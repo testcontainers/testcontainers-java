@@ -30,17 +30,19 @@ public class ContainerWithLicenseIT {
             .version("1.0")
             .mainClass(LicenceCheckerExtension.class).build();
 
-        final HiveMQContainer hivemq =
-            new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_CE_IMAGE_NAME)
-                .withHiveMQConfig(MountableFile.forClasspathResource("/inMemoryConfig.xml"))
-                .withExtension(hiveMQExtension)
-                .waitForExtension(hiveMQExtension)
-                .withLicense(MountableFile.forClasspathResource("/myLicense.lic"))
-                .withLicense(MountableFile.forClasspathResource("/myExtensionLicense.elic"));
+        try (final HiveMQContainer hivemq =
+                 new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_CE_IMAGE_NAME)
+                     .withHiveMQConfig(MountableFile.forClasspathResource("/inMemoryConfig.xml"))
+                     .withExtension(hiveMQExtension)
+                     .waitForExtension(hiveMQExtension)
+                     .withLicense(MountableFile.forClasspathResource("/myLicense.lic"))
+                     .withLicense(MountableFile.forClasspathResource("/myExtensionLicense.elic"))) {
 
-        hivemq.start();
-        TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort());
-        hivemq.stop();
+
+            hivemq.start();
+            TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort());
+            hivemq.stop();
+        }
     }
 
     @SuppressWarnings("CodeBlock2Expr")

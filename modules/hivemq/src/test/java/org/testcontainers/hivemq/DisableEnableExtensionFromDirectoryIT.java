@@ -17,21 +17,23 @@ public class DisableEnableExtensionFromDirectoryIT {
     @Test
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
     void test() throws Exception {
-        final HiveMQContainer hivemq =
-                new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME)
-                        .withExtension(MountableFile.forClasspathResource("/modifier-extension"))
-                        .waitForExtension("Modifier Extension")
-                        .withLogLevel(Level.DEBUG);
+        try (final HiveMQContainer hivemq =
+                 new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME)
+                     .withExtension(MountableFile.forClasspathResource("/modifier-extension"))
+                     .waitForExtension("Modifier Extension")
+                     .withLogLevel(Level.DEBUG)) {
 
-        hivemq.start();
+            hivemq.start();
 
-        TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort());
-        hivemq.disableExtension("Modifier Extension", "modifier-extension");
-        assertThrows(ExecutionException.class, () -> TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort()));
-        hivemq.enableExtension("Modifier Extension", "modifier-extension");
-        TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort());
 
-        hivemq.stop();
+            TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort());
+            hivemq.disableExtension("Modifier Extension", "modifier-extension");
+            assertThrows(ExecutionException.class, () -> TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort()));
+            hivemq.enableExtension("Modifier Extension", "modifier-extension");
+            TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort());
+
+            hivemq.stop();
+        }
     }
 
 }

@@ -18,26 +18,28 @@ public class ContainerWithCustomConfigIT {
     @Test
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
     void test() throws Exception {
-        final HiveMQContainer hivemq = new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME)
-            .withHiveMQConfig(MountableFile.forClasspathResource("/config.xml"));
 
-        hivemq.start();
+        try (final HiveMQContainer hivemq = new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME)
+            .withHiveMQConfig(MountableFile.forClasspathResource("/config.xml"))) {
 
-        final Mqtt5BlockingClient publisher = Mqtt5Client.builder()
-            .identifier("publisher")
-            .serverPort(hivemq.getMqttPort())
-            .buildBlocking();
+            hivemq.start();
 
-        publisher.connect();
+            final Mqtt5BlockingClient publisher = Mqtt5Client.builder()
+                .identifier("publisher")
+                .serverPort(hivemq.getMqttPort())
+                .buildBlocking();
 
-        assertThrows(MqttSessionExpiredException.class, () -> {
-            // this should fail since only QoS 0 is allowed by the configuration
-            publisher.publishWith()
-                .topic("test/topic")
-                .qos(MqttQos.EXACTLY_ONCE)
-                .send();
-        });
+            publisher.connect();
 
-        hivemq.stop();
+            assertThrows(MqttSessionExpiredException.class, () -> {
+                // this should fail since only QoS 0 is allowed by the configuration
+                publisher.publishWith()
+                    .topic("test/topic")
+                    .qos(MqttQos.EXACTLY_ONCE)
+                    .send();
+            });
+
+            hivemq.stop();
+        }
     }
 }

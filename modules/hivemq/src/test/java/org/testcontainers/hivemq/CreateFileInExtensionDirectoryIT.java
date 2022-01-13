@@ -31,14 +31,16 @@ public class CreateFileInExtensionDirectoryIT {
             .version("1.0")
             .mainClass(FileCreatorExtension.class).build();
 
-        final HiveMQContainer hivemq =
-            new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_CE_IMAGE_NAME)
-                .withHiveMQConfig(MountableFile.forClasspathResource("/inMemoryConfig.xml"))
-                .waitForExtension(hiveMQExtension)
-                .withExtension(hiveMQExtension);
-        hivemq.start();
-        TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort());
-        hivemq.stop();
+        try (final HiveMQContainer hivemq =
+                 new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_CE_IMAGE_NAME)
+                     .withHiveMQConfig(MountableFile.forClasspathResource("/inMemoryConfig.xml"))
+                     .waitForExtension(hiveMQExtension)
+                     .withExtension(hiveMQExtension)) {
+
+            hivemq.start();
+            TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort());
+            hivemq.stop();
+        }
     }
 
     public static class FileCreatorExtension implements ExtensionMain {

@@ -30,42 +30,43 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class ContainerWithoutPlatformExtensionsIT {
 
     private final @NotNull HiveMQExtension hiveMQExtension = HiveMQExtension.builder()
-            .name("MyExtension")
-            .id("my-extension")
-            .version("1.0.0")
-            .mainClass(CheckerExtension.class).build();
+        .name("MyExtension")
+        .id("my-extension")
+        .version("1.0.0")
+        .mainClass(CheckerExtension.class).build();
 
 
     @Test
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
     public void removeAllPlatformExtensions() throws InterruptedException {
 
-        final HiveMQContainer hivemq = new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME)
-                .withExtension(hiveMQExtension)
-                .waitForExtension(hiveMQExtension)
-                .withoutPrepackagedExtensions();
+        try (final HiveMQContainer hivemq = new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME)
+            .withExtension(hiveMQExtension)
+            .waitForExtension(hiveMQExtension)
+            .withoutPrepackagedExtensions()) {
 
-        hivemq.start();
+            hivemq.start();
 
-        final Mqtt5BlockingClient client = MqttClient.builder()
+            final Mqtt5BlockingClient client = MqttClient.builder()
                 .serverPort(hivemq.getMqttPort())
                 .useMqttVersion5()
                 .buildBlocking();
 
-        client.connect();
-        final Mqtt5BlockingClient.Mqtt5Publishes publishes = client.publishes(MqttGlobalPublishFilter.ALL);
-        client.subscribeWith().topicFilter("extensions").send();
+            client.connect();
+            final Mqtt5BlockingClient.Mqtt5Publishes publishes = client.publishes(MqttGlobalPublishFilter.ALL);
+            client.subscribeWith().topicFilter("extensions").send();
 
-        final Mqtt5Publish receive = publishes.receive();
-        assertTrue(receive.getPayload().isPresent());
-        final String extensionInfo = new String(receive.getPayloadAsBytes());
+            final Mqtt5Publish receive = publishes.receive();
+            assertTrue(receive.getPayload().isPresent());
+            final String extensionInfo = new String(receive.getPayloadAsBytes());
 
-        assertFalse(extensionInfo.contains("hivemq-allow-all-extension"));
-        assertFalse(extensionInfo.contains("hivemq-kafka-extension"));
-        assertFalse(extensionInfo.contains("hivemq-bridge-extension"));
-        assertFalse(extensionInfo.contains("hivemq-enterprise-security-extension"));
+            assertFalse(extensionInfo.contains("hivemq-allow-all-extension"));
+            assertFalse(extensionInfo.contains("hivemq-kafka-extension"));
+            assertFalse(extensionInfo.contains("hivemq-bridge-extension"));
+            assertFalse(extensionInfo.contains("hivemq-enterprise-security-extension"));
 
-        hivemq.start();
+            hivemq.start();
+        }
     }
 
     @Test
@@ -73,16 +74,16 @@ public class ContainerWithoutPlatformExtensionsIT {
     public void removeKafkaExtension() throws InterruptedException {
 
         final HiveMQContainer hivemq = new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME)
-                .withExtension(hiveMQExtension)
-                .waitForExtension(hiveMQExtension)
-                .withoutPrepackagedExtensions("hivemq-kafka-extension");
+            .withExtension(hiveMQExtension)
+            .waitForExtension(hiveMQExtension)
+            .withoutPrepackagedExtensions("hivemq-kafka-extension");
 
         hivemq.start();
 
         final Mqtt5BlockingClient client = MqttClient.builder()
-                .serverPort(hivemq.getMqttPort())
-                .useMqttVersion5()
-                .buildBlocking();
+            .serverPort(hivemq.getMqttPort())
+            .useMqttVersion5()
+            .buildBlocking();
 
         client.connect();
         final Mqtt5BlockingClient.Mqtt5Publishes publishes = client.publishes(MqttGlobalPublishFilter.ALL);
@@ -104,31 +105,31 @@ public class ContainerWithoutPlatformExtensionsIT {
 
         @Override
         public void extensionStart(
-                final @NotNull ExtensionStartInput extensionStartInput,
-                final @NotNull ExtensionStartOutput extensionStartOutput) {
+            final @NotNull ExtensionStartInput extensionStartInput,
+            final @NotNull ExtensionStartOutput extensionStartOutput) {
 
             final String extensionFolders = Arrays.stream(extensionStartInput.getServerInformation().getExtensionsFolder().listFiles())
-                    .filter(File::isDirectory)
-                    .map(File::getName)
-                    .collect(Collectors.joining("\n"));
+                .filter(File::isDirectory)
+                .map(File::getName)
+                .collect(Collectors.joining("\n"));
 
             final byte[] bytes = extensionFolders.getBytes(StandardCharsets.UTF_8);
             Services.publishService().publish(Builders.publish()
-                    .topic("extensions")
-                    .retain(true)
-                    .payload(ByteBuffer.wrap(bytes))
-                    .build());
+                .topic("extensions")
+                .retain(true)
+                .payload(ByteBuffer.wrap(bytes))
+                .build());
 
             Services.securityRegistry().setAuthenticatorProvider(authenticatorProviderInput ->
-                    (SimpleAuthenticator) (simpleAuthInput, simpleAuthOutput) ->
-                            simpleAuthOutput.authenticateSuccessfully());
+                (SimpleAuthenticator) (simpleAuthInput, simpleAuthOutput) ->
+                    simpleAuthOutput.authenticateSuccessfully());
 
         }
 
         @Override
         public void extensionStop(
-                final @NotNull ExtensionStopInput extensionStopInput,
-                final @NotNull ExtensionStopOutput extensionStopOutput) {
+            final @NotNull ExtensionStopInput extensionStopInput,
+            final @NotNull ExtensionStopOutput extensionStopOutput) {
 
         }
     }

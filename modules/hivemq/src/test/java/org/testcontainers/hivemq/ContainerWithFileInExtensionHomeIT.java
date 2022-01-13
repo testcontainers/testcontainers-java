@@ -26,30 +26,32 @@ public class ContainerWithFileInExtensionHomeIT {
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
     void test() throws Exception {
         final HiveMQExtension hiveMQExtension = HiveMQExtension.builder()
-                .id("extension-1")
-                .name("my-extension")
-                .version("1.0")
-                .mainClass(FileCheckerExtension.class).build();
+            .id("extension-1")
+            .name("my-extension")
+            .version("1.0")
+            .mainClass(FileCheckerExtension.class).build();
 
-        final HiveMQContainer hivemq =
-                new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_CE_IMAGE_NAME)
-                    .withHiveMQConfig(MountableFile.forClasspathResource("/inMemoryConfig.xml"))
-                    .withExtension(hiveMQExtension)
-                    .waitForExtension(hiveMQExtension)
-                    .withFileInExtensionHomeFolder(
-                        MountableFile.forClasspathResource("/additionalFile.txt"),
-                        "extension-1",
-                        "/additionalFiles/my-file.txt");
+        try (final HiveMQContainer hivemq =
+                 new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_CE_IMAGE_NAME)
+                     .withHiveMQConfig(MountableFile.forClasspathResource("/inMemoryConfig.xml"))
+                     .withExtension(hiveMQExtension)
+                     .waitForExtension(hiveMQExtension)
+                     .withFileInExtensionHomeFolder(
+                         MountableFile.forClasspathResource("/additionalFile.txt"),
+                         "extension-1",
+                         "/additionalFiles/my-file.txt")) {
 
-        hivemq.start();
-        TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort());
-        hivemq.stop();
+            hivemq.start();
+            TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort());
+            hivemq.stop();
+
+        }
     }
 
     public static class FileCheckerExtension implements ExtensionMain {
 
         @Override
-        public void extensionStart(@NotNull ExtensionStartInput extensionStartInput, @NotNull ExtensionStartOutput extensionStartOutput) {
+        public void extensionStart(final @NotNull ExtensionStartInput extensionStartInput, final @NotNull ExtensionStartOutput extensionStartOutput) {
 
             final PublishInboundInterceptor publishInboundInterceptor = (publishInboundInput, publishInboundOutput) -> {
 
@@ -68,7 +70,7 @@ public class ContainerWithFileInExtensionHomeIT {
         }
 
         @Override
-        public void extensionStop(@NotNull ExtensionStopInput extensionStopInput, @NotNull ExtensionStopOutput extensionStopOutput) {
+        public void extensionStop(final @NotNull ExtensionStopInput extensionStopInput, final @NotNull ExtensionStopOutput extensionStopOutput) {
 
         }
     }

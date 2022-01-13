@@ -42,16 +42,17 @@ public class CreateFileInCopiedDirectoryIT {
             .version("1.0")
             .mainClass(FileCreatorExtension.class).build();
 
-        final HiveMQContainer extension =
-            new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_CE_IMAGE_NAME)
-                .withHiveMQConfig(MountableFile.forClasspathResource("/inMemoryConfig.xml"))
-                .withExtension(hivemq)
-                .waitForExtension(hivemq)
-                .withFileInHomeFolder(createDirectory(), "directory");
+        try (final HiveMQContainer extension =
+                 new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_CE_IMAGE_NAME)
+                     .withHiveMQConfig(MountableFile.forClasspathResource("/inMemoryConfig.xml"))
+                     .withExtension(hivemq)
+                     .waitForExtension(hivemq)
+                     .withFileInHomeFolder(createDirectory(), "directory")) {
 
-        extension.start();
-        TestPublishModifiedUtil.testPublishModified(extension.getMqttPort());
-        extension.stop();
+            extension.start();
+            TestPublishModifiedUtil.testPublishModified(extension.getMqttPort());
+            extension.stop();
+        }
     }
 
     public static class FileCreatorExtension implements ExtensionMain {

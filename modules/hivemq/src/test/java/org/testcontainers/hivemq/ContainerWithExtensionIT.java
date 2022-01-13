@@ -19,22 +19,23 @@ public class ContainerWithExtensionIT {
             .version("1.0")
             .mainClass(MyExtension.class).build();
 
-        final HiveMQContainer hivemq =
-            new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_CE_IMAGE_NAME)
-                .withHiveMQConfig(MountableFile.forClasspathResource("/inMemoryConfig.xml"))
-                .waitForExtension(hiveMQExtension)
-                .withExtension(hiveMQExtension);
+        try (final HiveMQContainer hivemq =
+                 new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_CE_IMAGE_NAME)
+                     .withHiveMQConfig(MountableFile.forClasspathResource("/inMemoryConfig.xml"))
+                     .waitForExtension(hiveMQExtension)
+                     .withExtension(hiveMQExtension)) {
 
-        hivemq.start();
-        TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort());
-        hivemq.stop();
+            hivemq.start();
+            TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort());
+            hivemq.stop();
 
-        hivemq.start();
-        TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort());
-        hivemq.stop();
+            hivemq.start();
+            TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort());
+            hivemq.stop();
 
-        hivemq.start();
-        TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort());
-        hivemq.stop();
+            hivemq.start();
+            TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort());
+            hivemq.stop();
+        }
     }
 }
