@@ -63,10 +63,6 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
 
     private final @NotNull MultiLogMessageWaitStrategy waitStrategy = new MultiLogMessageWaitStrategy();
 
-    public HiveMQContainer() {
-        this(DEFAULT_HIVEMQ_CE_IMAGE_NAME.withTag(DEFAULT_HIVEMQ_CE_TAG));
-    }
-
     public HiveMQContainer(final @NotNull DockerImageName dockerImageName) {
         super(dockerImageName);
 
