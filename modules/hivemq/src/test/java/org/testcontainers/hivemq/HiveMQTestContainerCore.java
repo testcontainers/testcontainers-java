@@ -75,6 +75,8 @@ class HiveMQTestContainerCore {
     @Test
     void withFileInExtensionHomeFolder_fileDoesNotExist_Exception() {
         final MountableFile mountableFile = MountableFile.forHostPath("/this/does/not/exist");
-        assertThrows(ContainerLaunchException.class, () -> container.withFileInExtensionHomeFolder(mountableFile, "my-extension"));
+        assertThrows(ContainerLaunchException.class, () -> {
+            final HiveMQContainer hiveMQContainer = container.withFileInExtensionHomeFolder(mountableFile, "my-extension");
+        });
     }
 }

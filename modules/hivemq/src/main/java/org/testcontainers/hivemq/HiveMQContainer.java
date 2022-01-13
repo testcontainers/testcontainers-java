@@ -31,7 +31,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@SuppressWarnings("UnusedReturnValue")
 public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
 
     private final static @NotNull Logger logger = LoggerFactory.getLogger(HiveMQContainer.class);
