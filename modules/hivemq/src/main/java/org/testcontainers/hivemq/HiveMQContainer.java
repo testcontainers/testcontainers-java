@@ -99,7 +99,7 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
     public void start() {
         super.start();
         if (controlCenterEnabled) {
-            logger.info("The HiveMQ Control Center is reachable under: http://localhost:{}", getMappedPort(CONTROL_CENTER_PORT));
+            logger.info("The HiveMQ Control Center is reachable under: http://{}:{}", getHost(), getMappedPort(CONTROL_CENTER_PORT));
         }
     }
 

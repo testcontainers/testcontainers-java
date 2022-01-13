@@ -24,7 +24,7 @@ public class ContainerWithControlCenterIT {
         extension.start();
 
         final CloseableHttpClient httpClient = HttpClientBuilder.create().build();
-        final HttpUriRequest request = new HttpGet("http://localhost:" + extension.getMappedPort(CONTROL_CENTER_PORT));
+        final HttpUriRequest request = new HttpGet("http://" + extension.getHost() + ":" + extension.getMappedPort(CONTROL_CENTER_PORT));
         httpClient.execute(request);
 
         extension.stop();
