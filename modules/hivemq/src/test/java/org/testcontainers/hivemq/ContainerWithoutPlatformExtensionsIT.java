@@ -40,15 +40,15 @@ public class ContainerWithoutPlatformExtensionsIT {
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
     public void removeAllPlatformExtensions() throws InterruptedException {
 
-        final HiveMQContainer container = new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME)
+        final HiveMQContainer hivemq = new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME)
                 .withExtension(hiveMQExtension)
                 .waitForExtension(hiveMQExtension)
                 .withoutPrepackagedExtensions();
 
-        container.start();
+        hivemq.start();
 
         final Mqtt5BlockingClient client = MqttClient.builder()
-                .serverPort(container.getMqttPort())
+                .serverPort(hivemq.getMqttPort())
                 .useMqttVersion5()
                 .buildBlocking();
 
@@ -65,22 +65,22 @@ public class ContainerWithoutPlatformExtensionsIT {
         assertFalse(extensionInfo.contains("hivemq-bridge-extension"));
         assertFalse(extensionInfo.contains("hivemq-enterprise-security-extension"));
 
-        container.start();
+        hivemq.start();
     }
 
     @Test
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
     public void removeKafkaExtension() throws InterruptedException {
 
-        final HiveMQContainer container = new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME)
+        final HiveMQContainer hivemq = new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME)
                 .withExtension(hiveMQExtension)
                 .waitForExtension(hiveMQExtension)
                 .withoutPrepackagedExtensions("hivemq-kafka-extension");
 
-        container.start();
+        hivemq.start();
 
         final Mqtt5BlockingClient client = MqttClient.builder()
-                .serverPort(container.getMqttPort())
+                .serverPort(hivemq.getMqttPort())
                 .useMqttVersion5()
                 .buildBlocking();
 
@@ -97,7 +97,7 @@ public class ContainerWithoutPlatformExtensionsIT {
         assertTrue(extensionInfo.contains("hivemq-bridge-extension"));
         assertTrue(extensionInfo.contains("hivemq-enterprise-security-extension"));
 
-        container.stop();
+        hivemq.stop();
     }
 
     public static class CheckerExtension implements ExtensionMain {

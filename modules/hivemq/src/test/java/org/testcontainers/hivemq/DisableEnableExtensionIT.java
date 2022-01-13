@@ -25,22 +25,22 @@ public class DisableEnableExtensionIT {
     @Test
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
     void test() throws Exception {
-        final HiveMQContainer extension =
+        final HiveMQContainer hivemq =
                 new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME)
                         .withExtension(hiveMQExtension)
                         .withLogLevel(Level.DEBUG);
 
-        extension.start();
+        hivemq.start();
 
-        assertThrows(ExecutionException.class, () -> TestPublishModifiedUtil.testPublishModified(extension.getMqttPort()));
-        extension.enableExtension(hiveMQExtension);
-        TestPublishModifiedUtil.testPublishModified(extension.getMqttPort());
-        extension.disableExtension(hiveMQExtension);
-        assertThrows(ExecutionException.class, () -> TestPublishModifiedUtil.testPublishModified(extension.getMqttPort()));
-        extension.enableExtension(hiveMQExtension);
-        TestPublishModifiedUtil.testPublishModified(extension.getMqttPort());
+        assertThrows(ExecutionException.class, () -> TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort()));
+        hivemq.enableExtension(hiveMQExtension);
+        TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort());
+        hivemq.disableExtension(hiveMQExtension);
+        assertThrows(ExecutionException.class, () -> TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort()));
+        hivemq.enableExtension(hiveMQExtension);
+        TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort());
 
-        extension.stop();
+        hivemq.stop();
     }
 
 }

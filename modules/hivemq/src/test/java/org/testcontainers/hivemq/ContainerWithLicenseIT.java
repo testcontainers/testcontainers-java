@@ -30,7 +30,7 @@ public class ContainerWithLicenseIT {
             .version("1.0")
             .mainClass(LicenceCheckerExtension.class).build();
 
-        final HiveMQContainer extension =
+        final HiveMQContainer hivemq =
             new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_CE_IMAGE_NAME)
                 .withHiveMQConfig(MountableFile.forClasspathResource("/inMemoryConfig.xml"))
                 .withExtension(hiveMQExtension)
@@ -38,9 +38,9 @@ public class ContainerWithLicenseIT {
                 .withLicense(MountableFile.forClasspathResource("/myLicense.lic"))
                 .withLicense(MountableFile.forClasspathResource("/myExtensionLicense.elic"));
 
-        extension.start();
-        TestPublishModifiedUtil.testPublishModified(extension.getMqttPort());
-        extension.stop();
+        hivemq.start();
+        TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort());
+        hivemq.stop();
     }
 
     @SuppressWarnings("CodeBlock2Expr")

@@ -17,16 +17,16 @@ public class ContainerWithControlCenterIT {
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
     public void test() throws Exception {
 
-        final HiveMQContainer extension =
+        final HiveMQContainer hivemq =
                 new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME)
                         .withControlCenter();
 
-        extension.start();
+        hivemq.start();
 
         final CloseableHttpClient httpClient = HttpClientBuilder.create().build();
-        final HttpUriRequest request = new HttpGet("http://" + extension.getHost() + ":" + extension.getMappedPort(CONTROL_CENTER_PORT));
+        final HttpUriRequest request = new HttpGet("http://" + hivemq.getHost() + ":" + hivemq.getMappedPort(CONTROL_CENTER_PORT));
         httpClient.execute(request);
 
-        extension.stop();
+        hivemq.stop();
     }
 }

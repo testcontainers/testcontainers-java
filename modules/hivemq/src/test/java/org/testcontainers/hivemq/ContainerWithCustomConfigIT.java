@@ -18,14 +18,14 @@ public class ContainerWithCustomConfigIT {
     @Test
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
     void test() throws Exception {
-        final HiveMQContainer extension = new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME)
+        final HiveMQContainer hivemq = new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME)
             .withHiveMQConfig(MountableFile.forClasspathResource("/config.xml"));
 
-        extension.start();
+        hivemq.start();
 
         final Mqtt5BlockingClient publisher = Mqtt5Client.builder()
             .identifier("publisher")
-            .serverPort(extension.getMqttPort())
+            .serverPort(hivemq.getMqttPort())
             .buildBlocking();
 
         publisher.connect();
@@ -38,6 +38,6 @@ public class ContainerWithCustomConfigIT {
                 .send();
         });
 
-        extension.stop();
+        hivemq.stop();
     }
 }

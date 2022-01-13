@@ -30,7 +30,7 @@ public class ContainerWithFileInHomeIT {
             .version("1.0")
             .mainClass(FileCheckerExtension.class).build();
 
-        final HiveMQContainer extension =
+        final HiveMQContainer hivemq =
             new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_CE_IMAGE_NAME)
                 .withHiveMQConfig(MountableFile.forClasspathResource("/inMemoryConfig.xml"))
                 .withExtension(hiveMQExtension)
@@ -38,9 +38,9 @@ public class ContainerWithFileInHomeIT {
                 .withFileInHomeFolder(MountableFile.forClasspathResource("/additionalFile.txt"),
                     "/additionalFiles/my-file.txt");
 
-        extension.start();
-        TestPublishModifiedUtil.testPublishModified(extension.getMqttPort());
-        extension.stop();
+        hivemq.start();
+        TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort());
+        hivemq.stop();
     }
 
     public static class FileCheckerExtension implements ExtensionMain {
