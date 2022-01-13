@@ -9,9 +9,6 @@ import org.junit.jupiter.api.Timeout;
 
 import java.util.concurrent.TimeUnit;
 
-/**
- * @author Yannick Weber
- */
 public class ContainerWithControlCenterIT {
 
     public static final int CONTROL_CENTER_PORT = 8080;

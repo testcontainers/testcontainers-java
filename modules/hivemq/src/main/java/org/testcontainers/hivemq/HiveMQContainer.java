@@ -31,9 +31,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * @author Yannick Weber
- */
 @SuppressWarnings("UnusedReturnValue")
 public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
 

@@ -13,9 +13,6 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-/**
- * @author Yannick Weber
- */
 public class DisableEnableExtensionIT {
 
     private final @NotNull HiveMQExtension hiveMQExtension = HiveMQExtension.builder()

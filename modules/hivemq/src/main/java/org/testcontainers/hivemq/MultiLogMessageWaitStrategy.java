@@ -17,8 +17,6 @@ import java.util.function.Predicate;
 /**
  * This is a wait strategy to wait for multiple log patterns.
  * The wait strategy will continue when every log pattern is matched at least once.
- *
- * @author Yannick Weber
  */
 class MultiLogMessageWaitStrategy extends AbstractWaitStrategy {
 

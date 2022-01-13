@@ -27,9 +27,6 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/**
- * @author Yannick Weber
- */
 public class ContainerWithoutPlatformExtensionsIT {
 
     private final @NotNull HiveMQExtension hiveMQExtension = HiveMQExtension.builder()

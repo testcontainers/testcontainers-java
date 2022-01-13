@@ -23,9 +23,6 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/**
- * @author Yannick Weber
- */
 public class CreateFileInCopiedDirectoryIT {
 
     private @NotNull MountableFile createDirectory() throws IOException {

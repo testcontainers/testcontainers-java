@@ -2,9 +2,6 @@ package org.testcontainers.hivemq;
 
 import org.jetbrains.annotations.NotNull;
 
-/**
- * @author Yannick Weber
- */
 class PathUtil {
 
     static @NotNull String prepareInnerPath(@NotNull String innerPath) {

@@ -7,9 +7,6 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-/**
- * @author Yannick Weber
- */
 public class HiveMQExtension {
 
     private final @NotNull String id;

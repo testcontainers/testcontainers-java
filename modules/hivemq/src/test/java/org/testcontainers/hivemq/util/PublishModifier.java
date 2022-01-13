@@ -8,9 +8,6 @@ import com.hivemq.extension.sdk.api.interceptor.publish.parameter.PublishInbound
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
-/**
- * @author Yannick Weber
- */
 public class PublishModifier implements PublishInboundInterceptor {
     @Override
     public void onInboundPublish(final @NotNull PublishInboundInput publishInboundInput, final @NotNull PublishInboundOutput publishInboundOutput) {

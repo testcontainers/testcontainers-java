@@ -9,9 +9,6 @@ import com.hivemq.extension.sdk.api.parameter.ExtensionStopOutput;
 import com.hivemq.extension.sdk.api.services.Services;
 import com.hivemq.extension.sdk.api.services.intializer.ClientInitializer;
 
-/**
- * @author Yannick Weber
- */
 public class MyExtensionWithSubclasses implements ExtensionMain {
 
     @Override

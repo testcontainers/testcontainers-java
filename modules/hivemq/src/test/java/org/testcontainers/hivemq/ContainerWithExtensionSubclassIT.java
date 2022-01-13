@@ -9,9 +9,6 @@ import org.testcontainers.utility.MountableFile;
 
 import java.util.concurrent.TimeUnit;
 
-/**
- * @author Yannick Weber
- */
 public class ContainerWithExtensionSubclassIT {
 
     @Test

@@ -13,9 +13,6 @@ import com.hivemq.extension.sdk.api.services.intializer.ClientInitializer;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
-/**
- * @author Yannick Weber
- */
 @SuppressWarnings("CodeBlock2Expr")
 public class MyExtension implements ExtensionMain {
 

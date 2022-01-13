@@ -9,9 +9,6 @@ import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-/**
- * @author Yannick Weber
- */
 public class TestPublishModifiedUtil {
 
     public static void testPublishModified(final int mqttPort) throws InterruptedException, ExecutionException {

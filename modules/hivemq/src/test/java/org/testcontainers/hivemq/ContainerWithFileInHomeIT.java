@@ -19,9 +19,6 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
-/**
- * @author Yannick Weber
- */
 public class ContainerWithFileInHomeIT {
 
     @Test
