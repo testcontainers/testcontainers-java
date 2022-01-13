@@ -4,9 +4,9 @@ dependencies {
     api project(':testcontainers')
 
     testImplementation 'com.google.cloud:google-cloud-datastore:2.2.1'
-    testImplementation 'com.google.cloud:google-cloud-firestore:3.0.9'
+    testImplementation 'com.google.cloud:google-cloud-firestore:3.0.10'
     testImplementation 'com.google.cloud:google-cloud-pubsub:1.115.0'
-    testImplementation 'com.google.cloud:google-cloud-spanner:6.17.3'
+    testImplementation 'com.google.cloud:google-cloud-spanner:6.17.4'
     testImplementation 'com.google.cloud:google-cloud-bigtable:2.4.0'
     testImplementation 'org.assertj:assertj-core:3.22.0'
 }
