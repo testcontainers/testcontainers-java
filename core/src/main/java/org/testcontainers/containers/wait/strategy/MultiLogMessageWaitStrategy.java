@@ -1,11 +1,10 @@
-package org.testcontainers.hivemq;
+package org.testcontainers.containers.wait.strategy;
 
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.WaitingConsumer;
-import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
 import org.testcontainers.utility.LogUtils;
 
 import java.util.Map;
@@ -18,7 +17,7 @@ import java.util.function.Predicate;
  * This is a wait strategy to wait for multiple log patterns.
  * The wait strategy will continue when every log pattern is matched at least once.
  */
-class MultiLogMessageWaitStrategy extends AbstractWaitStrategy {
+public class MultiLogMessageWaitStrategy extends AbstractWaitStrategy {
 
     private final @NotNull ConcurrentHashMap<String, Boolean> regexes = new ConcurrentHashMap<>();
 

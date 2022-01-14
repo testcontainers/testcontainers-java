@@ -1,29 +1,21 @@
 package org.testcontainers.hivemq;
 
-import javassist.ClassPool;
-import javassist.NotFoundException;
 import org.apache.commons.io.FileUtils;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.MultiLogMessageWaitStrategy;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.time.Duration;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -33,7 +25,7 @@ import java.util.regex.Pattern;
 
 public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(HiveMQContainer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(HiveMQContainer.class);
 
     public static final String DEFAULT_HIVEMQ_EE_TAG = "4.7.2";
     public static final String DEFAULT_HIVEMQ_CE_TAG = "2021.3";
