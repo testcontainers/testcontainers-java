@@ -35,15 +35,6 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(HiveMQContainer.class);
 
-    private static final String VALID_EXTENSION_XML =
-            "<hivemq-extension>" + //
-                    "   <id>%s</id>" + //
-                    "   <name>%s</name>" + //
-                    "   <version>%s</version>" + //
-                    "   <priority>%s</priority>" +  //
-                    "   <start-priority>%s</start-priority>" +  //
-                    "</hivemq-extension>";
-
     public static final String DEFAULT_HIVEMQ_EE_TAG = "4.7.2";
     public static final String DEFAULT_HIVEMQ_CE_TAG = "2021.3";
     public static final DockerImageName DEFAULT_HIVEMQ_EE_IMAGE_NAME = DockerImageName.parse("hivemq/hivemq4").withTag(DEFAULT_HIVEMQ_EE_TAG);
@@ -55,7 +46,6 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
     @SuppressWarnings("OctalInteger")
     private static final int MODE = 0777;
     private static final @NotNull Pattern EXTENSION_ID_PATTERN = Pattern.compile("<id>(.+?)</id>");
-    public static final @NotNull String EXTENSION_MAIN_CLASS_NAME = "com.hivemq.extension.sdk.api.ExtensionMain";
 
     private final @NotNull ConcurrentHashMap<String, CountDownLatch> containerOutputLatches = new ConcurrentHashMap<>();
     private volatile boolean silent = false;
@@ -166,7 +156,7 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
      */
     public @NotNull HiveMQContainer withExtension(final @NotNull HiveMQExtension hiveMQExtension) {
         try {
-            final File extension = createExtension(hiveMQExtension);
+            final File extension = hiveMQExtension.createExtension(hiveMQExtension);
             final MountableFile mountableExtension = MountableFile.forHostPath(extension.getPath(), MODE);
             withCopyFileToContainer(mountableExtension, "/opt/hivemq/extensions/" + hiveMQExtension.getId());
         } catch (final Exception e) {
@@ -213,66 +203,6 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
             throw new IllegalStateException("Could not parse extension id from '" + file.getAbsolutePath() + "'");
         }
         return matcher.group(1);
-    }
-
-    private @NotNull File createExtension(final @NotNull HiveMQExtension hiveMQExtension)
-            throws Exception {
-
-        final File tempDir = Files.createTempDirectory("").toFile();
-
-        final File extensionDir = new File(tempDir, hiveMQExtension.getId());
-        FileUtils.writeStringToFile(new File(extensionDir, "hivemq-extension.xml"),
-                String.format(
-                    VALID_EXTENSION_XML,
-                        hiveMQExtension.getId(),
-                        hiveMQExtension.getName(),
-                        hiveMQExtension.getVersion(),
-                        hiveMQExtension.getPriority(),
-                        hiveMQExtension.getStartPriority()),
-                Charset.defaultCharset());
-
-        if (hiveMQExtension.isDisabledOnStartup()) {
-            final File disabled = new File(extensionDir, "DISABLED");
-            final boolean newFile = disabled.createNewFile();
-            if (!newFile) {
-                throw new ContainerLaunchException("Could not create DISABLED file '" + disabled.getAbsolutePath() + "' on host machine.");
-            }
-        }
-
-        final JavaArchive javaArchive =
-                ShrinkWrap.create(JavaArchive.class)
-                    .addAsServiceProvider(EXTENSION_MAIN_CLASS_NAME, hiveMQExtension.getMainClass().getName());
-
-        putSubclassesIntoJar(hiveMQExtension.getId(), hiveMQExtension.getMainClass(), javaArchive);
-        for (final Class<?> additionalClass : hiveMQExtension.getAdditionalClasses()) {
-            javaArchive.addClass(additionalClass);
-            putSubclassesIntoJar(hiveMQExtension.getId(), additionalClass, javaArchive);
-        }
-
-        javaArchive.as(ZipExporter.class).exportTo(new File(extensionDir, "extension.jar"));
-
-        return extensionDir;
-    }
-
-    private void putSubclassesIntoJar(
-            final @NotNull String extensionId,
-            final @Nullable Class<?> clazz,
-            final @NotNull JavaArchive javaArchive) throws NotFoundException {
-
-        if (clazz != null) {
-            final Set<String> subClassNames =
-                    ClassPool.getDefault().get(clazz.getName()).getClassFile().getConstPool().getClassNames();
-            for (final String subClassName : subClassNames) {
-                final String className = subClassName.replaceAll("/", ".");
-
-                if (!className.startsWith("[L")) {
-                    LOGGER.debug("Trying to package subclass '{}' into extension '{}'.", className, extensionId);
-                    javaArchive.addClass(className);
-                } else {
-                    LOGGER.debug("Class '{}' will be ignored.", className);
-                }
-            }
-        }
     }
 
     /**

@@ -1,13 +1,37 @@
 package org.testcontainers.hivemq;
 
+import javassist.ClassPool;
+import javassist.NotFoundException;
+import org.apache.commons.io.FileUtils;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.ContainerLaunchException;
 
+import java.io.File;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 public class HiveMQExtension {
+
+    private static final String VALID_EXTENSION_XML =
+        "<hivemq-extension>" + //
+            "   <id>%s</id>" + //
+            "   <name>%s</name>" + //
+            "   <version>%s</version>" + //
+            "   <priority>%s</priority>" +  //
+            "   <start-priority>%s</start-priority>" +  //
+            "</hivemq-extension>";
+    public static final String EXTENSION_MAIN_CLASS_NAME = "com.hivemq.extension.sdk.api.ExtensionMain";
+    private static final Logger LOGGER = LoggerFactory.getLogger(HiveMQExtension.class);
 
     private final @NotNull String id;
     private final @NotNull String name;
@@ -36,6 +60,66 @@ public class HiveMQExtension {
         this.disabledOnStartup = disabledOnStartup;
         this.mainClass = mainClass;
         this.additionalClasses = additionalClasses;
+    }
+
+    @NotNull File createExtension(final @NotNull HiveMQExtension hiveMQExtension)
+        throws Exception {
+
+        final File tempDir = Files.createTempDirectory("").toFile();
+
+        final File extensionDir = new File(tempDir, hiveMQExtension.getId());
+        FileUtils.writeStringToFile(new File(extensionDir, "hivemq-extension.xml"),
+            String.format(
+                VALID_EXTENSION_XML,
+                hiveMQExtension.getId(),
+                hiveMQExtension.getName(),
+                hiveMQExtension.getVersion(),
+                hiveMQExtension.getPriority(),
+                hiveMQExtension.getStartPriority()),
+            Charset.defaultCharset());
+
+        if (hiveMQExtension.isDisabledOnStartup()) {
+            final File disabled = new File(extensionDir, "DISABLED");
+            final boolean newFile = disabled.createNewFile();
+            if (!newFile) {
+                throw new ContainerLaunchException("Could not create DISABLED file '" + disabled.getAbsolutePath() + "' on host machine.");
+            }
+        }
+
+        final JavaArchive javaArchive =
+            ShrinkWrap.create(JavaArchive.class)
+                .addAsServiceProvider(EXTENSION_MAIN_CLASS_NAME, hiveMQExtension.getMainClass().getName());
+
+        putSubclassesIntoJar(hiveMQExtension.getId(), hiveMQExtension.getMainClass(), javaArchive);
+        for (final Class<?> additionalClass : hiveMQExtension.getAdditionalClasses()) {
+            javaArchive.addClass(additionalClass);
+            putSubclassesIntoJar(hiveMQExtension.getId(), additionalClass, javaArchive);
+        }
+
+        javaArchive.as(ZipExporter.class).exportTo(new File(extensionDir, "extension.jar"));
+
+        return extensionDir;
+    }
+
+    private void putSubclassesIntoJar(
+        final @NotNull String extensionId,
+        final @Nullable Class<?> clazz,
+        final @NotNull JavaArchive javaArchive) throws NotFoundException {
+
+        if (clazz != null) {
+            final Set<String> subClassNames =
+                ClassPool.getDefault().get(clazz.getName()).getClassFile().getConstPool().getClassNames();
+            for (final String subClassName : subClassNames) {
+                final String className = subClassName.replaceAll("/", ".");
+
+                if (!className.startsWith("[L")) {
+                    LOGGER.debug("Trying to package subclass '{}' into extension '{}'.", className, extensionId);
+                    javaArchive.addClass(className);
+                } else {
+                    LOGGER.debug("Class '{}' will be ignored.", className);
+                }
+            }
+        }
     }
 
     public @NotNull String getId() {
@@ -191,14 +275,14 @@ public class HiveMQExtension {
          */
         public @NotNull Builder mainClass(final @NotNull Class<?> mainClass) {
             try {
-                final Class<?> extensionMain = Class.forName(HiveMQContainer.EXTENSION_MAIN_CLASS_NAME);
+                final Class<?> extensionMain = Class.forName(EXTENSION_MAIN_CLASS_NAME);
                 if (!extensionMain.isAssignableFrom(mainClass)) {
-                    throw new IllegalArgumentException("The provided class does not implement '" + HiveMQContainer.EXTENSION_MAIN_CLASS_NAME + "'");
+                    throw new IllegalArgumentException("The provided class does not implement '" + EXTENSION_MAIN_CLASS_NAME + "'");
                 }
                 this.mainClass = mainClass;
                 return this;
             } catch (final ClassNotFoundException e) {
-                throw new IllegalStateException("The class '" + HiveMQContainer.EXTENSION_MAIN_CLASS_NAME + "' was not found in the classpath.");
+                throw new IllegalStateException("The class '" + EXTENSION_MAIN_CLASS_NAME + "' was not found in the classpath.");
             }
         }
 
