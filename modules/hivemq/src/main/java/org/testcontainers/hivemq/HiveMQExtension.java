@@ -2,6 +2,7 @@ package org.testcontainers.hivemq;
 
 import javassist.ClassPool;
 import javassist.NotFoundException;
+import lombok.Getter;
 import org.apache.commons.io.FileUtils;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
@@ -33,13 +34,27 @@ public class HiveMQExtension {
     public static final String EXTENSION_MAIN_CLASS_NAME = "com.hivemq.extension.sdk.api.ExtensionMain";
     private static final Logger LOGGER = LoggerFactory.getLogger(HiveMQExtension.class);
 
+    @Getter
     private final @NotNull String id;
+
+    @Getter
     private final @NotNull String name;
+
+    @Getter
     private final @NotNull String version;
+
+    @Getter
     private final int priority;
+
+    @Getter
     private final int startPriority;
+
+    @Getter
     private final boolean disabledOnStartup;
+
+    @Getter
     private final @NotNull Class<?> mainClass;
+
     private final @NotNull List<Class<?>> additionalClasses;
 
     private HiveMQExtension(
@@ -120,34 +135,6 @@ public class HiveMQExtension {
                 }
             }
         }
-    }
-
-    public @NotNull String getId() {
-        return id;
-    }
-
-    public @NotNull String getName() {
-        return name;
-    }
-
-    public @NotNull String getVersion() {
-        return version;
-    }
-
-    public int getPriority() {
-        return priority;
-    }
-
-    public int getStartPriority() {
-        return startPriority;
-    }
-
-    public boolean isDisabledOnStartup() {
-        return disabledOnStartup;
-    }
-
-    public @NotNull Class<?> getMainClass() {
-        return mainClass;
     }
 
     public @NotNull List<Class<?>> getAdditionalClasses() {
