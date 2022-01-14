@@ -33,9 +33,9 @@ import java.util.regex.Pattern;
 
 public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
 
-    private final static Logger logger = LoggerFactory.getLogger(HiveMQContainer.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(HiveMQContainer.class);
 
-    private static final String validPluginXML =
+    private static final String VALID_EXTENSION_XML =
             "<hivemq-extension>" + //
                     "   <id>%s</id>" + //
                     "   <name>%s</name>" + //
@@ -85,10 +85,10 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
             if (!containerOutputLatches.isEmpty()) {
                 containerOutputLatches.forEach((regEx, latch) -> {
                     if (outputFrame.getUtf8String().matches("(?s)" + regEx)) {
-                        logger.debug("Container Output '{}' matched RegEx '{}'", outputFrame.getUtf8String(), regEx);
+                        LOGGER.debug("Container Output '{}' matched RegEx '{}'", outputFrame.getUtf8String(), regEx);
                         latch.countDown();
                     } else {
-                        logger.debug("Container Output '{}' did not match RegEx '{}'", outputFrame.getUtf8String(), regEx);
+                        LOGGER.debug("Container Output '{}' did not match RegEx '{}'", outputFrame.getUtf8String(), regEx);
                     }
                 });
             }
@@ -99,7 +99,7 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
     public void start() {
         super.start();
         if (controlCenterEnabled) {
-            logger.info("The HiveMQ Control Center is reachable under: http://{}:{}", getHost(), getMappedPort(CONTROL_CENTER_PORT));
+            LOGGER.info("The HiveMQ Control Center is reachable under: http://{}:{}", getHost(), getMappedPort(CONTROL_CENTER_PORT));
         }
     }
 
@@ -197,7 +197,7 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
             final String extensionDirName = getExtensionDirectoryName(extensionDir);
             final String containerPath = "/opt/hivemq/extensions/" + extensionDirName;
             withCopyFileToContainer(cloneWithFileMode(mountableExtension), containerPath);
-            logger.info("Putting extension '{}' into '{}'", extensionDirName, containerPath);
+            LOGGER.info("Putting extension '{}' into '{}'", extensionDirName, containerPath);
         } catch (final Exception e) {
             throw new ContainerLaunchException(e.getMessage() == null ? "" : e.getMessage(), e);
         }
@@ -223,7 +223,7 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
         final File extensionDir = new File(tempDir, hiveMQExtension.getId());
         FileUtils.writeStringToFile(new File(extensionDir, "hivemq-extension.xml"),
                 String.format(
-                        validPluginXML,
+                    VALID_EXTENSION_XML,
                         hiveMQExtension.getId(),
                         hiveMQExtension.getName(),
                         hiveMQExtension.getVersion(),
@@ -266,10 +266,10 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
                 final String className = subClassName.replaceAll("/", ".");
 
                 if (!className.startsWith("[L")) {
-                    logger.debug("Trying to package subclass '{}' into extension '{}'.", className, extensionId);
+                    LOGGER.debug("Trying to package subclass '{}' into extension '{}'.", className, extensionId);
                     javaArchive.addClass(className);
                 } else {
-                    logger.debug("Class '{}' will be ignored.", className);
+                    LOGGER.debug("Class '{}' will be ignored.", className);
                 }
             }
         }
@@ -332,7 +332,7 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
         }
         final String containerPath = "/opt/hivemq/license/" + licenseFile.getName();
         withCopyFileToContainer(cloneWithFileMode(mountableLicense), containerPath);
-        logger.info("Putting license '{}' into '{}'.", licenseFile.getAbsolutePath(), containerPath);
+        LOGGER.info("Putting license '{}' into '{}'.", licenseFile.getAbsolutePath(), containerPath);
         return self();
     }
 
@@ -351,7 +351,7 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
         }
         final String containerPath = "/opt/hivemq/conf/config.xml";
         withCopyFileToContainer(cloneWithFileMode(mountableConfig), containerPath);
-        logger.info("Putting '{}' into '{}'.", config.getAbsolutePath(), containerPath);
+        LOGGER.info("Putting '{}' into '{}'.", config.getAbsolutePath(), containerPath);
         return self();
     }
 
@@ -415,7 +415,7 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
         }
         final String containerPath = "/opt/hivemq" + PathUtil.prepareAppendPath(pathInHomeFolder);
         withCopyFileToContainer(cloneWithFileMode(mountableFile), containerPath);
-        logger.info("Putting file '{}' into container path '{}'.", file.getAbsolutePath(), containerPath);
+        LOGGER.info("Putting file '{}' into container path '{}'.", file.getAbsolutePath(), containerPath);
         return self();
     }
 
@@ -444,7 +444,7 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
             containerOutputLatches.put(regEX, latch);
 
             execInContainer("touch", containerPath);
-            logger.info("Putting DISABLED file into container path '{}'", containerPath);
+            LOGGER.info("Putting DISABLED file into container path '{}'", containerPath);
 
             final boolean await = latch.await(timeout.getSeconds(), TimeUnit.SECONDS);
             if (!await) {
@@ -532,7 +532,7 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
             containerOutputLatches.put(regEX, latch);
 
             execInContainer("rm", "-rf", containerPath);
-            logger.info("Removing DISABLED file in container path '{}'", containerPath);
+            LOGGER.info("Removing DISABLED file in container path '{}'", containerPath);
 
             final boolean await = latch.await(timeout.getSeconds(), TimeUnit.SECONDS);
             if (!await) {
