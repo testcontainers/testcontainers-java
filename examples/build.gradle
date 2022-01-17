@@ -1,2 +1,10 @@
 // empty build.gradle for dependabot
 apply from: "$rootDir/../gradle/ci-support.gradle"
+
+subprojects {
+    apply plugin:"java"
+
+    repositories {
+        mavenCentral()
+    }
+}
