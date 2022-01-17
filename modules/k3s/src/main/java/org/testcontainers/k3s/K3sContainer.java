@@ -50,7 +50,12 @@ public class K3sContainer extends GenericContainer<K3sContainer> {
             is -> objectMapper.readValue(is, ObjectNode.class)
         );
 
-        ObjectNode clusterConfig = rawKubeConfig.at("/clusters/0/cluster").require();
+        JsonNode clusterNode = rawKubeConfig.at("/clusters/0/cluster");
+        if (!clusterNode.isObject()) {
+            throw new IllegalStateException("'/clusters/0/cluster' expected to be an object");
+        }
+        ObjectNode clusterConfig = (ObjectNode) clusterNode;
+
         clusterConfig.replace("server", new TextNode("https://" + this.getHost() + ":" + this.getMappedPort(6443)));
 
         rawKubeConfig.set("current-context", new TextNode("default"));
