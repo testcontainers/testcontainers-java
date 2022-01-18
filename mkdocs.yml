@@ -65,7 +65,6 @@ nav:
           - modules/docker_compose.md
           - modules/elasticsearch.md
           - modules/gcloud.md
-          - modules/k3s.md
           - modules/kafka.md
           - modules/localstack.md
           - modules/mockserver.md
