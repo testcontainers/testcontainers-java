@@ -13,7 +13,7 @@ jobs:
       AWS_SECRET_ACCESS_KEY: $(aws.secretAccessKey)
     inputs:
         gradleWrapperFile: 'gradlew'
-        jdkVersionOption: '1.11'
+        jdkVersionOption: '1.8'
         options: '--no-daemon --continue'
         tasks: 'clean testcontainers:check'
         publishJUnitResults: true
@@ -28,7 +28,7 @@ jobs:
       AWS_SECRET_ACCESS_KEY: $(aws.secretAccessKey)
     inputs:
         gradleWrapperFile: 'gradlew'
-        jdkVersionOption: '1.11'
+        jdkVersionOption: '1.8'
         options: '--no-daemon --continue'
         tasks: 'clean check -x testcontainers:test'
         publishJUnitResults: true
