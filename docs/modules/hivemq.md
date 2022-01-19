@@ -41,99 +41,69 @@ Add to `pom.xml`:
 ```
 
 
-## User defined HiveMQ image and tag
+## Using HiveMQ CE/EE
 
-The default image is the 'hivemq/hivemq-ce' using the '2021.3' version.
-As always, the constructor allows to specify a custom image and tag, details on the available tags for community edition
-are available in our [Docker-repository](https://hub.docker.com/r/hivemq/hivemq-ce).
+We provide different editions of HiveMQ on [Docker-Hub](https://hub.docker.com/u/hivemq):
 
-You can alos pick the HiveMQ-enterprise edition using the image name 'hivemq/hivemq4'. Please check the [Docker-repository](https://hub.docker.com/r/hivemq/hivemq4)
- for available tags.
+- the open source [Community Edition](https://github.com/hivemq/hivemq-community-edition) which 
+is tagged as *hivemq/hivemq-ce*.
+- the Enterprise Edition which is tagged as *hivemq/hivemq-ee*.
 
-An example for explicitly specifiying image and version.
-```java    
-import org.testcontainers.hivemq.HiveMQContainer
+Both edition can be used directly as testcontainers:
 
-public class MqttTest {
+Using the Community Edition:
+<!--codeinclude-->
+[Community Edition HiveMQ-Testcontainer](../../modules/hivemq/src/test/java/org/testcontainers/hivemq/docs/DemoHiveMQContainerIT.java) inside_block:ceVersion
+<!--/codeinclude-->
 
-     @Container
-     final HiveMQContainer hivemq = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq-ce:2021.3"));
-     
-}
+Using the Enterprise Edition:
+<!--codeinclude-->
+[Enterprise Edition HiveMQ-Testcontainer](../../modules/hivemq/src/test/java/org/testcontainers/hivemq/docs/DemoHiveMQContainerIT.java) inside_block:eeVersion
+<!--/codeinclude-->
+
+Using a specifc version is possible by using the tag:
+<!--codeinclude-->
+[Specific Version HiveMQ-Testcontainer](../../modules/hivemq/src/test/java/org/testcontainers/hivemq/docs/DemoHiveMQContainerIT.java) inside_block:specificVersion
+<!--/codeinclude-->
 
 ## Test your MQTT 3 and MQTT 5 client application
 
 Using an Mqtt-client (e.g. the [HiveMQ-Mqtt-Client](https://github.com/hivemq/hivemq-mqtt-client)) you can start 
 testing directly. 
 
-```java
-import com.hivemq.client.mqtt.mqtt5.Mqtt5BlockingClient;
-import com.hivemq.client.mqtt.mqtt5.Mqtt5Client;
+<!--codeinclude-->
+[MQTT5 Client](../../modules/hivemq/src/test/java/org/testcontainers/hivemq/docs/DemoHiveMQContainerIT.java) inside_block:mqtt5client
+<!--/codeinclude-->
 
-public class MqttTest {
+## Settings
 
-@Container
-final HiveMQContainer hivemq = new HiveMQContainer()
-
-@Test
-public void test_mqtt() {
-    
-    final Mqtt5BlockingClient client = Mqtt5Client.builder()
-        .serverPort(hivemq.getMqttPort())
-        .buildBlocking();
-
-    client.connect();
-    client.disconnect();
-}
-}
-```
-
-## Set logging level
-
-The logging level of the HiveMQ testcontainer can be controlled using the withLogLevel-methid on the builder.
+There are several things that can be adjusted before container setup.
+The following example shows how to enable the Control Center (this is an enterprise feature), set the log level to DEBUG
+(`.silent(true)` can be used to turn off all output) and load a HiveMQ-config-file from the classpath.
+The contents of *config.xml* are documented [here](https://github.com/hivemq/hivemq-community-edition/wiki/Configuration).
 
 ---
-**Note:** you can silence the container at any time using the `.silent(true)` method.
-
----
-
-```java
-@Container
-final HiveMQContainer hivemq = new HiveMQContainer()
-        .withLogLevel(Level.DEBUG);
-```
-
-## HiveMQ Control Center
-
-The HiveMQ Testcontainer can make the HiveMQ Control Center available.
-
----
-**Note:** that the HiveMQ Control Center is a feature of the HiveMQ Enterprise Edition.
-
----
-
-```java
-@Container
-final HiveMQContainer hivemq = new HiveMQContainer()
-        .withControlCenter();
-```
-
+**Note:**
 After startup, you are presented with the URL of the HiveMQ Control Center:
 
 ```
 2021-09-10 10:35:53,511 INFO  - The HiveMQ Control Center is reachable under: http://localhost:55032
 ```
 
-## Add a custom HiveMQ configuration
+<!--codeinclude-->
+[Config Examples](../../modules/hivemq/src/test/java/org/testcontainers/hivemq/docs/DemoContainerConfigIT.java) inside_block:containerConfig
+<!--/codeinclude-->
 
-In situations where additional configuration is required the file can be specified using the provided builder.
-The contents of *config.xml* are documented [here](https://github.com/hivemq/hivemq-community-edition/wiki/Configuration). 
+---
 
-```java
-@RegisterExtension
-final HiveMQContainer hivemq = new HiveMQContainer()
-        .withHiveMQConfig(MountableFile.forHostPath("/path/to/config.xml"));
-```
+## Configure Docker resources
+
+It might be required to adjust docker resources (CPU/RAM/...).
+To do so we provide a way to modify the HostConfig:
+
+<!--codeinclude-->
+[Docker resource definitons](../../modules/hivemq/src/test/java/org/testcontainers/hivemq/docs/DemoContainerConfigIT.java) inside_block:dockerConfig
+<!--/codeinclude-->
 
 ## Testing HiveMQ extensions
 
@@ -149,77 +119,40 @@ We therefore provide custom wait conditions for HiveMQ Extensions:
 
 The following will specify an extension to be loaded from **src/test/resources/modifier-extension** into the container and 
 wait for an  extension named **'My Extension Name'** to be started: 
-```java
-@Container
-final HiveMQContainer hivemq = new HiveMQContainer()
-            .withExtension(MountableFile.forHostPath("src/test/resources/modifier-extension"))
-            .waitForExtension("My Extension Name");
-```
 
-Next up we have an example for using an extension directly from the classpath:
-```java
-final HiveMQExtension hiveMQExtension = HiveMQExtension.builder()
-    .id("extension-1")
-    .name("my-extension")
-    .version("1.0")
-    .mainClass(MyExtension.class).build();
+<!--codeinclude-->
+[Custom Wait Strategy](../../modules/hivemq/src/test/java/org/testcontainers/hivemq/docs/DemoExtensionTestsIT.java) inside_block:waitStrategy
+<!--/codeinclude-->
 
-@Container
-final HiveMQContainer hivemq = new HiveMQContainer("hivemq/hivemq4", "latest")
-        .withExtension(hiveMQExtension)
-        .waitForExtension(hiveMQExtension);
-```
+Next up we have an example for using an extension directly from the classpath and waiting directly on the extension:
+
+<!--codeinclude-->
+[Extension from Classpath](../../modules/hivemq/src/test/java/org/testcontainers/hivemq/docs/DemoExtensionTestsIT.java) inside_block:extensionClasspath
+<!--/codeinclude-->
+
+---
+**Note** Debugging extensions
+
+Both examples contain ```.withDebugging()``` which enables remote debugging on the container.
+With debugging enabled you can start putting breakpoints right into your extensions.
+
+--- 
 
 ### Testing extensions using Gradle
 
-In a Gradle based HiveMQ Extension project we support testing using a dedicated [HiveMQ Extension Gradle Plugin](https://github.com/hivemq/hivemq-extension-gradle-plugin/edit/master/README.md).
+In a Gradle based HiveMQ Extension project we support testing using a dedicated [HiveMQ Extension Gradle Plugin](https://github.com/hivemq/hivemq-extension-gradle-plugin/README.md).
 
 The plugin adds an `integrationTest` task which executes tests from the `integrationTest` source set.
 - Integration test source files are defined in `src/integrationTest`.
 - Integration test dependencies are defined via the `integrationTestImplementation`, `integrationTestRuntimeOnly`, etc. configurations.
 
 The `integrationTest` task builds the extension and unzips it to the `build/hivemq-extension-test` directory.
-The tests can then load the built extension into the HiveMQ Testcontainer:
+The tests can then load the built extension into the HiveMQ Testcontainer.
+
 ```java
 @Container
-final HiveMQContainer hivemq = new HiveMQContainer("hivemq/hivemq4", "latest")
+final HiveMQContainer hivemq = new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_CE_IMAGE_NAME)
     .withExtension(new File("build/hivemq-extension-test/<extension-id>"));
-```
-
-### Remote debugging of loaded extensions
-
-You can debug extensions that are directly loaded from your code:
-
-- put a break point in your extension
-- enable remote debugging on your container
-
-```java
-@Container
-final HiveMQContainer hivemq = new HiveMQContainer()
-        .withDebugging();
-```
-
-#### Load an extension from a Gradle project
-
-It is also possible to reference an extension in a different Gradle project by using the **GradleHiveMQExtensionSupplier**:
-
-```java
-import org.testcontainers.hivemq.GradleHiveMQExtensionSupplier;
-
-@Container
-final HiveMQContainer hivemq = new HiveMQContainer("hivemq/hivemq4", "latest")
-        .withExtension(new GradleHiveMQExtensionSupplier(new File("path/to/extension/")).get());
-```
-
-### Testing extensions using Maven
-
-You can package and load an extension from a separate maven project by referencing the **pom.xml** of said project:
-```java
-import org.testcontainers.hivemq.MavenHiveMQExtensionSupplier;
-
-@Container
-final HiveMQContainer hivemq = new HiveMQContainer("hivemq/hivemq4", "latest")
-        .withExtension(new MavenHiveMQExtensionSupplier("path/to/extension/pom.xml").get());
 ```
 
 ### Enable/Disable an extension
@@ -231,30 +164,22 @@ It is possible to enable and disable HiveMQ extensions during runtime. Extension
 
 ---
 
-```java
-public class MqttTest {
-private final @NotNull HiveMQExtension hiveMQExtension = HiveMQExtension.builder()
-    .id("extension-1")
-    .name("my-extension")
-    .version("1.0")
-    .disabledOnStartup(true)
-    .mainClass(MyExtension.class).build();
+The following example shows how to start a HiveMQ-testcontainer with the extension called **my-extension** being disabled.
 
-@Container
-final HiveMQContainer hivemq = new HiveMQContainer("hivemq/hivemq4", "latest")
-        .withExtension(hiveMQExtension);
 
-@Test
-void test_disable_enable_extension() throws ExecutionException, InterruptedException {
-    hivemq.enableExtension(hiveMQExtension);
-    hivemq.disableExtension(hiveMQExtension);
-}
-}
-```
+<!--codeinclude-->
+[Disable Extension at startup](../../modules/hivemq/src/test/java/org/testcontainers/hivemq/docs/DemoDisableExtensionsIT.java) inside_block:startDisabled
+<!--/codeinclude-->
+
+The following test then proceeds to enable and then disable the extension:
+
+<!--codeinclude-->
+[Enable/Disable extension at runtime](../../modules/hivemq/src/test/java/org/testcontainers/hivemq/docs/DemoDisableExtensionsIT.java) inside_block:startDisabled
+<!--/codeinclude-->
 
 ## Enable/Disable an extension loaded from a folder
 
-You can enable or disable extensions loaded from an extension folder during runtime.
+Extensions loaded from an extension folder during runtime can also be enabled/disabled on the fly.
 If the extension folder contains a DISABLED file, the extension will be disabled during startup.
 
 ---
@@ -262,17 +187,16 @@ If the extension folder contains a DISABLED file, the extension will be disabled
 
 ---
 
-```java
-@Container
-final HiveMQContainer hivemq = new HiveMQContainer("hivemq/hivemq4", "latest")
-            .withExtension(new MountableFile.forHostPath("src/test/resources/modifier-extension"));
-            
-@Test
-void test_disable_enable_extension() throws ExecutionException, InterruptedException {
-    hivemq.disableExtension("Modifier Extension", "modifier-extension");
-    hivemq.enableExtension("Modifier Extension", "modifier-extension");
-}
-```
+We first load the extension from the filesytem:
+<!--codeinclude-->
+[Extension from filesystem](../../modules/hivemq/src/test/java/org/testcontainers/hivemq/docs/DemoDisableExtensionsIT.java) inside_block:startFromFilesystem
+<!--/codeinclude-->
+
+Now we can enable/disable the extension using its name:
+
+<!--codeinclude-->
+[Enable/Disable extension at runtime](../../modules/hivemq/src/test/java/org/testcontainers/hivemq/docs/DemoDisableExtensionsIT.java) inside_block:runtimeEnableFilesystem
+<!--/codeinclude-->
 
 ### Remove prepackaged HiveMQ Extensions
 
@@ -280,71 +204,38 @@ Since HiveMQ's 4.4 release, HiveMQ Docker images come with the HiveMQ Extension 
 and the HiveMQ Enterprise Security Extension.
 These Extensions are disabled by default, but sometimes you my need to remove them before the container starts.
 
-### Remove all prepackaged extensions:
+Removing all extension is as simple as:
 
-```java
-@Container
-final HiveMQContainer hivemq = new HiveMQContainer()
-    .withoutPrepackagedExtensions();
-```
+<!--codeinclude-->
+[Remove all extensions](../../modules/hivemq/src/test/java/org/testcontainers/hivemq/docs/DemoDisableExtensionsIT.java) inside_block:noExtensions
+<!--/codeinclude-->
 
-### Remove specific prepackaged extensions:
-
-```java
-@Container
-final HiveMQContainer hivemq = new HiveMQContainer()
-    .withoutPrepackagedExtensions("hivemq-kafka-extension");
-```
+A single extension (e.g. Kafka) can be removed as easily:
+<!--codeinclude-->
+[Remove a specific extension](../../modules/hivemq/src/test/java/org/testcontainers/hivemq/docs/DemoDisableExtensionsIT.java) inside_block:noKafkaExtension
+<!--/codeinclude-->
 
 ## Put files into the container
 
 ### Put a file into HiveMQ home
 
-```java
-@Container
-final HiveMQContainer hivemq = new HiveMQContainer()
-        .withFileInHomeFolder(
-            MountableFile.forHostPath("src/test/resources/additionalFile.txt"),
-            "/path/in/home/folder");
-```
+<!--codeinclude-->
+[Put file into HiveMQ home](../../modules/hivemq/src/test/java/org/testcontainers/hivemq/docs/DemoFilesIT.java) inside_block:hivemqHome
+<!--/codeinclude-->
 
 ### Put files into extension home
 
-```java
-@Container
-final HiveMQContainer hivemq = new HiveMQContainer()
-        .withExtension(HiveMQExtension.builder()
-            .id("extension-1")
-            .name("my-extension")
-            .version("1.0")
-            .mainClass(MyExtension.class).build())
-        .withFileInExtensionHomeFolder(
-            MountableFile.forHostPath("src/test/resources/additionalFile.txt"),
-            "extension-1",
-            "/path/in/extension/home");
-```
+<!--codeinclude-->
+[Put file into HiveMQ-Extension home](../../modules/hivemq/src/test/java/org/testcontainers/hivemq/docs/DemoFilesIT.java) inside_block:extensionHome
+<!--/codeinclude-->
 
 ### Put license files into the container
 
-```java
-@Container
-final HiveMQContainer hivemq = new HiveMQContainer()
-        .withLicense(new File("src/test/resources/myLicense.lic"))
-        .withLicense(new File("src/test/resources/myExtensionLicense.elic"));
-```
+<!--codeinclude-->
+[Put license file into HiveMQ-testcontainer](../../modules/hivemq/src/test/java/org/testcontainers/hivemq/docs/DemoFilesIT.java) inside_block:withLicenses
+<!--/codeinclude-->
 
-### Configure Docker resources
 
-```java
-@RegisterExtension
-@Container
-final HiveMQContainer hivemq = new HiveMQContainer()
-        .withCreateContainerCmdModifier(createContainerCmd -> {
-            final HostConfig hostConfig = HostConfig.newHostConfig();
-            hostConfig.withCpuCount(2L);
-            hostConfig.withMemory(2 * 1024 * 1024L);
-        });
-```
 
 ### Customize the Container further
 
