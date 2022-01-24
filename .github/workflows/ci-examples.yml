@@ -23,7 +23,7 @@ jobs:
         uses: gradle/gradle-build-action@v2
       - name: Clear existing docker image cache
         run: docker image prune -af
-      - name: Build and test Examples with Gradle (${{matrix.gradle_args}})
+      - name: Build and test Examples with Gradle
         working-directory: ./examples/
         run: |
-          ./gradlew --no-daemon --continue --scan --info ${{matrix.gradle_args}}
+          ./gradlew --no-daemon --continue --scan --info check
