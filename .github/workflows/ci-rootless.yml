@@ -17,8 +17,8 @@ jobs:
       XDG_RUNTIME_DIR: ${{ matrix.XDG_RUNTIME_DIR }}
     steps:
       - uses: actions/checkout@v2
-      - name: debug
-        run: id -u; whoami
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
       - name: uninstall rootful Docker
         run: sudo apt-get -q -y --purge remove moby-engine moby-buildx && sudo rm -rf /var/run/docker.sock
       - name: install rootless Docker

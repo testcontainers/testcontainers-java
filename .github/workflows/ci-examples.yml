@@ -21,12 +21,8 @@ jobs:
         with:
           java-version: '8.0.302'
           distribution: temurin
-      - name: Cache Gradle Home files
-        uses: actions/cache@v2.1.7
-        continue-on-error: true
-        with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-home-testmatrix-examples-${{ hashFiles('**/*.gradle') }}
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
       - id: set-matrix
         working-directory: ./examples/
         env:
@@ -49,12 +45,8 @@ jobs:
         with:
           java-version: '8.0.302'
           distribution: temurin
-      - name: Cache Gradle Home files
-        uses: actions/cache@v2.1.7
-        continue-on-error: true
-        with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-home-examples-${{matrix.gradle_args}}_check-${{ hashFiles('**/*.gradle') }}
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
       - name: Clear existing docker image cache
         run: docker image prune -af
       - name: Build and test Examples with Gradle (${{matrix.gradle_args}})
