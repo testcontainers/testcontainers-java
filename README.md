@@ -23,3 +23,5 @@ MS SQL Server module is (c) 2017 - 2021 G DATA Software AG and other authors.
 Hashicorp Vault module is (c) 2017 - 2021 Capital One Services, LLC and other authors.
 
 See [contributors](https://github.com/testcontainers/testcontainers-java/graphs/contributors) for all contributors.
+
+A change that should not lead to CI build.
