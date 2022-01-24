@@ -32,8 +32,6 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
 
     private static final String FSYNC_OFF_OPTION = "fsync=off";
 
-    private static final String QUERY_PARAM_SEPARATOR = "&";
-
     /**
      * @deprecated use {@link #PostgreSQLContainer(DockerImageName)} or {@link #PostgreSQLContainer(String)} instead
      */
