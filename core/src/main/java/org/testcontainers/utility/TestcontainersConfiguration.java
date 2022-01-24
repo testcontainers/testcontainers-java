@@ -120,6 +120,13 @@ public class TestcontainersConfiguration {
         return getImage(ALPINE_IMAGE).asCanonicalNameString();
     }
 
+    public boolean isRyukEnabled() {
+        // Environment variable TESTCONTAINERS_RYUK_DISABLED is legacy. Having this boolean expression ensure legacy
+        // systems will not break.
+        return !Boolean.parseBoolean(System.getenv("TESTCONTAINERS_RYUK_DISABLED")) &&
+            Boolean.parseBoolean(getEnvVarOrProperty("ryuk.container.enabled", "true"));
+    }
+
     public boolean isRyukPrivileged() {
         return Boolean
             .parseBoolean(getEnvVarOrProperty("ryuk.container.privileged", "false"));

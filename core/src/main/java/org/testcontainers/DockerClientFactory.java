@@ -211,7 +211,7 @@ public class DockerClientFactory {
 
         final String ryukContainerId;
 
-        boolean useRyuk = !Boolean.parseBoolean(System.getenv("TESTCONTAINERS_RYUK_DISABLED"));
+        boolean useRyuk = TestcontainersConfiguration.getInstance().isRyukEnabled();
         if (useRyuk) {
             log.debug("Ryuk is enabled");
             try {
