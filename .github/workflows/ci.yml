@@ -19,32 +19,9 @@ jobs:
       - uses: actions/checkout@v2
       - id: thundra_test_initializer
         uses: thundra-io/thundra-test-init-action@v1
-  find_gradle_jobs:
-    runs-on: ubuntu-18.04
-    outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-java@v2.5.0
-        with:
-          java-version: '8.0.302'
-          distribution: temurin
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
-      - id: set-matrix
-        env:
-          # Since we override the tests executor,
-          # we should not push empty results to the cache
-          READ_ONLY_REMOTE_GRADLE_CACHE: true
-        run: |
-          TASKS=$(./gradlew --no-daemon --parallel -q testMatrix)
-          echo $TASKS
-          echo "::set-output name=matrix::{\"gradle_args\":$TASKS}"
+
   check:
-    needs: [find_gradle_jobs, thundra_test_initializer]
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJson(needs.find_gradle_jobs.outputs.matrix) }}
+    needs: [thundra_test_initializer]
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
@@ -64,7 +41,7 @@ jobs:
           project_id: ${{ secrets.THUNDRA_PROJECT_ID }}
       - name: Build and test with Gradle (${{matrix.gradle_args}})
         run: |
-          ./gradlew --no-daemon --continue --scan ${{matrix.gradle_args}} \
+          ./gradlew --no-daemon --continue --scan \
             $([[ -f $THUNDRA_GRADLE_INIT_SCRIPT_PATH ]] && echo "--init-script $THUNDRA_GRADLE_INIT_SCRIPT_PATH")
         env:
           THUNDRA_AGENT_TEST_RUN_ID: ${{ needs.thundra_test_initializer.outputs.thundra_agent_testrun_id }}
