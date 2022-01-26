@@ -46,7 +46,12 @@ public enum CouchbaseService {
     /**
      * Analytics service.
      */
-    ANALYTICS("cbas", 1024);
+    ANALYTICS("cbas", 1024),
+
+    /**
+     * Eventing service.
+     */
+    EVENTING("eventing", 256);
 
     private final String identifier;
 
