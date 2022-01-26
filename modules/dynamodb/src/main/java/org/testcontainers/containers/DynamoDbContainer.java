@@ -14,7 +14,7 @@ import static org.testcontainers.containers.DynamoDbConfig.DEFAULT_PORT;
 public class DynamoDbContainer extends GenericContainer<DynamoDbContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("amazon/dynamodb-local");
-    private static final String DEFAULT_TAG = "1.17.0";
+    private static final String DEFAULT_TAG = "1.18.0";
 
     private DynamoDbConfig config;
 
