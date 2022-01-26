@@ -489,6 +489,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
             @Cleanup Response response = doHttpRequest(MGMT_PORT, "/pools/default/buckets", "POST", new FormBody.Builder()
                 .add("name", bucket.getName())
                 .add("ramQuotaMB", Integer.toString(bucket.getQuota()))
+                .add("bucketType", bucket.getBucketType().getIdentifier())
                 .add("flushEnabled", bucket.hasFlushEnabled() ? "1" : "0")
                 .build(), true);
 
@@ -504,61 +505,162 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
                 .waitUntilReady(this)
             );
 
+            timePhase("createBucket:" + bucket.getName() + ":createScopes", () -> createScopes(bucket));
+
             if (enabledServices.contains(CouchbaseService.QUERY)) {
                 // If the query service is enabled, make sure that we only proceed if the query engine also
                 // knows about the bucket in its metadata configuration.
                 timePhase(
                     "createBucket:" + bucket.getName() + ":queryKeyspacePresent",
-                    () -> Unreliables.retryUntilTrue(1, TimeUnit.MINUTES, () -> {
-                        @Cleanup Response queryResponse = doHttpRequest(QUERY_PORT, "/query/service", "POST", new FormBody.Builder()
-                            .add("statement", "SELECT COUNT(*) > 0 as present FROM system:keyspaces WHERE name = \"" + bucket.getName() + "\"")
-                            .build(), true);
-
-                        String body = queryResponse.body() != null ? queryResponse.body().string() : null;
-                        checkSuccessfulResponse(queryResponse, "Could not poll query service state for bucket: " + bucket.getName());
-
-                        return Optional.of(MAPPER.readTree(body))
-                            .map(n -> n.at("/results/0/present"))
-                            .map(JsonNode::asBoolean)
-                            .orElse(false);
-                }));
+                    () -> verifyKeyspacePresent(bucket.getName(), null, null)
+                );
             }
 
             if (bucket.hasPrimaryIndex()) {
                 if (enabledServices.contains(CouchbaseService.QUERY)) {
-                    @Cleanup Response queryResponse = doHttpRequest(QUERY_PORT, "/query/service", "POST", new FormBody.Builder()
-                        .add("statement", "CREATE PRIMARY INDEX on `" + bucket.getName() + "`")
-                        .build(), true);
-
-                    try {
-                        checkSuccessfulResponse(queryResponse, "Could not create primary index for bucket " + bucket.getName());
-                    } catch (IllegalStateException ex) {
-                        // potentially ignore the error, the index will be eventually built.
-                        if (!ex.getMessage().contains("Index creation will be retried in background")) {
-                            throw ex;
-                        }
-                    }
-
                     timePhase(
-                        "createBucket:" + bucket.getName() + ":primaryIndexOnline",
-                        () ->  Unreliables.retryUntilTrue(1, TimeUnit.MINUTES, () -> {
-                            @Cleanup Response stateResponse = doHttpRequest(QUERY_PORT, "/query/service", "POST", new FormBody.Builder()
-                                .add("statement", "SELECT count(*) > 0 AS online FROM system:indexes where keyspace_id = \"" + bucket.getName() + "\" and is_primary = true and state = \"online\"")
-                                .build(), true);
-
-                            String body = stateResponse.body() != null ? stateResponse.body().string() : null;
-                            checkSuccessfulResponse(stateResponse, "Could not poll primary index state for bucket: " + bucket.getName());
-
-                            return Optional.of(MAPPER.readTree(body))
-                                .map(n -> n.at("/results/0/online"))
-                                .map(JsonNode::asBoolean)
-                                .orElse(false);
-                    }));
+                        "createBucket:" + bucket.getName() + ":createPrimaryIndex",
+                        () -> createPrimaryIndex(bucket.getName(), null, null)
+                    );
                 } else {
                     logger().info("Primary index creation for bucket {} ignored, since QUERY service is not present.", bucket.getName());
                 }
             }
         }
+    }
+
+    /**
+     * Creates scopes and collections for a given bucket - only available with server 7.0 and later.
+     *
+     * @param bucket the bucket information.
+     */
+    private void createScopes(final BucketDefinition bucket) {
+        logger().debug("Creating scopes " + bucket.getScopes() + " for bucket " + bucket.getName());
+
+        for (ScopeDefinition scope : bucket.getScopes()) {
+            // We don't need to create the _default scope, it already exists. In fact, if we tried the
+            // server wouldn't let us. But we can still create collections for it which we do below.
+            if (!scope.getName().equals("_default")) {
+                @Cleanup Response scopeResponse = doHttpRequest(
+                    MGMT_PORT,
+                    "/pools/default/buckets/" + bucket.getName() + "/scopes",
+                    "POST",
+                    new FormBody.Builder().add("name", scope.getName()).build(),
+                    true
+                );
+
+                if (scopeResponse.code() == 404) {
+                    throw new IllegalStateException("Scopes and collections are not supported with this cluster version");
+                }
+                checkSuccessfulResponse(scopeResponse, "Could not create scope " + scope.getName()
+                    + " for bucket " + bucket.getName());
+            }
+
+            for (CollectionDefinition collection : scope.getCollections()) {
+                @Cleanup Response collectionResponse = doHttpRequest(
+                    MGMT_PORT,
+                    "/pools/default/buckets/" + bucket.getName() + "/scopes/" + scope.getName() + "/collections",
+                    "POST",
+                    new FormBody.Builder().add("name", collection.getName()).build(),
+                    true
+                );
+
+                if (collectionResponse.code() == 404) {
+                    throw new IllegalStateException("Scopes and collections are not supported with this cluster version");
+                }
+                checkSuccessfulResponse(collectionResponse, "Could not create collection " + collection
+                    + " for bucket " + bucket.getName());
+
+                if (enabledServices.contains(CouchbaseService.QUERY) && collection.hasPrimaryIndex()) {
+                    timePhase(
+                        "createCollection:" + collection.getName() + ":queryKeyspacePresent",
+                        () -> verifyKeyspacePresent(bucket.getName(), scope.getName(), collection.getName())
+                    );
+                    timePhase(
+                        "createCollection:" + collection.getName() + ":createPrimaryIndex",
+                        () -> createPrimaryIndex(bucket.getName(), scope.getName(), collection.getName())
+                    );
+                }
+            }
+        }
+    }
+
+    /**
+     * Helper method to check if the keyspace is present in the query engine to avoid eventual consistency failures.
+     *
+     * @param bucket the name of the bucket.
+     * @param scope the name of the scope - can be null.
+     * @param collection the name of the collection - can be null.
+     */
+    private void verifyKeyspacePresent(final String bucket, final String scope, final String collection) {
+        Unreliables.retryUntilTrue(1, TimeUnit.MINUTES, () -> {
+            String query = "SELECT COUNT(*) > 0 as present FROM system:keyspaces WHERE name = \"" + bucket + "\"";
+            String keyspace = bucket;
+            if (scope != null && collection != null) {
+                query = "SELECT COUNT(*) > 0 as present FROM system:keyspaces WHERE " +
+                    "name = \"" + collection + "\" AND `bucket` = \"" + bucket + "\" AND `scope` = \"" + scope + "\"";
+                keyspace = keyspace + "." + scope + "." + collection;
+            }
+
+            @Cleanup Response queryResponse = doHttpRequest(QUERY_PORT, "/query/service", "POST", new FormBody.Builder()
+                .add("statement", query)
+                .build(), true);
+
+            String body = queryResponse.body() != null ? queryResponse.body().string() : null;
+            checkSuccessfulResponse(queryResponse, "Could not poll query service state for keyspace: " + keyspace);
+
+            return Optional.of(MAPPER.readTree(body))
+                .map(n -> n.at("/results/0/present"))
+                .map(JsonNode::asBoolean)
+                .orElse(false);
+        });
+    }
+
+    /**
+     * Helper method to create a primary index (for a bucket or a collection).
+     *
+     * @param bucket the name of the bucket.
+     * @param scope the name of the scope - can be null.
+     * @param collection the name of the collection - can be null.
+     */
+    private void createPrimaryIndex(final String bucket, final String scope, final String collection) {
+        final String keyspace = scope != null && collection != null
+            ? "`" + bucket + "`.`" + scope + "`.`" + collection + "`"
+            : "`" + bucket +"`";
+
+        @Cleanup Response queryResponse = doHttpRequest(QUERY_PORT, "/query/service", "POST", new FormBody.Builder()
+            .add("statement", "CREATE PRIMARY INDEX on " + keyspace + "")
+            .build(), true);
+
+        try {
+            checkSuccessfulResponse(queryResponse, "Could not create primary index for keyspace " + keyspace);
+        } catch (IllegalStateException ex) {
+            // potentially ignore the error, the index will be eventually built.
+            if (!ex.getMessage().contains("Index creation will be retried in background")) {
+                throw ex;
+            }
+        }
+
+        timePhase(
+            "createPrimaryIndex:" + keyspace + ":primaryIndexOnline",
+            () ->  Unreliables.retryUntilTrue(1, TimeUnit.MINUTES, () -> {
+                String whereClause = scope != null && collection != null
+                    ? "keyspace_id = \"" + collection + "\" and scope_id = \"" + scope + "\" and bucket_id = \"" + bucket + "\""
+                    : "keyspace_id = \"" + bucket + "\"";
+
+                @Cleanup Response stateResponse = doHttpRequest(QUERY_PORT, "/query/service", "POST", new FormBody.Builder()
+                    .add("statement", "SELECT count(*) > 0 AS online FROM system:indexes where " + whereClause + " and is_primary = true and state = \"online\"")
+                    .build(), true);
+
+
+                String body = stateResponse.body() != null ? stateResponse.body().string() : null;
+                checkSuccessfulResponse(stateResponse, "Could not poll primary index state for keyspace: " + keyspace);
+
+                return Optional.of(MAPPER.readTree(body))
+                    .map(n -> n.at("/results/0/online"))
+                    .map(JsonNode::asBoolean)
+                    .orElse(false);
+            }));
     }
 
     /**
