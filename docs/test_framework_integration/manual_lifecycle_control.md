@@ -30,6 +30,9 @@ abstract class AbstractContainerBaseTest {
     static {
         MY_SQL_CONTAINER = new MySQLContainer();
         MY_SQL_CONTAINER.start();
+        
+        // Gracefully shutdown container at the end of the JVM's lifecycle.
+        Runtime.getRuntime().addShutdownHook(new MY_SQL_CONTAINER::close));
     }
 }
 
