@@ -225,6 +225,9 @@ public class DockerClientFactory {
         } else {
             log.debug("Ryuk is disabled");
             ryukContainerId = null;
+            // Poor man's Ryuk
+            //noinspection deprecation
+            ResourceReaper.instance().setHook();
         }
 
         boolean checksEnabled = !TestcontainersConfiguration.getInstance().isDisableChecks();

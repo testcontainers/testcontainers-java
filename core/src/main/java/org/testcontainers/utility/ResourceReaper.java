@@ -5,12 +5,14 @@ import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.Bind;
+import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Network;
 import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Ports;
+import com.github.dockerjava.api.model.PruneType;
 import com.github.dockerjava.api.model.Volume;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
@@ -36,6 +38,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -58,7 +61,14 @@ public final class ResourceReaper {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ResourceReaper.class);
 
-    private static final List<List<Map.Entry<String, String>>> DEATH_NOTE = new ArrayList<>();
+    private static final List<List<Map.Entry<String, String>>> DEATH_NOTE = new ArrayList<>(
+        Arrays.asList(
+            DockerClientFactory.DEFAULT_LABELS.entrySet().stream()
+                .<Map.Entry<String, String>>map(it -> new SimpleEntry<>("label", it.getKey() + "=" + it.getValue()))
+                .collect(Collectors.toList())
+        )
+    );
+
     private static final RateLimiter RYUK_ACK_RATE_LIMITER = RateLimiterBuilder
         .newBuilder()
         .withRate(4, TimeUnit.SECONDS)
@@ -66,15 +76,12 @@ public final class ResourceReaper {
         .build();
 
     private static ResourceReaper instance;
-    private final DockerClient dockerClient;
+    private static AtomicBoolean ryukStarted = new AtomicBoolean(false);
+    private final DockerClient dockerClient = DockerClientFactory.lazyClient();
     private Map<String, String> registeredContainers = new ConcurrentHashMap<>();
     private Set<String> registeredNetworks = Sets.newConcurrentHashSet();
     private Set<String> registeredImages = Sets.newConcurrentHashSet();
     private AtomicBoolean hookIsSet = new AtomicBoolean(false);
-
-    private ResourceReaper() {
-        dockerClient = DockerClientFactory.instance().client();
-    }
 
 
     /**
@@ -173,14 +180,6 @@ public final class ResourceReaper {
 
         CountDownLatch ryukScheduledLatch = new CountDownLatch(1);
 
-        synchronized (DEATH_NOTE) {
-            DEATH_NOTE.add(
-                    DockerClientFactory.DEFAULT_LABELS.entrySet().stream()
-                            .<Map.Entry<String, String>>map(it -> new SimpleEntry<>("label", it.getKey() + "=" + it.getValue()))
-                            .collect(Collectors.toList())
-            );
-        }
-
         String host = containerState.getHost();
         Integer ryukPort = containerState.getFirstMappedPort();
         Thread kiraThread = new Thread(
@@ -238,6 +237,7 @@ public final class ResourceReaper {
             }
         }
 
+        ryukStarted.set(true);
         return ryukContainerId;
     }
 
@@ -262,12 +262,27 @@ public final class ResourceReaper {
      * Register a filter to be cleaned up.
      *
      * @param filter the filter
+     * @deprecated only label filter is supported by the prune API, use {@link #registerLabelsFilterForCleanup(Map)}
      */
+    @Deprecated
     public void registerFilterForCleanup(List<Map.Entry<String, String>> filter) {
         synchronized (DEATH_NOTE) {
             DEATH_NOTE.add(filter);
             DEATH_NOTE.notifyAll();
         }
+    }
+
+    /**
+     * Register a label to be cleaned up.
+     *
+     * @param labels the filter
+     */
+    public void registerLabelsFilterForCleanup(Map<String, String> labels) {
+        registerFilterForCleanup(
+            labels.entrySet().stream()
+                .map(it -> new SimpleEntry<>("label", it.getKey() + "=" + it.getValue()))
+                .collect(Collectors.toList())
+        );
     }
 
     /**
@@ -444,10 +459,52 @@ public final class ResourceReaper {
         }
     }
 
-    private void setHook() {
+    private void prune(PruneType pruneType, List<Map.Entry<String, String>> filters) {
+        String[] labels = filters.stream()
+            .filter(it -> "label".equals(it.getKey()))
+            .map(Map.Entry::getValue)
+            .toArray(String[]::new);
+        switch (pruneType) {
+            // Docker only prunes stopped containers, so we have to do it manually
+            case CONTAINERS:
+                List<Container> containers = dockerClient.listContainersCmd()
+                    .withFilter("label", Arrays.asList(labels))
+                    .withShowAll(true)
+                    .exec();
+
+                containers.parallelStream().forEach(container -> {
+                    stopContainer(container.getId(), container.getImage());
+                });
+                break;
+            default:
+                dockerClient.pruneCmd(pruneType).withLabelFilter(labels).exec();
+                break;
+        }
+    }
+
+    /**
+     * @deprecated internal API, not intended for public usage
+     */
+    @Deprecated
+    public void setHook() {
         if (hookIsSet.compareAndSet(false, true)) {
             // If the JVM stops without containers being stopped, try and stop the container.
-            Runtime.getRuntime().addShutdownHook(new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP, this::performCleanup));
+            Runtime.getRuntime().addShutdownHook(
+                new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP,
+                    () -> {
+                        performCleanup();
+
+                        if (!ryukStarted.get()) {
+                            synchronized (DEATH_NOTE) {
+                                DEATH_NOTE.forEach(filters -> prune(PruneType.CONTAINERS, filters));
+                                DEATH_NOTE.forEach(filters -> prune(PruneType.NETWORKS, filters));
+                                DEATH_NOTE.forEach(filters -> prune(PruneType.VOLUMES, filters));
+                                DEATH_NOTE.forEach(filters -> prune(PruneType.IMAGES, filters));
+                            }
+                        }
+                    }
+                )
+            );
         }
     }
 
