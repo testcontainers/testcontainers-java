@@ -10,6 +10,9 @@ This enables testing MQTT client applications and integration testing of custom 
 - MQTT resources:
     - [MQTT Essentials](https://www.hivemq.com/mqtt-essentials/)
     - [MQTT 5 Essentials](https://www.hivemq.com/mqtt-5/)
+    
+Please make sure to check out the hivemq-docs for the [community edition](https://github.com/hivemq/hivemq-community-edition/wiki/) 
+and the [regular edition](https://www.hivemq.com/docs/hivemq/4.7/user-guide/).
 
 ## Add to your project
 
@@ -78,9 +81,8 @@ testing directly.
 ## Settings
 
 There are several things that can be adjusted before container setup.
-The following example shows how to enable the Control Center (this is an enterprise feature), set the log level to DEBUG
-(`.silent(true)` can be used to turn off all output) and load a HiveMQ-config-file from the classpath.
-The contents of *config.xml* are documented [here](https://github.com/hivemq/hivemq-community-edition/wiki/Configuration).
+The following example shows how to enable the Control Center (this is an enterprise feature), set the log level to DEBUG 
+and load a HiveMQ-config-file from the classpath.
 
 ---
 **Note:**
@@ -95,15 +97,6 @@ After startup, you are presented with the URL of the HiveMQ Control Center:
 <!--/codeinclude-->
 
 ---
-
-## Configure Docker resources
-
-It might be required to adjust docker resources (CPU/RAM/...).
-To do so we provide a way to modify the HostConfig:
-
-<!--codeinclude-->
-[Docker resource definitons](../../modules/hivemq/src/test/java/org/testcontainers/hivemq/docs/DemoContainerConfigIT.java) inside_block:dockerConfig
-<!--/codeinclude-->
 
 ## Testing HiveMQ extensions
 
@@ -174,7 +167,7 @@ The following example shows how to start a HiveMQ-testcontainer with the extensi
 The following test then proceeds to enable and then disable the extension:
 
 <!--codeinclude-->
-[Enable/Disable extension at runtime](../../modules/hivemq/src/test/java/org/testcontainers/hivemq/docs/DemoDisableExtensionsIT.java) inside_block:startDisabled
+[Enable/Disable extension at runtime](../../modules/hivemq/src/test/java/org/testcontainers/hivemq/docs/DemoDisableExtensionsIT.java) inside_block:runtimeEnable
 <!--/codeinclude-->
 
 ## Enable/Disable an extension loaded from a folder
