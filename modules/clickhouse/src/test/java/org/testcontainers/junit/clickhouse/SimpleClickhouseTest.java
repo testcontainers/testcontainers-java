@@ -23,4 +23,16 @@ public class SimpleClickhouseTest extends AbstractContainerDatabaseTest {
             assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
         }
     }
+
+    @Test
+    public void testTemporarilyUseDeprecatedDriver() throws SQLException {
+        System.setProperty("clickhouse-temporarily-use-deprecated-driver", "true");
+        try (ClickHouseContainer clickhouse = new ClickHouseContainer(CLICKHOUSE_IMAGE)) {
+            clickhouse.start();
+            ResultSet resultSet = performQuery(clickhouse, "SELECT 1");
+
+            int resultSetInt = resultSet.getInt(1);
+            assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+        }
+    }
 }
