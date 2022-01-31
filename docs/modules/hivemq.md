@@ -1,6 +1,6 @@
 # HiveMQ Module
 
-![image](https://www.hivemq.com/img/logo-hivemq-testcontainer.png)
+<img src="../modules_logos/hivemq-testcontainer.png" alt="drawing" width="400"/>
 
 Automatic starting HiveMQ docker containers for JUnit4 and JUnit5 tests.
 This enables testing MQTT client applications and integration testing of custom HiveMQ extensions.
@@ -234,7 +234,3 @@ A single extension (e.g. Kafka) can be removed as easily:
 
 Since the `HiveMQContainer` extends from [Testcontainer's](https://github.com/testcontainers) `GenericContainer` the container
 can be customized as desired.
-
-## Contributing
-
-If you want to contribute to the HiveMQ Testcontainer, see the [contribution guidelines](CONTRIBUTING.md).
