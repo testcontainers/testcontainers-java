@@ -253,7 +253,7 @@ public final class ResourceReaper {
      * Perform a cleanup.
      */
     public synchronized void performCleanup() {
-        registeredContainers.forEach(this::stopContainer);
+        registeredContainers.forEach(this::removeContainer);
         registeredNetworks.forEach(this::removeNetwork);
         registeredImages.forEach(this::removeImage);
     }
@@ -302,7 +302,7 @@ public final class ResourceReaper {
      * @param containerId the ID of the container
      */
     public void stopAndRemoveContainer(String containerId) {
-        stopContainer(containerId, registeredContainers.get(containerId));
+        removeContainer(containerId, registeredContainers.get(containerId));
 
         registeredContainers.remove(containerId);
     }
@@ -314,12 +314,12 @@ public final class ResourceReaper {
      * @param imageName   the image name of the container (used for logging)
      */
     public void stopAndRemoveContainer(String containerId, String imageName) {
-        stopContainer(containerId, imageName);
+        removeContainer(containerId, imageName);
 
         registeredContainers.remove(containerId);
     }
 
-    private void stopContainer(String containerId, String imageName) {
+    private void removeContainer(String containerId, String imageName) {
         boolean running;
         try {
             InspectContainerResponse containerInfo = dockerClient.inspectContainerCmd(containerId).exec();
@@ -473,7 +473,7 @@ public final class ResourceReaper {
                     .exec();
 
                 containers.parallelStream().forEach(container -> {
-                    stopContainer(container.getId(), container.getImage());
+                    removeContainer(container.getId(), container.getImage());
                 });
                 break;
             default:
