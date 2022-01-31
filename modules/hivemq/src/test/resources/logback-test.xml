@@ -14,9 +14,8 @@
         <appender-ref ref="CONSOLE"/>
     </root>
 
-    <logger name="com.hivemq.client" level="OFF"/>
-    <logger name="org.testcontainers" level="OFF"/>
-    <logger name="com.github.dockerjava" level="OFF"/>
-    <logger name="io.netty" level="OFF"/>
+    <logger name="com.hivemq.client" level="WARN"/>
+    <logger name="org.testcontainers" level="DEBUG"/>
+    <logger name="io.netty" level="WARN"/>
 
 </configuration>
