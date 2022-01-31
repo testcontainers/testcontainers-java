@@ -72,9 +72,9 @@ public final class ResourceReaper {
     @Deprecated
     public static String start(DockerClient client) {
         RyukResourceReaper ryuk = new RyukResourceReaper(client);
-
+        String containerId = ryuk.getContainerId();
         ryukStarted.set(true);
-        return ryuk.getContainerId();
+        return containerId;
     }
 
     public synchronized static ResourceReaper instance() {
