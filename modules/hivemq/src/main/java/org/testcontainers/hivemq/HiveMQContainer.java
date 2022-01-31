@@ -40,7 +40,6 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
     private static final @NotNull Pattern EXTENSION_ID_PATTERN = Pattern.compile("<id>(.+?)</id>");
 
     private final @NotNull ConcurrentHashMap<String, CountDownLatch> containerOutputLatches = new ConcurrentHashMap<>();
-    private volatile boolean silent = false;
     private volatile boolean controlCenterEnabled = false;
 
     private final @NotNull MultiLogMessageWaitStrategy waitStrategy = new MultiLogMessageWaitStrategy();
@@ -59,8 +58,6 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
             final String utf8String = outputFrame.getUtf8String();
             if (utf8String.startsWith("Listening for transport dt_socket at address:")) {
                 System.out.println("Listening for transport dt_socket at address: " + getMappedPort(DEBUGGING_PORT));
-            } else if (!silent) {
-                System.out.print(utf8String);
             }
         });
         withLogConsumer((outputFrame) -> {
@@ -515,17 +512,6 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
      */
     public void enableExtension(final @NotNull HiveMQExtension hiveMQExtension) throws TimeoutException {
         enableExtension(hiveMQExtension, Duration.ofSeconds(60));
-    }
-
-    /**
-     * Determines whether the stdout of the container is printed to System.out.
-     *
-     * @param silent whether the container is silent.
-     * @return self
-     */
-    public @NotNull HiveMQContainer silent(final boolean silent) {
-        this.silent = silent;
-        return self();
     }
 
     /**
