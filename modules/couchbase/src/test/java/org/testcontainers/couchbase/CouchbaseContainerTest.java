@@ -35,9 +35,9 @@ import static org.junit.Assert.assertThrows;
 public class CouchbaseContainerTest {
 
     private static final DockerImageName COUCHBASE_IMAGE_ENTERPRISE =
-        DockerImageName.parse("couchbase/server:enterprise-6.6.2");
+        DockerImageName.parse("couchbase/server:enterprise-7.0.3");
     private static final DockerImageName COUCHBASE_IMAGE_COMMUNITY =
-        DockerImageName.parse("couchbase/server:community-6.6.0");
+        DockerImageName.parse("couchbase/server:community-7.0.2");
 
     @Test
     public void testBasicContainerUsageForEnterpriseContainer() {
@@ -122,6 +122,20 @@ public class CouchbaseContainerTest {
         try (
             CouchbaseContainer container = new CouchbaseContainer(COUCHBASE_IMAGE_COMMUNITY)
                 .withEnabledServices(CouchbaseService.KV, CouchbaseService.ANALYTICS)
+        ) {
+            assertThrows(ContainerLaunchException.class, () -> setUpClient(container, cluster -> {}));
+        }
+    }
+
+    /**
+     * Make sure that the code fails fast if the Eventing service is enabled on the community
+     * edition which is not supported.
+     */
+    @Test
+    public void testFailureIfCommunityUsedWithEventing() {
+        try (
+            CouchbaseContainer container = new CouchbaseContainer(COUCHBASE_IMAGE_COMMUNITY)
+                .withEnabledServices(CouchbaseService.KV, CouchbaseService.EVENTING)
         ) {
             assertThrows(ContainerLaunchException.class, () -> setUpClient(container, cluster -> {}));
         }

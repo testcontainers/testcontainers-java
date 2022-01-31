@@ -74,6 +74,10 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     private static final int ANALYTICS_SSL_PORT = 18095;
 
+    private static final int EVENTING_PORT = 8096;
+
+    private static final int EVENTING_SSL_PORT = 18096;
+
     private static final int KV_PORT = 11210;
 
     private static final int KV_SSL_PORT = 11207;
@@ -196,6 +200,17 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         return this;
     }
 
+    /**
+     * Enables the eventing service which is not enabled by default.
+     *
+     * @return this {@link CouchbaseContainer} for chaining purposes.
+     */
+    public CouchbaseContainer withEventingService() {
+        checkNotRunning();
+        this.enabledServices.add(CouchbaseService.EVENTING);
+        return this;
+    }
+
     public final String getUsername() {
         return username;
     }
@@ -232,7 +247,9 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
             ANALYTICS_PORT,
             ANALYTICS_SSL_PORT,
             KV_PORT,
-            KV_SSL_PORT
+            KV_SSL_PORT,
+            EVENTING_PORT,
+            EVENTING_SSL_PORT
         );
 
         WaitAllStrategy waitStrategy = new WaitAllStrategy();
@@ -273,6 +290,16 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
                 new HttpWaitStrategy()
                     .forPath("/admin/ping")
                     .forPort(ANALYTICS_PORT)
+                    .withBasicCredentials(username, password)
+                    .forStatusCode(200)
+            );
+        }
+
+        if (enabledServices.contains(CouchbaseService.EVENTING)) {
+            waitStrategy = waitStrategy.withStrategy(
+                new HttpWaitStrategy()
+                    .forPath("/api/v1/config")
+                    .forPort(EVENTING_PORT)
                     .withBasicCredentials(username, password)
                     .forStatusCode(200)
             );
@@ -328,8 +355,13 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
             throw new IllegalStateException("Couchbase /pools did not return valid JSON");
         }
 
-        if (!isEnterprise && enabledServices.contains(CouchbaseService.ANALYTICS)) {
-            throw new IllegalStateException("The Analytics Service is only supported with the Enterprise version");
+        if (!isEnterprise) {
+            if (enabledServices.contains(CouchbaseService.ANALYTICS)) {
+                throw new IllegalStateException("The Analytics Service is only supported with the Enterprise version");
+            }
+            if (enabledServices.contains(CouchbaseService.EVENTING)) {
+                throw new IllegalStateException("The Eventing Service is only supported with the Enterprise version");
+            }
         }
     }
 
@@ -450,6 +482,11 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         if (enabledServices.contains(CouchbaseService.ANALYTICS)) {
             builder.add("cbas", Integer.toString(getMappedPort(ANALYTICS_PORT)));
             builder.add("cbasSSL", Integer.toString(getMappedPort(ANALYTICS_SSL_PORT)));
+        }
+
+        if (enabledServices.contains(CouchbaseService.EVENTING)) {
+            builder.add("eventingAdminPort", Integer.toString(getMappedPort(EVENTING_PORT)));
+            builder.add("eventingSSL", Integer.toString(getMappedPort(EVENTING_SSL_PORT)));
         }
 
         @Cleanup Response response = doHttpRequest(

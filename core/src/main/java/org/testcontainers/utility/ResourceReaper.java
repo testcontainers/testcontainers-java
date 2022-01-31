@@ -3,7 +3,9 @@ package org.testcontainers.utility;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.NotFoundException;
+import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.Network;
+import com.github.dockerjava.api.model.PruneType;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
@@ -46,15 +48,12 @@ public final class ResourceReaper {
     );
 
     private static ResourceReaper instance;
-    private final DockerClient dockerClient;
+    private static AtomicBoolean ryukStarted = new AtomicBoolean(false);
+    private final DockerClient dockerClient = DockerClientFactory.lazyClient();
     private Map<String, String> registeredContainers = new ConcurrentHashMap<>();
     private Set<String> registeredNetworks = Sets.newConcurrentHashSet();
     private Set<String> registeredImages = Sets.newConcurrentHashSet();
     private AtomicBoolean hookIsSet = new AtomicBoolean(false);
-
-    private ResourceReaper() {
-        dockerClient = DockerClientFactory.instance().client();
-    }
 
 
     /**
@@ -74,6 +73,7 @@ public final class ResourceReaper {
     public static String start(DockerClient client) {
         RyukResourceReaper ryuk = new RyukResourceReaper(client);
 
+        ryukStarted.set(true);
         return ryuk.getContainerId();
     }
 
@@ -89,7 +89,7 @@ public final class ResourceReaper {
      * Perform a cleanup.
      */
     public synchronized void performCleanup() {
-        registeredContainers.forEach(this::stopContainer);
+        registeredContainers.forEach(this::removeContainer);
         registeredNetworks.forEach(this::removeNetwork);
         registeredImages.forEach(this::removeImage);
     }
@@ -98,12 +98,27 @@ public final class ResourceReaper {
      * Register a filter to be cleaned up.
      *
      * @param filter the filter
+     * @deprecated only label filter is supported by the prune API, use {@link #registerLabelsFilterForCleanup(Map)}
      */
+    @Deprecated
     public void registerFilterForCleanup(List<Map.Entry<String, String>> filter) {
         synchronized (DEATH_NOTE) {
             DEATH_NOTE.add(filter);
             DEATH_NOTE.notifyAll();
         }
+    }
+
+    /**
+     * Register a label to be cleaned up.
+     *
+     * @param labels the filter
+     */
+    public void registerLabelsFilterForCleanup(Map<String, String> labels) {
+        registerFilterForCleanup(
+            labels.entrySet().stream()
+                .map(it -> new SimpleEntry<>("label", it.getKey() + "=" + it.getValue()))
+                .collect(Collectors.toList())
+        );
     }
 
     /**
@@ -123,7 +138,7 @@ public final class ResourceReaper {
      * @param containerId the ID of the container
      */
     public void stopAndRemoveContainer(String containerId) {
-        stopContainer(containerId, registeredContainers.get(containerId));
+        removeContainer(containerId, registeredContainers.get(containerId));
 
         registeredContainers.remove(containerId);
     }
@@ -135,12 +150,12 @@ public final class ResourceReaper {
      * @param imageName   the image name of the container (used for logging)
      */
     public void stopAndRemoveContainer(String containerId, String imageName) {
-        stopContainer(containerId, imageName);
+        removeContainer(containerId, imageName);
 
         registeredContainers.remove(containerId);
     }
 
-    private void stopContainer(String containerId, String imageName) {
+    private void removeContainer(String containerId, String imageName) {
         boolean running;
         try {
             InspectContainerResponse containerInfo = dockerClient.inspectContainerCmd(containerId).exec();
@@ -280,10 +295,52 @@ public final class ResourceReaper {
         }
     }
 
-    private void setHook() {
+    private void prune(PruneType pruneType, List<Map.Entry<String, String>> filters) {
+        String[] labels = filters.stream()
+            .filter(it -> "label".equals(it.getKey()))
+            .map(Map.Entry::getValue)
+            .toArray(String[]::new);
+        switch (pruneType) {
+            // Docker only prunes stopped containers, so we have to do it manually
+            case CONTAINERS:
+                List<Container> containers = dockerClient.listContainersCmd()
+                    .withFilter("label", Arrays.asList(labels))
+                    .withShowAll(true)
+                    .exec();
+
+                containers.parallelStream().forEach(container -> {
+                    removeContainer(container.getId(), container.getImage());
+                });
+                break;
+            default:
+                dockerClient.pruneCmd(pruneType).withLabelFilter(labels).exec();
+                break;
+        }
+    }
+
+    /**
+     * @deprecated internal API, not intended for public usage
+     */
+    @Deprecated
+    public void setHook() {
         if (hookIsSet.compareAndSet(false, true)) {
             // If the JVM stops without containers being stopped, try and stop the container.
-            Runtime.getRuntime().addShutdownHook(new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP, this::performCleanup));
+            Runtime.getRuntime().addShutdownHook(
+                new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP,
+                    () -> {
+                        performCleanup();
+
+                        if (!ryukStarted.get()) {
+                            synchronized (DEATH_NOTE) {
+                                DEATH_NOTE.forEach(filters -> prune(PruneType.CONTAINERS, filters));
+                                DEATH_NOTE.forEach(filters -> prune(PruneType.NETWORKS, filters));
+                                DEATH_NOTE.forEach(filters -> prune(PruneType.VOLUMES, filters));
+                                DEATH_NOTE.forEach(filters -> prune(PruneType.IMAGES, filters));
+                            }
+                        }
+                    }
+                )
+            );
         }
     }
 
