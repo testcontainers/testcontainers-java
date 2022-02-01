@@ -20,37 +20,46 @@ import java.util.concurrent.TimeUnit;
 @Testcontainers
 public class DemoHiveMQContainerIT {
 
-    //ceVersion
+    // ceVersion {
     @Container
     final HiveMQContainer hivemqCe =
         new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_CE_IMAGE_NAME)
             .withLogLevel(Level.DEBUG);
-    //
+    // }
 
-    //eeVersion
+    // eeVersion {
     @Container
     final HiveMQContainer hivemqEe =
         new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_CE_IMAGE_NAME)
             .withLogLevel(Level.DEBUG);
-    //
+    // }
 
-    //specificVersion
+    // eeVersionWithControlCenter {
+    @Container
+    final HiveMQContainer hivemqEeWithControLCenter =
+        new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_CE_IMAGE_NAME)
+            .withLogLevel(Level.DEBUG)
+            .withHiveMQConfig(MountableFile.forClasspathResource("/inMemoryConfig.xml"))
+            .withControlCenter();
+    // }
+
+    // specificVersion {
     @Container
     final HiveMQContainer hivemqSpecificVersion = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq-ce:2021.3"));
-    //
+    // }
 
     @Test
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
     public void test() throws Exception {
 
-        //mqtt5client
+        // mqtt5client {
         final Mqtt5BlockingClient client = Mqtt5Client.builder()
             .serverPort(hivemqCe.getMqttPort())
             .buildBlocking();
 
         client.connect();
         client.disconnect();
-        //
+        // }
 
     }
 }

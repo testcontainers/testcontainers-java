@@ -17,19 +17,19 @@ import org.testcontainers.utility.MountableFile;
 @Testcontainers
 public class DemoDisableExtensionsIT {
 
-    //noExtensions
+    // noExtensions {
     @Container
     final HiveMQContainer hivemqNoExtensions = new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME)
         .withoutPrepackagedExtensions();
-    //
+    // }
 
-    //noKafkaExtension
+    // noKafkaExtension {
     @Container
     final HiveMQContainer hivemqNoKafkaExtension = new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME)
         .withoutPrepackagedExtensions("hivemq-kafka-extension");
-    //
+    // }
 
-    //startDisabled
+    // startDisabled {
     private final HiveMQExtension hiveMQExtension = HiveMQExtension.builder()
         .id("extension-1")
         .name("my-extension")
@@ -40,29 +40,29 @@ public class DemoDisableExtensionsIT {
     @Container
     final HiveMQContainer hivemq = new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME)
         .withExtension(hiveMQExtension);
-    //
+    // }
 
 
-    //startFromFilesystem
+    // startFromFilesystem {
     @Container
     final HiveMQContainer hivemqExtensionFromFilesystem = new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME)
         .withExtension(MountableFile.forHostPath("src/test/resources/modifier-extension"));
-    //
+    // }
 
 
-    //runtimeEnable
+    // runtimeEnable {
     @Test
     void test_disable_enable_extension() throws Exception {
         hivemq.enableExtension(hiveMQExtension);
         hivemq.disableExtension(hiveMQExtension);
     }
-    //
+    // }
 
-    //runtimeEnableFilesystem
+    // runtimeEnableFilesystem {
     @Test
     void test_disable_enable_extension_from_filesystem() throws Exception {
         hivemqExtensionFromFilesystem.disableExtension("Modifier Extension", "modifier-extension");
         hivemqExtensionFromFilesystem.enableExtension("Modifier Extension", "modifier-extension");
     }
-    //
+    // }
 }

@@ -84,17 +84,20 @@ There are several things that can be adjusted before container setup.
 The following example shows how to enable the Control Center (this is an enterprise feature), set the log level to DEBUG 
 and load a HiveMQ-config-file from the classpath.
 
+<!--codeinclude-->
+[Config Examples](../../modules/hivemq/src/test/java/org/testcontainers/hivemq/docs/DemoHiveMQContainerIT.java) inside_block:eeVersionWithControlCenter
+<!--/codeinclude-->
+
 ---
 **Note:**
-After startup, you are presented with the URL of the HiveMQ Control Center:
+The Control Center of HiveMQ can be accessed via the URL presented in the output of the starting container:
 
 ```
 2021-09-10 10:35:53,511 INFO  - The HiveMQ Control Center is reachable under: http://localhost:55032
 ```
 
-<!--codeinclude-->
-[Config Examples](../../modules/hivemq/src/test/java/org/testcontainers/hivemq/docs/DemoContainerConfigIT.java) inside_block:containerConfig
-<!--/codeinclude-->
+Please be aware that the Control Center is a feature of the enterprise edition of HiveMQ and thus only available with 
+the enterprise container. 
 
 ---
 
