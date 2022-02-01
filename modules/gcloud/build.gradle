@@ -4,7 +4,7 @@ dependencies {
     api project(':testcontainers')
 
     testImplementation 'com.google.cloud:google-cloud-datastore:2.2.2'
-    testImplementation 'com.google.cloud:google-cloud-firestore:3.0.10'
+    testImplementation 'com.google.cloud:google-cloud-firestore:3.0.11'
     testImplementation 'com.google.cloud:google-cloud-pubsub:1.115.1'
     testImplementation 'com.google.cloud:google-cloud-spanner:6.17.4'
     testImplementation 'com.google.cloud:google-cloud-bigtable:2.5.1'
