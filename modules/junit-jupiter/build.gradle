@@ -9,7 +9,7 @@ dependencies {
     testImplementation 'com.zaxxer:HikariCP:4.0.3'
     testImplementation 'redis.clients:jedis:4.0.1'
     testImplementation 'org.apache.httpcomponents:httpclient:4.5.13'
-    testImplementation ('org.mockito:mockito-core:4.2.0') {
+    testImplementation ('org.mockito:mockito-core:4.3.1') {
         exclude(module: 'hamcrest-core')
     }
     testImplementation 'org.assertj:assertj-core:3.22.0'
