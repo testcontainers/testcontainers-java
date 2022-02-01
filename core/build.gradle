@@ -90,7 +90,7 @@ dependencies {
 
     testImplementation 'org.apache.httpcomponents:httpclient:4.5.9'
     testImplementation 'redis.clients:jedis:4.0.1'
-    testImplementation 'com.rabbitmq:amqp-client:5.14.0'
+    testImplementation 'com.rabbitmq:amqp-client:5.14.1'
     testImplementation 'org.mongodb:mongo-java-driver:3.12.10'
 
     testImplementation ('org.mockito:mockito-core:4.2.0') {
