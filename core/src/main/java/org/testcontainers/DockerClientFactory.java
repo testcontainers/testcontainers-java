@@ -31,6 +31,7 @@ import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.ImageNameSubstitutor;
 import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.ResourceReaper;
+import org.testcontainers.utility.RyukResourceReaper;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.io.ByteArrayOutputStream;
@@ -38,6 +39,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -61,8 +63,7 @@ public class DockerClientFactory {
     public static final String SESSION_ID = UUID.randomUUID().toString();
 
     public static final Map<String, String> DEFAULT_LABELS = ImmutableMap.of(
-            TESTCONTAINERS_LABEL, "true",
-            TESTCONTAINERS_SESSION_ID_LABEL, SESSION_ID
+            TESTCONTAINERS_LABEL, "true"
     );
 
     private static final DockerImageName TINY_IMAGE = DockerImageName.parse("alpine:3.14");
@@ -174,15 +175,14 @@ public class DockerClientFactory {
      */
     @Synchronized
     public DockerClient client() {
-
-        if (dockerClient != null) {
-            return dockerClient;
-        }
-
         // fail-fast if checks have failed previously
         if (cachedClientFailure != null) {
             log.debug("There is a cached checks failure - throwing", cachedClientFailure);
             throw cachedClientFailure;
+        }
+
+        if (dockerClient != null) {
+            return dockerClient;
         }
 
         final DockerClientProviderStrategy strategy = getOrInitializeStrategy();
@@ -198,6 +198,7 @@ public class DockerClientFactory {
                 throw new IllegalStateException("You should never close the global DockerClient!");
             }
         };
+        dockerClient = client;
 
         Info dockerInfo = client.infoCmd().exec();
         Version version = client.versionCmd().exec();
@@ -210,24 +211,15 @@ public class DockerClientFactory {
                 "  Total Memory: " + dockerInfo.getMemTotal() / (1024 * 1024) + " MB");
 
         final String ryukContainerId;
-
-        boolean useRyuk = !Boolean.parseBoolean(System.getenv("TESTCONTAINERS_RYUK_DISABLED"));
-        if (useRyuk) {
-            log.debug("Ryuk is enabled");
-            try {
-                //noinspection deprecation
-                ryukContainerId = ResourceReaper.start(client);
-            } catch (RuntimeException e) {
-                cachedClientFailure = e;
-                throw e;
-            }
-            log.info("Ryuk started - will monitor and terminate Testcontainers containers on JVM exit");
-        } else {
-            log.debug("Ryuk is disabled");
-            ryukContainerId = null;
-            // best-efforts cleanup at JVM shutdown, without using the Ryuk container
+        try {
+            ResourceReaper resourceReaper = ResourceReaper.instance();
             //noinspection deprecation
-            ResourceReaper.instance().setHook();
+            ryukContainerId = resourceReaper instanceof RyukResourceReaper
+                ? ((RyukResourceReaper) resourceReaper).getContainerId()
+                : null;
+        } catch (RuntimeException e) {
+            cachedClientFailure = e;
+            throw e;
         }
 
         boolean checksEnabled = !TestcontainersConfiguration.getInstance().isDisableChecks();
@@ -261,7 +253,6 @@ public class DockerClientFactory {
             log.debug("Checks are disabled");
         }
 
-        dockerClient = client;
         return dockerClient;
     }
 
@@ -378,8 +369,10 @@ public class DockerClientFactory {
         final String tinyImage = ImageNameSubstitutor.instance().apply(TINY_IMAGE).asCanonicalNameString();
 
         checkAndPullImage(client, tinyImage);
+        HashMap<String, String> labels = new HashMap<>(DEFAULT_LABELS);
+        labels.putAll(ResourceReaper.instance().getLabels());
         CreateContainerCmd createContainerCmd = client.createContainerCmd(tinyImage)
-                .withLabels(DEFAULT_LABELS);
+                .withLabels(labels);
         createContainerCmdConsumer.accept(createContainerCmd);
         String id = createContainerCmd.exec().getId();
 
