@@ -19,14 +19,14 @@ import java.util.concurrent.TimeUnit;
 @Testcontainers
 public class DemoFilesIT {
 
-    //hivemqHome
+    // hivemqHome {
     final HiveMQContainer hivemqFileInHome = new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_CE_IMAGE_NAME)
         .withFileInHomeFolder(
             MountableFile.forHostPath("src/test/resources/additionalFile.txt"),
             "/path/in/home/folder");
-    //
+    // }
 
-    //extensionHome
+    // extensionHome {
     @Container
     final HiveMQContainer hivemqFileInExtensionHome = new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_CE_IMAGE_NAME)
         .withExtension(HiveMQExtension.builder()
@@ -38,27 +38,27 @@ public class DemoFilesIT {
             MountableFile.forHostPath("src/test/resources/additionalFile.txt"),
             "extension-1",
             "/path/in/extension/home");
-    //
+    // }
 
-    //withLicenses
+    // withLicenses {
     @Container
     final HiveMQContainer hivemq = new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_CE_IMAGE_NAME)
         .withLicense(MountableFile.forHostPath("src/test/resources/myLicense.lic"))
         .withLicense(MountableFile.forHostPath("src/test/resources/myExtensionLicense.elic"));
-    //
+    // }
 
     @Test
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
     public void test() throws Exception {
 
-        //mqtt5client
+        // mqtt5client {
         final Mqtt5BlockingClient client = Mqtt5Client.builder()
             .serverPort(hivemq.getMqttPort())
             .buildBlocking();
 
         client.connect();
         client.disconnect();
-        //
+        // }
 
     }
 }
