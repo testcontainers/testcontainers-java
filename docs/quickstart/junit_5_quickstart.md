@@ -48,7 +48,6 @@ First, add Testcontainers as a dependency as follows:
         <scope>test</scope>
     </dependency>
     ```
-=======
 
 ## 2. Get Testcontainers to run a Redis container during our tests
 
