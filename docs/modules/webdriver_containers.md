@@ -88,32 +88,35 @@ A few different examples are shown in [ChromeWebDriverContainerTest.java](https:
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
-```groovy tab='Gradle'
-testImplementation "org.testcontainers:selenium:{{latest_version}}"
-```
-
-```xml tab='Maven'
-<dependency>
-    <groupId>org.testcontainers</groupId>
-    <artifactId>selenium</artifactId>
-    <version>{{latest_version}}</version>
-    <scope>test</scope>
-</dependency>
-```
+=== "Gradle"
+    ```groovy
+    testImplementation "org.testcontainers:selenium:{{latest_version}}"
+    ```
+=== "Maven"
+    ```xml
+    <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>selenium</artifactId>
+        <version>{{latest_version}}</version>
+        <scope>test</scope>
+    </dependency>
+    ```
 
 !!! hint
     Adding this Testcontainers library JAR will not automatically add a Selenium Webdriver JAR to your project. You should ensure that your project also has suitable Selenium dependencies in place, for example:
 
-    ```groovy tab='Gradle'
-    compile "org.seleniumhq.selenium:selenium-remote-driver:3.141.59"
-    ```
+    === "Gradle"
+        ```groovy
+        compile "org.seleniumhq.selenium:selenium-remote-driver:3.141.59"
+        ```
     
-    ```xml tab='Maven'
-    <dependency>
-        <groupId>org.seleniumhq.selenium</groupId>
-        <artifactId>selenium-remote-driver</artifactId>
-        <version>3.141.59</version>
-    </dependency>
-    ```
+    === "Maven"
+        ```xml
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-remote-driver</artifactId>
+            <version>3.141.59</version>
+        </dependency>
+        ```
     
     Testcontainers will try and match the version of the Dockerized browser to whichever version of Selenium is found on the classpath
