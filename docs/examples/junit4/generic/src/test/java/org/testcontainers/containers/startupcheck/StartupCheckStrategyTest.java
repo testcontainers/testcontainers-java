@@ -45,7 +45,7 @@ public class StartupCheckStrategyTest {
 
         @SneakyThrows
         @Test
-        public void testCommandIsExecuted() {
+        public void oneShotStrategyTest() {
             waitForHello(bboxWithOneShot);
 
             assertThat(bboxWithOneShot.isRunning()).isFalse();
@@ -64,7 +64,7 @@ public class StartupCheckStrategyTest {
 
         @SneakyThrows
         @Test
-        public void testCommandIsExecuted() {
+        public void indefiniteOneShotStrategyTest() {
             waitForHello(bboxWithIndefiniteOneShot);
 
             assertThat(bboxWithIndefiniteOneShot.isRunning()).isFalse();
@@ -75,7 +75,7 @@ public class StartupCheckStrategyTest {
         @Rule
         // withMinimumDurationStrategy {
         public GenericContainer<?> bboxWithMinimumDuration = new GenericContainer<>(DockerImageName.parse("busybox:1.31.1"))
-            .withCommand("sh", "-c", String.format("sleep 5 && echo \"%s\"", HELLO_TESTCONTAINERS))
+            .withCommand("sleep 5")
             .withStartupCheckStrategy(
                 new MinimumDurationRunningStartupCheckStrategy(Duration.ofSeconds(1))
             );
@@ -83,9 +83,7 @@ public class StartupCheckStrategyTest {
 
         @SneakyThrows
         @Test
-        public void testCommandIsExecuted() {
-            waitForHello(bboxWithMinimumDuration);
-
+        public void minimumDurationStrategyTest() {
             assertThat(bboxWithMinimumDuration.isRunning()).isTrue();
         }
     }
