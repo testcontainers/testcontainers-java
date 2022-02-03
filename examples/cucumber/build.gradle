@@ -10,7 +10,7 @@ dependencies {
     implementation 'org.seleniumhq.selenium:selenium-remote-driver:3.141.59'
     implementation 'org.seleniumhq.selenium:selenium-firefox-driver:3.141.59'
     implementation 'org.seleniumhq.selenium:selenium-chrome-driver:3.141.59'
-    testImplementation 'io.cucumber:cucumber-java:7.2.2'
+    testImplementation 'io.cucumber:cucumber-java:7.2.3'
     testImplementation 'io.cucumber:cucumber-junit:7.2.2'
     testImplementation 'org.testcontainers:selenium'
 }
