@@ -39,15 +39,16 @@ This may be used with Kubernetes clients - e.g. for the [official Java client](c
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
-```groovy tab='Gradle'
-testImplementation "org.testcontainers:k3s:{{latest_version}}"
-```
-
-```xml tab='Maven'
-<dependency>
-    <groupId>org.testcontainers</groupId>
-    <artifactId>k3s</artifactId>
-    <version>{{latest_version}}</version>
-    <scope>test</scope>
-</dependency>
-```
+=== "Gradle"
+    ```groovy tab='Gradle'
+    testImplementation "org.testcontainers:k3s:{{latest_version}}"
+    ```
+=== "Maven"
+    ```xml tab='Maven'
+    <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>k3s</artifactId>
+        <version>{{latest_version}}</version>
+        <scope>test</scope>
+    </dependency>
+    ```
