@@ -13,7 +13,8 @@ import java.util.Map;
  */
 class JVMHookResourceReaper extends ResourceReaper {
 
-    JVMHookResourceReaper() {
+    @Override
+    public void init() {
         setHook();
     }
 

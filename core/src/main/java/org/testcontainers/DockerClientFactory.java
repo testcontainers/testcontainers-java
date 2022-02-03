@@ -74,7 +74,7 @@ public class DockerClientFactory {
     DockerClientProviderStrategy strategy;
 
     @VisibleForTesting
-    DockerClient dockerClient;
+    DockerClient client;
 
     @VisibleForTesting
     RuntimeException cachedClientFailure;
@@ -181,14 +181,14 @@ public class DockerClientFactory {
             throw cachedClientFailure;
         }
 
-        if (dockerClient != null) {
-            return dockerClient;
+        if (client != null) {
+            return client;
         }
 
         final DockerClientProviderStrategy strategy = getOrInitializeStrategy();
 
         log.info("Docker host IP address is {}", strategy.getDockerHostIpAddress());
-        final DockerClient client = new DockerClientDelegate() {
+        client = new DockerClientDelegate() {
 
             @Getter
             final DockerClient dockerClient = strategy.getDockerClient();
@@ -198,7 +198,6 @@ public class DockerClientFactory {
                 throw new IllegalStateException("You should never close the global DockerClient!");
             }
         };
-        dockerClient = client;
 
         Info dockerInfo = client.infoCmd().exec();
         Version version = client.versionCmd().exec();
@@ -210,13 +209,11 @@ public class DockerClientFactory {
                 "  Operating System: " + dockerInfo.getOperatingSystem() + "\n" +
                 "  Total Memory: " + dockerInfo.getMemTotal() / (1024 * 1024) + " MB");
 
-        final String ryukContainerId;
+        final ResourceReaper resourceReaper;
         try {
-            ResourceReaper resourceReaper = ResourceReaper.instance();
+            resourceReaper = ResourceReaper.instance();
             //noinspection deprecation
-            ryukContainerId = resourceReaper instanceof RyukResourceReaper
-                ? ((RyukResourceReaper) resourceReaper).getContainerId()
-                : null;
+            resourceReaper.init();
         } catch (RuntimeException e) {
             cachedClientFailure = e;
             throw e;
@@ -229,6 +226,12 @@ public class DockerClientFactory {
             try {
                 log.info("Checking the system...");
                 checkDockerVersion(version.getVersion());
+
+                //noinspection deprecation
+                String ryukContainerId = resourceReaper instanceof RyukResourceReaper
+                    ? ((RyukResourceReaper) resourceReaper).getContainerId()
+                    : null;
+
                 if (ryukContainerId != null) {
                     checkDiskSpace(client, ryukContainerId);
                 } else {
@@ -253,7 +256,7 @@ public class DockerClientFactory {
             log.debug("Checks are disabled");
         }
 
-        return dockerClient;
+        return client;
     }
 
     private void checkDockerVersion(String dockerVersion) {

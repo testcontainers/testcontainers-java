@@ -307,6 +307,13 @@ public class ResourceReaper {
         return MARKER_LABELS;
     }
 
+    /**
+     * @deprecated internal API
+     */
+    @Deprecated
+    public void init() {
+    }
+
     static class FilterRegistry {
 
         @VisibleForTesting

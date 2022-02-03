@@ -56,7 +56,8 @@ public class RyukResourceReaper extends ResourceReaper {
     @Getter
     private String containerId = null;
 
-    RyukResourceReaper() {
+    @Override
+    public void init() {
         if (!TestcontainersConfiguration.getInstance().environmentSupportsReuse()) {
             log.debug("Ryuk is enabled");
             maybeStart();
