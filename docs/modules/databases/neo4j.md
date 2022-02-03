@@ -140,6 +140,9 @@ public class ExampleTest {
 }
 ```
 
+!!! note
+The `withDatabase` method will only work with Neo4j 3.5 and throw an exception if used in combination with a newer version.
+
 ## Choose your Neo4j license
 
 If you need the Neo4j enterprise license, you can declare your Neo4j container like this:

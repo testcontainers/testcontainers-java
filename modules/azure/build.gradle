@@ -3,6 +3,6 @@ description = "Testcontainers :: Azure"
 dependencies {
     api project(':testcontainers')
 
-    testImplementation 'org.assertj:assertj-core:3.15.0'
-    testImplementation 'com.azure:azure-cosmos:4.16.0'
+    testImplementation 'org.assertj:assertj-core:3.22.0'
+    testImplementation 'com.azure:azure-cosmos:4.24.0'
 }

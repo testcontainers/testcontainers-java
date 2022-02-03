@@ -23,10 +23,7 @@ First, add Testcontainers as a dependency as follows:
 
 === "Gradle"
     ```groovy
-    def junitJupiterVersion = '5.4.2'
-    testImplementation "org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion"
-    testImplementation "org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion"
+    testImplementation "org.junit.jupiter:junit-jupiter:5.8.1"
     testImplementation "org.testcontainers:testcontainers:{{latest_version}}"
     testImplementation "org.testcontainers:junit-jupiter:{{latest_version}}"
     ```
@@ -34,20 +31,8 @@ First, add Testcontainers as a dependency as follows:
     ```xml
     <dependency>
         <groupId>org.junit.jupiter</groupId>
-        <artifactId>junit-jupiter-api</artifactId>
-        <version>5.4.2</version>
-        <scope>test</scope>
-    </dependency>
-    <dependency>
-        <groupId>org.junit.jupiter</groupId>
-        <artifactId>junit-jupiter-params</artifactId>
-        <version>5.4.2</version>
-        <scope>test</scope>
-    </dependency>
-    <dependency>
-        <groupId>org.junit.jupiter</groupId>
-        <artifactId>junit-jupiter-engine</artifactId>
-        <version>5.4.2</version>
+        <artifactId>junit-jupiter</artifactId>
+        <version>5.8.1</version>
         <scope>test</scope>
     </dependency>
     <dependency>
@@ -63,6 +48,7 @@ First, add Testcontainers as a dependency as follows:
         <scope>test</scope>
     </dependency>
     ```
+=======
 
 ## 2. Get Testcontainers to run a Redis container during our tests
 
