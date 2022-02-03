@@ -58,7 +58,7 @@ dependencies {
     }
 
     api 'junit:junit:4.13.2'
-    api 'org.slf4j:slf4j-api:1.7.32'
+    api 'org.slf4j:slf4j-api:1.7.35'
     compileOnly 'org.jetbrains:annotations:23.0.0'
     testCompileClasspath 'org.jetbrains:annotations:23.0.0'
     api 'org.apache.commons:commons-compress:1.21'
