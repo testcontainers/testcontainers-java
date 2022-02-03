@@ -5,7 +5,7 @@ from SeleniumHQ's [docker-selenium](https://github.com/SeleniumHQ/docker-seleniu
 
 ## Benefits
 
-* Fully compatible with Selenium 2/Webdriver tests, by providing a `RemoteWebDriver` instance
+* Fully compatible with Selenium 3 & 4 tests, by providing a `RemoteWebDriver` instance
 * No need to have specific web browsers, or even a desktop environment, installed on test servers. The only dependency
   is a working Docker installation and your Java JUnit test suite.
 * Browsers are always launched from a fixed, clean image. This means no configuration drift from user changes or

@@ -68,6 +68,7 @@ public class HostPortWaitStrategy extends AbstractWaitStrategy {
                         .pollInSameThread()
                         .pollInterval(Duration.ofMillis(100))
                         .pollDelay(Duration.ZERO)
+                        .ignoreExceptions()
                         .forever()
                         .until(externalCheck);
 

@@ -15,6 +15,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 public enum PortForwardingContainer {
     INSTANCE;
@@ -68,9 +69,24 @@ public enum PortForwardingContainer {
         }
     }
 
+    void start() {
+        getSshConnection();
+    }
+
     Optional<ContainerNetwork> getNetwork() {
         return Optional.ofNullable(container)
             .map(GenericContainer::getContainerInfo)
             .flatMap(it -> it.getNetworkSettings().getNetworks().values().stream().findFirst());
+    }
+
+    void reset() {
+        if (container != null) {
+            container.stop();
+        }
+        container = null;
+
+        ((AtomicReference<?>) (Object) sshConnection).set(null);
+
+        exposedPorts.clear();
     }
 }

@@ -53,20 +53,20 @@ configurations.all {
 }
 
 dependencies {
-    baseline 'org.testcontainers:testcontainers:1.16.0', {
+    baseline 'org.testcontainers:testcontainers:1.16.2', {
         exclude group: "*", module: "*"
     }
 
     api 'junit:junit:4.13.2'
     api 'org.slf4j:slf4j-api:1.7.32'
-    compileOnly 'org.jetbrains:annotations:22.0.0'
-    testCompileClasspath 'org.jetbrains:annotations:21.0.1'
+    compileOnly 'org.jetbrains:annotations:23.0.0'
+    testCompileClasspath 'org.jetbrains:annotations:23.0.0'
     api 'org.apache.commons:commons-compress:1.21'
     api ('org.rnorth.duct-tape:duct-tape:1.0.8') {
         exclude(group: 'org.jetbrains', module: 'annotations')
     }
 
-    shaded 'org.awaitility:awaitility:4.1.0'
+    shaded 'org.awaitility:awaitility:4.1.1'
 
     api platform('com.github.docker-java:docker-java-bom:3.2.12')
     shaded platform('com.github.docker-java:docker-java-bom:3.2.12')
@@ -82,31 +82,31 @@ dependencies {
 
     api 'com.github.docker-java:docker-java-transport-zerodep'
 
-    shaded "org.yaml:snakeyaml:1.29"
+    shaded "org.yaml:snakeyaml:1.30"
 
     shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
 
     shaded 'org.zeroturnaround:zt-exec:1.12'
 
     testImplementation 'org.apache.httpcomponents:httpclient:4.5.9'
-    testImplementation 'redis.clients:jedis:3.7.0'
-    testImplementation 'com.rabbitmq:amqp-client:5.13.1'
+    testImplementation 'redis.clients:jedis:4.0.1'
+    testImplementation 'com.rabbitmq:amqp-client:5.14.0'
     testImplementation 'org.mongodb:mongo-java-driver:3.12.10'
 
-    testImplementation ('org.mockito:mockito-core:3.12.4') {
+    testImplementation ('org.mockito:mockito-core:4.2.0') {
         exclude(module: 'hamcrest-core')
     }
     // Synthetic JAR used for MountableFileTest and DirectoryTarResourceTest
     testImplementation files('testlib/repo/fakejar/fakejar/0/fakejar-0.jar')
 
     testImplementation 'org.rnorth.visible-assertions:visible-assertions:2.1.2'
-    testImplementation 'org.assertj:assertj-core:3.21.0'
+    testImplementation 'org.assertj:assertj-core:3.22.0'
     testImplementation project(':test-support')
 
     jarFileTestCompileOnly "org.projectlombok:lombok:${lombok.version}"
     jarFileTestAnnotationProcessor "org.projectlombok:lombok:${lombok.version}"
     jarFileTestImplementation 'junit:junit:4.13.2'
-    jarFileTestImplementation 'org.assertj:assertj-core:3.20.2'
+    jarFileTestImplementation 'org.assertj:assertj-core:3.22.0'
     jarFileTestImplementation 'org.ow2.asm:asm-debug-all:5.2'
 }
 

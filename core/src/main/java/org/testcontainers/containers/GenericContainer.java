@@ -231,6 +231,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Setter(AccessLevel.NONE)
     private boolean shouldBeReused = false;
 
+    private boolean hostAccessible = false;
 
     public GenericContainer(@NonNull final DockerImageName dockerImageName) {
         this.image = new RemoteDockerImage(dockerImageName);
@@ -420,11 +421,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             if (!reused) {
                 containerIsCreated(containerId);
 
-                logger().info("Starting container with ID: {}", containerId);
+                logger().info("Container {} is starting: {}", dockerImageName, containerId);
                 dockerClient.startContainerCmd(containerId).exec();
+            } else {
+                logger().info("Reusing existing container ({}) and not creating a new one", containerId);
             }
-
-            logger().info("Container {} is starting: {}", dockerImageName, containerId);
 
             // For all registered output consumers, start following as close to container startup as possible
             this.logConsumers.forEach(this::followOutput);
@@ -834,6 +835,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             createCommand.withNetworkMode(networkForLinks.get());
         }
 
+        if (hostAccessible) {
+            PortForwardingContainer.INSTANCE.start();
+        }
         PortForwardingContainer.INSTANCE.getNetwork().ifPresent(it -> {
             withExtraHost(INTERNAL_HOST_HOSTNAME, it.getIpAddress());
         });
@@ -1421,6 +1425,18 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @UnstableAPI
     public SELF withReuse(boolean reusable) {
         this.shouldBeReused = reusable;
+        return self();
+    }
+
+    /**
+     * Forces access to the tests host machine.
+     * Use this method if you need to call {@link org.testcontainers.Testcontainers#exposeHostPorts(int...)}
+     * after you start this container.
+     *
+     * @return this
+     */
+    public SELF withAccessToHost(boolean value) {
+        this.hostAccessible = value;
         return self();
     }
 

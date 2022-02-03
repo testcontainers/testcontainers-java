@@ -10,7 +10,7 @@ Testcontainers make the following kinds of tests easier:
 
 * **Data access layer integration tests**: use a containerized instance of a MySQL, PostgreSQL or Oracle database to test your data access layer code for complete compatibility, but without requiring complex setup on developers' machines and safe in the knowledge that your tests will always start with a known DB state. Any other database type that can be containerized can also be used.
 * **Application integration tests**: for running your application in a short-lived test mode with dependencies, such as databases, message queues or web servers.
-* **UI/Acceptance tests**: use containerized web browsers, compatible with Selenium, for conducting automated UI tests. Each test can get a fresh instance of the browser, with no browser state, plugin variations or automated browser upgrades to worry about. And you get a video recording of each test session, or just each session where tests failed.
+* **UI/Acceptance tests**: use [containerized web browsers](modules/webdriver_containers.md), compatible with Selenium, for conducting automated UI tests. Each test can get a fresh instance of the browser, with no browser state, plugin variations or automated browser upgrades to worry about. And you get a video recording of each test session, or just each session where tests failed.
 * **Much more!** Check out the various contributed modules or create your own custom container classes using [`GenericContainer`](features/creating_container.md) as a base.
 
 ## Prerequisites
@@ -65,6 +65,7 @@ Using Maven you can add the following to `dependencyManagement` section in your 
     </dependencies>
 </dependencyManagement>
 ```
+
 and then use dependencies without specifying a version:
 
 ```xml tab='Maven'
@@ -126,16 +127,34 @@ A huge thank you to our sponsors:
     </a>
 </div>
 
+<div style="text-align:center; max-width: 128px; display: inline-block; margin: 5px;">
+    <a href="https://www.elastic.co/">
+        <img src="sponsor_logos/elastic.png" style="width: 100%"/>
+        <p>Elastic</p>
+    </a>
+</div>
+
+### Donors
+
+<div style="text-align:center; max-width: 128px; display: inline-block; margin: 5px;">
+    <a href="https://www.redhat.com">
+        <img src="sponsor_logos/red_hat.png" style="width: 100%"/>
+        <p>Red Hat</p>
+    </a>
+</div>
+
 ### Backers
 
 * [Philip Riecks (@rieckpil)](https://github.com/rieckpil)
 * [Karl Heinz Marbaise (@khmarbaise)](https://github.com/khmarbaise)
 * [Sascha Frinken (@sascha-frinken)](https://github.com/sascha-frinken)
 * [Christoph Dreis (@dreis2211)](https://github.com/dreis2211)
-* [Pascal Zwick (@pas2al)](https://github.com/pas2al)
 * [Nikita Zhevnitskiy (@zhenik)](https://github.com/zhenik)
 * [Bas Stoker (@bastoker)](https://github.com/bastoker)
 * [Oleg Nenashev (@oleg-nenashev)](https://github.com/oleg-nenashev)
+* [Rik Glover (@rikglover)](https://github.com/rikglover)
+* [Amitosh Swain Mahapatra (@recrsn)](https://github.com/recrsn)
+* [Paris Apostolopoulos](https://opencollective.com/paris-apostolopoulos)
 
 ## Who is using Testcontainers?
 
