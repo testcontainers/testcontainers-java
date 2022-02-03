@@ -21,27 +21,29 @@ Let's start from here, and see how to improve the test with Testcontainers:
 
 First, add Testcontainers as a dependency as follows:
 
-```groovy tab='Gradle'
-testImplementation "org.testcontainers:spock:{{latest_version}}"
-```
-
-```xml tab='Maven'
-<dependency>
-    <groupId>org.testcontainers</groupId>
-    <artifactId>spock</artifactId>
-    <version>{{latest_version}}</version>
-    <scope>test</scope>
-</dependency>
-```
+=== "Gradle"
+    ```groovy
+    testImplementation "org.testcontainers:spock:{{latest_version}}"
+    ```
+=== "Maven"
+    ```xml
+    <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>spock</artifactId>
+        <version>{{latest_version}}</version>
+        <scope>test</scope>
+    </dependency>
+    ```
 
 ## 2. Get Testcontainers to run a Redis container during our tests
 
 Annotate the Spock specification class with the Testcontainers extension:
 
-```groovy tab='Spock Testcontainers annotation'
-@org.testcontainers.spock.Testcontainers
-class RedisBackedCacheIntTest extends Specification {
-```
+=== "Spock Testcontainers annotation"
+    ```groovy
+    @org.testcontainers.spock.Testcontainers
+    class RedisBackedCacheIntTest extends Specification {
+    ```
 
 And add the following field to the body of our test class:
 
