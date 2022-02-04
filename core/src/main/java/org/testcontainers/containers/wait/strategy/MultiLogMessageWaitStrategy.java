@@ -1,6 +1,5 @@
 package org.testcontainers.containers.wait.strategy;
 
-import org.jetbrains.annotations.NotNull;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.output.OutputFrame;
@@ -19,7 +18,7 @@ import java.util.function.Predicate;
  */
 public class MultiLogMessageWaitStrategy extends AbstractWaitStrategy {
 
-    private final @NotNull ConcurrentHashMap<String, Boolean> regexes = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Boolean> regexes = new ConcurrentHashMap<>();
 
     @Override
     protected void waitUntilReady() {
@@ -30,10 +29,10 @@ public class MultiLogMessageWaitStrategy extends AbstractWaitStrategy {
             if (regexes.isEmpty()) {
                 return true;
             }
-            regexes.entrySet().forEach(stringBooleanEntry -> {
-                final boolean matched = outputFrame.getUtf8String().matches("(?s)" + stringBooleanEntry.getKey());
+            regexes.entrySet().forEach(regexHasMatched -> {
+                final boolean matched = outputFrame.getUtf8String().matches("(?s)" + regexHasMatched.getKey());
                 if (matched) {
-                    stringBooleanEntry.setValue(true);
+                    regexHasMatched.setValue(true);
                 }
             });
             return regexes.values().stream().reduce(Boolean::logicalAnd).orElse(true);
@@ -46,12 +45,12 @@ public class MultiLogMessageWaitStrategy extends AbstractWaitStrategy {
         }
     }
 
-    public @NotNull MultiLogMessageWaitStrategy withRegEx(final @NotNull String regEx) {
+    public MultiLogMessageWaitStrategy withRegEx(final String regEx) {
         regexes.put(regEx, false);
         return this;
     }
 
-    public @NotNull MultiLogMessageWaitStrategy reset() {
+    public MultiLogMessageWaitStrategy reset() {
         for (final Map.Entry<String, Boolean> stringBooleanEntry : regexes.entrySet()) {
             stringBooleanEntry.setValue(false);
         }
