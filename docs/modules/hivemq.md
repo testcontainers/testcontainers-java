@@ -11,62 +11,32 @@ This enables testing MQTT client applications and integration testing of custom 
     - [MQTT Essentials](https://www.hivemq.com/mqtt-essentials/)
     - [MQTT 5 Essentials](https://www.hivemq.com/mqtt-5/)
     
-Please make sure to check out the hivemq-docs for the [community edition](https://github.com/hivemq/hivemq-community-edition/wiki/) 
-and the [regular edition](https://www.hivemq.com/docs/hivemq/4.7/user-guide/).
-
-## Add to your project
-
-### Gradle
-
-Add to `build.gradle`:
-
-````groovy
-testImplementation 'org.testcontainers:hivemq:{{latest_version}}'
-````
-
-Add to `build.gradle.kts`:
-
-````kotlin
-testImplementation("org.testcontainers:hivemq:{{latest_version}}")
-````
-
-### Maven
-
-Add to `pom.xml`:
-
-```xml
-<dependency>
-    <groupId>org.testcontainers</groupId>
-    <artifactId>hivemq</artifactId>
-    <version>{{latest_version}}</version>
-    <scope>test</scope>
-</dependency>
-```
-
+Please make sure to check out the hivemq-docs for the [Community Edition](https://github.com/hivemq/hivemq-community-edition/wiki/) 
+and the [Enterprise Edition](https://www.hivemq.com/docs/hivemq/4.7/user-guide/).
 
 ## Using HiveMQ CE/EE
 
-We provide different editions of HiveMQ on [Docker-Hub](https://hub.docker.com/u/hivemq):
+HiveMQ provides different editions of on [Docker Hub](https://hub.docker.com/u/hivemq):
 
 - the open source [Community Edition](https://github.com/hivemq/hivemq-community-edition) which 
-is tagged as *hivemq/hivemq-ce*.
-- the Enterprise Edition which is tagged as *hivemq/hivemq-ee*.
+is published as *hivemq/hivemq-ce*.
+- the [Enterprise Edition](https://www.hivemq.com/docs/hivemq/4.7/user-guide/) which is published as *hivemq/hivemq-ee*.
 
-Both edition can be used directly as testcontainers:
+Both editions can be used directly:
 
 Using the Community Edition:
 <!--codeinclude-->
-[Community Edition HiveMQ-Testcontainer](../../modules/hivemq/src/test/java/org/testcontainers/hivemq/docs/DemoHiveMQContainerIT.java) inside_block:ceVersion
+[Community Edition HiveMQ image](../../modules/hivemq/src/test/java/org/testcontainers/hivemq/docs/DemoHiveMQContainerIT.java) inside_block:ceVersion
 <!--/codeinclude-->
 
 Using the Enterprise Edition:
 <!--codeinclude-->
-[Enterprise Edition HiveMQ-Testcontainer](../../modules/hivemq/src/test/java/org/testcontainers/hivemq/docs/DemoHiveMQContainerIT.java) inside_block:eeVersion
+[Enterprise Edition HiveMQ image](../../modules/hivemq/src/test/java/org/testcontainers/hivemq/docs/DemoHiveMQContainerIT.java) inside_block:eeVersion
 <!--/codeinclude-->
 
 Using a specifc version is possible by using the tag:
 <!--codeinclude-->
-[Specific Version HiveMQ-Testcontainer](../../modules/hivemq/src/test/java/org/testcontainers/hivemq/docs/DemoHiveMQContainerIT.java) inside_block:specificVersion
+[Specific HiveMQ Version](../../modules/hivemq/src/test/java/org/testcontainers/hivemq/docs/DemoHiveMQContainerIT.java) inside_block:specificVersion
 <!--/codeinclude-->
 
 ## Test your MQTT 3 and MQTT 5 client application
@@ -97,7 +67,7 @@ The Control Center of HiveMQ can be accessed via the URL presented in the output
 ```
 
 Please be aware that the Control Center is a feature of the enterprise edition of HiveMQ and thus only available with 
-the enterprise container. 
+the enterprise image. 
 
 ---
 
@@ -105,11 +75,11 @@ the enterprise container.
 
 Using the [Extension SDK](https://github.com/hivemq/hivemq-extension-sdk) the functionality of all editions of HiveMQ
 can be extended. 
-The HiveMQ-testcontainer also supports testing these custom extensions of yours.
+The HiveMQ module also supports testing your own custom extensions.
 
 ### Wait Strategy
 
-The raw HiveMQ-testcontainer is built to wait for certain startup log messages to signal readiness.
+The raw HiveMQ module is built to wait for certain startup log messages to signal readiness.
 Since extensions are loaded dynamically they can be available a short while after the main container has started.
 We therefore provide custom wait conditions for HiveMQ Extensions:
 
@@ -136,7 +106,7 @@ With debugging enabled you can start putting breakpoints right into your extensi
 
 ### Testing extensions using Gradle
 
-In a Gradle based HiveMQ Extension project we support testing using a dedicated [HiveMQ Extension Gradle Plugin](https://github.com/hivemq/hivemq-extension-gradle-plugin/README.md).
+In a Gradle based HiveMQ Extension project, testing is supported using the dedicated [HiveMQ Extension Gradle Plugin](https://github.com/hivemq/hivemq-extension-gradle-plugin/README.md).
 
 The plugin adds an `integrationTest` task which executes tests from the `integrationTest` source set.
 - Integration test source files are defined in `src/integrationTest`.
@@ -160,7 +130,7 @@ It is possible to enable and disable HiveMQ extensions during runtime. Extension
 
 ---
 
-The following example shows how to start a HiveMQ-testcontainer with the extension called **my-extension** being disabled.
+The following example shows how to start a HiveMQ container with the extension called **my-extension** being disabled.
 
 
 <!--codeinclude-->
@@ -228,12 +198,40 @@ A single extension (e.g. Kafka) can be removed as easily:
 ### Put license files into the container
 
 <!--codeinclude-->
-[Put license file into HiveMQ-testcontainer](../../modules/hivemq/src/test/java/org/testcontainers/hivemq/docs/DemoFilesIT.java) inside_block:withLicenses
+[Put license file into the HiveMQ container](../../modules/hivemq/src/test/java/org/testcontainers/hivemq/docs/DemoFilesIT.java) inside_block:withLicenses
 <!--/codeinclude-->
-
 
 
 ### Customize the Container further
 
 Since the `HiveMQContainer` extends from [Testcontainer's](https://github.com/testcontainers) `GenericContainer` the container
 can be customized as desired.
+
+## Add to your project
+
+### Gradle
+
+Add to `build.gradle`:
+
+````groovy
+testImplementation 'org.testcontainers:hivemq:{{latest_version}}'
+````
+
+Add to `build.gradle.kts`:
+
+````kotlin
+testImplementation("org.testcontainers:hivemq:{{latest_version}}")
+````
+
+### Maven
+
+Add to `pom.xml`:
+
+```xml
+<dependency>
+    <groupId>org.testcontainers</groupId>
+    <artifactId>hivemq</artifactId>
+    <version>{{latest_version}}</version>
+    <scope>test</scope>
+</dependency>
+```
