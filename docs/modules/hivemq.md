@@ -20,7 +20,7 @@ HiveMQ provides different editions of on [Docker Hub](https://hub.docker.com/u/h
 
 - the open source [Community Edition](https://github.com/hivemq/hivemq-community-edition) which 
 is published as *hivemq/hivemq-ce*.
-- the [Enterprise Edition](https://www.hivemq.com/docs/hivemq/4.7/user-guide/) which is published as *hivemq/hivemq-ee*.
+- the [Enterprise Edition](https://www.hivemq.com/docs/hivemq/4.7/user-guide/) which is published as *hivemq/hivemq4*.
 
 Both editions can be used directly:
 
