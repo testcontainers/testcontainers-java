@@ -41,6 +41,7 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
 
     private final @NotNull ConcurrentHashMap<String, CountDownLatch> containerOutputLatches = new ConcurrentHashMap<>();
     private volatile boolean controlCenterEnabled = false;
+    private volatile boolean debugging = false;
 
     private final @NotNull MultiLogMessageWaitStrategy waitStrategy = new MultiLogMessageWaitStrategy();
 
@@ -56,18 +57,16 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
 
         withLogConsumer(outputFrame -> {
             final String utf8String = outputFrame.getUtf8String();
-            if (utf8String.startsWith("Listening for transport dt_socket at address:")) {
+            if (debugging && utf8String.startsWith("Listening for transport dt_socket at address:")) {
                 System.out.println("Listening for transport dt_socket at address: " + getMappedPort(DEBUGGING_PORT));
             }
-        });
-        withLogConsumer((outputFrame) -> {
             if (!containerOutputLatches.isEmpty()) {
                 containerOutputLatches.forEach((regEx, latch) -> {
                     if (outputFrame.getUtf8String().matches("(?s)" + regEx)) {
-                        LOGGER.debug("Container Output '{}' matched RegEx '{}'", outputFrame.getUtf8String(), regEx);
+                        LOGGER.debug("Container Output '{}' matched RegEx '{}'", utf8String, regEx);
                         latch.countDown();
                     } else {
-                        LOGGER.debug("Container Output '{}' did not match RegEx '{}'", outputFrame.getUtf8String(), regEx);
+                        LOGGER.debug("Container Output '{}' did not match RegEx '{}'", utf8String, regEx);
                     }
                 });
             }
@@ -116,6 +115,7 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
      * @return self
      */
     public @NotNull HiveMQContainer withDebugging() {
+        debugging = true;
         addExposedPorts(DEBUGGING_PORT);
         withEnv("JAVA_OPTS", "-agentlib:jdwp=transport=dt_socket,address=0.0.0.0:" + DEBUGGING_PORT + ",server=y,suspend=y");
         return self();
