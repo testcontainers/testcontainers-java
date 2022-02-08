@@ -11,7 +11,6 @@ import java.sql.Statement;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.testcontainers.MSSQLServerTestImages.MSSQL_SERVER_IMAGE;
 
@@ -60,14 +59,6 @@ public class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
             resultSet.next();
             int resultSetInt = resultSet.getInt("ID");
             assertEquals("A basic SELECT query succeeds", 3, resultSetInt);
-        }
-    }
-
-    @Test
-    public void turnOffEncryptByDefaultInJDBCUrl() {
-        try (MSSQLServerContainer<?> mssqlServerContainer = new MSSQLServerContainer<>(MSSQL_SERVER_IMAGE)) {
-            mssqlServerContainer.start();
-            assertTrue(mssqlServerContainer.getJdbcUrl().contains("encrypt=false"));
         }
     }
 }
