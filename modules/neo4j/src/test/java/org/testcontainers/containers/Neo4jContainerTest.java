@@ -183,6 +183,32 @@ public class Neo4jContainerTest {
             .containsEntry("NEO4J_dbms_tx__log_rotation_size", "42M");
     }
 
+    @Test
+    public void shouldConfigureSingleLabsPlugin() {
+        Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4")
+            .withLabsPlugins(Neo4jLabsPlugin.APOC);
+
+        // needs to get called explicitly for setup
+        neo4jContainer.configure();
+
+        assertThat(neo4jContainer.getEnvMap())
+            .containsEntry("NEO4JLABS_PLUGINS", "[\"apoc\"]");
+    }
+
+    @Test
+    public void shouldConfigureMultipleLabsPlugins() {
+        // configureLabsPlugins {
+        Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4")
+            .withLabsPlugins(Neo4jLabsPlugin.APOC, Neo4jLabsPlugin.BLOOM);
+        // }
+
+        // needs to get called explicitly for setup
+        neo4jContainer.configure();
+
+        assertThat(neo4jContainer.getEnvMap().get("NEO4JLABS_PLUGINS"))
+            .containsAnyOf("[\"apoc\",\"bloom\"]", "[\"bloom\",\"apoc\"]");
+    }
+
     private static Driver getDriver(Neo4jContainer<?> container) {
 
         AuthToken authToken = AuthTokens.none();

@@ -52,6 +52,21 @@ Whole directories work as well:
 [Plugin folder](../../../modules/neo4j/src/test/java/org/testcontainers/containers/Neo4jContainerTest.java) inside_block:registerPluginsPath
 <!--/codeinclude-->
 
+### Add Neo4j Docker Labs plugins
+
+Add any Neo4j Labs plugin from the [Neo4j Docker Labs plugin list](https://neo4j.com/docs/operations-manual/4.4/docker/operations/#docker-neo4jlabs-plugins).
+
+!!! note
+    At the moment only the plugins available from the list Neo4j Docker 4.4 are supported by type.
+    If you want to register another supported Neo4j Labs plugin, you have to add the environment manually
+    by using the method `withEnv("NEO4JLABS_PLUGINS", "[\"anotherPlugin\"]")`.
+    Please refer to the list of [supported Docker image plugins](https://neo4j.com/docs/operations-manual/current/docker/operations/#docker-neo4jlabs-plugins).
+
+<!--codeinclude-->
+[Configure Neo4j Labs Plugins](../../../modules/neo4j/src/test/java/org/testcontainers/containers/Neo4jContainerTest.java) inside_block:configureLabsPlugins
+<!--/codeinclude-->
+
+
 ### Start the container with a predefined database
 
 If you have an existing database (`graph.db`) you want to work with, copy it over to the container like this:
@@ -61,7 +76,7 @@ If you have an existing database (`graph.db`) you want to work with, copy it ove
 <!--/codeinclude-->
 
 !!! note
-The `withDatabase` method will only work with Neo4j 3.5 and throw an exception if used in combination with a newer version.
+    The `withDatabase` method will only work with Neo4j 3.5 and throw an exception if used in combination with a newer version.
 
 ## Choose your Neo4j license
 
