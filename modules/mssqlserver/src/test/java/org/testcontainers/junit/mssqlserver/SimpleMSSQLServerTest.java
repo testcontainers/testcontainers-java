@@ -3,7 +3,6 @@ package org.testcontainers.junit.mssqlserver;
 import org.junit.Test;
 import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
-import org.testcontainers.utility.DockerImageName;
 
 import javax.sql.DataSource;
 import java.sql.ResultSet;
@@ -66,7 +65,7 @@ public class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void turnOffEncryptByDefaultInJDBCUrl() {
-        try (MSSQLServerContainer<?> mssqlServerContainer = new MSSQLServerContainer<>(DockerImageName.parse("mcr.microsoft.com/mssql/server").withTag("2017-CU12"))) {
+        try (MSSQLServerContainer<?> mssqlServerContainer = new MSSQLServerContainer<>(MSSQL_SERVER_IMAGE)) {
             mssqlServerContainer.start();
             assertTrue(mssqlServerContainer.getJdbcUrl().contains("encrypt=false"));
         }
