@@ -92,6 +92,14 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
     }
 
     @Override
+    protected String constructUrlForConnection(String queryString) {
+        if (urlParameters.keySet().stream().map(String::toLowerCase).noneMatch("encrypt"::equals)) {
+            urlParameters.put("encrypt", "false");
+        }
+        return super.constructUrlForConnection(queryString);
+    }
+
+    @Override
     public String getJdbcUrl() {
         String additionalUrlParams = constructUrlParameters(";", ";");
         return "jdbc:sqlserver://" + getHost() + ":" + getMappedPort(MS_SQL_SERVER_PORT) + additionalUrlParams;
