@@ -1,16 +1,13 @@
 package org.testcontainers.hivemq.docs;
 
-import com.hivemq.client.mqtt.mqtt5.Mqtt5BlockingClient;
-import com.hivemq.client.mqtt.mqtt5.Mqtt5Client;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
-import org.slf4j.event.Level;
 import org.testcontainers.hivemq.HiveMQContainer;
 import org.testcontainers.hivemq.HiveMQExtension;
 import org.testcontainers.hivemq.util.MyExtension;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 @Disabled("This test is only used for documentation and would cause extremely high load on the CI-server if run. The test is not required to verify that the code builds.")
@@ -19,13 +16,13 @@ public class DemoDisableExtensionsIT {
 
     // noExtensions {
     @Container
-    final HiveMQContainer hivemqNoExtensions = new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME)
+    final HiveMQContainer hivemqNoExtensions = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq4").withTag("4.7.4"))
         .withoutPrepackagedExtensions();
     // }
 
     // noKafkaExtension {
     @Container
-    final HiveMQContainer hivemqNoKafkaExtension = new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME)
+    final HiveMQContainer hivemqNoKafkaExtension = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq4").withTag("4.7.4"))
         .withoutPrepackagedExtensions("hivemq-kafka-extension");
     // }
 
@@ -38,14 +35,14 @@ public class DemoDisableExtensionsIT {
         .mainClass(MyExtension.class).build();
 
     @Container
-    final HiveMQContainer hivemq = new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME)
+    final HiveMQContainer hivemq = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq4").withTag("4.7.4"))
         .withExtension(hiveMQExtension);
     // }
 
 
     // startFromFilesystem {
     @Container
-    final HiveMQContainer hivemqExtensionFromFilesystem = new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME)
+    final HiveMQContainer hivemqExtensionFromFilesystem = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq4").withTag("4.7.4"))
         .withExtension(MountableFile.forHostPath("src/test/resources/modifier-extension"));
     // }
 

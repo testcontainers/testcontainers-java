@@ -18,7 +18,7 @@ public class DisableEnableExtensionFromDirectoryIT {
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
     void test() throws Exception {
         try (final HiveMQContainer hivemq =
-                 new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME)
+                 new HiveMQContainer(DockerImageName.parse("hivemq/hivemq4").withTag("4.7.4"))
                      .withExtension(MountableFile.forClasspathResource("/modifier-extension"))
                      .waitForExtension("Modifier Extension")
                      .withLogLevel(Level.DEBUG)) {
@@ -31,8 +31,6 @@ public class DisableEnableExtensionFromDirectoryIT {
             assertThrows(ExecutionException.class, () -> TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort()));
             hivemq.enableExtension("Modifier Extension", "modifier-extension");
             TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort());
-
-            hivemq.stop();
         }
     }
 

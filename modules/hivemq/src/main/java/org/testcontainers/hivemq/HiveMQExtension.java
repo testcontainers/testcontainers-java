@@ -31,7 +31,7 @@ public class HiveMQExtension {
             "   <priority>%s</priority>" +  //
             "   <start-priority>%s</start-priority>" +  //
             "</hivemq-extension>";
-    public static final String EXTENSION_MAIN_CLASS_NAME = "com.hivemq.extension.sdk.api.ExtensionMain";
+    private static final String EXTENSION_MAIN_CLASS_NAME = "com.hivemq.extension.sdk.api.ExtensionMain";
     private static final Logger LOGGER = LoggerFactory.getLogger(HiveMQExtension.class);
 
     @Getter

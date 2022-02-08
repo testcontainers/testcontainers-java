@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.testcontainers.hivemq.util.TestPublishModifiedUtil;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.File;
@@ -32,7 +33,7 @@ public class ContainerWithFileInExtensionHomeIT {
             .mainClass(FileCheckerExtension.class).build();
 
         try (final HiveMQContainer hivemq =
-                 new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_CE_IMAGE_NAME)
+                 new HiveMQContainer(DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3"))
                      .withHiveMQConfig(MountableFile.forClasspathResource("/inMemoryConfig.xml"))
                      .withExtension(hiveMQExtension)
                      .waitForExtension(hiveMQExtension)
@@ -43,8 +44,6 @@ public class ContainerWithFileInExtensionHomeIT {
 
             hivemq.start();
             TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort());
-            hivemq.stop();
-
         }
     }
 

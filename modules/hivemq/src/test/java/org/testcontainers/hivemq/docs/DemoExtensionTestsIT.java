@@ -10,6 +10,7 @@ import org.testcontainers.hivemq.HiveMQExtension;
 import org.testcontainers.hivemq.util.MyExtensionWithSubclasses;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import java.util.concurrent.TimeUnit;
@@ -21,7 +22,7 @@ public class DemoExtensionTestsIT {
     // waitStrategy {
     @Container
     final HiveMQContainer hivemqWithWaitStrategy =
-        new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME)
+        new HiveMQContainer(DockerImageName.parse("hivemq/hivemq4").withTag("4.7.4"))
             .withExtension(MountableFile.forClasspathResource("/modifier-extension"))
             .withDebugging() // enable debugging
             .waitForExtension("Modifier Extension");
@@ -36,7 +37,7 @@ public class DemoExtensionTestsIT {
 
     @Container
     final HiveMQContainer hivemqWithClasspathExtension =
-        new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_CE_IMAGE_NAME)
+        new HiveMQContainer(DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3"))
             .waitForExtension(hiveMQEClasspathxtension)
             .withExtension(hiveMQEClasspathxtension)
             .withDebugging() // enable debugging

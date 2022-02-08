@@ -6,6 +6,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.testcontainers.utility.DockerImageName;
 
 import java.util.concurrent.TimeUnit;
 
@@ -18,16 +19,15 @@ public class ContainerWithControlCenterIT {
     public void test() throws Exception {
 
         try (final HiveMQContainer hivemq =
-                 new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME)
+                 new HiveMQContainer(DockerImageName.parse("hivemq/hivemq4").withTag("4.7.4"))
                      .withControlCenter()) {
 
             hivemq.start();
 
-            final CloseableHttpClient httpClient = HttpClientBuilder.create().build();
-            final HttpUriRequest request = new HttpGet("http://" + hivemq.getHost() + ":" + hivemq.getMappedPort(CONTROL_CENTER_PORT));
-            httpClient.execute(request);
-
-            hivemq.stop();
+            try (final CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
+                final HttpUriRequest request = new HttpGet("http://" + hivemq.getHost() + ":" + hivemq.getMappedPort(CONTROL_CENTER_PORT));
+                httpClient.execute(request);
+            }
         }
 
     }

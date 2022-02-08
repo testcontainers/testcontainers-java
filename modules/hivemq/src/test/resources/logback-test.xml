@@ -15,7 +15,7 @@
     </root>
 
     <logger name="com.hivemq.client" level="WARN"/>
-    <logger name="org.testcontainers" level="DEBUG"/>
+    <logger name="org.testcontainers" level="INFO"/>
     <logger name="io.netty" level="WARN"/>
 
 </configuration>

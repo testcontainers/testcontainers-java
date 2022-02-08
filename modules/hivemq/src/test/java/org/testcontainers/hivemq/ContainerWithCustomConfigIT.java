@@ -19,7 +19,7 @@ public class ContainerWithCustomConfigIT {
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
     void test() throws Exception {
 
-        try (final HiveMQContainer hivemq = new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME)
+        try (final HiveMQContainer hivemq = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq4").withTag("4.7.4"))
             .withHiveMQConfig(MountableFile.forClasspathResource("/config.xml"))) {
 
             hivemq.start();
@@ -38,8 +38,6 @@ public class ContainerWithCustomConfigIT {
                     .qos(MqttQos.EXACTLY_ONCE)
                     .send();
             });
-
-            hivemq.stop();
         }
     }
 }

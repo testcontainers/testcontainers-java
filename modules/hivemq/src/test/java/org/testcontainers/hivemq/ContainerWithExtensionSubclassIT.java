@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Timeout;
 import org.slf4j.event.Level;
 import org.testcontainers.hivemq.util.MyExtensionWithSubclasses;
 import org.testcontainers.hivemq.util.TestPublishModifiedUtil;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import java.util.concurrent.TimeUnit;
@@ -21,7 +22,7 @@ public class ContainerWithExtensionSubclassIT {
             .mainClass(MyExtensionWithSubclasses.class).build();
 
         try (final HiveMQContainer hivemq =
-                 new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_CE_IMAGE_NAME)
+                 new HiveMQContainer(DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3"))
                      .waitForExtension(hiveMQExtension)
                      .withExtension(hiveMQExtension)
                      .withHiveMQConfig(MountableFile.forClasspathResource("/inMemoryConfig.xml"))
@@ -29,7 +30,6 @@ public class ContainerWithExtensionSubclassIT {
 
             hivemq.start();
             TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort());
-            hivemq.stop();
         }
     }
 }

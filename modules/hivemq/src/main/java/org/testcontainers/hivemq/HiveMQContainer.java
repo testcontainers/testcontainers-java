@@ -1,5 +1,6 @@
 package org.testcontainers.hivemq;
 
+import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -27,21 +28,21 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HiveMQContainer.class);
 
-    public static final String DEFAULT_HIVEMQ_EE_TAG = "4.7.2";
-    public static final String DEFAULT_HIVEMQ_CE_TAG = "2021.3";
-    public static final DockerImageName DEFAULT_HIVEMQ_EE_IMAGE_NAME = DockerImageName.parse("hivemq/hivemq4").withTag(DEFAULT_HIVEMQ_EE_TAG);
-    public static final DockerImageName DEFAULT_HIVEMQ_CE_IMAGE_NAME = DockerImageName.parse("hivemq/hivemq-ce").withTag(DEFAULT_HIVEMQ_CE_TAG);
+    private static final String DEFAULT_HIVEMQ_EE_TAG = "4.7.2";
+    private static final String DEFAULT_HIVEMQ_CE_TAG = "2021.3";
+    private static final DockerImageName DEFAULT_HIVEMQ_EE_IMAGE_NAME = DockerImageName.parse("hivemq/hivemq4").withTag(DEFAULT_HIVEMQ_EE_TAG);
+    private static final DockerImageName DEFAULT_HIVEMQ_CE_IMAGE_NAME = DockerImageName.parse("hivemq/hivemq-ce").withTag(DEFAULT_HIVEMQ_CE_TAG);
 
-    public static final int DEBUGGING_PORT = 9000;
-    public static final int MQTT_PORT = 1883;
-    public static final int CONTROL_CENTER_PORT = 8080;
+    private static final int DEBUGGING_PORT = 9000;
+    private static final int MQTT_PORT = 1883;
+    private static final int CONTROL_CENTER_PORT = 8080;
     @SuppressWarnings("OctalInteger")
     private static final int MODE = 0777;
     private static final @NotNull Pattern EXTENSION_ID_PATTERN = Pattern.compile("<id>(.+?)</id>");
 
     private final @NotNull ConcurrentHashMap<String, CountDownLatch> containerOutputLatches = new ConcurrentHashMap<>();
-    private volatile boolean controlCenterEnabled = false;
-    private volatile boolean debugging = false;
+    private boolean controlCenterEnabled = false;
+    private boolean debugging = false;
 
     private final @NotNull MultiLogMessageWaitStrategy waitStrategy = new MultiLogMessageWaitStrategy();
 
@@ -73,9 +74,7 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
         });
     }
 
-    @Override
-    public void start() {
-        super.start();
+    protected void containerIsStarted(final @NotNull InspectContainerResponse containerInfo) {
         if (controlCenterEnabled) {
             LOGGER.info("The HiveMQ Control Center is reachable under: http://{}:{}", getHost(), getMappedPort(CONTROL_CENTER_PORT));
         }
@@ -540,9 +539,8 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
     }
 
     @Override
-    public void stop() {
+    protected void containerIsStopping(final @NotNull InspectContainerResponse containerInfo) {
         waitStrategy.reset();
-        super.stop();
     }
 
     private @NotNull MountableFile cloneWithFileMode(final @NotNull MountableFile mountableFile) {

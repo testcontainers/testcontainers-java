@@ -5,12 +5,12 @@ import com.hivemq.client.mqtt.mqtt5.Mqtt5Client;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
-import org.slf4j.event.Level;
 import org.testcontainers.hivemq.HiveMQContainer;
 import org.testcontainers.hivemq.HiveMQExtension;
 import org.testcontainers.hivemq.util.MyExtension;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import java.util.concurrent.TimeUnit;
@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 public class DemoFilesIT {
 
     // hivemqHome {
-    final HiveMQContainer hivemqFileInHome = new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_CE_IMAGE_NAME)
+    final HiveMQContainer hivemqFileInHome = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3"))
         .withFileInHomeFolder(
             MountableFile.forHostPath("src/test/resources/additionalFile.txt"),
             "/path/in/home/folder");
@@ -28,7 +28,7 @@ public class DemoFilesIT {
 
     // extensionHome {
     @Container
-    final HiveMQContainer hivemqFileInExtensionHome = new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_CE_IMAGE_NAME)
+    final HiveMQContainer hivemqFileInExtensionHome = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3"))
         .withExtension(HiveMQExtension.builder()
             .id("extension-1")
             .name("my-extension")
@@ -42,7 +42,7 @@ public class DemoFilesIT {
 
     // withLicenses {
     @Container
-    final HiveMQContainer hivemq = new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_CE_IMAGE_NAME)
+    final HiveMQContainer hivemq = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3"))
         .withLicense(MountableFile.forHostPath("src/test/resources/myLicense.lic"))
         .withLicense(MountableFile.forHostPath("src/test/resources/myExtensionLicense.elic"));
     // }

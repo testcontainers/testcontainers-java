@@ -7,8 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.slf4j.event.Level;
 import org.testcontainers.hivemq.HiveMQContainer;
-import org.testcontainers.hivemq.HiveMQExtension;
-import org.testcontainers.hivemq.util.MyExtensionWithSubclasses;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
@@ -23,21 +21,21 @@ public class DemoHiveMQContainerIT {
     // ceVersion {
     @Container
     final HiveMQContainer hivemqCe =
-        new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_CE_IMAGE_NAME)
+        new HiveMQContainer(DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3"))
             .withLogLevel(Level.DEBUG);
     // }
 
     // eeVersion {
     @Container
     final HiveMQContainer hivemqEe =
-        new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_CE_IMAGE_NAME)
+        new HiveMQContainer(DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3"))
             .withLogLevel(Level.DEBUG);
     // }
 
     // eeVersionWithControlCenter {
     @Container
     final HiveMQContainer hivemqEeWithControLCenter =
-        new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_CE_IMAGE_NAME)
+        new HiveMQContainer(DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3"))
             .withLogLevel(Level.DEBUG)
             .withHiveMQConfig(MountableFile.forClasspathResource("/inMemoryConfig.xml"))
             .withControlCenter();

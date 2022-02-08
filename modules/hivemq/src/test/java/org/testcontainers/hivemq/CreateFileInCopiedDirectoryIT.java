@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.testcontainers.hivemq.util.TestPublishModifiedUtil;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.File;
@@ -36,22 +37,21 @@ public class CreateFileInCopiedDirectoryIT {
     @Test
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
     void test() throws Exception {
-        final HiveMQExtension hivemq = HiveMQExtension.builder()
+        final HiveMQExtension extension = HiveMQExtension.builder()
             .id("extension-1")
             .name("my-extension")
             .version("1.0")
             .mainClass(FileCreatorExtension.class).build();
 
-        try (final HiveMQContainer extension =
-                 new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_CE_IMAGE_NAME)
+        try (final HiveMQContainer hivemq =
+                 new HiveMQContainer(DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3"))
                      .withHiveMQConfig(MountableFile.forClasspathResource("/inMemoryConfig.xml"))
-                     .withExtension(hivemq)
-                     .waitForExtension(hivemq)
+                     .withExtension(extension)
+                     .waitForExtension(extension)
                      .withFileInHomeFolder(createDirectory(), "directory")) {
 
-            extension.start();
-            TestPublishModifiedUtil.testPublishModified(extension.getMqttPort());
-            extension.stop();
+            hivemq.start();
+            TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort());
         }
     }
 

@@ -40,7 +40,7 @@ public class ContainerWithoutPlatformExtensionsIT {
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
     public void removeAllPlatformExtensions() throws InterruptedException {
 
-        try (final HiveMQContainer hivemq = new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME)
+        try (final HiveMQContainer hivemq = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq4").withTag("4.7.4"))
             .withExtension(hiveMQExtension)
             .waitForExtension(hiveMQExtension)
             .withoutPrepackagedExtensions()) {
@@ -73,32 +73,31 @@ public class ContainerWithoutPlatformExtensionsIT {
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
     public void removeKafkaExtension() throws InterruptedException {
 
-        final HiveMQContainer hivemq = new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME)
+        try (final HiveMQContainer hivemq = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq4").withTag("4.7.4"))
             .withExtension(hiveMQExtension)
             .waitForExtension(hiveMQExtension)
-            .withoutPrepackagedExtensions("hivemq-kafka-extension");
+            .withoutPrepackagedExtensions("hivemq-kafka-extension")) {
 
-        hivemq.start();
+            hivemq.start();
 
-        final Mqtt5BlockingClient client = MqttClient.builder()
-            .serverPort(hivemq.getMqttPort())
-            .useMqttVersion5()
-            .buildBlocking();
+            final Mqtt5BlockingClient client = MqttClient.builder()
+                .serverPort(hivemq.getMqttPort())
+                .useMqttVersion5()
+                .buildBlocking();
 
-        client.connect();
-        final Mqtt5BlockingClient.Mqtt5Publishes publishes = client.publishes(MqttGlobalPublishFilter.ALL);
-        client.subscribeWith().topicFilter("extensions").send();
+            client.connect();
+            final Mqtt5BlockingClient.Mqtt5Publishes publishes = client.publishes(MqttGlobalPublishFilter.ALL);
+            client.subscribeWith().topicFilter("extensions").send();
 
-        final Mqtt5Publish receive = publishes.receive();
-        assertTrue(receive.getPayload().isPresent());
-        final String extensionInfo = new String(receive.getPayloadAsBytes());
+            final Mqtt5Publish receive = publishes.receive();
+            assertTrue(receive.getPayload().isPresent());
+            final String extensionInfo = new String(receive.getPayloadAsBytes());
 
-        assertTrue(extensionInfo.contains("hivemq-allow-all-extension"));
-        assertFalse(extensionInfo.contains("hivemq-kafka-extension"));
-        assertTrue(extensionInfo.contains("hivemq-bridge-extension"));
-        assertTrue(extensionInfo.contains("hivemq-enterprise-security-extension"));
-
-        hivemq.stop();
+            assertTrue(extensionInfo.contains("hivemq-allow-all-extension"));
+            assertFalse(extensionInfo.contains("hivemq-kafka-extension"));
+            assertTrue(extensionInfo.contains("hivemq-bridge-extension"));
+            assertTrue(extensionInfo.contains("hivemq-enterprise-security-extension"));
+        }
     }
 
     public static class CheckerExtension implements ExtensionMain {

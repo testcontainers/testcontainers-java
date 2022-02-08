@@ -26,7 +26,7 @@ public class DisableEnableExtensionIT {
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
     void test() throws Exception {
         try (final HiveMQContainer hivemq =
-                 new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_EE_IMAGE_NAME)
+                 new HiveMQContainer(DockerImageName.parse("hivemq/hivemq4").withTag("4.7.4"))
                      .withExtension(hiveMQExtension)
                      .withLogLevel(Level.DEBUG)) {
 
@@ -40,8 +40,6 @@ public class DisableEnableExtensionIT {
             assertThrows(ExecutionException.class, () -> TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort()));
             hivemq.enableExtension(hiveMQExtension);
             TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort());
-
-            hivemq.stop();
         }
     }
 
