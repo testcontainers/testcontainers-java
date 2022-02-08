@@ -1,9 +1,9 @@
 package org.testcontainers.junit.mssqlserver;
 
 import org.junit.Test;
-import org.testcontainers.MSSQLServerTestImages;
 import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
+import org.testcontainers.utility.DockerImageName;
 
 import javax.sql.DataSource;
 import java.sql.ResultSet;
@@ -12,6 +12,7 @@ import java.sql.Statement;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.testcontainers.MSSQLServerTestImages.MSSQL_SERVER_IMAGE;
 
@@ -60,6 +61,14 @@ public class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
             resultSet.next();
             int resultSetInt = resultSet.getInt("ID");
             assertEquals("A basic SELECT query succeeds", 3, resultSetInt);
+        }
+    }
+
+    @Test
+    public void turnOffEncryptByDefaultInJDBCUrl() {
+        try (MSSQLServerContainer<?> mssqlServerContainer = new MSSQLServerContainer<>(DockerImageName.parse("mcr.microsoft.com/mssql/server").withTag("2017-CU12"))) {
+            mssqlServerContainer.start();
+            assertTrue(mssqlServerContainer.getJdbcUrl().contains("encrypt=false"));
         }
     }
 }
