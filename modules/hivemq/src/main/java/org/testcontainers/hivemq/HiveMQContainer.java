@@ -28,10 +28,8 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HiveMQContainer.class);
 
-    private static final String DEFAULT_HIVEMQ_EE_TAG = "4.7.2";
-    private static final String DEFAULT_HIVEMQ_CE_TAG = "2021.3";
-    private static final DockerImageName DEFAULT_HIVEMQ_EE_IMAGE_NAME = DockerImageName.parse("hivemq/hivemq4").withTag(DEFAULT_HIVEMQ_EE_TAG);
-    private static final DockerImageName DEFAULT_HIVEMQ_CE_IMAGE_NAME = DockerImageName.parse("hivemq/hivemq-ce").withTag(DEFAULT_HIVEMQ_CE_TAG);
+    private static final DockerImageName DEFAULT_HIVEMQ_EE_IMAGE_NAME = DockerImageName.parse("hivemq/hivemq4");
+    private static final DockerImageName DEFAULT_HIVEMQ_CE_IMAGE_NAME = DockerImageName.parse("hivemq/hivemq-ce");
 
     private static final int DEBUGGING_PORT = 9000;
     private static final int MQTT_PORT = 1883;
