@@ -159,7 +159,9 @@ public class DockerClientFactory {
             return dockerSocketOverride;
         }
 
-        URI dockerHost = getTransportConfig().getDockerHost();
+        URI dockerHost = getTransportConfig().getRemoteDockerHost() != null
+            ? getTransportConfig().getRemoteDockerHost()
+            : getTransportConfig().getDockerHost();
         String path = "unix".equals(dockerHost.getScheme())
             ? dockerHost.getRawPath()
             : "/var/run/docker.sock";

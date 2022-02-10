@@ -14,5 +14,8 @@ public class TransportConfig {
     URI dockerHost;
 
     @Nullable
+    URI remoteDockerHost;
+
+    @Nullable
     SSLConfig sslConfig;
 }
