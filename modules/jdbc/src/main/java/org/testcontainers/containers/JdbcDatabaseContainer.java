@@ -4,7 +4,7 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import java.sql.Statement;
 import lombok.NonNull;
 import lombok.SneakyThrows;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.delegate.DatabaseDelegate;

@@ -32,6 +32,12 @@ subprojects {
 
     repositories {
         mavenCentral()
+
+        repositories {
+            maven {
+                url 'https://oss.sonatype.org/service/local/repositories/comgithubdocker-java-1150/content/'
+            }
+        }
     }
 
     configurations {
@@ -52,7 +58,7 @@ subprojects {
         for (srcDir in project.sourceSets.main.java.srcDirs) {
             // TODO: named input and relative path for `srcDir` to make task more cacheable
             inputs.dir(srcDir)
-            // TODO: `outputDir` as relative path to make task more cacheable 
+            // TODO: `outputDir` as relative path to make task more cacheable
             args(srcDir, "-d", outputDir, "-f", "generateDelombokComment:skip")
         }
     }
