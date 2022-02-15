@@ -17,7 +17,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Collections;
-import java.util.LinkedList;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -44,7 +45,7 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
     private boolean controlCenterEnabled = false;
     private boolean debugging = false;
 
-    private final @NotNull LinkedList<String> prepackagedExtensionsToRemove = new LinkedList<>();
+    private final @NotNull Set<String> prepackagedExtensionsToRemove = new HashSet<>();
     private boolean removeAllPrepackagedExtensions = false;
 
     private final @NotNull MultiLogMessageWaitStrategy waitStrategy = new MultiLogMessageWaitStrategy();
@@ -79,25 +80,27 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
 
     @Override
     protected void configure() {
-        withCreateContainerCmdModifier(it -> it.withEntrypoint("/bin/sh"));
+        if (removeAllPrepackagedExtensions || !prepackagedExtensionsToRemove.isEmpty()) {
+            withCreateContainerCmdModifier(it -> it.withEntrypoint("/bin/sh"));
 
-        final String removeCommand;
+            final String removeCommand;
 
-        if (removeAllPrepackagedExtensions) {
-            removeCommand = "rm -rf /opt/hivemq/extensions/** &&";
-        } else {
-            removeCommand = prepackagedExtensionsToRemove.stream()
-                .map(extensionId -> "rm -rf /opt/hivemq/extensions/" + extensionId + "&&")
-                .collect(Collectors.joining());
+            if (removeAllPrepackagedExtensions) {
+                removeCommand = "rm -rf /opt/hivemq/extensions/** &&";
+            } else {
+                removeCommand = prepackagedExtensionsToRemove.stream()
+                    .map(extensionId -> "rm -rf /opt/hivemq/extensions/" + extensionId + "&&")
+                    .collect(Collectors.joining());
+            }
+            setCommand(
+                "-c",
+                removeCommand +
+                    "cp -r '/opt/hivemq/temp-extensions/'* /opt/hivemq/extensions/ " +
+                    "; rm -rf /opt/hivemq/temp-extensions/** " +
+                    "&& chmod -R 777 /opt/hivemq/extensions " +
+                    "&& /opt/docker-entrypoint.sh /opt/hivemq/bin/run.sh"
+            );
         }
-        setCommand(
-            "-c",
-            removeCommand +
-                "cp -r '/opt/hivemq/temp-extensions/'* /opt/hivemq/extensions/ " +
-                "; rm -rf /opt/hivemq/temp-extensions/** " +
-                "&& chmod -R 777 /opt/hivemq/extensions " +
-                "&& /opt/docker-entrypoint.sh /opt/hivemq/bin/run.sh"
-        );
     }
 
     protected void containerIsStarted(final @NotNull InspectContainerResponse containerInfo) {
