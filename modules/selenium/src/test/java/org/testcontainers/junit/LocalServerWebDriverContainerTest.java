@@ -10,7 +10,7 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 import org.testcontainers.containers.BrowserWebDriverContainer;
 import org.testcontainers.utility.TestEnvironment;
 
-import static org.apache.commons.lang.SystemUtils.IS_OS_MAC_OSX;
+import static org.apache.commons.lang3.SystemUtils.IS_OS_MAC_OSX;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 
 /**

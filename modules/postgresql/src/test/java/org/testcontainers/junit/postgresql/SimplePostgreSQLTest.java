@@ -1,6 +1,7 @@
 package org.testcontainers.junit.postgresql;
 
 import org.junit.Test;
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
@@ -24,13 +25,19 @@ public class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSimple() throws SQLException {
-        try (PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(POSTGRES_TEST_IMAGE)) {
+        DockerClientFactory.instance().client();
+//        try (
+            PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(POSTGRES_TEST_IMAGE)
+//                .withReuse(true)
+                ;
+//        ) {
+        postgres.withReuse(true);
             postgres.start();
 
-            ResultSet resultSet = performQuery(postgres, "SELECT 1");
-            int resultSetInt = resultSet.getInt(1);
-            assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
-        }
+//            ResultSet resultSet = performQuery(postgres, "SELECT 1");
+//            int resultSetInt = resultSet.getInt(1);
+//            assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+//        }
     }
 
     @Test
