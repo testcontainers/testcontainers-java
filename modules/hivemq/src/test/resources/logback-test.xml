@@ -1,21 +1,18 @@
 <configuration scan="false">
 
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%-30(%d %level)- %msg%n%ex</pattern>
+            <pattern>%d{HH:mm:ss.SSS} %-5level %logger - %msg%n</pattern>
         </encoder>
     </appender>
 
-    <root>
-        <appender-ref ref="CONSOLE"/>
-    </root>
-
-    <root level="DEBUG">
-        <appender-ref ref="CONSOLE"/>
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
     </root>
 
     <logger name="com.hivemq.client" level="WARN"/>
     <logger name="org.testcontainers" level="INFO"/>
+    <logger name="com.github.dockerjava" level="WARN"/>
     <logger name="io.netty" level="WARN"/>
 
 </configuration>

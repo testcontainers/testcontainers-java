@@ -9,7 +9,6 @@ import org.slf4j.event.Level;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.MultiLogMessageWaitStrategy;
-import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
@@ -17,12 +16,15 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
 
@@ -41,6 +43,9 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
     private final @NotNull ConcurrentHashMap<String, CountDownLatch> containerOutputLatches = new ConcurrentHashMap<>();
     private boolean controlCenterEnabled = false;
     private boolean debugging = false;
+
+    private final @NotNull LinkedList<String> prepackagedExtensionsToRemove = new LinkedList<>();
+    private boolean removeAllPrepackagedExtensions = false;
 
     private final @NotNull MultiLogMessageWaitStrategy waitStrategy = new MultiLogMessageWaitStrategy();
 
@@ -70,6 +75,29 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
                 });
             }
         });
+    }
+
+    @Override
+    protected void configure() {
+        withCreateContainerCmdModifier(it -> it.withEntrypoint("/bin/sh"));
+
+        final String removeCommand;
+
+        if (removeAllPrepackagedExtensions) {
+            removeCommand = "rm -rf /opt/hivemq/extensions/** &&";
+        } else {
+            removeCommand = prepackagedExtensionsToRemove.stream()
+                .map(extensionId -> "rm -rf /opt/hivemq/extensions/" + extensionId + "&&")
+                .collect(Collectors.joining());
+        }
+        setCommand(
+            "-c",
+            removeCommand +
+                "cp -r '/opt/hivemq/temp-extensions/'* /opt/hivemq/extensions/ " +
+                "; rm -rf /opt/hivemq/temp-extensions/** " +
+                "&& chmod -R 777 /opt/hivemq/extensions " +
+                "&& /opt/docker-entrypoint.sh /opt/hivemq/bin/run.sh"
+        );
     }
 
     protected void containerIsStarted(final @NotNull InspectContainerResponse containerInfo) {
@@ -133,9 +161,11 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
 
     /**
      * Wraps the given class and all its subclasses into an extension
-     * and puts it into '/opt/hivemq/extensions/{extension-id}' inside the container.
+     * and puts it into '/opt/hivemq/temp-extensions/{extension-id}' inside the container.
      * <p>
      * Must be called before the container is started.
+     * <p>
+     * The contents of the '/opt/hivemq/temp-extensions/' directory are copied to '/opt/hivemq/extensions/' before the container is started.
      *
      * @param hiveMQExtension the {@link HiveMQExtension} of the extension
      * @return self
@@ -144,7 +174,7 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
         try {
             final File extension = hiveMQExtension.createExtension(hiveMQExtension);
             final MountableFile mountableExtension = MountableFile.forHostPath(extension.getPath(), MODE);
-            withCopyFileToContainer(mountableExtension, "/opt/hivemq/extensions/" + hiveMQExtension.getId());
+            withCopyFileToContainer(mountableExtension, "/opt/hivemq/temp-extensions/" + hiveMQExtension.getId());
         } catch (final Exception e) {
             throw new ContainerLaunchException(e.getMessage() == null ? "" : e.getMessage(), e);
         }
@@ -152,11 +182,13 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
     }
 
     /**
-     * Puts the given extension folder into '/opt/hivemq/extensions/{directory-name}' inside the container.
+     * Puts the given extension folder into '/opt/hivemq/temp-extensions/{directory-name}' inside the container.
      * It must at least contain a valid hivemq-extension.xml and a valid extension.jar in order to be executed.
      * The directory-name is taken from the id defined in the hivemq-extension.xml.
      * <p>
      * Must be called before the container is started.
+     * <p>
+     * The contents of the '/opt/hivemq/temp-extensions/' directory are copied to '/opt/hivemq/extensions/' before the container is started.
      *
      * @param mountableExtension the extension folder on the host machine
      * @return self
@@ -171,7 +203,7 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
         }
         try {
             final String extensionDirName = getExtensionDirectoryName(extensionDir);
-            final String containerPath = "/opt/hivemq/extensions/" + extensionDirName;
+            final String containerPath = "/opt/hivemq/temp-extensions/" + extensionDirName;
             withCopyFileToContainer(cloneWithFileMode(mountableExtension), containerPath);
             LOGGER.info("Putting extension '{}' into '{}'", extensionDirName, containerPath);
         } catch (final Exception e) {
@@ -192,8 +224,7 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
     }
 
     /**
-     * Removes the specified prepackaged extension folders from '/opt/hivemq/extensions' before the container is built.
-     * Note: this creates a custom docker image.
+     * Removes the specified prepackaged extension folders from '/opt/hivemq/extensions' before the container is started.
      * <p>
      * Must be called before the container is started.
      *
@@ -201,31 +232,19 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
      * @return self
      */
     public @NotNull HiveMQContainer withoutPrepackagedExtensions(final @NotNull String... extensionIds) {
-        final String dockerImageName = getDockerImageName();
-        setImage(new ImageFromDockerfile(dockerImageName + "-custom")
-                .withDockerfileFromBuilder(builder -> {
-                    builder.from(dockerImageName);
-                    for (final String extensionId : extensionIds) {
-                        builder.run("rm", "-rf", "/opt/hivemq/extensions/" + extensionId);
-                    }
-                }));
+        Collections.addAll(prepackagedExtensionsToRemove, extensionIds);
         return self();
     }
 
     /**
-     * Removes all prepackaged extension folders from '/opt/hivemq/extensions' before the container is built.
-     * Note: this creates a custom docker image.
+     * Removes all prepackaged extension folders from '/opt/hivemq/extensions' before the container is started.
      * <p>
      * Must be called before the container is started.
      *
      * @return self
      */
     public @NotNull HiveMQContainer withoutPrepackagedExtensions() {
-        final String dockerImageName = getDockerImageName();
-        setImage(new ImageFromDockerfile(dockerImageName + "-custom")
-                .withDockerfileFromBuilder(builder ->
-                        builder.from(dockerImageName)
-                                .run("rm", "-rf", "/opt/hivemq/extensions/")));
+        removeAllPrepackagedExtensions = true;
         return self();
     }
 
@@ -272,27 +291,29 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
     }
 
     /**
-     * Puts the given file into the root of the extension's home '/opt/hivemq/extensions/{extensionId}/'.
-     * Note: the extension must be loaded before the file is put.
+     * Puts the given file into the root of the extension's home '/opt/hivemq/temp-extensions/{extensionId}/'.
      * <p>
      * Must be called before the container is started.
+     * <p>
+     * The contents of the '/opt/hivemq/temp-extensions/' directory are copied to '/opt/hivemq/extensions/' before the container is started.
      *
      * @param file        the file on the host machine
      * @param extensionId the extension
      * @return self
      */
     public @NotNull HiveMQContainer withFileInExtensionHomeFolder(
-            final @NotNull MountableFile file,
-            final @NotNull String extensionId) {
+        final @NotNull MountableFile file,
+        final @NotNull String extensionId) {
 
         return withFileInExtensionHomeFolder(file, extensionId, "");
     }
 
     /**
-     * Puts the given file into given subdirectory of the extensions's home '/opt/hivemq/extensions/{id}/{pathInExtensionHome}/'
-     * Note: the extension must be loaded before the file is put.
+     * Puts the given file into given subdirectory of the extensions's home '/opt/hivemq/temp-extensions/{id}/{pathInExtensionHome}/'
      * <p>
      * Must be called before the container is started.
+     * <p>
+     * The contents of the '/opt/hivemq/temp-extensions/' directory are copied to '/opt/hivemq/extensions/' before the container is started.
      *
      * @param file                the file on the host machine
      * @param extensionId         the extension
@@ -300,11 +321,11 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
      * @return self
      */
     public @NotNull HiveMQContainer withFileInExtensionHomeFolder(
-            final @NotNull MountableFile file,
-            final @NotNull String extensionId,
-            final @NotNull String pathInExtensionHome) {
+        final @NotNull MountableFile file,
+        final @NotNull String extensionId,
+        final @NotNull String pathInExtensionHome) {
 
-        return withFileInHomeFolder(file, "/extensions/" + extensionId + PathUtil.prepareAppendPath(pathInExtensionHome));
+        return withFileInHomeFolder(file, "/temp-extensions/" + extensionId + PathUtil.prepareAppendPath(pathInExtensionHome));
     }
 
     /**
@@ -317,8 +338,8 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
      * @return self
      */
     public @NotNull HiveMQContainer withFileInHomeFolder(
-            final @NotNull MountableFile mountableFile,
-            final @NotNull String pathInHomeFolder) {
+        final @NotNull MountableFile mountableFile,
+        final @NotNull String pathInHomeFolder) {
 
         final File file = new File(mountableFile.getResolvedPath());
 
@@ -348,9 +369,9 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
      * @throws TimeoutException if the extension was not disabled within the configured timeout
      */
     public void disableExtension(
-            final @NotNull String extensionName,
-            final @NotNull String extensionDirectory,
-            final @NotNull Duration timeout) throws TimeoutException {
+        final @NotNull String extensionName,
+        final @NotNull String extensionDirectory,
+        final @NotNull Duration timeout) throws TimeoutException {
 
         final String regEX = "(.*)Extension \"" + extensionName + "\" version (.*) stopped successfully(.*)";
         try {
@@ -365,8 +386,8 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
             final boolean await = latch.await(timeout.getSeconds(), TimeUnit.SECONDS);
             if (!await) {
                 throw new TimeoutException("Extension disabling timed out after '" + timeout.getSeconds() + "' seconds. " +
-                        "Maybe you are using a HiveMQ Community Edition image, " +
-                        "which does not support disabling of extensions");
+                    "Maybe you are using a HiveMQ Community Edition image, " +
+                    "which does not support disabling of extensions");
             }
         } catch (final InterruptedException | IOException e) {
             throw new RuntimeException(e);
@@ -387,8 +408,8 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
      * @throws TimeoutException if the extension was not disabled within 60 seconds
      */
     public void disableExtension(
-            final @NotNull String extensionName,
-            final @NotNull String extensionDirectory) throws TimeoutException {
+        final @NotNull String extensionName,
+        final @NotNull String extensionDirectory) throws TimeoutException {
         disableExtension(extensionName, extensionDirectory, Duration.ofSeconds(60));
     }
 
@@ -404,8 +425,8 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
      * @throws TimeoutException if the extension was not disabled within the configured timeout
      */
     public void disableExtension(
-            final @NotNull HiveMQExtension hiveMQExtension,
-            final @NotNull Duration timeout) throws TimeoutException {
+        final @NotNull HiveMQExtension hiveMQExtension,
+        final @NotNull Duration timeout) throws TimeoutException {
         disableExtension(hiveMQExtension.getName(), hiveMQExtension.getId(), timeout);
     }
 
@@ -436,9 +457,9 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
      * @throws TimeoutException if the extension was not enabled within the configured timeout
      */
     public void enableExtension(
-            final @NotNull String extensionName,
-            final @NotNull String extensionDirectory,
-            final @NotNull Duration timeout) throws TimeoutException {
+        final @NotNull String extensionName,
+        final @NotNull String extensionDirectory,
+        final @NotNull Duration timeout) throws TimeoutException {
 
         final String regEX = "(.*)Extension \"" + extensionName + "\" version (.*) started successfully(.*)";
         try {
@@ -453,8 +474,8 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
             final boolean await = latch.await(timeout.getSeconds(), TimeUnit.SECONDS);
             if (!await) {
                 throw new TimeoutException("Extension enabling timed out after '" + timeout.getSeconds() + "' seconds. " +
-                        "Maybe you are using a HiveMQ Community Edition image, " +
-                        "which does not support disabling of extensions");
+                    "Maybe you are using a HiveMQ Community Edition image, " +
+                    "which does not support disabling of extensions");
             }
         } catch (final InterruptedException | IOException e) {
             throw new RuntimeException(e);
@@ -475,8 +496,8 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
      * @throws TimeoutException if the extension was not enabled within 60 seconds
      */
     public void enableExtension(
-            final @NotNull String extensionName,
-            final @NotNull String extensionDirectory) throws TimeoutException {
+        final @NotNull String extensionName,
+        final @NotNull String extensionDirectory) throws TimeoutException {
         enableExtension(extensionName, extensionDirectory, Duration.ofSeconds(60));
     }
 
@@ -492,8 +513,8 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
      * @throws TimeoutException if the extension was not enabled within the configured timeout
      */
     public void enableExtension(
-            final @NotNull HiveMQExtension hiveMQExtension,
-            final @NotNull Duration timeout) throws TimeoutException {
+        final @NotNull HiveMQExtension hiveMQExtension,
+        final @NotNull Duration timeout) throws TimeoutException {
         enableExtension(hiveMQExtension.getName(), hiveMQExtension.getId(), timeout);
     }
 
