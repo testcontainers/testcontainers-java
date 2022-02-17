@@ -10,7 +10,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
-@Disabled("This test is only used for documentation and would cause extremely high load on the CI-server if run. The test is not required to verify that the code builds.")
 @Testcontainers
 public class DemoDisableExtensionsIT {
 

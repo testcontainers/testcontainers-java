@@ -15,7 +15,6 @@ import org.testcontainers.utility.MountableFile;
 
 import java.util.concurrent.TimeUnit;
 
-@Disabled("This test is only used for documentation and would cause extremely high load on the CI-server if run. The test is not required to verify that the code builds.")
 @Testcontainers
 public class DemoFilesIT {
 
