@@ -1,6 +1,5 @@
 package org.testcontainers.hivemq.docs;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.hivemq.HiveMQContainer;
 import org.testcontainers.hivemq.HiveMQExtension;
@@ -10,7 +9,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
-@Disabled("This test is only used for documentation and would cause extremely high load on the CI-server if run. The test is not required to verify that the code builds.")
 @Testcontainers
 public class DemoDisableExtensionsIT {
 
@@ -36,6 +34,7 @@ public class DemoDisableExtensionsIT {
 
     @Container
     final HiveMQContainer hivemq = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq4").withTag("4.7.4"))
+        .withLogConsumer(outputFrame -> System.out.print(outputFrame.getUtf8String()))
         .withExtension(hiveMQExtension);
     // }
 

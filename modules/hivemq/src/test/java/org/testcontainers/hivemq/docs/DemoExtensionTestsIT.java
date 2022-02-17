@@ -2,7 +2,6 @@ package org.testcontainers.hivemq.docs;
 
 import com.hivemq.client.mqtt.mqtt5.Mqtt5BlockingClient;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5Client;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.testcontainers.hivemq.HiveMQContainer;
@@ -15,7 +14,6 @@ import org.testcontainers.utility.MountableFile;
 
 import java.util.concurrent.TimeUnit;
 
-@Disabled("This test is only used for documentation and would cause extremely high load on the CI-server if run. The test is not required to verify that the code builds.")
 @Testcontainers
 public class DemoExtensionTestsIT {
 
@@ -24,7 +22,6 @@ public class DemoExtensionTestsIT {
     final HiveMQContainer hivemqWithWaitStrategy =
         new HiveMQContainer(DockerImageName.parse("hivemq/hivemq4").withTag("4.7.4"))
             .withExtension(MountableFile.forClasspathResource("/modifier-extension"))
-            .withDebugging() // enable debugging
             .waitForExtension("Modifier Extension");
     // }
 
@@ -40,7 +37,6 @@ public class DemoExtensionTestsIT {
         new HiveMQContainer(DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3"))
             .waitForExtension(hiveMQEClasspathxtension)
             .withExtension(hiveMQEClasspathxtension)
-            .withDebugging() // enable debugging
             .withHiveMQConfig(MountableFile.forClasspathResource("/inMemoryConfig.xml"));
     // }
 
