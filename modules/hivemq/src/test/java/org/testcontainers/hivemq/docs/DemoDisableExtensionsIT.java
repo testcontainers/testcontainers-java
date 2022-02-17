@@ -34,7 +34,6 @@ public class DemoDisableExtensionsIT {
 
     @Container
     final HiveMQContainer hivemq = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq4").withTag("4.7.4"))
-        .withLogConsumer(outputFrame -> System.out.print(outputFrame.getUtf8String()))
         .withExtension(hiveMQExtension);
     // }
 
