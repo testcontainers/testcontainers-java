@@ -115,11 +115,9 @@ The plugin adds an `integrationTest` task which executes tests from the `integra
 The `integrationTest` task builds the extension and unzips it to the `build/hivemq-extension-test` directory.
 The tests can then load the built extension into the HiveMQ Testcontainer.
 
-```java
-@Container
-final HiveMQContainer hivemq = new HiveMQContainer(HiveMQContainer.DEFAULT_HIVEMQ_CE_IMAGE_NAME)
-    .withExtension(new File("build/hivemq-extension-test/<extension-id>"));
-```
+<!--codeinclude-->
+[Extension from filesystem](../../modules/hivemq/src/test/java/org/testcontainers/hivemq/docs/DemoDisableExtensionsIT.java) inside_block:startFromFilesystem
+<!--/codeinclude-->
 
 ### Enable/Disable an extension
 
