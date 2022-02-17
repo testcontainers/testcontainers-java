@@ -24,7 +24,6 @@ public class ContainerWithExtensionFromDirectoryIT {
 
             hivemq.start();
             TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort());
-            hivemq.stop();
         }
     }
 
