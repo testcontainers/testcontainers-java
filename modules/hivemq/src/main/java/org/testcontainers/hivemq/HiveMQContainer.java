@@ -80,10 +80,10 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
 
     @Override
     protected void configure() {
-        if (removeAllPrepackagedExtensions || !prepackagedExtensionsToRemove.isEmpty()) {
-            withCreateContainerCmdModifier(it -> it.withEntrypoint("/bin/sh"));
+        final String removeCommand;
+        withCreateContainerCmdModifier(it -> it.withEntrypoint("/bin/sh"));
 
-            final String removeCommand;
+        if (removeAllPrepackagedExtensions || !prepackagedExtensionsToRemove.isEmpty()) {
 
             if (removeAllPrepackagedExtensions) {
                 removeCommand = "rm -rf /opt/hivemq/extensions/** &&";
@@ -92,15 +92,17 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
                     .map(extensionId -> "rm -rf /opt/hivemq/extensions/" + extensionId + "&&")
                     .collect(Collectors.joining());
             }
-            setCommand(
-                "-c",
-                removeCommand +
-                    "cp -r '/opt/hivemq/temp-extensions/'* /opt/hivemq/extensions/ " +
-                    "; rm -rf /opt/hivemq/temp-extensions/** " +
-                    "&& chmod -R 777 /opt/hivemq/extensions " +
-                    "&& /opt/docker-entrypoint.sh /opt/hivemq/bin/run.sh"
-            );
+        } else {
+            removeCommand = "";
         }
+        setCommand(
+            "-c",
+            removeCommand +
+                "cp -r '/opt/hivemq/temp-extensions/'* /opt/hivemq/extensions/ " +
+                "; rm -rf /opt/hivemq/temp-extensions/** " +
+                "&& chmod -R 777 /opt/hivemq/extensions " +
+                "&& /opt/docker-entrypoint.sh /opt/hivemq/bin/run.sh"
+        );
     }
 
     protected void containerIsStarted(final @NotNull InspectContainerResponse containerInfo) {
