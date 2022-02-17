@@ -1,0 +1,8 @@
+
+
+tasks:
+  - init: ./gradlew build -x check
+    before: curl -L -o /workspace/testcontainers-cloud-agent https://app.testcontainers.cloud/download/testcontainers-cloud-agent_linux_x86-64 && chmod +x /workspace/testcontainers-cloud-agent
+    command: /workspace/testcontainers-cloud-agent &
+
+
