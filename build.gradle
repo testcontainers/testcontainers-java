@@ -1,7 +1,18 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        // https://github.com/melix/japicmp-gradle-plugin/issues/36
+        classpath 'com.google.guava:guava:30.1.1-jre'
+    }
+}
+
 plugins {
     id 'io.franzbecker.gradle-lombok' version '4.0.0'
     id 'com.github.johnrengelman.shadow' version '7.0.0'
-    id "com.jfrog.bintray" version "1.8.4" apply false
+    id 'me.champeau.gradle.japicmp' version '0.2.9' apply false
 }
 
 apply from: "$rootDir/gradle/ci-support.gradle"
@@ -10,7 +21,7 @@ subprojects {
     apply plugin: 'java-library'
     apply plugin: 'idea'
     apply plugin: 'io.franzbecker.gradle-lombok'
-    apply plugin: 'com.github.johnrengelman.shadow'
+    apply from: "$rootDir/gradle/shading.gradle"
 
     group = "org.testcontainers"
 
@@ -20,7 +31,6 @@ subprojects {
     compileTestJava.options.encoding = 'UTF-8'
 
     repositories {
-        jcenter()
         mavenCentral()
     }
 
@@ -46,9 +56,14 @@ subprojects {
     task delombok(type: io.franzbecker.gradle.lombok.task.DelombokTask) {
         def outputDir = file("$buildDir/delombok")
         outputs.dir(outputDir)
+        outputs.cacheIf {
+            true
+        }
         for (srcDir in project.sourceSets.main.java.srcDirs) {
+            // TODO: named input and relative path for `srcDir` to make task more cacheable
             inputs.dir(srcDir)
-            args(srcDir, "-d", outputDir)
+            // TODO: `outputDir` as relative path to make task more cacheable 
+            args(srcDir, "-d", outputDir, "-f", "generateDelombokComment:skip")
         }
     }
     delombok.onlyIf {
@@ -58,20 +73,12 @@ subprojects {
     // specific modules should be excluded from publication
     if ( ! ["test-support", "jdbc-test"].contains(it.name) && !it.path.startsWith(":docs:") && it != project(":docs") ) {
         apply from: "$rootDir/gradle/publishing.gradle"
-        apply from: "$rootDir/gradle/bintray.gradle"
 
-        jar.archiveClassifier.set("original")
-
-        publishing {
-            publications {
-                mavenJava(MavenPublication) { publication ->
-                    artifacts.removeAll { it.classifier == jar.archiveClassifier.get() }
-                    artifact project.tasks.shadowJar
-                }
-            }
+        if (it.name != "bom") {
+            apply plugin: "me.champeau.gradle.japicmp"
+            tasks.register('japicmp', me.champeau.gradle.japicmp.JapicmpTask)
+            apply from: "$rootDir/gradle/japicmp.gradle"
         }
-
-        task release(dependsOn: bintrayUpload)
     }
 
     test {
@@ -107,37 +114,6 @@ subprojects {
     javadoc {
         dependsOn delombok
         source = delombok.outputs
-    }
-
-    shadowJar {
-        configurations = []
-        archiveClassifier.set(null)
-
-        doFirst {
-            // See https://github.com/johnrengelman/shadow/blob/5.0.0/src/main/groovy/com/github/jengelman/gradle/plugins/shadow/tasks/ConfigureShadowRelocation.groovy
-            Set<String> packages = []
-            // Always read from core's configurations
-            for (configuration in tasks.getByPath(":testcontainers:shadowJar").configurations) {
-                for (jar in configuration.files) {
-                    def jf = new java.util.jar.JarFile(jar)
-                    for (entry in jf.entries()) {
-                        def name = entry.name
-                        if (name.endsWith(".class")) {
-                            def index = name.lastIndexOf('/')
-                            if (index != -1) {
-                                packages.add(name.substring(0, index))
-                            }
-                        }
-                    }
-                    jf.close()
-                }
-            }
-            for (pkg in packages) {
-                pkg = pkg.replaceAll('/', '.')
-
-                tasks.shadowJar.relocate(pkg, "org.testcontainers.shaded.${pkg}")
-            }
-        }
     }
 
     dependencies {

@@ -1,6 +1,7 @@
 package org.testcontainers.images;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.PullImageCmd;
 import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.google.common.util.concurrent.Futures;
@@ -75,11 +76,21 @@ public class RemoteDockerImage extends LazyFuture<String> {
 
             while (Instant.now().isBefore(lastRetryAllowed)) {
                 try {
-                    dockerClient
+                    PullImageCmd pullImageCmd = dockerClient
                         .pullImageCmd(imageName.getUnversionedPart())
-                        .withTag(imageName.getVersionPart())
-                        .exec(new TimeLimitedLoggedPullImageResultCallback(logger))
-                        .awaitCompletion();
+                        .withTag(imageName.getVersionPart());
+
+                    try {
+                        pullImageCmd
+                            .exec(new TimeLimitedLoggedPullImageResultCallback(logger))
+                            .awaitCompletion();
+                    } catch (DockerClientException e) {
+                        // Try to fallback to x86
+                        pullImageCmd
+                            .withPlatform("linux/amd64")
+                            .exec(new TimeLimitedLoggedPullImageResultCallback(logger))
+                            .awaitCompletion();
+                    }
 
                     LocalImagesCache.INSTANCE.refreshCache(imageName);
 

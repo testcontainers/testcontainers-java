@@ -67,18 +67,20 @@ public class SomeTest {
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
-```groovy tab='Gradle'
-testImplementation "org.testcontainers:trino:{{latest_version}}"
-```
+=== "Gradle"
+    ```groovy
+    testImplementation "org.testcontainers:trino:{{latest_version}}"
+    ```
 
-```xml tab='Maven'
-<dependency>
-    <groupId>org.testcontainers</groupId>
-    <artifactId>trino</artifactId>
-    <version>{{latest_version}}</version>
-    <scope>test</scope>
-</dependency>
-```
+=== "Maven"
+    ```xml
+    <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>trino</artifactId>
+        <version>{{latest_version}}</version>
+        <scope>test</scope>
+    </dependency>
+    ```
 
 !!! hint
     Adding this Testcontainers library JAR will not automatically add the Trino JDBC driver JAR to your project.

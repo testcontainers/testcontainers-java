@@ -123,6 +123,7 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
             // To build an image, we have to send the context to Docker in TAR archive format
             try (TarArchiveOutputStream tarArchive = new TarArchiveOutputStream(new GZIPOutputStream(out))) {
                 tarArchive.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
+                tarArchive.setBigNumberMode(TarArchiveOutputStream.BIGNUMBER_POSIX);
 
                 for (Map.Entry<String, Transferable> entry : transferables.entrySet()) {
                     Transferable transferable = entry.getValue();

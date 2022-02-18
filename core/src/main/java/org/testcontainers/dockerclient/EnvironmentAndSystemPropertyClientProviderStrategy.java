@@ -2,6 +2,7 @@ package org.testcontainers.dockerclient;
 
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientConfig;
+import lombok.Getter;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.util.Optional;
@@ -25,24 +26,38 @@ public final class EnvironmentAndSystemPropertyClientProviderStrategy extends Do
 
     private final DockerClientConfig dockerClientConfig;
 
+    @Getter
+    private final boolean applicable;
+
     public EnvironmentAndSystemPropertyClientProviderStrategy() {
         // use docker-java defaults if present, overridden if our own configuration is set
-        DefaultDockerClientConfig.Builder configBuilder = DefaultDockerClientConfig.createDefaultConfigBuilder();
+        this(DefaultDockerClientConfig.createDefaultConfigBuilder());
+    }
 
-        getSetting("docker.host").ifPresent(configBuilder::withDockerHost);
-        getSetting("docker.tls.verify").ifPresent(configBuilder::withDockerTlsVerify);
-        getSetting("docker.cert.path").ifPresent(configBuilder::withDockerCertPath);
+    EnvironmentAndSystemPropertyClientProviderStrategy(DefaultDockerClientConfig.Builder configBuilder) {
+        String dockerConfigSource = TestcontainersConfiguration.getInstance()
+            .getEnvVarOrProperty("dockerconfig.source", "auto");
+
+        switch (dockerConfigSource) {
+            case "auto":
+                Optional<String> dockerHost = getSetting("docker.host");
+                dockerHost.ifPresent(configBuilder::withDockerHost);
+                applicable = dockerHost.isPresent();
+                getSetting("docker.tls.verify").ifPresent(configBuilder::withDockerTlsVerify);
+                getSetting("docker.cert.path").ifPresent(configBuilder::withDockerCertPath);
+                break;
+            case "autoIgnoringUserProperties":
+                applicable = configBuilder.isDockerHostSetExplicitly();
+                break;
+            default:
+                throw new InvalidConfigurationException("Invalid value for dockerconfig.source: " + dockerConfigSource);
+        }
 
         dockerClientConfig = configBuilder.build();
     }
 
     private Optional<String> getSetting(final String name) {
         return Optional.ofNullable(TestcontainersConfiguration.getInstance().getEnvVarOrUserProperty(name, null));
-    }
-
-    @Override
-    protected boolean isApplicable() {
-        return getSetting("docker.host").isPresent();
     }
 
     @Override
@@ -61,5 +76,10 @@ public final class EnvironmentAndSystemPropertyClientProviderStrategy extends Do
     @Override
     public String getDescription() {
         return "Environment variables, system properties and defaults. Resolved dockerHost=" + dockerClientConfig.getDockerHost();
+    }
+
+    @Override
+    protected boolean isPersistable() {
+        return false;
     }
 }

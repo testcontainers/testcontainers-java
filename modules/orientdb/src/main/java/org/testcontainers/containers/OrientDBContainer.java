@@ -9,19 +9,13 @@ import lombok.NonNull;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
-import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
-import org.testcontainers.containers.wait.strategy.WaitStrategy;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.util.Optional;
-
-import static java.net.HttpURLConnection.HTTP_OK;
 
 /**
  * @author robfrank
@@ -68,14 +62,7 @@ public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
         serverPassword = DEFAULT_SERVER_PASSWORD;
         databaseName = DEFAULT_DATABASE_NAME;
 
-        WaitStrategy waitForHttp = new HttpWaitStrategy()
-            .forPort(DEFAULT_HTTP_PORT)
-            .forStatusCodeMatching(response -> response == HTTP_OK);
-
-        waitStrategy = new WaitAllStrategy()
-            .withStrategy(Wait.forListeningPort())
-            .withStrategy(waitForHttp)
-            .withStartupTimeout(Duration.ofMinutes(2));
+        waitStrategy =  new LogMessageWaitStrategy().withRegEx(".*Gremlin started correctly.*");
 
         addExposedPorts(DEFAULT_BINARY_PORT, DEFAULT_HTTP_PORT);
     }
