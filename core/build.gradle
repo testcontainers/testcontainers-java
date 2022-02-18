@@ -2,6 +2,15 @@ apply plugin: 'com.github.johnrengelman.shadow'
 
 description = "Testcontainers Core"
 
+configure([tasks.compileJava]) {
+     sourceCompatibility = 16 // for the IDE support
+     options.release = 8
+
+     javaCompiler = javaToolchains.compilerFor {
+         languageVersion = JavaLanguageVersion.of(16)
+     }
+ }
+
 sourceSets {
     jarFileTest
 }
