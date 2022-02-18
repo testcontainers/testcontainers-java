@@ -108,8 +108,8 @@ dependencies {
         exclude group: "*", module: "*"
     }
 
-    annotationProcessor 'com.github.bsideup.jabel:jabel-javac-plugin:0.4.0'
-    compileOnly 'com.github.bsideup.jabel:jabel-javac-plugin:0.4.0'
+    annotationProcessor 'com.github.bsideup.jabel:jabel-javac-plugin:0.4.2'
+    compileOnly 'com.github.bsideup.jabel:jabel-javac-plugin:0.4.2'
 
     api 'junit:junit:4.12'
     api 'org.slf4j:slf4j-api:1.7.30'
