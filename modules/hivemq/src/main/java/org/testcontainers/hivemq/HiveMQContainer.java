@@ -8,7 +8,8 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.MultiLogMessageWaitStrategy;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
@@ -48,7 +49,7 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
     private final @NotNull Set<String> prepackagedExtensionsToRemove = new HashSet<>();
     private boolean removeAllPrepackagedExtensions = false;
 
-    private final @NotNull MultiLogMessageWaitStrategy waitStrategy = new MultiLogMessageWaitStrategy();
+    private final @NotNull WaitAllStrategy waitStrategy = new WaitAllStrategy();
 
     public HiveMQContainer(final @NotNull DockerImageName dockerImageName) {
         super(dockerImageName);
@@ -57,7 +58,7 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
 
         addExposedPort(MQTT_PORT);
 
-        waitStrategy.withRegEx("(.*)Started HiveMQ in(.*)");
+        waitStrategy.withStrategy(new LogMessageWaitStrategy().withRegEx("(.*)Started HiveMQ in(.*)"));
         waitingFor(waitStrategy);
 
         withLogConsumer(outputFrame -> {
@@ -121,7 +122,7 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
      */
     public @NotNull HiveMQContainer waitForExtension(final @NotNull String extensionName) {
         final String regEX = "(.*)Extension \"" + extensionName + "\" version (.*) started successfully(.*)";
-        waitStrategy.withRegEx(regEX);
+        waitStrategy.withStrategy(new LogMessageWaitStrategy().withRegEx(regEX));
         return self();
     }
 
@@ -560,11 +561,6 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
      */
     public int getMqttPort() {
         return this.getMappedPort(MQTT_PORT);
-    }
-
-    @Override
-    protected void containerIsStopping(final @NotNull InspectContainerResponse containerInfo) {
-        waitStrategy.reset();
     }
 
     private @NotNull MountableFile cloneWithFileMode(final @NotNull MountableFile mountableFile) {
