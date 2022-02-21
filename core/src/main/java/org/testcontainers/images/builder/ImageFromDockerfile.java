@@ -112,6 +112,8 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
                 labels.putAll(buildImageCmd.getLabels());
             }
             labels.putAll(DockerClientFactory.DEFAULT_LABELS);
+            //noinspection deprecation
+            labels.putAll(ResourceReaper.instance().getLabels());
             buildImageCmd.withLabels(labels);
 
             prePullDependencyImages(dependencyImageNames);
