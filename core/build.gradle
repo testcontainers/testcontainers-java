@@ -40,7 +40,12 @@ tasks.japicmp {
 
     classExcludes = []
 
-    methodExcludes = []
+    methodExcludes = [
+        "org.testcontainers.utility.ResourceReaper#start(java.lang.String,com.github.dockerjava.api.DockerClient)",
+        "org.testcontainers.utility.ResourceReaper#start(com.github.dockerjava.api.DockerClient)",
+        "org.testcontainers.utility.ResourceReaper#registerNetworkForCleanup(java.lang.String)",
+        "org.testcontainers.utility.ResourceReaper#removeNetworks(java.lang.String)",
+    ]
 
     fieldExcludes = []
 }
