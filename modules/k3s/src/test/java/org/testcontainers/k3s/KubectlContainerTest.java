@@ -1,41 +1,27 @@
 package org.testcontainers.k3s;
 
-import lombok.extern.slf4j.Slf4j;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.assertj.core.api.Assertions;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
-import org.testcontainers.containers.output.WaitingConsumer;
+import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 
-import static org.testcontainers.containers.Network.newNetwork;
-import static org.testcontainers.containers.output.OutputFrame.OutputType.STDOUT;
-
-@Slf4j
 public class KubectlContainerTest {
 
-    public static Network network = newNetwork();
+    public static Network network = Network.SHARED;
 
+    @ClassRule
     public static K3sContainer k3s = new K3sContainer(DockerImageName.parse("rancher/k3s:v1.21.3-k3s1"))
         .withNetwork(network)
         .withNetworkAliases("k3s");
-
-    @BeforeClass
-    public static void setup() {
-        k3s.start();
-    }
-
-    @AfterClass
-    public static void tearDown() {
-        k3s.stop();
-    }
 
     @Test
     public void shouldExposeKubeConfigForNetworkAlias() throws Exception {
@@ -45,18 +31,20 @@ public class KubectlContainerTest {
         Path tempFile = Files.createTempFile(null, null);
         Files.write(tempFile, kubeConfigYaml.getBytes(StandardCharsets.UTF_8));
 
-        GenericContainer<?> kubectlContainer = new GenericContainer<>(DockerImageName.parse("rancher/kubectl:v1.23.3"))
-            .withNetwork(network)
-            .withCopyFileToContainer(MountableFile.forHostPath(tempFile.toAbsolutePath()), "/.kube/config")
-            .withCommand("get namespaces");
+        try (
+            GenericContainer<?> kubectlContainer = new GenericContainer<>(DockerImageName.parse("rancher/kubectl:v1.23.3"))
+                .withNetwork(network)
+                .withCopyFileToContainer(MountableFile.forHostPath(tempFile.toAbsolutePath()), "/.kube/config")
+                .withCommand("get namespaces")
+                .withStartupCheckStrategy(
+                    new OneShotStartupCheckStrategy().withTimeout(Duration.ofSeconds(30))
+                )
+        ) {
+            kubectlContainer.start();
 
-        kubectlContainer.start();
-
-        WaitingConsumer consumer = new WaitingConsumer();
-        kubectlContainer.followOutput(consumer, STDOUT);
-
-        consumer.waitUntil(frame ->
-            frame.getUtf8String().contains("kube-system"), 30, TimeUnit.SECONDS);
+            String logs = kubectlContainer.getLogs();
+            Assertions.assertThat(logs).contains("kube-system");
+        }
     }
 
     @Test(expected = IllegalArgumentException.class)
