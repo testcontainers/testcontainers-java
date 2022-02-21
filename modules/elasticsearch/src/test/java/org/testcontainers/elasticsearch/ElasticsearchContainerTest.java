@@ -270,10 +270,8 @@ public class ElasticsearchContainerTest {
                 .build();
 
             Response response = client.performRequest(new Request("GET", "/_cluster/health"));
-            // }}
             assertThat(response.getStatusLine().getStatusCode(), is(200));
             assertThat(EntityUtils.toString(response.getEntity()), containsString("cluster_name"));
-            // httpClientSecuredContainer {{
         }
     }
 

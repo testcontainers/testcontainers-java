@@ -3,9 +3,9 @@ package org.testcontainers.elasticsearch;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.apache.commons.io.IOUtils;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.utility.Base58;
+import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 
 import javax.net.ssl.SSLContext;
@@ -15,12 +15,7 @@ import java.net.InetSocketAddress;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
-import java.time.Duration;
 import java.util.Optional;
-import java.util.regex.Pattern;
-
-import static java.net.HttpURLConnection.HTTP_OK;
-import static java.net.HttpURLConnection.HTTP_UNAUTHORIZED;
 
 /**
  * Represents an elasticsearch docker instance which exposes by default port 9200 and 9300 (transport.tcp.port)
@@ -57,9 +52,6 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
     @Deprecated
     protected static final String DEFAULT_TAG = "7.9.2";
 
-    // matches 8.x.x, 9.x.x and any double digit version, also supports those -alpha2 suffixes
-    private static final Pattern VERSION_PATTERN = Pattern.compile("^([89]|\\d{2})\\.\\d+\\.\\d+.*");
-
     private final boolean isOss;
     private final boolean isAtLeastMajorVersion8;
     private Optional<byte[]> caCertAsBytes = Optional.empty();
@@ -94,19 +86,15 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
         withNetworkAliases("elasticsearch-" + Base58.randomString(6));
         withEnv("discovery.type", "single-node");
         addExposedPorts(ELASTICSEARCH_DEFAULT_PORT, ELASTICSEARCH_DEFAULT_TCP_PORT);
-        this.isAtLeastMajorVersion8 = VERSION_PATTERN.matcher(dockerImageName.getVersionPart()).matches();
+        this.isAtLeastMajorVersion8 = new ComparableVersion(dockerImageName.getVersionPart()).isGreaterThanOrEqualTo("8.0.0");
+        // regex that
+        //   matches 8.0 JSON logging with no whitespace between message field and content
+        //   matches 7.x JSON logging with whitespace between message field and content
+        //   matches 6.x text logging with node name in brackets and just a 'started' message till the end of the line
+        String regex = ".*(\"message\":\\s?\"started\".*|] started\n$)";
+        setWaitStrategy(new LogMessageWaitStrategy().withRegEx(regex));
         if (isAtLeastMajorVersion8) {
-            // TLS using a self signed certificate is enabled by default in version 8
-            // to prevent the HttpsUrlConnection to fail with certificate errors we use
-            // the log message wait strategy, as there will be a single JSON encoded message
-            // marking the node as started
-            setWaitStrategy(new LogMessageWaitStrategy().withRegEx(".*\"message\":\"started\".*"));
             withPassword(ELASTICSEARCH_DEFAULT_PASSWORD);
-        } else {
-            setWaitStrategy(new HttpWaitStrategy()
-                .forPort(ELASTICSEARCH_DEFAULT_PORT)
-                .forStatusCodeMatching(response -> response == HTTP_OK || response == HTTP_UNAUTHORIZED)
-                .withStartupTimeout(Duration.ofMinutes(2)));
         }
     }
 
