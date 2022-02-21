@@ -29,6 +29,7 @@ jobs:
     env:
       AWS_ACCESS_KEY_ID: $(aws.accessKeyId)
       AWS_SECRET_ACCESS_KEY: $(aws.secretAccessKey)
+      _JAVA_OPTIONS: "-Djava.net.preferIPv4Stack=true"
     inputs:
         gradleWrapperFile: 'gradlew'
         jdkVersionOption: '1.8'
