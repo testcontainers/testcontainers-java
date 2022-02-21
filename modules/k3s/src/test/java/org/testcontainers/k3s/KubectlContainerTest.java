@@ -8,6 +8,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.output.WaitingConsumer;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -46,7 +47,7 @@ public class KubectlContainerTest {
 
         GenericContainer<?> kubectlContainer = new GenericContainer<>(DockerImageName.parse("rancher/kubectl:v1.23.3"))
             .withNetwork(network)
-            .withFileSystemBind(tempFile.toAbsolutePath().toString(), "/.kube/config")
+            .withCopyFileToContainer(MountableFile.forHostPath(tempFile.toAbsolutePath()), "/.kube/config")
             .withCommand("get namespaces");
 
         kubectlContainer.start();
