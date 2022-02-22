@@ -47,6 +47,7 @@ public class DemoExtensionTestsIT {
         // mqtt5client {
         final Mqtt5BlockingClient client = Mqtt5Client.builder()
             .serverPort(hivemqWithClasspathExtension.getMqttPort())
+            .serverHost(hivemqWithClasspathExtension.getHost())
             .buildBlocking();
 
         client.connect();

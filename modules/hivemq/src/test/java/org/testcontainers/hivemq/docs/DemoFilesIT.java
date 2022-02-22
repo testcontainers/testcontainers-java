@@ -52,6 +52,7 @@ public class DemoFilesIT {
         // mqtt5client {
         final Mqtt5BlockingClient client = Mqtt5Client.builder()
             .serverPort(hivemq.getMqttPort())
+            .serverHost(hivemq.getHost())
             .buildBlocking();
 
         client.connect();

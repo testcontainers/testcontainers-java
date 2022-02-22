@@ -33,13 +33,13 @@ public class DisableEnableExtensionIT {
 
             hivemq.start();
 
-            assertThrows(ExecutionException.class, () -> TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort()));
+            assertThrows(ExecutionException.class, () -> TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort(), hivemq.getHost()));
             hivemq.enableExtension(hiveMQExtension);
-            TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort());
+            TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort(), hivemq.getHost());
             hivemq.disableExtension(hiveMQExtension);
-            assertThrows(ExecutionException.class, () -> TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort()));
+            assertThrows(ExecutionException.class, () -> TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort(), hivemq.getHost()));
             hivemq.enableExtension(hiveMQExtension);
-            TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort());
+            TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort(), hivemq.getHost());
         }
     }
 

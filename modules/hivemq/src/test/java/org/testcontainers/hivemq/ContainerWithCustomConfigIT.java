@@ -27,6 +27,7 @@ public class ContainerWithCustomConfigIT {
             final Mqtt5BlockingClient publisher = Mqtt5Client.builder()
                 .identifier("publisher")
                 .serverPort(hivemq.getMqttPort())
+                .serverHost(hivemq.getHost())
                 .buildBlocking();
 
             publisher.connect();
