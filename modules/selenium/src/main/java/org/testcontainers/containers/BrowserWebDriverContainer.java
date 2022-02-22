@@ -16,6 +16,9 @@ import java.time.Duration;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.SystemUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.openqa.selenium.Capabilities;
@@ -205,7 +208,11 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         setCommand("/opt/bin/entry_point.sh");
 
         if (getShmSize() == null) {
-            this.getBinds().add(new Bind("/dev/shm", new Volume("/dev/shm"), AccessMode.rw));
+            if (SystemUtils.IS_OS_WINDOWS) {
+                withSharedMemorySize(2 * FileUtils.ONE_GB);
+            } else {
+                this.getBinds().add(new Bind("/dev/shm", new Volume("/dev/shm"), AccessMode.rw));
+            }
         }
 
         /*
@@ -287,9 +294,6 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
             if (capabilities == null) {
                 logger().warn("No capabilities provided - this will cause an exception in future versions. Falling back to ChromeOptions");
                 capabilities = new ChromeOptions();
-            }
-            if (capabilities instanceof ChromeOptions) {
-                ((ChromeOptions) capabilities).addArguments("--disable-dev-shm-usage", "--headless");
             }
 
             driver = Unreliables.retryUntilSuccess(30, TimeUnit.SECONDS, () -> {
