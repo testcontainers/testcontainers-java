@@ -364,7 +364,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             CreateContainerCmd createCommand = dockerClient.createContainerCmd(dockerImageName);
             applyConfiguration(createCommand);
 
-            createCommand.getLabels().put(DockerClientFactory.TESTCONTAINERS_LABEL, "true");
+            createCommand.getLabels().putAll(DockerClientFactory.DEFAULT_LABELS);
 
             boolean reused = false;
             final boolean reusable;
@@ -406,7 +406,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             }
 
             if (!reusable) {
-                createCommand.getLabels().put(DockerClientFactory.TESTCONTAINERS_SESSION_ID_LABEL, DockerClientFactory.SESSION_ID);
+                //noinspection deprecation
+                createCommand.getLabels().putAll(ResourceReaper.instance().getLabels());
             }
 
             if (!reused) {
