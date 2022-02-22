@@ -2,6 +2,7 @@ import com.example.DemoApplication;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
@@ -43,7 +44,7 @@ public class SeleniumContainerTest {
         RemoteWebDriver driver = chrome.getWebDriver();
 
         driver.get("http://host.testcontainers.internal:" + port + "/foo.html");
-        List<WebElement> hElement = driver.findElementsByTagName("h");
+        List<WebElement> hElement = driver.findElements(By.tagName("h"));
 
         assertTrue("The h element is found", hElement != null && hElement.size() > 0);
     }

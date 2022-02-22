@@ -72,6 +72,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
     @Nullable
     private RemoteWebDriver driver;
+    private boolean tracingWebDriver;
     private VncRecordingMode recordingMode = VncRecordingMode.RECORD_FAILING;
     private VncRecordingFormat recordingFormat;
     private RecordingFileFactory recordingFileFactory;
@@ -296,9 +297,15 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
                 capabilities = new ChromeOptions();
             }
 
+            boolean supportsWebDriverWithoutTracing = new ComparableVersion(SeleniumUtils.determineClasspathSeleniumVersion()).isGreaterThanOrEqualTo("4.1.2");
+
             driver = Unreliables.retryUntilSuccess(30, TimeUnit.SECONDS, () -> {
                 return Timeouts.getWithTimeout(10, TimeUnit.SECONDS, () -> {
-                    return new RemoteWebDriver(getSeleniumAddress(), capabilities);
+                    if (supportsWebDriverWithoutTracing) {
+                        return new RemoteWebDriver(getSeleniumAddress(), capabilities, tracingWebDriver);
+                    } else {
+                        return new RemoteWebDriver(getSeleniumAddress(), capabilities);
+                    }
                 });
             });
         }
@@ -366,6 +373,17 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     @Deprecated
     public SELF withLinkToContainer(LinkableContainer otherContainer, String alias) {
         addLink(otherContainer, alias);
+        return self();
+    }
+
+    /*
+     * Whether to create the <code>WebDriver</code> with the distributed tracing feature enabled.
+     * Note: reqires at least version 4.1.2 of selenium
+     *
+     * @return this instance, for chaining
+     */
+    public SELF withTracingWebDriver(boolean tracingWebDriver) {
+        this.tracingWebDriver = tracingWebDriver;
         return self();
     }
 
