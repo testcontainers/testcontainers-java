@@ -2,7 +2,7 @@ package org.testcontainers.junit;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.junit.Assume;
 import org.junit.Test;
 import org.openqa.selenium.chrome.ChromeOptions;

@@ -73,17 +73,13 @@ dependencies {
 
     shaded 'org.awaitility:awaitility:4.1.1'
 
-    api platform('com.github.docker-java:docker-java-bom:3.2.12')
-    shaded platform('com.github.docker-java:docker-java-bom:3.2.12')
+    api platform('com.github.docker-java:docker-java-bom:3.2.13')
+    shaded platform('com.github.docker-java:docker-java-bom:3.2.13')
 
     api "com.github.docker-java:docker-java-api"
 
     shaded 'com.github.docker-java:docker-java-core'
-
-    shaded 'com.github.docker-java:docker-java-transport-okhttp', {
-        // TODO remove unused `net.java.dev.jna:jna-platform` from `docker-java-transport-okhttp`
-        exclude(group: 'net.java.dev.jna', module: 'jna-platform')
-    }
+    shaded 'com.github.docker-java:docker-java-transport-okhttp'
 
     api 'com.github.docker-java:docker-java-transport-zerodep'
 
