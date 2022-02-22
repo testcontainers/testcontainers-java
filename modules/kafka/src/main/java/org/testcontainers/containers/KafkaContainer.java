@@ -47,6 +47,8 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         // Use two listeners with different names, it will force Kafka to communicate with itself via internal
         // listener when KAFKA_INTER_BROKER_LISTENER_NAME is set, otherwise Kafka will try to use the advertised listener
         withEnv("KAFKA_LISTENERS", "PLAINTEXT://0.0.0.0:" + KAFKA_PORT + ",BROKER://0.0.0.0:9092");
+        // Will be altered in #containerIsStarted
+        withEnv("KAFKA_ADVERTISED_LISTENERS", "BROKER://localhost:9092");
         withEnv("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", "BROKER:PLAINTEXT,PLAINTEXT:PLAINTEXT");
         withEnv("KAFKA_INTER_BROKER_LISTENER_NAME", "BROKER");
 
@@ -75,16 +77,6 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     @Override
     protected void configure() {
-        withEnv(
-            "KAFKA_ADVERTISED_LISTENERS",
-            String.format(
-                "BROKER://%s:9092",
-                getNetwork() != null
-                    ? getNetworkAliases().get(0)
-                    : "localhost"
-            )
-        );
-
         String command = "#!/bin/bash\n";
         if (externalZookeeperConnect != null) {
             withEnv("KAFKA_ZOOKEEPER_CONNECT", externalZookeeperConnect);
