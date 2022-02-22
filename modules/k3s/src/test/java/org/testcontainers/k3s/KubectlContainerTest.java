@@ -26,7 +26,7 @@ public class KubectlContainerTest {
     @Test
     public void shouldExposeKubeConfigForNetworkAlias() throws Exception {
 
-        String kubeConfigYaml = k3s.getKubeConfigYaml("k3s");
+        String kubeConfigYaml = k3s.generateInternalKubeConfigYaml("k3s");
 
         Path tempFile = Files.createTempFile(null, null);
         Files.write(tempFile, kubeConfigYaml.getBytes(StandardCharsets.UTF_8));
@@ -49,6 +49,6 @@ public class KubectlContainerTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowAnExceptionForUnknownNetworkAlias() {
-        k3s.getKubeConfigYaml("not-set-network-alias");
+        k3s.generateInternalKubeConfigYaml("not-set-network-alias");
     }
 }
