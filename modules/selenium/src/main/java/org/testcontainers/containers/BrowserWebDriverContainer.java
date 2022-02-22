@@ -286,8 +286,10 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         if (driver == null) {
             if (capabilities == null) {
                 logger().warn("No capabilities provided - this will cause an exception in future versions. Falling back to ChromeOptions");
-                capabilities = new ChromeOptions()
-                    .addArguments("--disable-dev-shm-usage", "--headless");
+                capabilities = new ChromeOptions();
+            }
+            if (capabilities instanceof ChromeOptions) {
+                ((ChromeOptions) capabilities).addArguments("--disable-dev-shm-usage", "--headless");
             }
 
             driver = Unreliables.retryUntilSuccess(30, TimeUnit.SECONDS, () -> {
