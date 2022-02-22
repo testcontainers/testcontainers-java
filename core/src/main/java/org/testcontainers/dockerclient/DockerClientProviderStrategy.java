@@ -6,7 +6,6 @@ import com.github.dockerjava.api.model.Network;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.core.RemoteApiVersion;
-import com.github.dockerjava.okhttp.OkDockerHttpClient;
 import com.github.dockerjava.transport.DockerHttpClient;
 import com.github.dockerjava.zerodep.ZerodepDockerHttpClient;
 import com.google.common.annotations.VisibleForTesting;
@@ -255,12 +254,6 @@ public abstract class DockerClientProviderStrategy {
 
         String transportType = TestcontainersConfiguration.getInstance().getTransportType();
         switch (transportType) {
-            case "okhttp":
-                dockerHttpClient = new OkDockerHttpClient.Builder()
-                    .dockerHost(transportConfig.getDockerHost())
-                    .sslConfig(transportConfig.getSslConfig())
-                    .build();
-                break;
             case "httpclient5":
                 dockerHttpClient = new ZerodepDockerHttpClient.Builder()
                     .dockerHost(transportConfig.getDockerHost())
