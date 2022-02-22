@@ -41,7 +41,7 @@ public class ContainerWithLicenseIT {
 
 
             hivemq.start();
-            TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort());
+            TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort(), hivemq.getHost());
         }
     }
 
