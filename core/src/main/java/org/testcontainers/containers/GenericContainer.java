@@ -23,6 +23,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.hash.Hashing;
 import lombok.AccessLevel;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -121,6 +122,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     static final String COPIED_FILES_HASH_LABEL = "org.testcontainers.copied_files.hash";
 
+    @Getter(AccessLevel.MODULE)
+    @NonNull
+    private final BaseContainerDef containerDef;
+
     /*
      * Default settings
      */
@@ -143,12 +148,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private List<String> networkAliases = new ArrayList<>(Arrays.asList(
             "tc-" + Base58.randomString(8)
     ));
-
-    @NonNull
-    private RemoteDockerImage image;
-
-    @NonNull
-    private Map<String, String> env = new HashMap<>();
 
     @NonNull
     private Map<String, String> labels = new HashMap<>();
@@ -234,11 +233,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private boolean hostAccessible = false;
 
     public GenericContainer(@NonNull final DockerImageName dockerImageName) {
-        this.image = new RemoteDockerImage(dockerImageName);
+        this(new RemoteDockerImage(dockerImageName));
     }
 
     public GenericContainer(@NonNull final RemoteDockerImage image) {
-        this.image = image;
+        this(new ContainerDef(image));
     }
 
     /**
@@ -250,15 +249,24 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     public GenericContainer(@NonNull final String dockerImageName) {
-        this.setDockerImageName(dockerImageName);
+        this(new RemoteDockerImage(dockerImageName));
     }
 
     public GenericContainer(@NonNull final Future<String> image) {
-        setImage(image);
+        this(new RemoteDockerImage(image));
+    }
+
+    GenericContainer(@NonNull ContainerDef containerDef) {
+        this.containerDef = containerDef;
+    }
+
+    @Override
+    public Future<String> getImage() {
+        return containerDef.getImage();
     }
 
     public void setImage(Future<String> image) {
-        this.image = new RemoteDockerImage(image);
+        containerDef.setImage(new RemoteDockerImage(image));
     }
 
     @Override
@@ -362,6 +370,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
             logger().info("Creating container for image: {}", dockerImageName);
             CreateContainerCmd createCommand = dockerClient.createContainerCmd(dockerImageName);
+            containerDef.applyTo(createCommand);
             applyConfiguration(createCommand);
 
             createCommand.getLabels().putAll(DockerClientFactory.DEFAULT_LABELS);
@@ -776,12 +785,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             createCommand.withCmd(commandParts);
         }
 
-        String[] envArray = env.entrySet().stream()
-                .filter(it -> it.getValue() != null)
-                .map(it -> it.getKey() + "=" + it.getValue())
-                .toArray(String[]::new);
-        createCommand.withEnv(envArray);
-
         boolean shouldCheckFileMountingSupport = binds.size() > 0 && !TestcontainersConfiguration.getInstance().isDisableChecks();
         if (shouldCheckFileMountingSupport) {
             if (!DockerClientFactory.instance().isFileMountingSupported()) {
@@ -949,7 +952,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @Override
     public Map<String, String> getEnvMap() {
-        return env;
+        return containerDef.getEnv();
     }
 
     /**
@@ -957,19 +960,21 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public List<String> getEnv() {
-        return env.entrySet().stream()
-                .map(it -> it.getKey() + "=" + it.getValue())
-                .collect(Collectors.toList());
+        return getEnvMap().entrySet().stream()
+            .map(it -> it.getKey() + "=" + it.getValue())
+            .collect(Collectors.toList());
     }
 
     @Override
     public void setEnv(List<String> env) {
-        this.env = env.stream()
+        containerDef.setEnv(
+            env.stream()
                 .map(it -> it.split("="))
                 .collect(Collectors.toMap(
-                        it -> it[0],
-                        it -> it[1]
-                ));
+                    it -> it[0],
+                    it -> it[1]
+                ))
+         );
     }
 
     /**
@@ -977,7 +982,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public void addEnv(String key, String value) {
-        env.put(key, value);
+        containerDef.putEnv(key, value);
     }
 
     /**
@@ -1214,7 +1219,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @Override
     public SELF withImagePullPolicy(ImagePullPolicy imagePullPolicy) {
-        this.image = this.image.withImagePullPolicy(imagePullPolicy);
+        setImage(containerDef.getImage().withImagePullPolicy(imagePullPolicy));
         return self();
     }
 
@@ -1312,7 +1317,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public void setDockerImageName(@NonNull String dockerImageName) {
-        this.image = new RemoteDockerImage(dockerImageName);
+        containerDef.setImage(new RemoteDockerImage(dockerImageName));
     }
 
     /**
@@ -1321,6 +1326,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     @NonNull
     public String getDockerImageName() {
+        final Future<String> image = getImage();
         try {
             return image.get();
         } catch (Exception e) {
