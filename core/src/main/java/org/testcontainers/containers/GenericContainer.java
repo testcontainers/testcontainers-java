@@ -237,7 +237,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     public GenericContainer(@NonNull final RemoteDockerImage image) {
-        this(new ContainerDef(image));
+        this.containerDef = createContainerDef(image);
     }
 
     /**
@@ -256,8 +256,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         this(new RemoteDockerImage(image));
     }
 
-    GenericContainer(@NonNull ContainerDef containerDef) {
-        this.containerDef = containerDef;
+    BaseContainerDef createContainerDef(RemoteDockerImage image) {
+        return new ContainerDef(image);
     }
 
     @Override

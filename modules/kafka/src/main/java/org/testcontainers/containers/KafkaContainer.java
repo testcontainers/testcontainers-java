@@ -2,6 +2,7 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import lombok.SneakyThrows;
+import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.utility.DockerImageName;
 
 /**
@@ -18,8 +19,6 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     public static final int ZOOKEEPER_PORT = 2181;
 
     private static final String DEFAULT_INTERNAL_TOPIC_RF = "1";
-
-    protected String externalZookeeperConnect = null;
 
     /**
      * @deprecated use {@link KafkaContainer(DockerImageName)} instead
@@ -59,13 +58,23 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         withEnv("KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS", "0");
     }
 
+    @Override
+    BaseContainerDef createContainerDef(RemoteDockerImage image) {
+        return new KafkaContainerDef(image);
+    }
+
+    @Override
+    KafkaContainerDef getContainerDef() {
+        return (KafkaContainerDef) super.getContainerDef();
+    }
+
     public KafkaContainer withEmbeddedZookeeper() {
-        externalZookeeperConnect = null;
+        getContainerDef().withEmbeddedZookeeper();
         return self();
     }
 
     public KafkaContainer withExternalZookeeper(String connectString) {
-        externalZookeeperConnect = connectString;
+        getContainerDef().withExternalZookeeper(connectString);
         return self();
     }
 
@@ -86,6 +95,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         );
 
         String command = "#!/bin/bash\n";
+        String externalZookeeperConnect = getContainerDef().getExternalZookeeperConnect();
         if (externalZookeeperConnect != null) {
             withEnv("KAFKA_ZOOKEEPER_CONNECT", externalZookeeperConnect);
         } else {
