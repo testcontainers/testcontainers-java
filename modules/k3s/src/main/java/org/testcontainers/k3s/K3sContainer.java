@@ -62,7 +62,7 @@ public class K3sContainer extends GenericContainer<K3sContainer> {
     }
 
     /**
-     * Return the kubernetes client configuration to access cluster from host machine.
+     * Return the kubernetes client configuration to access k3s from the host machine.
      *
      * @return the kubeConfig yaml.
      */
@@ -71,8 +71,8 @@ public class K3sContainer extends GenericContainer<K3sContainer> {
     }
 
     /**
-     * Generate a kubernetes client configuration for docker internal network. The kubeConfig can be use by
-     * another docker container running in the same network with k3s container. For host network access use
+     * Generate a kubernetes client configuration for use on a docker internal network. The kubeConfig can be used by
+     * another docker container running in the same network as the k3s container. For access from the host, use
      * the {@link #getKubeConfigYaml()} method instead.
      *
      * @param networkAlias a valid network alias of the k3s container.
