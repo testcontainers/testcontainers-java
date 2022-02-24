@@ -24,7 +24,7 @@ import static org.junit.Assert.fail;
 
 // junitExample {
 @Testcontainers
-public class ExampleTest {
+public class Neo4jExampleTest {
 
     @Container
     private static Neo4jContainer<?> neo4jContainer =
