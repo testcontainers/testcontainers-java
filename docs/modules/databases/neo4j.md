@@ -75,70 +75,40 @@ You are not limited to Unit tests and can of course use an instance of the Neo4j
 
 Authentication can be disabled:
 
-```java
-@Testcontainers
-public class ExampleTest {
-
-    @Container
-    Neo4jContainer neo4jContainer = new Neo4jContainer()
-        .withoutAuthentication();
-}
-```
+<!--codeinclude-->
+[Disable authentication](../../../modules/neo4j/src/test/java/org/testcontainers/containers/Neo4jContainerTest.java) inside_block:withoutAuthentication
+<!--/codeinclude-->
 
 ### Neo4j-Configuration
 
 Neo4j's Docker image needs Neo4j configuration options in a dedicated format.
-The container takes care of that and you can configure the database with standard options like the following:
+The container takes care of that, and you can configure the database with standard options like the following:
 
-```java
-@Testcontainers
-public class ExampleTest {
-
-    @Container
-    Neo4jContainer neo4jContainer = new Neo4jContainer()
-        .withNeo4jConfig("dbms.security.procedures.unrestricted", "apoc.*,algo.*");
-}
-```
+<!--codeinclude-->
+[Neo4j configuration](../../../modules/neo4j/src/test/java/org/testcontainers/containers/Neo4jContainerTest.java) inside_block:neo4jConfiguration
+<!--/codeinclude-->
 
 ### Add custom plugins
 
 Custom plugins, like APOC, can be copied over to the container from any classpath or host resource like this:
 
-```java
-@Testcontainers
-public class ExampleTest {
-
-    @Container
-    Neo4jContainer neo4jContainer = new Neo4jContainer()
-        .withPlugins(MountableFile.forClasspathResource("/apoc-3.5.0.1-all.jar"));
-}
-```
+<!--codeinclude-->
+[Plugin jar](../../../modules/neo4j/src/test/java/org/testcontainers/containers/Neo4jContainerTest.java) inside_block:registerPluginsJar
+<!--/codeinclude-->
 
 Whole directories work as well:
 
-```java
-@Testcontainers
-public class ExampleTest {
-
-    @Container
-    Neo4jContainer neo4jContainer = new Neo4jContainer()
-        .withPlugins(MountableFile.forClasspathResource("/my-plugins"));
-}
-```
+<!--codeinclude-->
+[Plugin folder](../../../modules/neo4j/src/test/java/org/testcontainers/containers/Neo4jContainerTest.java) inside_block:registerPluginsPath
+<!--/codeinclude-->
 
 ### Start the container with a predefined database
 
 If you have an existing database (`graph.db`) you want to work with, copy it over to the container like this:
 
-```java
-@Testcontainers
-public class ExampleTest {
-
-    @Container
-    Neo4jContainer neo4jContainer = new Neo4jContainer()
-        .withDatabase(MountableFile.forClasspathResource("/test-graph.db"));
-}
-```
+<!--codeinclude-->
+[Copy database](../../../modules/neo4j/src/test/java/org/testcontainers/containers/Neo4jContainerTest.java) inside_block:copyDatabase
+<!--/codeinclude-->
 
 !!! note
 The `withDatabase` method will only work with Neo4j 3.5 and throw an exception if used in combination with a newer version.
@@ -147,14 +117,9 @@ The `withDatabase` method will only work with Neo4j 3.5 and throw an exception i
 
 If you need the Neo4j enterprise license, you can declare your Neo4j container like this:
 
-```java
-@Testcontainers
-public class ExampleTest { 
-    @ClassRule
-    public static Neo4jContainer neo4jContainer = new Neo4jContainer()
-        .withEnterpriseEdition();        
-}
-```
+<!--codeinclude-->
+[Enterprise edition](../../../modules/neo4j/src/test/java/org/testcontainers/containers/Neo4jContainerTest.java) inside_block:enterpriseEdition
+<!--/codeinclude-->
 
 This creates a Testcontainer based on the Docker image build with the Enterprise version of Neo4j. 
 The call to `withEnterpriseEdition` adds the required environment variable that you accepted the terms and condition of the enterprise version.

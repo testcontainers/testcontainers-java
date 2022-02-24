@@ -31,7 +31,10 @@ public class Neo4jContainerTest {
     public void shouldDisableAuthentication() {
 
         try (
-            Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>(Neo4jTestImages.NEO4J_TEST_IMAGE).withoutAuthentication()
+            // withoutAuthentication {
+            Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>(Neo4jTestImages.NEO4J_TEST_IMAGE)
+                .withoutAuthentication()
+            // }
         ) {
             neo4jContainer.start();
             try (Driver driver = getDriver(neo4jContainer);
@@ -46,8 +49,10 @@ public class Neo4jContainerTest {
     @Test
     public void shouldCopyDatabase() {
         try (
+            // copyDatabase {
             Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:3.5.30")
                 .withDatabase(MountableFile.forClasspathResource("/test-graph.db"))
+            // }
         ) {
             neo4jContainer.start();
             try (
@@ -88,8 +93,10 @@ public class Neo4jContainerTest {
     @Test
     public void shouldCopyPlugins() {
         try (
+            // registerPluginsPath {
             Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>(Neo4jTestImages.NEO4J_TEST_IMAGE)
                 .withPlugins(MountableFile.forClasspathResource("/custom-plugins"))
+            // }
         ) {
             neo4jContainer.start();
             try (
@@ -104,8 +111,10 @@ public class Neo4jContainerTest {
     @Test
     public void shouldCopyPlugin() {
         try (
+            // registerPluginsJar {
             Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>(Neo4jTestImages.NEO4J_TEST_IMAGE)
                 .withPlugins(MountableFile.forClasspathResource("/custom-plugins/hello-world.jar"))
+            // }
         ) {
             neo4jContainer.start();
             try (
@@ -140,8 +149,10 @@ public class Neo4jContainerTest {
         assumeThat(Neo4jContainerTest.class.getResource(ACCEPTANCE_FILE_LOCATION)).isNotNull();
 
         try (
+            // enterpriseEdition {
             Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>(Neo4jTestImages.NEO4J_TEST_IMAGE)
                 .withEnterpriseEdition()
+            // }
                 .withAdminPassword("Picard123")
         ) {
             neo4jContainer.start();
@@ -159,10 +170,11 @@ public class Neo4jContainerTest {
 
     @Test
     public void shouldAddConfigToEnvironment() {
-
+        // neo4jConfiguration {
         Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>(Neo4jTestImages.NEO4J_TEST_IMAGE)
             .withNeo4jConfig("dbms.security.procedures.unrestricted", "apoc.*,algo.*")
             .withNeo4jConfig("dbms.tx_log.rotation.size", "42M");
+        // }
 
         assertThat(neo4jContainer.getEnvMap())
             .containsEntry("NEO4J_dbms_security_procedures_unrestricted", "apoc.*,algo.*");
