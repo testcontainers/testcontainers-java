@@ -9,6 +9,7 @@ import org.neo4j.driver.GraphDatabase;
 import org.neo4j.driver.Record;
 import org.neo4j.driver.Result;
 import org.neo4j.driver.Session;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import java.util.Collections;
@@ -26,13 +27,14 @@ public class Neo4jContainerTest {
 
     // See org.testcontainers.utility.LicenseAcceptance#ACCEPTANCE_FILE_NAME
     private static final String ACCEPTANCE_FILE_LOCATION = "/container-license-acceptance.txt";
+    public static final DockerImageName NEO4J_IMAGE = Neo4jTestImages.NEO4J_TEST_IMAGE;
 
     @Test
     public void shouldDisableAuthentication() {
 
         try (
             // withoutAuthentication {
-            Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>(Neo4jTestImages.NEO4J_TEST_IMAGE)
+            Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>(NEO4J_IMAGE)
                 .withoutAuthentication()
             // }
         ) {
@@ -94,7 +96,7 @@ public class Neo4jContainerTest {
     public void shouldCopyPlugins() {
         try (
             // registerPluginsPath {
-            Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>(Neo4jTestImages.NEO4J_TEST_IMAGE)
+            Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>(NEO4J_IMAGE)
                 .withPlugins(MountableFile.forClasspathResource("/custom-plugins"))
             // }
         ) {
@@ -112,7 +114,7 @@ public class Neo4jContainerTest {
     public void shouldCopyPlugin() {
         try (
             // registerPluginsJar {
-            Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>(Neo4jTestImages.NEO4J_TEST_IMAGE)
+            Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>(NEO4J_IMAGE)
                 .withPlugins(MountableFile.forClasspathResource("/custom-plugins/hello-world.jar"))
             // }
         ) {
@@ -140,7 +142,7 @@ public class Neo4jContainerTest {
         String expectedImageName = "neo4j:4.4-enterprise";
 
         assertThatExceptionOfType(IllegalStateException.class)
-            .isThrownBy(() -> new Neo4jContainer<>(Neo4jTestImages.NEO4J_TEST_IMAGE).withEnterpriseEdition())
+            .isThrownBy(() -> new Neo4jContainer<>(NEO4J_IMAGE).withEnterpriseEdition())
             .withMessageContaining("The image " + expectedImageName + " requires you to accept a license agreement.");
     }
 
@@ -150,7 +152,7 @@ public class Neo4jContainerTest {
 
         try (
             // enterpriseEdition {
-            Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>(Neo4jTestImages.NEO4J_TEST_IMAGE)
+            Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>(NEO4J_IMAGE)
                 .withEnterpriseEdition()
             // }
                 .withAdminPassword("Picard123")
@@ -171,7 +173,7 @@ public class Neo4jContainerTest {
     @Test
     public void shouldAddConfigToEnvironment() {
         // neo4jConfiguration {
-        Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>(Neo4jTestImages.NEO4J_TEST_IMAGE)
+        Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>(NEO4J_IMAGE)
             .withNeo4jConfig("dbms.security.procedures.unrestricted", "apoc.*,algo.*")
             .withNeo4jConfig("dbms.tx_log.rotation.size", "42M");
         // }

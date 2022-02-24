@@ -1,0 +1,14 @@
+plugins {
+    id 'java'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.assertj:assertj-core:3.22.0'
+    testImplementation 'org.neo4j.driver:neo4j-java-driver:4.4.3'
+    testImplementation 'org.testcontainers:neo4j:1.16.3'
+    testImplementation 'org.testcontainers:junit-jupiter:1.16.3'
+}

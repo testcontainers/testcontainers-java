@@ -13,8 +13,9 @@ On the JVM you would most likely use the [Java driver](https://github.com/neo4j/
 
 The following example uses the JUnit 5 extension `@Testcontainers` and demonstrates both the usage of the Java Driver and the REST endpoint:
 
-=== "JUnit 5 example"
-    ```java
+<!--codeinclude-->
+[JUnit 5 example](../../../examples/neo4j-container/src/test/java/org/testcontainers/containers/Neo4jExampleTest.java) inside_block:junitExample
+<!--/codeinclude-->
     @Testcontainers
     public class ExampleTest {
     
