@@ -3,7 +3,8 @@ description = "Testcontainers :: K3S"
 dependencies {
     api project(":testcontainers")
 
-    shaded 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.1'
+    // https://youtu.be/otCpCn0l4Wo
+    shaded 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.8.8'
 
     testImplementation 'io.fabric8:kubernetes-client:5.11.0'
     testImplementation 'io.kubernetes:client-java:14.0.0'
