@@ -1,5 +1,9 @@
 description = "TestContainers :: HiveMQ"
 
+shadowJar {
+    exclude 'META-INF/services/*'
+}
+
 dependencies {
     api(project(":testcontainers"))
     api("org.jetbrains:annotations:23.0.0")

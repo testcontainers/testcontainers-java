@@ -4,6 +4,8 @@ import javassist.ClassPool;
 import javassist.NotFoundException;
 import lombok.Getter;
 import org.apache.commons.io.FileUtils;
+import org.jboss.shrinkwrap.api.ConfigurationBuilder;
+import org.jboss.shrinkwrap.api.Domain;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -101,9 +103,17 @@ public class HiveMQExtension {
             }
         }
 
-        final JavaArchive javaArchive =
-            ShrinkWrap.create(JavaArchive.class)
-                .addAsServiceProvider(EXTENSION_MAIN_CLASS_NAME, hiveMQExtension.getMainClass().getName());
+        // Shadow Gradle plugin doesn't know how to handle ShrinkWrap's SPI definitions
+        // This workaround creates the mappings programmatically
+        // TODO write a custom Gradle Shadow transformer?
+        Domain domain = ShrinkWrap.createDomain(
+            new ConfigurationBuilder()
+                .extensionLoader(new ShadingAwareServiceExtensionLoader())
+        );
+
+        final JavaArchive javaArchive = domain.getArchiveFactory()
+            .create(JavaArchive.class)
+            .addAsServiceProvider(EXTENSION_MAIN_CLASS_NAME, hiveMQExtension.getMainClass().getName());
 
         putSubclassesIntoJar(hiveMQExtension.getId(), hiveMQExtension.getMainClass(), javaArchive);
         for (final Class<?> additionalClass : hiveMQExtension.getAdditionalClasses()) {
