@@ -1,8 +1,8 @@
 package org.testcontainers.dockerclient;
 
 import com.github.dockerjava.core.DefaultDockerClientConfig;
-import com.github.dockerjava.core.LocalDirectorySSLConfig;
 import com.github.dockerjava.transport.SSLConfig;
+import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -16,15 +16,12 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -93,21 +90,24 @@ public class EnvironmentAndSystemPropertyClientProviderStrategyTest {
         assertEquals("tcp://1.2.3.4:2375", transportConfig.getDockerHost().toString());
 
         SSLConfig sslConfig = transportConfig.getSslConfig();
-        assertNotNull(sslConfig);
-        assertTrue(sslConfig instanceof LocalDirectorySSLConfig);
-        assertEquals(tempDirPath, ((LocalDirectorySSLConfig) sslConfig).getDockerCertPath());
+        Assertions.assertThat(sslConfig)
+            .extracting("dockerCertPath")
+            .isEqualTo(tempDirPath);
     }
 
     @Test
     public void applicableWhenIgnoringUserPropertiesAndConfigured() {
         Mockito.doReturn("autoIgnoringUserProperties").when(TestcontainersConfiguration.getInstance()).getEnvVarOrProperty(eq("dockerconfig.source"), anyString());
 
-        DefaultDockerClientConfig.Builder configBuilder = DefaultDockerClientConfig.createDefaultConfigBuilder()
-            .withDockerHost("tcp://1.2.3.4:2375");
+        Properties oldProperties = System.getProperties();
+        try {
+            System.setProperty("DOCKER_HOST", "tcp://1.2.3.4:2375");
+            EnvironmentAndSystemPropertyClientProviderStrategy strategy = new EnvironmentAndSystemPropertyClientProviderStrategy();
 
-        EnvironmentAndSystemPropertyClientProviderStrategy strategy = new EnvironmentAndSystemPropertyClientProviderStrategy(configBuilder);
-
-        assertTrue(strategy.isApplicable());
+            assertTrue(strategy.isApplicable());
+        } finally {
+            System.setProperties(oldProperties);
+        }
     }
 
     @Test
