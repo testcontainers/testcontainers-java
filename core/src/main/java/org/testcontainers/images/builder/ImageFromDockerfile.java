@@ -22,6 +22,7 @@ import org.testcontainers.images.builder.traits.StringsTrait;
 import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.DockerLoggerFactory;
+import org.testcontainers.utility.ImageNameSubstitutor;
 import org.testcontainers.utility.LazyFuture;
 import org.testcontainers.utility.ResourceReaper;
 
@@ -174,7 +175,9 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
         imagesToPull.forEach(imageName -> {
             try {
                 log.info("Pre-emptively checking local images for '{}', referenced via a Dockerfile. If not available, it will be pulled.", imageName);
-                new RemoteDockerImage(DockerImageName.parse(imageName)).get();
+                new RemoteDockerImage(DockerImageName.parse(imageName))
+                    .withImageNameSubstitutor(ImageNameSubstitutor.noop())
+                    .get();
             } catch (Exception e) {
                 log.warn("Unable to pre-fetch an image ({}) depended upon by Dockerfile - image build will continue but may fail. Exception message was: {}", imageName, e.getMessage());
             }
