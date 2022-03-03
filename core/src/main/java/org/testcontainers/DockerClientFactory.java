@@ -22,13 +22,15 @@ import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.dockerclient.DockerClientProviderStrategy;
 import org.testcontainers.dockerclient.DockerMachineClientProviderStrategy;
 import org.testcontainers.dockerclient.TransportConfig;
+import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.images.TimeLimitedLoggedPullImageResultCallback;
 import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
-import org.testcontainers.utility.ImageNameSubstitutor;
 import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.ResourceReaper;
 import org.testcontainers.utility.RyukResourceReaper;
@@ -236,7 +238,6 @@ public class DockerClientFactory {
                     checkDiskSpace(client, ryukContainerId);
                 } else {
                     runInsideDocker(
-                        client,
                         createContainerCmd -> {
                             createContainerCmd.withName("testcontainers-checks-" + SESSION_ID);
                             createContainerCmd.getHostConfig().withAutoRemove(true);
@@ -335,14 +336,18 @@ public class DockerClientFactory {
     }
 
     /**
-   * Check whether the image is available locally and pull it otherwise
-   */
+     * Check whether the image is available locally and pull it otherwise
+     *
+     * @deprecated use {@link RemoteDockerImage}
+     */
     @SneakyThrows
+    @Deprecated
     public void checkAndPullImage(DockerClient client, String image) {
         try {
             client.inspectImageCmd(image).exec();
         } catch (NotFoundException notFoundException) {
             PullImageCmd pullImageCmd = client.pullImageCmd(image);
+            Logger log = LoggerFactory.getLogger(image);
             try {
                 pullImageCmd.exec(new TimeLimitedLoggedPullImageResultCallback(log)).awaitCompletion();
             } catch (DockerClientException e) {
@@ -363,18 +368,10 @@ public class DockerClientFactory {
     }
 
     public <T> T runInsideDocker(Consumer<CreateContainerCmd> createContainerCmdConsumer, BiFunction<DockerClient, String, T> block) {
-        // We can't use client() here because it might create an infinite loop
-        return runInsideDocker(getOrInitializeStrategy().getDockerClient(), createContainerCmdConsumer, block);
-    }
-
-    private <T> T runInsideDocker(DockerClient client, Consumer<CreateContainerCmd> createContainerCmdConsumer, BiFunction<DockerClient, String, T> block) {
-
-        final String tinyImage = ImageNameSubstitutor.instance().apply(TINY_IMAGE).asCanonicalNameString();
-
-        checkAndPullImage(client, tinyImage);
+        RemoteDockerImage dockerImage = new RemoteDockerImage(TINY_IMAGE);
         HashMap<String, String> labels = new HashMap<>(DEFAULT_LABELS);
         labels.putAll(ResourceReaper.instance().getLabels());
-        CreateContainerCmd createContainerCmd = client.createContainerCmd(tinyImage)
+        CreateContainerCmd createContainerCmd = client.createContainerCmd(dockerImage.get())
                 .withLabels(labels);
         createContainerCmdConsumer.accept(createContainerCmd);
         String id = createContainerCmd.exec().getId();
