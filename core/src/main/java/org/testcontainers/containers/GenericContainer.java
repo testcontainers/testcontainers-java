@@ -1332,6 +1332,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * {@inheritDoc}
      */
     @Override
+    @Deprecated
     public String getTestHostIpAddress() {
         if (DockerMachineClient.instance().isInstalled()) {
             try {
