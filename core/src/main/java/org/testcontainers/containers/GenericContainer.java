@@ -1219,7 +1219,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @Override
     public SELF withImagePullPolicy(ImagePullPolicy imagePullPolicy) {
-        setImage(containerDef.getImage().withImagePullPolicy(imagePullPolicy));
+        containerDef.setImage(containerDef.getImage().withImagePullPolicy(imagePullPolicy));
         return self();
     }
 
