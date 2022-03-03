@@ -59,7 +59,7 @@ project.afterEvaluate {
     // Add shaded JARs first
     tasks.test.classpath = findShadedProjects(project)
         .plus(project)
-        .sum {it.tasks.findByName("shadowJar").outputs.files }
+        .sum { it.tasks.findByName("shadowJar").outputs.files }
         .plus(sourceSets.test.runtimeClasspath)
 }
 
