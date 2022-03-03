@@ -20,10 +20,12 @@ import org.rnorth.ducttape.TimeoutException;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.rnorth.ducttape.unreliables.Unreliables;
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -282,7 +284,10 @@ public abstract class DockerClientProviderStrategy {
                     .withDockerHost(transportConfig.getDockerHost().toString())
                     .build()
             ),
-            dockerHttpClient
+            new HeadersAddingDockerHttpClient(
+                dockerHttpClient,
+                Collections.singletonMap("x-tc-sid", DockerClientFactory.SESSION_ID)
+            )
         );
     }
 
