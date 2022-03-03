@@ -368,7 +368,11 @@ public class DockerClientFactory {
     }
 
     public <T> T runInsideDocker(Consumer<CreateContainerCmd> createContainerCmdConsumer, BiFunction<DockerClient, String, T> block) {
-        RemoteDockerImage dockerImage = new RemoteDockerImage(TINY_IMAGE);
+        return runInsideDocker(TINY_IMAGE, createContainerCmdConsumer, block);
+    }
+
+    <T> T runInsideDocker(DockerImageName imageName, Consumer<CreateContainerCmd> createContainerCmdConsumer, BiFunction<DockerClient, String, T> block) {
+        RemoteDockerImage dockerImage = new RemoteDockerImage(imageName);
         HashMap<String, String> labels = new HashMap<>(DEFAULT_LABELS);
         labels.putAll(ResourceReaper.instance().getLabels());
         CreateContainerCmd createContainerCmd = client.createContainerCmd(dockerImage.get())
