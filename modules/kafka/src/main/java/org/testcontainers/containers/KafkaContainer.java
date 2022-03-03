@@ -21,6 +21,13 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     private static final String DEFAULT_INTERNAL_TOPIC_RF = "1";
 
     /**
+     * @deprecated use {@link KafkaContainerDef#getExternalZookeeperConnect()}
+     * @see #getContainerDef()
+     */
+    @Deprecated
+    protected String externalZookeeperConnect = null;
+
+    /**
      * @deprecated use {@link KafkaContainer(DockerImageName)} instead
      */
     @Deprecated
@@ -69,12 +76,12 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     }
 
     public KafkaContainer withEmbeddedZookeeper() {
-        getContainerDef().withEmbeddedZookeeper();
+        externalZookeeperConnect = null;
         return self();
     }
 
     public KafkaContainer withExternalZookeeper(String connectString) {
-        getContainerDef().withExternalZookeeper(connectString);
+        externalZookeeperConnect = connectString;
         return self();
     }
 
@@ -84,6 +91,13 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     @Override
     protected void configure() {
+        // TODO move to #withExternalZookeeper once `externalZookeeperConnect` is removed
+        if (externalZookeeperConnect != null) {
+            getContainerDef().withExternalZookeeper(externalZookeeperConnect);
+        } else {
+            getContainerDef().withEmbeddedZookeeper();
+        }
+
         withEnv(
             "KAFKA_ADVERTISED_LISTENERS",
             String.format(

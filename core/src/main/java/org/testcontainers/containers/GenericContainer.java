@@ -261,7 +261,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     @Override
-    public Future<String> getImage() {
+    public RemoteDockerImage getImage() {
         return containerDef.getImage();
     }
 
