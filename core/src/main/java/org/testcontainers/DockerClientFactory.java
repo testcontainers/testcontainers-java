@@ -22,8 +22,6 @@ import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testcontainers.dockerclient.DockerClientProviderStrategy;
 import org.testcontainers.dockerclient.DockerMachineClientProviderStrategy;
 import org.testcontainers.dockerclient.TransportConfig;
@@ -347,7 +345,6 @@ public class DockerClientFactory {
             client.inspectImageCmd(image).exec();
         } catch (NotFoundException notFoundException) {
             PullImageCmd pullImageCmd = client.pullImageCmd(image);
-            Logger log = LoggerFactory.getLogger(image);
             try {
                 pullImageCmd.exec(new TimeLimitedLoggedPullImageResultCallback(log)).awaitCompletion();
             } catch (DockerClientException e) {
