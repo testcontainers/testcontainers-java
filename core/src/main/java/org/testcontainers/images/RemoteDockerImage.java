@@ -29,10 +29,13 @@ import java.util.concurrent.Future;
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 public class RemoteDockerImage extends LazyFuture<String> {
 
-    private static final Duration PULL_RETRY_TIME_LIMIT = Duration.ofMinutes(2);
+    private static final Duration DEFAULT_PULL_RETRY_TIME_LIMIT = Duration.ofMinutes(2);
 
     @ToString.Exclude
     private Future<DockerImageName> imageNameFuture;
+
+    @ToString.Exclude
+    private Duration imagePullRetryTimeLimit = DEFAULT_PULL_RETRY_TIME_LIMIT;
 
     @Wither
     private ImagePullPolicy imagePullPolicy = PullPolicy.defaultPolicy();
@@ -42,6 +45,11 @@ public class RemoteDockerImage extends LazyFuture<String> {
 
     public RemoteDockerImage(DockerImageName dockerImageName) {
         this.imageNameFuture = CompletableFuture.completedFuture(dockerImageName);
+    }
+
+    public RemoteDockerImage(DockerImageName dockerImageName, Duration imagePullRetryTimeLimit) {
+        this.imageNameFuture = CompletableFuture.completedFuture(dockerImageName);
+        this.imagePullRetryTimeLimit = imagePullRetryTimeLimit;
     }
 
     @Deprecated
@@ -72,7 +80,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
             logger.info("Pulling docker image: {}. Please be patient; this may take some time but only needs to be done once.", imageName);
 
             Exception lastFailure = null;
-            final Instant lastRetryAllowed = Instant.now().plus(PULL_RETRY_TIME_LIMIT);
+            final Instant lastRetryAllowed = Instant.now().plus(imagePullRetryTimeLimit);
 
             while (Instant.now().isBefore(lastRetryAllowed)) {
                 try {
@@ -96,8 +104,15 @@ public class RemoteDockerImage extends LazyFuture<String> {
 
                     return imageName.asCanonicalNameString();
                 } catch (InterruptedException | InternalServerErrorException e) {
-                    // these classes of exception often relate to timeout/connection errors so should be retried
                     lastFailure = e;
+
+                    if (e.getMessage().toLowerCase().contains("no basic auth credentials")) {
+                        // This likely means docker credential is not configured. The exception is fatal and should
+                        // not be retried
+                        throw new ContainerFetchException("Failed to pull image: " + imageName, lastFailure);
+                    }
+
+                    // these classes of exception often relate to timeout/connection errors so should be retried
                     logger.warn("Retrying pull for image: {} ({}s remaining)",
                         imageName,
                         Duration.between(Instant.now(), lastRetryAllowed).getSeconds());
