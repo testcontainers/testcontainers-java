@@ -36,7 +36,7 @@ test methods:
 You can then use this driver instance like a regular WebDriver.
 
 Note that, if you want to test a **web application running on the host machine** (the machine the JUnit tests are
-running on - which is quite likely), you'll need to use [the host exposing](../features/networking.md) feature of Testcontainers, e.g.:
+running on - which is quite likely), you'll need to use [the host exposing](../features/networking.md#exposing-host-ports-to-the-container) feature of Testcontainers, e.g.:
 <!--codeinclude-->
 [Open Web Page](../../modules/selenium/src/test/java/org/testcontainers/junit/LocalServerWebDriverContainerTest.java) inside_block:getPage
 <!--/codeinclude-->
