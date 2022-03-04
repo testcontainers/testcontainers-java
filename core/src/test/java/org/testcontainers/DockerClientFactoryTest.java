@@ -42,8 +42,8 @@ public class DockerClientFactoryTest {
                 imageName,
                 cmd -> cmd.withCmd("sh", "-c", "echo 'SUCCESS'"),
                 (client, id) ->
-                    client.logContainerCmd(id)
-                            .withStdOut(true)
+                        client.logContainerCmd(id)
+                                .withStdOut(true)
                                 .exec(new LogToStringContainerCallback())
                                 .toString()
         );
