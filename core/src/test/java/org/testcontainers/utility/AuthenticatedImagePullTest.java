@@ -91,10 +91,10 @@ public class AuthenticatedImagePullTest {
         // remove the image tag from local docker so that it must be pulled before use
         try {
             client.removeImageCmd(testImageName).withForce(true).exec();
-            LocalImagesCacheAccessor.clearCache();
         } catch (NotFoundException ignored) {
 
         }
+        LocalImagesCacheAccessor.clearCache();
     }
 
     @AfterClass
