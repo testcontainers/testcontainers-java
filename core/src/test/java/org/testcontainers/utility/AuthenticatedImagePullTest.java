@@ -10,6 +10,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.testcontainers.DockerClientFactory;
@@ -17,6 +18,7 @@ import org.testcontainers.DockerRegistryContainer;
 import org.testcontainers.containers.ContainerState;
 import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.images.LocalImagesCacheAccessor;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 
 import java.io.IOException;
@@ -90,6 +92,7 @@ public class AuthenticatedImagePullTest {
         // remove the image tag from local docker so that it must be pulled before use
         try {
             client.removeImageCmd(testImageName).withForce(true).exec();
+            LocalImagesCacheAccessor.clearCache();
         } catch (NotFoundException ignored) {
 
         }
@@ -131,6 +134,7 @@ public class AuthenticatedImagePullTest {
     }
 
     @Test
+    @Ignore
     public void testThatAuthLocatorIsUsedForDockerComposePull() throws IOException {
         // Prepare a simple temporary Docker Compose manifest which requires our custom private image
         Path tempFile = getLocalTempFile(".docker-compose.yml");
