@@ -10,7 +10,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.testcontainers.DockerClientFactory;
@@ -134,7 +133,6 @@ public class AuthenticatedImagePullTest {
     }
 
     @Test
-    @Ignore
     public void testThatAuthLocatorIsUsedForDockerComposePull() throws IOException {
         // Prepare a simple temporary Docker Compose manifest which requires our custom private image
         Path tempFile = getLocalTempFile(".docker-compose.yml");

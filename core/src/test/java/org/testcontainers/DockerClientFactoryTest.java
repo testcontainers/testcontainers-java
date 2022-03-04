@@ -8,6 +8,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.rnorth.visibleassertions.VisibleAssertions;
 import org.testcontainers.DockerClientFactory.DiskSpaceUsage;
+import org.testcontainers.dockerclient.LogToStringContainerCallback;
 import org.testcontainers.images.LocalImagesCacheAccessor;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MockTestcontainersConfigurationRule;
@@ -40,17 +41,11 @@ public class DockerClientFactoryTest {
         dockFactory.runInsideDocker(
                 imageName,
                 cmd -> cmd.withCmd("sh", "-c", "echo 'SUCCESS'"),
-                (client, id) -> {
-                    try {
-                        return client.logContainerCmd(id)
+                (client, id) ->
+                    client.logContainerCmd(id)
                             .withStdOut(true)
-                            .start()
-                            .awaitCompletion();
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        throw new RuntimeException(e);
-                    }
-                }
+                                .exec(new LogToStringContainerCallback())
+                                .toString()
         );
     }
 
