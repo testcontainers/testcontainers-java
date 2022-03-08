@@ -12,3 +12,4 @@
 
 modules/mssqlserver/    @StefanHufschmidt @rnorth @bsideup @kiview
 modules/vault/          @mikeoswald @rnorth @bsideup @kiview
+modules/hivemq/         @hivemq/hivemq-os-project-code-owners
