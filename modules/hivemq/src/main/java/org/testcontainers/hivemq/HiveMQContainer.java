@@ -354,7 +354,7 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
         }
 
         if (!file.exists()) {
-            throw new ContainerLaunchException("File '" + mountableFile.getFilesystemPath() + "‘ does not exist.");
+            throw new ContainerLaunchException("File '" + mountableFile.getFilesystemPath() + "' does not exist.");
         }
         final String containerPath = "/opt/hivemq" + PathUtil.prepareAppendPath(pathInHomeFolder);
         withCopyFileToContainer(cloneWithFileMode(mountableFile), containerPath);
