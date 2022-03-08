@@ -44,6 +44,7 @@ public interface ContainerState {
      * Get the IP address that this container may be reached on (may not be the local machine).
      *
      * @return an IP address
+     * @deprecated use {@link #getHost()}
      * @see #getHost()
      */
     default String getContainerIpAddress() {

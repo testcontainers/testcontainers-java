@@ -7,10 +7,9 @@ import org.mortbay.jetty.handler.ResourceHandler;
 import org.openqa.selenium.By;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.testcontainers.Testcontainers;
 import org.testcontainers.containers.BrowserWebDriverContainer;
-import org.testcontainers.utility.TestEnvironment;
 
-import static org.apache.commons.lang3.SystemUtils.IS_OS_MAC_OSX;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 
 /**
@@ -20,17 +19,10 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 public class LocalServerWebDriverContainerTest {
 
     @Rule
-    public BrowserWebDriverContainer chrome = new BrowserWebDriverContainer().withCapabilities(new ChromeOptions());
+    public BrowserWebDriverContainer<?> chrome = new BrowserWebDriverContainer<>()
+        .withAccessToHost(true)
+        .withCapabilities(new ChromeOptions());
     private int localPort;
-
-    /**
-     * The getTestHostIpAddress() method is only implemented for OS X running docker-machine. Skip JUnit execution elsewhere.
-     */
-    @BeforeClass
-    public static void checkOS() {
-        Assume.assumeTrue("These tests are currently only applicable to OS X", IS_OS_MAC_OSX);
-        Assume.assumeTrue("These tests are only applicable to docker machine", TestEnvironment.dockerIsDockerMachine());
-    }
 
     @Before
     public void setupLocalServer() throws Exception {
@@ -55,8 +47,8 @@ public class LocalServerWebDriverContainerTest {
 
         // Construct a URL that the browser container can access
         // getPage {
-        String hostIpAddress = chrome.getTestHostIpAddress();
-        driver.get("http://" + hostIpAddress + ":" + localPort);
+        Testcontainers.exposeHostPorts(localPort);
+        driver.get("http://host.testcontainers.internal:" + localPort);
         // }
 
         String headingText = driver.findElement(By.cssSelector("h1")).getText().trim();

@@ -365,7 +365,9 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * from inside the container is not going to work, since the container has its own IP address.
      *
      * @return the IP address of the host machine
+     * @deprecated use {@link org.testcontainers.Testcontainers#exposeHostPorts(int...)}
      */
+    @Deprecated
     String getTestHostIpAddress();
 
     /**
