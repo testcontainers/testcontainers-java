@@ -7,7 +7,7 @@ import org.testcontainers.utility.DockerImageName;
  */
 public interface YugabyteTestContainerConstants {
 
-	String IMAGE_NAME = "yugabytedb/yugabyte:2.9.1.0-b140";
+	String IMAGE_NAME = "yugabytedb/yugabyte:2.12.1.0-b41";
 
 	DockerImageName YBDB_TEST_IMAGE = DockerImageName.parse(IMAGE_NAME);
 
