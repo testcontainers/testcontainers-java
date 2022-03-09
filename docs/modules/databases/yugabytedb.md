@@ -14,7 +14,7 @@ YugabyteDB supports two APIs.
 public class YugabyteDBTest {
 
     @Rule
-    public YugabyteYSQLContainer container = new YugabyteYSQLContainer("yugabytedb/yugabyte:2.9.1.0-b140");
+    public YugabyteYSQLContainer container = new YugabyteYSQLContainer("yugabytedb/yugabyte:2.12.1.0-b41");
     
     @Test
     public void method() {
@@ -25,7 +25,7 @@ public class YugabyteDBTest {
 
 #### JDBC URL
 
-`jdbc:tc:yugabyte:2.7.2.0-b216:///yugabyte`
+`jdbc:tc:yugabyte:2.12.1.0-b41:///yugabyte`
 
 ### YCQL API
 
@@ -33,7 +33,7 @@ public class YugabyteDBTest {
 public class YugabyteDBTest {
 
     @Rule
-    public YugabyteYCQLContainer container = new YugabyteYCQLContainer("yugabytedb/yugabyte:2.9.1.0-b140");
+    public YugabyteYCQLContainer container = new YugabyteYCQLContainer("yugabytedb/yugabyte:2.12.1.0-b41");
     
     @Test
     public void method() {

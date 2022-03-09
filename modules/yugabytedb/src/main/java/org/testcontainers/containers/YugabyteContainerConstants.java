@@ -11,7 +11,7 @@ public interface YugabyteContainerConstants {
 
 	DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("yugabytedb/yugabyte");
 
-	String DEFAULT_TAG = "2.9.1.0-b140";
+	String DEFAULT_TAG = "2.12.1.0-b41";
 
 	String NAME = "yugabyte";
 
