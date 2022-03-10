@@ -4,5 +4,5 @@ dependencies {
     api project(':testcontainers')
 
     testImplementation 'org.assertj:assertj-core:3.22.0'
-    testImplementation 'com.azure:azure-cosmos:4.24.0'
+    testImplementation 'com.azure:azure-cosmos:4.26.0'
 }
