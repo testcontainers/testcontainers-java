@@ -177,6 +177,7 @@ A huge thank you to our sponsors:
 * [eBay Marketing](https://www.ebay.com) - Testing for MySQL, Cassandra, Redis, Couchbase, Kafka, etc.
 * [Skyscanner](https://www.skyscanner.net/) - Integration testing against HTTP service mocks and various data stores
 * [Neo4j-OGM](https://neo4j.com/developer/neo4j-ogm/) - Testing with Neo4j
+* [Spring Data Neo4j](https://github.com/spring-projects/spring-data-neo4j/) - Testing imperative and reactive implementations with Neo4j
 * [Lightbend](https://www.lightbend.com/) - Testing [Alpakka Kafka](https://doc.akka.io/docs/alpakka-kafka/current/) and support in [Alpakka Kafka Testkit](https://doc.akka.io/docs/alpakka-kafka/current/testing.html#testing-with-kafka-in-docker)
 * [Zalando SE](https://corporate.zalando.com/en) - Testing core business services
 * [Europace AG](https://tech.europace.de/) - Integration testing for databases and micro services
