@@ -6,6 +6,7 @@ import static java.util.stream.Collectors.toSet;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -63,7 +64,7 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
 
     private String adminPassword = DEFAULT_ADMIN_PASSWORD;
 
-    private final Set<Neo4jLabsPlugin> labsPlugins = new HashSet<>();
+    private final Set<String> labsPlugins = new HashSet<>();
 
     /**
      * Creates a Neo4jContainer using the official Neo4j docker image.
@@ -127,7 +128,7 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
 
         if (!this.labsPlugins.isEmpty()) {
             String enabledPlugins = this.labsPlugins.stream()
-                .map(plugin -> "\"" + plugin.pluginName + "\"")
+                .map(pluginName -> "\"" + pluginName + "\"")
                 .collect(Collectors.joining(","));
 
             addEnv("NEO4JLABS_PLUGINS", "[" + enabledPlugins + "]");
@@ -272,6 +273,21 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
      * @return This container.
      */
     public S withLabsPlugins(Neo4jLabsPlugin... neo4jLabsPlugins) {
+        List<String> pluginNames = Arrays.stream(neo4jLabsPlugins)
+            .map(plugin -> plugin.pluginName)
+            .collect(Collectors.toList());
+
+        this.labsPlugins.addAll(pluginNames);
+        return self();
+    }
+
+    /**
+     * Registers one or more {@link Neo4jLabsPlugin} for download and server startup.
+
+     * @param neo4jLabsPlugins The Neo4j plugins that should get started with the server.
+     * @return This container.
+     */
+    public S withLabsPlugins(String... neo4jLabsPlugins) {
         this.labsPlugins.addAll(Arrays.asList(neo4jLabsPlugins));
         return self();
     }

@@ -58,8 +58,8 @@ Add any Neo4j Labs plugin from the [Neo4j Docker Labs plugin list](https://neo4j
 
 !!! note
     At the moment only the plugins available from the list Neo4j Docker 4.4 are supported by type.
-    If you want to register another supported Neo4j Labs plugin, you have to add the environment manually
-    by using the method `withEnv("NEO4JLABS_PLUGINS", "[\"anotherPlugin\"]")`.
+    If you want to register another supported Neo4j Labs plugin, you have to add it manually
+    by using the method `withLabsPlugins(String... neo4jLabsPlugins)`.
     Please refer to the list of [supported Docker image plugins](https://neo4j.com/docs/operations-manual/current/docker/operations/#docker-neo4jlabs-plugins).
 
 <!--codeinclude-->
