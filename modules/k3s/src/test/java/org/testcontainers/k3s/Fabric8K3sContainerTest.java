@@ -34,7 +34,9 @@ public class Fabric8K3sContainerTest {
                 .withLogConsumer(new Slf4jLogConsumer(log))
             // }
         ) {
+            // starting_k3s {
             k3s.start();
+            // }
 
             // connecting_with_fabric8 {
             // obtain a kubeconfig file which allows us to connect to k3s
