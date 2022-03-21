@@ -34,7 +34,6 @@ public class PeopleRepositoryTest {
 
         String url = mssqlserver.getJdbcUrl();
 
-        LoggerFactory.getLogger("foo").info(url);
         String connectionString = String.format("%s;username=%s;password=%s", url, mssqlserver.getUsername(), mssqlserver.getPassword());
         Connection connection = DriverManager.getConnection(connectionString);
 
