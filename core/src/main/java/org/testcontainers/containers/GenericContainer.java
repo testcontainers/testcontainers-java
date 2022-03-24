@@ -49,6 +49,7 @@ import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 import org.testcontainers.images.ImagePullPolicy;
 import org.testcontainers.images.RemoteDockerImage;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.lifecycle.Startables;
 import org.testcontainers.lifecycle.TestDescription;
@@ -186,7 +187,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private Long shmSize;
 
     // Maintain order in which entries are added, as earlier target location may be a prefix of a later location.
-    private Map<MountableFile, String> copyToFileContainerPathMap = new LinkedHashMap<>();
+    private Map<CopyFileToContainerWrapper<?>, String> copyToFileContainerPathMap = new LinkedHashMap<>();
 
     protected final Set<Startable> dependencies = new HashSet<>();
 
@@ -414,7 +415,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 containerId = createCommand.exec().getId();
 
                 // TODO use single "copy" invocation (and calculate an hash of the resulting tar archive)
-                copyToFileContainerPathMap.forEach(this::copyFileToContainer);
+                copyToFileContainerPathMap.forEach((k,v) -> k.copyFileToContainer(this));
             }
 
             connectToPortForwardingNetwork(createCommand.getNetworkMode());
@@ -530,14 +531,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @VisibleForTesting
     Checksum hashCopiedFiles() {
         Checksum checksum = new Adler32();
-        copyToFileContainerPathMap.entrySet().stream().sorted(Entry.comparingByValue()).forEach(entry -> {
-            byte[] pathBytes = entry.getValue().getBytes();
-            // Add path to the hash
-            checksum.update(pathBytes, 0, pathBytes.length);
-
-            File file = new File(entry.getKey().getResolvedPath());
-            checksumFile(file, checksum);
-        });
+        copyToFileContainerPathMap.entrySet().stream().sorted(Entry.comparingByValue())
+            .forEach(entry -> entry.getKey().hash(checksum));
         return checksum;
     }
 
@@ -1284,15 +1279,97 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         return self();
     }
 
+    private interface CopyFileToContainerWrapper<T> {
+        T getWrapped();
+
+        void hash(Checksum checksum);
+
+        void copyFileToContainer(GenericContainer<?> container);
+    }
+
     /**
      * {@inheritDoc}
      */
     @Override
     public SELF withCopyFileToContainer(MountableFile mountableFile, String containerPath) {
-        if (copyToFileContainerPathMap.containsKey(mountableFile)) {
-            throw new IllegalStateException("Path already configured for copy: " + mountableFile);
+        final CopyFileToContainerWrapper<MountableFile> wrapper = new CopyFileToContainerWrapper<MountableFile>() {
+            @Override
+            public MountableFile getWrapped() {
+                return mountableFile;
+            }
+
+            @Override
+            public void hash(final Checksum checksum) {
+                byte[] pathBytes = containerPath.getBytes();
+                // Add path to the hash
+                checksum.update(pathBytes, 0, pathBytes.length);
+
+                File file = new File(mountableFile.getResolvedPath());
+                checksumFile(file, checksum);
+            }
+
+            @Override
+            public void copyFileToContainer(final GenericContainer<?> container) {
+                container.copyFileToContainer(mountableFile, containerPath);
+            }
+
+            @Override
+            public int hashCode() {
+                return mountableFile.hashCode();
+            }
+
+            @Override
+            public boolean equals(final Object obj) {
+                return mountableFile.equals(obj);
+            }
+        };
+        return withCopyFileToContainer(wrapper, containerPath);
+    }
+
+    @Override
+    public SELF withCopyFileToContainer(final Transferable transferable, final String containerPath) {
+        final CopyFileToContainerWrapper<Transferable> wrapper = new CopyFileToContainerWrapper<Transferable>() {
+            @Override
+            public Transferable getWrapped() {
+                return transferable;
+            }
+
+            @Override
+            public void hash(final Checksum checksum) {
+                byte[] pathBytes = containerPath.getBytes();
+                // Add path to the hash
+                checksum.update(pathBytes, 0, pathBytes.length);
+
+                byte[] transferableBytes = transferable.getBytes();
+                checksum.update(transferableBytes, 0, transferableBytes.length);
+            }
+
+            @Override
+            public void copyFileToContainer(final GenericContainer<?> container) {
+                container.copyFileToContainer(transferable, containerPath);
+            }
+
+            @Override
+            public int hashCode() {
+                return transferable.hashCode();
+            }
+
+            @Override
+            public boolean equals(final Object obj) {
+                return transferable.equals(obj);
+            }
+        };
+        return withCopyFileToContainer(wrapper, containerPath);
+    }
+
+    private SELF withCopyFileToContainer(
+        final CopyFileToContainerWrapper<?> wrapper,
+        final String containerPath
+    ) {
+        if (copyToFileContainerPathMap.containsKey(wrapper)) {
+            throw new IllegalStateException("Path already configured for copy: " + wrapper.getWrapped());
         }
-        copyToFileContainerPathMap.put(mountableFile, containerPath);
+        copyToFileContainerPathMap.put(wrapper, containerPath);
         return self();
     }
 
