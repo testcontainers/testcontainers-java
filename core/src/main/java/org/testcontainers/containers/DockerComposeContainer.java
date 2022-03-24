@@ -12,8 +12,8 @@ import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.Uninterruptibles;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 import org.slf4j.Logger;
@@ -41,7 +41,6 @@ import org.zeroturnaround.exec.stream.slf4j.Slf4jStream;
 
 import java.io.File;
 import java.time.Duration;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -56,7 +55,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -310,8 +308,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     }
 
     private void registerContainersForShutdown() {
-        ResourceReaper.instance().registerFilterForCleanup(Arrays.asList(
-            new SimpleEntry<>("label", "com.docker.compose.project=" + project)
+        ResourceReaper.instance().registerLabelsFilterForCleanup(Collections.singletonMap(
+            "com.docker.compose.project", project
         ));
     }
 
@@ -608,7 +606,7 @@ interface DockerCompose {
 class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCompose> implements DockerCompose {
 
     public static final char UNIX_PATH_SEPERATOR = ':';
-    public static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("docker/compose:1.24.1");
+    public static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("docker/compose:1.29.2");
 
     public ContainerisedDockerCompose(List<File> composeFiles, String identifier) {
 

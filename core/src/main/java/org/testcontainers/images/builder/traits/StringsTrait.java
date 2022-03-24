@@ -1,7 +1,7 @@
 package org.testcontainers.images.builder.traits;
 
 import lombok.Getter;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.testcontainers.images.builder.Transferable;
 
 /**

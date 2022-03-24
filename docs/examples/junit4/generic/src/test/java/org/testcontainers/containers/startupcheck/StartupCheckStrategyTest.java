@@ -84,9 +84,9 @@ public class StartupCheckStrategyTest {
         @SneakyThrows
         @Test
         public void testCommandIsExecuted() {
-            waitForHello(bboxWithMinimumDuration);
-
             assertThat(bboxWithMinimumDuration.isRunning()).isTrue();
+
+            waitForHello(bboxWithMinimumDuration);
         }
     }
 }

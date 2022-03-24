@@ -1,15 +1,16 @@
 package org.testcontainers;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.DockerClientDelegate;
 import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.command.CreateContainerCmd;
-import com.github.dockerjava.api.command.ListImagesCmd;
+import com.github.dockerjava.api.command.PullImageCmd;
+import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.AccessMode;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Frame;
-import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.api.model.Info;
 import com.github.dockerjava.api.model.Version;
 import com.github.dockerjava.api.model.Volume;
@@ -19,8 +20,8 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.testcontainers.dockerclient.DockerClientProviderStrategy;
 import org.testcontainers.dockerclient.DockerMachineClientProviderStrategy;
 import org.testcontainers.dockerclient.TransportConfig;
@@ -30,6 +31,7 @@ import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.ImageNameSubstitutor;
 import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.ResourceReaper;
+import org.testcontainers.utility.RyukResourceReaper;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.io.ByteArrayOutputStream;
@@ -37,7 +39,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -61,11 +63,10 @@ public class DockerClientFactory {
     public static final String SESSION_ID = UUID.randomUUID().toString();
 
     public static final Map<String, String> DEFAULT_LABELS = ImmutableMap.of(
-            TESTCONTAINERS_LABEL, "true",
-            TESTCONTAINERS_SESSION_ID_LABEL, SESSION_ID
+            TESTCONTAINERS_LABEL, "true"
     );
 
-    private static final DockerImageName TINY_IMAGE = DockerImageName.parse("alpine:3.5");
+    private static final DockerImageName TINY_IMAGE = DockerImageName.parse("alpine:3.14");
     private static DockerClientFactory instance;
 
     // Cached client configuration
@@ -73,7 +74,7 @@ public class DockerClientFactory {
     DockerClientProviderStrategy strategy;
 
     @VisibleForTesting
-    DockerClient dockerClient;
+    DockerClient client;
 
     @VisibleForTesting
     RuntimeException cachedClientFailure;
@@ -95,7 +96,17 @@ public class DockerClientFactory {
     }
 
     public static DockerClient lazyClient() {
-        return LazyDockerClient.INSTANCE;
+        return new DockerClientDelegate() {
+            @Override
+            protected DockerClient getDockerClient() {
+                return instance().client();
+            }
+
+            @Override
+            public String toString() {
+                return "LazyDockerClient";
+            }
+        };
     }
 
     /**
@@ -164,21 +175,24 @@ public class DockerClientFactory {
      */
     @Synchronized
     public DockerClient client() {
-
-        if (dockerClient != null) {
-            return dockerClient;
-        }
-
         // fail-fast if checks have failed previously
         if (cachedClientFailure != null) {
             log.debug("There is a cached checks failure - throwing", cachedClientFailure);
             throw cachedClientFailure;
         }
 
+        if (client != null) {
+            return client;
+        }
+
         final DockerClientProviderStrategy strategy = getOrInitializeStrategy();
 
         log.info("Docker host IP address is {}", strategy.getDockerHostIpAddress());
-        final DockerClient client = new DelegatingDockerClient(strategy.getDockerClient()) {
+        client = new DockerClientDelegate() {
+
+            @Getter
+            final DockerClient dockerClient = strategy.getDockerClient();
+
             @Override
             public void close() {
                 throw new IllegalStateException("You should never close the global DockerClient!");
@@ -195,22 +209,14 @@ public class DockerClientFactory {
                 "  Operating System: " + dockerInfo.getOperatingSystem() + "\n" +
                 "  Total Memory: " + dockerInfo.getMemTotal() / (1024 * 1024) + " MB");
 
-        final String ryukContainerId;
-
-        boolean useRyuk = !Boolean.parseBoolean(System.getenv("TESTCONTAINERS_RYUK_DISABLED"));
-        if (useRyuk) {
-            log.debug("Ryuk is enabled");
-            try {
-                //noinspection deprecation
-                ryukContainerId = ResourceReaper.start(client);
-            } catch (RuntimeException e) {
-                cachedClientFailure = e;
-                throw e;
-            }
-            log.info("Ryuk started - will monitor and terminate Testcontainers containers on JVM exit");
-        } else {
-            log.debug("Ryuk is disabled");
-            ryukContainerId = null;
+        final ResourceReaper resourceReaper;
+        try {
+            resourceReaper = ResourceReaper.instance();
+            //noinspection deprecation
+            resourceReaper.init();
+        } catch (RuntimeException e) {
+            cachedClientFailure = e;
+            throw e;
         }
 
         boolean checksEnabled = !TestcontainersConfiguration.getInstance().isDisableChecks();
@@ -220,6 +226,12 @@ public class DockerClientFactory {
             try {
                 log.info("Checking the system...");
                 checkDockerVersion(version.getVersion());
+
+                //noinspection deprecation
+                String ryukContainerId = resourceReaper instanceof RyukResourceReaper
+                    ? ((RyukResourceReaper) resourceReaper).getContainerId()
+                    : null;
+
                 if (ryukContainerId != null) {
                     checkDiskSpace(client, ryukContainerId);
                 } else {
@@ -244,8 +256,7 @@ public class DockerClientFactory {
             log.debug("Checks are disabled");
         }
 
-        dockerClient = client;
-        return dockerClient;
+        return client;
     }
 
     private void checkDockerVersion(String dockerVersion) {
@@ -330,8 +341,17 @@ public class DockerClientFactory {
     public void checkAndPullImage(DockerClient client, String image) {
         try {
             client.inspectImageCmd(image).exec();
-        } catch (NotFoundException e) {
-            client.pullImageCmd(image).exec(new TimeLimitedLoggedPullImageResultCallback(log)).awaitCompletion();
+        } catch (NotFoundException notFoundException) {
+            PullImageCmd pullImageCmd = client.pullImageCmd(image);
+            try {
+                pullImageCmd.exec(new TimeLimitedLoggedPullImageResultCallback(log)).awaitCompletion();
+            } catch (DockerClientException e) {
+                // Try to fallback to x86
+                pullImageCmd
+                    .withPlatform("linux/amd64")
+                    .exec(new TimeLimitedLoggedPullImageResultCallback(log))
+                    .awaitCompletion();
+            }
         }
     }
 
@@ -352,8 +372,10 @@ public class DockerClientFactory {
         final String tinyImage = ImageNameSubstitutor.instance().apply(TINY_IMAGE).asCanonicalNameString();
 
         checkAndPullImage(client, tinyImage);
+        HashMap<String, String> labels = new HashMap<>(DEFAULT_LABELS);
+        labels.putAll(ResourceReaper.instance().getLabels());
         CreateContainerCmd createContainerCmd = client.createContainerCmd(tinyImage)
-                .withLabels(DEFAULT_LABELS);
+                .withLabels(labels);
         createContainerCmdConsumer.accept(createContainerCmd);
         String id = createContainerCmd.exec().getId();
 

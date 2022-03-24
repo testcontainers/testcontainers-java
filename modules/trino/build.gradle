@@ -1,9 +1,9 @@
 description = "Testcontainers :: JDBC :: Trino"
 
 dependencies {
-    compile project(':jdbc')
+    api project(':jdbc')
 
-    testCompile project(':jdbc-test')
-    testCompile 'io.trino:trino-jdbc:352'
-    compileOnly 'org.jetbrains:annotations:20.0.0'
+    testImplementation project(':jdbc-test')
+    testImplementation 'io.trino:trino-jdbc:369'
+    compileOnly 'org.jetbrains:annotations:23.0.0'
 }

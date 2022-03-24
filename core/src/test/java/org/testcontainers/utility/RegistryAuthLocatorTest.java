@@ -2,7 +2,7 @@ package org.testcontainers.utility;
 
 import com.github.dockerjava.api.model.AuthConfig;
 import com.google.common.io.Resources;
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 

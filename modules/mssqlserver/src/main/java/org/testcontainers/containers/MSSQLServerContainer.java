@@ -1,8 +1,10 @@
 package org.testcontainers.containers;
 
+import com.google.common.collect.Sets;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.LicenseAcceptance;
 
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -60,8 +62,8 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
     }
 
     @Override
-    protected Integer getLivenessCheckPort() {
-        return getMappedPort(MS_SQL_SERVER_PORT);
+    public Set<Integer> getLivenessCheckPortNumbers() {
+        return Sets.newHashSet(MS_SQL_SERVER_PORT);
     }
 
     @Override
@@ -87,6 +89,17 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
     @Override
     public String getDriverClassName() {
         return "com.microsoft.sqlserver.jdbc.SQLServerDriver";
+    }
+
+    @Override
+    protected String constructUrlForConnection(String queryString) {
+        // The JDBC driver of MS SQL Server enables encryption by default for versions > 10.1.0.
+        // We need to disable it by default to be able to use the container without having to pass extra params.
+        // See https://github.com/microsoft/mssql-jdbc/releases/tag/v10.1.0
+        if (urlParameters.keySet().stream().map(String::toLowerCase).noneMatch("encrypt"::equals)) {
+            urlParameters.put("encrypt", "false");
+        }
+        return super.constructUrlForConnection(queryString);
     }
 
     @Override

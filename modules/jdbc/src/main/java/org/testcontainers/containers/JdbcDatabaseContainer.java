@@ -1,8 +1,10 @@
 package org.testcontainers.containers;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import java.sql.Statement;
 import lombok.NonNull;
-import org.apache.commons.lang.StringUtils;
+import lombok.SneakyThrows;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.delegate.DatabaseDelegate;
@@ -130,25 +132,23 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
         return self();
     }
 
+    @SneakyThrows(InterruptedException.class)
     @Override
     protected void waitUntilContainerStarted() {
         logger().info("Waiting for database connection to become available at {} using query '{}'", getJdbcUrl(), getTestQueryString());
 
         // Repeatedly try and open a connection to the DB and execute a test query
         long start = System.currentTimeMillis();
-        try {
-            while (System.currentTimeMillis() < start + (1000 * startupTimeoutSeconds)) {
-                try {
-                    if (!isRunning()) {
-                        Thread.sleep(100L);
-                        continue; // Don't attempt to connect yet
-                    }
 
-                    try (Connection connection = createConnection("")) {
-                        boolean testQuerySucceeded = connection.createStatement().execute(this.getTestQueryString());
-                        if (testQuerySucceeded) {
-                            break;
-                        }
+        while (System.currentTimeMillis() < start + (1000 * startupTimeoutSeconds)) {
+            if (!isRunning()) {
+                Thread.sleep(100L);
+            } else {
+                try (Statement statement = createConnection("").createStatement()) {
+                    boolean testQuerySucceeded = statement.execute(this.getTestQueryString());
+                    if (testQuerySucceeded) {
+                        logger().info("Container is started (JDBC URL: {})", this.getJdbcUrl());
+                        return;
                     }
                 } catch (NoDriverFoundException e) {
                     // we explicitly want this exception to fail fast without retries
@@ -159,12 +159,12 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
                     Thread.sleep(100L);
                 }
             }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new ContainerLaunchException("Container startup wait was interrupted", e);
         }
 
-        logger().info("Container is started (JDBC URL: {})", JdbcDatabaseContainer.this.getJdbcUrl());
+        throw new IllegalStateException(
+            String.format("Container is started, but cannot be accessed by (JDBC URL: %s), please check container logs",
+                this.getJdbcUrl())
+        );
     }
 
     @Override

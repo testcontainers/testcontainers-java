@@ -9,7 +9,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.images.ParsedDockerfile;
@@ -112,6 +112,8 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
                 labels.putAll(buildImageCmd.getLabels());
             }
             labels.putAll(DockerClientFactory.DEFAULT_LABELS);
+            //noinspection deprecation
+            labels.putAll(ResourceReaper.instance().getLabels());
             buildImageCmd.withLabels(labels);
 
             prePullDependencyImages(dependencyImageNames);
@@ -123,6 +125,7 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
             // To build an image, we have to send the context to Docker in TAR archive format
             try (TarArchiveOutputStream tarArchive = new TarArchiveOutputStream(new GZIPOutputStream(out))) {
                 tarArchive.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
+                tarArchive.setBigNumberMode(TarArchiveOutputStream.BIGNUMBER_POSIX);
 
                 for (Map.Entry<String, Transferable> entry : transferables.entrySet()) {
                     Transferable transferable = entry.getValue();

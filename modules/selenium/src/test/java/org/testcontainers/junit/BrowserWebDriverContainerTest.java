@@ -2,6 +2,8 @@ package org.testcontainers.junit;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.SystemUtils;
+import org.junit.Assume;
 import org.junit.Test;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxOptions;
@@ -50,6 +52,7 @@ public class BrowserWebDriverContainerTest {
 
     @Test
     public void createContainerWithShmVolume() {
+        Assume.assumeFalse("SHM isn't mounted on Windows", SystemUtils.IS_OS_WINDOWS);
         try (
             BrowserWebDriverContainer webDriverContainer = new BrowserWebDriverContainer()
                 .withCapabilities(new FirefoxOptions())

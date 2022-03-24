@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.archivers.tar.TarConstants;
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.UnstableAPI;
@@ -130,6 +130,10 @@ public class MountableFile implements Transferable {
         classLoadersToSearch.add(MountableFile.class.getClassLoader());
 
         for (final ClassLoader classLoader : classLoadersToSearch) {
+            if (classLoader == null) {
+                continue;
+            }
+
             URL resource = classLoader.getResource(resourcePath);
             if (resource != null) {
                 return resource;

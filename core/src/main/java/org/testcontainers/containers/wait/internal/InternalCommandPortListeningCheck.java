@@ -24,24 +24,29 @@ public class InternalCommandPortListeningCheck implements java.util.concurrent.C
 
     @Override
     public Boolean call() {
-        StringBuilder command = new StringBuilder("true");
+        StringBuilder command = new StringBuilder("while true; do ( true ");
 
         for (int internalPort : internalPorts) {
             command.append(" && ");
             command.append(" (");
-            command.append(format("cat /proc/net/tcp* | awk '{print $2}' | grep -i ':0*%x'", internalPort));
+            command.append(format("grep -i ':0*%x' /proc/net/tcp*", internalPort));
             command.append(" || ");
             command.append(format("nc -vz -w 1 localhost %d", internalPort));
             command.append(" || ");
             command.append(format("/bin/bash -c '</dev/tcp/localhost/%d'", internalPort));
             command.append(")");
         }
+        command.append(" ) && exit 0 || sleep 0.1; done");
 
         Instant before = Instant.now();
         try {
             ExecResult result = ExecInContainerPattern.execInContainer(waitStrategyTarget.getContainerInfo(), "/bin/sh", "-c", command.toString());
             log.trace("Check for {} took {}. Result code '{}', stdout message: '{}'", internalPorts, Duration.between(before, Instant.now()), result.getExitCode(), result.getStdout());
-            return result.getExitCode() == 0;
+            int exitCode = result.getExitCode();
+            if (exitCode != 0 && exitCode != 1) {
+                log.warn("An exception while executing the internal check: {}", result);
+            }
+            return exitCode == 0;
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }

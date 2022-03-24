@@ -18,7 +18,7 @@ public class CustomizableMysqlTest extends AbstractContainerDatabaseTest {
     @Test
     public void testSimple() throws SQLException {
         // Add MYSQL_ROOT_HOST environment so that we can root login from anywhere for testing purposes
-        try (MySQLContainer<?> mysql = new MySQLContainer<>(MySQLTestImages.MYSQL_IMAGE)
+        try (MySQLContainer<?> mysql = new MySQLContainer<>(MySQLTestImages.MYSQL_57_IMAGE)
             .withDatabaseName(DB_NAME)
             .withUsername(USER)
             .withPassword(PWD)

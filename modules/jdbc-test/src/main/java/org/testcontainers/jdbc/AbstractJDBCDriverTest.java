@@ -3,7 +3,7 @@ package org.testcontainers.jdbc;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.dbutils.QueryRunner;
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameter;
@@ -117,7 +117,9 @@ public class AbstractJDBCDriverTest {
         String databaseQuery = "SELECT DATABASE()";
         // Postgres does not have Database() as a function
         String databaseType = ConnectionUrl.newInstance(jdbcUrl).getDatabaseType();
-        if (databaseType.equalsIgnoreCase("postgresql") || databaseType.equalsIgnoreCase("postgis")) {
+        if (databaseType.equalsIgnoreCase("postgresql") ||
+            databaseType.equalsIgnoreCase("postgis") ||
+            databaseType.equalsIgnoreCase("timescaledb")) {
             databaseQuery = "SELECT CURRENT_DATABASE()";
         }
 

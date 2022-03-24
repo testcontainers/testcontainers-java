@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<hivemq>
+    <persistence>
+        <mode>in-memory</mode>
+    </persistence>
+</hivemq>

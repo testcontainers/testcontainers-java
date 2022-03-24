@@ -12,7 +12,7 @@ import lombok.SneakyThrows;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
-import org.apache.commons.lang.math.NumberUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.DockerClientFactory;
@@ -44,6 +44,7 @@ public interface ContainerState {
      * Get the IP address that this container may be reached on (may not be the local machine).
      *
      * @return an IP address
+     * @deprecated use {@link #getHost()}
      * @see #getHost()
      */
     default String getContainerIpAddress() {
@@ -272,6 +273,7 @@ public interface ContainerState {
             TarArchiveOutputStream tarArchive = new TarArchiveOutputStream(byteArrayOutputStream)
         ) {
             tarArchive.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
+            tarArchive.setBigNumberMode(TarArchiveOutputStream.BIGNUMBER_POSIX);
 
             transferable.transferTo(tarArchive, containerPath);
             tarArchive.finish();
