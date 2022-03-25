@@ -9,7 +9,6 @@ import org.neo4j.driver.GraphDatabase;
 import org.neo4j.driver.Record;
 import org.neo4j.driver.Result;
 import org.neo4j.driver.Session;
-import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import java.util.Collections;
@@ -181,6 +180,63 @@ public class Neo4jContainerTest {
             .containsEntry("NEO4J_dbms_security_procedures_unrestricted", "apoc.*,algo.*");
         assertThat(neo4jContainer.getEnvMap())
             .containsEntry("NEO4J_dbms_tx__log_rotation_size", "42M");
+    }
+
+    @Test
+    public void shouldConfigureSingleLabsPlugin() {
+        try (Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4")
+            .withLabsPlugins(Neo4jLabsPlugin.APOC)) {
+
+
+            // needs to get called explicitly for setup
+            neo4jContainer.configure();
+
+            assertThat(neo4jContainer.getEnvMap())
+                .containsEntry("NEO4JLABS_PLUGINS", "[\"apoc\"]");
+        }
+    }
+
+    @Test
+    public void shouldConfigureMultipleLabsPlugins() {
+        try(
+        // configureLabsPlugins {
+        Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4")
+            .withLabsPlugins(Neo4jLabsPlugin.APOC, Neo4jLabsPlugin.BLOOM);
+        // }
+        ) {
+            // needs to get called explicitly for setup
+            neo4jContainer.configure();
+
+            assertThat(neo4jContainer.getEnvMap().get("NEO4JLABS_PLUGINS"))
+                .containsAnyOf("[\"apoc\",\"bloom\"]", "[\"bloom\",\"apoc\"]");
+        }
+    }
+
+    @Test
+    public void shouldConfigureSingleLabsPluginWithString() {
+        try (Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4")
+            .withLabsPlugins("myApoc")) {
+
+            // needs to get called explicitly for setup
+            neo4jContainer.configure();
+
+            assertThat(neo4jContainer.getEnvMap())
+                .containsEntry("NEO4JLABS_PLUGINS", "[\"myApoc\"]");
+        }
+    }
+
+    @Test
+    public void shouldConfigureMultipleLabsPluginsWithString() {
+
+        try (Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4")
+            .withLabsPlugins("myApoc", "myBloom")) {
+
+            // needs to get called explicitly for setup
+            neo4jContainer.configure();
+
+            assertThat(neo4jContainer.getEnvMap().get("NEO4JLABS_PLUGINS"))
+                .containsAnyOf("[\"myApoc\",\"myBloom\"]", "[\"myBloom\",\"myApoc\"]");
+        }
     }
 
     private static Driver getDriver(Neo4jContainer<?> container) {
