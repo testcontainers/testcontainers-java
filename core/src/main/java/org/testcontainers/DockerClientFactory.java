@@ -334,24 +334,32 @@ public class DockerClientFactory {
         }
     }
 
-    /**
-   * Check whether the image is available locally and pull it otherwise
-   */
+   /**
+    * Check whether the image is available locally and pull it otherwise
+    */
     @SneakyThrows
     public void checkAndPullImage(DockerClient client, String image) {
         try {
             client.inspectImageCmd(image).exec();
         } catch (NotFoundException notFoundException) {
-            PullImageCmd pullImageCmd = client.pullImageCmd(image);
-            try {
-                pullImageCmd.exec(new TimeLimitedLoggedPullImageResultCallback(log)).awaitCompletion();
-            } catch (DockerClientException e) {
-                // Try to fallback to x86
-                pullImageCmd
-                    .withPlatform("linux/amd64")
-                    .exec(new TimeLimitedLoggedPullImageResultCallback(log))
-                    .awaitCompletion();
-            }
+            pullImage(client, image);
+        }
+    }
+
+    /**
+     * Pull image from the remote registry
+     */
+    @SneakyThrows
+    public void pullImage(DockerClient client, String image) {
+        PullImageCmd pullImageCmd = client.pullImageCmd(image);
+        try {
+            pullImageCmd.exec(new TimeLimitedLoggedPullImageResultCallback(log)).awaitCompletion();
+        } catch (DockerClientException e) {
+            // Try to fallback to x86
+            pullImageCmd
+                .withPlatform("linux/amd64")
+                .exec(new TimeLimitedLoggedPullImageResultCallback(log))
+                .awaitCompletion();
         }
     }
 

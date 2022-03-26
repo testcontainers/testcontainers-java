@@ -4,7 +4,6 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.InspectImageResponse;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.Image;
-import com.google.common.annotations.VisibleForTesting;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.utility.DockerImageName;
@@ -18,19 +17,22 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Slf4j
-enum LocalImagesCache {
+public enum LocalImagesCache {
     INSTANCE;
 
     private final AtomicBoolean initialized = new AtomicBoolean(false);
 
-    @VisibleForTesting
-    final Map<DockerImageName, ImageData> cache = new ConcurrentHashMap<>();
+    private final Map<DockerImageName, ImageData> cache = new ConcurrentHashMap<>();
 
-    DockerClient dockerClient = DockerClientFactory.lazyClient();
+    private final DockerClient dockerClient = DockerClientFactory.lazyClient();
 
     public ImageData get(DockerImageName imageName) {
         maybeInitCache();
         return cache.get(imageName);
+    }
+
+    public void clearCache(DockerImageName imageName) {
+        cache.remove(imageName);
     }
 
     public Optional<ImageData> refreshCache(DockerImageName imageName) {

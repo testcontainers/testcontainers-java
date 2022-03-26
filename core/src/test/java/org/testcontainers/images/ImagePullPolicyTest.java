@@ -62,7 +62,7 @@ public class ImagePullPolicyTest {
         // Clean up local cache
         removeImage();
 
-        LocalImagesCache.INSTANCE.cache.remove(imageName);
+        LocalImagesCache.INSTANCE.clearCache(imageName);
     }
 
     @Test
