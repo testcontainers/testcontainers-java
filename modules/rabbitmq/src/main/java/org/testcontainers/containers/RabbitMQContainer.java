@@ -396,7 +396,7 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
      * @return This container.
      */
     public RabbitMQContainer withRabbitMQConfigSysctl(MountableFile rabbitMQConf) {
-        withEnv("RABBITMQ_CONFIG_FILE", "/etc/rabbitmq/rabbitmq-custom");
+        withEnv("RABBITMQ_CONFIG_FILE", "/etc/rabbitmq/rabbitmq-custom.conf");
         return withCopyFileToContainer(rabbitMQConf, "/etc/rabbitmq/rabbitmq-custom.conf");
     }
 
