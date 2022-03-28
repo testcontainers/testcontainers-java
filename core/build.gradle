@@ -79,7 +79,6 @@ dependencies {
     api "com.github.docker-java:docker-java-api"
 
     shaded 'com.github.docker-java:docker-java-core'
-    shaded 'com.github.docker-java:docker-java-transport-okhttp'
 
     api 'com.github.docker-java:docker-java-transport-zerodep'
 
