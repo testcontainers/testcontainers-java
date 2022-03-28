@@ -21,7 +21,8 @@ import java.util.stream.Stream;
 enum LocalImagesCache {
     INSTANCE;
 
-    private final AtomicBoolean initialized = new AtomicBoolean(false);
+    @VisibleForTesting
+    final AtomicBoolean initialized = new AtomicBoolean(false);
 
     @VisibleForTesting
     final Map<DockerImageName, ImageData> cache = new ConcurrentHashMap<>();
