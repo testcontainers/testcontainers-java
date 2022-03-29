@@ -17,24 +17,6 @@ plugins {
 
 apply from: "$rootDir/gradle/ci-support.gradle"
 
-/**
- * Allows build cache relocatability for Delombok task
- */
-class DelombokArgumentProvider implements CommandLineArgumentProvider {
-
-    @InputFiles
-    @PathSensitive(PathSensitivity.RELATIVE)
-    Set<File> srcDirs
-
-    @OutputDirectory
-    File outputDir
-
-    @Override
-    Iterable<String> asArguments() {
-        return [srcDirs.collect { it.absolutePath }.join(" "), "-d", outputDir.absolutePath, "-f", "generateDelombokComment:skip"]
-    }
-}
-
 subprojects {
     apply plugin: 'java-library'
     apply plugin: 'idea'
@@ -67,7 +49,7 @@ subprojects {
             true
         }
         argumentProviders.addAll(
-            new DelombokArgumentProvider(srcDirs: project.sourceSets.main.java.srcDirs, outputDir: file("$buildDir/delombok"))
+            new org.testcontainers.build.DelombokArgumentProvider(srcDirs: project.sourceSets.main.java.srcDirs, outputDir: file("$buildDir/delombok"))
         )
     }
     delombok.onlyIf {
