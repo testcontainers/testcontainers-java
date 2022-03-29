@@ -3,10 +3,6 @@
 If you like to live on the bleeding edge, [jitpack.io](https://jitpack.io) can be used to obtain SNAPSHOT versions.
 Use the following dependency description instead:
 
-=== "Gradle"
-    ```groovy
-    testImplementation "com.github.testcontainers.testcontainers-java:hivemq:master-SNAPSHOT"
-    ```
 === "Maven"
     ```xml
     <dependency>
@@ -15,13 +11,13 @@ Use the following dependency description instead:
         <version>master-SNAPSHOT</version>
     </dependency>
     ```
+=== "Gradle"
+```groovy
+testImplementation "com.github.testcontainers.testcontainers-java:--artifact name--:master-SNAPSHOT"
+```
 
 A specific git revision (such as `02782d9`) can be used as a fixed version instead: 
 
-=== "Gradle"
-    ```groovy
-    testImplementation "com.github.testcontainers.testcontainers-java:hivemq:02782d9"
-    ```
 === "Maven"
     ```xml
     <dependency>
@@ -30,18 +26,14 @@ A specific git revision (such as `02782d9`) can be used as a fixed version inste
         <version>02782d9</version>
     </dependency>
     ```
+=== "Gradle"
+```groovy
+testImplementation "com.github.testcontainers.testcontainers-java:--artifact name--:02782d9"
+```
 
 
 The JitPack maven repository must also be declared, e.g.:
 
-=== "Gradle"
-    ```groovy
-    repositories {
-        maven {
-            url "https://jitpack.io"
-        }
-    }
-    ```
 === "Maven"
     ```xml
     <repositories>
@@ -50,5 +42,13 @@ The JitPack maven repository must also be declared, e.g.:
             <url>https://jitpack.io</url>
         </repository>
     </repositories>
+    ```
+=== "Gradle"
+    ```groovy
+    repositories {
+        maven {
+            url "https://jitpack.io"
+        }
+    }
     ```
 
