@@ -48,7 +48,8 @@ public class DockerImageNameTest {
                 "/myname:latest",
                 "/myname@sha256:latest",
                 "/myname@sha256:gggggggggggggggggggggggggggggggg",
-                "repo:notaport/myname:latest"};
+                "repo:notaport/myname:latest",
+                "repo:repo:version"};
         }
 
         @Parameterized.Parameter
