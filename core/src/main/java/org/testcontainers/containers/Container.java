@@ -7,11 +7,12 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.Value;
 import org.testcontainers.DockerClientFactory;
-import org.testcontainers.images.ImagePullPolicy;
+import org.testcontainers.containers.output.BaseConsumer;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
+import org.testcontainers.images.ImagePullPolicy;
 import org.testcontainers.utility.LogUtils;
 import org.testcontainers.utility.MountableFile;
 
@@ -371,12 +372,17 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     String getTestHostIpAddress();
 
     /**
-     * Follow container output, sending each frame (usually, line) to a consumer. Stdout and stderr will be followed.
+     * Follow container output, sending each frame (usually, line) to a consumer. stdout and stderr will be followed by
+     * default, or if configured in BaseConsumer.
      *
      * @param consumer consumer that the frames should be sent to
      */
     default void followOutput(Consumer<OutputFrame> consumer) {
-        LogUtils.followOutput(DockerClientFactory.instance().client(), getContainerId(), consumer);
+        if (consumer instanceof BaseConsumer) {
+            LogUtils.followOutput(DockerClientFactory.instance().client(), getContainerId(), consumer, ((BaseConsumer<?>) consumer).getTypes());
+        } else {
+            LogUtils.followOutput(DockerClientFactory.instance().client(), getContainerId(), consumer);
+        }
     }
 
     /**

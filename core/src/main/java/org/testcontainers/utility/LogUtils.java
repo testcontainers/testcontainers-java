@@ -4,6 +4,7 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.LogContainerCmd;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
+import org.testcontainers.containers.output.BaseConsumer;
 import org.testcontainers.containers.output.FrameConsumerResultCallback;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.ToStringConsumer;
@@ -52,6 +53,21 @@ public class LogUtils {
                              Consumer<OutputFrame> consumer) {
 
         followOutput(dockerClient, containerId, consumer, STDOUT, STDERR);
+    }
+
+    /**
+     * Attach a log consumer to a container's log outputs in follow mode. The consumer will receive all previous
+     * and all future log frames (stdout and stderr if configured in BaseConsumer).
+     *
+     * @param dockerClient a Docker client
+     * @param containerId  container ID to attach to
+     * @param consumer     a base consumer of {@link OutputFrame}s
+     */
+    public void followOutput(DockerClient dockerClient,
+                             String containerId,
+                             BaseConsumer<?> consumer) {
+
+        followOutput(dockerClient, containerId, consumer, consumer.getTypes());
     }
 
     /**
