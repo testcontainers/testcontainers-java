@@ -109,7 +109,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
     }
 
     /**
-     * If this is running above Elasticsearch 8, the probably self signed CA cert will be extracted
+     * If this is running above Elasticsearch 8, this will return the probably self-signed CA cert that has been extracted
      *
      * @return byte array optional containing the CA cert extracted from the docker container
      */
