@@ -70,7 +70,7 @@ public class GenericContainerTest {
         try (
             GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
                 .withStartupCheckStrategy(new NoopStartupCheckStrategy())
-                .waitingFor(new WaitForExitedState(state -> state.getExitCodeLong() > 0))
+                .waitingFor(new WaitForExitedState(state -> state.getExitCode() > 0))
                 .withCommand("sh", "-c", "usleep 100; exit 123")
         ) {
             assertThatThrownBy(container::start)
