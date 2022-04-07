@@ -14,6 +14,7 @@ import javax.net.ssl.TrustManagerFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -21,6 +22,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.Collections;
+import java.util.Objects;
+import java.util.Scanner;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -115,43 +118,34 @@ public class RabbitMQContainerTest {
     }
 
     @Test
-    public void shouldMountConfigurationFile()
-    {
+    public void shouldMountConfigurationFile() {
         try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
-
             container.withRabbitMQConfig(MountableFile.forClasspathResource("/rabbitmq-custom.conf"));
             container.start();
 
-            assertThat(container.getLogs()).contains("config file(s) : /etc/rabbitmq/rabbitmq-custom.conf");
-            assertThat(container.getLogs()).doesNotContain(" (not found)");
+            assertThat(container.getLogs()).contains("debug"); // config file changes log level to `debug`
         }
     }
 
 
     @Test
-    public void shouldMountConfigurationFileErlang()
-    {
+    public void shouldMountConfigurationFileErlang() {
         try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
-
             container.withRabbitMQConfigErlang(MountableFile.forClasspathResource("/rabbitmq-custom.config"));
             container.start();
 
-            assertThat(container.getLogs()).contains("config file(s) : /etc/rabbitmq/rabbitmq-custom.config");
-            assertThat(container.getLogs()).doesNotContain(" (not found)");
+            assertThat(container.getLogs()).contains("debug"); // config file changes log level to `debug`
         }
     }
 
 
     @Test
-    public void shouldMountConfigurationFileSysctl()
-    {
+    public void shouldMountConfigurationFileSysctl() {
         try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
-
             container.withRabbitMQConfigSysctl(MountableFile.forClasspathResource("/rabbitmq-custom.conf"));
             container.start();
 
-            assertThat(container.getLogs()).contains("config file(s) : /etc/rabbitmq/rabbitmq-custom.conf");
-            assertThat(container.getLogs()).doesNotContain(" (not found)");
+            assertThat(container.getLogs()).contains("debug"); // config file changes log level to `debug`
         }
     }
 
