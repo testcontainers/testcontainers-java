@@ -187,6 +187,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private Long shmSize;
 
     // Maintain order in which entries are added, as earlier target location may be a prefix of a later location.
+    @Deprecated
     private Map<MountableFile, String> copyToFileContainerPathMap = new LinkedHashMap<>();
 
     // Maintain order in which entries are added, as earlier target location may be a prefix of a later location.
