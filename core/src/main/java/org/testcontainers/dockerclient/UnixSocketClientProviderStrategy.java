@@ -1,6 +1,6 @@
 package org.testcontainers.dockerclient;
 
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.SystemUtils;
 
 import java.io.IOException;
 import java.net.URI;

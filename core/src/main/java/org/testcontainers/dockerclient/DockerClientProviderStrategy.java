@@ -6,7 +6,6 @@ import com.github.dockerjava.api.model.Network;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.core.RemoteApiVersion;
-import com.github.dockerjava.okhttp.OkDockerHttpClient;
 import com.github.dockerjava.transport.DockerHttpClient;
 import com.github.dockerjava.zerodep.ZerodepDockerHttpClient;
 import com.google.common.annotations.VisibleForTesting;
@@ -14,16 +13,18 @@ import com.google.common.base.Throwables;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import org.rnorth.ducttape.TimeoutException;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.rnorth.ducttape.unreliables.Unreliables;
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -255,12 +256,6 @@ public abstract class DockerClientProviderStrategy {
 
         String transportType = TestcontainersConfiguration.getInstance().getTransportType();
         switch (transportType) {
-            case "okhttp":
-                dockerHttpClient = new OkDockerHttpClient.Builder()
-                    .dockerHost(transportConfig.getDockerHost())
-                    .sslConfig(transportConfig.getSslConfig())
-                    .build();
-                break;
             case "httpclient5":
                 dockerHttpClient = new ZerodepDockerHttpClient.Builder()
                     .dockerHost(transportConfig.getDockerHost())
@@ -282,7 +277,10 @@ public abstract class DockerClientProviderStrategy {
                     .withDockerHost(transportConfig.getDockerHost().toString())
                     .build()
             ),
-            dockerHttpClient
+            new HeadersAddingDockerHttpClient(
+                dockerHttpClient,
+                Collections.singletonMap("x-tc-sid", DockerClientFactory.SESSION_ID)
+            )
         );
     }
 

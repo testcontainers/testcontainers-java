@@ -4,8 +4,8 @@ import com.sun.jna.Library;
 import com.sun.jna.Native;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.net.URI;

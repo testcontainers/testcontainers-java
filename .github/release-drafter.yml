@@ -23,3 +23,4 @@ categories:
       - type/test-improvement
   - title: 📦 Dependency updates
     label: dependencies
+    collapse-after: 5

@@ -12,6 +12,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.rnorth.visibleassertions.VisibleAssertions;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.DockerRegistryContainer;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
@@ -22,19 +23,17 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
-import static org.testcontainers.TestImages.DOCKER_REGISTRY_IMAGE;
 
 public class ImagePullPolicyTest {
 
     @ClassRule
-    public static GenericContainer<?> registry = new GenericContainer<>(DOCKER_REGISTRY_IMAGE)
-        .withExposedPorts(5000);
+    public static DockerRegistryContainer registry = new DockerRegistryContainer();
 
     private static DockerImageName imageName;
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-        String testRegistryAddress = registry.getHost() + ":" + registry.getFirstMappedPort();
+        String testRegistryAddress = registry.getEndpoint();
         String testImageName = testRegistryAddress + "/image-pull-policy-test";
         String tag = UUID.randomUUID().toString();
         imageName = DockerImageName.parse(testImageName).withTag(tag);
