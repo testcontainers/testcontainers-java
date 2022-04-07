@@ -1,12 +1,15 @@
 package org.testcontainers.utility;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.archivers.tar.TarConstants;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.DockerClientFactory;
@@ -28,6 +31,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.stream.Stream;
+import java.util.zip.Checksum;
 
 import static lombok.AccessLevel.PACKAGE;
 import static org.testcontainers.utility.PathUtils.recursiveDeleteDir;
@@ -359,6 +364,31 @@ public class MountableFile implements Transferable {
     @Override
     public String getDescription() {
         return this.getResolvedPath();
+    }
+
+    @Override
+    public void updateChecksum(Checksum checksum) {
+        byte[] pathBytes = getBytes();
+        // Add path to the hash
+        checksum.update(pathBytes, 0, pathBytes.length);
+
+        File file = new File(getResolvedPath());
+        checksumFile(file, checksum);
+    }
+
+    @SneakyThrows(IOException.class)
+    private void checksumFile(File file, Checksum checksum) {
+        Path path = file.toPath();
+        checksum.update(MountableFile.getUnixFileMode(path));
+        if (file.isDirectory()) {
+            try (Stream<Path> stream = Files.walk(path)) {
+                stream.filter(it -> it != path).forEach(it -> {
+                    checksumFile(it.toFile(), checksum);
+                });
+            }
+        } else {
+            FileUtils.checksum(file, checksum);
+        }
     }
 
     @Override

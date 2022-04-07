@@ -6,6 +6,7 @@ import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.zip.Checksum;
 
 public interface Transferable {
 
@@ -30,6 +31,12 @@ public interface Transferable {
             @Override
             public byte[] getBytes() {
                 return bytes;
+            }
+
+            @Override
+            public void updateChecksum(Checksum checksum) {
+                byte[] bytes = getBytes();
+                checksum.update(bytes, 0, bytes.length);
             }
 
             @Override
@@ -82,5 +89,9 @@ public interface Transferable {
 
     default String getDescription() {
         return "";
+    }
+
+    default void updateChecksum(Checksum checksum) {
+        throw new UnsupportedOperationException("Provide implementation in subclass");
     }
 }

@@ -192,7 +192,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private Map<MountableFile, String> copyToFileContainerPathMap = new LinkedHashMap<>();
 
     // Maintain order in which entries are added, as earlier target location may be a prefix of a later location.
-    @Getter(AccessLevel.NONE)
     @Setter(AccessLevel.NONE)
     private Map<Transferable, String> copyToTransferableContainerPathMap = new LinkedHashMap<>();
 
@@ -540,31 +539,19 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @VisibleForTesting
     Checksum hashCopiedFiles() {
         Checksum checksum = new Adler32();
+        final Consumer<String> updateFromString = string -> {
+            byte[] bytes = string.getBytes();
+            checksum.update(bytes, 0, bytes.length);
+        };
         copyToFileContainerPathMap.entrySet().stream().sorted(Entry.comparingByValue()).forEach(entry -> {
-            byte[] pathBytes = entry.getValue().getBytes();
-            // Add path to the hash
-            checksum.update(pathBytes, 0, pathBytes.length);
-
-            File file = new File(entry.getKey().getResolvedPath());
-            checksumFile(file, checksum);
+            updateFromString.accept(entry.getValue());
+            entry.getKey().updateChecksum(checksum);
+        });
+        copyToTransferableContainerPathMap.entrySet().stream().sorted(Entry.comparingByValue()).forEach(entry -> {
+            updateFromString.accept(entry.getValue());
+            entry.getKey().updateChecksum(checksum);
         });
         return checksum;
-    }
-
-    @VisibleForTesting
-    @SneakyThrows(IOException.class)
-    void checksumFile(File file, Checksum checksum) {
-        Path path = file.toPath();
-        checksum.update(MountableFile.getUnixFileMode(path));
-        if (file.isDirectory()) {
-            try (Stream<Path> stream = Files.walk(path)) {
-                stream.filter(it -> it != path).forEach(it -> {
-                    checksumFile(it.toFile(), checksum);
-                });
-            }
-        } else {
-            FileUtils.checksum(file, checksum);
-        }
     }
 
     @UnstableAPI
@@ -1474,5 +1461,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public String getContainerName() {
         return getContainerInfo().getName();
+    }
+
+    @VisibleForTesting
+    Map<Transferable, String> getCopyToTransferableContainerPathMap() {
+        return copyToTransferableContainerPathMap;
     }
 }
