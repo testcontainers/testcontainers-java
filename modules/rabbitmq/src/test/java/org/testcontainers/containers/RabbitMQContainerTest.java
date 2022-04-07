@@ -123,16 +123,10 @@ public class RabbitMQContainerTest {
 
             final String resourceLocation = "/rabbitmq-custom.conf";
             container.withRabbitMQConfig(MountableFile.forClasspathResource(resourceLocation));
-            InputStream inputStream = this.getClass().getResourceAsStream(resourceLocation);
-            Scanner s = new Scanner(Objects.requireNonNull(inputStream)).useDelimiter("\\A");
-            String configContents = s.hasNext() ? s.next() : "";
             container.start();
 
             assertThat(container.getLogs()).contains("config file(s) : /etc/rabbitmq/rabbitmq-custom.conf");
-            assertThat(container.execInContainer("cat", "/etc/rabbitmq/rabbitmq-custom.conf")
-                .getStdout()
-            ).contains(configContents);
-            assertThat(container.getLogs()).doesNotContain(" (not found)");
+            assertThat(container.getLogs()).contains("debug"); // config file changes log level to `debug`
         }
     }
 
@@ -142,18 +136,11 @@ public class RabbitMQContainerTest {
         try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
 
             final String resourceLocation = "/rabbitmq-custom.config";
-            InputStream inputStream = this.getClass().getResourceAsStream(resourceLocation);
-            Scanner s = new Scanner(Objects.requireNonNull(inputStream)).useDelimiter("\\A");
-            String configContents = s.hasNext() ? s.next() : "";
 
             container.withRabbitMQConfigErlang(MountableFile.forClasspathResource("/rabbitmq-custom.config"));
             container.start();
 
-            assertThat(container.getLogs()).contains("config file(s) : /etc/rabbitmq/rabbitmq-custom.config");
-            assertThat(container.execInContainer("cat", "/etc/rabbitmq/rabbitmq-custom.config")
-                .getStdout()
-            ).contains(configContents);
-            assertThat(container.getLogs()).doesNotContain(" (not found)");
+            assertThat(container.getLogs()).contains("debug"); // config file changes log level to `debug`
         }
     }
 
