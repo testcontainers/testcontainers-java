@@ -83,7 +83,7 @@ public class GenericContainerTest {
         try (
             GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
                 .withStartupCheckStrategy(new NoopStartupCheckStrategy())
-                .withCopyTransferableToContainer(Transferable.of("test".getBytes(StandardCharsets.UTF_8)), "/tmp/test")
+                .withCopyFileToContainer(Transferable.of("test".getBytes(StandardCharsets.UTF_8)), "/tmp/test")
                 .waitingFor(new WaitForExitedState(state -> state.getExitCodeLong() > 0))
                 .withCommand("sh", "-c", "grep -q test /tmp/test && exit 100")
         ) {

@@ -176,13 +176,13 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     SELF withCopyFileToContainer(MountableFile mountableFile, String containerPath);
 
     /**
-     * Set the Transferable to be copied before starting a created container
+     * Set the file to be copied before starting a created container
      *
-     * @param transferable a Transferable with the contents for the file.
+     * @param transferable a Transferable
      * @param containerPath a destination path on container to which the files / folders to be copied
      * @return this
      */
-    SELF withCopyTransferableToContainer(Transferable transferable, String containerPath);
+    SELF withCopyFileToContainer(Transferable transferable, String containerPath);
 
     /**
      * Add an environment variable to be passed to the container.
@@ -412,11 +412,6 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     SELF withLogConsumer(Consumer<OutputFrame> consumer);
 
     List<String> getPortBindings();
-
-    @Override
-    default void copyFileToContainer(MountableFile mountableFile, String containerPath) {
-        ContainerState.super.copyFileToContainer(mountableFile, containerPath);
-    }
 
     List<String> getExtraHosts();
 
