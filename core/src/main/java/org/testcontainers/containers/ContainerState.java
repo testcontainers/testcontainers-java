@@ -47,6 +47,7 @@ public interface ContainerState {
      * @deprecated use {@link #getHost()}
      * @see #getHost()
      */
+    @Deprecated
     default String getContainerIpAddress() {
         return getHost();
     }
