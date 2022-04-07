@@ -543,14 +543,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             byte[] bytes = string.getBytes();
             checksum.update(bytes, 0, bytes.length);
         };
-        copyToFileContainerPathMap.entrySet().stream().sorted(Entry.comparingByValue()).forEach(entry -> {
-            updateFromString.accept(entry.getValue());
-            entry.getKey().updateChecksum(checksum);
-        });
-        copyToTransferableContainerPathMap.entrySet().stream().sorted(Entry.comparingByValue()).forEach(entry -> {
-            updateFromString.accept(entry.getValue());
-            entry.getKey().updateChecksum(checksum);
-        });
+        Stream.of(copyToFileContainerPathMap, copyToTransferableContainerPathMap)
+            .flatMap(it -> it.entrySet().stream())
+            .sorted(Entry.comparingByValue()).forEach(entry -> {
+                updateFromString.accept(entry.getValue());
+                entry.getKey().updateChecksum(checksum);
+            });
         return checksum;
     }
 

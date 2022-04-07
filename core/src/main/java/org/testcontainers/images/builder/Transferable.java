@@ -35,7 +35,6 @@ public interface Transferable {
 
             @Override
             public void updateChecksum(Checksum checksum) {
-                byte[] bytes = getBytes();
                 checksum.update(bytes, 0, bytes.length);
             }
 

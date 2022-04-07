@@ -368,10 +368,6 @@ public class MountableFile implements Transferable {
 
     @Override
     public void updateChecksum(Checksum checksum) {
-        byte[] pathBytes = getBytes();
-        // Add path to the hash
-        checksum.update(pathBytes, 0, pathBytes.length);
-
         File file = new File(getResolvedPath());
         checksumFile(file, checksum);
     }
