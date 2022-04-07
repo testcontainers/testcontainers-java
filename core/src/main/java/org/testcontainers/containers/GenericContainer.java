@@ -23,6 +23,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.hash.Hashing;
 import lombok.AccessLevel;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -191,6 +192,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private Map<MountableFile, String> copyToFileContainerPathMap = new LinkedHashMap<>();
 
     // Maintain order in which entries are added, as earlier target location may be a prefix of a later location.
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
     private Map<Transferable, String> copyToTransferableContainerPathMap = new LinkedHashMap<>();
 
     protected final Set<Startable> dependencies = new HashSet<>();
