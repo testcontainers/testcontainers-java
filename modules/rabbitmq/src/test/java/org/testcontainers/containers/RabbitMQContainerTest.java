@@ -118,25 +118,19 @@ public class RabbitMQContainerTest {
     }
 
     @Test
-    public void shouldMountConfigurationFile() throws IOException, InterruptedException {
+    public void shouldMountConfigurationFile() {
         try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
-
-            final String resourceLocation = "/rabbitmq-custom.conf";
-            container.withRabbitMQConfig(MountableFile.forClasspathResource(resourceLocation));
+            container.withRabbitMQConfig(MountableFile.forClasspathResource("/rabbitmq-custom.conf"));
             container.start();
 
-            assertThat(container.getLogs()).contains("config file(s) : /etc/rabbitmq/rabbitmq-custom.conf");
             assertThat(container.getLogs()).contains("debug"); // config file changes log level to `debug`
         }
     }
 
 
     @Test
-    public void shouldMountConfigurationFileErlang() throws IOException, InterruptedException {
+    public void shouldMountConfigurationFileErlang() {
         try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
-
-            final String resourceLocation = "/rabbitmq-custom.config";
-
             container.withRabbitMQConfigErlang(MountableFile.forClasspathResource("/rabbitmq-custom.config"));
             container.start();
 
@@ -146,20 +140,12 @@ public class RabbitMQContainerTest {
 
 
     @Test
-    public void shouldMountConfigurationFileSysctl() throws IOException, InterruptedException {
+    public void shouldMountConfigurationFileSysctl() {
         try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
-
-            final String resourceLocation = "/rabbitmq-custom.conf";
-            container.withRabbitMQConfigSysctl(MountableFile.forClasspathResource(resourceLocation));
-            InputStream inputStream = this.getClass().getResourceAsStream(resourceLocation);
-            Scanner s = new Scanner(Objects.requireNonNull(inputStream)).useDelimiter("\\A");
-            String configContents = s.hasNext() ? s.next() : "";
+            container.withRabbitMQConfigSysctl(MountableFile.forClasspathResource("/rabbitmq-custom.conf"));
             container.start();
 
-            assertThat(container.getLogs()).contains("config file(s) : /etc/rabbitmq/rabbitmq-custom.conf");
-            assertThat(container.execInContainer("cat", "/etc/rabbitmq/rabbitmq-custom.conf")
-                .getStdout()
-            ).contains(configContents);
+            assertThat(container.getLogs()).contains("debug"); // config file changes log level to `debug`
         }
     }
 
