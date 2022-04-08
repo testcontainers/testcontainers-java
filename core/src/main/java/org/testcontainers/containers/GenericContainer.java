@@ -23,6 +23,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.hash.Hashing;
 import lombok.AccessLevel;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -49,6 +50,7 @@ import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 import org.testcontainers.images.ImagePullPolicy;
 import org.testcontainers.images.RemoteDockerImage;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.lifecycle.Startables;
 import org.testcontainers.lifecycle.TestDescription;
@@ -186,7 +188,14 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private Long shmSize;
 
     // Maintain order in which entries are added, as earlier target location may be a prefix of a later location.
+    @Deprecated
     private Map<MountableFile, String> copyToFileContainerPathMap = new LinkedHashMap<>();
+
+    // Maintain order in which entries are added, as earlier target location may be a prefix of a later location.
+    @Setter(AccessLevel.NONE)
+    @Getter(AccessLevel.MODULE)
+    @VisibleForTesting
+    private Map<Transferable, String> copyToTransferableContainerPathMap = new LinkedHashMap<>();
 
     protected final Set<Startable> dependencies = new HashSet<>();
 
@@ -415,6 +424,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
                 // TODO use single "copy" invocation (and calculate an hash of the resulting tar archive)
                 copyToFileContainerPathMap.forEach(this::copyFileToContainer);
+
+                copyToTransferableContainerPathMap.forEach(this::copyFileToContainer);
             }
 
             connectToPortForwardingNetwork(createCommand.getNetworkMode());
@@ -530,31 +541,16 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @VisibleForTesting
     Checksum hashCopiedFiles() {
         Checksum checksum = new Adler32();
-        copyToFileContainerPathMap.entrySet().stream().sorted(Entry.comparingByValue()).forEach(entry -> {
-            byte[] pathBytes = entry.getValue().getBytes();
-            // Add path to the hash
-            checksum.update(pathBytes, 0, pathBytes.length);
+        Stream.of(copyToFileContainerPathMap, copyToTransferableContainerPathMap)
+            .flatMap(it -> it.entrySet().stream())
+            .sorted(Entry.comparingByValue()).forEach(entry -> {
+                byte[] pathBytes = entry.getValue().getBytes();
+                // Add path to the hash
+                checksum.update(pathBytes, 0, pathBytes.length);
 
-            File file = new File(entry.getKey().getResolvedPath());
-            checksumFile(file, checksum);
-        });
+                entry.getKey().updateChecksum(checksum);
+            });
         return checksum;
-    }
-
-    @VisibleForTesting
-    @SneakyThrows(IOException.class)
-    void checksumFile(File file, Checksum checksum) {
-        Path path = file.toPath();
-        checksum.update(MountableFile.getUnixFileMode(path));
-        if (file.isDirectory()) {
-            try (Stream<Path> stream = Files.walk(path)) {
-                stream.filter(it -> it != path).forEach(it -> {
-                    checksumFile(it.toFile(), checksum);
-                });
-            }
-        } else {
-            FileUtils.checksum(file, checksum);
-        }
     }
 
     @UnstableAPI
@@ -1293,6 +1289,15 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             throw new IllegalStateException("Path already configured for copy: " + mountableFile);
         }
         copyToFileContainerPathMap.put(mountableFile, containerPath);
+        return self();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public SELF withCopyToContainer(Transferable transferable, String containerPath) {
+        copyToTransferableContainerPathMap.put(transferable, containerPath);
         return self();
     }
 

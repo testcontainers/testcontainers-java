@@ -12,6 +12,7 @@ import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.LogUtils;
 import org.testcontainers.utility.MountableFile;
 
@@ -169,10 +170,22 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * Set the file to be copied before starting a created container
      *
      * @param mountableFile a Mountable file with path of source file / folder on host machine
-     * @param containerPath a destination path on conatiner to which the files / folders to be copied
+     * @param containerPath a destination path on container to which the files / folders to be copied
+     * @return this
+     *
+     * @deprecated Use {@link #withCopyToContainer(Transferable, String)} instead
+     */
+    @Deprecated
+    SELF withCopyFileToContainer(MountableFile mountableFile, String containerPath);
+
+    /**
+     * Set the content to be copied before starting a created container
+     *
+     * @param transferable a Transferable
+     * @param containerPath a destination path on container to which the files / folders to be copied
      * @return this
      */
-    SELF withCopyFileToContainer(MountableFile mountableFile, String containerPath);
+    SELF withCopyToContainer(Transferable transferable, String containerPath);
 
     /**
      * Add an environment variable to be passed to the container.
