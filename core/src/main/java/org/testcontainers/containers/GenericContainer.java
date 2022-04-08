@@ -1296,7 +1296,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * {@inheritDoc}
      */
     @Override
-    public SELF withCopyFileToContainer(Transferable transferable, String containerPath) {
+    public SELF withCopyToContainer(Transferable transferable, String containerPath) {
         copyToTransferableContainerPathMap.put(transferable, containerPath);
         return self();
     }
