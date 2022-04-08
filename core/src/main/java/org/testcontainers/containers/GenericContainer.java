@@ -541,14 +541,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @VisibleForTesting
     Checksum hashCopiedFiles() {
         Checksum checksum = new Adler32();
-        final Consumer<String> updateFromString = string -> {
-            byte[] bytes = string.getBytes();
-            checksum.update(bytes, 0, bytes.length);
-        };
         Stream.of(copyToFileContainerPathMap, copyToTransferableContainerPathMap)
             .flatMap(it -> it.entrySet().stream())
             .sorted(Entry.comparingByValue()).forEach(entry -> {
-                updateFromString.accept(entry.getValue());
+                byte[] bytes = entry.getValue().getBytes();
+                checksum.update(bytes, 0, bytes.length);
                 entry.getKey().updateChecksum(checksum);
             });
         return checksum;
