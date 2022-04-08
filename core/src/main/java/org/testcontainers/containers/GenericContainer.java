@@ -544,8 +544,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         Stream.of(copyToFileContainerPathMap, copyToTransferableContainerPathMap)
             .flatMap(it -> it.entrySet().stream())
             .sorted(Entry.comparingByValue()).forEach(entry -> {
-                byte[] bytes = entry.getValue().getBytes();
-                checksum.update(bytes, 0, bytes.length);
+                byte[] pathBytes = entry.getValue().getBytes();
+                // Add path to the hash
+                checksum.update(pathBytes, 0, pathBytes.length);
+
                 entry.getKey().updateChecksum(checksum);
             });
         return checksum;
