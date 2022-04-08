@@ -193,6 +193,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     // Maintain order in which entries are added, as earlier target location may be a prefix of a later location.
     @Setter(AccessLevel.NONE)
+    @Getter(AccessLevel.MODULE)
+    @VisibleForTesting
     private Map<Transferable, String> copyToTransferableContainerPathMap = new LinkedHashMap<>();
 
     protected final Set<Startable> dependencies = new HashSet<>();
@@ -1459,10 +1461,5 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public String getContainerName() {
         return getContainerInfo().getName();
-    }
-
-    @VisibleForTesting
-    Map<Transferable, String> getCopyToTransferableContainerPathMap() {
-        return copyToTransferableContainerPathMap;
     }
 }
