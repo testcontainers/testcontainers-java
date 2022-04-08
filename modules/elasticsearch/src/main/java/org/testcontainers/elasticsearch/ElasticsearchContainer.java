@@ -1,20 +1,32 @@
 package org.testcontainers.elasticsearch;
 
-import static java.net.HttpURLConnection.HTTP_OK;
-import static java.net.HttpURLConnection.HTTP_UNAUTHORIZED;
-
-import java.net.InetSocketAddress;
-import java.time.Duration;
+import com.github.dockerjava.api.command.InspectContainerResponse;
+import org.apache.commons.io.IOUtils;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.utility.Base58;
+import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
+import java.io.ByteArrayInputStream;
+import java.net.InetSocketAddress;
+import java.security.KeyStore;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
+import java.util.Optional;
 
 /**
  * Represents an elasticsearch docker instance which exposes by default port 9200 and 9300 (transport.tcp.port)
  * The docker image is by default fetched from docker.elastic.co/elasticsearch/elasticsearch
  */
 public class ElasticsearchContainer extends GenericContainer<ElasticsearchContainer> {
+
+    /**
+     * Elasticsearch Default Password for Elasticsearch &gt;= 8
+     */
+    public static final String ELASTICSEARCH_DEFAULT_PASSWORD = "changeme";
 
     /**
      * Elasticsearch Default HTTP port
@@ -39,7 +51,10 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
      */
     @Deprecated
     protected static final String DEFAULT_TAG = "7.9.2";
-    private boolean isOss = false;
+
+    private final boolean isOss;
+    private final boolean isAtLeastMajorVersion8;
+    private Optional<byte[]> caCertAsBytes = Optional.empty();
 
     /**
      * @deprecated use {@link ElasticsearchContainer(DockerImageName)} instead
@@ -65,23 +80,67 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
         super(dockerImageName);
 
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, DEFAULT_OSS_IMAGE_NAME);
-
-        if (dockerImageName.isCompatibleWith(DEFAULT_OSS_IMAGE_NAME)) {
-            this.isOss = true;
-        }
+        this.isOss = dockerImageName.isCompatibleWith(DEFAULT_OSS_IMAGE_NAME);
 
         logger().info("Starting an elasticsearch container using [{}]", dockerImageName);
         withNetworkAliases("elasticsearch-" + Base58.randomString(6));
         withEnv("discovery.type", "single-node");
         addExposedPorts(ELASTICSEARCH_DEFAULT_PORT, ELASTICSEARCH_DEFAULT_TCP_PORT);
-        setWaitStrategy(new HttpWaitStrategy()
-            .forPort(ELASTICSEARCH_DEFAULT_PORT)
-            .forStatusCodeMatching(response -> response == HTTP_OK || response == HTTP_UNAUTHORIZED)
-            .withStartupTimeout(Duration.ofMinutes(2)));
+        this.isAtLeastMajorVersion8 = new ComparableVersion(dockerImageName.getVersionPart()).isGreaterThanOrEqualTo("8.0.0");
+        // regex that
+        //   matches 8.0 JSON logging with no whitespace between message field and content
+        //   matches 7.x JSON logging with whitespace between message field and content
+        //   matches 6.x text logging with node name in brackets and just a 'started' message till the end of the line
+        String regex = ".*(\"message\":\\s?\"started\".*|] started\n$)";
+        setWaitStrategy(new LogMessageWaitStrategy().withRegEx(regex));
+        if (isAtLeastMajorVersion8) {
+            withPassword(ELASTICSEARCH_DEFAULT_PASSWORD);
+        }
+    }
+
+    @Override
+    protected void containerIsStarted(InspectContainerResponse containerInfo) {
+        if (isAtLeastMajorVersion8) {
+            byte[] bytes = copyFileFromContainer("/usr/share/elasticsearch/config/certs/http_ca.crt", IOUtils::toByteArray);
+            if (bytes.length > 0) {
+                this.caCertAsBytes = Optional.of(bytes);
+            }
+        }
     }
 
     /**
-     * Define the Elasticsearch password to set. It enables security behind the scene.
+     * If this is running above Elasticsearch 8, this will return the probably self-signed CA cert that has been extracted
+     *
+     * @return byte array optional containing the CA cert extracted from the docker container
+     */
+    public Optional<byte[]> caCertAsBytes() {
+        return caCertAsBytes;
+    }
+
+    /**
+     * A SSL context based on the self signed CA, so that using this SSL Context allows to connect to the Elasticsearch service
+     * @return a customized SSL Context
+     */
+    public SSLContext createSslContextFromCa() {
+        try {
+            CertificateFactory factory = CertificateFactory.getInstance("X.509");
+            Certificate trustedCa = factory.generateCertificate(new ByteArrayInputStream(caCertAsBytes.get()));
+            KeyStore trustStore = KeyStore.getInstance("pkcs12");
+            trustStore.load(null, null);
+            trustStore.setCertificateEntry("ca", trustedCa);
+
+            final SSLContext sslContext = SSLContext.getInstance("TLSv1.3");
+            TrustManagerFactory tmfactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            tmfactory.init(trustStore);
+            sslContext.init(null, tmfactory.getTrustManagers(), null);
+            return sslContext;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Define the Elasticsearch password to set. It enables security behind the scene for major version below 8.0.0.
      * It's not possible to use security with the oss image.
      * @param password  Password to set
      * @return this
@@ -92,7 +151,10 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
                 "Please switch to the default distribution");
         }
         withEnv("ELASTIC_PASSWORD", password);
-        withEnv("xpack.security.enabled", "true");
+        if (!isAtLeastMajorVersion8) {
+            // major version 8 is secure by default and does not need this to enable authentication
+            withEnv("xpack.security.enabled", "true");
+        }
         return this;
     }
 
