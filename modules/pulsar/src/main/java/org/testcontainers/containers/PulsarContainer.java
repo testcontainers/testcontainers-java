@@ -59,7 +59,8 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
             waitingFor(
                 new WaitAllStrategy()
                     .withStrategy(waitStrategy)
-                    .withStrategy(createLogWaitingStrategy())
+                    .withStrategy(Wait.forLogMessage(".*Function worker service started.*", 1)
+                    .withStartupTimeout(startupTimeout))
             );
         }
     }
@@ -73,13 +74,6 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
     public PulsarContainer withFunctionsWorker() {
         functionsWorkerEnabled = true;
         return this;
-    }
-
-    private WaitStrategy createLogWaitingStrategy() {
-        if (startupTimeout != null) {
-            return Wait.forLogMessage(".*Function worker service started.*", 1).withStartupTimeout(startupTimeout);
-        }
-        return Wait.forLogMessage(".*Function worker service started.*", 1);
     }
 
     public String getPulsarBrokerUrl() {
