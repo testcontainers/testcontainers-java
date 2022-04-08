@@ -198,7 +198,7 @@ public class TestcontainersConfiguration {
     }
 
     public Integer getClientPingTimeout() {
-        return Integer.parseInt(getEnvVarOrProperty("client.ping.timeout", "5"));
+        return Integer.parseInt(getEnvVarOrProperty("client.ping.timeout", "10"));
     }
 
     @Nullable
