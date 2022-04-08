@@ -12,6 +12,7 @@ import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.LogUtils;
 import org.testcontainers.utility.MountableFile;
 
@@ -173,6 +174,15 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @return this
      */
     SELF withCopyFileToContainer(MountableFile mountableFile, String containerPath);
+
+    /**
+     * Set the file to be copied before starting a created container
+     *
+     * @param transferable a Transferable
+     * @param containerPath a destination path on conatiner to which the files / folders to be copied
+     * @return this
+     */
+    SELF withCopyFileToContainer(Transferable transferable, String containerPath);
 
     /**
      * Add an environment variable to be passed to the container.

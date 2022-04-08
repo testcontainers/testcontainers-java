@@ -53,7 +53,7 @@ public class CopyFileToContainerTest {
             .withClasspathResourceMapping(resource, "/readOnlyShared", BindMode.READ_ONLY, SelinuxContext.SHARED)
             .withClasspathResourceMapping(resource, "/readWrite", BindMode.READ_WRITE);
 
-        Map<MountableFile, String> copyMap = container.getCopyToFileContainerPathMap();
+        Map<?, String> copyMap = container.getCopyToFileContainerPathMap();
         assertTrue("uses copy for read-only", copyMap.containsValue("/readOnly"));
         assertTrue("uses copy for read-only and no Selinux", copyMap.containsValue("/readOnlyNoSelinux"));
 
