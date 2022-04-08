@@ -2,7 +2,10 @@ package org.testcontainers.containers;
 
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
+import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.utility.DockerImageName;
+
+import java.time.Duration;
 
 /**
  * This container wraps Apache Pulsar running in standalone mode
@@ -18,6 +21,8 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
     private static final String DEFAULT_TAG = "2.2.0";
 
     private boolean functionsWorkerEnabled = false;
+
+    private Duration startupTimeout;
 
     /**
      * @deprecated use {@link PulsarContainer(DockerImageName)} instead
@@ -54,14 +59,27 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
             waitingFor(
                 new WaitAllStrategy()
                     .withStrategy(waitStrategy)
-                    .withStrategy(Wait.forLogMessage(".*Function worker service started.*", 1))
+                    .withStrategy(createLogWaitingStrategy())
             );
         }
+    }
+
+    @Override
+    public PulsarContainer withStartupTimeout(Duration startupTimeout) {
+        this.startupTimeout = startupTimeout;
+        return super.withStartupTimeout(startupTimeout);
     }
 
     public PulsarContainer withFunctionsWorker() {
         functionsWorkerEnabled = true;
         return this;
+    }
+
+    private WaitStrategy createLogWaitingStrategy() {
+        if (startupTimeout != null) {
+            return Wait.forLogMessage(".*Function worker service started.*", 1).withStartupTimeout(startupTimeout);
+        }
+        return Wait.forLogMessage(".*Function worker service started.*", 1);
     }
 
     public String getPulsarBrokerUrl() {
