@@ -24,6 +24,7 @@ import org.testcontainers.images.builder.Transferable;
 
 import java.nio.charset.StandardCharsets;
 import org.testcontainers.images.builder.ImageFromDockerfile;
+import org.testcontainers.utility.MountableFile;
 
 import java.util.Arrays;
 import java.util.List;
@@ -83,6 +84,24 @@ public class GenericContainerTest {
         try (
             GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
                 .withStartupCheckStrategy(new NoopStartupCheckStrategy())
+                .withCopyFileToContainer(Transferable.of("test"), "/tmp/test")
+                .waitingFor(new WaitForExitedState(state -> state.getExitCodeLong() > 0))
+                .withCommand("sh", "-c", "grep -q test /tmp/test && exit 100")
+        ) {
+            assertThatThrownBy(container::start)
+                .hasStackTraceContaining("Container exited with code 100");
+        }
+    }
+
+    @Test
+    public void shouldCopyTransferableAfterMountableFile() {
+        try (
+            GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
+                .withStartupCheckStrategy(new NoopStartupCheckStrategy())
+                .withCopyFileToContainer(
+                    MountableFile.forClasspathResource("test_copy_to_container.txt"),
+                    "/tmp/test"
+                )
                 .withCopyFileToContainer(Transferable.of("test"), "/tmp/test")
                 .waitingFor(new WaitForExitedState(state -> state.getExitCodeLong() > 0))
                 .withCommand("sh", "-c", "grep -q test /tmp/test && exit 100")
