@@ -60,6 +60,8 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
                 new WaitAllStrategy()
                     .withStrategy(waitStrategy)
                     .withStrategy(Wait.forLogMessage(".*Function worker service started.*", 1)
+                        // NOTE withStartupTimeout must be called at the end, because start timeout will be
+                        // applied to all strategies above
                     .withStartupTimeout(startupTimeout))
             );
         }
