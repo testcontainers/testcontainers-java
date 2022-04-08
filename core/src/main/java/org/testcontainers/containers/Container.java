@@ -173,19 +173,19 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @param containerPath a destination path on container to which the files / folders to be copied
      * @return this
      *
-     * @deprecated Use {@link #withCopyFileToContainer(Transferable, String)} instead
+     * @deprecated Use {@link #withCopyToContainer(Transferable, String)} instead
      */
     @Deprecated
     SELF withCopyFileToContainer(MountableFile mountableFile, String containerPath);
 
     /**
-     * Set the file to be copied before starting a created container
+     * Set the content to be copied before starting a created container
      *
      * @param transferable a Transferable
      * @param containerPath a destination path on container to which the files / folders to be copied
      * @return this
      */
-    SELF withCopyFileToContainer(Transferable transferable, String containerPath);
+    SELF withCopyToContainer(Transferable transferable, String containerPath);
 
     /**
      * Add an environment variable to be passed to the container.
