@@ -336,7 +336,7 @@ public class ReusabilityUnitTests {
 
             @Override
             public void withCopyFileToContainer(MountableFile mountableFile, String path) {
-                container.withCopyFileToContainer((Transferable)mountableFile, path);
+                container.withCopyToContainer(mountableFile, path);
             }
 
             @Override
