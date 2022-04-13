@@ -187,7 +187,6 @@ public class DockerClientFactory {
 
         final DockerClientProviderStrategy strategy = getOrInitializeStrategy();
 
-        log.info("Docker host IP address is {}", strategy.getDockerHostIpAddress());
         client = new DockerClientDelegate() {
 
             @Getter
@@ -198,6 +197,7 @@ public class DockerClientFactory {
                 throw new IllegalStateException("You should never close the global DockerClient!");
             }
         };
+        log.info("Docker host IP address is {}", strategy.getDockerHostIpAddress());
 
         Info dockerInfo = client.infoCmd().exec();
         Version version = client.versionCmd().exec();
