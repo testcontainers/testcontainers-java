@@ -1,6 +1,8 @@
 package org.testcontainers.elasticsearch;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.exception.NotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
@@ -21,6 +23,7 @@ import java.util.Optional;
  * Represents an elasticsearch docker instance which exposes by default port 9200 and 9300 (transport.tcp.port)
  * The docker image is by default fetched from docker.elastic.co/elasticsearch/elasticsearch
  */
+@Slf4j
 public class ElasticsearchContainer extends GenericContainer<ElasticsearchContainer> {
 
     /**
@@ -101,10 +104,26 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
         if (isAtLeastMajorVersion8) {
-            byte[] bytes = copyFileFromContainer("/usr/share/elasticsearch/config/certs/http_ca.crt", IOUtils::toByteArray);
+            extractCert("/usr/share/elasticsearch/config/certs/http_ca.crt");
+        }
+    }
+
+    /**
+     * Reads CA cert from a certain path in the container
+     *
+     * @param path Path of the CA cert
+     */
+    public void extractCert(String path) {
+        try {
+            byte[] bytes = copyFileFromContainer(path, IOUtils::toByteArray);
             if (bytes.length > 0) {
                 this.caCertAsBytes = Optional.of(bytes);
             }
+        } catch (NotFoundException e) {
+            // just emit an error message, but do not throw an exception
+            // this might be ok, if the docker image is accidentally looking like version 8 or latest
+            // if Elasticsearch is repackaged, i.e. with custom plugins
+            log.warn("CA cert under " + path + " not found.");
         }
     }
 

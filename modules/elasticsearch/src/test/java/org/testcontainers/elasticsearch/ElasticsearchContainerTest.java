@@ -252,7 +252,7 @@ public class ElasticsearchContainerTest {
 
     @Test
     public void testElasticsearch8SecureByDefault() throws Exception {
-        try (ElasticsearchContainer container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:8.0.0")) {
+        try (ElasticsearchContainer container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:8.1.2")) {
             // Start the container. This step might take some time...
             container.start();
 
