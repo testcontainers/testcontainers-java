@@ -1,5 +1,7 @@
 package org.testcontainers.elasticsearch;
 
+import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.core.command.PullImageResultCallback;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -18,6 +20,7 @@ import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.junit.After;
 import org.junit.Test;
 import org.rnorth.visibleassertions.VisibleAssertions;
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
@@ -272,11 +275,35 @@ public class ElasticsearchContainerTest {
         try (ElasticsearchContainer container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:8.1.2")
             .withCopyToContainer(mountableFile, caPath)
             .withCertPath(caPath)) {
+
             container.start();
 
             // this is expected, as a different cert is used for creating the SSL context
             assertThrows("PKIX path validation failed: java.security.cert.CertPathValidatorException: Path does not chain with any of the trust anchors", SSLHandshakeException.class, () -> getClusterHealth(container));
         }
+    }
+
+    @Test
+    public void testElasticsearch8SecureByDefaultFailsSilentlyOnLatestImages() throws Exception {
+        // this test exists for custom images by users that use the `latest` tag
+        // even though the version might be older than version 8
+        // this tags an old 7.x version as :latest
+        tagImage("docker.elastic.co/elasticsearch/elasticsearch:7.9.2", "elasticsearch-tc-older-release", "latest");
+        DockerImageName image = DockerImageName.parse("elasticsearch-tc-older-release:latest").asCompatibleSubstituteFor("docker.elastic.co/elasticsearch/elasticsearch");
+
+        try (ElasticsearchContainer container = new ElasticsearchContainer(image)) {
+            container.start();
+
+            Response response = getClient(container).performRequest(new Request("GET", "/_cluster/health"));
+            assertThat(response.getStatusLine().getStatusCode(), is(200));
+            assertThat(EntityUtils.toString(response.getEntity()), containsString("cluster_name"));
+        }
+    }
+
+    private void tagImage(String sourceImage, String targetImage, String targetTag) throws InterruptedException {
+        DockerClient client = DockerClientFactory.instance().client();
+        client.pullImageCmd(sourceImage).exec(new PullImageResultCallback()).awaitCompletion();
+        client.tagImageCmd(sourceImage, targetImage, targetTag).exec();
     }
 
     private Response getClusterHealth(ElasticsearchContainer container) throws IOException {
