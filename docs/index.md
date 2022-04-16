@@ -200,7 +200,7 @@ A huge thank you to our sponsors:
 * [Alkira](https://www.alkira.com/) - Testing of multiple micro-services using Kafka, PostgreSQL, Apache Zookeeper, Etcd and so on.
 * [Togglz](https://www.togglz.org/) - Feature Flags for the Java platform
 * [Byzer](https://www.byzer.org/home) - Integration tests for Data and AI platforms are based on multiple versions of Byzer, Ray and Apache Spark.
-
+* [Apache SeaTunnel](https://github.com/apache/incubator-seatunnel) - Integration testing with different datasource.
 
 ## License
 
