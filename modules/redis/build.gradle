@@ -3,5 +3,5 @@ description = "TestContainers :: Redis"
 dependencies {
     api project(":testcontainers")
     testImplementation 'org.assertj:assertj-core:3.22.0'
-    testImplementation 'redis.clients:jedis:4.2.1'
+    testImplementation 'redis.clients:jedis:4.1.1'
 }
