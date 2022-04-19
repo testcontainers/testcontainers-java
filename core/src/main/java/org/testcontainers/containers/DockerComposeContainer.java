@@ -726,20 +726,17 @@ class LocalDockerCompose implements DockerCompose {
         final Map<String, String> environment = Maps.newHashMap(env);
         environment.put(ENV_PROJECT_NAME, identifier);
 
-        String dockerHost = System.getenv("DOCKER_HOST");
-        if (dockerHost == null) {
-            TransportConfig transportConfig = DockerClientFactory.instance().getTransportConfig();
-            SSLConfig sslConfig = transportConfig.getSslConfig();
-            if (sslConfig != null) {
-                if (sslConfig instanceof LocalDirectorySSLConfig) {
-                    environment.put("DOCKER_CERT_PATH", ((LocalDirectorySSLConfig) sslConfig).getDockerCertPath());
-                    environment.put("DOCKER_TLS_VERIFY", "true");
-                } else {
-                    logger().warn("Couldn't set DOCKER_CERT_PATH. `sslConfig` is present but it's not LocalDirectorySSLConfig.");
-                }
+        TransportConfig transportConfig = DockerClientFactory.instance().getTransportConfig();
+        SSLConfig sslConfig = transportConfig.getSslConfig();
+        if (sslConfig != null) {
+            if (sslConfig instanceof LocalDirectorySSLConfig) {
+                environment.put("DOCKER_CERT_PATH", ((LocalDirectorySSLConfig) sslConfig).getDockerCertPath());
+                environment.put("DOCKER_TLS_VERIFY", "true");
+            } else {
+                logger().warn("Couldn't set DOCKER_CERT_PATH. `sslConfig` is present but it's not LocalDirectorySSLConfig.");
             }
-            dockerHost = transportConfig.getDockerHost().toString();
         }
+        String dockerHost = transportConfig.getDockerHost().toString();
         environment.put("DOCKER_HOST", dockerHost);
 
         final Stream<String> absoluteDockerComposeFilePaths = composeFiles.stream()
