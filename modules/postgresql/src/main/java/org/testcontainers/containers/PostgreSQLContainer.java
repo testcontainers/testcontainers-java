@@ -81,7 +81,7 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
     @Override
     public String getJdbcUrl() {
         String additionalUrlParams = constructUrlParameters("?", "&");
-        return "jdbc:postgresql://" + getContainerIpAddress() + ":" + getMappedPort(POSTGRESQL_PORT)
+        return "jdbc:postgresql://" + getHost() + ":" + getMappedPort(POSTGRESQL_PORT)
             + "/" + databaseName + additionalUrlParams;
     }
 
