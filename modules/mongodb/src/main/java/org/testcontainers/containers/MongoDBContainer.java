@@ -69,7 +69,7 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
         }
         return String.format(
             "mongodb://%s:%d/%s",
-            getContainerIpAddress(),
+            getHost(),
             getMappedPort(MONGODB_INTERNAL_PORT),
             databaseName
         );
