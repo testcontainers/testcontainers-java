@@ -136,7 +136,7 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
 
         if (StringUtils.isNotEmpty(configuration.getConfigurationName())) {
             SolrClientUtils.uploadConfiguration(
-                getContainerIpAddress(),
+                getHost(),
                 getSolrPort(),
                 configuration.getConfigurationName(),
                 configuration.getSolrConfiguration(),
@@ -144,7 +144,7 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
         }
 
         SolrClientUtils.createCollection(
-            getContainerIpAddress(),
+            getHost(),
             getSolrPort(),
             configuration.getCollectionName(),
             configuration.getConfigurationName());
