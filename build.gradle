@@ -43,13 +43,14 @@ subprojects {
         version = '1.18.20'
     }
 
+
     task delombok(type: io.franzbecker.gradle.lombok.task.DelombokTask) {
-        def outputDir = file("$buildDir/delombok")
-        outputs.dir(outputDir)
-        for (srcDir in project.sourceSets.main.java.srcDirs) {
-            inputs.dir(srcDir)
-            args(srcDir, "-d", outputDir)
+        outputs.cacheIf {
+            true
         }
+        argumentProviders.addAll(
+            new org.testcontainers.build.DelombokArgumentProvider(srcDirs: project.sourceSets.main.java.srcDirs, outputDir: file("$buildDir/delombok"))
+        )
     }
     delombok.onlyIf {
         project.sourceSets.main.java.srcDirs.find { it.exists() }

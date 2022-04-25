@@ -2,7 +2,7 @@ package org.testcontainers.containers.output;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.testcontainers.containers.Container.ExecResult;

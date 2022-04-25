@@ -32,8 +32,6 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
 
     private static final String FSYNC_OFF_OPTION = "fsync=off";
 
-    private static final String QUERY_PARAM_SEPARATOR = "&";
-
     /**
      * @deprecated use {@link #PostgreSQLContainer(DockerImageName)} or {@link #PostgreSQLContainer(String)} instead
      */
@@ -83,7 +81,7 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
     @Override
     public String getJdbcUrl() {
         String additionalUrlParams = constructUrlParameters("?", "&");
-        return "jdbc:postgresql://" + getContainerIpAddress() + ":" + getMappedPort(POSTGRESQL_PORT)
+        return "jdbc:postgresql://" + getHost() + ":" + getMappedPort(POSTGRESQL_PORT)
             + "/" + databaseName + additionalUrlParams;
     }
 

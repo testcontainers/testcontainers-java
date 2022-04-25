@@ -1,7 +1,6 @@
 package org.testcontainers.junit.mssqlserver;
 
 import org.junit.Test;
-import org.testcontainers.MSSQLServerTestImages;
 import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
@@ -11,7 +10,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.testcontainers.MSSQLServerTestImages.MSSQL_SERVER_IMAGE;
 

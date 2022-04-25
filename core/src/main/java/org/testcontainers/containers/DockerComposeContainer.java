@@ -12,8 +12,8 @@ import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.Uninterruptibles;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 import org.slf4j.Logger;
@@ -25,12 +25,14 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.dockerclient.TransportConfig;
+import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.utility.AuditLogger;
 import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.CommandLine;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.DockerLoggerFactory;
+import org.testcontainers.utility.ImageNameSubstitutor;
 import org.testcontainers.utility.LogUtils;
 import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.PathUtils;
@@ -41,7 +43,6 @@ import org.zeroturnaround.exec.stream.slf4j.Slf4jStream;
 
 import java.io.File;
 import java.time.Duration;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -56,7 +57,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -188,7 +188,9 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
             .forEach(imageName -> {
                 try {
                     log.info("Preemptively checking local images for '{}', referenced via a compose file or transitive Dockerfile. If not available, it will be pulled.", imageName);
-                    DockerClientFactory.instance().checkAndPullImage(dockerClient, imageName);
+                    new RemoteDockerImage(DockerImageName.parse(imageName))
+                        .withImageNameSubstitutor(ImageNameSubstitutor.noop())
+                        .get();
                 } catch (Exception e) {
                     log.warn("Unable to pre-fetch an image ({}) depended upon by Docker Compose build - startup will continue but may fail. Exception message was: {}", imageName, e.getMessage());
                 }
@@ -310,8 +312,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     }
 
     private void registerContainersForShutdown() {
-        ResourceReaper.instance().registerFilterForCleanup(Arrays.asList(
-            new SimpleEntry<>("label", "com.docker.compose.project=" + project)
+        ResourceReaper.instance().registerLabelsFilterForCleanup(Collections.singletonMap(
+            "com.docker.compose.project", project
         ));
     }
 
@@ -724,20 +726,17 @@ class LocalDockerCompose implements DockerCompose {
         final Map<String, String> environment = Maps.newHashMap(env);
         environment.put(ENV_PROJECT_NAME, identifier);
 
-        String dockerHost = System.getenv("DOCKER_HOST");
-        if (dockerHost == null) {
-            TransportConfig transportConfig = DockerClientFactory.instance().getTransportConfig();
-            SSLConfig sslConfig = transportConfig.getSslConfig();
-            if (sslConfig != null) {
-                if (sslConfig instanceof LocalDirectorySSLConfig) {
-                    environment.put("DOCKER_CERT_PATH", ((LocalDirectorySSLConfig) sslConfig).getDockerCertPath());
-                    environment.put("DOCKER_TLS_VERIFY", "true");
-                } else {
-                    logger().warn("Couldn't set DOCKER_CERT_PATH. `sslConfig` is present but it's not LocalDirectorySSLConfig.");
-                }
+        TransportConfig transportConfig = DockerClientFactory.instance().getTransportConfig();
+        SSLConfig sslConfig = transportConfig.getSslConfig();
+        if (sslConfig != null) {
+            if (sslConfig instanceof LocalDirectorySSLConfig) {
+                environment.put("DOCKER_CERT_PATH", ((LocalDirectorySSLConfig) sslConfig).getDockerCertPath());
+                environment.put("DOCKER_TLS_VERIFY", "true");
+            } else {
+                logger().warn("Couldn't set DOCKER_CERT_PATH. `sslConfig` is present but it's not LocalDirectorySSLConfig.");
             }
-            dockerHost = transportConfig.getDockerHost().toString();
         }
+        String dockerHost = transportConfig.getDockerHost().toString();
         environment.put("DOCKER_HOST", dockerHost);
 
         final Stream<String> absoluteDockerComposeFilePaths = composeFiles.stream()
