@@ -5,6 +5,13 @@ updates:
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
+    directory: "/"
+    allow:
+      - dependency-name: "com.gradle*"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
 
 # Explicit entry for each module
   - package-ecosystem: "gradle"
