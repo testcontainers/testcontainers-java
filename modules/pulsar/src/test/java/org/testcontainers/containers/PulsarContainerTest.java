@@ -9,8 +9,6 @@ import org.apache.pulsar.client.api.PulsarClient;
 import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
 
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -46,9 +44,7 @@ public class PulsarContainerTest {
 
     @Test
     public void shouldWaitForFunctionsWorkerStarted() throws Exception {
-        try (PulsarContainer pulsar = new PulsarContainer(PULSAR_IMAGE)
-            .withFunctionsWorker()
-            .withStartupTimeout(Duration.of(2, ChronoUnit.MINUTES))) {
+        try (PulsarContainer pulsar = new PulsarContainer(PULSAR_IMAGE).withFunctionsWorker()) {
 
             pulsar.start();
 
