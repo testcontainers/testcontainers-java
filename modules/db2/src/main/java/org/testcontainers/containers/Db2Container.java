@@ -27,7 +27,7 @@ public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
     private String password = "foobar1234";
 
     /**
-     * @deprecated use {@link Db2Container(DockerImageName)} instead
+     * @deprecated use {@link Db2Container#Db2Container(DockerImageName)} instead
      */
     @Deprecated
     public Db2Container() {
@@ -43,7 +43,6 @@ public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
 
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
-        withPrivilegedMode(true);
         this.waitStrategy = new LogMessageWaitStrategy()
                 .withRegEx(".*Setup has completed\\..*")
                 .withStartupTimeout(Duration.of(10, ChronoUnit.MINUTES));
@@ -78,6 +77,8 @@ public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
     /**
      * Accepts the license for the DB2 container by setting the LICENSE=accept
      * variable as described at <a href="https://hub.docker.com/r/ibmcom/db2">https://hub.docker.com/r/ibmcom/db2</a>
+     *
+     * @return self
      */
     public Db2Container acceptLicense() {
         addEnv("LICENSE", "accept");
