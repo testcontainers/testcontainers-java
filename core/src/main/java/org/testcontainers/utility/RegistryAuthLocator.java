@@ -7,6 +7,7 @@ import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
+import org.testcontainers.UnstableAPI;
 import org.zeroturnaround.exec.InvalidResultException;
 import org.zeroturnaround.exec.ProcessExecutor;
 
@@ -32,7 +33,6 @@ import static org.testcontainers.utility.AuthConfigUtil.toSafeString;
 public class RegistryAuthLocator {
 
     private static final Logger log = getLogger(RegistryAuthLocator.class);
-    private static final String DEFAULT_REGISTRY_NAME = "index.docker.io";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private static RegistryAuthLocator instance;
@@ -42,6 +42,8 @@ public class RegistryAuthLocator {
     private final File configFile;
 
     private final Map<String, Optional<AuthConfig>> cache = new ConcurrentHashMap<>();
+
+    private String indexServerAddress = "https://index.docker.io/v1/";
 
     /**
      * key - credential helper's name
@@ -77,6 +79,16 @@ public class RegistryAuthLocator {
         }
 
         return instance;
+    }
+
+    /**
+     *
+     * Internal method, not expected to be called by a regular user
+     *
+     */
+    @UnstableAPI
+    public void setIndexServerAddress(String indexServerAddress) {
+        this.indexServerAddress = indexServerAddress;
     }
 
     @VisibleForTesting
@@ -282,7 +294,7 @@ public class RegistryAuthLocator {
     }
 
     private String effectiveRegistryName(DockerImageName dockerImageName) {
-        return StringUtils.defaultIfEmpty(dockerImageName.getRegistry(), DEFAULT_REGISTRY_NAME);
+        return StringUtils.defaultIfEmpty(dockerImageName.getRegistry(), indexServerAddress);
     }
 
     private String getGenericCredentialsNotFoundMsg(String credentialHelperName) {
