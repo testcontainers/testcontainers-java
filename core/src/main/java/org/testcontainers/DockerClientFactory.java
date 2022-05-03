@@ -30,7 +30,6 @@ import org.testcontainers.images.TimeLimitedLoggedPullImageResultCallback;
 import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
-import org.testcontainers.utility.RegistryAuthLocator;
 import org.testcontainers.utility.ResourceReaper;
 import org.testcontainers.utility.RyukResourceReaper;
 import org.testcontainers.utility.TestcontainersConfiguration;
@@ -209,10 +208,6 @@ public class DockerClientFactory {
                 "  API Version: " + activeApiVersion + "\n" +
                 "  Operating System: " + dockerInfo.getOperatingSystem() + "\n" +
                 "  Total Memory: " + dockerInfo.getMemTotal() / (1024 * 1024) + " MB");
-
-        if (dockerInfo.getIndexServerAddress() != null) {
-            RegistryAuthLocator.instance().setIndexServerAddress(dockerInfo.getIndexServerAddress());
-        }
 
         final ResourceReaper resourceReaper;
         try {
@@ -438,5 +433,10 @@ public class DockerClientFactory {
      */
     public boolean isUsing(Class<? extends DockerClientProviderStrategy> providerStrategyClass) {
         return strategy != null && providerStrategyClass.isAssignableFrom(this.strategy.getClass());
+    }
+
+    @UnstableAPI
+    public Info getInfo() {
+        return getOrInitializeStrategy().getInfo();
     }
 }
