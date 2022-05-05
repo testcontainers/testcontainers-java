@@ -1,7 +1,6 @@
 package org.testcontainers.elasticsearch;
 
 import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.core.command.PullImageResultCallback;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -19,8 +18,8 @@ import org.elasticsearch.common.transport.TransportAddress;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.junit.After;
 import org.junit.Test;
-import org.rnorth.visibleassertions.VisibleAssertions;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
@@ -301,9 +300,13 @@ public class ElasticsearchContainerTest {
     }
 
     private void tagImage(String sourceImage, String targetImage, String targetTag) throws InterruptedException {
-        DockerClient client = DockerClientFactory.instance().client();
-        client.pullImageCmd(sourceImage).exec(new PullImageResultCallback()).awaitCompletion();
-        client.tagImageCmd(sourceImage, targetImage, targetTag).exec();
+        DockerClient dockerClient = DockerClientFactory.instance().client();
+        dockerClient.tagImageCmd(
+                new RemoteDockerImage(DockerImageName.parse(sourceImage)).get(),
+                targetImage,
+                targetTag
+            )
+            .exec();
     }
 
     private Response getClusterHealth(ElasticsearchContainer container) throws IOException {
