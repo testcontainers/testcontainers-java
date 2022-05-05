@@ -40,7 +40,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
     private final List<EnabledService> services = new ArrayList<>();
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("localstack/localstack");
-    private static final String DEFAULT_TAG = "0.11.2";
+    private static final String DEFAULT_TAG = "0.14.2";
 
     @Deprecated
     public static final String VERSION = DEFAULT_TAG;
