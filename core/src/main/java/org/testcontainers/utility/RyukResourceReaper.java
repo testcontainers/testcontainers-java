@@ -17,6 +17,7 @@ import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ContainerState;
+import org.testcontainers.images.RemoteDockerImage;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -85,16 +86,13 @@ public class RyukResourceReaper extends ResourceReaper {
             return;
         }
         DockerClient client = DockerClientFactory.lazyClient();
-        String ryukImage = ImageNameSubstitutor.instance()
-            .apply(DockerImageName.parse("testcontainers/ryuk:0.3.3"))
-            .asCanonicalNameString();
-        DockerClientFactory.instance().checkAndPullImage(client, ryukImage);
+        RemoteDockerImage ryukImage = new RemoteDockerImage(DockerImageName.parse("testcontainers/ryuk:0.3.3"));
 
         List<Bind> binds = new ArrayList<>();
         binds.add(new Bind(DockerClientFactory.instance().getRemoteDockerUnixSocketPath(), new Volume("/var/run/docker.sock")));
 
         ExposedPort ryukExposedPort = ExposedPort.tcp(8080);
-        containerId = client.createContainerCmd(ryukImage)
+        containerId = client.createContainerCmd(ryukImage.get())
             .withHostConfig(
                 new HostConfig()
                     .withAutoRemove(true)

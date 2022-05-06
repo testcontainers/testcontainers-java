@@ -60,7 +60,7 @@ public class SolrContainerTest {
         container.start();
 
         // Do whatever you want with the client ...
-        SolrClient client = new Http2SolrClient.Builder("http://" + container.getContainerIpAddress() + ":" + container.getSolrPort() + "/solr").build();
+        SolrClient client = new Http2SolrClient.Builder("http://" + container.getHost() + ":" + container.getSolrPort() + "/solr").build();
         SolrPingResponse response = client.ping("dummy");
 
         // Stop the container.
@@ -70,7 +70,7 @@ public class SolrContainerTest {
 
     private SolrClient getClient(SolrContainer container) {
         if (client == null) {
-            client = new Http2SolrClient.Builder("http://" + container.getContainerIpAddress() + ":" + container.getSolrPort() + "/solr").build();
+            client = new Http2SolrClient.Builder("http://" + container.getHost() + ":" + container.getSolrPort() + "/solr").build();
         }
         return client;
     }

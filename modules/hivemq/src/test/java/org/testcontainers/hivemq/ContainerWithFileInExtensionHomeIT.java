@@ -43,7 +43,7 @@ public class ContainerWithFileInExtensionHomeIT {
                          "/additionalFiles/my-file.txt")) {
 
             hivemq.start();
-            TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort());
+            TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort(), hivemq.getHost());
         }
     }
 

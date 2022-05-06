@@ -10,7 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.ToString;
-import lombok.experimental.Wither;
+import lombok.With;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ContainerFetchException;
@@ -34,8 +34,11 @@ public class RemoteDockerImage extends LazyFuture<String> {
     @ToString.Exclude
     private Future<DockerImageName> imageNameFuture;
 
-    @Wither
+    @With
     private ImagePullPolicy imagePullPolicy = PullPolicy.defaultPolicy();
+
+    @With
+    private ImageNameSubstitutor imageNameSubstitutor = ImageNameSubstitutor.instance();
 
     @ToString.Exclude
     private DockerClient dockerClient = DockerClientFactory.lazyClient();
@@ -115,7 +118,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
         final DockerImageName specifiedImageName = imageNameFuture.get();
 
         // Allow the image name to be substituted
-        return ImageNameSubstitutor.instance().apply(specifiedImageName);
+        return imageNameSubstitutor.apply(specifiedImageName);
     }
 
     @ToString.Include(name = "imageName", rank = 1)

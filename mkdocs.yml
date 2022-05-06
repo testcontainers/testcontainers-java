@@ -7,9 +7,10 @@ theme:
     name: 'material'
     custom_dir: 'docs/theme'
     palette:
-        primary: 'blue'
-        accent: 'teal'
-    font: false
+        scheme: testcontainers
+    font:
+      text: Roboto
+      code: Roboto Mono
     logo: 'logo.svg'
     favicon: 'favicon.ico'
 extra_css:

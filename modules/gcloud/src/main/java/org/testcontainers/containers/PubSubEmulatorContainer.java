@@ -34,6 +34,6 @@ public class PubSubEmulatorContainer extends GenericContainer<PubSubEmulatorCont
      * io.grpc.ManagedChannelBuilder#forTarget(java.lang.String) method.
      */
     public String getEmulatorEndpoint() {
-        return getContainerIpAddress() + ":" + getMappedPort(PORT);
+        return getHost() + ":" + getMappedPort(PORT);
     }
 }

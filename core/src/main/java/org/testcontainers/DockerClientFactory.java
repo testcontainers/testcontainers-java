@@ -20,15 +20,15 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.testcontainers.dockerclient.DockerClientProviderStrategy;
 import org.testcontainers.dockerclient.DockerMachineClientProviderStrategy;
 import org.testcontainers.dockerclient.TransportConfig;
+import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.images.TimeLimitedLoggedPullImageResultCallback;
 import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
-import org.testcontainers.utility.ImageNameSubstitutor;
 import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.ResourceReaper;
 import org.testcontainers.utility.RyukResourceReaper;
@@ -187,7 +187,6 @@ public class DockerClientFactory {
 
         final DockerClientProviderStrategy strategy = getOrInitializeStrategy();
 
-        log.info("Docker host IP address is {}", strategy.getDockerHostIpAddress());
         client = new DockerClientDelegate() {
 
             @Getter
@@ -198,6 +197,7 @@ public class DockerClientFactory {
                 throw new IllegalStateException("You should never close the global DockerClient!");
             }
         };
+        log.info("Docker host IP address is {}", strategy.getDockerHostIpAddress());
 
         Info dockerInfo = client.infoCmd().exec();
         Version version = client.versionCmd().exec();
@@ -236,7 +236,6 @@ public class DockerClientFactory {
                     checkDiskSpace(client, ryukContainerId);
                 } else {
                     runInsideDocker(
-                        client,
                         createContainerCmd -> {
                             createContainerCmd.withName("testcontainers-checks-" + SESSION_ID);
                             createContainerCmd.getHostConfig().withAutoRemove(true);
@@ -335,9 +334,12 @@ public class DockerClientFactory {
     }
 
     /**
-   * Check whether the image is available locally and pull it otherwise
-   */
+     * Check whether the image is available locally and pull it otherwise
+     *
+     * @deprecated use {@link RemoteDockerImage}
+     */
     @SneakyThrows
+    @Deprecated
     public void checkAndPullImage(DockerClient client, String image) {
         try {
             client.inspectImageCmd(image).exec();
@@ -363,18 +365,14 @@ public class DockerClientFactory {
     }
 
     public <T> T runInsideDocker(Consumer<CreateContainerCmd> createContainerCmdConsumer, BiFunction<DockerClient, String, T> block) {
-        // We can't use client() here because it might create an infinite loop
-        return runInsideDocker(getOrInitializeStrategy().getDockerClient(), createContainerCmdConsumer, block);
+        return runInsideDocker(TINY_IMAGE, createContainerCmdConsumer, block);
     }
 
-    private <T> T runInsideDocker(DockerClient client, Consumer<CreateContainerCmd> createContainerCmdConsumer, BiFunction<DockerClient, String, T> block) {
-
-        final String tinyImage = ImageNameSubstitutor.instance().apply(TINY_IMAGE).asCanonicalNameString();
-
-        checkAndPullImage(client, tinyImage);
+    <T> T runInsideDocker(DockerImageName imageName, Consumer<CreateContainerCmd> createContainerCmdConsumer, BiFunction<DockerClient, String, T> block) {
+        RemoteDockerImage dockerImage = new RemoteDockerImage(imageName);
         HashMap<String, String> labels = new HashMap<>(DEFAULT_LABELS);
         labels.putAll(ResourceReaper.instance().getLabels());
-        CreateContainerCmd createContainerCmd = client.createContainerCmd(tinyImage)
+        CreateContainerCmd createContainerCmd = client.createContainerCmd(dockerImage.get())
                 .withLabels(labels);
         createContainerCmdConsumer.accept(createContainerCmd);
         String id = createContainerCmd.exec().getId();

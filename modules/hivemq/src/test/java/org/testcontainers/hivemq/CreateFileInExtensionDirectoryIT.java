@@ -39,7 +39,7 @@ public class CreateFileInExtensionDirectoryIT {
                      .withExtension(hiveMQExtension)) {
 
             hivemq.start();
-            TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort());
+            TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort(), hivemq.getHost());
         }
     }
 

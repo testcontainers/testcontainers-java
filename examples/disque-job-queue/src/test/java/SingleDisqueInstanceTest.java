@@ -30,7 +30,7 @@ public class SingleDisqueInstanceTest {
     @Before
     public void setup() {
         context("");
-        DisqueClient client = new DisqueClient(DisqueURI.create(container.getContainerIpAddress(), container.getMappedPort(7711)));
+        DisqueClient client = new DisqueClient(DisqueURI.create(container.getHost(), container.getMappedPort(7711)));
         connection = client.connect().sync();
         retryAfter1Second = AddJobArgs.builder().retry(1, TimeUnit.SECONDS).build();
 

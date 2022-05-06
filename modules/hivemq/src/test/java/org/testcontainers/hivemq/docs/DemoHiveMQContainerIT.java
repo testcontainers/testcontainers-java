@@ -51,6 +51,7 @@ public class DemoHiveMQContainerIT {
         // mqtt5client {
         final Mqtt5BlockingClient client = Mqtt5Client.builder()
             .serverPort(hivemqCe.getMqttPort())
+            .serverHost(hivemqCe.getHost())
             .buildBlocking();
 
         client.connect();

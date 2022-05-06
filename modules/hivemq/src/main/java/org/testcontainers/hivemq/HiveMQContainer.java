@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -77,6 +78,16 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
                 });
             }
         });
+
+        final HashMap<String, String> tmpFs = new HashMap<>();
+        if (dockerImageName.isCompatibleWith(DEFAULT_HIVEMQ_EE_IMAGE_NAME)) {
+            tmpFs.put("/opt/hivemq/audit", "rw");
+            tmpFs.put("/opt/hivemq/backup", "rw");
+        }
+
+        tmpFs.put("/opt/hivemq/log", "rw");
+        tmpFs.put("/opt/hivemq/data", "rw");
+        withTmpFs(tmpFs);
     }
 
     @Override
@@ -354,7 +365,7 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
         }
 
         if (!file.exists()) {
-            throw new ContainerLaunchException("File '" + mountableFile.getFilesystemPath() + "‘ does not exist.");
+            throw new ContainerLaunchException("File '" + mountableFile.getFilesystemPath() + "' does not exist.");
         }
         final String containerPath = "/opt/hivemq" + PathUtil.prepareAppendPath(pathInHomeFolder);
         withCopyFileToContainer(cloneWithFileMode(mountableFile), containerPath);

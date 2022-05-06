@@ -1,11 +1,5 @@
 package org.testcontainers.elasticsearch;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
-
-import java.io.IOException;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -24,6 +18,13 @@ import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.junit.After;
 import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
+
+import java.io.IOException;
+
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
 
 public class ElasticsearchContainerTest {
 
@@ -247,6 +248,31 @@ public class ElasticsearchContainerTest {
                     .withTag(ELASTICSEARCH_VERSION))
             .withPassword("foo")
         );
+    }
+
+    @Test
+    public void testElasticsearch8SecureByDefault() throws Exception {
+        try (ElasticsearchContainer container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:8.0.0")) {
+            // Start the container. This step might take some time...
+            container.start();
+
+            // Create the secured client.
+            final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+            credentialsProvider.setCredentials(AuthScope.ANY,
+                new UsernamePasswordCredentials(ELASTICSEARCH_USERNAME, ElasticsearchContainer.ELASTICSEARCH_DEFAULT_PASSWORD));
+
+            client = RestClient.builder(HttpHost.create("https://" + container.getHttpHostAddress()))
+                .setHttpClientConfigCallback(httpClientBuilder -> {
+                    httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+                    httpClientBuilder.setSSLContext(container.createSslContextFromCa());
+                    return httpClientBuilder;
+                })
+                .build();
+
+            Response response = client.performRequest(new Request("GET", "/_cluster/health"));
+            assertThat(response.getStatusLine().getStatusCode(), is(200));
+            assertThat(EntityUtils.toString(response.getEntity()), containsString("cluster_name"));
+        }
     }
 
     private RestClient getClient(ElasticsearchContainer container) {

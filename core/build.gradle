@@ -45,6 +45,8 @@ tasks.japicmp {
         "org.testcontainers.utility.ResourceReaper#start(com.github.dockerjava.api.DockerClient)",
         "org.testcontainers.utility.ResourceReaper#registerNetworkForCleanup(java.lang.String)",
         "org.testcontainers.utility.ResourceReaper#removeNetworks(java.lang.String)",
+        "org.testcontainers.images.builder.Transferable#of(java.lang.String)",
+        "org.testcontainers.images.builder.Transferable#updateChecksum(java.util.zip.Checksum)"
     ]
 
     fieldExcludes = []
@@ -71,19 +73,14 @@ dependencies {
         exclude(group: 'org.jetbrains', module: 'annotations')
     }
 
-    shaded 'org.awaitility:awaitility:4.1.1'
+    shaded 'org.awaitility:awaitility:4.2.0'
 
-    api platform('com.github.docker-java:docker-java-bom:3.2.12')
-    shaded platform('com.github.docker-java:docker-java-bom:3.2.12')
+    api platform('com.github.docker-java:docker-java-bom:3.2.13')
+    shaded platform('com.github.docker-java:docker-java-bom:3.2.13')
 
     api "com.github.docker-java:docker-java-api"
 
     shaded 'com.github.docker-java:docker-java-core'
-
-    shaded 'com.github.docker-java:docker-java-transport-okhttp', {
-        // TODO remove unused `net.java.dev.jna:jna-platform` from `docker-java-transport-okhttp`
-        exclude(group: 'net.java.dev.jna', module: 'jna-platform')
-    }
 
     api 'com.github.docker-java:docker-java-transport-zerodep'
 
@@ -95,7 +92,7 @@ dependencies {
 
     testImplementation 'org.apache.httpcomponents:httpclient:4.5.9'
     testImplementation 'redis.clients:jedis:4.0.1'
-    testImplementation 'com.rabbitmq:amqp-client:5.14.1'
+    testImplementation 'com.rabbitmq:amqp-client:5.14.2'
     testImplementation 'org.mongodb:mongo-java-driver:3.12.10'
 
     testImplementation ('org.mockito:mockito-core:4.3.1') {

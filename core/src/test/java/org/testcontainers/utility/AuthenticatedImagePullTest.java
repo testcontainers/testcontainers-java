@@ -17,6 +17,7 @@ import org.testcontainers.DockerRegistryContainer;
 import org.testcontainers.containers.ContainerState;
 import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.images.LocalImagesCacheAccessor;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 
 import java.io.IOException;
@@ -93,6 +94,7 @@ public class AuthenticatedImagePullTest {
         } catch (NotFoundException ignored) {
 
         }
+        LocalImagesCacheAccessor.clearCache();
     }
 
     @AfterClass
