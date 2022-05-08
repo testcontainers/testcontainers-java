@@ -1,40 +1,20 @@
 package org.testcontainers.utility;
 
-import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.async.ResultCallback;
-import com.github.dockerjava.api.command.InspectContainerResponse;
-import com.github.dockerjava.api.model.Bind;
-import com.github.dockerjava.api.model.ExposedPort;
-import com.github.dockerjava.api.model.Frame;
-import com.github.dockerjava.api.model.HostConfig;
-import com.github.dockerjava.api.model.PortBinding;
-import com.github.dockerjava.api.model.Ports;
-import com.github.dockerjava.api.model.Volume;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.testcontainers.DockerClientFactory;
-import org.testcontainers.containers.ContainerState;
-import org.testcontainers.images.RemoteDockerImage;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static org.awaitility.Awaitility.await;
 
 /**
  * Ryuk-based {@link ResourceReaper} implementation.
@@ -85,86 +65,16 @@ public class RyukResourceReaper extends ResourceReaper {
         if (!started.compareAndSet(false, true)) {
             return;
         }
-        DockerClient client = DockerClientFactory.lazyClient();
-        RemoteDockerImage ryukImage = new RemoteDockerImage(DockerImageName.parse("testcontainers/ryuk:0.3.3"));
 
-        List<Bind> binds = new ArrayList<>();
-        binds.add(new Bind(DockerClientFactory.instance().getRemoteDockerUnixSocketPath(), new Volume("/var/run/docker.sock")));
+        RyukContainer ryukContainer = new RyukContainer();
+        ryukContainer.start();
 
-        ExposedPort ryukExposedPort = ExposedPort.tcp(8080);
-        containerId = client.createContainerCmd(ryukImage.get())
-            .withHostConfig(
-                new HostConfig()
-                    .withAutoRemove(true)
-                    .withPortBindings(new PortBinding(Ports.Binding.empty(), ryukExposedPort))
-            )
-            .withExposedPorts(ryukExposedPort)
-            .withName("testcontainers-ryuk-" + DockerClientFactory.SESSION_ID)
-            .withLabels(Collections.singletonMap(DockerClientFactory.TESTCONTAINERS_LABEL, "true"))
-            .withBinds(binds)
-            .withPrivileged(TestcontainersConfiguration.getInstance().isRyukPrivileged())
-            .exec()
-            .getId();
-
-        client.startContainerCmd(containerId).exec();
-
-        StringBuilder ryukLog = new StringBuilder();
-
-        ResultCallback.Adapter<Frame> logCallback = client.logContainerCmd(containerId)
-            .withSince(0)
-            .withFollowStream(true)
-            .withStdOut(true)
-            .withStdErr(true)
-            .exec(new ResultCallback.Adapter<Frame>() {
-                @Override
-                public void onNext(Frame frame) {
-                    ryukLog.append(new String(frame.getPayload(), StandardCharsets.UTF_8));
-                }
-            });
-
-        InspectContainerResponse inspectedContainer;
-        try {
-            // inspect container response might initially not contain the mapped port
-            inspectedContainer = await()
-                .atMost(5, TimeUnit.SECONDS)
-                .pollInterval(DynamicPollInterval.ofMillis(50))
-                .pollInSameThread()
-                .until(
-                    () -> client.inspectContainerCmd(containerId).exec(),
-                    inspectContainerResponse -> {
-                        return inspectContainerResponse
-                            .getNetworkSettings()
-                            .getPorts()
-                            .getBindings()
-                            .values()
-                            .stream()
-                            .anyMatch(Objects::nonNull);
-                    }
-                );
-        } catch (Exception e) {
-            log.warn("Ryuk container cannot be inspected and probably had a problem starting. Ryuk's logs:\n{}", ryukLog);
-            throw new IllegalStateException("Ryuk failed to start", e);
-        }
-
-        ContainerState containerState = new ContainerState() {
-
-            @Override
-            public List<Integer> getExposedPorts() {
-                return Stream.of(getContainerInfo().getConfig().getExposedPorts())
-                    .map(ExposedPort::getPort)
-                    .collect(Collectors.toList());
-            }
-
-            @Override
-            public InspectContainerResponse getContainerInfo() {
-                return inspectedContainer;
-            }
-        };
+        containerId = ryukContainer.getContainerId();
 
         CountDownLatch ryukScheduledLatch = new CountDownLatch(1);
 
-        String host = containerState.getHost();
-        Integer ryukPort = containerState.getFirstMappedPort();
+        String host = ryukContainer.getHost();
+        Integer ryukPort = ryukContainer.getFirstMappedPort();
         Thread kiraThread = new Thread(
             DockerClientFactory.TESTCONTAINERS_THREAD_GROUP,
             () -> {
@@ -207,17 +117,10 @@ public class RyukResourceReaper extends ResourceReaper {
         );
         kiraThread.setDaemon(true);
         kiraThread.start();
-        try {
-            // We need to wait before we can start any containers to make sure that we delete them
-            if (!ryukScheduledLatch.await(TestcontainersConfiguration.getInstance().getRyukTimeout(), TimeUnit.SECONDS)) {
-                log.error("Timed out waiting for Ryuk container to start. Ryuk's logs:\n{}", ryukLog);
-                throw new IllegalStateException(String.format("Could not connect to Ryuk at %s:%s", host, ryukPort));
-            }
-        } finally {
-            try {
-                logCallback.close();
-            } catch (IOException ignored) {
-            }
+        // We need to wait before we can start any containers to make sure that we delete them
+        if (!ryukScheduledLatch.await(TestcontainersConfiguration.getInstance().getRyukTimeout(), TimeUnit.SECONDS)) {
+            log.error("Timed out waiting for Ryuk container to start. Ryuk's logs:\n{}", ryukContainer.getLogs());
+            throw new IllegalStateException(String.format("Could not connect to Ryuk at %s:%s", host, ryukPort));
         }
     }
 }
