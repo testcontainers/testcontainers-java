@@ -168,7 +168,7 @@ public abstract class DockerClientProviderStrategy {
                 break;
             default:
                 log.warn("Unknown DOCKER_HOST scheme {}, skipping the strategy test...", dockerHost.getScheme());
-                return false;
+                return true;
         }
 
         try (Socket socket = socketProvider.call()) {
