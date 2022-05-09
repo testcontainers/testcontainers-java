@@ -165,6 +165,9 @@ public final class DockerImageName {
         if (!versioning.isValid()) {
             throw new IllegalArgumentException(versioning + " is not a valid image versioning identifier (in " + rawName + ")");
         }
+        if (!rawName.contains("/") && rawName.split(":").length > 2) {
+            throw new IllegalArgumentException(rawName + " is not a valid Docker image name.");
+        }
     }
 
     /**
