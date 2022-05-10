@@ -33,7 +33,7 @@ import static org.testcontainers.utility.AuthConfigUtil.toSafeString;
 public class RegistryAuthLocator {
 
     private static final Logger log = getLogger(RegistryAuthLocator.class);
-    private static final String DEFAULT_REGISTRY_NAME = "index.docker.io";
+    private static final String DEFAULT_REGISTRY_NAME = "https://index.docker.io/v1/";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private static RegistryAuthLocator instance;
