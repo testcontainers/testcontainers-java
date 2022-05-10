@@ -21,20 +21,20 @@ import java.util.stream.Stream;
 enum LocalImagesCache {
     INSTANCE;
 
-    private final AtomicBoolean initialized = new AtomicBoolean(false);
+    @VisibleForTesting
+    final AtomicBoolean initialized = new AtomicBoolean(false);
 
     @VisibleForTesting
     final Map<DockerImageName, ImageData> cache = new ConcurrentHashMap<>();
 
-    DockerClient dockerClient = DockerClientFactory.lazyClient();
-
     public ImageData get(DockerImageName imageName) {
-        maybeInitCache();
+        maybeInitCache(DockerClientFactory.instance().client());
         return cache.get(imageName);
     }
 
     public Optional<ImageData> refreshCache(DockerImageName imageName) {
-        if (!maybeInitCache()) {
+        DockerClient dockerClient = DockerClientFactory.instance().client();
+        if (!maybeInitCache(dockerClient)) {
             // Cache may be stale, trying inspectImageCmd...
 
             InspectImageResponse response = null;
@@ -56,7 +56,7 @@ enum LocalImagesCache {
         return Optional.ofNullable(cache.get(imageName));
     }
 
-    private synchronized boolean maybeInitCache() {
+    private synchronized boolean maybeInitCache(DockerClient dockerClient) {
         if (!initialized.compareAndSet(false, true)) {
             return false;
         }

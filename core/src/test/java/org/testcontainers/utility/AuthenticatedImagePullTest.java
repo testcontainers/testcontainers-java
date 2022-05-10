@@ -13,12 +13,11 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.DockerRegistryContainer;
 import org.testcontainers.containers.ContainerState;
 import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.output.FrameConsumerResultCallback;
-import org.testcontainers.containers.output.OutputFrame;
-import org.testcontainers.containers.output.WaitingConsumer;
+import org.testcontainers.images.LocalImagesCacheAccessor;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 
 import java.io.IOException;
@@ -26,9 +25,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -51,18 +47,14 @@ public class AuthenticatedImagePullTest {
      * Containerised docker image registry, with simple hardcoded credentials
      */
     @ClassRule
-    public static GenericContainer<?> authenticatedRegistry = new GenericContainer<>(new ImageFromDockerfile()
+    public static DockerRegistryContainer authenticatedRegistry = new DockerRegistryContainer(new ImageFromDockerfile()
         .withDockerfileFromBuilder(builder -> {
             builder.from(DOCKER_REGISTRY_IMAGE.asCanonicalNameString())
                 .run("htpasswd -Bbn testuser notasecret > /htpasswd")
                 .env("REGISTRY_AUTH", "htpasswd")
                 .env("REGISTRY_AUTH_HTPASSWD_PATH", "/htpasswd")
                 .env("REGISTRY_AUTH_HTPASSWD_REALM", "Test");
-        }))
-        .withEnv("REGISTRY_HTTP_ADDR", "127.0.0.1:0")
-        .withCreateContainerCmdModifier(cmd -> {
-            cmd.getHostConfig().withNetworkMode("host");
-        });
+        }));
 
     private static RegistryAuthLocator originalAuthLocatorSingleton;
     private static DockerClient client;
@@ -75,30 +67,7 @@ public class AuthenticatedImagePullTest {
         originalAuthLocatorSingleton = RegistryAuthLocator.instance();
         client = DockerClientFactory.instance().client();
 
-        AtomicInteger port = new AtomicInteger(-1);
-        try (FrameConsumerResultCallback resultCallback = new FrameConsumerResultCallback()) {
-            WaitingConsumer waitingConsumer = new WaitingConsumer();
-            resultCallback.addConsumer(OutputFrame.OutputType.STDERR, waitingConsumer);
-
-            client.logContainerCmd(authenticatedRegistry.getContainerId())
-                .withStdErr(true)
-                .withFollowStream(true)
-                .exec(resultCallback);
-
-            Pattern pattern = Pattern.compile(".*listening on .*:(\\d+).*", Pattern.DOTALL | Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
-            waitingConsumer.waitUntil(it -> {
-                String s = it.getUtf8String();
-                Matcher matcher = pattern.matcher(s);
-                if (matcher.matches()) {
-                    port.set(Integer.parseInt(matcher.group(1)));
-                    return true;
-                } else {
-                    return false;
-                }
-            }, 10, TimeUnit.SECONDS);
-        }
-
-        String testRegistryAddress = authenticatedRegistry.getHost() + ":" + port.get();
+        String testRegistryAddress = authenticatedRegistry.getEndpoint();
         testImageName = testRegistryAddress + "/alpine";
 
         final DockerImageName expectedName = DockerImageName.parse(testImageName);
@@ -125,6 +94,7 @@ public class AuthenticatedImagePullTest {
         } catch (NotFoundException ignored) {
 
         }
+        LocalImagesCacheAccessor.clearCache();
     }
 
     @AfterClass

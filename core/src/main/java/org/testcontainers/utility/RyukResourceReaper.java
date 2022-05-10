@@ -17,6 +17,7 @@ import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ContainerState;
+import org.testcontainers.images.RemoteDockerImage;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -29,13 +30,21 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.awaitility.Awaitility.await;
 
+/**
+ * Ryuk-based {@link ResourceReaper} implementation.
+ *
+ * @see <a href="https://github.com/testcontainers/moby-ryuk">moby-ryuk</a>
+ * @deprecated internal API
+ */
+@Deprecated
 @Slf4j
-class RyukResourceReaper {
+public class RyukResourceReaper extends ResourceReaper {
 
     private static final RateLimiter RYUK_ACK_RATE_LIMITER = RateLimiterBuilder
         .newBuilder()
@@ -43,21 +52,47 @@ class RyukResourceReaper {
         .withConstantThroughput()
         .build();
 
+    private final AtomicBoolean started = new AtomicBoolean(false);
+
     @Getter
-    private final String containerId;
+    private String containerId = null;
+
+    @Override
+    public void init() {
+        if (!TestcontainersConfiguration.getInstance().environmentSupportsReuse()) {
+            log.debug("Ryuk is enabled");
+            maybeStart();
+            log.info("Ryuk started - will monitor and terminate Testcontainers containers on JVM exit");
+        } else {
+            log.debug("Ryuk is enabled but will be started on demand");
+        }
+    }
+
+    @Override
+    public void registerLabelsFilterForCleanup(Map<String, String> labels) {
+        maybeStart();
+        super.registerLabelsFilterForCleanup(labels);
+    }
+
+    @Override
+    public Map<String, String> getLabels() {
+        maybeStart();
+        return super.getLabels();
+    }
 
     @SneakyThrows(InterruptedException.class)
-    RyukResourceReaper(DockerClient client) {
-        String ryukImage = ImageNameSubstitutor.instance()
-            .apply(DockerImageName.parse("testcontainers/ryuk:0.3.3"))
-            .asCanonicalNameString();
-        DockerClientFactory.instance().checkAndPullImage(client, ryukImage);
+    private synchronized void maybeStart() {
+        if (!started.compareAndSet(false, true)) {
+            return;
+        }
+        DockerClient client = DockerClientFactory.lazyClient();
+        RemoteDockerImage ryukImage = new RemoteDockerImage(DockerImageName.parse("testcontainers/ryuk:0.3.3"));
 
         List<Bind> binds = new ArrayList<>();
         binds.add(new Bind(DockerClientFactory.instance().getRemoteDockerUnixSocketPath(), new Volume("/var/run/docker.sock")));
 
         ExposedPort ryukExposedPort = ExposedPort.tcp(8080);
-        containerId = client.createContainerCmd(ryukImage)
+        containerId = client.createContainerCmd(ryukImage.get())
             .withHostConfig(
                 new HostConfig()
                     .withAutoRemove(true)

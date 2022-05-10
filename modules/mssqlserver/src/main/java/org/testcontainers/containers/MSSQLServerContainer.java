@@ -92,6 +92,17 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
     }
 
     @Override
+    protected String constructUrlForConnection(String queryString) {
+        // The JDBC driver of MS SQL Server enables encryption by default for versions > 10.1.0.
+        // We need to disable it by default to be able to use the container without having to pass extra params.
+        // See https://github.com/microsoft/mssql-jdbc/releases/tag/v10.1.0
+        if (urlParameters.keySet().stream().map(String::toLowerCase).noneMatch("encrypt"::equals)) {
+            urlParameters.put("encrypt", "false");
+        }
+        return super.constructUrlForConnection(queryString);
+    }
+
+    @Override
     public String getJdbcUrl() {
         String additionalUrlParams = constructUrlParameters(";", ";");
         return "jdbc:sqlserver://" + getHost() + ":" + getMappedPort(MS_SQL_SERVER_PORT) + additionalUrlParams;

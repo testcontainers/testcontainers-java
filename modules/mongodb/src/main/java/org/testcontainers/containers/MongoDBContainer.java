@@ -49,6 +49,19 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
     }
 
     /**
+     * Gets a connection string url, unlike {@link #getReplicaSetUrl} this does point to a
+     * database
+     * @return a connection url pointing to a mongodb instance
+     */
+    public String getConnectionString() {
+        return String.format(
+            "mongodb://%s:%d",
+            getHost(),
+            getMappedPort(MONGODB_INTERNAL_PORT)
+        );
+    }
+
+    /**
      * Gets a replica set url for the default {@value #MONGODB_DATABASE_NAME_DEFAULT} database.
      *
      * @return a replica set url.
@@ -67,12 +80,7 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
         if (!isRunning()) {
             throw new IllegalStateException("MongoDBContainer should be started first");
         }
-        return String.format(
-            "mongodb://%s:%d/%s",
-            getContainerIpAddress(),
-            getMappedPort(MONGODB_INTERNAL_PORT),
-            databaseName
-        );
+        return getConnectionString() + "/" + databaseName;
     }
 
     @Override

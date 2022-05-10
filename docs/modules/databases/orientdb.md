@@ -16,27 +16,28 @@ On the JVM you would most likely use the [Java driver](https://github.com/).
 
 The following example uses the JUnit 5 extension `@Testcontainers` and demonstrates both the usage of the Java Client:
 
-```java tab="JUnit 5 example"
-@Testcontainers
-public class ExampleTest {
-
-    @Container
-    private static OrientDBContainer container = new OrientDBContainer();
-
-    @Test
-    void testDbCreation() {
-
-        final ODatabaseSession session = container.getSession();
-
-        session.command("CREATE CLASS Person EXTENDS V");
-        session.command("INSERT INTO Person set name='john'");
-        session.command("INSERT INTO Person set name='jane'");
-
-        assertThat(session.query("SELECT FROM Person").stream()).hasSize(2);
+=== "JUnit 5 example"
+    ```java
+    @Testcontainers
+    public class ExampleTest {
+    
+        @Container
+        private static OrientDBContainer container = new OrientDBContainer();
+    
+        @Test
+        void testDbCreation() {
+    
+            final ODatabaseSession session = container.getSession();
+    
+            session.command("CREATE CLASS Person EXTENDS V");
+            session.command("INSERT INTO Person set name='john'");
+            session.command("INSERT INTO Person set name='jane'");
+    
+            assertThat(session.query("SELECT FROM Person").stream()).hasSize(2);
+        }
+    
     }
-
-}
-```
+    ```
 
 You are not limited to Unit tests and can of course use an instance of the OrientDB Testcontainer in vanilla Java code as well.
 
@@ -45,33 +46,36 @@ You are not limited to Unit tests and can of course use an instance of the Orien
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
-```groovy tab='Gradle'
-testImplementation "org.testcontainers:orientdb:{{latest_version}}"
-```
-
-```xml tab='Maven'
-<dependency>
-    <groupId>org.testcontainers</groupId>
-    <artifactId>orientdb</artifactId>
-    <version>{{latest_version}}</version>
-    <scope>test</scope>
-</dependency>
-```
+=== "Gradle"
+    ```groovy
+    testImplementation "org.testcontainers:orientdb:{{latest_version}}"
+    ```
+=== "Maven"
+    ```xml
+    <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>orientdb</artifactId>
+        <version>{{latest_version}}</version>
+        <scope>test</scope>
+    </dependency>
+    ```
 
 !!! hint
     Add the OrientDB Java client if you plan to access the Testcontainer:
     
-    ```groovy tab='Gradle'
-    compile "com.orientechnologies:orientdb-client:3.0.24"
-    ```
+    === "Gradle"
+        ```groovy
+        compile "com.orientechnologies:orientdb-client:3.0.24"
+        ```
     
-    ```xml tab='Maven'
-    <dependency>
-        <groupId>com.orientechnologies</groupId>
-        <artifactId>orientdb-client</artifactId>
-        <version>3.0.24</version>
-    </dependency>
-    ```
+    === "Maven"
+        ```xml
+        <dependency>
+            <groupId>com.orientechnologies</groupId>
+            <artifactId>orientdb-client</artifactId>
+            <version>3.0.24</version>
+        </dependency>
+        ```
     
 
 

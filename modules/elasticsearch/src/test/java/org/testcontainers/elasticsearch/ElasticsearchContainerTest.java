@@ -1,11 +1,6 @@
 package org.testcontainers.elasticsearch;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
-
-import java.io.IOException;
+import com.github.dockerjava.api.DockerClient;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -23,7 +18,18 @@ import org.elasticsearch.common.transport.TransportAddress;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.junit.After;
 import org.junit.Test;
+import org.testcontainers.DockerClientFactory;
+import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
+
+import javax.net.ssl.SSLHandshakeException;
+import java.io.IOException;
+
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
 
 public class ElasticsearchContainerTest {
 
@@ -247,6 +253,77 @@ public class ElasticsearchContainerTest {
                     .withTag(ELASTICSEARCH_VERSION))
             .withPassword("foo")
         );
+    }
+
+    @Test
+    public void testElasticsearch8SecureByDefault() throws Exception {
+        try (ElasticsearchContainer container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:8.1.2")) {
+            // Start the container. This step might take some time...
+            container.start();
+
+            Response response = getClusterHealth(container);
+            assertThat(response.getStatusLine().getStatusCode(), is(200));
+            assertThat(EntityUtils.toString(response.getEntity()), containsString("cluster_name"));
+        }
+    }
+
+    @Test
+    public void testElasticsearch8SecureByDefaultCustomCaCertFails() throws Exception {
+        final MountableFile mountableFile = MountableFile.forClasspathResource("http_ca.crt");
+        String caPath = "/tmp/http_ca.crt";
+        try (ElasticsearchContainer container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:8.1.2")
+            .withCopyToContainer(mountableFile, caPath)
+            .withCertPath(caPath)) {
+
+            container.start();
+
+            // this is expected, as a different cert is used for creating the SSL context
+            assertThrows("PKIX path validation failed: java.security.cert.CertPathValidatorException: Path does not chain with any of the trust anchors", SSLHandshakeException.class, () -> getClusterHealth(container));
+        }
+    }
+
+    @Test
+    public void testElasticsearch8SecureByDefaultFailsSilentlyOnLatestImages() throws Exception {
+        // this test exists for custom images by users that use the `latest` tag
+        // even though the version might be older than version 8
+        // this tags an old 7.x version as :latest
+        tagImage("docker.elastic.co/elasticsearch/elasticsearch:7.9.2", "elasticsearch-tc-older-release", "latest");
+        DockerImageName image = DockerImageName.parse("elasticsearch-tc-older-release:latest").asCompatibleSubstituteFor("docker.elastic.co/elasticsearch/elasticsearch");
+
+        try (ElasticsearchContainer container = new ElasticsearchContainer(image)) {
+            container.start();
+
+            Response response = getClient(container).performRequest(new Request("GET", "/_cluster/health"));
+            assertThat(response.getStatusLine().getStatusCode(), is(200));
+            assertThat(EntityUtils.toString(response.getEntity()), containsString("cluster_name"));
+        }
+    }
+
+    private void tagImage(String sourceImage, String targetImage, String targetTag) throws InterruptedException {
+        DockerClient dockerClient = DockerClientFactory.instance().client();
+        dockerClient.tagImageCmd(
+                new RemoteDockerImage(DockerImageName.parse(sourceImage)).get(),
+                targetImage,
+                targetTag
+            )
+            .exec();
+    }
+
+    private Response getClusterHealth(ElasticsearchContainer container) throws IOException {
+        // Create the secured client.
+        final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+        credentialsProvider.setCredentials(AuthScope.ANY,
+            new UsernamePasswordCredentials(ELASTICSEARCH_USERNAME, ElasticsearchContainer.ELASTICSEARCH_DEFAULT_PASSWORD));
+
+        client = RestClient.builder(HttpHost.create("https://" + container.getHttpHostAddress()))
+            .setHttpClientConfigCallback(httpClientBuilder -> {
+                httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+                httpClientBuilder.setSSLContext(container.createSslContextFromCa());
+                return httpClientBuilder;
+            })
+            .build();
+
+        return client.performRequest(new Request("GET", "/_cluster/health"));
     }
 
     private RestClient getClient(ElasticsearchContainer container) {
