@@ -7,6 +7,9 @@ import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.core.RemoteApiVersion;
 import com.github.dockerjava.transport.DockerHttpClient;
+import com.github.dockerjava.transport.NamedPipeSocket;
+import com.github.dockerjava.transport.SSLConfig;
+import com.github.dockerjava.transport.UnixSocket;
 import com.github.dockerjava.zerodep.ZerodepDockerHttpClient;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
@@ -14,15 +17,28 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.awaitility.Awaitility;
 import org.jetbrains.annotations.Nullable;
 import org.rnorth.ducttape.TimeoutException;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.UnstableAPI;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
+import javax.net.SocketFactory;
+import java.io.File;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketAddress;
+import java.net.SocketTimeoutException;
 import java.net.URI;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -31,6 +47,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
@@ -108,6 +125,71 @@ public abstract class DockerClientProviderStrategy {
     }
 
     /**
+     * TODO we should consider moving this to docker-java at some point
+     */
+    @UnstableAPI
+    protected boolean test() {
+        TransportConfig transportConfig = getTransportConfig();
+        URI dockerHost = transportConfig.getDockerHost();
+
+        Callable<Socket> socketProvider;
+        SocketAddress socketAddress;
+        switch (dockerHost.getScheme()) {
+            case "tcp":
+            case "http":
+            case "https":
+                SocketFactory socketFactory = SocketFactory.getDefault();
+                SSLConfig sslConfig = transportConfig.getSslConfig();
+                if (sslConfig != null) {
+                    try {
+                        socketFactory = sslConfig.getSSLContext().getSocketFactory();
+                    } catch (KeyManagementException | UnrecoverableKeyException | NoSuchAlgorithmException | KeyStoreException e) {
+                        log.warn("Exception while creating SSLSocketFactory", e);
+                        return false;
+                    }
+                }
+                socketProvider = socketFactory::createSocket;
+                socketAddress = new InetSocketAddress(dockerHost.getHost(), dockerHost.getPort());
+                break;
+            case "unix":
+            case "npipe":
+                if (!new File(dockerHost.getPath()).exists()) {
+                    log.debug("DOCKER_HOST socket file '{}' does not exist", dockerHost.getPath());
+                    return false;
+                }
+                socketProvider = () -> {
+                    switch (dockerHost.getScheme()) {
+                        case "unix":
+                            return UnixSocket.get(dockerHost.getPath());
+                        case "npipe":
+                            return new NamedPipeSocket(dockerHost.getPath());
+                        default:
+                            throw new IllegalStateException("Unexpected scheme " + dockerHost.getScheme());
+                    }
+                };
+                socketAddress = new InetSocketAddress("localhost", 2375);
+                break;
+            default:
+                log.warn("Unknown DOCKER_HOST scheme {}, skipping the strategy test...", dockerHost.getScheme());
+                return true;
+        }
+
+        try (Socket socket = socketProvider.call()) {
+            Duration timeout = Duration.ofMillis(200);
+            Awaitility.await()
+                .atMost(TestcontainersConfiguration.getInstance().getClientPingTimeout(), TimeUnit.SECONDS)
+                .pollInterval(timeout)
+                .pollDelay(Duration.ofSeconds(0)) // start checking immediately
+                .ignoreExceptionsInstanceOf(SocketTimeoutException.class)
+                .untilAsserted(() -> socket.connect(socketAddress, (int) timeout.toMillis()));
+            return true;
+        } catch (Exception e) {
+            log.warn("DOCKER_HOST {} is not listening", dockerHost);
+            return false;
+        }
+    }
+
+    /**
      * Determine the right DockerClientConfig to use for building clients by trial-and-error.
      *
      * @return a working DockerClientConfig, as determined by successful execution of a ping command
@@ -164,19 +246,12 @@ public abstract class DockerClientProviderStrategy {
     private static boolean tryOutStrategy(List<String> configurationFailures, DockerClientProviderStrategy strategy) {
         try {
             log.debug("Trying out strategy: {}", strategy.getClass().getSimpleName());
-            DockerClient dockerClient = strategy.getDockerClient();
 
-            try {
-                strategy.info = Unreliables.retryUntilSuccess(TestcontainersConfiguration.getInstance().getClientPingTimeout(), TimeUnit.SECONDS, () -> {
-                    return strategy.PING_RATE_LIMITER.getWhenReady(() -> {
-                        log.debug("Pinging docker daemon...");
-                        return dockerClient.infoCmd().exec();
-                    });
-                });
-            } catch (TimeoutException e) {
-                IOUtils.closeQuietly(dockerClient);
-                throw e;
+            if (!strategy.test()) {
+                log.debug("strategy {} did not pass the test", strategy.getClass().getSimpleName());
+                return false;
             }
+
             log.info("Found Docker environment with {}", strategy.getDescription());
             log.debug(
                 "Transport type: '{}', Docker host: '{}'",
