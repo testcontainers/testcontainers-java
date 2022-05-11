@@ -252,6 +252,7 @@ public abstract class DockerClientProviderStrategy {
                 return false;
             }
 
+            strategy.info = strategy.getDockerClient().infoCmd().exec();
             log.info("Found Docker environment with {}", strategy.getDescription());
             log.debug(
                 "Transport type: '{}', Docker host: '{}'",
