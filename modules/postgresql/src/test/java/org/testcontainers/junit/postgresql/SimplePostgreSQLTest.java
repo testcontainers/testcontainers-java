@@ -3,14 +3,17 @@ package org.testcontainers.junit.postgresql;
 import org.junit.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
+import org.testcontainers.images.builder.ImageFromDockerfile;
+import org.testcontainers.utility.DockerImageName;
 
+import java.nio.file.Paths;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertNotEquals;
 import static org.testcontainers.PostgreSQLTestImages.POSTGRES_TEST_IMAGE;
@@ -79,4 +82,21 @@ public class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
             assertThat(jdbcUrl, containsString("charSet=UNICODE"));
         }
     }
+
+    @Test
+    public void testWithDataAlreadyInTheContainer() throws SQLException {
+        ImageFromDockerfile image = new ImageFromDockerfile()
+            .withDockerfile(Paths.get("src/test/resources/Dockerfile"));
+
+        DockerImageName postgresImage = DockerImageName.parse(image.get()).asCompatibleSubstituteFor("postgres");
+        try (PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(postgresImage)) {
+            postgres.start();
+
+            ResultSet resultSet = performQuery(postgres, "SELECT foo FROM bar");
+
+            String firstColumnValue = resultSet.getString(1);
+            assertEquals("Value from init script should equal real value", "hello world", firstColumnValue);
+        }
+    }
+
 }

@@ -9,6 +9,7 @@ import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.delegate.DatabaseDelegate;
 import org.testcontainers.ext.ScriptUtils;
 import org.testcontainers.jdbc.JdbcDatabaseDelegate;
+import org.testcontainers.jdbc.wait.JdbcQueryWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
@@ -316,6 +317,10 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
 
     protected DatabaseDelegate getDatabaseDelegate() {
         return new JdbcDatabaseDelegate(this, "");
+    }
+
+    protected JdbcQueryWaitStrategy getJdbcQueryWaitStrategy() {
+        return new JdbcQueryWaitStrategy(getDatabaseDelegate());
     }
 
     public static class NoDriverFoundException extends RuntimeException {
