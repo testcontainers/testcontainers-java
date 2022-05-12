@@ -1,13 +1,10 @@
 package org.testcontainers.containers;
 
 import org.jetbrains.annotations.NotNull;
-import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
-import java.time.Duration;
 import java.util.Set;
 
-import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.Collections.singleton;
 
 /**
@@ -49,10 +46,7 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
 
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
-        this.waitStrategy = new LogMessageWaitStrategy()
-                .withRegEx(".*database system is ready to accept connections.*\\s")
-                .withTimes(2)
-                .withStartupTimeout(Duration.of(60, SECONDS));
+        this.waitStrategy = new PostgreSQLWaitStrategy(dockerImageName.getVersionPart());
         this.setCommand("postgres", "-c", FSYNC_OFF_OPTION);
 
         addExposedPort(POSTGRESQL_PORT);
