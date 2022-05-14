@@ -18,9 +18,9 @@ class RyukContainer extends GenericContainer<RyukContainer> {
                 cmd.getHostConfig()
                     .withAutoRemove(true)
                     .withPrivileged(TestcontainersConfiguration.getInstance().isRyukPrivileged())
+                    .withBinds(new Bind(DockerClientFactory.instance().getRemoteDockerUnixSocketPath(), new Volume("/var/run/docker.sock")))
             );
         });
-        getBinds().add(new Bind(DockerClientFactory.instance().getRemoteDockerUnixSocketPath(), new Volume("/var/run/docker.sock")));
 
         waitingFor(Wait.forLogMessage(".*Started.*", 1));
     }
