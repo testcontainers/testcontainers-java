@@ -7,6 +7,7 @@ import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
+import org.testcontainers.DockerClientFactory;
 import org.zeroturnaround.exec.InvalidResultException;
 import org.zeroturnaround.exec.ProcessExecutor;
 
@@ -32,7 +33,7 @@ import static org.testcontainers.utility.AuthConfigUtil.toSafeString;
 public class RegistryAuthLocator {
 
     private static final Logger log = getLogger(RegistryAuthLocator.class);
-    private static final String DEFAULT_REGISTRY_NAME = "index.docker.io";
+    private static final String DEFAULT_REGISTRY_NAME = "https://index.docker.io/v1/";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private static RegistryAuthLocator instance;
@@ -282,7 +283,14 @@ public class RegistryAuthLocator {
     }
 
     private String effectiveRegistryName(DockerImageName dockerImageName) {
-        return StringUtils.defaultIfEmpty(dockerImageName.getRegistry(), DEFAULT_REGISTRY_NAME);
+        final String registry = dockerImageName.getRegistry();
+        if (!StringUtils.isEmpty(registry)) {
+            return registry;
+        }
+        return StringUtils.defaultString(
+            DockerClientFactory.instance().getInfo().getIndexServerAddress(),
+            DEFAULT_REGISTRY_NAME
+        );
     }
 
     private String getGenericCredentialsNotFoundMsg(String credentialHelperName) {
