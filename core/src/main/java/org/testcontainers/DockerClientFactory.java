@@ -199,7 +199,7 @@ public class DockerClientFactory {
         };
         log.info("Docker host IP address is {}", strategy.getDockerHostIpAddress());
 
-        Info dockerInfo = client.infoCmd().exec();
+        Info dockerInfo = strategy.getInfo();
         Version version = client.versionCmd().exec();
         activeApiVersion = version.getApiVersion();
         activeExecutionDriver = dockerInfo.getExecutionDriver();
@@ -433,5 +433,10 @@ public class DockerClientFactory {
      */
     public boolean isUsing(Class<? extends DockerClientProviderStrategy> providerStrategyClass) {
         return strategy != null && providerStrategyClass.isAssignableFrom(this.strategy.getClass());
+    }
+
+    @UnstableAPI
+    public Info getInfo() {
+        return getOrInitializeStrategy().getInfo();
     }
 }

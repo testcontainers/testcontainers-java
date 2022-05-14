@@ -65,6 +65,9 @@ public abstract class DockerClientProviderStrategy {
 
     private String dockerHostIpAddress;
 
+    @Getter
+    private Info info;
+
     private final RateLimiter PING_RATE_LIMITER = RateLimiterBuilder.newBuilder()
             .withRate(10, TimeUnit.SECONDS)
             .withConstantThroughput()
@@ -249,7 +252,7 @@ public abstract class DockerClientProviderStrategy {
                 return false;
             }
 
-            Info info = strategy.getDockerClient().infoCmd().exec();
+            strategy.info = strategy.getDockerClient().infoCmd().exec();
             log.info("Found Docker environment with {}", strategy.getDescription());
             log.debug(
                 "Transport type: '{}', Docker host: '{}'",
@@ -258,7 +261,7 @@ public abstract class DockerClientProviderStrategy {
             );
 
             log.debug("Checking Docker OS type for {}", strategy.getDescription());
-            String osType = info.getOsType();
+            String osType = strategy.getInfo().getOsType();
             if (StringUtils.isBlank(osType)) {
                 log.warn("Could not determine Docker OS type");
             } else if (!osType.equals("linux")) {
