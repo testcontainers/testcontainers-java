@@ -1,11 +1,12 @@
 package org.testcontainers.utility;
 
-import lombok.Getter;
+import com.github.dockerjava.api.command.CreateContainerCmd;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.containers.GenericContainer;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -34,8 +35,11 @@ public class RyukResourceReaper extends ResourceReaper {
 
     private final AtomicBoolean started = new AtomicBoolean(false);
 
-    @Getter
-    private String containerId = null;
+    private final RyukContainer ryukContainer = new RyukContainer();
+
+    public String getContainerId() {
+        return ryukContainer.getContainerId();
+    }
 
     @Override
     public void init() {
@@ -60,16 +64,24 @@ public class RyukResourceReaper extends ResourceReaper {
         return super.getLabels();
     }
 
+    @Override
+    public CreateContainerCmd register(GenericContainer<?> container, CreateContainerCmd cmd) {
+        if (container == ryukContainer) {
+            // Do not register Ryuk container to avoid self-pruning
+            return cmd;
+        }
+
+        maybeStart();
+        return super.register(container, cmd);
+    }
+
     @SneakyThrows(InterruptedException.class)
     private synchronized void maybeStart() {
         if (!started.compareAndSet(false, true)) {
             return;
         }
 
-        RyukContainer ryukContainer = new RyukContainer();
         ryukContainer.start();
-
-        containerId = ryukContainer.getContainerId();
 
         CountDownLatch ryukScheduledLatch = new CountDownLatch(1);
 

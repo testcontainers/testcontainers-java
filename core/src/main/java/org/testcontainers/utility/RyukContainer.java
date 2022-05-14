@@ -1,15 +1,10 @@
 package org.testcontainers.utility;
 
-import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Volume;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
-import org.testcontainers.containers.wait.strategy.WaitStrategy;
-import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
-
-import java.time.Duration;
+import org.testcontainers.containers.wait.strategy.Wait;
 
 class RyukContainer extends GenericContainer<RyukContainer> {
 
@@ -27,23 +22,6 @@ class RyukContainer extends GenericContainer<RyukContainer> {
         });
         getBinds().add(new Bind(DockerClientFactory.instance().getRemoteDockerUnixSocketPath(), new Volume("/var/run/docker.sock")));
 
-        withStartupCheckStrategy(new StartupCheckStrategy() {
-            @Override
-            public StartupStatus checkStartupState(DockerClient dockerClient, String containerId) {
-                return StartupStatus.SUCCESSFUL;
-            }
-        });
-
-        waitingFor(new WaitStrategy() {
-            @Override
-            public void waitUntilReady(WaitStrategyTarget waitStrategyTarget) {
-
-            }
-
-            @Override
-            public WaitStrategy withStartupTimeout(Duration startupTimeout) {
-                return this;
-            }
-        });
+        waitingFor(Wait.forLogMessage(".*Started.*", 1));
     }
 }

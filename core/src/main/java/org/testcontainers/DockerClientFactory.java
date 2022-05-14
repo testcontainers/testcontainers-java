@@ -204,10 +204,10 @@ public class DockerClientFactory {
         activeApiVersion = version.getApiVersion();
         activeExecutionDriver = dockerInfo.getExecutionDriver();
         log.info("Connected to docker: \n" +
-                "  Server Version: " + dockerInfo.getServerVersion() + "\n" +
-                "  API Version: " + activeApiVersion + "\n" +
-                "  Operating System: " + dockerInfo.getOperatingSystem() + "\n" +
-                "  Total Memory: " + dockerInfo.getMemTotal() / (1024 * 1024) + " MB");
+            "  Server Version: " + dockerInfo.getServerVersion() + "\n" +
+            "  API Version: " + activeApiVersion + "\n" +
+            "  Operating System: " + dockerInfo.getOperatingSystem() + "\n" +
+            "  Total Memory: " + dockerInfo.getMemTotal() / (1024 * 1024) + " MB");
 
         final ResourceReaper resourceReaper;
         try {

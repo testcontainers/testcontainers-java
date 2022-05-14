@@ -389,7 +389,7 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @param consumer consumer that the frames should be sent to
      */
     default void followOutput(Consumer<OutputFrame> consumer) {
-        LogUtils.followOutput(DockerClientFactory.instance().client(), getContainerId(), consumer);
+        LogUtils.followOutput(getDockerClient(), getContainerId(), consumer);
     }
 
     /**
@@ -400,7 +400,7 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @param types    types that should be followed (one or both of STDOUT, STDERR)
      */
     default void followOutput(Consumer<OutputFrame> consumer, OutputFrame.OutputType... types) {
-        LogUtils.followOutput(DockerClientFactory.instance().client(), getContainerId(), consumer, types);
+        LogUtils.followOutput(getDockerClient(), getContainerId(), consumer, types);
     }
 
 
@@ -438,8 +438,6 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      */
     @Deprecated
     Map<String, LinkableContainer> getLinkedContainers();
-
-    DockerClient getDockerClient();
 
     void setExposedPorts(List<Integer> exposedPorts);
 
