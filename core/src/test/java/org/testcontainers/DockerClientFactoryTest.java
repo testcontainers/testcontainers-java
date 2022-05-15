@@ -25,7 +25,7 @@ public class DockerClientFactoryTest {
             registryContainer.start();
             DockerImageName imageName = registryContainer.createImage();
 
-            final DockerClientFactory dockFactory = DockerClientFactory.instance();
+            DockerClientFactory dockFactory = DockerClientFactory.instance();
 
             dockFactory.runInsideDocker(
                 imageName,
