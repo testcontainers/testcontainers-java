@@ -6,6 +6,8 @@ sourceSets {
     jarFileTest
 }
 
+test.maxParallelForks = 4
+
 idea.module.testSourceDirs += sourceSets.jarFileTest.allSource.srcDirs
 
 shadowJar {

@@ -1,37 +1,28 @@
 package org.testcontainers.utility;
 
-import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.async.ResultCallback;
-import com.github.dockerjava.api.command.PullImageResultCallback;
-import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.AuthConfig;
 import org.intellij.lang.annotations.Language;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.testcontainers.DockerClientFactory;
 import org.testcontainers.DockerRegistryContainer;
 import org.testcontainers.containers.ContainerState;
 import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.images.LocalImagesCacheAccessor;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.concurrent.TimeUnit;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.when;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 import static org.testcontainers.TestImages.DOCKER_REGISTRY_IMAGE;
-import static org.testcontainers.TestImages.TINY_IMAGE;
 
 /**
  * This test checks the integration between Testcontainers and an authenticated registry, but uses
@@ -57,20 +48,15 @@ public class AuthenticatedImagePullTest {
         }));
 
     private static RegistryAuthLocator originalAuthLocatorSingleton;
-    private static DockerClient client;
 
-    private static String testImageName;
-    private static RegistryAuthLocator mockAuthLocator;
+    private final DockerImageName testImageName = authenticatedRegistry.createImage();
 
     @BeforeClass
-    public static void setUp() throws Exception {
+    public static void beforeClass() throws Exception {
         originalAuthLocatorSingleton = RegistryAuthLocator.instance();
-        client = DockerClientFactory.instance().client();
 
         String testRegistryAddress = authenticatedRegistry.getEndpoint();
-        testImageName = testRegistryAddress + "/alpine";
 
-        final DockerImageName expectedName = DockerImageName.parse(testImageName);
         final AuthConfig authConfig = new AuthConfig()
             .withUsername("testuser")
             .withPassword("notasecret")
@@ -79,22 +65,8 @@ public class AuthenticatedImagePullTest {
         // Replace the RegistryAuthLocator singleton with our mock, for the duration of this test
         final RegistryAuthLocator mockAuthLocator = Mockito.mock(RegistryAuthLocator.class);
         RegistryAuthLocator.setInstance(mockAuthLocator);
-        when(mockAuthLocator.lookupAuthConfig(eq(expectedName), any()))
+        when(mockAuthLocator.lookupAuthConfig(argThat(argument -> testRegistryAddress.equals(argument.getRegistry())), any()))
             .thenReturn(authConfig);
-
-        // a push will use the auth locator for authentication, although that isn't the goal of this test
-        putImageInRegistry();
-    }
-
-    @Before
-    public void removeImageFromLocalDocker() {
-        // remove the image tag from local docker so that it must be pulled before use
-        try {
-            client.removeImageCmd(testImageName).withForce(true).exec();
-        } catch (NotFoundException ignored) {
-
-        }
-        LocalImagesCacheAccessor.clearCache();
     }
 
     @AfterClass
@@ -105,7 +77,7 @@ public class AuthenticatedImagePullTest {
     @Test
     public void testThatAuthLocatorIsUsedForContainerCreation() {
         // actually start a container, which will require an authenticated pull
-        try (final GenericContainer<?> container = new GenericContainer<>(DockerImageName.parse(testImageName))
+        try (final GenericContainer<?> container = new GenericContainer<>(testImageName)
             .withCommand("/bin/sh", "-c", "sleep 10")) {
             container.start();
 
@@ -117,7 +89,7 @@ public class AuthenticatedImagePullTest {
     public void testThatAuthLocatorIsUsedForDockerfileBuild() throws IOException {
         // Prepare a simple temporary Dockerfile which requires our custom private image
         Path tempFile = getLocalTempFile(".Dockerfile");
-        String dockerFileContent = "FROM " + testImageName;
+        String dockerFileContent = "FROM " + testImageName.asCanonicalNameString();
         Files.write(tempFile, dockerFileContent.getBytes());
 
         // Start a container built from a derived image, which will require an authenticated pull
@@ -141,7 +113,7 @@ public class AuthenticatedImagePullTest {
                 "services:\n" +
                 "  privateservice:\n" +
                 "      command: /bin/sh -c 'sleep 60'\n" +
-                "      image: " + testImageName;
+                "      image: " + testImageName.asCanonicalNameString();
         Files.write(tempFile, composeFileContent.getBytes());
 
         // Start the docker compose project, which will require an authenticated pull
@@ -167,25 +139,5 @@ public class AuthenticatedImagePullTest {
         tempFile.toFile().deleteOnExit();
 
         return tempFile;
-    }
-
-    private static void putImageInRegistry() throws InterruptedException {
-        // It doesn't matter which image we use for this test, but use one that's likely to have been pulled already
-        final String dummySourceImage = TINY_IMAGE.asCanonicalNameString();
-
-        client.pullImageCmd(dummySourceImage)
-            .exec(new PullImageResultCallback())
-            .awaitCompletion(1, TimeUnit.MINUTES);
-
-        final String id = client.inspectImageCmd(dummySourceImage)
-            .exec()
-            .getId();
-
-        // push the image to the registry
-        client.tagImageCmd(id, testImageName, "").exec();
-
-        client.pushImageCmd(testImageName)
-            .exec(new ResultCallback.Adapter<>())
-            .awaitCompletion(1, TimeUnit.MINUTES);
     }
 }
