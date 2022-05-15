@@ -87,7 +87,7 @@ public class DockerRegistryContainer extends GenericContainer<DockerRegistryCont
 
         String dummyImageId = client.inspectImageCmd(originalImage).exec().getId();
 
-        DockerImageName imageName = DockerImageName.parse(getEndpoint() + "/" + Base58.randomString(8).toLowerCase()).withTag(tag);
+        DockerImageName imageName = DockerImageName.parse(getEndpoint() + "/" + Base58.randomString(6).toLowerCase()).withTag(tag);
 
         // push the image to the registry
         client.tagImageCmd(dummyImageId, imageName.asCanonicalNameString(), tag).exec();
