@@ -19,6 +19,7 @@ package org.testcontainers.couchbase;
 import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.Cluster;
 import com.couchbase.client.java.Collection;
+import com.couchbase.client.java.Scope;
 import com.couchbase.client.java.json.JsonObject;
 import org.junit.Test;
 import org.testcontainers.containers.ContainerLaunchException;
@@ -79,6 +80,39 @@ public class CouchbaseContainerTest {
                 bucket.waitUntilReady(Duration.ofSeconds(10L));
 
                 Collection collection = bucket.defaultCollection();
+
+                collection.upsert("foo", JsonObject.create().put("key", "value"));
+
+                JsonObject fooObject = collection.get("foo").contentAsObject();
+
+                assertEquals("value", fooObject.getString("key"));
+            });
+        }
+    }
+
+    @Test
+    public void testContainerUsageWithScopeAndCollection() {
+        // bucket_definition {
+        CollectionDefinition collectionDefinition = new CollectionDefinition("mycollection");
+
+        ScopeDefinition scopeDefinition = new ScopeDefinition("myscope").withCollection(collectionDefinition);
+
+        BucketDefinition bucketDefinition = new BucketDefinition("mybucket").withScope(scopeDefinition);
+        // }
+
+        try (
+            // container_definition {
+            CouchbaseContainer container = new CouchbaseContainer(COUCHBASE_IMAGE_ENTERPRISE)
+                .withBucket(bucketDefinition)
+            // }
+        ) {
+            setUpClient(container, cluster -> {
+                Bucket bucket = cluster.bucket(bucketDefinition.getName());
+                bucket.waitUntilReady(Duration.ofSeconds(10L));
+
+                Scope scope = bucket.scope(scopeDefinition.getName());
+
+                Collection collection = scope.collection(collectionDefinition.getName());
 
                 collection.upsert("foo", JsonObject.create().put("key", "value"));
 

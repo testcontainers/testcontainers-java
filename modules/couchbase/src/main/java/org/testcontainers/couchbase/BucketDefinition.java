@@ -16,6 +16,9 @@
 
 package org.testcontainers.couchbase;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Allows to configure the properties of a bucket that should be created.
  */
@@ -25,6 +28,7 @@ public class BucketDefinition {
     private boolean flushEnabled = false;
     private boolean queryPrimaryIndex = true;
     private int quota = 100;
+    private List<ScopeDefinition> scopes = new ArrayList<>();
 
     public BucketDefinition(final String name) {
         this.name = name;
@@ -66,6 +70,17 @@ public class BucketDefinition {
         return this;
     }
 
+    /**
+     * Add a scope to this bucket.
+     *
+     * @param scope, the scope definition.
+     * @return this {@link BucketDefinition} for chaining purposes.
+     */
+    public BucketDefinition withScope(ScopeDefinition scope) {
+        scopes.add(scope);
+        return this;
+    }
+
     public String getName() {
         return name;
     }
@@ -82,4 +97,7 @@ public class BucketDefinition {
         return quota;
     }
 
+    public List<ScopeDefinition> scopes() {
+        return scopes;
+    }
 }

@@ -531,6 +531,27 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
             checkSuccessfulResponse(response, "Could not create bucket " + bucket.getName());
 
+            for (ScopeDefinition scope: bucket.scopes()) {
+                logger().debug("Creating scope \"{}\"", scope.getName());
+
+                @Cleanup Response scopeResponse = doHttpRequest(MGMT_PORT, "/pools/default/buckets/" + bucket.getName() + "/scopes", "POST", new FormBody.Builder()
+                    .add("name", scope.getName())
+                    .build(), true);
+
+                checkSuccessfulResponse(scopeResponse, "Could not create scope " + scope.getName());
+
+                for (CollectionDefinition collection: scope.getCollections()) {
+                    logger().debug("Creating collection \"{}\"", collection.getName());
+
+                    @Cleanup Response collectionResponse = doHttpRequest(MGMT_PORT, "/pools/default/buckets/" + bucket.getName() + "/scopes/" + scope.getName() + "/collections", "POST", new FormBody.Builder()
+                        .add("name", collection.getName())
+                        .add("maxTTL", Integer.toString(collection.getMaxTTL()))
+                        .build(), true);
+
+                    checkSuccessfulResponse(collectionResponse, "Could not create collection " + collection.getName());
+                }
+            }
+
             timePhase("createBucket:" + bucket.getName() + ":waitForAllServicesEnabled", () ->
                 new HttpWaitStrategy()
                 .forPath("/pools/default/b/" + bucket.getName())
