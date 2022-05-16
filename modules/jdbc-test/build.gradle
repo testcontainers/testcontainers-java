@@ -16,5 +16,5 @@ dependencies {
 
     api 'org.apache.tomcat:tomcat-jdbc:10.0.20'
     api 'org.vibur:vibur-dbcp:25.0'
-    api 'mysql:mysql-connector-java:8.0.28'
+    api 'mysql:mysql-connector-java:8.0.29'
 }
