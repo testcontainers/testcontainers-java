@@ -27,7 +27,7 @@ public class LogMessageWaitStrategy extends AbstractWaitStrategy {
     protected void waitUntilReady() {
         WaitingConsumer waitingConsumer = new WaitingConsumer();
 
-        LogContainerCmd cmd = DockerClientFactory.instance().client().logContainerCmd(waitStrategyTarget.getContainerId())
+        LogContainerCmd cmd = waitStrategyTarget.getDockerClient().logContainerCmd(waitStrategyTarget.getContainerId())
             .withFollowStream(true)
             .withSince(0)
             .withStdOut(true)
