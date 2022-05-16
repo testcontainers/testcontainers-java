@@ -19,6 +19,8 @@ import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.junit.After;
 import org.junit.Test;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
@@ -279,6 +281,27 @@ public class ElasticsearchContainerTest {
 
             // this is expected, as a different cert is used for creating the SSL context
             assertThrows("PKIX path validation failed: java.security.cert.CertPathValidatorException: Path does not chain with any of the trust anchors", SSLHandshakeException.class, () -> getClusterHealth(container));
+        }
+    }
+
+    @Test
+    public void testElasticsearch8SecureByDefaultHttpWaitStrategy() throws Exception {
+        final HttpWaitStrategy httpsWaitStrategy = Wait.forHttps("/")
+            .forPort(9200)
+            .forStatusCode(200)
+            .withBasicCredentials(ELASTICSEARCH_USERNAME, ELASTICSEARCH_PASSWORD)
+            // trusting self-signed certificate
+            .allowInsecure();
+
+        try (ElasticsearchContainer container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:8.1.2")
+            .waitingFor(httpsWaitStrategy)) {
+
+            // Start the container. This step might take some time...
+            container.start();
+
+            Response response = getClusterHealth(container);
+            assertThat(response.getStatusLine().getStatusCode(), is(200));
+            assertThat(EntityUtils.toString(response.getEntity()), containsString("cluster_name"));
         }
     }
 
