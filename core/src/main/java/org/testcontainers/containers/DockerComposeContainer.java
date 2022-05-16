@@ -124,7 +124,6 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     }
 
     public DockerComposeContainer(String identifier, List<File> composeFiles) {
-
         this.composeFiles = composeFiles;
         this.dockerComposeFiles = new DockerComposeFiles(composeFiles);
 
@@ -132,7 +131,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         this.identifier = identifier;
         this.project = randomProjectId();
 
-        this.dockerClient = DockerClientFactory.instance().client();
+        this.dockerClient = DockerClientFactory.lazyClient();
     }
 
     @Override
@@ -269,7 +268,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     private void createServiceInstance(Container container) {
         String serviceName = getServiceNameFromContainer(container);
-        final ComposeServiceWaitStrategyTarget containerInstance = new ComposeServiceWaitStrategyTarget(container,
+        final ComposeServiceWaitStrategyTarget containerInstance = new ComposeServiceWaitStrategyTarget(dockerClient, container,
             ambassadorContainer, ambassadorPortMappings.getOrDefault(serviceName, new HashMap<>()));
 
         String containerId = containerInstance.getContainerId();
@@ -559,7 +558,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     }
 
     private void followLogs(String containerId, Consumer<OutputFrame> consumer) {
-        LogUtils.followOutput(DockerClientFactory.instance().client(), containerId, consumer);
+        LogUtils.followOutput(dockerClient, containerId, consumer);
     }
 
     private SELF self() {
@@ -659,7 +658,7 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
 
         AuditLogger.doComposeLog(this.getCommandParts(), this.getEnv());
 
-        final Integer exitCode = this.dockerClient.inspectContainerCmd(getContainerId())
+        final Integer exitCode = getDockerClient().inspectContainerCmd(getContainerId())
             .exec()
             .getState()
             .getExitCode();

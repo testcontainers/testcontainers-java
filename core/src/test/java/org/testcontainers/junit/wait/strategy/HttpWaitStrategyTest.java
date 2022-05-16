@@ -58,6 +58,17 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
     }
 
     /**
+     * Ensures that HTTPS requests made with the HttpWaitStrategy can skip the 
+     * certificate validation chains (to support self-signed certificates for example). 
+     */
+    @Test
+    public void testWaitUntilReadyWithTlsAndAllowUnsecure() {
+        waitUntilReadyAndSucceed(startContainerWithCommand(createHttpsShellCommand("200 OK", GOOD_RESPONSE_BODY, 8080),
+            createHttpWaitStrategy(ready).usingTls().allowInsecure()
+        ));
+    }
+
+    /**
      * Expects that the WaitStrategy returns successfully after receiving an HTTP 401 response from the container.
      * This 401 response is checked with a lambda using {@link HttpWaitStrategy#forStatusCodeMatching(Predicate)}
      */
@@ -205,5 +216,13 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
             "Content-Type: text/html" + NEWLINE +
             "Content-Length: " + length + NEWLINE + "\";"
             + " echo \"" + responseBody + "\";} | nc -lp " + port + "; done";
+    }
+    
+    private String createHttpsShellCommand(String header, String responseBody, int port) {
+        int length = responseBody.getBytes().length;
+        return "apk add nmap-ncat; while true; do { echo -e \"HTTP/1.1 " + header + NEWLINE +
+            "Content-Type: text/html" + NEWLINE +
+            "Content-Length: " + length + NEWLINE + "\";"
+            + " echo \"" + responseBody + "\";} | ncat -lp " + port + " --ssl; done";
     }
 }

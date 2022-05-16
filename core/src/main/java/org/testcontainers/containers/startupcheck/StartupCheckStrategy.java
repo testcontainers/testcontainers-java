@@ -5,6 +5,7 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.rnorth.ducttape.unreliables.Unreliables;
+import org.testcontainers.containers.GenericContainer;
 
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
@@ -28,6 +29,15 @@ public abstract class StartupCheckStrategy {
     public <SELF extends StartupCheckStrategy> SELF withTimeout(Duration timeout) {
         this.timeout = timeout;
         return (SELF) this;
+    }
+
+    /**
+     *
+     * @deprecated internal API
+     */
+    @Deprecated
+    public boolean waitUntilStartupSuccessful(GenericContainer<?> container) {
+        return waitUntilStartupSuccessful(container.getDockerClient(), container.getContainerId());
     }
 
     public boolean waitUntilStartupSuccessful(DockerClient dockerClient, String containerId) {
