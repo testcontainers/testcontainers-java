@@ -416,7 +416,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
             if (!reusable) {
                 //noinspection deprecation
-                createCommand.getLabels().putAll(ResourceReaper.instance().getLabels());
+                createCommand = ResourceReaper.instance().register(this, createCommand);
             }
 
             if (!reused) {
@@ -469,7 +469,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             containerIsStarting(containerInfo, reused);
 
             // Wait until the container has reached the desired running state
-            if (!this.startupCheckStrategy.waitUntilStartupSuccessful(dockerClient, containerId)) {
+            if (!this.startupCheckStrategy.waitUntilStartupSuccessful(this)) {
                 // Bail out, don't wait for the port to start listening.
                 // (Exception thrown here will be caught below and wrapped)
                 throw new IllegalStateException("Container did not start correctly.");
