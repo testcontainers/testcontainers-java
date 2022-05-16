@@ -1,6 +1,7 @@
 package org.testcontainers.utility;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.Network;
@@ -11,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.containers.GenericContainer;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -305,6 +307,16 @@ public class ResourceReaper {
     @Deprecated
     public Map<String, String> getLabels() {
         return MARKER_LABELS;
+    }
+
+    /**
+     *
+     * @deprecated internal API
+     */
+    @Deprecated
+    public CreateContainerCmd register(GenericContainer<?> container, CreateContainerCmd cmd) {
+        cmd.getLabels().putAll(getLabels());
+        return cmd;
     }
 
     /**

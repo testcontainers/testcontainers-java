@@ -43,12 +43,8 @@ tasks.japicmp {
     classExcludes = []
 
     methodExcludes = [
-        "org.testcontainers.utility.ResourceReaper#start(java.lang.String,com.github.dockerjava.api.DockerClient)",
-        "org.testcontainers.utility.ResourceReaper#start(com.github.dockerjava.api.DockerClient)",
-        "org.testcontainers.utility.ResourceReaper#registerNetworkForCleanup(java.lang.String)",
-        "org.testcontainers.utility.ResourceReaper#removeNetworks(java.lang.String)",
-        "org.testcontainers.images.builder.Transferable#of(java.lang.String)",
-        "org.testcontainers.images.builder.Transferable#updateChecksum(java.util.zip.Checksum)"
+        "org.testcontainers.containers.Container#getDockerClient()",
+        "org.testcontainers.containers.ContainerState#getDockerClient()",
     ]
 
     fieldExcludes = []
