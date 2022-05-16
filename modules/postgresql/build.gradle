@@ -7,7 +7,7 @@ dependencies {
     api project(':jdbc')
 
     compileOnly project(':r2dbc')
-    compileOnly 'io.r2dbc:r2dbc-postgresql:0.8.11.RELEASE'
+    compileOnly 'io.r2dbc:r2dbc-postgresql:0.8.12.RELEASE'
 
     testImplementation project(':jdbc-test')
     testImplementation project(':test-support')
