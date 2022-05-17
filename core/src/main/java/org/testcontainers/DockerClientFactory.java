@@ -198,11 +198,9 @@ public class DockerClientFactory {
                 "  Operating System: " + dockerInfo.getOperatingSystem() + "\n" +
                 "  Total Memory: " + dockerInfo.getMemTotal() / (1024 * 1024) + " MB");
 
-        final ResourceReaper resourceReaper;
         try {
-            resourceReaper = ResourceReaper.instance();
             //noinspection deprecation
-            resourceReaper.init();
+            ResourceReaper.instance().init();
         } catch (RuntimeException e) {
             cachedClientFailure = e;
             throw e;
