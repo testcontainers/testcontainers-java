@@ -1,18 +1,16 @@
 package org.testcontainers.k3s;
 
-import org.assertj.core.api.Assertions;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
-import org.testcontainers.utility.MountableFile;
 
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.Duration;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class KubectlContainerTest {
 
@@ -25,25 +23,18 @@ public class KubectlContainerTest {
 
     @Test
     public void shouldExposeKubeConfigForNetworkAlias() throws Exception {
-
         String kubeConfigYaml = k3s.generateInternalKubeConfigYaml("k3s");
 
-        Path tempFile = Files.createTempFile(null, null);
-        Files.write(tempFile, kubeConfigYaml.getBytes(StandardCharsets.UTF_8));
-
         try (
-            GenericContainer<?> kubectlContainer = new GenericContainer<>(DockerImageName.parse("rancher/kubectl:v1.23.3"))
+            GenericContainer<?> kubectlContainer = new GenericContainer<>("rancher/kubectl:v1.23.3")
                 .withNetwork(network)
-                .withCopyFileToContainer(MountableFile.forHostPath(tempFile.toAbsolutePath()), "/.kube/config")
+                .withCopyToContainer(Transferable.of(kubeConfigYaml), "/.kube/config")
                 .withCommand("get namespaces")
-                .withStartupCheckStrategy(
-                    new OneShotStartupCheckStrategy().withTimeout(Duration.ofSeconds(30))
-                )
+                .withStartupCheckStrategy(new OneShotStartupCheckStrategy().withTimeout(Duration.ofSeconds(30)))
         ) {
             kubectlContainer.start();
 
-            String logs = kubectlContainer.getLogs();
-            Assertions.assertThat(logs).contains("kube-system");
+            assertThat(kubectlContainer.getLogs()).contains("kube-system");
         }
     }
 
