@@ -40,7 +40,9 @@ tasks.japicmp {
         "org.testcontainers.shaded.*",
     ]
 
-    classExcludes = []
+    classExcludes = [
+        "org.testcontainers.utility.RyukResourceReaper",
+    ]
 
     methodExcludes = [
         "org.testcontainers.containers.Container#getDockerClient()",

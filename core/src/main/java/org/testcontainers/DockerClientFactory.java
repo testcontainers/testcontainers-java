@@ -2,7 +2,6 @@ package org.testcontainers;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.DockerClientDelegate;
-import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.PullImageCmd;
 import com.github.dockerjava.api.exception.DockerClientException;
@@ -10,7 +9,6 @@ import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.AccessMode;
 import com.github.dockerjava.api.model.Bind;
-import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.Info;
 import com.github.dockerjava.api.model.Version;
 import com.github.dockerjava.api.model.Volume;
@@ -31,18 +29,14 @@ import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.ResourceReaper;
-import org.testcontainers.utility.RyukResourceReaper;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.UUID;
 import java.util.function.BiFunction;
@@ -80,15 +74,9 @@ public class DockerClientFactory {
     RuntimeException cachedClientFailure;
 
     private String activeApiVersion;
-    private String activeExecutionDriver;
 
     @Getter(lazy = true)
     private final boolean fileMountingSupported = checkMountableFile();
-
-
-    static {
-        System.setProperty("org.testcontainers.shaded.io.netty.packagePrefix", "org.testcontainers.shaded.");
-    }
 
     @VisibleForTesting
     DockerClientFactory() {
@@ -200,20 +188,19 @@ public class DockerClientFactory {
         log.info("Docker host IP address is {}", strategy.getDockerHostIpAddress());
 
         Info dockerInfo = strategy.getInfo();
+        log.debug("Docker info: {}", dockerInfo.getRawValues());
         Version version = client.versionCmd().exec();
+        log.debug("Docker version: {}", version.getRawValues());
         activeApiVersion = version.getApiVersion();
-        activeExecutionDriver = dockerInfo.getExecutionDriver();
         log.info("Connected to docker: \n" +
                 "  Server Version: " + dockerInfo.getServerVersion() + "\n" +
                 "  API Version: " + activeApiVersion + "\n" +
                 "  Operating System: " + dockerInfo.getOperatingSystem() + "\n" +
                 "  Total Memory: " + dockerInfo.getMemTotal() / (1024 * 1024) + " MB");
 
-        final ResourceReaper resourceReaper;
         try {
-            resourceReaper = ResourceReaper.instance();
             //noinspection deprecation
-            resourceReaper.init();
+            ResourceReaper.instance().init();
         } catch (RuntimeException e) {
             cachedClientFailure = e;
             throw e;
@@ -226,27 +213,6 @@ public class DockerClientFactory {
             try {
                 log.info("Checking the system...");
                 checkDockerVersion(version.getVersion());
-
-                //noinspection deprecation
-                String ryukContainerId = resourceReaper instanceof RyukResourceReaper
-                    ? ((RyukResourceReaper) resourceReaper).getContainerId()
-                    : null;
-
-                if (ryukContainerId != null) {
-                    checkDiskSpace(client, ryukContainerId);
-                } else {
-                    runInsideDocker(
-                        createContainerCmd -> {
-                            createContainerCmd.withName("testcontainers-checks-" + SESSION_ID);
-                            createContainerCmd.getHostConfig().withAutoRemove(true);
-                            createContainerCmd.withCmd("tail", "-f", "/dev/null");
-                        },
-                        (__, containerId) -> {
-                            checkDiskSpace(client, containerId);
-                            return "";
-                        }
-                    );
-                }
             } catch (RuntimeException e) {
                 cachedClientFailure = e;
                 throw e;
@@ -261,43 +227,6 @@ public class DockerClientFactory {
     private void checkDockerVersion(String dockerVersion) {
         boolean versionIsSufficient = new ComparableVersion(dockerVersion).compareTo(new ComparableVersion("1.6.0")) >= 0;
         check("Docker server version should be at least 1.6.0", versionIsSufficient);
-    }
-
-    private void checkDiskSpace(DockerClient dockerClient, String id) {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-
-        try {
-            dockerClient
-                    .execStartCmd(dockerClient.execCreateCmd(id).withAttachStdout(true).withCmd("df", "-P").exec().getId())
-                    .exec(new ResultCallback.Adapter<Frame>() {
-                        @Override
-                        public void onNext(Frame frame) {
-                            if (frame == null) {
-                                return;
-                            }
-                            switch (frame.getStreamType()) {
-                                case RAW:
-                                case STDOUT:
-                                    try {
-                                        outputStream.write(frame.getPayload());
-                                        outputStream.flush();
-                                    } catch (IOException e) {
-                                        onError(e);
-                                    }
-                            }
-                        }
-                    })
-                    .awaitCompletion();
-        } catch (Exception e) {
-            log.debug("Can't exec disk checking command", e);
-        }
-
-        DiskSpaceUsage df = parseAvailableDiskSpace(outputStream.toString());
-
-        check(
-                "Docker environment should have more than 2GB free disk space",
-                df.availableMB.map(it -> it >= 2048).orElse(true)
-        );
     }
 
     private void check(String message, boolean isSuccessful) {
@@ -389,28 +318,6 @@ public class DockerClientFactory {
         }
     }
 
-    @VisibleForTesting
-    static class DiskSpaceUsage {
-        Optional<Long> availableMB = Optional.empty();
-        Optional<Integer> usedPercent = Optional.empty();
-    }
-
-    @VisibleForTesting
-    DiskSpaceUsage parseAvailableDiskSpace(String dfOutput) {
-        DiskSpaceUsage df = new DiskSpaceUsage();
-        String[] lines = dfOutput.split("\n");
-        for (String line : lines) {
-            String[] fields = line.split("\\s+");
-            if (fields.length > 5 && fields[5].equals("/")) {
-                long availableKB = Long.parseLong(fields[3]);
-                df.availableMB = Optional.of(availableKB / 1024L);
-                df.usedPercent = Optional.of(Integer.valueOf(fields[4].replace("%", "")));
-                break;
-            }
-        }
-        return df;
-    }
-
     /**
      * @return the docker API version of the daemon that we have connected to
      */
@@ -423,8 +330,7 @@ public class DockerClientFactory {
      * @return the docker execution driver of the daemon that we have connected to
      */
     public String getActiveExecutionDriver() {
-        client();
-        return activeExecutionDriver;
+        return getInfo().getExecutionDriver();
     }
 
     /**
