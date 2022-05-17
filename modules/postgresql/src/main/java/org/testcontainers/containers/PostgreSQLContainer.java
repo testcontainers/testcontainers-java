@@ -46,7 +46,7 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
 
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
-        this.waitStrategy = new PostgreSQLWaitStrategy(dockerImageName.getVersionPart());
+        this.waitStrategy = new PostgreSQLWaitStrategy();
         this.setCommand("postgres", "-c", FSYNC_OFF_OPTION);
 
         addExposedPort(POSTGRESQL_PORT);
