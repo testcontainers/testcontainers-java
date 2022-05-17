@@ -1,11 +1,10 @@
 package org.testcontainers.utility;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.NotFoundException;
-import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.Network;
-import com.github.dockerjava.api.model.PruneType;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
@@ -13,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.containers.GenericContainer;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -24,62 +24,62 @@ import java.net.URLEncoder;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Component that responsible for container removal and automatic cleanup of dead containers at JVM shutdown.
  */
 @Slf4j
-public final class ResourceReaper {
+public class ResourceReaper {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ResourceReaper.class);
 
+    private static final Map<String, String> MARKER_LABELS = Collections.singletonMap(
+        DockerClientFactory.TESTCONTAINERS_SESSION_ID_LABEL,
+        DockerClientFactory.SESSION_ID
+    );
+
     static final List<List<Map.Entry<String, String>>> DEATH_NOTE = new ArrayList<>(
         Arrays.asList(
-            DockerClientFactory.DEFAULT_LABELS.entrySet().stream()
+            Stream
+                .concat(
+                    DockerClientFactory.DEFAULT_LABELS.entrySet().stream(),
+                    MARKER_LABELS.entrySet().stream()
+                )
                 .<Map.Entry<String, String>>map(it -> new SimpleEntry<>("label", it.getKey() + "=" + it.getValue()))
                 .collect(Collectors.toList())
         )
     );
 
     private static ResourceReaper instance;
-    private static AtomicBoolean ryukStarted = new AtomicBoolean(false);
-    private final DockerClient dockerClient = DockerClientFactory.lazyClient();
+    final DockerClient dockerClient = DockerClientFactory.lazyClient();
     private Map<String, String> registeredContainers = new ConcurrentHashMap<>();
     private Set<String> registeredNetworks = Sets.newConcurrentHashSet();
     private Set<String> registeredImages = Sets.newConcurrentHashSet();
     private AtomicBoolean hookIsSet = new AtomicBoolean(false);
 
-
     /**
-     *
-     * @deprecated internal API
+     * Internal constructor to avoid custom implementations
      */
-    @Deprecated
-    public static String start(String hostIpAddress, DockerClient client) {
-        return start(client);
-    }
-
-    /**
-     *
-     * @deprecated internal API
-     */
-    @Deprecated
-    public static String start(DockerClient client) {
-        RyukResourceReaper ryuk = new RyukResourceReaper(client);
-        String containerId = ryuk.getContainerId();
-        ryukStarted.set(true);
-        return containerId;
+    ResourceReaper() {
     }
 
     public synchronized static ResourceReaper instance() {
         if (instance == null) {
-            instance = new ResourceReaper();
+            boolean useRyuk = !Boolean.parseBoolean(System.getenv("TESTCONTAINERS_RYUK_DISABLED"));
+            if (useRyuk) {
+                //noinspection deprecation
+                instance = new RyukResourceReaper();
+            } else {
+                instance = new JVMHookResourceReaper();
+            }
         }
 
         return instance;
@@ -87,8 +87,10 @@ public final class ResourceReaper {
 
     /**
      * Perform a cleanup.
+     * @deprecated no longer supported API, use {@link DockerClient} directly
      */
-    public synchronized void performCleanup() {
+    @Deprecated
+    public void performCleanup() {
         registeredContainers.forEach(this::removeContainer);
         registeredNetworks.forEach(this::removeNetwork);
         registeredImages.forEach(this::removeImage);
@@ -126,7 +128,9 @@ public final class ResourceReaper {
      *
      * @param containerId the ID of the container
      * @param imageName   the image name of the container (used for logging)
+     * @deprecated no longer supported API
      */
+    @Deprecated
     public void registerContainerForCleanup(String containerId, String imageName) {
         setHook();
         registeredContainers.put(containerId, imageName);
@@ -136,7 +140,9 @@ public final class ResourceReaper {
      * Stop a potentially running container and remove it, including associated volumes.
      *
      * @param containerId the ID of the container
+     * @deprecated use {@link DockerClient} directly
      */
+    @Deprecated
     public void stopAndRemoveContainer(String containerId) {
         removeContainer(containerId, registeredContainers.get(containerId));
 
@@ -148,7 +154,9 @@ public final class ResourceReaper {
      *
      * @param containerId the ID of the container
      * @param imageName   the image name of the container (used for logging)
+     * @deprecated use {@link DockerClient} directly
      */
+    @Deprecated
     public void stopAndRemoveContainer(String containerId, String imageName) {
         removeContainer(containerId, imageName);
 
@@ -204,46 +212,24 @@ public final class ResourceReaper {
      * Register a network to be cleaned up at JVM shutdown.
      *
      * @param id   the ID of the network
+     * @deprecated no longer supported API
      */
+    @Deprecated
     public void registerNetworkIdForCleanup(String id) {
         setHook();
         registeredNetworks.add(id);
     }
 
     /**
-     * @param networkName   the name of the network
-     * @deprecated see {@link ResourceReaper#registerNetworkIdForCleanup(String)}
-     */
-    @Deprecated
-    public void registerNetworkForCleanup(String networkName) {
-        try {
-            // Try to find the network by name, so that we can register its ID for later deletion
-            dockerClient.listNetworksCmd()
-                    .withNameFilter(networkName)
-                    .exec()
-            .forEach(network -> registerNetworkIdForCleanup(network.getId()));
-        } catch (Exception e) {
-            LOGGER.trace("Error encountered when looking up network (name: {})", networkName);
-        }
-    }
-
-    /**
      * Removes a network by ID.
      * @param id
+     * @deprecated use {@link DockerClient} directly
      */
+    @Deprecated
     public void removeNetworkById(String id) {
       removeNetwork(id);
     }
 
-    /**
-     * Removes a network by ID.
-     * @param identifier
-     * @deprecated see {@link ResourceReaper#removeNetworkById(String)}
-     */
-    @Deprecated
-    public void removeNetworks(String identifier) {
-        removeNetworkById(identifier);
-    }
 
     private void removeNetwork(String id) {
         try {
@@ -273,14 +259,26 @@ public final class ResourceReaper {
         }
     }
 
+    /**
+     * @deprecated no longer supported API
+     */
+    @Deprecated
     public void unregisterNetwork(String identifier) {
         registeredNetworks.remove(identifier);
     }
 
+    /**
+     * @deprecated no longer supported API
+     */
+    @Deprecated
     public void unregisterContainer(String identifier) {
         registeredContainers.remove(identifier);
     }
 
+    /**
+     * @deprecated no longer supported API
+     */
+    @Deprecated
     public void registerImageForCleanup(String dockerImageName) {
         setHook();
         registeredImages.add(dockerImageName);
@@ -295,53 +293,37 @@ public final class ResourceReaper {
         }
     }
 
-    private void prune(PruneType pruneType, List<Map.Entry<String, String>> filters) {
-        String[] labels = filters.stream()
-            .filter(it -> "label".equals(it.getKey()))
-            .map(Map.Entry::getValue)
-            .toArray(String[]::new);
-        switch (pruneType) {
-            // Docker only prunes stopped containers, so we have to do it manually
-            case CONTAINERS:
-                List<Container> containers = dockerClient.listContainersCmd()
-                    .withFilter("label", Arrays.asList(labels))
-                    .withShowAll(true)
-                    .exec();
-
-                containers.parallelStream().forEach(container -> {
-                    removeContainer(container.getId(), container.getImage());
-                });
-                break;
-            default:
-                dockerClient.pruneCmd(pruneType).withLabelFilter(labels).exec();
-                break;
+    void setHook() {
+        if (hookIsSet.compareAndSet(false, true)) {
+            // If the JVM stops without containers being stopped, try and stop the container.
+            Runtime.getRuntime().addShutdownHook(new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP, this::performCleanup));
         }
     }
 
     /**
-     * @deprecated internal API, not intended for public usage
+     *
+     * @deprecated internal API
      */
     @Deprecated
-    public void setHook() {
-        if (hookIsSet.compareAndSet(false, true)) {
-            // If the JVM stops without containers being stopped, try and stop the container.
-            Runtime.getRuntime().addShutdownHook(
-                new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP,
-                    () -> {
-                        performCleanup();
+    public Map<String, String> getLabels() {
+        return MARKER_LABELS;
+    }
 
-                        if (!ryukStarted.get()) {
-                            synchronized (DEATH_NOTE) {
-                                DEATH_NOTE.forEach(filters -> prune(PruneType.CONTAINERS, filters));
-                                DEATH_NOTE.forEach(filters -> prune(PruneType.NETWORKS, filters));
-                                DEATH_NOTE.forEach(filters -> prune(PruneType.VOLUMES, filters));
-                                DEATH_NOTE.forEach(filters -> prune(PruneType.IMAGES, filters));
-                            }
-                        }
-                    }
-                )
-            );
-        }
+    /**
+     *
+     * @deprecated internal API
+     */
+    @Deprecated
+    public CreateContainerCmd register(GenericContainer<?> container, CreateContainerCmd cmd) {
+        cmd.getLabels().putAll(getLabels());
+        return cmd;
+    }
+
+    /**
+     * @deprecated internal API
+     */
+    @Deprecated
+    public void init() {
     }
 
     static class FilterRegistry {

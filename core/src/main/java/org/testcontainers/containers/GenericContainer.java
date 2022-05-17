@@ -23,12 +23,13 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.hash.Hashing;
 import lombok.AccessLevel;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
@@ -49,6 +50,7 @@ import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 import org.testcontainers.images.ImagePullPolicy;
 import org.testcontainers.images.RemoteDockerImage;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.lifecycle.Startables;
 import org.testcontainers.lifecycle.TestDescription;
@@ -186,7 +188,14 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private Long shmSize;
 
     // Maintain order in which entries are added, as earlier target location may be a prefix of a later location.
+    @Deprecated
     private Map<MountableFile, String> copyToFileContainerPathMap = new LinkedHashMap<>();
+
+    // Maintain order in which entries are added, as earlier target location may be a prefix of a later location.
+    @Setter(AccessLevel.NONE)
+    @Getter(AccessLevel.MODULE)
+    @VisibleForTesting
+    private Map<Transferable, String> copyToTransferableContainerPathMap = new LinkedHashMap<>();
 
     protected final Set<Startable> dependencies = new HashSet<>();
 
@@ -364,7 +373,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             CreateContainerCmd createCommand = dockerClient.createContainerCmd(dockerImageName);
             applyConfiguration(createCommand);
 
-            createCommand.getLabels().put(DockerClientFactory.TESTCONTAINERS_LABEL, "true");
+            createCommand.getLabels().putAll(DockerClientFactory.DEFAULT_LABELS);
 
             boolean reused = false;
             final boolean reusable;
@@ -406,7 +415,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             }
 
             if (!reusable) {
-                createCommand.getLabels().put(DockerClientFactory.TESTCONTAINERS_SESSION_ID_LABEL, DockerClientFactory.SESSION_ID);
+                //noinspection deprecation
+                createCommand = ResourceReaper.instance().register(this, createCommand);
             }
 
             if (!reused) {
@@ -414,6 +424,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
                 // TODO use single "copy" invocation (and calculate an hash of the resulting tar archive)
                 copyToFileContainerPathMap.forEach(this::copyFileToContainer);
+
+                copyToTransferableContainerPathMap.forEach(this::copyFileToContainer);
             }
 
             connectToPortForwardingNetwork(createCommand.getNetworkMode());
@@ -457,7 +469,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             containerIsStarting(containerInfo, reused);
 
             // Wait until the container has reached the desired running state
-            if (!this.startupCheckStrategy.waitUntilStartupSuccessful(dockerClient, containerId)) {
+            if (!this.startupCheckStrategy.waitUntilStartupSuccessful(this)) {
                 // Bail out, don't wait for the port to start listening.
                 // (Exception thrown here will be caught below and wrapped)
                 throw new IllegalStateException("Container did not start correctly.");
@@ -529,31 +541,16 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @VisibleForTesting
     Checksum hashCopiedFiles() {
         Checksum checksum = new Adler32();
-        copyToFileContainerPathMap.entrySet().stream().sorted(Entry.comparingByValue()).forEach(entry -> {
-            byte[] pathBytes = entry.getValue().getBytes();
-            // Add path to the hash
-            checksum.update(pathBytes, 0, pathBytes.length);
+        Stream.of(copyToFileContainerPathMap, copyToTransferableContainerPathMap)
+            .flatMap(it -> it.entrySet().stream())
+            .sorted(Entry.comparingByValue()).forEach(entry -> {
+                byte[] pathBytes = entry.getValue().getBytes();
+                // Add path to the hash
+                checksum.update(pathBytes, 0, pathBytes.length);
 
-            File file = new File(entry.getKey().getResolvedPath());
-            checksumFile(file, checksum);
-        });
+                entry.getKey().updateChecksum(checksum);
+            });
         return checksum;
-    }
-
-    @VisibleForTesting
-    @SneakyThrows(IOException.class)
-    void checksumFile(File file, Checksum checksum) {
-        Path path = file.toPath();
-        checksum.update(MountableFile.getUnixFileMode(path));
-        if (file.isDirectory()) {
-            try (Stream<Path> stream = Files.walk(path)) {
-                stream.filter(it -> it != path).forEach(it -> {
-                    checksumFile(it.toFile(), checksum);
-                });
-            }
-        } else {
-            FileUtils.checksum(file, checksum);
-        }
     }
 
     @UnstableAPI
@@ -1296,6 +1293,15 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public SELF withCopyToContainer(Transferable transferable, String containerPath) {
+        copyToTransferableContainerPathMap.put(transferable, containerPath);
+        return self();
+    }
+
+    /**
      * Get the IP address that this container may be reached on (may not be the local machine).
      *
      * @return an IP address
@@ -1331,6 +1337,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * {@inheritDoc}
      */
     @Override
+    @Deprecated
     public String getTestHostIpAddress() {
         if (DockerMachineClient.instance().isInstalled()) {
             try {

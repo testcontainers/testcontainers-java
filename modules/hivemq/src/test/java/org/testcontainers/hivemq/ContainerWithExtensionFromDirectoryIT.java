@@ -23,7 +23,7 @@ public class ContainerWithExtensionFromDirectoryIT {
                     .withLogLevel(Level.DEBUG)) {
 
             hivemq.start();
-            TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort());
+            TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort(), hivemq.getHost());
         }
     }
 
@@ -37,7 +37,7 @@ public class ContainerWithExtensionFromDirectoryIT {
                 .withLogLevel(Level.DEBUG)) {
 
             hivemq.start();
-            TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort());
+            TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort(), hivemq.getHost());
         }
     }
 }

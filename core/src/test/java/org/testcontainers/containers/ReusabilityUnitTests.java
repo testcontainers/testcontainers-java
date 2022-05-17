@@ -10,7 +10,6 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.command.ListContainersCmd;
 import com.github.dockerjava.api.command.StartContainerCmd;
 import com.github.dockerjava.api.model.Container;
-import com.github.dockerjava.api.model.NetworkSettings;
 import com.github.dockerjava.core.command.CreateContainerCmdImpl;
 import com.github.dockerjava.core.command.InspectContainerCmdImpl;
 import com.github.dockerjava.core.command.ListContainersCmdImpl;
@@ -24,13 +23,13 @@ import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.Parameterized;
 import org.mockito.Answers;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 import org.rnorth.visibleassertions.VisibleAssertions;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.MockTestcontainersConfigurationRule;
 import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.TestcontainersConfiguration;
@@ -39,12 +38,14 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -297,10 +298,64 @@ public class ReusabilityUnitTests {
         }
     }
 
-    @RunWith(BlockJUnit4ClassRunner.class)
+    @RunWith(Parameterized.class)
     @FieldDefaults(makeFinal = true)
     public static class CopyFilesHashTest {
+        private final TestStrategy strategy;
+
+        interface TestStrategy {
+            void withCopyFileToContainer(MountableFile mountableFile, String path);
+
+            void clear();
+        }
+
+        private static class MountableFileTestStrategy implements TestStrategy {
+            private final GenericContainer<?> container;
+
+            private MountableFileTestStrategy(GenericContainer<?> container) {
+                this.container = container;
+            }
+
+            @Override
+            public void withCopyFileToContainer(MountableFile mountableFile, String path) {
+                container.withCopyFileToContainer(mountableFile, path);
+            }
+
+            @Override
+            public void clear() {
+                container.getCopyToFileContainerPathMap().clear();
+            }
+        }
+
+        private static class TransferableTestStrategy implements TestStrategy {
+            private final GenericContainer<?> container;
+
+            private TransferableTestStrategy(GenericContainer<?> container) {
+                this.container = container;
+            }
+
+            @Override
+            public void withCopyFileToContainer(MountableFile mountableFile, String path) {
+                container.withCopyToContainer(mountableFile, path);
+            }
+
+            @Override
+            public void clear() {
+                container.getCopyToTransferableContainerPathMap().clear();
+            }
+        }
+
+        @Parameterized.Parameters
+        public static List<Function<GenericContainer<?>, TestStrategy>> strategies() {
+            return Arrays.asList(MountableFileTestStrategy::new, TransferableTestStrategy::new);
+        }
+
+
         GenericContainer<?> container = new GenericContainer<>(TINY_IMAGE);
+
+        public CopyFilesHashTest(Function<GenericContainer<?>, TestStrategy> strategyFactory) {
+            this.strategy = strategyFactory.apply(container);
+        }
 
         @Test
         public void empty() {
@@ -311,7 +366,7 @@ public class ReusabilityUnitTests {
         public void oneFile() {
             long emptyHash = container.hashCopiedFiles().getValue();
 
-            container.withCopyFileToContainer(
+            strategy.withCopyFileToContainer(
                 MountableFile.forClasspathResource("test_copy_to_container.txt"),
                 "/foo/bar"
             );
@@ -322,13 +377,13 @@ public class ReusabilityUnitTests {
         @Test
         public void differentPath() {
             MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");
-            container.withCopyFileToContainer(mountableFile, "/foo/bar");
+            strategy.withCopyFileToContainer(mountableFile, "/foo/bar");
 
             long hash1 = container.hashCopiedFiles().getValue();
 
-            container.getCopyToFileContainerPathMap().clear();
+            strategy.clear();
 
-            container.withCopyFileToContainer(mountableFile, "/foo/baz");
+            strategy.withCopyFileToContainer(mountableFile, "/foo/baz");
 
             assertThat(container.hashCopiedFiles().getValue()).isNotEqualTo(hash1);
         }
@@ -337,7 +392,7 @@ public class ReusabilityUnitTests {
         public void detectsChangesInFile() throws Exception {
             Path path = File.createTempFile("reusable_test", ".txt").toPath();
             MountableFile mountableFile = MountableFile.forHostPath(path);
-            container.withCopyFileToContainer(mountableFile, "/foo/bar");
+            strategy.withCopyFileToContainer(mountableFile, "/foo/bar");
 
             long hash1 = container.hashCopiedFiles().getValue();
 
@@ -348,13 +403,13 @@ public class ReusabilityUnitTests {
 
         @Test
         public void multipleFiles() {
-            container.withCopyFileToContainer(
+            strategy.withCopyFileToContainer(
                 MountableFile.forClasspathResource("test_copy_to_container.txt"),
                 "/foo/bar"
             );
             long hash1 = container.hashCopiedFiles().getValue();
 
-            container.withCopyFileToContainer(
+            strategy.withCopyFileToContainer(
                 MountableFile.forClasspathResource("mappable-resource/test-resource.txt"),
                 "/foo/baz"
             );
@@ -368,7 +423,7 @@ public class ReusabilityUnitTests {
 
             Path tempDirectory = Files.createTempDirectory("reusable_test");
             MountableFile mountableFile = MountableFile.forHostPath(tempDirectory);
-            container.withCopyFileToContainer(mountableFile, "/foo/bar/");
+            strategy.withCopyFileToContainer(mountableFile, "/foo/bar/");
 
             assertThat(container.hashCopiedFiles().getValue()).isNotEqualTo(emptyHash);
         }
@@ -378,7 +433,7 @@ public class ReusabilityUnitTests {
             Path tempDirectory = Files.createTempDirectory("reusable_test");
             MountableFile mountableFile = MountableFile.forHostPath(tempDirectory);
             assertThat(new File(mountableFile.getResolvedPath())).isDirectory();
-            container.withCopyFileToContainer(mountableFile, "/foo/bar/");
+            strategy.withCopyFileToContainer(mountableFile, "/foo/bar/");
 
             long hash1 = container.hashCopiedFiles().getValue();
 
@@ -397,11 +452,11 @@ public class ReusabilityUnitTests {
             Path tempDirectory = Files.createTempDirectory("reusable_test");
             MountableFile mountableFile = MountableFile.forHostPath(tempDirectory);
             assertThat(new File(mountableFile.getResolvedPath())).isDirectory();
-            container.withCopyFileToContainer(mountableFile, "/foo/bar/");
+            strategy.withCopyFileToContainer(mountableFile, "/foo/bar/");
 
             long hash1 = container.hashCopiedFiles().getValue();
 
-            container.withCopyFileToContainer(
+            strategy.withCopyFileToContainer(
                 MountableFile.forClasspathResource("test_copy_to_container.txt"),
                 "/foo/baz"
             );
@@ -414,7 +469,7 @@ public class ReusabilityUnitTests {
             Path path = File.createTempFile("reusable_test", ".txt").toPath();
             path.toFile().setExecutable(false);
             MountableFile mountableFile = MountableFile.forHostPath(path);
-            container.withCopyFileToContainer(mountableFile, "/foo/bar");
+            strategy.withCopyFileToContainer(mountableFile, "/foo/bar");
 
             long hash1 = container.hashCopiedFiles().getValue();
 
@@ -432,7 +487,7 @@ public class ReusabilityUnitTests {
             Path subDir = Files.createDirectory(tempDirectory.resolve("sub"));
             subDir.toFile().setWritable(false);
             assumeThat(subDir.toFile().canWrite()).isFalse();
-            container.withCopyFileToContainer(mountableFile, "/foo/bar/");
+            strategy.withCopyFileToContainer(mountableFile, "/foo/bar/");
 
             long hash1 = container.hashCopiedFiles().getValue();
 

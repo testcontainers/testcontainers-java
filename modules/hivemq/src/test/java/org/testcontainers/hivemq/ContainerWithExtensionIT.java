@@ -27,15 +27,15 @@ public class ContainerWithExtensionIT {
                      .withExtension(hiveMQExtension)) {
 
             hivemq.start();
-            TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort());
+            TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort(), hivemq.getHost());
             hivemq.stop();
 
             hivemq.start();
-            TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort());
+            TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort(), hivemq.getHost());
             hivemq.stop();
 
             hivemq.start();
-            TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort());
+            TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort(), hivemq.getHost());
         }
     }
 }

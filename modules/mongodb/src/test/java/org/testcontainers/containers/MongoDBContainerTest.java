@@ -38,11 +38,15 @@ public class MongoDBContainerTest {
 
             final String mongoRsUrl = mongoDBContainer.getReplicaSetUrl();
             assertNotNull(mongoRsUrl);
+            final String connectionString = mongoDBContainer.getConnectionString();
+            final MongoClient mongoSyncClientBase = MongoClients.create(connectionString);
             final MongoClient mongoSyncClient = MongoClients.create(mongoRsUrl);
             mongoSyncClient.getDatabase("mydb1").getCollection("foo")
                 .withWriteConcern(WriteConcern.MAJORITY).insertOne(new Document("abc", 0));
             mongoSyncClient.getDatabase("mydb2").getCollection("bar")
                 .withWriteConcern(WriteConcern.MAJORITY).insertOne(new Document("xyz", 0));
+            mongoSyncClientBase.getDatabase("mydb3").getCollection("baz")
+                .withWriteConcern(WriteConcern.MAJORITY).insertOne(new Document("def", 0));
 
             final ClientSession clientSession = mongoSyncClient.startSession();
             final TransactionOptions txnOptions = TransactionOptions.builder()

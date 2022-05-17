@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.fail;
 public class Neo4jContainerJUnitIntegrationTest {
 
     @ClassRule
-    public static Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>(Neo4jTestImages.NEO4J_TEST_IMAGE);
+    public static Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4");
 
     @Test
     public void shouldStart() {

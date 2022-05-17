@@ -49,6 +49,7 @@ public class ContainerWithoutPlatformExtensionsIT {
 
             final Mqtt5BlockingClient client = MqttClient.builder()
                 .serverPort(hivemq.getMqttPort())
+                .serverHost(hivemq.getHost())
                 .useMqttVersion5()
                 .buildBlocking();
 
@@ -82,6 +83,7 @@ public class ContainerWithoutPlatformExtensionsIT {
 
             final Mqtt5BlockingClient client = MqttClient.builder()
                 .serverPort(hivemq.getMqttPort())
+                .serverHost(hivemq.getHost())
                 .useMqttVersion5()
                 .buildBlocking();
 

@@ -8,6 +8,7 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.utility.DockerImageName;
 
 import java.util.Arrays;
@@ -72,15 +73,9 @@ public class LegacyModeTest {
         @BeforeClass
         public static void createCustomTag() {
             DockerClient dockerClient = DockerClientFactory.instance().client();
-            DockerClientFactory
-                .instance()
-                .checkAndPullImage(
-                    dockerClient,
-                    LOCALSTACK_0_12_IMAGE.asCanonicalNameString()
-                );
             dockerClient
                 .tagImageCmd(
-                    LOCALSTACK_0_12_IMAGE.asCanonicalNameString(),
+                    new RemoteDockerImage(LOCALSTACK_0_12_IMAGE).get(),
                     LOCALSTACK_CUSTOM_TAG.getRepository(),
                     LOCALSTACK_CUSTOM_TAG.getVersionPart()
                 )

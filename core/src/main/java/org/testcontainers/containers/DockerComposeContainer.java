@@ -12,8 +12,8 @@ import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.Uninterruptibles;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 import org.slf4j.Logger;
@@ -25,12 +25,14 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.dockerclient.TransportConfig;
+import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.utility.AuditLogger;
 import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.CommandLine;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.DockerLoggerFactory;
+import org.testcontainers.utility.ImageNameSubstitutor;
 import org.testcontainers.utility.LogUtils;
 import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.PathUtils;
@@ -122,7 +124,6 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     }
 
     public DockerComposeContainer(String identifier, List<File> composeFiles) {
-
         this.composeFiles = composeFiles;
         this.dockerComposeFiles = new DockerComposeFiles(composeFiles);
 
@@ -130,7 +131,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
         this.identifier = identifier;
         this.project = randomProjectId();
 
-        this.dockerClient = DockerClientFactory.instance().client();
+        this.dockerClient = DockerClientFactory.lazyClient();
     }
 
     @Override
@@ -186,7 +187,9 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
             .forEach(imageName -> {
                 try {
                     log.info("Preemptively checking local images for '{}', referenced via a compose file or transitive Dockerfile. If not available, it will be pulled.", imageName);
-                    DockerClientFactory.instance().checkAndPullImage(dockerClient, imageName);
+                    new RemoteDockerImage(DockerImageName.parse(imageName))
+                        .withImageNameSubstitutor(ImageNameSubstitutor.noop())
+                        .get();
                 } catch (Exception e) {
                     log.warn("Unable to pre-fetch an image ({}) depended upon by Docker Compose build - startup will continue but may fail. Exception message was: {}", imageName, e.getMessage());
                 }
@@ -265,7 +268,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
 
     private void createServiceInstance(Container container) {
         String serviceName = getServiceNameFromContainer(container);
-        final ComposeServiceWaitStrategyTarget containerInstance = new ComposeServiceWaitStrategyTarget(container,
+        final ComposeServiceWaitStrategyTarget containerInstance = new ComposeServiceWaitStrategyTarget(dockerClient, container,
             ambassadorContainer, ambassadorPortMappings.getOrDefault(serviceName, new HashMap<>()));
 
         String containerId = containerInstance.getContainerId();
@@ -555,7 +558,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> e
     }
 
     private void followLogs(String containerId, Consumer<OutputFrame> consumer) {
-        LogUtils.followOutput(DockerClientFactory.instance().client(), containerId, consumer);
+        LogUtils.followOutput(dockerClient, containerId, consumer);
     }
 
     private SELF self() {
@@ -655,7 +658,7 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
 
         AuditLogger.doComposeLog(this.getCommandParts(), this.getEnv());
 
-        final Integer exitCode = this.dockerClient.inspectContainerCmd(getContainerId())
+        final Integer exitCode = getDockerClient().inspectContainerCmd(getContainerId())
             .exec()
             .getState()
             .getExitCode();
@@ -722,20 +725,17 @@ class LocalDockerCompose implements DockerCompose {
         final Map<String, String> environment = Maps.newHashMap(env);
         environment.put(ENV_PROJECT_NAME, identifier);
 
-        String dockerHost = System.getenv("DOCKER_HOST");
-        if (dockerHost == null) {
-            TransportConfig transportConfig = DockerClientFactory.instance().getTransportConfig();
-            SSLConfig sslConfig = transportConfig.getSslConfig();
-            if (sslConfig != null) {
-                if (sslConfig instanceof LocalDirectorySSLConfig) {
-                    environment.put("DOCKER_CERT_PATH", ((LocalDirectorySSLConfig) sslConfig).getDockerCertPath());
-                    environment.put("DOCKER_TLS_VERIFY", "true");
-                } else {
-                    logger().warn("Couldn't set DOCKER_CERT_PATH. `sslConfig` is present but it's not LocalDirectorySSLConfig.");
-                }
+        TransportConfig transportConfig = DockerClientFactory.instance().getTransportConfig();
+        SSLConfig sslConfig = transportConfig.getSslConfig();
+        if (sslConfig != null) {
+            if (sslConfig instanceof LocalDirectorySSLConfig) {
+                environment.put("DOCKER_CERT_PATH", ((LocalDirectorySSLConfig) sslConfig).getDockerCertPath());
+                environment.put("DOCKER_TLS_VERIFY", "true");
+            } else {
+                logger().warn("Couldn't set DOCKER_CERT_PATH. `sslConfig` is present but it's not LocalDirectorySSLConfig.");
             }
-            dockerHost = transportConfig.getDockerHost().toString();
         }
+        String dockerHost = transportConfig.getDockerHost().toString();
         environment.put("DOCKER_HOST", dockerHost);
 
         final Stream<String> absoluteDockerComposeFilePaths = composeFiles.stream()

@@ -1,76 +1,32 @@
 package org.testcontainers.images;
 
-import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.async.ResultCallback;
-import com.github.dockerjava.api.command.PullImageResultCallback;
 import com.github.dockerjava.api.exception.NotFoundException;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.rnorth.visibleassertions.VisibleAssertions;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.DockerRegistryContainer;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 import org.testcontainers.utility.DockerImageName;
 
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
-import static org.testcontainers.TestImages.DOCKER_REGISTRY_IMAGE;
 
 public class ImagePullPolicyTest {
 
     @ClassRule
-    public static GenericContainer<?> registry = new GenericContainer<>(DOCKER_REGISTRY_IMAGE)
-        .withExposedPorts(5000);
+    public static DockerRegistryContainer registry = new DockerRegistryContainer();
 
-    private static DockerImageName imageName;
-
-    @BeforeClass
-    public static void beforeClass() throws Exception {
-        String testRegistryAddress = registry.getHost() + ":" + registry.getFirstMappedPort();
-        String testImageName = testRegistryAddress + "/image-pull-policy-test";
-        String tag = UUID.randomUUID().toString();
-        imageName = DockerImageName.parse(testImageName).withTag(tag);
-
-        DockerClient client = DockerClientFactory.instance().client();
-        String dummySourceImage = "hello-world:latest";
-        client.pullImageCmd(dummySourceImage).exec(new PullImageResultCallback()).awaitCompletion();
-
-        String dummyImageId = client.inspectImageCmd(dummySourceImage).exec().getId();
-
-        // push the image to the registry
-        client.tagImageCmd(dummyImageId, testImageName, tag).exec();
-
-        client.pushImageCmd(imageName.asCanonicalNameString())
-            .exec(new ResultCallback.Adapter<>())
-            .awaitCompletion(1, TimeUnit.MINUTES);
-    }
-
-    @AfterClass
-    public static void afterClass() {
-        removeImage();
-    }
-
-    @Before
-    public void setUp() {
-        // Clean up local cache
-        removeImage();
-
-        LocalImagesCache.INSTANCE.cache.remove(imageName);
-    }
+    private final DockerImageName imageName = registry.createImage();
 
     @Test
     public void pullsByDefault() {
         try (
             GenericContainer<?> container = new GenericContainer<>(imageName)
-                .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
+                .withExposedPorts(8080)
         ) {
             container.start();
         }
@@ -80,7 +36,7 @@ public class ImagePullPolicyTest {
     public void shouldAlwaysPull() {
         try (
             GenericContainer<?> container = new GenericContainer<>(imageName)
-                .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
+                .withExposedPorts(8080)
         ) {
             container.start();
         }
@@ -89,7 +45,7 @@ public class ImagePullPolicyTest {
 
         try (
             GenericContainer<?> container = new GenericContainer<>(imageName)
-                .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
+                .withExposedPorts(8080)
         ) {
             expectToFailWithNotFoundException(container);
         }
@@ -100,7 +56,7 @@ public class ImagePullPolicyTest {
                 .withImagePullPolicy(PullPolicy.alwaysPull())
             // }
         ) {
-            container.withStartupCheckStrategy(new OneShotStartupCheckStrategy());
+            container.withExposedPorts(8080);
             container.start();
         }
     }
@@ -118,7 +74,7 @@ public class ImagePullPolicyTest {
                 })
             // }
         ) {
-            container.withStartupCheckStrategy(new OneShotStartupCheckStrategy());
+            container.withExposedPorts(8080);
             container.start();
         }
     }
@@ -134,7 +90,7 @@ public class ImagePullPolicyTest {
         try (
             GenericContainer<?> container = new GenericContainer<>(imageName)
                 .withImagePullPolicy(policy)
-                .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
+                .withExposedPorts(8080)
         ) {
             container.start();
 
@@ -170,7 +126,7 @@ public class ImagePullPolicyTest {
         }
     }
 
-    private static void removeImage() {
+    private void removeImage() {
         try {
             DockerClientFactory.instance().client()
                 .removeImageCmd(imageName.asCanonicalNameString())

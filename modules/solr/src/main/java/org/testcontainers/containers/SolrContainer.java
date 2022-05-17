@@ -2,7 +2,7 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import lombok.SneakyThrows;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
@@ -136,7 +136,7 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
 
         if (StringUtils.isNotEmpty(configuration.getConfigurationName())) {
             SolrClientUtils.uploadConfiguration(
-                getContainerIpAddress(),
+                getHost(),
                 getSolrPort(),
                 configuration.getConfigurationName(),
                 configuration.getSolrConfiguration(),
@@ -144,7 +144,7 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
         }
 
         SolrClientUtils.createCollection(
-            getContainerIpAddress(),
+            getHost(),
             getSolrPort(),
             configuration.getCollectionName(),
             configuration.getConfigurationName());

@@ -33,9 +33,7 @@ public class K3sContainer extends GenericContainer<K3sContainer> {
         addExposedPorts(KUBE_SECURE_PORT, RANCHER_WEBHOOK_PORT);
         setPrivilegedMode(true);
         withCreateContainerCmdModifier(it -> {
-            DockerObjectAccessor.overrideRawValue(
-                it.getHostConfig(), "CgroupnsMode", "host"
-            );
+            it.getHostConfig().withCgroupnsMode("host");
         });
         addFileSystemBind("/sys/fs/cgroup", "/sys/fs/cgroup", BindMode.READ_WRITE);
 
