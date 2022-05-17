@@ -9,7 +9,7 @@ dependencies {
     compileOnly 'com.google.auto.service:auto-service:1.0-rc6'
 
     api project(':testcontainers')
-    api 'io.r2dbc:r2dbc-spi:0.8.1.RELEASE'
+    api 'io.r2dbc:r2dbc-spi:1.0.0.RELEASE'
 
     testImplementation 'org.assertj:assertj-core:3.22.0'
     testImplementation 'io.r2dbc:r2dbc-postgresql:0.8.12.RELEASE'

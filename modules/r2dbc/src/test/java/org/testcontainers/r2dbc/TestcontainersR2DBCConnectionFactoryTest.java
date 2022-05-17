@@ -33,14 +33,16 @@ public class TestcontainersR2DBCConnectionFactoryTest {
         String url = "r2dbc:tc:postgresql:///db?TC_IMAGE_TAG=10-alpine";
         ConnectionFactory connectionFactory = ConnectionFactories.get(url);
 
-        Integer updated = Flux
+        Long updated = Flux
             .usingWhen(
                 connectionFactory.create(),
                 connection -> {
                     return Mono
                         .from(connection.createStatement("CREATE TABLE test(id integer PRIMARY KEY)").execute())
                         .thenMany(connection.createStatement("INSERT INTO test(id) VALUES(123)").execute())
-                        .flatMap(Result::getRowsUpdated);
+                        .flatMap(Result::getRowsUpdated)
+                        .cast(Integer.class)
+                        .map(Integer::longValue);
                 },
                 Connection::close
             )

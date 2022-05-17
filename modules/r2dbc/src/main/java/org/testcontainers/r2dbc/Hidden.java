@@ -42,7 +42,7 @@ class Hidden {
             //   | DRIVER   | tc              | postgres     |
             //   | PROTOCOL | postgres        | <empty>      |
 
-            String protocol = options.getRequiredValue(ConnectionFactoryOptions.PROTOCOL);
+            String protocol = (String) options.getRequiredValue(ConnectionFactoryOptions.PROTOCOL);
             if (protocol.trim().length() == 0) {
                 throw new IllegalArgumentException("Invalid protocol: " + protocol);
             }
