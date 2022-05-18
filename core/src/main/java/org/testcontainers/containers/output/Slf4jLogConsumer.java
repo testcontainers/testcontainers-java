@@ -1,18 +1,22 @@
 package org.testcontainers.containers.output;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.MDC;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A consumer for container output that logs output to an SLF4J logger.
  */
 public class Slf4jLogConsumer extends BaseConsumer<Slf4jLogConsumer> {
+
     private final Logger logger;
+
     private final Map<String, String> mdc = new HashMap<>();
+
     private boolean separateOutputStreams;
+
     private String prefix = "";
 
     public Slf4jLogConsumer(Logger logger) {
@@ -56,23 +60,31 @@ public class Slf4jLogConsumer extends BaseConsumer<Slf4jLogConsumer> {
         try {
             switch (outputType) {
                 case END:
-                    break;
+                    {
+                        break;
+                    }
                 case STDOUT:
-                    if (separateOutputStreams) {
-                        logger.info("{}{}", prefix.isEmpty() ? "" : (prefix + ": "), utf8String);
-                    } else {
-                        logger.info("{}{}: {}", prefix, outputType, utf8String);
+                    {
+                        if (separateOutputStreams) {
+                            logger.info("{}{}", prefix.isEmpty() ? "" : (prefix + ": "), utf8String);
+                        } else {
+                            logger.info("{}{}: {}", prefix, outputType, utf8String);
+                        }
+                        break;
                     }
-                    break;
                 case STDERR:
-                    if (separateOutputStreams) {
-                        logger.error("{}{}", prefix.isEmpty() ? "" : (prefix + ": "), utf8String);
-                    } else {
-                        logger.info("{}{}: {}", prefix, outputType, utf8String);
+                    {
+                        if (separateOutputStreams) {
+                            logger.error("{}{}", prefix.isEmpty() ? "" : (prefix + ": "), utf8String);
+                        } else {
+                            logger.info("{}{}: {}", prefix, outputType, utf8String);
+                        }
+                        break;
                     }
-                    break;
                 default:
-                    throw new IllegalArgumentException("Unexpected outputType " + outputType);
+                    {
+                        throw new IllegalArgumentException("Unexpected outputType " + outputType);
+                    }
             }
         } finally {
             if (originalMdc == null) {

@@ -35,22 +35,31 @@ public final class EnvironmentAndSystemPropertyClientProviderStrategy extends Do
     }
 
     EnvironmentAndSystemPropertyClientProviderStrategy(DefaultDockerClientConfig.Builder configBuilder) {
-        String dockerConfigSource = TestcontainersConfiguration.getInstance()
+        String dockerConfigSource = TestcontainersConfiguration
+            .getInstance()
             .getEnvVarOrProperty("dockerconfig.source", "auto");
 
         switch (dockerConfigSource) {
             case "auto":
-                Optional<String> dockerHost = getSetting("docker.host");
-                dockerHost.ifPresent(configBuilder::withDockerHost);
-                applicable = dockerHost.isPresent();
-                getSetting("docker.tls.verify").ifPresent(configBuilder::withDockerTlsVerify);
-                getSetting("docker.cert.path").ifPresent(configBuilder::withDockerCertPath);
-                break;
+                {
+                    Optional<String> dockerHost = getSetting("docker.host");
+                    dockerHost.ifPresent(configBuilder::withDockerHost);
+                    applicable = dockerHost.isPresent();
+                    getSetting("docker.tls.verify").ifPresent(configBuilder::withDockerTlsVerify);
+                    getSetting("docker.cert.path").ifPresent(configBuilder::withDockerCertPath);
+                    break;
+                }
             case "autoIgnoringUserProperties":
-                applicable = configBuilder.isDockerHostSetExplicitly();
-                break;
+                {
+                    applicable = configBuilder.isDockerHostSetExplicitly();
+                    break;
+                }
             default:
-                throw new InvalidConfigurationException("Invalid value for dockerconfig.source: " + dockerConfigSource);
+                {
+                    throw new InvalidConfigurationException(
+                        "Invalid value for dockerconfig.source: " + dockerConfigSource
+                    );
+                }
         }
 
         dockerClientConfig = configBuilder.build();
@@ -62,7 +71,8 @@ public final class EnvironmentAndSystemPropertyClientProviderStrategy extends Do
 
     @Override
     public TransportConfig getTransportConfig() {
-        return TransportConfig.builder()
+        return TransportConfig
+            .builder()
             .dockerHost(dockerClientConfig.getDockerHost())
             .sslConfig(dockerClientConfig.getSSLConfig())
             .build();
@@ -75,7 +85,10 @@ public final class EnvironmentAndSystemPropertyClientProviderStrategy extends Do
 
     @Override
     public String getDescription() {
-        return "Environment variables, system properties and defaults. Resolved dockerHost=" + dockerClientConfig.getDockerHost();
+        return (
+            "Environment variables, system properties and defaults. Resolved dockerHost=" +
+            dockerClientConfig.getDockerHost()
+        );
     }
 
     @Override

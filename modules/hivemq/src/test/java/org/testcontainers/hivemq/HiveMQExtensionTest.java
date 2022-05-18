@@ -8,6 +8,9 @@ class HiveMQExtensionTest {
 
     @Test
     void builder_classDoesNotImplementExtensionMain_exception() {
-        assertThrows(IllegalArgumentException.class, () -> HiveMQExtension.builder().mainClass(HiveMQExtensionTest.class));
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> HiveMQExtension.builder().mainClass(HiveMQExtensionTest.class)
+        );
     }
 }

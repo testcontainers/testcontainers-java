@@ -110,7 +110,6 @@ subprojects {
     }
 
     spotless {
-        enforceCheck false
         java {
             removeUnusedImports()
             trimTrailingWhitespace()

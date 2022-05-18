@@ -6,15 +6,15 @@ import org.testcontainers.containers.GenericContainer;
 
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.testcontainers.junit.jupiter.JUnitJupiterTestImages.HTTPD_IMAGE;
 
 // testClass {
 @Testcontainers
 class TestcontainersNestedRestartedContainerTests {
 
     @Container
-    private final GenericContainer<?> topLevelContainer = new GenericContainer<>(HTTPD_IMAGE)
+    private final GenericContainer<?> topLevelContainer = new GenericContainer<>(JUnitJupiterTestImages.HTTPD_IMAGE)
         .withExposedPorts(80);
+
     // }}
 
     private static String topLevelContainerId;
@@ -25,16 +25,16 @@ class TestcontainersNestedRestartedContainerTests {
     @Test
     void top_level_container_should_be_running() {
         assertTrue(topLevelContainer.isRunning());
-// }}
+        // }}
         topLevelContainerId = topLevelContainer.getContainerId();
-// testClass {{
+        // testClass {{
     }
 
     @Nested
     class NestedTestCase {
 
         @Container
-        private final GenericContainer<?> nestedContainer = new GenericContainer<>(HTTPD_IMAGE)
+        private final GenericContainer<?> nestedContainer = new GenericContainer<>(JUnitJupiterTestImages.HTTPD_IMAGE)
             .withExposedPorts(80);
 
         @Test
@@ -43,13 +43,13 @@ class TestcontainersNestedRestartedContainerTests {
             assertTrue(topLevelContainer.isRunning());
             // nested containers are only available inside their nested class
             assertTrue(nestedContainer.isRunning());
-// }}}
+            // }}}
             if (nestedContainerId == null) {
                 nestedContainerId = nestedContainer.getContainerId();
             } else {
                 assertNotEquals(nestedContainerId, nestedContainer.getContainerId());
             }
-// testClass {{
+            // testClass {{
         }
 
         // }
@@ -74,7 +74,7 @@ class TestcontainersNestedRestartedContainerTests {
                 assertNotEquals(nestedContainerId, nestedContainer.getContainerId());
             }
         }
-// testClass {{{
+        // testClass {{{
     }
 }
 // }

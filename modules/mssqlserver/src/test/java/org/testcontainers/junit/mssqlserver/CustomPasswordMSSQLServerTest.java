@@ -22,11 +22,15 @@ import static org.rnorth.visibleassertions.VisibleAssertions.fail;
 public class CustomPasswordMSSQLServerTest {
 
     private static String UPPER_CASE_LETTERS = "ABCDE";
+
     private static String LOWER_CASE_LETTERS = "abcde";
+
     private static String NUMBERS = "12345";
+
     private static String SPECIAL_CHARS = "_(!)_";
 
     private String password;
+
     private Boolean valid;
 
     public CustomPasswordMSSQLServerTest(String password, Boolean valid) {
@@ -36,45 +40,37 @@ public class CustomPasswordMSSQLServerTest {
 
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][]{
-            new Object[]{null, false},
-            // too short
-            {"abc123", false},
-
-            // too long
-            {RandomStringUtils.randomAlphabetic(129), false},
-
-            // only 2 categories
-            {UPPER_CASE_LETTERS + NUMBERS, false},
-            {UPPER_CASE_LETTERS + SPECIAL_CHARS, false},
-            {LOWER_CASE_LETTERS + NUMBERS, false},
-            {LOWER_CASE_LETTERS + SPECIAL_CHARS, false},
-            {NUMBERS + SPECIAL_CHARS, false},
-
-            // 3 categories
-            {UPPER_CASE_LETTERS + LOWER_CASE_LETTERS + NUMBERS, true},
-            {UPPER_CASE_LETTERS + LOWER_CASE_LETTERS + SPECIAL_CHARS, true},
-            {UPPER_CASE_LETTERS + NUMBERS + SPECIAL_CHARS, true},
-            {LOWER_CASE_LETTERS + NUMBERS + SPECIAL_CHARS, true},
-
-            // 4 categories
-            {UPPER_CASE_LETTERS + LOWER_CASE_LETTERS + NUMBERS + SPECIAL_CHARS, true},
-
-
-        });
+        return Arrays.asList(
+            new Object[][] {
+                new Object[] { null, false },
+                // too short
+                { "abc123", false },
+                // too long
+                { RandomStringUtils.randomAlphabetic(129), false },
+                // only 2 categories
+                { UPPER_CASE_LETTERS + NUMBERS, false },
+                { UPPER_CASE_LETTERS + SPECIAL_CHARS, false },
+                { LOWER_CASE_LETTERS + NUMBERS, false },
+                { LOWER_CASE_LETTERS + SPECIAL_CHARS, false },
+                { NUMBERS + SPECIAL_CHARS, false },
+                // 3 categories
+                { UPPER_CASE_LETTERS + LOWER_CASE_LETTERS + NUMBERS, true },
+                { UPPER_CASE_LETTERS + LOWER_CASE_LETTERS + SPECIAL_CHARS, true },
+                { UPPER_CASE_LETTERS + NUMBERS + SPECIAL_CHARS, true },
+                { LOWER_CASE_LETTERS + NUMBERS + SPECIAL_CHARS, true },
+                // 4 categories
+                { UPPER_CASE_LETTERS + LOWER_CASE_LETTERS + NUMBERS + SPECIAL_CHARS, true },
+            }
+        );
     }
 
     @Test
     public void runPasswordTests() {
         try {
             new MSSQLServerContainer<>(MSSQLServerTestImages.MSSQL_SERVER_IMAGE).withPassword(this.password);
-            if (!valid)
-                fail("Password " + this.password + " is not valid. Expected exception");
+            if (!valid) fail("Password " + this.password + " is not valid. Expected exception");
         } catch (IllegalArgumentException e) {
-            if (valid)
-                fail("Password " + this.password + " should have been validated");
+            if (valid) fail("Password " + this.password + " should have been validated");
         }
     }
-
-
 }

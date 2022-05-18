@@ -1,13 +1,12 @@
 package org.testcontainers.utility;
 
-import static org.hamcrest.core.StringContains.containsString;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertFalse;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertFalse;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
 public class DockerImageNameCompatibilityTest {
 
@@ -20,6 +19,7 @@ public class DockerImageNameCompatibilityTest {
 
         assertFalse("image name foo != bar", subject.isCompatibleWith(DockerImageName.parse("bar")));
     }
+
     @Test
     public void testNoTagTreatedAsWildcard() {
         final DockerImageName subject = DockerImageName.parse("foo:4.5.6");
@@ -59,7 +59,10 @@ public class DockerImageNameCompatibilityTest {
     public void testImageWithClaimedCompatibilityForFullPath() {
         DockerImageName subject = DockerImageName.parse("foo").asCompatibleSubstituteFor("registry/repo/bar");
 
-        assertTrue("foo(registry/repo/bar) ~= registry/repo/bar", subject.isCompatibleWith(DockerImageName.parse("registry/repo/bar")));
+        assertTrue(
+            "foo(registry/repo/bar) ~= registry/repo/bar",
+            subject.isCompatibleWith(DockerImageName.parse("registry/repo/bar"))
+        );
         assertFalse("foo(registry/repo/bar) != repo/bar", subject.isCompatibleWith(DockerImageName.parse("repo/bar")));
         assertFalse("foo(registry/repo/bar) != bar", subject.isCompatibleWith(DockerImageName.parse("bar")));
     }

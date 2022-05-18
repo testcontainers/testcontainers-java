@@ -13,19 +13,20 @@ import org.testcontainers.utility.DockerImageName;
  */
 public class BigtableEmulatorContainer extends GenericContainer<BigtableEmulatorContainer> {
 
-    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("gcr.io/google.com/cloudsdktool/cloud-sdk");
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse(
+        "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    );
 
     private static final String CMD = "gcloud beta emulators bigtable start --host-port 0.0.0.0:9000";
+
     private static final int PORT = 9000;
 
     public BigtableEmulatorContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         withExposedPorts(PORT);
-        setWaitStrategy(new LogMessageWaitStrategy()
-                .withRegEx("(?s).*running.*$"));
+        setWaitStrategy(new LogMessageWaitStrategy().withRegEx("(?s).*running.*$"));
         withCommand("/bin/sh", "-c", CMD);
     }
 

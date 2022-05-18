@@ -11,8 +11,7 @@ public class ImageFromDockerfileTest {
 
     @Test
     public void shouldAddDefaultLabels() {
-        ImageFromDockerfile image = new ImageFromDockerfile()
-            .withDockerfileFromBuilder(it -> it.from("scratch"));
+        ImageFromDockerfile image = new ImageFromDockerfile().withDockerfileFromBuilder(it -> it.from("scratch"));
 
         String imageId = image.resolve();
 
@@ -23,5 +22,4 @@ public class ImageFromDockerfileTest {
         assertThat(inspectImageResponse.getConfig().getLabels())
             .containsAllEntriesOf(DockerClientFactory.DEFAULT_LABELS);
     }
-
 }
