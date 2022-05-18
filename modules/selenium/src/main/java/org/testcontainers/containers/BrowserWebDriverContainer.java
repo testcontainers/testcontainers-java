@@ -318,6 +318,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
             } catch (Exception e) {
                 LOGGER.debug("Failed to quit the driver", e);
             }
+            driver = null;
         }
 
         if (vncRecordingContainer != null) {
@@ -326,6 +327,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
             } catch (Exception e) {
                 LOGGER.debug("Failed to stop vncRecordingContainer", e);
             }
+            vncRecordingContainer = null;
         }
 
         super.stop();
