@@ -207,11 +207,12 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
         setCommand("/opt/bin/entry_point.sh");
 
-        if (getShmSize() == null) {
+        Bind bind = new Bind("/dev/shm", new Volume("/dev/shm"), AccessMode.rw);
+        if (getShmSize() == null && !this.getBinds().contains(bind)) {
             if (SystemUtils.IS_OS_WINDOWS) {
                 withSharedMemorySize(512 * FileUtils.ONE_MB);
             } else {
-                this.getBinds().add(new Bind("/dev/shm", new Volume("/dev/shm"), AccessMode.rw));
+                this.getBinds().add(bind);
             }
         }
 
