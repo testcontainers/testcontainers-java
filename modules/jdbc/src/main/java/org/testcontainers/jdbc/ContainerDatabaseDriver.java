@@ -162,8 +162,10 @@ public class ContainerDatabaseDriver implements Driver {
         return new ConnectionWrapper(connection, () -> {
             finalConnections.remove(connection);
             if (!isDaemon && finalConnections.isEmpty()) {
-                container.stop();
-                jdbcUrlContainerCache.remove(connectionUrl.getUrl());
+                synchronized (jdbcUrlContainerCache) {
+                    container.stop();
+                    jdbcUrlContainerCache.remove(connectionUrl.getUrl());
+                }
             }
         });
     }
