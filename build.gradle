@@ -10,7 +10,7 @@ buildscript {
 }
 
 plugins {
-    id 'io.franzbecker.gradle-lombok' version '4.0.0'
+    id 'io.franzbecker.gradle-lombok' version '5.0.0'
     id 'com.github.johnrengelman.shadow' version '7.0.0'
     id 'me.champeau.gradle.japicmp' version '0.2.9' apply false
 }
@@ -40,7 +40,7 @@ subprojects {
     }
 
     lombok {
-        version = '1.18.20'
+        version = '1.18.24'
     }
 
 
