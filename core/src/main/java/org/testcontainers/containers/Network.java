@@ -1,6 +1,7 @@
 package org.testcontainers.containers;
 
 import com.github.dockerjava.api.command.CreateNetworkCmd;
+import com.github.dockerjava.api.command.ListNetworksCmd;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Singular;
@@ -11,7 +12,9 @@ import org.testcontainers.utility.ResourceReaper;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -19,7 +22,14 @@ import java.util.function.Consumer;
 
 public interface Network extends AutoCloseable, TestRule {
 
-    Network SHARED = new NetworkImpl(false, null, Collections.emptySet(), null) {
+    Network SHARED = new NetworkImpl(
+        UUID.randomUUID().toString(),
+        false,
+        false,
+        null,
+        Collections.emptySet(),
+        null
+    ) {
         @Override
         public void close() {
             // Do not allow users to close SHARED network, only ResourceReaper is allowed to close (destroy) it
@@ -35,6 +45,13 @@ public interface Network extends AutoCloseable, TestRule {
         return builder().build();
     }
 
+    static Network newNetwork(String networkName) {
+        return builder()
+            .name(networkName)
+            .withReuse(true)
+            .build();
+    }
+
     static NetworkImpl.NetworkImplBuilder builder() {
         return NetworkImpl.builder();
     }
@@ -43,7 +60,11 @@ public interface Network extends AutoCloseable, TestRule {
     @Getter
     class NetworkImpl extends ExternalResource implements Network {
 
-        private final String name = UUID.randomUUID().toString();
+        @Builder.Default
+        private String name = UUID.randomUUID().toString();
+
+        @Builder.Default
+        private Boolean withReuse = false;
 
         private Boolean enableIpv6;
 
@@ -66,7 +87,25 @@ public interface Network extends AutoCloseable, TestRule {
             return id;
         }
 
+        private Optional<String> get() {
+            ListNetworksCmd listNetworksCmd = DockerClientFactory.instance().client().listNetworksCmd();
+            listNetworksCmd.withNameFilter(name);
+            List<com.github.dockerjava.api.model.Network> networks = listNetworksCmd.exec();
+            for(com.github.dockerjava.api.model.Network network : networks){
+                if(network.getName().equals(name)){
+                    return Optional.of(network.getId());
+                }
+            }
+            return Optional.empty();
+        }
+
         private String create() {
+
+            Optional<String> existingNetwork = get();
+            if(existingNetwork.isPresent()) {
+                return existingNetwork.get();
+            }
+
             CreateNetworkCmd createNetworkCmd = DockerClientFactory.instance().client().createNetworkCmd();
 
             createNetworkCmd.withName(name);
@@ -101,8 +140,10 @@ public interface Network extends AutoCloseable, TestRule {
 
         @Override
         public synchronized void close() {
-            if (initialized.getAndSet(false)) {
-                ResourceReaper.instance().removeNetworkById(id);
+            if(!withReuse) {
+                if (initialized.getAndSet(false)) {
+                    ResourceReaper.instance().removeNetworkById(id);
+                }
             }
         }
     }
