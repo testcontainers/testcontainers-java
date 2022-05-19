@@ -27,7 +27,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.SneakyThrows;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.jetbrains.annotations.NotNull;
@@ -66,12 +65,10 @@ import org.testcontainers.utility.ResourceReaper;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
@@ -242,6 +239,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private boolean hostAccessible = false;
 
+    @Setter(AccessLevel.NONE)
+    @VisibleForTesting
+    private boolean configured = false;
+
     public GenericContainer(@NonNull final DockerImageName dockerImageName) {
         this.image = new RemoteDockerImage(dockerImageName);
     }
@@ -328,7 +329,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     protected void doStart() {
         try {
-            configure();
+            if (!this.configured) {
+                configure();
+                configured = true;
+            }
 
             Instant startedAt = Instant.now();
 
@@ -790,10 +794,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         }
 
         Bind[] bindsArray = binds.stream()
+                .distinct()
                 .toArray(Bind[]::new);
         createCommand.withBinds(bindsArray);
 
         VolumesFrom[] volumesFromsArray = volumesFroms.stream()
+                .distinct()
                 .toArray(VolumesFrom[]::new);
         createCommand.withVolumesFrom(volumesFromsArray);
 
@@ -840,6 +846,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         });
 
         String[] extraHostsArray = extraHosts.stream()
+                .distinct()
                 .toArray(String[]::new);
         createCommand.withExtraHosts(extraHostsArray);
 

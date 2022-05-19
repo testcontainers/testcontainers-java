@@ -17,12 +17,10 @@ import org.junit.Test;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.TestImages;
-import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
 import org.testcontainers.images.builder.Transferable;
 
-import java.nio.charset.StandardCharsets;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.utility.MountableFile;
 
@@ -33,8 +31,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
@@ -181,6 +179,21 @@ public class GenericContainerTest {
             assertTrue("withExposedPort should be exposed", container.getExposedPorts().contains(8080));
         }
     }
+
+    @Test
+    public void testContainerIsAlreadyConfiguredWhenUsedMultipleTimes() {
+        try (GenericContainer<?> container = new GenericContainer<>(TINY_IMAGE)
+            .withCommand("top")) {
+            assertThat(container.isConfigured()).isFalse();
+            container.start();
+            assertThat(container.isConfigured()).isTrue();
+            container.stop();
+            assertThat(container.isConfigured()).isTrue();
+            container.start();
+            assertThat(container.isConfigured()).isTrue();
+        }
+    }
+
 
     static class NoopStartupCheckStrategy extends StartupCheckStrategy {
 
