@@ -136,9 +136,6 @@ subprojects {
         configFile = rootProject.file('config/checkstyle/checkstyle.xml')
         checkstyleTest.enabled = false
         checkstyleMain.enabled = false
-    }
-
-    afterEvaluate {
-        tasks.withType(Checkstyle.class).forEach(task -> task.enabled = false)
+        ignoreFailures = true
     }
 }
