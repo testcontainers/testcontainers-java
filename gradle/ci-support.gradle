@@ -29,6 +29,11 @@ gradle.taskGraph.whenReady {
             subproject.tasks.findByName("javadoc")?.enabled = false
             subproject.tasks.findByName("delombok")?.enabled = false
             subproject.tasks.findByName("japicmp")?.enabled = false
+            subproject.tasks.findByName("spotlessJavaCheck")?.enabled = false
+            subproject.tasks.findByName("spotlessGroovyGradleCheck")?.enabled = false
+            subproject.tasks.findByName("checkstyleMain")?.enabled = false
+            subproject.tasks.findByName("checkstyleTest")?.enabled = false
+            subproject.tasks.findByName("checkstyleJarFileTest")?.enabled = false
         }
     }
 }
