@@ -26,7 +26,7 @@ task customNeo4jPluginJar(type: Jar) {
     outputs.dir(customNeo4jPluginDestinationDir)
 }
 
-test.mustRunAfter customNeo4jPluginJar
+processTestResources.dependsOn customNeo4jPluginJar
 
 dependencies {
     customNeo4jPluginCompileOnly "org.neo4j:neo4j:3.5.32"
