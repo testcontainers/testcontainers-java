@@ -134,8 +134,6 @@ subprojects {
     checkstyle {
         toolVersion = "9.3"
         configFile = rootProject.file('config/checkstyle/checkstyle.xml')
-        checkstyleTest.enabled = false
-        checkstyleMain.enabled = false
         ignoreFailures = true
     }
 }
