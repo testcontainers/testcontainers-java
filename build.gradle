@@ -138,9 +138,7 @@ subprojects {
         checkstyleMain.enabled = false
     }
 
-    tasks.whenTaskAdded {task ->
-        if (task.name.equals("checkstyleJarFileTest")) {
-            task.enabled = false
-        }
+    afterEvaluate {
+        tasks.withType(Checkstyle.class).forEach(task -> task.enabled = false)
     }
 }
