@@ -76,14 +76,8 @@ public class DockerClientFactory {
 
     private String activeApiVersion;
 
-    private String activeExecutionDriver;
-
     @Getter(lazy = true)
     private final boolean fileMountingSupported = checkMountableFile();
-
-    static {
-        System.setProperty("org.testcontainers.shaded.io.netty.packagePrefix", "org.testcontainers.shaded.");
-    }
 
     @VisibleForTesting
     DockerClientFactory() {}
@@ -193,7 +187,6 @@ public class DockerClientFactory {
         Version version = client.versionCmd().exec();
         log.debug("Docker version: {}", version.getRawValues());
         activeApiVersion = version.getApiVersion();
-        activeExecutionDriver = dockerInfo.getExecutionDriver();
         log.info(
             "Connected to docker: \n" +
             "  Server Version: " +
