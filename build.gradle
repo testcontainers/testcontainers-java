@@ -13,6 +13,7 @@ plugins {
     id 'io.franzbecker.gradle-lombok' version '5.0.0'
     id 'com.github.johnrengelman.shadow' version '7.0.0'
     id 'me.champeau.gradle.japicmp' version '0.2.9' apply false
+    id 'com.diffplug.spotless' version '6.3.0' apply false
 }
 
 apply from: "$rootDir/gradle/ci-support.gradle"
@@ -22,6 +23,8 @@ subprojects {
     apply plugin: 'idea'
     apply plugin: 'io.franzbecker.gradle-lombok'
     apply from: "$rootDir/gradle/shading.gradle"
+    apply plugin: 'com.diffplug.spotless'
+    apply plugin: 'checkstyle'
 
     group = "org.testcontainers"
 
@@ -104,5 +107,33 @@ subprojects {
 
     dependencies {
         testImplementation 'ch.qos.logback:logback-classic:1.2.3'
+    }
+
+    spotless {
+        enforceCheck false
+        java {
+            removeUnusedImports()
+            trimTrailingWhitespace()
+            endWithNewline()
+
+            prettier(['prettier': '2.5.1', 'prettier-plugin-java': '1.6.1'])
+                .config([
+                    'parser'    : 'java',
+                    'tabWidth'  : 4,
+                    'printWidth': 120
+                ])
+
+            importOrder('', 'java', 'javax', '\\#')
+        }
+        groovyGradle {
+            target '**/*.groovy'
+            greclipse('4.19.0')
+        }
+    }
+
+    checkstyle {
+        toolVersion = "9.3"
+        configFile = rootProject.file('config/checkstyle/checkstyle.xml')
+        ignoreFailures = true
     }
 }
