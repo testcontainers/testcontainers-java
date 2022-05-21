@@ -18,3 +18,5 @@ jobs:
             -w "$PWD" \
             openjdk:8-jdk-alpine \
             ./gradlew --no-daemon --continue --scan testcontainers:test --tests '*GenericContainerRuleTest'
+        env:
+          AUTO_APPLY_GIT_HOOKS: false
