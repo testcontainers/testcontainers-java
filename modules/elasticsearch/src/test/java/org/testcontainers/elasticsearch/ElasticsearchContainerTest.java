@@ -153,7 +153,8 @@ public class ElasticsearchContainerTest {
     @Test
     public void elasticsearchOssImage() throws IOException {
         try (
-            ElasticsearchContainer container = new ElasticsearchContainer( // ossContainer {
+            // ossContainer {
+            ElasticsearchContainer container = new ElasticsearchContainer(
                 DockerImageName
                     .parse("docker.elastic.co/elasticsearch/elasticsearch-oss")
                     .withTag(ELASTICSEARCH_VERSION)
