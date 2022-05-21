@@ -72,8 +72,12 @@ public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
         addEnv("DB2INST1_PASSWORD", password);
 
         // These settings help the DB2 container start faster
-        if (!getEnvMap().containsKey("AUTOCONFIG")) addEnv("AUTOCONFIG", "false");
-        if (!getEnvMap().containsKey("ARCHIVE_LOGS")) addEnv("ARCHIVE_LOGS", "false");
+        if (!getEnvMap().containsKey("AUTOCONFIG")) {
+            addEnv("AUTOCONFIG", "false");
+        }
+        if (!getEnvMap().containsKey("ARCHIVE_LOGS")) {
+            addEnv("ARCHIVE_LOGS", "false");
+        }
     }
 
     /**

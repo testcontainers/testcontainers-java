@@ -25,7 +25,9 @@ public class DockerignoreTest {
                 .get();
             fail("Should not be able to build an image with an invalid .dockerignore file");
         } catch (DockerClientException e) {
-            if (!e.getMessage().contains("Invalid pattern")) throw e;
+            if (!e.getMessage().contains("Invalid pattern")) {
+                throw e;
+            }
         }
     }
 

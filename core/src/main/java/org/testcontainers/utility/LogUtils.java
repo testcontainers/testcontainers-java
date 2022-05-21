@@ -90,8 +90,12 @@ public class LogUtils {
         final FrameConsumerResultCallback callback = new FrameConsumerResultCallback();
         for (OutputFrame.OutputType type : types) {
             callback.addConsumer(type, consumer);
-            if (type == OutputFrame.OutputType.STDOUT) cmd.withStdOut(true);
-            if (type == OutputFrame.OutputType.STDERR) cmd.withStdErr(true);
+            if (type == OutputFrame.OutputType.STDOUT) {
+                cmd.withStdOut(true);
+            }
+            if (type == OutputFrame.OutputType.STDERR) {
+                cmd.withStdErr(true);
+            }
         }
 
         return cmd.exec(callback);

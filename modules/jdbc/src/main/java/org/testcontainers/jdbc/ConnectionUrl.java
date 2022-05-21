@@ -189,7 +189,9 @@ public class ConnectionUrl {
         while (matcher.find()) {
             String key = matcher.group(1);
             String value = matcher.group(2);
-            if (!key.matches(Patterns.TC_PARAM_NAME_PATTERN)) results.put(key, value);
+            if (!key.matches(Patterns.TC_PARAM_NAME_PATTERN)) {
+                results.put(key, value);
+            }
         }
 
         return results;

@@ -68,9 +68,13 @@ public class CustomPasswordMSSQLServerTest {
     public void runPasswordTests() {
         try {
             new MSSQLServerContainer<>(MSSQLServerTestImages.MSSQL_SERVER_IMAGE).withPassword(this.password);
-            if (!valid) fail("Password " + this.password + " is not valid. Expected exception");
+            if (!valid) {
+                fail("Password " + this.password + " is not valid. Expected exception");
+            }
         } catch (IllegalArgumentException e) {
-            if (valid) fail("Password " + this.password + " should have been validated");
+            if (valid) {
+                fail("Password " + this.password + " should have been validated");
+            }
         }
     }
 }
