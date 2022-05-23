@@ -29,16 +29,18 @@ public class ImageFromDockerfileTest {
     public void shouldNotAddSessionLabelIfDeleteOnExitIsFalse() {
         ImageFromDockerfile image = new ImageFromDockerfile("localhost/testcontainers/" + Base58.randomString(16).toLowerCase(), false)
             .withDockerfileFromBuilder(it -> it.from("scratch"));
-
         String imageId = image.resolve();
-
         DockerClient dockerClient = DockerClientFactory.instance().client();
 
-        InspectImageResponse inspectImageResponse = dockerClient.inspectImageCmd(imageId).exec();
+        try {
+            InspectImageResponse inspectImageResponse = dockerClient.inspectImageCmd(imageId).exec();
+            assertThat(inspectImageResponse.getConfig().getLabels())
+                .doesNotContainKey(DockerClientFactory.TESTCONTAINERS_SESSION_ID_LABEL).containsKey("foobar");
+        } finally {
+            // ensure the image is deleted, even if the test fails
+            dockerClient.removeImageCmd(imageId);
+        }
 
-        assertThat(inspectImageResponse.getConfig().getLabels())
-            .doesNotContainKey(DockerClientFactory.TESTCONTAINERS_SESSION_ID_LABEL);
     }
-
 
 }
