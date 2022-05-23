@@ -22,7 +22,7 @@ apply from: "$rootDir/gradle/ci-support.gradle"
 apply plugin: 'com.github.tjni.captainhook'
 
 captainHook {
-    autoApplyGitHooks = System.getenv("AUTO_APPLY_GIT_HOOKS") == null
+    autoApplyGitHooks = Boolean.valueOf(System.getenv("AUTO_APPLY_GIT_HOOKS"))
     preCommit = './gradlew spotlessApply'
 }
 
