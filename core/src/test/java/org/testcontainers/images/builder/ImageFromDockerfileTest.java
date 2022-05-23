@@ -28,7 +28,7 @@ public class ImageFromDockerfileTest {
     @Test
     public void shouldNotAddSessionLabelIfDeleteOnExitIsFalse() {
         ImageFromDockerfile image = new ImageFromDockerfile("localhost/testcontainers/" + Base58.randomString(16).toLowerCase(), false)
-            .withDockerfileFromBuilder(it -> it.from("scratch").user("testcontainers"));
+            .withDockerfileFromBuilder(it -> it.from("scratch"));
 
         String imageId = image.resolve();
 
