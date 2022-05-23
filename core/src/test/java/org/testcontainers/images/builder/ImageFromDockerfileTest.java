@@ -38,7 +38,7 @@ public class ImageFromDockerfileTest {
                 .doesNotContainKey(DockerClientFactory.TESTCONTAINERS_SESSION_ID_LABEL).containsKey("foobar");
         } finally {
             // ensure the image is deleted, even if the test fails
-            dockerClient.removeImageCmd(imageId);
+            dockerClient.removeImageCmd(imageId).exec();
         }
 
     }
