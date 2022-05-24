@@ -87,9 +87,6 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
         DockerClient dockerClient = DockerClientFactory.instance().client();
 
         try {
-            if (deleteOnExit) {
-                ResourceReaper.instance().registerImageForCleanup(dockerImageName);
-            }
 
             BuildImageResultCallback resultCallback = new BuildImageResultCallback() {
                 @Override
@@ -114,9 +111,12 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
             if (buildImageCmd.getLabels() != null) {
                 labels.putAll(buildImageCmd.getLabels());
             }
+
             labels.putAll(DockerClientFactory.DEFAULT_LABELS);
-            //noinspection deprecation
-            labels.putAll(ResourceReaper.instance().getLabels());
+            if (deleteOnExit) {
+                //noinspection deprecation
+                labels.putAll(ResourceReaper.instance().getLabels());
+            }
             buildImageCmd.withLabels(labels);
 
             prePullDependencyImages(dependencyImageNames);
