@@ -12,7 +12,6 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ExtensionContext.Namespace;
 import org.junit.jupiter.api.extension.ExtensionContext.Store;
 import org.junit.jupiter.api.extension.ExtensionContext.Store.CloseableResource;
-import org.junit.jupiter.api.extension.TestInstancePostProcessor;
 import org.junit.platform.commons.support.AnnotationSupport;
 import org.junit.platform.commons.util.AnnotationUtils;
 import org.junit.platform.commons.util.Preconditions;
@@ -23,6 +22,8 @@ import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
@@ -32,27 +33,13 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 class TestcontainersExtension
-    implements
-        BeforeEachCallback,
-        BeforeAllCallback,
-        AfterEachCallback,
-        AfterAllCallback,
-        ExecutionCondition,
-        TestInstancePostProcessor {
+    implements BeforeEachCallback, BeforeAllCallback, AfterEachCallback, AfterAllCallback, ExecutionCondition {
 
     private static final Namespace NAMESPACE = Namespace.create(TestcontainersExtension.class);
-
-    private static final String TEST_INSTANCE = "testInstance";
 
     private static final String SHARED_LIFECYCLE_AWARE_CONTAINERS = "sharedLifecycleAwareContainers";
 
     private static final String LOCAL_LIFECYCLE_AWARE_CONTAINERS = "localLifecycleAwareContainers";
-
-    @Override
-    public void postProcessTestInstance(final Object testInstance, final ExtensionContext context) {
-        Store store = context.getStore(NAMESPACE);
-        store.put(TEST_INSTANCE, testInstance);
-    }
 
     @Override
     public void beforeAll(ExtensionContext context) {
@@ -176,17 +163,9 @@ class TestcontainersExtension
     }
 
     private Set<Object> collectParentTestInstances(final ExtensionContext context) {
-        Set<Object> testInstances = new LinkedHashSet<>();
-        Optional<ExtensionContext> current = Optional.of(context);
-        while (current.isPresent()) {
-            ExtensionContext ctx = current.get();
-            Object testInstance = ctx.getStore(NAMESPACE).remove(TEST_INSTANCE);
-            if (testInstance != null) {
-                testInstances.add(testInstance);
-            }
-            current = ctx.getParent();
-        }
-        return testInstances;
+        List<Object> allInstances = new ArrayList<>(context.getRequiredTestInstances().getAllInstances());
+        Collections.reverse(allInstances);
+        return new LinkedHashSet<>(allInstances);
     }
 
     private List<StoreAdapter> findSharedContainers(Class<?> testClass) {

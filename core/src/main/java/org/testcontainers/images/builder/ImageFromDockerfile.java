@@ -93,10 +93,6 @@ public class ImageFromDockerfile
         DockerClient dockerClient = DockerClientFactory.instance().client();
 
         try {
-            if (deleteOnExit) {
-                ResourceReaper.instance().registerImageForCleanup(dockerImageName);
-            }
-
             BuildImageResultCallback resultCallback = new BuildImageResultCallback() {
                 @Override
                 public void onNext(BuildResponseItem item) {
@@ -122,9 +118,12 @@ public class ImageFromDockerfile
             if (buildImageCmd.getLabels() != null) {
                 labels.putAll(buildImageCmd.getLabels());
             }
+
             labels.putAll(DockerClientFactory.DEFAULT_LABELS);
-            //noinspection deprecation
-            labels.putAll(ResourceReaper.instance().getLabels());
+            if (deleteOnExit) {
+                //noinspection deprecation
+                labels.putAll(ResourceReaper.instance().getLabels());
+            }
             buildImageCmd.withLabels(labels);
 
             prePullDependencyImages(dependencyImageNames);
