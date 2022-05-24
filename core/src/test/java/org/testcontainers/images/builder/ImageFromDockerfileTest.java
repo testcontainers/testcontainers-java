@@ -35,7 +35,7 @@ public class ImageFromDockerfileTest {
         try {
             InspectImageResponse inspectImageResponse = dockerClient.inspectImageCmd(imageId).exec();
             assertThat(inspectImageResponse.getConfig().getLabels())
-                .doesNotContainKey(DockerClientFactory.TESTCONTAINERS_SESSION_ID_LABEL).containsKey("foobar");
+                .doesNotContainKey(DockerClientFactory.TESTCONTAINERS_SESSION_ID_LABEL);
         } finally {
             // ensure the image is deleted, even if the test fails
             dockerClient.removeImageCmd(imageId).exec();
