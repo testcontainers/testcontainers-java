@@ -264,21 +264,13 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
         switch (browserName) {
             case BrowserType.CHROME:
-                {
-                    return (supportsVncWithoutDebugImage ? CHROME_IMAGE : CHROME_DEBUG_IMAGE).withTag(seleniumVersion);
-                }
+                return (supportsVncWithoutDebugImage ? CHROME_IMAGE : CHROME_DEBUG_IMAGE).withTag(seleniumVersion);
             case BrowserType.FIREFOX:
-                {
-                    return (supportsVncWithoutDebugImage ? FIREFOX_IMAGE : FIREFOX_DEBUG_IMAGE).withTag(
-                            seleniumVersion
-                        );
-                }
+                return (supportsVncWithoutDebugImage ? FIREFOX_IMAGE : FIREFOX_DEBUG_IMAGE).withTag(seleniumVersion);
             default:
-                {
-                    throw new UnsupportedOperationException(
-                        "Browser name must be 'chrome' or 'firefox'; provided '" + browserName + "' is not supported"
-                    );
-                }
+                throw new UnsupportedOperationException(
+                    "Browser name must be 'chrome' or 'firefox'; provided '" + browserName + "' is not supported"
+                );
         }
     }
 
@@ -381,20 +373,14 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         final boolean shouldRecord;
         switch (recordingMode) {
             case RECORD_ALL:
-                {
-                    shouldRecord = true;
-                    break;
-                }
+                shouldRecord = true;
+                break;
             case RECORD_FAILING:
-                {
-                    shouldRecord = !succeeded;
-                    break;
-                }
+                shouldRecord = !succeeded;
+                break;
             default:
-                {
-                    shouldRecord = false;
-                    break;
-                }
+                shouldRecord = false;
+                break;
         }
 
         if (shouldRecord) {

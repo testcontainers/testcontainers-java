@@ -97,9 +97,7 @@ public class PublicBinaryAPITest extends AbstractJarFileTest {
             case "org/testcontainers/dockerclient/DockerClientProviderStrategy":
             case "org/testcontainers/dockerclient/WindowsClientProviderStrategy":
             case "org/testcontainers/utility/DynamicPollInterval":
-                {
-                    Assume.assumeTrue(false);
-                }
+                Assume.assumeTrue(false);
         }
     }
 

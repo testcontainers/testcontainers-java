@@ -49,19 +49,13 @@ public abstract class StartupCheckStrategy {
                     StartupStatus state = checkStartupState(dockerClient, containerId);
                     switch (state) {
                         case SUCCESSFUL:
-                            {
-                                startedOK[0] = true;
-                                return true;
-                            }
+                            startedOK[0] = true;
+                            return true;
                         case FAILED:
-                            {
-                                startedOK[0] = false;
-                                return true;
-                            }
+                            startedOK[0] = false;
+                            return true;
                         default:
-                            {
-                                return false;
-                            }
+                            return false;
                     }
                 });
             }

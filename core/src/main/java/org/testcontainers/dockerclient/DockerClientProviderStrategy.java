@@ -144,58 +144,46 @@ public abstract class DockerClientProviderStrategy {
             case "tcp":
             case "http":
             case "https":
-                {
-                    SocketFactory socketFactory = SocketFactory.getDefault();
-                    SSLConfig sslConfig = transportConfig.getSslConfig();
-                    if (sslConfig != null) {
-                        try {
-                            socketFactory = sslConfig.getSSLContext().getSocketFactory();
-                        } catch (
-                            KeyManagementException
-                            | UnrecoverableKeyException
-                            | NoSuchAlgorithmException
-                            | KeyStoreException e
-                        ) {
-                            log.warn("Exception while creating SSLSocketFactory", e);
-                            return false;
-                        }
-                    }
-                    socketProvider = socketFactory::createSocket;
-                    socketAddress = new InetSocketAddress(dockerHost.getHost(), dockerHost.getPort());
-                    break;
-                }
-            case "unix":
-            case "npipe":
-                {
-                    if (!new File(dockerHost.getPath()).exists()) {
-                        log.debug("DOCKER_HOST socket file '{}' does not exist", dockerHost.getPath());
+                SocketFactory socketFactory = SocketFactory.getDefault();
+                SSLConfig sslConfig = transportConfig.getSslConfig();
+                if (sslConfig != null) {
+                    try {
+                        socketFactory = sslConfig.getSSLContext().getSocketFactory();
+                    } catch (
+                        KeyManagementException
+                        | UnrecoverableKeyException
+                        | NoSuchAlgorithmException
+                        | KeyStoreException e
+                    ) {
+                        log.warn("Exception while creating SSLSocketFactory", e);
                         return false;
                     }
-                    socketProvider =
-                        () -> {
-                            switch (dockerHost.getScheme()) {
-                                case "unix":
-                                    {
-                                        return UnixSocket.get(dockerHost.getPath());
-                                    }
-                                case "npipe":
-                                    {
-                                        return new NamedPipeSocket(dockerHost.getPath());
-                                    }
-                                default:
-                                    {
-                                        throw new IllegalStateException("Unexpected scheme " + dockerHost.getScheme());
-                                    }
-                            }
-                        };
-                    socketAddress = new InetSocketAddress("localhost", 2375);
-                    break;
                 }
+                socketProvider = socketFactory::createSocket;
+                socketAddress = new InetSocketAddress(dockerHost.getHost(), dockerHost.getPort());
+                break;
+            case "unix":
+            case "npipe":
+                if (!new File(dockerHost.getPath()).exists()) {
+                    log.debug("DOCKER_HOST socket file '{}' does not exist", dockerHost.getPath());
+                    return false;
+                }
+                socketProvider =
+                    () -> {
+                        switch (dockerHost.getScheme()) {
+                            case "unix":
+                                return UnixSocket.get(dockerHost.getPath());
+                            case "npipe":
+                                return new NamedPipeSocket(dockerHost.getPath());
+                            default:
+                                throw new IllegalStateException("Unexpected scheme " + dockerHost.getScheme());
+                        }
+                    };
+                socketAddress = new InetSocketAddress("localhost", 2375);
+                break;
             default:
-                {
-                    log.warn("Unknown DOCKER_HOST scheme {}, skipping the strategy test...", dockerHost.getScheme());
-                    return true;
-                }
+                log.warn("Unknown DOCKER_HOST scheme {}, skipping the strategy test...", dockerHost.getScheme());
+                return true;
         }
 
         try (Socket socket = socketProvider.call()) {
@@ -386,18 +374,14 @@ public abstract class DockerClientProviderStrategy {
         String transportType = TestcontainersConfiguration.getInstance().getTransportType();
         switch (transportType) {
             case "httpclient5":
-                {
-                    dockerHttpClient =
-                        new ZerodepDockerHttpClient.Builder()
-                            .dockerHost(transportConfig.getDockerHost())
-                            .sslConfig(transportConfig.getSslConfig())
-                            .build();
-                    break;
-                }
+                dockerHttpClient =
+                    new ZerodepDockerHttpClient.Builder()
+                        .dockerHost(transportConfig.getDockerHost())
+                        .sslConfig(transportConfig.getSslConfig())
+                        .build();
+                break;
             default:
-                {
-                    throw new IllegalArgumentException("Unknown transport type '" + transportType + "'");
-                }
+                throw new IllegalArgumentException("Unknown transport type '" + transportType + "'");
         }
 
         DefaultDockerClientConfig.Builder configBuilder = DefaultDockerClientConfig.createDefaultConfigBuilder();
@@ -434,33 +418,27 @@ public abstract class DockerClientProviderStrategy {
             case "http":
             case "https":
             case "tcp":
-                {
-                    return dockerHost.getHost();
-                }
+                return dockerHost.getHost();
             case "unix":
             case "npipe":
-                {
-                    if (DockerClientConfigUtils.IN_A_CONTAINER) {
-                        return client
-                            .inspectNetworkCmd()
-                            .withNetworkId("bridge")
-                            .exec()
-                            .getIpam()
-                            .getConfig()
-                            .stream()
-                            .filter(it -> it.getGateway() != null)
-                            .findAny()
-                            .map(Network.Ipam.Config::getGateway)
-                            .orElseGet(() -> {
-                                return DockerClientConfigUtils.getDefaultGateway().orElse("localhost");
-                            });
-                    }
-                    return "localhost";
+                if (DockerClientConfigUtils.IN_A_CONTAINER) {
+                    return client
+                        .inspectNetworkCmd()
+                        .withNetworkId("bridge")
+                        .exec()
+                        .getIpam()
+                        .getConfig()
+                        .stream()
+                        .filter(it -> it.getGateway() != null)
+                        .findAny()
+                        .map(Network.Ipam.Config::getGateway)
+                        .orElseGet(() -> {
+                            return DockerClientConfigUtils.getDefaultGateway().orElse("localhost");
+                        });
                 }
+                return "localhost";
             default:
-                {
-                    return null;
-                }
+                return null;
         }
     }
 }

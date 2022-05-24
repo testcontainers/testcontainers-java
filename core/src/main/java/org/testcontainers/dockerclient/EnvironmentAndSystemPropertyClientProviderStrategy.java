@@ -41,25 +41,17 @@ public final class EnvironmentAndSystemPropertyClientProviderStrategy extends Do
 
         switch (dockerConfigSource) {
             case "auto":
-                {
-                    Optional<String> dockerHost = getSetting("docker.host");
-                    dockerHost.ifPresent(configBuilder::withDockerHost);
-                    applicable = dockerHost.isPresent();
-                    getSetting("docker.tls.verify").ifPresent(configBuilder::withDockerTlsVerify);
-                    getSetting("docker.cert.path").ifPresent(configBuilder::withDockerCertPath);
-                    break;
-                }
+                Optional<String> dockerHost = getSetting("docker.host");
+                dockerHost.ifPresent(configBuilder::withDockerHost);
+                applicable = dockerHost.isPresent();
+                getSetting("docker.tls.verify").ifPresent(configBuilder::withDockerTlsVerify);
+                getSetting("docker.cert.path").ifPresent(configBuilder::withDockerCertPath);
+                break;
             case "autoIgnoringUserProperties":
-                {
-                    applicable = configBuilder.isDockerHostSetExplicitly();
-                    break;
-                }
+                applicable = configBuilder.isDockerHostSetExplicitly();
+                break;
             default:
-                {
-                    throw new InvalidConfigurationException(
-                        "Invalid value for dockerconfig.source: " + dockerConfigSource
-                    );
-                }
+                throw new InvalidConfigurationException("Invalid value for dockerconfig.source: " + dockerConfigSource);
         }
 
         dockerClientConfig = configBuilder.build();

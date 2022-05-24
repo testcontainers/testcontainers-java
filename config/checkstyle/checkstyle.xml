@@ -11,8 +11,6 @@
                       LITERAL_FOR,
                       LITERAL_IF,
                       LITERAL_WHILE,
-                      LITERAL_CASE,
-                      LITERAL_DEFAULT,
                       "
             />
         </module>

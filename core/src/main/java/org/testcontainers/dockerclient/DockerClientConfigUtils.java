@@ -53,21 +53,15 @@ public class DockerClientConfigUtils {
             case "http":
             case "https":
             case "tcp":
-                {
-                    return dockerHost.getHost();
-                }
+                return dockerHost.getHost();
             case "unix":
             case "npipe":
-                {
-                    if (IN_A_CONTAINER) {
-                        return getDefaultGateway().orElse("localhost");
-                    }
-                    return "localhost";
+                if (IN_A_CONTAINER) {
+                    return getDefaultGateway().orElse("localhost");
                 }
+                return "localhost";
             default:
-                {
-                    return null;
-                }
+                return null;
         }
     }
 }
