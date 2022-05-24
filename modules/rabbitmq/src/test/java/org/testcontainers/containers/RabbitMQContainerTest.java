@@ -115,43 +115,34 @@ public class RabbitMQContainerTest {
     }
 
     @Test
-    public void shouldMountConfigurationFile()
-    {
+    public void shouldMountConfigurationFile() {
         try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
-
             container.withRabbitMQConfig(MountableFile.forClasspathResource("/rabbitmq-custom.conf"));
             container.start();
 
-            assertThat(container.getLogs()).contains("config file(s) : /etc/rabbitmq/rabbitmq-custom.conf");
-            assertThat(container.getLogs()).doesNotContain(" (not found)");
+            assertThat(container.getLogs()).contains("debug"); // config file changes log level to `debug`
         }
     }
 
 
     @Test
-    public void shouldMountConfigurationFileErlang()
-    {
+    public void shouldMountConfigurationFileErlang() {
         try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
-
             container.withRabbitMQConfigErlang(MountableFile.forClasspathResource("/rabbitmq-custom.config"));
             container.start();
 
-            assertThat(container.getLogs()).contains("config file(s) : /etc/rabbitmq/rabbitmq-custom.config");
-            assertThat(container.getLogs()).doesNotContain(" (not found)");
+            assertThat(container.getLogs()).contains("debug"); // config file changes log level to `debug`
         }
     }
 
 
     @Test
-    public void shouldMountConfigurationFileSysctl()
-    {
+    public void shouldMountConfigurationFileSysctl() {
         try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
-
             container.withRabbitMQConfigSysctl(MountableFile.forClasspathResource("/rabbitmq-custom.conf"));
             container.start();
 
-            assertThat(container.getLogs()).contains("config file(s) : /etc/rabbitmq/rabbitmq-custom.conf");
-            assertThat(container.getLogs()).doesNotContain(" (not found)");
+            assertThat(container.getLogs()).contains("debug"); // config file changes log level to `debug`
         }
     }
 
@@ -165,9 +156,16 @@ public class RabbitMQContainerTest {
                     .withVhost("vhost2", true)
                     .withExchange("direct-exchange", "direct")
                     .withExchange("topic-exchange", "topic")
+                    .withExchange("vhost1", "topic-exchange-2", "topic", false, false, true, Collections.emptyMap())
+                    .withExchange("vhost2", "topic-exchange-3", "topic")
+                    .withExchange("topic-exchange-4", "topic", false, false, true, Collections.emptyMap())
                     .withQueue("queue1")
                     .withQueue("queue2", true, false, ImmutableMap.of("x-message-ttl", 1000))
+                    .withQueue("vhost1", "queue3", true, false, ImmutableMap.of("x-message-ttl", 1000))
+                    .withQueue("vhost2", "queue4")
                     .withBinding("direct-exchange", "queue1")
+                    .withBinding("vhost1", "topic-exchange-2", "queue3")
+                    .withBinding("vhost2", "topic-exchange-3", "queue4", Collections.emptyMap(), "ss7", "queue")
                     .withUser("user1", "password1")
                     .withUser("user2", "password2", ImmutableSet.of("administrator"))
                     .withPermission("vhost1", "user1", ".*", ".*", ".*")
@@ -181,15 +179,15 @@ public class RabbitMQContainerTest {
 
             assertThat(container.execInContainer("rabbitmqadmin", "list", "queues")
                 .getStdout())
-                .contains("queue1", "queue2");
+                .contains("queue1", "queue2", "queue3", "queue4");
 
             assertThat(container.execInContainer("rabbitmqadmin", "list", "exchanges")
                 .getStdout())
-                .contains("direct-exchange", "topic-exchange");
+                .contains("direct-exchange", "topic-exchange", "topic-exchange-2", "topic-exchange-3", "topic-exchange-4");
 
             assertThat(container.execInContainer("rabbitmqadmin", "list", "bindings")
                 .getStdout())
-                .contains("direct-exchange");
+                .contains("direct-exchange", "topic-exchange-2", "topic-exchange-3");
 
             assertThat(container.execInContainer("rabbitmqadmin", "list", "users")
                 .getStdout())

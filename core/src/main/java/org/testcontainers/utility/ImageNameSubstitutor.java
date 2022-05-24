@@ -53,6 +53,10 @@ public abstract class ImageNameSubstitutor implements Function<DockerImageName, 
         return instance;
     }
 
+    public static ImageNameSubstitutor noop() {
+        return new NoopImageNameSubstitutor();
+    }
+
     private static ImageNameSubstitutor wrapWithLogging(final ImageNameSubstitutor wrappedInstance) {
         return new LogWrappedImageNameSubstitutor(wrappedInstance);
     }
@@ -125,6 +129,19 @@ public abstract class ImageNameSubstitutor implements Function<DockerImageName, 
                 defaultInstance.getDescription(),
                 configuredInstance.getDescription()
             );
+        }
+    }
+
+    private static class NoopImageNameSubstitutor extends ImageNameSubstitutor {
+
+        @Override
+        public DockerImageName apply(DockerImageName original) {
+            return original;
+        }
+
+        @Override
+        protected String getDescription() {
+            return "No-op substitutor";
         }
     }
 }

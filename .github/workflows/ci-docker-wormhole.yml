@@ -8,7 +8,7 @@ jobs:
   in-docker_test:
     runs-on: ubuntu-18.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Build with Gradle
         run: |
           docker run -i --rm \

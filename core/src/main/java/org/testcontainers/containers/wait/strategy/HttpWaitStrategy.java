@@ -12,14 +12,25 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.time.Duration;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import static org.rnorth.ducttape.unreliables.Unreliables.retryUntilSuccess;
 
@@ -47,6 +58,7 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
     private Predicate<Integer> statusCodePredicate = null;
     private Optional<Integer> livenessPort = Optional.empty();
     private Duration readTimeout = Duration.ofSeconds(1);
+    private boolean allowInsecure;
 
     /**
      * Waits for the given status code.
@@ -109,6 +121,16 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
      */
     public HttpWaitStrategy withMethod(String method) {
         this.method = method;
+        return this;
+    }
+
+    /**
+     * Indicates that HTTPS connection could use untrusted (self signed) certificate chains.
+     *
+     * @return this
+     */
+    public HttpWaitStrategy allowInsecure() {
+        this.allowInsecure = true;
         return this;
     }
 
@@ -206,7 +228,7 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
             retryUntilSuccess((int) startupTimeout.getSeconds(), TimeUnit.SECONDS, () -> {
                 getRateLimiter().doWhenReady(() -> {
                     try {
-                        final HttpURLConnection connection = (HttpURLConnection) new URL(uri).openConnection();
+                        final HttpURLConnection connection = openConnection(uri);
                         connection.setReadTimeout(Math.toIntExact(readTimeout.toMillis()));
 
                         // authenticate
@@ -264,6 +286,45 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
             throw new ContainerLaunchException(String.format(
                 "Timed out waiting for URL to be accessible (%s should return HTTP %s)", uri, statusCodes.isEmpty() ?
                     HttpURLConnection.HTTP_OK : statusCodes));
+        }
+    }
+
+    private HttpURLConnection openConnection(final String uri) throws IOException, MalformedURLException {
+        if (tlsEnabled) {
+            final HttpsURLConnection connection = (HttpsURLConnection)new URL(uri).openConnection();
+            if (allowInsecure) {
+                // Create a trust manager that does not validate certificate chains 
+                // and trust all certificates
+                final TrustManager[] trustAllCerts = new TrustManager[] { 
+                    new X509TrustManager() {
+                        @Override
+                        public X509Certificate[] getAcceptedIssuers() { 
+                            return new X509Certificate[0];
+                        }
+                        
+                        @Override
+                        public void checkClientTrusted(final X509Certificate[] certs, final String authType) {
+                        } 
+                        
+                        @Override
+                        public void checkServerTrusted(final X509Certificate[] certs, final String authType) {
+                        }
+                    } 
+                }; 
+
+                try {
+                    // Create custom SSL context and set the "trust all certificates" trust manager
+                    final SSLContext sc = SSLContext.getInstance("SSL"); 
+                    sc.init(new KeyManager[0], trustAllCerts, new SecureRandom()); 
+                    connection.setSSLSocketFactory(sc.getSocketFactory());
+                } catch (final NoSuchAlgorithmException | KeyManagementException ex) {
+                    throw new IOException("Unable to create custom SSL factory instance", ex);
+                }
+            }
+            
+            return connection;
+        } else {
+            return (HttpURLConnection) new URL(uri).openConnection();
         }
     }
 

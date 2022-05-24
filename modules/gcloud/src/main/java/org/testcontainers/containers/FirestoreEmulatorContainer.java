@@ -34,6 +34,6 @@ public class FirestoreEmulatorContainer extends GenericContainer<FirestoreEmulat
      * com.google.cloud.ServiceOptions.Builder#setHost(java.lang.String) method.
      */
     public String getEmulatorEndpoint() {
-        return getContainerIpAddress() + ":" + getMappedPort(8080);
+        return getHost() + ":" + getMappedPort(8080);
     }
 }

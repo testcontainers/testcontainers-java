@@ -64,3 +64,9 @@ src/mkdocs-codeinclude-plugin
 src/pip-delete-this-directory.txt
 
 .DS_Store
+
+# Codespaces / VSCode
+/.vscode/
+
+# Python virtual environment
+/.venv/

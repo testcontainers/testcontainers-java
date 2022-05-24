@@ -1,10 +1,9 @@
 package org.testcontainers.containers;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import java.sql.Statement;
 import lombok.NonNull;
 import lombok.SneakyThrows;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.delegate.DatabaseDelegate;
@@ -16,6 +15,7 @@ import org.testcontainers.utility.MountableFile;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -144,7 +144,8 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
             if (!isRunning()) {
                 Thread.sleep(100L);
             } else {
-                try (Statement statement = createConnection("").createStatement()) {
+                try (Connection connection = createConnection("");
+                     Statement statement = connection.createStatement()) {
                     boolean testQuerySucceeded = statement.execute(this.getTestQueryString());
                     if (testQuerySucceeded) {
                         logger().info("Container is started (JDBC URL: {})", this.getJdbcUrl());

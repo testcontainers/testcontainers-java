@@ -9,17 +9,20 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.images.ParsedDockerfile;
+import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.images.builder.traits.BuildContextBuilderTrait;
 import org.testcontainers.images.builder.traits.ClasspathTrait;
 import org.testcontainers.images.builder.traits.DockerfileTrait;
 import org.testcontainers.images.builder.traits.FilesTrait;
 import org.testcontainers.images.builder.traits.StringsTrait;
 import org.testcontainers.utility.Base58;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.DockerLoggerFactory;
+import org.testcontainers.utility.ImageNameSubstitutor;
 import org.testcontainers.utility.LazyFuture;
 import org.testcontainers.utility.ResourceReaper;
 
@@ -112,6 +115,8 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
                 labels.putAll(buildImageCmd.getLabels());
             }
             labels.putAll(DockerClientFactory.DEFAULT_LABELS);
+            //noinspection deprecation
+            labels.putAll(ResourceReaper.instance().getLabels());
             buildImageCmd.withLabels(labels);
 
             prePullDependencyImages(dependencyImageNames);
@@ -170,7 +175,9 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
         imagesToPull.forEach(imageName -> {
             try {
                 log.info("Pre-emptively checking local images for '{}', referenced via a Dockerfile. If not available, it will be pulled.", imageName);
-                DockerClientFactory.instance().checkAndPullImage(dockerClient, imageName);
+                new RemoteDockerImage(DockerImageName.parse(imageName))
+                    .withImageNameSubstitutor(ImageNameSubstitutor.noop())
+                    .get();
             } catch (Exception e) {
                 log.warn("Unable to pre-fetch an image ({}) depended upon by Dockerfile - image build will continue but may fail. Exception message was: {}", imageName, e.getMessage());
             }
