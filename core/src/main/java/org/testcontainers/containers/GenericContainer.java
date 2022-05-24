@@ -240,6 +240,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private boolean hostAccessible = false;
 
     @Setter(AccessLevel.NONE)
+    @Getter(AccessLevel.MODULE)
     @VisibleForTesting
     private boolean configured = false;
 
