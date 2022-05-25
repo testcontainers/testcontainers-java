@@ -55,7 +55,7 @@ public class DemoDisableExtensionsIT {
 
     // }
 
-    // runtimeEnable {
+    // hiveRuntimeEnable {
     @Test
     void test_disable_enable_extension() throws Exception {
         hivemq.enableExtension(hiveMQExtension);

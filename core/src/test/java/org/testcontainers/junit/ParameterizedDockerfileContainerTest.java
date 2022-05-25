@@ -39,7 +39,11 @@ public class ParameterizedDockerfileContainerTest {
 
     @Parameterized.Parameters(name = "{0}")
     public static Object[][] data() {
-        return new Object[][] { { "alpine:3.12", "3.12" }, { "alpine:3.13", "3.13" }, { "alpine:3.14", "3.14" } };
+        return new Object[][] { //
+            { "alpine:3.12", "3.12" },
+            { "alpine:3.13", "3.13" },
+            { "alpine:3.14", "3.14" },
+        };
     }
 
     @Test

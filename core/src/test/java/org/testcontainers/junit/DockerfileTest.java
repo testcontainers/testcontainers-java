@@ -102,7 +102,10 @@ public class DockerfileTest {
                 }
             )
             .withDockerfileFromBuilder(builder -> {
-                builder.from("alpine:3.14").copy("someFile.txt", "/someFile.txt").cmd("stat -c \"%a\" /someFile.txt");
+                builder
+                    .from("alpine:3.14") //
+                    .copy("someFile.txt", "/someFile.txt")
+                    .cmd("stat -c \"%a\" /someFile.txt");
             });
 
         GenericContainer container = new GenericContainer(image)

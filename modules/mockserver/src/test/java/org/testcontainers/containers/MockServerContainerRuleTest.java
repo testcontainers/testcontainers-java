@@ -24,13 +24,18 @@ public class MockServerContainerRuleTest {
 
     @Test
     public void shouldReturnExpectation() throws Exception {
+        // spotless:off
         // testSimpleExpectation {
         new MockServerClient(mockServer.getHost(), mockServer.getServerPort())
-            .when(request().withPath("/person").withQueryStringParameter("name", "peter"))
-            .respond(response().withBody("Peter the person!"));
+            .when(request()
+                .withPath("/person")
+                .withQueryStringParameter("name", "peter"))
+            .respond(response()
+                .withBody("Peter the person!"));
 
         // ...a GET request to '/person?name=peter' returns "Peter the person!"
         // }
+        // spotless:on
 
         assertThat(
             "Expectation returns expected response body",

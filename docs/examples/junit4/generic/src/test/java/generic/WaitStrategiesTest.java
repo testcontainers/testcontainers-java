@@ -14,7 +14,8 @@ public class WaitStrategiesTest {
 
     @Rule
     // waitForNetworkListening {
-    public GenericContainer nginx = new GenericContainer(DockerImageName.parse("nginx:1.9.4")).withExposedPorts(80);
+    public GenericContainer nginx = new GenericContainer(DockerImageName.parse("nginx:1.9.4")) //
+        .withExposedPorts(80);
 
     // }
 
@@ -35,20 +36,36 @@ public class WaitStrategiesTest {
     // }
 
     private static final HttpWaitStrategy MULTI_CODE_HTTP_WAIT =
+        // spotless:off
         // waitForHttpWithMultipleStatusCodes {
-        Wait.forHttp("/").forStatusCode(200).forStatusCode(301); // }
+        Wait.forHttp("/")
+            .forStatusCode(200)
+            .forStatusCode(301);
+        // }
+        // spotless:on
 
     private static final HttpWaitStrategy PREDICATE_HTTP_WAIT =
+        // spotless:off
         // waitForHttpWithStatusCodePredicate {
-        Wait.forHttp("/all").forStatusCodeMatching(it -> it >= 200 && it < 300 || it == 401); // }
+        Wait.forHttp("/all")
+            .forStatusCodeMatching(it -> it >= 200 && it < 300 || it == 401);
+        // }
+        // spotless:on
 
     private static final HttpWaitStrategy TLS_HTTP_WAIT =
+        // spotless:off
         // waitForHttpWithTls {
-        Wait.forHttp("/all").usingTls(); // }
+        Wait.forHttp("/all")
+            .usingTls();
+        // }
+        // spotless:on
 
     private static final WaitStrategy HEALTHCHECK_WAIT =
+        // spotless:off
         // healthcheckWait {
-        Wait.forHealthcheck(); // }
+        Wait.forHealthcheck();
+        // }
+        // spotless:on
 
     @Test
     public void testContainersAllStarted() {

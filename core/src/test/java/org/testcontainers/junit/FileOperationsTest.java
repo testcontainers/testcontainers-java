@@ -26,7 +26,8 @@ public class FileOperationsTest {
     @Test
     public void copyFileToContainerFileTest() throws Exception {
         try (
-            GenericContainer alpineCopyToContainer = new GenericContainer(TestImages.ALPINE_IMAGE).withCommand("top")
+            GenericContainer alpineCopyToContainer = new GenericContainer(TestImages.ALPINE_IMAGE) //
+                .withCommand("top")
         ) {
             alpineCopyToContainer.start();
             final MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");
@@ -43,7 +44,8 @@ public class FileOperationsTest {
     @Test
     public void copyFileToContainerFolderTest() throws Exception {
         try (
-            GenericContainer alpineCopyToContainer = new GenericContainer(TestImages.ALPINE_IMAGE).withCommand("top")
+            GenericContainer alpineCopyToContainer = new GenericContainer(TestImages.ALPINE_IMAGE) //
+                .withCommand("top")
         ) {
             alpineCopyToContainer.start();
             final MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");
@@ -60,7 +62,8 @@ public class FileOperationsTest {
     @Test
     public void copyFolderToContainerFolderTest() throws Exception {
         try (
-            GenericContainer alpineCopyToContainer = new GenericContainer(TestImages.ALPINE_IMAGE).withCommand("top")
+            GenericContainer alpineCopyToContainer = new GenericContainer(TestImages.ALPINE_IMAGE) //
+                .withCommand("top")
         ) {
             alpineCopyToContainer.start();
             final MountableFile mountableFile = MountableFile.forClasspathResource("mappable-resource/");
@@ -77,7 +80,8 @@ public class FileOperationsTest {
     @Test(expected = NotFoundException.class)
     public void copyFromContainerShouldFailBecauseNoFileTest() throws NotFoundException {
         try (
-            GenericContainer alpineCopyToContainer = new GenericContainer(TestImages.ALPINE_IMAGE).withCommand("top")
+            GenericContainer alpineCopyToContainer = new GenericContainer(TestImages.ALPINE_IMAGE) //
+                .withCommand("top")
         ) {
             alpineCopyToContainer.start();
             alpineCopyToContainer.copyFileFromContainer("/home/test.txt", "src/test/resources/copy-from/test.txt");
@@ -87,7 +91,8 @@ public class FileOperationsTest {
     @Test
     public void shouldCopyFileFromContainerTest() throws IOException {
         try (
-            GenericContainer alpineCopyToContainer = new GenericContainer(TestImages.ALPINE_IMAGE).withCommand("top")
+            GenericContainer alpineCopyToContainer = new GenericContainer(TestImages.ALPINE_IMAGE) //
+                .withCommand("top")
         ) {
             alpineCopyToContainer.start();
             final MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");

@@ -51,7 +51,11 @@ public class DirectoryTarResourceTest {
         GenericContainer container = new GenericContainer(
             new ImageFromDockerfile()
                 .withDockerfileFromBuilder(builder -> {
-                    builder.from("alpine:3.14").copy("/tmp/foo", "/foo").cmd("ls", "-al", "/").build();
+                    builder
+                        .from("alpine:3.14") //
+                        .copy("/tmp/foo", "/foo")
+                        .cmd("ls", "-al", "/")
+                        .build();
                 })
                 .withFileFromFile("/tmp/foo", new File("/mappable-resource/test-resource.txt"), 0754)
         )
@@ -74,7 +78,11 @@ public class DirectoryTarResourceTest {
         GenericContainer container = new GenericContainer(
             new ImageFromDockerfile()
                 .withDockerfileFromBuilder(builder -> {
-                    builder.from("alpine:3.14").copy("/tmp/foo", "/foo").cmd("ls -lRt /foo").build();
+                    builder
+                        .from("alpine:3.14") //
+                        .copy("/tmp/foo", "/foo")
+                        .cmd("ls -lRt /foo")
+                        .build();
                 })
                 .withFileFromClasspath("/tmp/foo", "/recursive/dir")
         ) // here we use /org/junit as a directory that really should exist on the classpath

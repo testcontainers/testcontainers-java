@@ -23,7 +23,7 @@ public class DemoHiveMQContainerIT {
 
     // }
 
-    // eeVersion {
+    // hiveEEVersion {
     @Container
     final HiveMQContainer hivemqEe = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3"))
         .withLogLevel(Level.DEBUG);
@@ -32,7 +32,7 @@ public class DemoHiveMQContainerIT {
 
     // eeVersionWithControlCenter {
     @Container
-    final HiveMQContainer hivemqEeWithControLCenter = new HiveMQContainer(
+    final HiveMQContainer hivemqEeWithControlCenter = new HiveMQContainer(
         DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3")
     )
         .withLogLevel(Level.DEBUG)

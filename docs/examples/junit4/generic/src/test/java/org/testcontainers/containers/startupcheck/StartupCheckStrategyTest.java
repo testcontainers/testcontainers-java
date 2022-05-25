@@ -38,12 +38,16 @@ public class StartupCheckStrategyTest {
     public static class OneShotStrategyTest {
 
         @Rule
+        // spotless:off
         // withOneShotStrategy {
         public GenericContainer<?> bboxWithOneShot = new GenericContainer<>(DockerImageName.parse("busybox:1.31.1"))
             .withCommand(String.format("echo %s", HELLO_TESTCONTAINERS))
-            .withStartupCheckStrategy(new OneShotStartupCheckStrategy().withTimeout(Duration.ofSeconds(3)));
+            .withStartupCheckStrategy(
+                new OneShotStartupCheckStrategy().withTimeout(Duration.ofSeconds(3))
+            );
 
         // }
+        // spotless:on
 
         @SneakyThrows
         @Test
@@ -57,14 +61,18 @@ public class StartupCheckStrategyTest {
     public static class IndefiniteOneShotStrategyTest {
 
         @Rule
+        // spotless:off
         // withIndefiniteOneShotStrategy {
         public GenericContainer<?> bboxWithIndefiniteOneShot = new GenericContainer<>(
             DockerImageName.parse("busybox:1.31.1")
         )
             .withCommand("sh", "-c", String.format("sleep 5 && echo \"%s\"", HELLO_TESTCONTAINERS))
-            .withStartupCheckStrategy(new IndefiniteWaitOneShotStartupCheckStrategy());
+            .withStartupCheckStrategy(
+                new IndefiniteWaitOneShotStartupCheckStrategy()
+            );
 
         // }
+        // spotless:on
 
         @SneakyThrows
         @Test
@@ -78,14 +86,18 @@ public class StartupCheckStrategyTest {
     public static class MinimumDurationStrategyTest {
 
         @Rule
+        // spotless:off
         // withMinimumDurationStrategy {
         public GenericContainer<?> bboxWithMinimumDuration = new GenericContainer<>(
             DockerImageName.parse("busybox:1.31.1")
         )
             .withCommand("sh", "-c", String.format("sleep 5 && echo \"%s\"", HELLO_TESTCONTAINERS))
-            .withStartupCheckStrategy(new MinimumDurationRunningStartupCheckStrategy(Duration.ofSeconds(1)));
+            .withStartupCheckStrategy(
+                new MinimumDurationRunningStartupCheckStrategy(Duration.ofSeconds(1))
+            );
 
         // }
+        // spotless:on
 
         @SneakyThrows
         @Test

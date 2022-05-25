@@ -119,6 +119,7 @@ subprojects {
 
     spotless {
         java {
+            toggleOffOn()
             removeUnusedImports()
             trimTrailingWhitespace()
             endWithNewline()

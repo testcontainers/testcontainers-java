@@ -18,6 +18,7 @@ public class ToxiproxyTest {
 
     private static final Duration JEDIS_TIMEOUT = Duration.ofSeconds(10);
 
+    // spotless:off
     // creatingProxy {
     // An alias that can be used to resolve the Toxiproxy container by name in the network it is connected to.
     // It can be used as a hostname of the Toxiproxy container by other containers in the same network.
@@ -31,7 +32,9 @@ public class ToxiproxyTest {
 
     // The target container - this could be anything
     @Rule
-    public GenericContainer<?> redis = new GenericContainer<>(REDIS_IMAGE).withExposedPorts(6379).withNetwork(network);
+    public GenericContainer<?> redis = new GenericContainer<>(REDIS_IMAGE)
+        .withExposedPorts(6379)
+        .withNetwork(network);
 
     private static final DockerImageName TOXIPROXY_IMAGE = DockerImageName.parse("shopify/toxiproxy:2.1.0");
 
@@ -42,6 +45,7 @@ public class ToxiproxyTest {
         .withNetworkAliases(TOXIPROXY_NETWORK_ALIAS);
 
     // }
+    // spotless:on
 
     @Test
     public void testDirect() {
@@ -68,10 +72,14 @@ public class ToxiproxyTest {
 
         checkCallWithLatency(jedis, "without interference", 0, 250);
 
+        // spotless:off
         // addingLatency {
-        proxy.toxics().latency("latency", ToxicDirection.DOWNSTREAM, 1_100).setJitter(100);
+        proxy.toxics()
+            .latency("latency", ToxicDirection.DOWNSTREAM, 1_100)
+            .setJitter(100);
         // from now on the connection latency should be from 1000-1200 ms.
         // }
+        // spotless:on
 
         checkCallWithLatency(jedis, "with interference", 1_000, 1_500);
     }

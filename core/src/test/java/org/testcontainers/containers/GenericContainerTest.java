@@ -104,7 +104,10 @@ public class GenericContainerTest {
     public void shouldOnlyPublishExposedPorts() {
         ImageFromDockerfile image = new ImageFromDockerfile("publish-multiple")
             .withDockerfileFromBuilder(builder -> {
-                builder.from("testcontainers/helloworld:1.1.0").expose(8080, 8081).build();
+                builder
+                    .from("testcontainers/helloworld:1.1.0") //
+                    .expose(8080, 8081)
+                    .build();
             });
         try (GenericContainer<?> container = new GenericContainer<>(image).withExposedPorts(8080)) {
             container.start();

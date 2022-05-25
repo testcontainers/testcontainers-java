@@ -10,11 +10,15 @@ public class ImageNameSubstitutionTest {
     @Test
     public void simpleExample() {
         try (
+            // spotless:off
             // directDockerHubReference {
             // Referring directly to an image on Docker Hub (mysql:8.0.24)
-            final MySQLContainer<?> mysql = new MySQLContainer<>(DockerImageName.parse("mysql:8.0.24"))
+            final MySQLContainer<?> mysql = new MySQLContainer<>(
+                DockerImageName.parse("mysql:8.0.24")
+            )
             // start the container and use it for testing
             // }
+            // spotless:on
         ) {
             mysql.start();
         }
@@ -28,13 +32,16 @@ public class ImageNameSubstitutionTest {
     @Test
     public void substitutedExample() {
         try (
+            // spotless:off
             // hardcodedMirror {
             // Referring directly to an image on a private registry - image name will vary
             final MySQLContainer<?> mysql = new MySQLContainer<>(
-                DockerImageName.parse("registry.mycompany.com/mirror/mysql:8.0.24").asCompatibleSubstituteFor("mysql")
+                DockerImageName.parse("registry.mycompany.com/mirror/mysql:8.0.24")
+                    .asCompatibleSubstituteFor("mysql")
             )
             // start the container and use it for testing
             // }
+            // spotless:on
         ) {
             mysql.start();
         }

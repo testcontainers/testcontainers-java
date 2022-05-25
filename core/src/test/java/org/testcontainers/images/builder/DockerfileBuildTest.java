@@ -26,9 +26,12 @@ public class DockerfileBuildTest {
             // Dockerfile build without explicit per-file inclusion
             new Object[] {
                 "test1234",
+                // spotless:off
                 // docsShowRecursiveFileInclusion {
-                new ImageFromDockerfile().withFileFromPath(".", RESOURCE_PATH),
+                new ImageFromDockerfile()
+                    .withFileFromPath(".", RESOURCE_PATH),
                 // }
+                // spotless:on
             },
             // Dockerfile build using a non-standard Dockerfile
             new Object[] {

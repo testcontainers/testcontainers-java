@@ -13,7 +13,9 @@ public class DB2JDBCDriverTest extends AbstractJDBCDriverTest {
     @Parameterized.Parameters(name = "{index} - {0}")
     public static Iterable<Object[]> data() {
         return Arrays.asList(
-            new Object[][] { { "jdbc:tc:db2://hostname/databasename", EnumSet.noneOf(Options.class) } }
+            new Object[][] { //
+                { "jdbc:tc:db2://hostname/databasename", EnumSet.noneOf(Options.class) },
+            }
         );
     }
 }

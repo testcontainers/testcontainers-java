@@ -13,7 +13,9 @@ public class ClickhouseJDBCDriverTest extends AbstractJDBCDriverTest {
     @Parameterized.Parameters(name = "{index} - {0}")
     public static Iterable<Object[]> data() {
         return Arrays.asList(
-            new Object[][] { { "jdbc:tc:clickhouse://hostname/databasename", EnumSet.of(Options.PmdKnownBroken) } }
+            new Object[][] { //
+                { "jdbc:tc:clickhouse://hostname/databasename", EnumSet.of(Options.PmdKnownBroken) },
+            }
         );
     }
 }

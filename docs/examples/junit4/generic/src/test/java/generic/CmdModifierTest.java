@@ -23,6 +23,7 @@ public class CmdModifierTest {
 
     // }
 
+    // spotless:off
     // memory {
     private long memoryInBytes = 32 * 1024 * 1024;
 
@@ -31,10 +32,13 @@ public class CmdModifierTest {
     @Rule
     public GenericContainer memoryLimitedRedis = new GenericContainer<>(DockerImageName.parse("redis:3.0.2"))
         .withCreateContainerCmdModifier(cmd -> {
-            cmd.getHostConfig().withMemory(memoryInBytes).withMemorySwap(memorySwapInBytes);
+            cmd.getHostConfig()
+                .withMemory(memoryInBytes)
+                .withMemorySwap(memorySwapInBytes);
         });
 
     // }
+    // spotless:on
 
     @Test
     public void testHostnameModified() throws IOException, InterruptedException {

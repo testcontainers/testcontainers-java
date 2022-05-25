@@ -23,7 +23,11 @@ public class DockerfileContainerTest {
     public GenericContainer dslContainer = new GenericContainer(
         new ImageFromDockerfile("tcdockerfile/nginx", false)
             .withDockerfileFromBuilder(builder -> {
-                builder.from("alpine:3.2").run("apk add --update nginx").cmd("nginx", "-g", "daemon off;").build();
+                builder
+                    .from("alpine:3.2") //
+                    .run("apk add --update nginx")
+                    .cmd("nginx", "-g", "daemon off;")
+                    .build();
             })
     )
         .withExposedPorts(80);
