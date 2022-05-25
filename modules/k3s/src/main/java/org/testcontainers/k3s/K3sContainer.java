@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import com.github.dockerjava.api.model.DockerObjectAccessor;
 import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
 import org.testcontainers.containers.BindMode;
@@ -42,17 +41,14 @@ public class K3sContainer extends GenericContainer<K3sContainer> {
         tmpFsMapping.put("/var/run", "");
         setTmpFsMapping(tmpFsMapping);
 
-        setCommand(
-            "server",
-            "--no-deploy=traefik",
-            "--tls-san=" + this.getHost()
-        );
+        setCommand("server", "--no-deploy=traefik", "--tls-san=" + this.getHost());
         setWaitStrategy(new LogMessageWaitStrategy().withRegEx(".*Node controller sync successful.*"));
     }
 
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
-        String rawKubeConfig = copyFileFromContainer("/etc/rancher/k3s/k3s.yaml",
+        String rawKubeConfig = copyFileFromContainer(
+            "/etc/rancher/k3s/k3s.yaml",
             is -> IOUtils.toString(is, StandardCharsets.UTF_8)
         );
         String serverUrl = "https://" + this.getHost() + ":" + this.getMappedPort(KUBE_SECURE_PORT);
@@ -100,7 +96,6 @@ public class K3sContainer extends GenericContainer<K3sContainer> {
 
         kubeConfigObjectNode.set("current-context", new TextNode("default"));
 
-        return objectMapper.writerWithDefaultPrettyPrinter()
-            .writeValueAsString(kubeConfigObjectNode);
+        return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(kubeConfigObjectNode);
     }
 }

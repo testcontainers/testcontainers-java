@@ -8,6 +8,7 @@ import java.time.Duration;
 import java.util.Set;
 
 public class ClickHouseContainer extends JdbcDatabaseContainer {
+
     public static final String NAME = "clickhouse";
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("yandex/clickhouse-server");
@@ -19,14 +20,19 @@ public class ClickHouseContainer extends JdbcDatabaseContainer {
     public static final String DEFAULT_TAG = "18.10.3";
 
     public static final Integer HTTP_PORT = 8123;
+
     public static final Integer NATIVE_PORT = 9000;
 
     private static final String DRIVER_CLASS_NAME = "ru.yandex.clickhouse.ClickHouseDriver";
+
     private static final String JDBC_URL_PREFIX = "jdbc:" + NAME + "://";
+
     private static final String TEST_QUERY = "SELECT 1";
 
     private String databaseName = "default";
+
     private String username = "default";
+
     private String password = "";
 
     /**
@@ -43,7 +49,6 @@ public class ClickHouseContainer extends JdbcDatabaseContainer {
 
     public ClickHouseContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         withExposedPorts(HTTP_PORT, NATIVE_PORT);

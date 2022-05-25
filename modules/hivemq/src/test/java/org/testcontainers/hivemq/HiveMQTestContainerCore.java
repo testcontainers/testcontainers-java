@@ -15,7 +15,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class HiveMQTestContainerCore {
 
-    final @NotNull HiveMQContainer container = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3"));
+    @NotNull
+    final HiveMQContainer container = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3"));
 
     @TempDir
     File tempDir;
@@ -69,14 +70,23 @@ class HiveMQTestContainerCore {
     @Test
     void withFileInExtensionHomeFolder_withPath_fileDoesNotExist_Exception() {
         final MountableFile mountableFile = MountableFile.forHostPath("/this/does/not/exist");
-        assertThrows(ContainerLaunchException.class, () -> container.withFileInExtensionHomeFolder(mountableFile, "my-extension", "some/path"));
+        assertThrows(
+            ContainerLaunchException.class,
+            () -> container.withFileInExtensionHomeFolder(mountableFile, "my-extension", "some/path")
+        );
     }
 
     @Test
     void withFileInExtensionHomeFolder_fileDoesNotExist_Exception() {
         final MountableFile mountableFile = MountableFile.forHostPath("/this/does/not/exist");
-        assertThrows(ContainerLaunchException.class, () -> {
-            final HiveMQContainer hiveMQContainer = container.withFileInExtensionHomeFolder(mountableFile, "my-extension");
-        });
+        assertThrows(
+            ContainerLaunchException.class,
+            () -> {
+                final HiveMQContainer hiveMQContainer = container.withFileInExtensionHomeFolder(
+                    mountableFile,
+                    "my-extension"
+                );
+            }
+        );
     }
 }

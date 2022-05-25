@@ -30,15 +30,16 @@ public enum PortForwardingContainer {
     @SneakyThrows
     private Connection createSSHSession() {
         String password = UUID.randomUUID().toString();
-        container = new GenericContainer<>(DockerImageName.parse("testcontainers/sshd:1.0.0"))
-            .withExposedPorts(22)
-            .withEnv("PASSWORD", password)
-            .withCommand(
-                "sh",
-                "-c",
-                // Disable ipv6 & Make it listen on all interfaces, not just localhost
-                "echo \"root:$PASSWORD\" | chpasswd && /usr/sbin/sshd -D -o PermitRootLogin=yes -o AddressFamily=inet -o GatewayPorts=yes"
-            );
+        container =
+            new GenericContainer<>(DockerImageName.parse("testcontainers/sshd:1.0.0"))
+                .withExposedPorts(22)
+                .withEnv("PASSWORD", password)
+                .withCommand(
+                    "sh",
+                    "-c",
+                    // Disable ipv6 & Make it listen on all interfaces, not just localhost
+                    "echo \"root:$PASSWORD\" | chpasswd && /usr/sbin/sshd -D -o PermitRootLogin=yes -o AddressFamily=inet -o GatewayPorts=yes"
+                );
         container.start();
 
         Connection connection = new Connection(container.getHost(), container.getMappedPort(22));
@@ -64,7 +65,7 @@ public enum PortForwardingContainer {
 
     @SneakyThrows
     public void exposeHostPort(int hostPort, int containerPort) {
-    	if (exposedPorts.add(new AbstractMap.SimpleEntry<>(hostPort, containerPort))) {
+        if (exposedPorts.add(new AbstractMap.SimpleEntry<>(hostPort, containerPort))) {
             getSshConnection().requestRemotePortForwarding("", containerPort, "localhost", hostPort);
         }
     }
@@ -74,7 +75,8 @@ public enum PortForwardingContainer {
     }
 
     Optional<ContainerNetwork> getNetwork() {
-        return Optional.ofNullable(container)
+        return Optional
+            .ofNullable(container)
             .map(GenericContainer::getContainerInfo)
             .flatMap(it -> it.getNetworkSettings().getNetworks().values().stream().findFirst());
     }

@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.Map;
 
 public interface LabelStatementTrait<SELF extends LabelStatementTrait<SELF> & DockerfileBuilderTrait<SELF>> {
-
     default SELF label(String key, String value) {
         return label(Collections.singletonMap(key, value));
     }

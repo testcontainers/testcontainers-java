@@ -35,5 +35,4 @@ public class MySQLContainerProvider extends JdbcDatabaseContainerProvider {
     public JdbcDatabaseContainer newInstance(ConnectionUrl connectionUrl) {
         return newInstanceFromConnectionUrl(connectionUrl, USER_PARAM, PASSWORD_PARAM);
     }
-
 }
