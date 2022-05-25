@@ -24,29 +24,20 @@ public class ImagePullPolicyTest {
 
     @Test
     public void pullsByDefault() {
-        try (
-            GenericContainer<?> container = new GenericContainer<>(imageName)
-                .withExposedPorts(8080)
-        ) {
+        try (GenericContainer<?> container = new GenericContainer<>(imageName).withExposedPorts(8080)) {
             container.start();
         }
     }
 
     @Test
     public void shouldAlwaysPull() {
-        try (
-            GenericContainer<?> container = new GenericContainer<>(imageName)
-                .withExposedPorts(8080)
-        ) {
+        try (GenericContainer<?> container = new GenericContainer<>(imageName).withExposedPorts(8080)) {
             container.start();
         }
 
         removeImage();
 
-        try (
-            GenericContainer<?> container = new GenericContainer<>(imageName)
-                .withExposedPorts(8080)
-        ) {
+        try (GenericContainer<?> container = new GenericContainer<>(imageName).withExposedPorts(8080)) {
             expectToFailWithNotFoundException(container);
         }
 
@@ -66,12 +57,14 @@ public class ImagePullPolicyTest {
         try (
             // custom_image_pull_policy {
             GenericContainer<?> container = new GenericContainer<>(imageName)
-                .withImagePullPolicy(new AbstractImagePullPolicy() {
-                    @Override
-                    protected boolean shouldPullCached(DockerImageName imageName, ImageData localImageData) {
-                        return System.getenv("ALWAYS_PULL_IMAGE") != null;
+                .withImagePullPolicy(
+                    new AbstractImagePullPolicy() {
+                        @Override
+                        protected boolean shouldPullCached(DockerImageName imageName, ImageData localImageData) {
+                            return System.getenv("ALWAYS_PULL_IMAGE") != null;
+                        }
                     }
-                })
+                )
             // }
         ) {
             container.withExposedPorts(8080);
@@ -81,12 +74,14 @@ public class ImagePullPolicyTest {
 
     @Test
     public void shouldCheckPolicy() {
-        ImagePullPolicy policy = Mockito.spy(new AbstractImagePullPolicy() {
-            @Override
-            protected boolean shouldPullCached(DockerImageName imageName, ImageData localImageData) {
-                return false;
+        ImagePullPolicy policy = Mockito.spy(
+            new AbstractImagePullPolicy() {
+                @Override
+                protected boolean shouldPullCached(DockerImageName imageName, ImageData localImageData) {
+                    return false;
+                }
             }
-        });
+        );
         try (
             GenericContainer<?> container = new GenericContainer<>(imageName)
                 .withImagePullPolicy(policy)
@@ -128,11 +123,12 @@ public class ImagePullPolicyTest {
 
     private void removeImage() {
         try {
-            DockerClientFactory.instance().client()
+            DockerClientFactory
+                .instance()
+                .client()
                 .removeImageCmd(imageName.asCanonicalNameString())
                 .withForce(true)
                 .exec();
-        } catch (NotFoundException ignored) {
-        }
+        } catch (NotFoundException ignored) {}
     }
 }

@@ -20,7 +20,9 @@ import static org.rnorth.visibleassertions.VisibleAssertions.*;
 public class MountableFileTest {
 
     private static final int TEST_FILE_MODE = 0532;
+
     private static final int BASE_FILE_MODE = 0100000;
+
     private static final int BASE_DIR_MODE = 0040000;
 
     @Test
@@ -67,7 +69,10 @@ public class MountableFileTest {
         performChecks(mountableFile);
 
         assertTrue("The resolved path contains the original space", mountableFile.getResolvedPath().contains(" "));
-        assertFalse("The resolved path does not contain an escaped space", mountableFile.getResolvedPath().contains("\\ "));
+        assertFalse(
+            "The resolved path does not contain an escaped space",
+            mountableFile.getResolvedPath().contains("\\ ")
+        );
     }
 
     @Test
@@ -78,13 +83,18 @@ public class MountableFileTest {
         performChecks(mountableFile);
 
         assertTrue("The resolved path contains the original space", mountableFile.getResolvedPath().contains("+"));
-        assertFalse("The resolved path does not contain an escaped space", mountableFile.getResolvedPath().contains(" "));
+        assertFalse(
+            "The resolved path does not contain an escaped space",
+            mountableFile.getResolvedPath().contains(" ")
+        );
     }
 
     @Test
     public void forClasspathResourceWithPermission() throws Exception {
-        final MountableFile mountableFile = MountableFile.forClasspathResource("mappable-resource/test-resource.txt",
-            TEST_FILE_MODE);
+        final MountableFile mountableFile = MountableFile.forClasspathResource(
+            "mappable-resource/test-resource.txt",
+            TEST_FILE_MODE
+        );
 
         performChecks(mountableFile);
         assertEquals("Valid file mode.", BASE_FILE_MODE | TEST_FILE_MODE, mountableFile.getFileMode());
@@ -110,7 +120,8 @@ public class MountableFileTest {
     public void noTrailingSlashesInTarEntryNames() throws Exception {
         final MountableFile mountableFile = MountableFile.forClasspathResource("mappable-resource/test-resource.txt");
 
-        @Cleanup final TarArchiveInputStream tais = intoTarArchive((taos) -> {
+        @Cleanup
+        final TarArchiveInputStream tais = intoTarArchive(taos -> {
             mountableFile.transferTo(taos, "/some/path.txt");
             mountableFile.transferTo(taos, "/path.txt");
             mountableFile.transferTo(taos, "path.txt");
@@ -123,8 +134,10 @@ public class MountableFileTest {
     }
 
     private TarArchiveInputStream intoTarArchive(Consumer<TarArchiveOutputStream> consumer) throws IOException {
-        @Cleanup final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        @Cleanup final TarArchiveOutputStream taos = new TarArchiveOutputStream(baos);
+        @Cleanup
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        @Cleanup
+        final TarArchiveOutputStream taos = new TarArchiveOutputStream(baos);
         consumer.accept(taos);
         taos.close();
 
@@ -151,7 +164,9 @@ public class MountableFileTest {
     private void performChecks(final MountableFile mountableFile) {
         final String mountablePath = mountableFile.getResolvedPath();
         assertTrue("The filesystem path '" + mountablePath + "' can be found", new File(mountablePath).exists());
-        assertFalse("The filesystem path '" + mountablePath + "' does not contain any URL escaping", mountablePath.contains("%20"));
+        assertFalse(
+            "The filesystem path '" + mountablePath + "' does not contain any URL escaping",
+            mountablePath.contains("%20")
+        );
     }
-
 }

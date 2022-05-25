@@ -37,8 +37,9 @@ public class CosmosDBEmulatorContainerTest {
     @Rule
     // emulatorContainer {
     public CosmosDBEmulatorContainer emulator = new CosmosDBEmulatorContainer(
-            DockerImageName.parse("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:latest")
+        DockerImageName.parse("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:latest")
     );
+
     // }
 
     @Test
@@ -55,18 +56,19 @@ public class CosmosDBEmulatorContainerTest {
         // }
         // buildClient {
         CosmosAsyncClient client = new CosmosClientBuilder()
-                .gatewayMode()
-                .endpointDiscoveryEnabled(false)
-                .endpoint(emulator.getEmulatorEndpoint())
-                .key(emulator.getEmulatorKey())
-                .buildAsyncClient();
+            .gatewayMode()
+            .endpointDiscoveryEnabled(false)
+            .endpoint(emulator.getEmulatorEndpoint())
+            .key(emulator.getEmulatorKey())
+            .buildAsyncClient();
         // }
         // testWithClientAgainstEmulatorContainer {
-        CosmosDatabaseResponse databaseResponse =
-                client.createDatabaseIfNotExists("Azure").block();
+        CosmosDatabaseResponse databaseResponse = client.createDatabaseIfNotExists("Azure").block();
         Assertions.assertThat(databaseResponse.getStatusCode()).isEqualTo(201);
-        CosmosContainerResponse containerResponse =
-                client.getDatabase("Azure").createContainerIfNotExists("ServiceContainer", "/name").block();
+        CosmosContainerResponse containerResponse = client
+            .getDatabase("Azure")
+            .createContainerIfNotExists("ServiceContainer", "/name")
+            .block();
         Assertions.assertThat(containerResponse.getStatusCode()).isEqualTo(201);
         // }
     }

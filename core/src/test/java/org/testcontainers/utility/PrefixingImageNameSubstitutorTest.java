@@ -8,11 +8,11 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
-import static org.testcontainers.utility.PrefixingImageNameSubstitutor.PREFIX_PROPERTY_KEY;
 
 public class PrefixingImageNameSubstitutorTest {
 
     private TestcontainersConfiguration mockConfiguration;
+
     private PrefixingImageNameSubstitutor underTest;
 
     @Before
@@ -23,7 +23,8 @@ public class PrefixingImageNameSubstitutorTest {
 
     @Test
     public void testHappyPath() {
-        when(mockConfiguration.getEnvVarOrProperty(eq(PREFIX_PROPERTY_KEY), any())).thenReturn("someregistry.com/our-mirror/");
+        when(mockConfiguration.getEnvVarOrProperty(eq(PrefixingImageNameSubstitutor.PREFIX_PROPERTY_KEY), any()))
+            .thenReturn("someregistry.com/our-mirror/");
 
         final DockerImageName result = underTest.apply(DockerImageName.parse("some/image:tag"));
 
@@ -36,33 +37,28 @@ public class PrefixingImageNameSubstitutorTest {
 
     @Test
     public void hubIoRegistryIsNotChanged() {
-        when(mockConfiguration.getEnvVarOrProperty(eq(PREFIX_PROPERTY_KEY), any())).thenReturn("someregistry.com/our-mirror/");
+        when(mockConfiguration.getEnvVarOrProperty(eq(PrefixingImageNameSubstitutor.PREFIX_PROPERTY_KEY), any()))
+            .thenReturn("someregistry.com/our-mirror/");
 
         final DockerImageName result = underTest.apply(DockerImageName.parse("docker.io/some/image:tag"));
 
-        assertEquals(
-            "The prefix is applied",
-            "docker.io/some/image:tag",
-            result.asCanonicalNameString()
-        );
+        assertEquals("The prefix is applied", "docker.io/some/image:tag", result.asCanonicalNameString());
     }
 
     @Test
     public void hubComRegistryIsNotChanged() {
-        when(mockConfiguration.getEnvVarOrProperty(eq(PREFIX_PROPERTY_KEY), any())).thenReturn("someregistry.com/our-mirror/");
+        when(mockConfiguration.getEnvVarOrProperty(eq(PrefixingImageNameSubstitutor.PREFIX_PROPERTY_KEY), any()))
+            .thenReturn("someregistry.com/our-mirror/");
 
         final DockerImageName result = underTest.apply(DockerImageName.parse("registry.hub.docker.com/some/image:tag"));
 
-        assertEquals(
-            "The prefix is applied",
-            "registry.hub.docker.com/some/image:tag",
-            result.asCanonicalNameString()
-        );
+        assertEquals("The prefix is applied", "registry.hub.docker.com/some/image:tag", result.asCanonicalNameString());
     }
 
     @Test
     public void thirdPartyRegistriesNotAffected() {
-        when(mockConfiguration.getEnvVarOrProperty(eq(PREFIX_PROPERTY_KEY), any())).thenReturn("someregistry.com/our-mirror/");
+        when(mockConfiguration.getEnvVarOrProperty(eq(PrefixingImageNameSubstitutor.PREFIX_PROPERTY_KEY), any()))
+            .thenReturn("someregistry.com/our-mirror/");
 
         final DockerImageName result = underTest.apply(DockerImageName.parse("gcr.io/something/image:tag"));
 
@@ -75,7 +71,8 @@ public class PrefixingImageNameSubstitutorTest {
 
     @Test
     public void testNoDoublePrefixing() {
-        when(mockConfiguration.getEnvVarOrProperty(eq(PREFIX_PROPERTY_KEY), any())).thenReturn("someregistry.com/our-mirror/");
+        when(mockConfiguration.getEnvVarOrProperty(eq(PrefixingImageNameSubstitutor.PREFIX_PROPERTY_KEY), any()))
+            .thenReturn("someregistry.com/our-mirror/");
 
         final DockerImageName result = underTest.apply(DockerImageName.parse("someregistry.com/some/image:tag"));
 
@@ -88,7 +85,8 @@ public class PrefixingImageNameSubstitutorTest {
 
     @Test
     public void testHandlesEmptyValue() {
-        when(mockConfiguration.getEnvVarOrProperty(eq(PREFIX_PROPERTY_KEY), any())).thenReturn("");
+        when(mockConfiguration.getEnvVarOrProperty(eq(PrefixingImageNameSubstitutor.PREFIX_PROPERTY_KEY), any()))
+            .thenReturn("");
 
         final DockerImageName result = underTest.apply(DockerImageName.parse("some/image:tag"));
 
@@ -101,39 +99,38 @@ public class PrefixingImageNameSubstitutorTest {
 
     @Test
     public void testHandlesRegistryOnlyWithTrailingSlash() {
-        when(mockConfiguration.getEnvVarOrProperty(eq(PREFIX_PROPERTY_KEY), any())).thenReturn("someregistry.com/");
+        when(mockConfiguration.getEnvVarOrProperty(eq(PrefixingImageNameSubstitutor.PREFIX_PROPERTY_KEY), any()))
+            .thenReturn("someregistry.com/");
 
         final DockerImageName result = underTest.apply(DockerImageName.parse("some/image:tag"));
 
-        assertEquals(
-            "The prefix is applied",
-            "someregistry.com/some/image:tag",
-            result.asCanonicalNameString()
-        );
+        assertEquals("The prefix is applied", "someregistry.com/some/image:tag", result.asCanonicalNameString());
     }
 
     @Test
     public void testCombinesLiterallyForRegistryOnlyWithoutTrailingSlash() {
-        when(mockConfiguration.getEnvVarOrProperty(eq(PREFIX_PROPERTY_KEY), any())).thenReturn("someregistry.com");
+        when(mockConfiguration.getEnvVarOrProperty(eq(PrefixingImageNameSubstitutor.PREFIX_PROPERTY_KEY), any()))
+            .thenReturn("someregistry.com");
 
         final DockerImageName result = underTest.apply(DockerImageName.parse("some/image:tag"));
 
         assertEquals(
             "The prefix is applied",
-            "someregistry.comsome/image:tag",   // treating the prefix literally, for predictability
+            "someregistry.comsome/image:tag", // treating the prefix literally, for predictability
             result.asCanonicalNameString()
         );
     }
 
     @Test
     public void testCombinesLiterallyForBothPartsWithoutTrailingSlash() {
-        when(mockConfiguration.getEnvVarOrProperty(eq(PREFIX_PROPERTY_KEY), any())).thenReturn("someregistry.com/our-mirror");
+        when(mockConfiguration.getEnvVarOrProperty(eq(PrefixingImageNameSubstitutor.PREFIX_PROPERTY_KEY), any()))
+            .thenReturn("someregistry.com/our-mirror");
 
         final DockerImageName result = underTest.apply(DockerImageName.parse("some/image:tag"));
 
         assertEquals(
             "The prefix is applied",
-            "someregistry.com/our-mirrorsome/image:tag",   // treating the prefix literally, for predictability
+            "someregistry.com/our-mirrorsome/image:tag", // treating the prefix literally, for predictability
             result.asCanonicalNameString()
         );
     }

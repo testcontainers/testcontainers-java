@@ -7,6 +7,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.testcontainers.TestImages;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 import org.testcontainers.utility.MountableFile;
@@ -16,7 +17,6 @@ import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
-import static org.testcontainers.TestImages.ALPINE_IMAGE;
 
 public class FileOperationsTest {
 
@@ -26,7 +26,7 @@ public class FileOperationsTest {
     @Test
     public void copyFileToContainerFileTest() throws Exception {
         try (
-            GenericContainer alpineCopyToContainer = new GenericContainer(ALPINE_IMAGE)
+            GenericContainer alpineCopyToContainer = new GenericContainer(TestImages.ALPINE_IMAGE) //
                 .withCommand("top")
         ) {
             alpineCopyToContainer.start();
@@ -44,7 +44,7 @@ public class FileOperationsTest {
     @Test
     public void copyFileToContainerFolderTest() throws Exception {
         try (
-            GenericContainer alpineCopyToContainer = new GenericContainer(ALPINE_IMAGE)
+            GenericContainer alpineCopyToContainer = new GenericContainer(TestImages.ALPINE_IMAGE) //
                 .withCommand("top")
         ) {
             alpineCopyToContainer.start();
@@ -62,10 +62,9 @@ public class FileOperationsTest {
     @Test
     public void copyFolderToContainerFolderTest() throws Exception {
         try (
-            GenericContainer alpineCopyToContainer = new GenericContainer(ALPINE_IMAGE)
+            GenericContainer alpineCopyToContainer = new GenericContainer(TestImages.ALPINE_IMAGE) //
                 .withCommand("top")
         ) {
-
             alpineCopyToContainer.start();
             final MountableFile mountableFile = MountableFile.forClasspathResource("mappable-resource/");
             alpineCopyToContainer.copyFileToContainer(mountableFile, "/home/test/");
@@ -81,7 +80,7 @@ public class FileOperationsTest {
     @Test(expected = NotFoundException.class)
     public void copyFromContainerShouldFailBecauseNoFileTest() throws NotFoundException {
         try (
-            GenericContainer alpineCopyToContainer = new GenericContainer(ALPINE_IMAGE)
+            GenericContainer alpineCopyToContainer = new GenericContainer(TestImages.ALPINE_IMAGE) //
                 .withCommand("top")
         ) {
             alpineCopyToContainer.start();
@@ -92,10 +91,9 @@ public class FileOperationsTest {
     @Test
     public void shouldCopyFileFromContainerTest() throws IOException {
         try (
-            GenericContainer alpineCopyToContainer = new GenericContainer(ALPINE_IMAGE)
+            GenericContainer alpineCopyToContainer = new GenericContainer(TestImages.ALPINE_IMAGE) //
                 .withCommand("top")
         ) {
-
             alpineCopyToContainer.start();
             final MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");
             alpineCopyToContainer.copyFileToContainer(mountableFile, "/home/");
@@ -110,7 +108,7 @@ public class FileOperationsTest {
 
     @Test
     public void copyFileOperationsShouldFailWhenNotStartedTest() {
-        try (GenericContainer<?> container = new GenericContainer<>(ALPINE_IMAGE).withCommand("top")) {
+        try (GenericContainer<?> container = new GenericContainer<>(TestImages.ALPINE_IMAGE).withCommand("top")) {
             Assertions
                 .assertThatThrownBy(() -> {
                     MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");
@@ -121,10 +119,7 @@ public class FileOperationsTest {
 
             Assertions
                 .assertThatThrownBy(() -> {
-                    container.copyFileFromContainer(
-                        "/home/test_copy_to_container.txt",
-                        IOUtils::toByteArray
-                    );
+                    container.copyFileFromContainer("/home/test_copy_to_container.txt", IOUtils::toByteArray);
                 })
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("can only be used when the Container is created");
@@ -134,18 +129,17 @@ public class FileOperationsTest {
     @Test
     public void shouldCopyFileFromExitedContainerTest() throws IOException {
         try (
-            GenericContainer<?> container = new GenericContainer<>(ALPINE_IMAGE)
+            GenericContainer<?> container = new GenericContainer<>(TestImages.ALPINE_IMAGE)
                 .withCommand("sh", "-c", "echo -n 'Hello!' > /home/file_in_container.txt")
                 .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
         ) {
             container.start();
-            assertThat(container.getDockerClient().waitContainerCmd(container.getContainerId()).start().awaitStatusCode())
+            assertThat(
+                container.getDockerClient().waitContainerCmd(container.getContainerId()).start().awaitStatusCode()
+            )
                 .isEqualTo(0);
 
-            container.copyFileFromContainer(
-                "/home/file_in_container.txt",
-                IOUtils::toByteArray
-            );
+            container.copyFileFromContainer("/home/file_in_container.txt", IOUtils::toByteArray);
 
             container.copyFileToContainer(
                 MountableFile.forClasspathResource("test_copy_to_container.txt"),

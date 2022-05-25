@@ -24,12 +24,11 @@ public class Neo4jContainerJUnitIntegrationTest {
 
     @Test
     public void shouldStart() {
-
         boolean actual = neo4jContainer.isRunning();
         assertThat(actual).isTrue();
 
-        try (Driver driver = GraphDatabase
-            .driver(neo4jContainer.getBoltUrl(), AuthTokens.basic("neo4j", "password"));
+        try (
+            Driver driver = GraphDatabase.driver(neo4jContainer.getBoltUrl(), AuthTokens.basic("neo4j", "password"));
             Session session = driver.session()
         ) {
             long one = session.run("RETURN 1", Collections.emptyMap()).next().get(0).asLong();

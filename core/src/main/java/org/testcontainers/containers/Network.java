@@ -18,7 +18,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 public interface Network extends AutoCloseable, TestRule {
-
     Network SHARED = new NetworkImpl(false, null, Collections.emptySet(), null) {
         @Override
         public void close() {

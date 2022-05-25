@@ -24,25 +24,26 @@ public class DockerComposeContainerScalingTest {
     }
 
     @Rule
-    public DockerComposeContainer environment = new DockerComposeContainer(new File("src/test/resources/scaled-compose-test.yml"))
-            .withScaledService("redis", 3)
-            .withExposedService("redis", REDIS_PORT) // implicit '_1'
-            .withExposedService("redis_2", REDIS_PORT) // explicit service index
-            .withExposedService("redis", 3, REDIS_PORT); // explicit service index via parameter
+    public DockerComposeContainer environment = new DockerComposeContainer(
+        new File("src/test/resources/scaled-compose-test.yml")
+    )
+        .withScaledService("redis", 3)
+        .withExposedService("redis", REDIS_PORT) // implicit '_1'
+        .withExposedService("redis_2", REDIS_PORT) // explicit service index
+        .withExposedService("redis", 3, REDIS_PORT); // explicit service index via parameter
 
     @Before
     public void setupClients() {
         for (int i = 0; i < 3; i++) {
-
             String name = String.format("redis_%d", i + 1);
 
-            clients[i] = new Jedis(environment.getServiceHost(name, REDIS_PORT), environment.getServicePort(name, REDIS_PORT));
+            clients[i] =
+                new Jedis(environment.getServiceHost(name, REDIS_PORT), environment.getServicePort(name, REDIS_PORT));
         }
     }
 
     @Test
     public void simpleTest() {
-
         for (int i = 0; i < 3; i++) {
             clients[i].incr("somekey");
 

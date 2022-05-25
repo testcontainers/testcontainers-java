@@ -90,7 +90,10 @@ class RyukResourceReaper extends ResourceReaper {
                         // not set the read timeout, as Ryuk would not send anything unless a new filter is submitted, meaning that we would get a timeout exception pretty quick
                         try (Socket clientSocket = new Socket()) {
                             clientSocket.connect(new InetSocketAddress(host, ryukPort), 5 * 1000);
-                            ResourceReaper.FilterRegistry registry = new ResourceReaper.FilterRegistry(clientSocket.getInputStream(), clientSocket.getOutputStream());
+                            ResourceReaper.FilterRegistry registry = new ResourceReaper.FilterRegistry(
+                                clientSocket.getInputStream(),
+                                clientSocket.getOutputStream()
+                            );
 
                             synchronized (ResourceReaper.DEATH_NOTE) {
                                 while (true) {
