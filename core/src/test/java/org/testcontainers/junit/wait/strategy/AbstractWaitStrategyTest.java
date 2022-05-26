@@ -84,7 +84,11 @@ public abstract class AbstractWaitStrategyTest<W extends WaitStrategy> {
      * @param shellCommand the shell command to execute
      */
     protected void waitUntilReadyAndSucceed(String shellCommand) {
-        waitUntilReadyAndSucceed(startContainerWithCommand(shellCommand));
+        try (
+        GenericContainer<?> container = startContainerWithCommand(shellCommand)
+        ) {
+            waitUntilReadyAndSucceed(container);
+        }
     }
 
     /**
@@ -94,7 +98,9 @@ public abstract class AbstractWaitStrategyTest<W extends WaitStrategy> {
      * @param shellCommand the shell command to execute
      */
     protected void waitUntilReadyAndTimeout(String shellCommand) {
-        waitUntilReadyAndTimeout(startContainerWithCommand(shellCommand));
+        try (GenericContainer<?> container = startContainerWithCommand(shellCommand)) {
+            waitUntilReadyAndTimeout(container);
+        }
     }
 
     /**
