@@ -329,9 +329,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     protected void doStart() {
         try {
-            if (!this.configured) {
-                configure();
-                configured = true;
+            synchronized (this) {
+                if (!this.configured) {
+                    configure();
+                    configured = true;
+                }
             }
 
             Instant startedAt = Instant.now();
