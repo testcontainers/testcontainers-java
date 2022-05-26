@@ -46,7 +46,7 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
         HashMap<String, String> headers = new HashMap<>();
         headers.put("baz", "boo");
         try (
-            GenericContainer container = startContainerWithCommand(
+            GenericContainer<?> container = startContainerWithCommand(
                 createShellCommand("200 OK", GOOD_RESPONSE_BODY),
                 createHttpWaitStrategy(ready).withHeader("foo", "bar").withHeaders(headers)
             )
