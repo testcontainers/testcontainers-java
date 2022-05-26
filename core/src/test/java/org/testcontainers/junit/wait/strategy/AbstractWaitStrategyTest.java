@@ -84,9 +84,7 @@ public abstract class AbstractWaitStrategyTest<W extends WaitStrategy> {
      * @param shellCommand the shell command to execute
      */
     protected void waitUntilReadyAndSucceed(String shellCommand) {
-        try (
-        GenericContainer<?> container = startContainerWithCommand(shellCommand)
-        ) {
+        try (GenericContainer<?> container = startContainerWithCommand(shellCommand)) {
             waitUntilReadyAndSucceed(container);
         }
     }
