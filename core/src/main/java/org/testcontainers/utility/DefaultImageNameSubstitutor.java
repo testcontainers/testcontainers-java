@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 final class DefaultImageNameSubstitutor extends ImageNameSubstitutor {
 
     private final ConfigurationFileImageNameSubstitutor configurationFileImageNameSubstitutor;
+
     private final PrefixingImageNameSubstitutor prefixingImageNameSubstitutor;
 
     public DefaultImageNameSubstitutor() {
@@ -29,13 +30,17 @@ final class DefaultImageNameSubstitutor extends ImageNameSubstitutor {
 
     @Override
     public DockerImageName apply(final DockerImageName original) {
-        return configurationFileImageNameSubstitutor
-            .andThen(prefixingImageNameSubstitutor)
-            .apply(original);
+        return configurationFileImageNameSubstitutor.andThen(prefixingImageNameSubstitutor).apply(original);
     }
 
     @Override
     protected String getDescription() {
-        return "DefaultImageNameSubstitutor (composite of '" + configurationFileImageNameSubstitutor.getDescription() + "' and '" + prefixingImageNameSubstitutor.getDescription() + "')";
+        return (
+            "DefaultImageNameSubstitutor (composite of '" +
+            configurationFileImageNameSubstitutor.getDescription() +
+            "' and '" +
+            prefixingImageNameSubstitutor.getDescription() +
+            "')"
+        );
     }
 }

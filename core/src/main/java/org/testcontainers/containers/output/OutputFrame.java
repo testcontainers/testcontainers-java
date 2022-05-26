@@ -12,6 +12,7 @@ public class OutputFrame {
     public static final OutputFrame END = new OutputFrame(OutputType.END, null);
 
     private final OutputType type;
+
     private final byte[] bytes;
 
     public OutputFrame(OutputType type, byte[] bytes) {
@@ -28,7 +29,6 @@ public class OutputFrame {
     }
 
     public String getUtf8String() {
-
         if (bytes == null) {
             return "";
         }
@@ -37,14 +37,20 @@ public class OutputFrame {
     }
 
     public enum OutputType {
-        STDOUT, STDERR, END;
+        STDOUT,
+        STDERR,
+        END;
 
         public static OutputType forStreamType(StreamType streamType) {
             switch (streamType) {
-                case RAW:    return STDOUT;
-                case STDOUT: return STDOUT;
-                case STDERR: return STDERR;
-                default: return null;
+                case RAW:
+                    return STDOUT;
+                case STDOUT:
+                    return STDOUT;
+                case STDERR:
+                    return STDERR;
+                default:
+                    return null;
             }
         }
     }
@@ -56,5 +62,4 @@ public class OutputFrame {
         }
         return new OutputFrame(outputType, frame.getPayload());
     }
-
 }

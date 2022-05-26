@@ -27,7 +27,12 @@ public abstract class AbstractDatabaseDelegate<CONNECTION> implements DatabaseDe
     }
 
     @Override
-    public void execute(Collection<String> statements, String scriptPath, boolean continueOnError, boolean ignoreFailedDrops) {
+    public void execute(
+        Collection<String> statements,
+        String scriptPath,
+        boolean continueOnError,
+        boolean ignoreFailedDrops
+    ) {
         int lineNumber = 0;
         for (String statement : statements) {
             lineNumber++;

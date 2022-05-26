@@ -15,7 +15,7 @@ public class ChromeWebDriverContainerTest extends BaseWebDriverContainerTest {
     @Rule
     public BrowserWebDriverContainer<?> chrome = new BrowserWebDriverContainer<>()
         .withCapabilities(new ChromeOptions())
-    // }
+        // }
         .withNetwork(NETWORK);
 
     @Before

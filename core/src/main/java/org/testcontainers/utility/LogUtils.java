@@ -13,9 +13,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.function.Consumer;
 
-import static org.testcontainers.containers.output.OutputFrame.OutputType.STDERR;
-import static org.testcontainers.containers.output.OutputFrame.OutputType.STDOUT;
-
 /**
  * Provides utility methods for logging.
  */
@@ -31,11 +28,12 @@ public class LogUtils {
      * @param consumer     a consumer of {@link OutputFrame}s
      * @param types        types of {@link OutputFrame} to receive
      */
-    public void followOutput(DockerClient dockerClient,
-                             String containerId,
-                             Consumer<OutputFrame> consumer,
-                             OutputFrame.OutputType... types) {
-
+    public void followOutput(
+        DockerClient dockerClient,
+        String containerId,
+        Consumer<OutputFrame> consumer,
+        OutputFrame.OutputType... types
+    ) {
         attachConsumer(dockerClient, containerId, consumer, true, types);
     }
 
@@ -47,11 +45,8 @@ public class LogUtils {
      * @param containerId  container ID to attach to
      * @param consumer     a consumer of {@link OutputFrame}s
      */
-    public void followOutput(DockerClient dockerClient,
-                             String containerId,
-                             Consumer<OutputFrame> consumer) {
-
-        followOutput(dockerClient, containerId, consumer, STDOUT, STDERR);
+    public void followOutput(DockerClient dockerClient, String containerId, Consumer<OutputFrame> consumer) {
+        followOutput(dockerClient, containerId, consumer, OutputFrame.OutputType.STDOUT, OutputFrame.OutputType.STDERR);
     }
 
     /**
@@ -63,16 +58,13 @@ public class LogUtils {
      * @return all previous output frames (stdout/stderr being separated by newline characters)
      */
     @SneakyThrows(IOException.class)
-    public String getOutput(DockerClient dockerClient,
-                            String containerId,
-                            OutputFrame.OutputType... types) {
-
+    public String getOutput(DockerClient dockerClient, String containerId, OutputFrame.OutputType... types) {
         if (containerId == null) {
             return "";
         }
 
         if (types.length == 0) {
-            types = new OutputFrame.OutputType[] { STDOUT, STDERR };
+            types = new OutputFrame.OutputType[] { OutputFrame.OutputType.STDOUT, OutputFrame.OutputType.STDERR };
         }
 
         final ToStringConsumer consumer = new ToStringConsumer();
@@ -90,16 +82,20 @@ public class LogUtils {
         boolean followStream,
         OutputFrame.OutputType... types
     ) {
-
-        final LogContainerCmd cmd = dockerClient.logContainerCmd(containerId)
+        final LogContainerCmd cmd = dockerClient
+            .logContainerCmd(containerId)
             .withFollowStream(followStream)
             .withSince(0);
 
         final FrameConsumerResultCallback callback = new FrameConsumerResultCallback();
         for (OutputFrame.OutputType type : types) {
             callback.addConsumer(type, consumer);
-            if (type == STDOUT) cmd.withStdOut(true);
-            if (type == STDERR) cmd.withStdErr(true);
+            if (type == OutputFrame.OutputType.STDOUT) {
+                cmd.withStdOut(true);
+            }
+            if (type == OutputFrame.OutputType.STDERR) {
+                cmd.withStdErr(true);
+            }
         }
 
         return cmd.exec(callback);

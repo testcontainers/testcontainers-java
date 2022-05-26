@@ -6,6 +6,7 @@ import org.testcontainers.utility.DockerImageName;
  * Factory for Trino containers.
  */
 public class TrinoContainerProvider extends JdbcDatabaseContainerProvider {
+
     @Override
     public boolean supports(String databaseType) {
         return databaseType.equals(TrinoContainer.NAME);

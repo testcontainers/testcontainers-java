@@ -22,11 +22,11 @@ public class LocalServerWebDriverContainerTest {
     public BrowserWebDriverContainer<?> chrome = new BrowserWebDriverContainer<>()
         .withAccessToHost(true)
         .withCapabilities(new ChromeOptions());
+
     private int localPort;
 
     @Before
     public void setupLocalServer() throws Exception {
-
         // Set up a local Jetty HTTP server
         Server server = new Server();
         server.addConnector(new SocketConnector());
@@ -53,6 +53,10 @@ public class LocalServerWebDriverContainerTest {
 
         String headingText = driver.findElement(By.cssSelector("h1")).getText().trim();
 
-        assertEquals("The hardcoded success message was found on a page fetched from a local server", "It worked", headingText);
+        assertEquals(
+            "The hardcoded success message was found on a page fetched from a local server",
+            "It worked",
+            headingText
+        );
     }
 }

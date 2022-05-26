@@ -50,16 +50,15 @@ public class TestcontainersR2DBCConnectionFactoryTest {
 
         assertThat(updated).isEqualTo(1);
 
-        Flux<Long> select = Flux
-            .usingWhen(
-                Flux.defer(connectionFactory::create),
-                connection -> {
-                    return Flux
-                        .from(connection.createStatement("SELECT COUNT(*) FROM test").execute())
-                        .flatMap(it -> it.map((row, meta) -> (Long) row.get(0)));
-                },
-                Connection::close
-            );
+        Flux<Long> select = Flux.usingWhen(
+            Flux.defer(connectionFactory::create),
+            connection -> {
+                return Flux
+                    .from(connection.createStatement("SELECT COUNT(*) FROM test").execute())
+                    .flatMap(it -> it.map((row, meta) -> (Long) row.get(0)));
+            },
+            Connection::close
+        );
 
         Long rows = select.blockFirst();
 

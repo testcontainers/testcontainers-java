@@ -17,10 +17,16 @@ public class DockerHealthcheckWaitStrategyTest {
     @Before
     public void setUp() {
         // Using a Dockerfile here, since Dockerfile builder DSL doesn't support HEALTHCHECK
-        container = new GenericContainer(new ImageFromDockerfile()
-            .withFileFromClasspath("write_file_and_loop.sh", "health-wait-strategy-dockerfile/write_file_and_loop.sh")
-            .withFileFromClasspath("Dockerfile", "health-wait-strategy-dockerfile/Dockerfile"))
-            .waitingFor(Wait.forHealthcheck().withStartupTimeout(Duration.ofSeconds(3)));
+        container =
+            new GenericContainer(
+                new ImageFromDockerfile()
+                    .withFileFromClasspath(
+                        "write_file_and_loop.sh",
+                        "health-wait-strategy-dockerfile/write_file_and_loop.sh"
+                    )
+                    .withFileFromClasspath("Dockerfile", "health-wait-strategy-dockerfile/Dockerfile")
+            )
+                .waitingFor(Wait.forHealthcheck().withStartupTimeout(Duration.ofSeconds(3)));
     }
 
     @Test
