@@ -20,5 +20,4 @@ public class MySQLR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseContai
     protected MySQLContainer<?> createContainer() {
         return new MySQLContainer<>(MySQLTestImages.MYSQL_80_IMAGE);
     }
-
 }

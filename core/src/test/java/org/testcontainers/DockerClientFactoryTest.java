@@ -28,11 +28,13 @@ public class DockerClientFactoryTest {
             dockFactory.runInsideDocker(
                 imageName,
                 cmd -> cmd.withCmd("sh", "-c", "echo 'SUCCESS'"),
-                (client, id) ->
-                    client.logContainerCmd(id)
+                (client, id) -> {
+                    return client
+                        .logContainerCmd(id)
                         .withStdOut(true)
                         .exec(new LogToStringContainerCallback())
-                        .toString()
+                        .toString();
+                }
             );
         }
     }

@@ -25,12 +25,13 @@ import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
-import javax.net.ssl.SSLHandshakeException;
 import java.io.IOException;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.is;
+import javax.net.ssl.SSLHandshakeException;
+
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
 
 public class ElasticsearchContainerTest {
@@ -39,10 +40,10 @@ public class ElasticsearchContainerTest {
      * Elasticsearch version which should be used for the Tests
      */
     private static final String ELASTICSEARCH_VERSION = "7.9.2";
-    private static final DockerImageName ELASTICSEARCH_IMAGE =
-        DockerImageName
-            .parse("docker.elastic.co/elasticsearch/elasticsearch")
-            .withTag(ELASTICSEARCH_VERSION);
+
+    private static final DockerImageName ELASTICSEARCH_IMAGE = DockerImageName
+        .parse("docker.elastic.co/elasticsearch/elasticsearch")
+        .withTag(ELASTICSEARCH_VERSION);
 
     /**
      * Elasticsearch default username, when secured
@@ -55,6 +56,7 @@ public class ElasticsearchContainerTest {
     private static final String ELASTICSEARCH_PASSWORD = "changeme";
 
     private RestClient client = null;
+
     private RestClient anonymousClient = null;
 
     @After
@@ -74,8 +76,8 @@ public class ElasticsearchContainerTest {
     @Deprecated // We will remove this test in the future
     public void elasticsearchDeprecatedCtorTest() throws IOException {
         // Create the elasticsearch container.
-        try (ElasticsearchContainer container = new ElasticsearchContainer()
-            .withEnv("foo", "bar") // dummy env for compiler checking correct generics usage
+        try (
+            ElasticsearchContainer container = new ElasticsearchContainer().withEnv("foo", "bar") // dummy env for compiler checking correct generics usage
         ) {
             // Start the container. This step might take some time...
             container.start();
@@ -96,8 +98,8 @@ public class ElasticsearchContainerTest {
     @Test
     public void elasticsearchDefaultTest() throws IOException {
         // Create the elasticsearch container.
-        try (ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE)
-            .withEnv("foo", "bar") // dummy env for compiler checking correct generics usage
+        try (
+            ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE).withEnv("foo", "bar") // dummy env for compiler checking correct generics usage
         ) {
             // Start the container. This step might take some time...
             container.start();
@@ -117,14 +119,18 @@ public class ElasticsearchContainerTest {
 
     @Test
     public void elasticsearchSecuredTest() throws IOException {
-        try (ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE)
-            .withPassword(ELASTICSEARCH_PASSWORD)) {
+        try (
+            ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE)
+                .withPassword(ELASTICSEARCH_PASSWORD)
+        ) {
             container.start();
 
             // The cluster should be secured so it must fail when we try to access / without credentials
-            assertThrows("We should not be able to access / URI with an anonymous client.",
+            assertThrows(
+                "We should not be able to access / URI with an anonymous client.",
                 ResponseException.class,
-                () -> getAnonymousClient(container).performRequest(new Request("GET", "/")));
+                () -> getAnonymousClient(container).performRequest(new Request("GET", "/"))
+            );
 
             // But it should work when we try to access / with the proper login and password
             Response response = getClient(container).performRequest(new Request("GET", "/"));
@@ -146,22 +152,24 @@ public class ElasticsearchContainerTest {
 
     @Test
     public void elasticsearchOssImage() throws IOException {
-        try (ElasticsearchContainer container =
-                 // ossContainer {
-                 new ElasticsearchContainer(
-                     DockerImageName
-                         .parse("docker.elastic.co/elasticsearch/elasticsearch-oss")
-                         .withTag(ELASTICSEARCH_VERSION)
-                 )
-             // }
+        try (
+            // ossContainer {
+            ElasticsearchContainer container = new ElasticsearchContainer(
+                DockerImageName
+                    .parse("docker.elastic.co/elasticsearch/elasticsearch-oss")
+                    .withTag(ELASTICSEARCH_VERSION)
+            )
+            // }
         ) {
             container.start();
             Response response = getClient(container).performRequest(new Request("GET", "/"));
             assertThat(response.getStatusLine().getStatusCode(), is(200));
             // The OSS image does not have any feature under Elastic License
-            assertThrows("We should not have /_xpack endpoint with an OSS License",
+            assertThrows(
+                "We should not have /_xpack endpoint with an OSS License",
                 ResponseException.class,
-                () -> getClient(container).performRequest(new Request("GET", "/_xpack/")));
+                () -> getClient(container).performRequest(new Request("GET", "/_xpack/"))
+            );
         }
     }
 
@@ -175,12 +183,18 @@ public class ElasticsearchContainerTest {
 
             // Do whatever you want with the rest client ...
             final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-            credentialsProvider.setCredentials(AuthScope.ANY,
-                new UsernamePasswordCredentials(ELASTICSEARCH_USERNAME, ELASTICSEARCH_PASSWORD));
+            credentialsProvider.setCredentials(
+                AuthScope.ANY,
+                new UsernamePasswordCredentials(ELASTICSEARCH_USERNAME, ELASTICSEARCH_PASSWORD)
+            );
 
-            client = RestClient.builder(HttpHost.create(container.getHttpHostAddress()))
-                .setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider))
-                .build();
+            client =
+                RestClient
+                    .builder(HttpHost.create(container.getHttpHostAddress()))
+                    .setHttpClientConfigCallback(httpClientBuilder -> {
+                        return httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+                    })
+                    .build();
 
             Response response = client.performRequest(new Request("GET", "/_cluster/health"));
             // }}
@@ -195,20 +209,28 @@ public class ElasticsearchContainerTest {
     public void restClientSecuredClusterHealth() throws IOException {
         // httpClientSecuredContainer {
         // Create the elasticsearch container.
-        try (ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE)
-            // With a password
-            .withPassword(ELASTICSEARCH_PASSWORD)) {
+        try (
+            ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE)
+                // With a password
+                .withPassword(ELASTICSEARCH_PASSWORD)
+        ) {
             // Start the container. This step might take some time...
             container.start();
 
             // Create the secured client.
             final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-            credentialsProvider.setCredentials(AuthScope.ANY,
-                new UsernamePasswordCredentials(ELASTICSEARCH_USERNAME, ELASTICSEARCH_PASSWORD));
+            credentialsProvider.setCredentials(
+                AuthScope.ANY,
+                new UsernamePasswordCredentials(ELASTICSEARCH_USERNAME, ELASTICSEARCH_PASSWORD)
+            );
 
-            client = RestClient.builder(HttpHost.create(container.getHttpHostAddress()))
-                .setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider))
-                .build();
+            client =
+                RestClient
+                    .builder(HttpHost.create(container.getHttpHostAddress()))
+                    .setHttpClientConfigCallback(httpClientBuilder -> {
+                        return httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+                    })
+                    .build();
 
             Response response = client.performRequest(new Request("GET", "/_cluster/health"));
             // }}
@@ -224,7 +246,7 @@ public class ElasticsearchContainerTest {
     public void transportClientClusterHealth() {
         // transportClientContainer {
         // Create the elasticsearch container.
-        try (ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE)){
+        try (ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE)) {
             // Start the container. This step might take some time...
             container.start();
 
@@ -232,8 +254,10 @@ public class ElasticsearchContainerTest {
             TransportAddress transportAddress = new TransportAddress(container.getTcpHost());
             String expectedClusterName = "docker-cluster";
             Settings settings = Settings.builder().put("cluster.name", expectedClusterName).build();
-            try (TransportClient transportClient = new PreBuiltTransportClient(settings)
-                .addTransportAddress(transportAddress)) {
+            try (
+                TransportClient transportClient = new PreBuiltTransportClient(settings)
+                    .addTransportAddress(transportAddress)
+            ) {
                 ClusterHealthResponse healths = transportClient.admin().cluster().prepareHealth().get();
                 String clusterName = healths.getClusterName();
                 // }}}
@@ -247,19 +271,27 @@ public class ElasticsearchContainerTest {
     @Test
     public void incompatibleSettingsTest() {
         // The OSS image can not use security feature
-        assertThrows("We should not be able to activate security with an OSS License",
+        assertThrows(
+            "We should not be able to activate security with an OSS License",
             IllegalArgumentException.class,
-            () -> new ElasticsearchContainer(
-                DockerImageName
-                    .parse("docker.elastic.co/elasticsearch/elasticsearch-oss")
-                    .withTag(ELASTICSEARCH_VERSION))
-            .withPassword("foo")
+            () -> {
+                new ElasticsearchContainer(
+                    DockerImageName
+                        .parse("docker.elastic.co/elasticsearch/elasticsearch-oss")
+                        .withTag(ELASTICSEARCH_VERSION)
+                )
+                    .withPassword("foo");
+            }
         );
     }
 
     @Test
     public void testElasticsearch8SecureByDefault() throws Exception {
-        try (ElasticsearchContainer container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:8.1.2")) {
+        try (
+            ElasticsearchContainer container = new ElasticsearchContainer(
+                "docker.elastic.co/elasticsearch/elasticsearch:8.1.2"
+            )
+        ) {
             // Start the container. This step might take some time...
             container.start();
 
@@ -273,29 +305,40 @@ public class ElasticsearchContainerTest {
     public void testElasticsearch8SecureByDefaultCustomCaCertFails() throws Exception {
         final MountableFile mountableFile = MountableFile.forClasspathResource("http_ca.crt");
         String caPath = "/tmp/http_ca.crt";
-        try (ElasticsearchContainer container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:8.1.2")
-            .withCopyToContainer(mountableFile, caPath)
-            .withCertPath(caPath)) {
-
+        try (
+            ElasticsearchContainer container = new ElasticsearchContainer(
+                "docker.elastic.co/elasticsearch/elasticsearch:8.1.2"
+            )
+                .withCopyToContainer(mountableFile, caPath)
+                .withCertPath(caPath)
+        ) {
             container.start();
 
             // this is expected, as a different cert is used for creating the SSL context
-            assertThrows("PKIX path validation failed: java.security.cert.CertPathValidatorException: Path does not chain with any of the trust anchors", SSLHandshakeException.class, () -> getClusterHealth(container));
+            assertThrows(
+                "PKIX path validation failed: java.security.cert.CertPathValidatorException: Path does not chain with any of the trust anchors",
+                SSLHandshakeException.class,
+                () -> getClusterHealth(container)
+            );
         }
     }
 
     @Test
     public void testElasticsearch8SecureByDefaultHttpWaitStrategy() throws Exception {
-        final HttpWaitStrategy httpsWaitStrategy = Wait.forHttps("/")
+        final HttpWaitStrategy httpsWaitStrategy = Wait
+            .forHttps("/")
             .forPort(9200)
             .forStatusCode(200)
             .withBasicCredentials(ELASTICSEARCH_USERNAME, ELASTICSEARCH_PASSWORD)
             // trusting self-signed certificate
             .allowInsecure();
 
-        try (ElasticsearchContainer container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:8.1.2")
-            .waitingFor(httpsWaitStrategy)) {
-
+        try (
+            ElasticsearchContainer container = new ElasticsearchContainer(
+                "docker.elastic.co/elasticsearch/elasticsearch:8.1.2"
+            )
+                .waitingFor(httpsWaitStrategy)
+        ) {
             // Start the container. This step might take some time...
             container.start();
 
@@ -311,7 +354,9 @@ public class ElasticsearchContainerTest {
         // even though the version might be older than version 8
         // this tags an old 7.x version as :latest
         tagImage("docker.elastic.co/elasticsearch/elasticsearch:7.9.2", "elasticsearch-tc-older-release", "latest");
-        DockerImageName image = DockerImageName.parse("elasticsearch-tc-older-release:latest").asCompatibleSubstituteFor("docker.elastic.co/elasticsearch/elasticsearch");
+        DockerImageName image = DockerImageName
+            .parse("elasticsearch-tc-older-release:latest")
+            .asCompatibleSubstituteFor("docker.elastic.co/elasticsearch/elasticsearch");
 
         try (ElasticsearchContainer container = new ElasticsearchContainer(image)) {
             container.start();
@@ -324,27 +369,31 @@ public class ElasticsearchContainerTest {
 
     private void tagImage(String sourceImage, String targetImage, String targetTag) throws InterruptedException {
         DockerClient dockerClient = DockerClientFactory.instance().client();
-        dockerClient.tagImageCmd(
-                new RemoteDockerImage(DockerImageName.parse(sourceImage)).get(),
-                targetImage,
-                targetTag
-            )
+        dockerClient
+            .tagImageCmd(new RemoteDockerImage(DockerImageName.parse(sourceImage)).get(), targetImage, targetTag)
             .exec();
     }
 
     private Response getClusterHealth(ElasticsearchContainer container) throws IOException {
         // Create the secured client.
         final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-        credentialsProvider.setCredentials(AuthScope.ANY,
-            new UsernamePasswordCredentials(ELASTICSEARCH_USERNAME, ElasticsearchContainer.ELASTICSEARCH_DEFAULT_PASSWORD));
+        credentialsProvider.setCredentials(
+            AuthScope.ANY,
+            new UsernamePasswordCredentials(
+                ELASTICSEARCH_USERNAME,
+                ElasticsearchContainer.ELASTICSEARCH_DEFAULT_PASSWORD
+            )
+        );
 
-        client = RestClient.builder(HttpHost.create("https://" + container.getHttpHostAddress()))
-            .setHttpClientConfigCallback(httpClientBuilder -> {
-                httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
-                httpClientBuilder.setSSLContext(container.createSslContextFromCa());
-                return httpClientBuilder;
-            })
-            .build();
+        client =
+            RestClient
+                .builder(HttpHost.create("https://" + container.getHttpHostAddress()))
+                .setHttpClientConfigCallback(httpClientBuilder -> {
+                    httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+                    httpClientBuilder.setSSLContext(container.createSslContextFromCa());
+                    return httpClientBuilder;
+                })
+                .build();
 
         return client.performRequest(new Request("GET", "/_cluster/health"));
     }
@@ -352,12 +401,18 @@ public class ElasticsearchContainerTest {
     private RestClient getClient(ElasticsearchContainer container) {
         if (client == null) {
             final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-            credentialsProvider.setCredentials(AuthScope.ANY,
-                new UsernamePasswordCredentials(ELASTICSEARCH_USERNAME, ELASTICSEARCH_PASSWORD));
+            credentialsProvider.setCredentials(
+                AuthScope.ANY,
+                new UsernamePasswordCredentials(ELASTICSEARCH_USERNAME, ELASTICSEARCH_PASSWORD)
+            );
 
-            client = RestClient.builder(HttpHost.create(container.getHttpHostAddress()))
-                .setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider))
-                .build();
+            client =
+                RestClient
+                    .builder(HttpHost.create(container.getHttpHostAddress()))
+                    .setHttpClientConfigCallback(httpClientBuilder -> {
+                        return httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+                    })
+                    .build();
         }
 
         return client;

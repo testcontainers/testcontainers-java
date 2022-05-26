@@ -9,7 +9,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 class BaseTest {
 
     @Container
-    public static final BrowserWebDriverContainer<?> container = new BrowserWebDriverContainer<>("selenium/standalone-chrome:2.45.0")
+    public static final BrowserWebDriverContainer<?> container = new BrowserWebDriverContainer<>(
+        "selenium/standalone-chrome:2.45.0"
+    )
         .withCapabilities(new ChromeOptions());
-
 }

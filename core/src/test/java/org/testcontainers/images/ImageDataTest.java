@@ -1,12 +1,11 @@
 package org.testcontainers.images;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import com.github.dockerjava.api.command.InspectImageResponse;
+import org.junit.Test;
 
 import java.time.Instant;
 
-import org.junit.Test;
-
-import com.github.dockerjava.api.command.InspectImageResponse;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ImageDataTest {
 
@@ -23,5 +22,4 @@ public class ImageDataTest {
         final ImageData imageData = ImageData.from(new InspectImageResponse().withCreated(timestamp));
         assertThat(imageData.getCreatedAt()).isEqualTo(Instant.parse("2020-07-27T16:23:31.365190246Z"));
     }
-
 }

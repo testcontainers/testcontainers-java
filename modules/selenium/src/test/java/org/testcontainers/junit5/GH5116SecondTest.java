@@ -17,5 +17,4 @@ class GH5116SecondTest extends BaseTest {
     void testDriverIsRestarted2() {
         assertThat(container.getWebDriver().getSessionId(), is(notNullValue()));
     }
-
 }

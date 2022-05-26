@@ -12,14 +12,17 @@ import org.testcontainers.utility.DockerImageName;
  */
 public class DatastoreEmulatorContainer extends GenericContainer<DatastoreEmulatorContainer> {
 
-    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("gcr.io/google.com/cloudsdktool/cloud-sdk");
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse(
+        "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    );
 
-    private static final String CMD = "gcloud beta emulators datastore start --project test-project --host-port 0.0.0.0:8081";
+    private static final String CMD =
+        "gcloud beta emulators datastore start --project test-project --host-port 0.0.0.0:8081";
+
     private static final int HTTP_PORT = 8081;
 
     public DatastoreEmulatorContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         withExposedPorts(HTTP_PORT);

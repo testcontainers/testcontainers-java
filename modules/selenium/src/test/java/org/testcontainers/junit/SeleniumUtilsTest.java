@@ -8,7 +8,6 @@ import java.util.jar.Manifest;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.*;
 
-
 /**
  * Created by Julien LAMY
  */
@@ -35,5 +34,4 @@ public class SeleniumUtilsTest {
         String seleniumVersion = SeleniumUtils.getSeleniumVersionFromManifest(manifest);
         assertEquals("Check if Selenium Version detected is the correct one.", expectedVersion, seleniumVersion);
     }
-
 }

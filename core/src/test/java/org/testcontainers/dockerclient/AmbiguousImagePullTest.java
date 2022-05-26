@@ -14,8 +14,7 @@ public class AmbiguousImagePullTest {
             DockerImageName imageName = registryContainer.createImage("latest");
             String imageNameWithoutTag = imageName.getRegistry() + "/" + imageName.getRepository();
             try (
-                final GenericContainer<?> container = new GenericContainer<>(imageNameWithoutTag)
-                    .withExposedPorts(8080)
+                final GenericContainer<?> container = new GenericContainer<>(imageNameWithoutTag).withExposedPorts(8080)
             ) {
                 container.start();
                 // do nothing other than start and stop

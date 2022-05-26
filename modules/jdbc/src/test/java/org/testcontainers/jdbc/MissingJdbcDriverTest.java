@@ -17,7 +17,6 @@ public class MissingJdbcDriverTest {
 
     @Test
     public void shouldFailFastIfNoDriverFound() {
-
         final MissingDriverContainer container = new MissingDriverContainer();
 
         try {
@@ -37,6 +36,7 @@ public class MissingJdbcDriverTest {
      * Container class for the purposes of testing, with a known non-existent driver
      */
     static class MissingDriverContainer extends JdbcDatabaseContainer {
+
         private final AtomicInteger connectionAttempts = new AtomicInteger();
 
         MissingDriverContainer() {

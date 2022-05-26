@@ -1,6 +1,5 @@
 package org.testcontainers.junit5;
 
-
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -18,5 +17,4 @@ class GH5116FirstTest extends BaseTest {
     void testDriverIsRestarted4() {
         assertThat(container.getWebDriver().getSessionId(), is(notNullValue()));
     }
-
 }

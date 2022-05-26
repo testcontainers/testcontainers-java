@@ -12,8 +12,7 @@ public class ImageFromDockerfileTest {
 
     @Test
     public void shouldAddDefaultLabels() {
-        ImageFromDockerfile image = new ImageFromDockerfile()
-            .withDockerfileFromBuilder(it -> it.from("scratch"));
+        ImageFromDockerfile image = new ImageFromDockerfile().withDockerfileFromBuilder(it -> it.from("scratch"));
 
         String imageId = image.resolve();
 
@@ -27,7 +26,10 @@ public class ImageFromDockerfileTest {
 
     @Test
     public void shouldNotAddSessionLabelIfDeleteOnExitIsFalse() {
-        ImageFromDockerfile image = new ImageFromDockerfile("localhost/testcontainers/" + Base58.randomString(16).toLowerCase(), false)
+        ImageFromDockerfile image = new ImageFromDockerfile(
+            "localhost/testcontainers/" + Base58.randomString(16).toLowerCase(),
+            false
+        )
             .withDockerfileFromBuilder(it -> it.from("scratch"));
         String imageId = image.resolve();
         DockerClient dockerClient = DockerClientFactory.instance().client();
@@ -40,7 +42,5 @@ public class ImageFromDockerfileTest {
             // ensure the image is deleted, even if the test fails
             dockerClient.removeImageCmd(imageId).exec();
         }
-
     }
-
 }
