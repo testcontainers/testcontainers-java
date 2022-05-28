@@ -89,6 +89,17 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
     }
 
     /**
+     * Resets all proxies and removes all active toxics.
+     */
+    public void reset() {
+        try {
+            client.reset();
+        } catch (IOException e) {
+            throw new RuntimeException("Proxy could not be reset", e);
+        }
+    }
+
+    /**
      * Obtain a {@link ContainerProxy} instance for a specific hostname and port, which can be for any host
      * that is routable <b>from this {@link ToxiproxyContainer} instance</b> (e.g. on the same
      * Docker {@link Network} or on routable from the Docker host).

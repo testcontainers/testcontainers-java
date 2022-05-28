@@ -192,6 +192,27 @@ public class ToxiproxyTest {
         assertEquals("control port is mapped from port 8474", toxiproxy.getMappedPort(8474), controlPort);
     }
 
+    @Test
+    public void testResetProxy() throws IOException {
+        final ToxiproxyContainer.ContainerProxy proxy = toxiproxy.getProxy(redis, 6379);
+
+        final String ipAddressViaToxiproxy = proxy.getContainerIpAddress();
+        final int portViaToxiproxy = proxy.getProxyPort();
+
+        final Jedis jedis = createJedis(ipAddressViaToxiproxy, portViaToxiproxy);
+        jedis.set("somekey", "somevalue");
+
+        proxy.toxics().latency("latency", ToxicDirection.DOWNSTREAM, 1_000);
+
+        checkCallWithLatency(jedis, "before resetting", 1_000, 1_050);
+
+        // reset {
+        toxiproxy.reset();
+        // }
+
+        checkCallWithLatency(jedis, "after resetting", 0, 100);
+    }
+
     private void checkCallWithLatency(
         Jedis jedis,
         final String description,

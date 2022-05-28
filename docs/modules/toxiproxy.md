@@ -68,6 +68,12 @@ Additionally we can disable the proxy to simulate a complete interruption to the
 [Cutting a connection](../../modules/toxiproxy/src/test/java/org/testcontainers/containers/ToxiproxyTest.java) inside_block:disableProxy
 <!--/codeinclude-->
 
+To run multiple tests, we can reset all added toxics by calling reset on the container:
+
+<!--codeinclude-->
+[Resetting toxics](../../modules/toxiproxy/src/test/java/org/testcontainers/containers/ToxiproxyTest.java) inside_block:reset
+<!--/codeinclude-->
+
 ## Adding this module to your project dependencies
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
