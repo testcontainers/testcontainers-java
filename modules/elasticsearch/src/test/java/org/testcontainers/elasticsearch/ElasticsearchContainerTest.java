@@ -367,6 +367,39 @@ public class ElasticsearchContainerTest {
         }
     }
 
+    @Test
+    public void testElasticsearchDefaultMaxHeapSize() throws Exception {
+        long defaultHeapSize = 2147483648L;
+
+        try (ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE)) {
+            container.start();
+
+            Response response = getClient(container).performRequest(new Request("GET", "/_nodes/_all/jvm"));
+            String responseBody = EntityUtils.toString(response.getEntity());
+            assertThat(response.getStatusLine().getStatusCode(), is(200));
+            assertThat(responseBody, containsString("\"heap_init_in_bytes\":" + defaultHeapSize));
+            assertThat(responseBody, containsString("\"heap_max_in_bytes\":" + defaultHeapSize));
+        }
+    }
+
+    @Test
+    public void testElasticsearchCustomMaxHeapSize() throws Exception {
+        long customHeapSize = 1073741824L;
+
+        try (
+            ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE)
+                .withMaxHeapSizeInBytes(customHeapSize)
+        ) {
+            container.start();
+
+            Response response = getClient(container).performRequest(new Request("GET", "/_nodes/_all/jvm"));
+            String responseBody = EntityUtils.toString(response.getEntity());
+            assertThat(response.getStatusLine().getStatusCode(), is(200));
+            assertThat(responseBody, containsString("\"heap_init_in_bytes\":" + customHeapSize));
+            assertThat(responseBody, containsString("\"heap_max_in_bytes\":" + customHeapSize));
+        }
+    }
+
     private void tagImage(String sourceImage, String targetImage, String targetTag) throws InterruptedException {
         DockerClient dockerClient = DockerClientFactory.instance().client();
         dockerClient

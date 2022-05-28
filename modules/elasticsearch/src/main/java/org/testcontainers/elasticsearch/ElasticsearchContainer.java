@@ -62,6 +62,11 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
     @Deprecated
     protected static final String DEFAULT_TAG = "7.9.2";
 
+    /**
+     * Elasticsearch Default max heap size
+     */
+    private static final long DEFAULT_MAX_HEAP_SIZE_IN_BYTES = 2147483648L;
+
     private final boolean isOss;
 
     private final boolean isAtLeastMajorVersion8;
@@ -98,6 +103,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
         logger().info("Starting an elasticsearch container using [{}]", dockerImageName);
         withNetworkAliases("elasticsearch-" + Base58.randomString(6));
         withEnv("discovery.type", "single-node");
+        withMaxHeapSizeInBytes(DEFAULT_MAX_HEAP_SIZE_IN_BYTES);
         addExposedPorts(ELASTICSEARCH_DEFAULT_PORT, ELASTICSEARCH_DEFAULT_TCP_PORT);
         this.isAtLeastMajorVersion8 =
             new ComparableVersion(dockerImageName.getVersionPart()).isGreaterThanOrEqualTo("8.0.0");
@@ -198,5 +204,17 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
     @Deprecated // The TransportClient will be removed in Elasticsearch 8. No need to expose this port anymore in the future.
     public InetSocketAddress getTcpHost() {
         return new InetSocketAddress(getHost(), getMappedPort(ELASTICSEARCH_DEFAULT_TCP_PORT));
+    }
+
+    /**
+     * Configure max heap size, using ES_JAVA_OPTS environment variable
+     *
+     * @param maxHeapSizeInBytes Maximum and start heap size in bytes
+     * @return this
+     */
+    public ElasticsearchContainer withMaxHeapSizeInBytes(long maxHeapSizeInBytes) {
+        String options = String.format("-Xms%d -Xmx%d", maxHeapSizeInBytes, maxHeapSizeInBytes);
+        withEnv("ES_JAVA_OPTS", options);
+        return this;
     }
 }
