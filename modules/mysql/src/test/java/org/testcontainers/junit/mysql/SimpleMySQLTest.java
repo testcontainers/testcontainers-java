@@ -1,6 +1,7 @@
 package org.testcontainers.junit.mysql;
 
 import org.apache.commons.lang3.SystemUtils;
+import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +11,11 @@ import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
+import java.io.File;
+import java.net.URL;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.attribute.PosixFilePermission;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -18,9 +24,14 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assume.assumeFalse;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
@@ -209,8 +220,8 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
             Statement statement = connection.createStatement();
             String multiQuery =
                 "DROP TABLE IF EXISTS bar; " +
-                "CREATE TABLE bar (foo VARCHAR(20)); " +
-                "INSERT INTO bar (foo) VALUES ('hello world');";
+                    "CREATE TABLE bar (foo VARCHAR(20)); " +
+                    "INSERT INTO bar (foo) VALUES ('hello world');";
             statement.execute(multiQuery);
             statement.execute("SELECT foo FROM bar;");
             try (ResultSet resultSet = statement.getResultSet()) {
@@ -239,6 +250,64 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
             assertThat(jdbcUrl, containsString("allowMultiQueries=true"));
         } finally {
             mysql.stop();
+        }
+    }
+
+    @Test
+    public void startFailsWithWrongPermissions() throws Exception {
+        try (
+            MySQLContainer<?> mysql = new MySQLContainer<>(MySQLTestImages.MYSQL_57_IMAGE)
+                .withConfigurationOverride("somepath/mysql_conf_override")
+                .withLogConsumer(new Slf4jLogConsumer(logger))
+        ) {
+            URL resource = this.getClass().getClassLoader().getResource("somepath/mysql_conf_override");
+
+            File file = new File(resource.toURI());
+            Assert.assertTrue(file.isDirectory());
+
+            boolean posix = FileSystems.getDefault().supportedFileAttributeViews().contains("posix");
+            if (posix) {
+                Set<PosixFilePermission> permissions = new HashSet<>(Arrays.asList(PosixFilePermission.OWNER_READ,
+                    PosixFilePermission.OWNER_WRITE,
+                    PosixFilePermission.OWNER_EXECUTE));
+
+                Files.setPosixFilePermissions(file.toPath(), permissions);
+            }
+
+            assertThrows(ContainerLaunchException.class, mysql::start);
+        }
+    }
+
+    @Test
+    public void startFailsSucceedsWithProperPermissions() throws Exception {
+        try (
+            MySQLContainer<?> mysql = new MySQLContainer<>(MySQLTestImages.MYSQL_57_IMAGE)
+                .withConfigurationOverride("somepath/mysql_conf_override")
+                .withLogConsumer(new Slf4jLogConsumer(logger))
+        ) {
+            URL resource = this.getClass().getClassLoader().getResource("somepath/mysql_conf_override");
+
+            File file = new File(resource.toURI());
+            Assert.assertTrue(file.isDirectory());
+
+            boolean posix = FileSystems.getDefault().supportedFileAttributeViews().contains("posix");
+            if (posix) {
+                Set<PosixFilePermission> permissions = new HashSet<>(Arrays.asList(
+                    PosixFilePermission.OWNER_READ,
+                    PosixFilePermission.OWNER_WRITE,
+                    PosixFilePermission.OWNER_EXECUTE,
+                    PosixFilePermission.GROUP_READ,
+                    PosixFilePermission.GROUP_WRITE,
+                    PosixFilePermission.GROUP_EXECUTE,
+                    PosixFilePermission.OTHERS_READ,
+                    PosixFilePermission.OTHERS_WRITE,
+                    PosixFilePermission.OTHERS_EXECUTE
+                ));
+
+                Files.setPosixFilePermissions(file.toPath(), permissions);
+            }
+
+            assertThrows(ContainerLaunchException.class, mysql::start);
         }
     }
 }
