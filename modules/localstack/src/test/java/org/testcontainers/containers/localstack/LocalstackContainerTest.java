@@ -294,7 +294,7 @@ public class LocalstackContainerTest {
         @ClassRule
         public static LocalStackContainer localstack = new LocalStackContainer(LocalstackTestImages.LOCALSTACK_IMAGE)
             .withEnv("DEFAULT_REGION", region)
-            .withServices(S3);
+            .withServices(Service.S3);
         // }
 
         @Test
