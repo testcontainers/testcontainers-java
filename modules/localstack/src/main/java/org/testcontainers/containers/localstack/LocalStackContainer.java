@@ -50,7 +50,6 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
     @Deprecated
     public static final String VERSION = DEFAULT_TAG;
 
-
     /**
      * Whether or to assume that all APIs run on different ports (when <code>true</code>) or are
      * exposed on a single port (<code>false</code>). From the Localstack README:
