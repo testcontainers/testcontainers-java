@@ -292,7 +292,7 @@ public class LocalstackContainerTest {
         // with_region {
         private static String region = "eu-west-1";
         @ClassRule
-        public static LocalStackContainer localstack = new LocalStackContainer(LOCALSTACK_IMAGE)
+        public static LocalStackContainer localstack = new LocalStackContainer(LocalstackTestImages.LOCALSTACK_IMAGE)
             .withEnv("DEFAULT_REGION", region)
             .withServices(S3);
         // }
