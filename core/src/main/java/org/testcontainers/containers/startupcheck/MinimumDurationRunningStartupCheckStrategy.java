@@ -35,5 +35,4 @@ public class MinimumDurationRunningStartupCheckStrategy extends StartupCheckStra
         }
         return StartupStatus.NOT_YET_KNOWN;
     }
-
 }

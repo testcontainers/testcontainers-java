@@ -1,12 +1,14 @@
 package org.testcontainers.containers;
 
 import lombok.extern.slf4j.Slf4j;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 @Slf4j
 public class MockServerContainer extends GenericContainer<MockServerContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("jamesdbloom/mockserver");
+
     private static final String DEFAULT_TAG = "mockserver-5.5.4";
 
     @Deprecated
@@ -32,10 +34,11 @@ public class MockServerContainer extends GenericContainer<MockServerContainer> {
 
     public MockServerContainer(DockerImageName dockerImageName) {
         super(dockerImageName);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, DockerImageName.parse("mockserver/mockserver"));
 
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        waitingFor(Wait.forHttp("/mockserver/status").withMethod("PUT").forStatusCode(200));
 
-        withCommand("-logLevel INFO -serverPort " + PORT);
+        withCommand("-serverPort " + PORT);
         addExposedPorts(PORT);
     }
 

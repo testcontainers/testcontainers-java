@@ -8,6 +8,7 @@
     * follow the style, naming and structure conventions of the rest of the project.
     * make commits atomic and easy to merge.
     * when updating documentation, please see [our guidance for documentation contributions](contributing_docs.md).
+    * apply format running `./gradlew spotlessApply`
     * verify all tests are passing. Build the project with `./gradlew check` to do this.
     **N.B.** Gradle's Build Cache is enabled by default, but you can add `--no-build-cache` flag to disable it.
 
@@ -35,7 +36,7 @@ If the answers to the above are all yes, then a new module may be a good approac
 Otherwise, it is entirely possible for you to:
 
 * publish a code snippet
-* contribute an [example](../examples/README.md) to the Testcontainers repo
+* contribute an example to the Testcontainers repo
 * publish your own third party library
 
 In any case, please contact us to help validate your proposal!
@@ -90,3 +91,17 @@ New modules should have the following warning at the top of their documentation 
     This module is INCUBATING. While it is ready for use and operational in the current version of Testcontainers, it is possible that it may receive breaking changes in the future. See [our contributing guidelines](/contributing/#incubating-modules) for more information on our incubating modules policy.
 
 We will evaluate incubating modules periodically, and remove the label when appropriate.
+
+
+## Combining Dependabot PRs
+
+Since we generally get a lot of Dependabot PRs, we regularly combine them into single commits. 
+For this, we are using the [gh-combine-prs](https://github.com/rnorth/gh-combine-prs) extension for [GitHub CLI](https://cli.github.com/).
+
+The whole process is as follow:
+
+1. Check that all open Dependabot PRs did succeed their build. If they did not succeed, trigger a rerun if the cause were external factors or else document the reason if obvious.
+2. Run the extension from an up-to-date local `master` branch: `gh combine-prs --query "author:app/dependabot"`
+3. Merge conflicts might appear. Just ignore them, we will get those PRs in a future run.
+4. Once the build of the combined PR did succeed, temporarily enable merge commits and merge the PR using a merge commit through the GitHub UI.
+5. After the merge, disable merge commits again.

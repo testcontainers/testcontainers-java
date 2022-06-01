@@ -11,19 +11,23 @@ import java.sql.SQLException;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 
 public class CustomizableMysqlTest extends AbstractContainerDatabaseTest {
+
     private static final String DB_NAME = "foo";
+
     private static final String USER = "bar";
+
     private static final String PWD = "baz";
 
     @Test
     public void testSimple() throws SQLException {
         // Add MYSQL_ROOT_HOST environment so that we can root login from anywhere for testing purposes
-        try (MySQLContainer<?> mysql = new MySQLContainer<>(MySQLTestImages.MYSQL_IMAGE)
-            .withDatabaseName(DB_NAME)
-            .withUsername(USER)
-            .withPassword(PWD)
-            .withEnv("MYSQL_ROOT_HOST", "%")) {
-
+        try (
+            MySQLContainer<?> mysql = new MySQLContainer<>(MySQLTestImages.MYSQL_57_IMAGE)
+                .withDatabaseName(DB_NAME)
+                .withUsername(USER)
+                .withPassword(PWD)
+                .withEnv("MYSQL_ROOT_HOST", "%")
+        ) {
             mysql.start();
 
             ResultSet resultSet = performQuery(mysql, "SELECT 1");

@@ -22,24 +22,27 @@ public class ParameterizedDockerfileContainerTest {
     public GenericContainer container;
 
     public ParameterizedDockerfileContainerTest(String baseImage, String expectedVersion) {
-        container = new GenericContainer(new ImageFromDockerfile().withDockerfileFromBuilder(builder -> {
-                builder
-                        .from(baseImage)
-                        // Could potentially customise the image here, e.g. adding files, running
-                        //  commands, etc.
-                        .build();
-            })).withCommand("top");
+        container =
+            new GenericContainer(
+                new ImageFromDockerfile()
+                    .withDockerfileFromBuilder(builder -> {
+                        builder
+                            .from(baseImage)
+                            // Could potentially customise the image here, e.g. adding files, running
+                            //  commands, etc.
+                            .build();
+                    })
+            )
+                .withCommand("top");
         this.expectedVersion = expectedVersion;
     }
 
     @Parameterized.Parameters(name = "{0}")
     public static Object[][] data() {
-        return new Object[][] {
-                { "alpine:3.2", "3.2"},
-                { "alpine:3.3", "3.3"},
-                { "alpine:3.4", "3.4"},
-                { "alpine:3.5", "3.5"},
-                { "alpine:3.6", "3.6"}
+        return new Object[][] { //
+            { "alpine:3.12", "3.12" },
+            { "alpine:3.13", "3.13" },
+            { "alpine:3.14", "3.14" },
         };
     }
 
@@ -47,7 +50,6 @@ public class ParameterizedDockerfileContainerTest {
     public void simpleTest() throws Exception {
         final String release = container.execInContainer("cat", "/etc/alpine-release").getStdout();
 
-        assertTrue("/etc/alpine-release starts with " + expectedVersion,
-                release.startsWith(expectedVersion));
+        assertTrue("/etc/alpine-release starts with " + expectedVersion, release.startsWith(expectedVersion));
     }
 }

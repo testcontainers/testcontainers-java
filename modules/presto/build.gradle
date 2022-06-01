@@ -1,9 +1,9 @@
 description = "Testcontainers :: JDBC :: Presto"
 
 dependencies {
-    compile project(':jdbc')
+    api project(':jdbc')
 
-    testCompile project(':jdbc-test')
-    testCompile 'io.prestosql:presto-jdbc:331'
-    compileOnly 'org.jetbrains:annotations:20.0.0'
+    testImplementation project(':jdbc-test')
+    testImplementation 'io.prestosql:presto-jdbc:350'
+    compileOnly 'org.jetbrains:annotations:23.0.0'
 }

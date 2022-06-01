@@ -7,6 +7,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import java.time.Instant;
+import java.time.ZonedDateTime;
 
 @Value
 @Builder
@@ -16,14 +17,13 @@ public class ImageData {
     Instant createdAt;
 
     static ImageData from(InspectImageResponse inspectImageResponse) {
-        return ImageData.builder()
-            .createdAt(Instant.parse(inspectImageResponse.getCreated()))
+        return ImageData
+            .builder()
+            .createdAt(ZonedDateTime.parse(inspectImageResponse.getCreated()).toInstant())
             .build();
     }
 
     static ImageData from(Image image) {
-        return ImageData.builder()
-            .createdAt(Instant.ofEpochMilli(image.getCreated()))
-            .build();
+        return ImageData.builder().createdAt(Instant.ofEpochMilli(image.getCreated())).build();
     }
 }

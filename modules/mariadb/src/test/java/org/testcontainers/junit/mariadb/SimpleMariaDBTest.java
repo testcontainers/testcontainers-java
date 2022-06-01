@@ -1,27 +1,25 @@
 package org.testcontainers.junit.mariadb;
 
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.junit.Test;
+import org.testcontainers.MariaDBTestImages;
 import org.testcontainers.containers.MariaDBContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assume.assumeFalse;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
-import static org.testcontainers.MariaDBTestImages.MARIADB_IMAGE;
-
 
 public class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSimple() throws SQLException {
-        try (MariaDBContainer<?> mariadb = new MariaDBContainer<>(MARIADB_IMAGE)) {
-
+        try (MariaDBContainer<?> mariadb = new MariaDBContainer<>(MariaDBTestImages.MARIADB_IMAGE)) {
             mariadb.start();
 
             ResultSet resultSet = performQuery(mariadb, "SELECT 1");
@@ -33,14 +31,20 @@ public class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSpecificVersion() throws SQLException {
-        try (MariaDBContainer<?> mariadbOldVersion = new MariaDBContainer<>(MARIADB_IMAGE.withTag("5.5.51"))) {
-
+        try (
+            MariaDBContainer<?> mariadbOldVersion = new MariaDBContainer<>(
+                MariaDBTestImages.MARIADB_IMAGE.withTag("5.5.51")
+            )
+        ) {
             mariadbOldVersion.start();
 
             ResultSet resultSet = performQuery(mariadbOldVersion, "SELECT VERSION()");
             String resultSetString = resultSet.getString(1);
 
-            assertTrue("The database version can be set using a container rule parameter", resultSetString.startsWith("5.5.51"));
+            assertTrue(
+                "The database version can be set using a container rule parameter",
+                resultSetString.startsWith("5.5.51")
+            );
         }
     }
 
@@ -48,8 +52,12 @@ public class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
     public void testMariaDBWithCustomIniFile() throws SQLException {
         assumeFalse(SystemUtils.IS_OS_WINDOWS);
 
-        try (MariaDBContainer<?> mariadbCustomConfig = new MariaDBContainer<>(MARIADB_IMAGE.withTag("10.1.16"))
-            .withConfigurationOverride("somepath/mariadb_conf_override")) {
+        try (
+            MariaDBContainer<?> mariadbCustomConfig = new MariaDBContainer<>(
+                MariaDBTestImages.MARIADB_IMAGE.withTag("10.1.16")
+            )
+                .withConfigurationOverride("somepath/mariadb_conf_override")
+        ) {
             mariadbCustomConfig.start();
 
             ResultSet resultSet = performQuery(mariadbCustomConfig, "SELECT @@GLOBAL.innodb_file_format");
@@ -61,9 +69,10 @@ public class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testMariaDBWithCommandOverride() throws SQLException {
-
-        try (MariaDBContainer<?> mariadbCustomConfig = new MariaDBContainer<>(MARIADB_IMAGE)
-            .withCommand("mysqld --auto_increment_increment=10")) {
+        try (
+            MariaDBContainer<?> mariadbCustomConfig = new MariaDBContainer<>(MariaDBTestImages.MARIADB_IMAGE)
+                .withCommand("mysqld --auto_increment_increment=10")
+        ) {
             mariadbCustomConfig.start();
             ResultSet resultSet = performQuery(mariadbCustomConfig, "show variables like 'auto_increment_increment'");
             String result = resultSet.getString("Value");
@@ -74,7 +83,7 @@ public class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testWithAdditionalUrlParamInJdbcUrl() {
-        MariaDBContainer<?> mariaDBContainer = new MariaDBContainer<>(MARIADB_IMAGE)
+        MariaDBContainer<?> mariaDBContainer = new MariaDBContainer<>(MariaDBTestImages.MARIADB_IMAGE)
             .withUrlParam("connectTimeout", "40000")
             .withUrlParam("rewriteBatchedStatements", "true");
 

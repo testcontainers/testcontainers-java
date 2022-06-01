@@ -7,6 +7,8 @@ on:
 env:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
+  GRADLE_ENTERPRISE_CACHE_PASSWORD: ${{ secrets.GRADLE_ENTERPRISE_CACHE_PASSWORD }}
 
 jobs:
   find_gradle_jobs:
@@ -14,12 +16,13 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-java@v1
+      - uses: actions/checkout@v3
+      - uses: actions/setup-java@v3
         with:
-          java-version: '1.8'
+          java-version: '8.0.302'
+          distribution: temurin
       - name: Cache Gradle Home files
-        uses: actions/cache@v1
+        uses: actions/cache@v3.0.2
         continue-on-error: true
         with:
           path: ~/.gradle/caches
@@ -41,12 +44,13 @@ jobs:
       matrix: ${{ fromJson(needs.find_gradle_jobs.outputs.matrix) }}
     runs-on: ubuntu-18.04
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-java@v1
+      - uses: actions/checkout@v3
+      - uses: actions/setup-java@v3
         with:
-          java-version: '1.8'
+          java-version: '8.0.302'
+          distribution: temurin
       - name: Cache Gradle Home files
-        uses: actions/cache@v1
+        uses: actions/cache@v3.0.2
         continue-on-error: true
         with:
           path: ~/.gradle/caches
@@ -57,13 +61,3 @@ jobs:
         working-directory: ./examples/
         run: |
           ./gradlew --no-daemon --continue --scan --info ${{matrix.gradle_args}}
-      - name: Aggregate Examples test reports with ciMate
-        if: always()
-        continue-on-error: true
-        env:
-          CIMATE_PROJECT_ID: 2348n4vl
-          CIMATE_CI_KEY: "Examples / ${{ runner.os }} / ${{matrix.gradle_args}}"
-        run: |
-          wget -q https://get.cimate.io/release/linux/cimate
-          chmod +x cimate
-          ./cimate "**/TEST-*.xml"

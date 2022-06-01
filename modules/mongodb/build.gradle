@@ -1,7 +1,7 @@
 description = "Testcontainers :: MongoDB"
 
 dependencies {
-    compile project(':testcontainers')
+    api project(':testcontainers')
 
-    testCompile("org.mongodb:mongodb-driver-sync:4.0.2")
+    testImplementation("org.mongodb:mongodb-driver-sync:4.5.1")
 }

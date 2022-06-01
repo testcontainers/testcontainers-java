@@ -1,6 +1,6 @@
 package org.testcontainers.dockerclient;
 
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.SystemUtils;
 
 import java.net.URI;
 
@@ -12,15 +12,14 @@ import java.net.URI;
 public final class NpipeSocketClientProviderStrategy extends DockerClientProviderStrategy {
 
     protected static final String DOCKER_SOCK_PATH = "//./pipe/docker_engine";
+
     private static final String SOCKET_LOCATION = "npipe://" + DOCKER_SOCK_PATH;
 
     public static final int PRIORITY = EnvironmentAndSystemPropertyClientProviderStrategy.PRIORITY - 20;
 
     @Override
     public TransportConfig getTransportConfig() {
-        return TransportConfig.builder()
-            .dockerHost(URI.create(SOCKET_LOCATION))
-            .build();
+        return TransportConfig.builder().dockerHost(URI.create(SOCKET_LOCATION)).build();
     }
 
     @Override

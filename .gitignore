@@ -46,6 +46,7 @@ node_modules/
 
 .gradle/
 build/
+!buildSrc/src/main/groovy/org/testcontainers/build
 out/
 *.class
 
@@ -63,3 +64,9 @@ src/mkdocs-codeinclude-plugin
 src/pip-delete-this-directory.txt
 
 .DS_Store
+
+# Codespaces / VSCode
+/.vscode/
+
+# Python virtual environment
+/.venv/

@@ -1,6 +1,9 @@
 package org.testcontainers.containers;
 
+import com.google.common.collect.Sets;
 import org.testcontainers.utility.DockerImageName;
+
+import java.util.Set;
 
 /**
  * Container implementation for the MariaDB project.
@@ -24,10 +27,15 @@ public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcD
     static final String DEFAULT_PASSWORD = "test";
 
     static final Integer MARIADB_PORT = 3306;
+
     private String databaseName = "test";
+
     private String username = DEFAULT_USER;
+
     private String password = DEFAULT_PASSWORD;
+
     private static final String MARIADB_ROOT_USER = "root";
+
     private static final String MY_CNF_CONFIG_OVERRIDE_PARAM_NAME = "TC_MY_CNF";
 
     /**
@@ -44,20 +52,23 @@ public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcD
 
     public MariaDBContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         addExposedPort(MARIADB_PORT);
     }
 
     @Override
-    protected Integer getLivenessCheckPort() {
-        return getMappedPort(MARIADB_PORT);
+    public Set<Integer> getLivenessCheckPortNumbers() {
+        return Sets.newHashSet(MARIADB_PORT);
     }
 
     @Override
     protected void configure() {
-        optionallyMapResourceParameterAsVolume(MY_CNF_CONFIG_OVERRIDE_PARAM_NAME, "/etc/mysql/conf.d", "mariadb-default-conf");
+        optionallyMapResourceParameterAsVolume(
+            MY_CNF_CONFIG_OVERRIDE_PARAM_NAME,
+            "/etc/mysql/conf.d",
+            "mariadb-default-conf"
+        );
 
         addEnv("MYSQL_DATABASE", databaseName);
         addEnv("MYSQL_USER", username);
@@ -80,13 +91,14 @@ public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcD
     @Override
     public String getJdbcUrl() {
         String additionalUrlParams = constructUrlParameters("?", "&");
-        return "jdbc:mariadb://" + getHost() + ":" + getMappedPort(MARIADB_PORT) +
-            "/" + databaseName + additionalUrlParams;
+        return (
+            "jdbc:mariadb://" + getHost() + ":" + getMappedPort(MARIADB_PORT) + "/" + databaseName + additionalUrlParams
+        );
     }
 
     @Override
     public String getDatabaseName() {
-    	return databaseName;
+        return databaseName;
     }
 
     @Override

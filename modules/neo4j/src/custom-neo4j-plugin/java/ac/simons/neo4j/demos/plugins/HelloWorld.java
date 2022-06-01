@@ -9,7 +9,6 @@ public class HelloWorld {
     @UserFunction("ac.simons.helloWorld")
     @Description("Simple Hello World")
     public String helloWorld(@Name("name") String name) {
-
         return "Hello, " + name;
     }
 }
