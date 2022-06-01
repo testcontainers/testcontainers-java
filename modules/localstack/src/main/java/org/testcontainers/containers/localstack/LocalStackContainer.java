@@ -44,8 +44,8 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("localstack/localstack");
 
     private static final String DEFAULT_TAG = "0.11.2";
-    private static final String DEFAULT_REGION = "us-east-1";
 
+    private static final String DEFAULT_REGION = "us-east-1";
 
     @Deprecated
     public static final String VERSION = DEFAULT_TAG;
