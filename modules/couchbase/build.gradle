@@ -3,7 +3,7 @@ description = "Testcontainers :: Couchbase"
 dependencies {
     api project(':testcontainers')
     // TODO use JDK's HTTP client and/or Apache HttpClient5
-    shaded 'com.squareup.okhttp3:okhttp:3.14.9'
+    shaded 'com.squareup.okhttp3:okhttp:4.9.3'
 
     testImplementation 'com.couchbase.client:java-client:3.3.0'
     testImplementation 'org.awaitility:awaitility:4.1.1'
