@@ -45,6 +45,8 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
 
     private static final String DEFAULT_TAG = "0.11.2";
 
+    private static final String DEFAULT_REGION = "us-east-1";
+
     @Deprecated
     public static final String VERSION = DEFAULT_TAG;
 
@@ -311,7 +313,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
      * @return a default region
      */
     public String getRegion() {
-        return "us-east-1";
+        return this.getEnvMap().getOrDefault("DEFAULT_REGION", DEFAULT_REGION);
     }
 
     public interface EnabledService {
