@@ -229,7 +229,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
                     logger()
                         .debug(
                             "Trying to create JDBC connection using {} to {} with properties: {}",
-                            driver.getClass().getName(),
+                            jdbcDriverInstance.getClass().getName(),
                             url,
                             info
                         );
