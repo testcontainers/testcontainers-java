@@ -5,5 +5,5 @@ dependencies {
     api project(':jdbc')
 
     testImplementation project(':jdbc-test')
-    testImplementation 'ru.yandex.clickhouse:clickhouse-jdbc:0.3.2'
+    testImplementation 'com.clickhouse:clickhouse-jdbc:0.3.2'
 }
