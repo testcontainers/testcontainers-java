@@ -86,6 +86,8 @@ dependencies {
 
     shaded 'org.zeroturnaround:zt-exec:1.12'
 
+    api 'com.github.terma:javaniotcpproxy:1.6'
+
     testImplementation 'org.apache.httpcomponents:httpclient:4.5.9'
     testImplementation 'redis.clients:jedis:4.2.3'
     testImplementation 'com.rabbitmq:amqp-client:5.14.2'

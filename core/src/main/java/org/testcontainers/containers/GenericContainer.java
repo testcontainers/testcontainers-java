@@ -17,6 +17,8 @@ import com.github.dockerjava.api.model.Ports;
 import com.github.dockerjava.api.model.Volume;
 import com.github.dockerjava.api.model.VolumesFrom;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
+import com.github.terma.javaniotcpproxy.StaticTcpProxyConfig;
+import com.github.terma.javaniotcpproxy.TcpProxy;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
@@ -125,6 +127,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @NonNull
     private LinkedHashSet<Integer> exposedPorts = new LinkedHashSet<>();
+
+    @NonNull
+    private LinkedHashSet<Integer> proxyPorts = new LinkedHashSet<>();
 
     @NonNull
     private List<String> portBindings = new ArrayList<>();
@@ -274,6 +279,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public void setExposedPorts(List<Integer> exposedPorts) {
         this.exposedPorts = new LinkedHashSet<>(exposedPorts);
+    }
+
+    @Override
+    public void setProxyPorts(List<Integer> proxyPorts) {
+        this.proxyPorts = new LinkedHashSet<>(proxyPorts);
     }
 
     /**
@@ -519,6 +529,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
             logger().info("Container {} started in {}", dockerImageName, Duration.between(startedAt, Instant.now()));
             containerIsStarted(containerInfo, reused);
+            createProxyPorts();
         } catch (Exception e) {
             if (e instanceof UndeclaredThrowableException && e.getCause() instanceof Exception) {
                 e = (Exception) e.getCause();
@@ -541,6 +552,17 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
             throw new ContainerLaunchException("Could not create/start container", e);
         }
+    }
+
+    private void createProxyPorts() {
+        this.proxyPorts.stream()
+            .filter(port -> exposedPorts.contains(port))
+            .forEach(port -> {
+                StaticTcpProxyConfig tcpProxyConfig = new StaticTcpProxyConfig(port, getHost(), getMappedPort(port));
+                tcpProxyConfig.setWorkerCount(1);
+                TcpProxy tcpProxy = new TcpProxy(tcpProxyConfig);
+                tcpProxy.start();
+            });
     }
 
     @VisibleForTesting
@@ -1509,5 +1531,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public String getContainerName() {
         return getContainerInfo().getName();
+    }
+
+    public SELF withProxyPorts(Integer... ports) {
+        this.setProxyPorts(Lists.newArrayList(ports));
+        return self();
     }
 }

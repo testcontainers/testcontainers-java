@@ -7,6 +7,7 @@ import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Info;
 import com.github.dockerjava.api.model.Ports;
 import com.google.common.primitives.Ints;
+import com.google.common.util.concurrent.Uninterruptibles;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.experimental.FieldDefaults;
@@ -23,6 +24,10 @@ import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.MountableFile;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.Socket;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -31,11 +36,23 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
 public class GenericContainerTest {
+
+    private static final int TEST_PORT = 5678;
+
+    private static final String TEST_RESPONSE = "test-response";
+
+    private static final String HTTP_ECHO_CMD = String.format(
+        "while true; do echo \"%s\" | nc -l -p %d; done",
+        TEST_RESPONSE,
+        TEST_PORT
+    );
 
     @Test
     public void shouldReportOOMAfterWait() {
@@ -166,6 +183,20 @@ public class GenericContainerTest {
         }
     }
 
+    @Test
+    public void shouldUseProxyPort() throws IOException {
+        try (
+            GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
+                .withCommand("/bin/sh", "-c", HTTP_ECHO_CMD)
+                .withExposedPorts(TEST_PORT)
+                .withProxyPorts(TEST_PORT)
+        ) {
+            container.start();
+            final String content = readResponse(container, TEST_PORT);
+            assertThat("Returned echo from proxy port does not match expected", content, equalTo("test-response"));
+        }
+    }
+
     static class NoopStartupCheckStrategy extends StartupCheckStrategy {
 
         @Override
@@ -200,6 +231,30 @@ public class GenericContainerTest {
             );
 
             throw new IllegalStateException("Nope!");
+        }
+    }
+
+    /**
+     * Simple socket content reader from given container:port
+     *
+     * @param container to query
+     * @param port      to send request to
+     * @return socket reader content
+     * @throws IOException if any
+     */
+    private String readResponse(GenericContainer container, Integer port) throws IOException {
+        try (
+            final BufferedReader reader = Unreliables.retryUntilSuccess(
+                10,
+                TimeUnit.SECONDS,
+                () -> {
+                    Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
+                    final Socket socket = new Socket(container.getHost(), port);
+                    return new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                }
+            )
+        ) {
+            return reader.readLine();
         }
     }
 }

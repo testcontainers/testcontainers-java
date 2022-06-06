@@ -449,6 +449,8 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
 
     void setExposedPorts(List<Integer> exposedPorts);
 
+    void setProxyPorts(List<Integer> exposedPorts);
+
     void setPortBindings(List<String> portBindings);
 
     void setExtraHosts(List<String> extraHosts);
