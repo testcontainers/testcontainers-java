@@ -1,10 +1,10 @@
 package org.testcontainers.containers;
 
-
-import java.util.Map;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.utility.DockerImageName;
+
+import java.util.Map;
 
 /**
  * This container wraps Apache Pulsar running in standalone mode
@@ -20,7 +20,8 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
     /**
      * See <a href="https://github.com/apache/pulsar/blob/master/pulsar-common/src/main/java/org/apache/pulsar/common/naming/SystemTopicNames.java">SystemTopicNames</a>.
      */
-    public static final String TRANSACTION_TOPIC_ENDPOINT = "/admin/v2/persistent/pulsar/system/transaction_coordinator_assign/partitions";
+    public static final String TRANSACTION_TOPIC_ENDPOINT =
+        "/admin/v2/persistent/pulsar/system/transaction_coordinator_assign/partitions";
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("apachepulsar/pulsar");
 
@@ -87,8 +88,8 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
     }
 
     protected void setupCommandAndEnv() {
-        String standaloneBaseCommand = "/pulsar/bin/apply-config-from-env.py /pulsar/conf/standalone.conf " +
-            "&& bin/pulsar standalone";
+        String standaloneBaseCommand =
+            "/pulsar/bin/apply-config-from-env.py /pulsar/conf/standalone.conf " + "&& bin/pulsar standalone";
 
         if (!functionsWorkerEnabled) {
             standaloneBaseCommand += " --no-functions-worker -nss";

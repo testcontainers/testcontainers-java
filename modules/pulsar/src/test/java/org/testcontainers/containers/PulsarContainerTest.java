@@ -13,12 +13,9 @@ import org.apache.pulsar.client.api.transaction.Transaction;
 import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-import static net.bytebuddy.matcher.ElementMatchers.is;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -30,15 +27,24 @@ public class PulsarContainerTest {
 
     @Test
     public void testUsage() throws Exception {
-        try (PulsarContainer pulsar = new PulsarContainer(PULSAR_IMAGE)) {
+        try (
+            // do not use PULSAR_IMAGE to make the doc looks easier
+            // constructorWithVersion {
+            PulsarContainer pulsar = new PulsarContainer(DockerImageName.parse("apachepulsar/pulsar:2.10.0"));
+            // }
+        ) {
             pulsar.start();
-            testPulsarFunctionality(pulsar.getPulsarBrokerUrl());
+            // coordinates {
+            final String pulsarBrokerUrl = pulsar.getPulsarBrokerUrl();
+            final String HttpServiceUrl = pulsar.getHttpServiceUrl();
+            // }
+            testPulsarFunctionality(pulsarBrokerUrl);
         }
     }
 
     @Test
     public void shouldNotEnableFunctionsWorkerByDefault() throws Exception {
-        try (PulsarContainer pulsar = new PulsarContainer("2.5.1")) {
+        try (PulsarContainer pulsar = new PulsarContainer(PULSAR_IMAGE)) {
             pulsar.start();
 
             try (PulsarAdmin pulsarAdmin = PulsarAdmin.builder().serviceHttpUrl(pulsar.getHttpServiceUrl()).build();) {
@@ -50,7 +56,11 @@ public class PulsarContainerTest {
 
     @Test
     public void shouldWaitForFunctionsWorkerStarted() throws Exception {
-        try (PulsarContainer pulsar = new PulsarContainer("2.5.1").withFunctionsWorker()) {
+        try (
+            // constructorWithFunctionsWorker {
+            PulsarContainer pulsar = new PulsarContainer(PULSAR_IMAGE).withFunctionsWorker();
+            // }
+        ) {
             pulsar.start();
 
             try (PulsarAdmin pulsarAdmin = PulsarAdmin.builder().serviceHttpUrl(pulsar.getHttpServiceUrl()).build();) {
@@ -61,12 +71,21 @@ public class PulsarContainerTest {
 
     @Test
     public void testTransactions() throws Exception {
-        try (PulsarContainer pulsar = new PulsarContainer(PULSAR_IMAGE).withTransactions()) {
+        try (
+            // constructorWithTransactions {
+            PulsarContainer pulsar = new PulsarContainer(PULSAR_IMAGE).withTransactions();
+            // }
+        ) {
             pulsar.start();
 
             try (PulsarAdmin pulsarAdmin = PulsarAdmin.builder().serviceHttpUrl(pulsar.getHttpServiceUrl()).build();) {
-                assertThat(pulsarAdmin.topics().getList("pulsar/system")
-                    .contains("persistent://pulsar/system/transaction_coordinator_assign-partition-0")).isTrue();
+                assertThat(
+                    pulsarAdmin
+                        .topics()
+                        .getList("pulsar/system")
+                        .contains("persistent://pulsar/system/transaction_coordinator_assign-partition-0")
+                )
+                    .isTrue();
             }
             testTransactionFunctionality(pulsar.getPulsarBrokerUrl());
         }
@@ -78,8 +97,13 @@ public class PulsarContainerTest {
             pulsar.start();
 
             try (PulsarAdmin pulsarAdmin = PulsarAdmin.builder().serviceHttpUrl(pulsar.getHttpServiceUrl()).build();) {
-                assertThat(pulsarAdmin.topics().getList("pulsar/system")
-                    .contains("persistent://pulsar/system/transaction_coordinator_assign-partition-0")).isTrue();
+                assertThat(
+                    pulsarAdmin
+                        .topics()
+                        .getList("pulsar/system")
+                        .contains("persistent://pulsar/system/transaction_coordinator_assign-partition-0")
+                )
+                    .isTrue();
                 assertThat(pulsarAdmin.functions().getFunctions("public", "default")).hasSize(0);
             }
             testTransactionFunctionality(pulsar.getPulsarBrokerUrl());
@@ -114,24 +138,21 @@ public class PulsarContainerTest {
 
     protected void testTransactionFunctionality(String pulsarBrokerUrl) throws Exception {
         try (
-            PulsarClient client = PulsarClient.builder()
-                .serviceUrl(pulsarBrokerUrl)
-                .enableTransaction(true)
-                .build();
-            Consumer<String> consumer = client.newConsumer(Schema.STRING)
+            PulsarClient client = PulsarClient.builder().serviceUrl(pulsarBrokerUrl).enableTransaction(true).build();
+            Consumer<String> consumer = client
+                .newConsumer(Schema.STRING)
                 .topic("transaction-topic")
                 .subscriptionInitialPosition(SubscriptionInitialPosition.Earliest)
                 .subscriptionName("test-transaction-sub")
                 .subscribe();
-            Producer<String> producer = client.newProducer(Schema.STRING)
+            Producer<String> producer = client
+                .newProducer(Schema.STRING)
                 .sendTimeout(0, TimeUnit.SECONDS)
-                .topic("transaction-topic").create()
+                .topic("transaction-topic")
+                .create()
         ) {
             final Transaction transaction = client.newTransaction().build().get();
-            producer
-                .newMessage(transaction)
-                .value("first")
-                .send();
+            producer.newMessage(transaction).value("first").send();
             transaction.commit();
             Message<String> message = consumer.receive();
             assertThat(message.getValue()).isEqualTo("first");
