@@ -1,17 +1,24 @@
 package org.testcontainers.containers;
 
+import com.beust.jcommander.internal.Maps;
 import org.apache.pulsar.client.admin.PulsarAdmin;
 import org.apache.pulsar.client.admin.PulsarAdminException;
 import org.apache.pulsar.client.api.Consumer;
 import org.apache.pulsar.client.api.Message;
 import org.apache.pulsar.client.api.Producer;
 import org.apache.pulsar.client.api.PulsarClient;
+import org.apache.pulsar.client.api.Schema;
+import org.apache.pulsar.client.api.SubscriptionInitialPosition;
+import org.apache.pulsar.client.api.transaction.Transaction;
 import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
+import static net.bytebuddy.matcher.ElementMatchers.is;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -19,7 +26,7 @@ public class PulsarContainerTest {
 
     public static final String TEST_TOPIC = "test_topic";
 
-    private static final DockerImageName PULSAR_IMAGE = DockerImageName.parse("apachepulsar/pulsar:2.2.0");
+    private static final DockerImageName PULSAR_IMAGE = DockerImageName.parse("apachepulsar/pulsar:2.10.0");
 
     @Test
     public void testUsage() throws Exception {
@@ -34,10 +41,10 @@ public class PulsarContainerTest {
         try (PulsarContainer pulsar = new PulsarContainer("2.5.1")) {
             pulsar.start();
 
-            PulsarAdmin pulsarAdmin = PulsarAdmin.builder().serviceHttpUrl(pulsar.getHttpServiceUrl()).build();
-
-            assertThatThrownBy(() -> pulsarAdmin.functions().getFunctions("public", "default"))
-                .isInstanceOf(PulsarAdminException.class);
+            try (PulsarAdmin pulsarAdmin = PulsarAdmin.builder().serviceHttpUrl(pulsar.getHttpServiceUrl()).build();) {
+                assertThatThrownBy(() -> pulsarAdmin.functions().getFunctions("public", "default"))
+                    .isInstanceOf(PulsarAdminException.class);
+            }
         }
     }
 
@@ -46,9 +53,48 @@ public class PulsarContainerTest {
         try (PulsarContainer pulsar = new PulsarContainer("2.5.1").withFunctionsWorker()) {
             pulsar.start();
 
-            PulsarAdmin pulsarAdmin = PulsarAdmin.builder().serviceHttpUrl(pulsar.getHttpServiceUrl()).build();
+            try (PulsarAdmin pulsarAdmin = PulsarAdmin.builder().serviceHttpUrl(pulsar.getHttpServiceUrl()).build();) {
+                assertThat(pulsarAdmin.functions().getFunctions("public", "default")).hasSize(0);
+            }
+        }
+    }
 
-            assertThat(pulsarAdmin.functions().getFunctions("public", "default")).hasSize(0);
+    @Test
+    public void testTransactions() throws Exception {
+        try (PulsarContainer pulsar = new PulsarContainer(PULSAR_IMAGE).withTransactions()) {
+            pulsar.start();
+
+            try (PulsarAdmin pulsarAdmin = PulsarAdmin.builder().serviceHttpUrl(pulsar.getHttpServiceUrl()).build();) {
+                assertThat(pulsarAdmin.topics().getList("pulsar/system")
+                    .contains("persistent://pulsar/system/transaction_coordinator_assign-partition-0")).isTrue();
+            }
+            testTransactionFunctionality(pulsar.getPulsarBrokerUrl());
+        }
+    }
+
+    @Test
+    public void testTransactionsAndFunctionsWorker() throws Exception {
+        try (PulsarContainer pulsar = new PulsarContainer(PULSAR_IMAGE).withTransactions().withFunctionsWorker()) {
+            pulsar.start();
+
+            try (PulsarAdmin pulsarAdmin = PulsarAdmin.builder().serviceHttpUrl(pulsar.getHttpServiceUrl()).build();) {
+                assertThat(pulsarAdmin.topics().getList("pulsar/system")
+                    .contains("persistent://pulsar/system/transaction_coordinator_assign-partition-0")).isTrue();
+                assertThat(pulsarAdmin.functions().getFunctions("public", "default")).hasSize(0);
+            }
+            testTransactionFunctionality(pulsar.getPulsarBrokerUrl());
+        }
+    }
+
+    @Test
+    public void testConfiguration() throws Exception {
+        try (PulsarContainer pulsar = new PulsarContainer(PULSAR_IMAGE)) {
+            pulsar.withConfiguration("clusterName", "mycluster");
+            assertThat(pulsar.getEnvMap().get("PULSAR_PREFIX_clusterName")).isEqualTo("mycluster");
+
+            pulsar.withConfiguration(Maps.newHashMap("clusterName", "mycluster2", "maxTopicsPerNamespace", "10"));
+            assertThat(pulsar.getEnvMap().get("PULSAR_PREFIX_clusterName")).isEqualTo("mycluster2");
+            assertThat(pulsar.getEnvMap().get("PULSAR_PREFIX_maxTopicsPerNamespace")).isEqualTo("10");
         }
     }
 
@@ -63,6 +109,32 @@ public class PulsarContainerTest {
             Message message = future.get(5, TimeUnit.SECONDS);
 
             assertThat(new String(message.getData())).isEqualTo("test containers");
+        }
+    }
+
+    protected void testTransactionFunctionality(String pulsarBrokerUrl) throws Exception {
+        try (
+            PulsarClient client = PulsarClient.builder()
+                .serviceUrl(pulsarBrokerUrl)
+                .enableTransaction(true)
+                .build();
+            Consumer<String> consumer = client.newConsumer(Schema.STRING)
+                .topic("transaction-topic")
+                .subscriptionInitialPosition(SubscriptionInitialPosition.Earliest)
+                .subscriptionName("test-transaction-sub")
+                .subscribe();
+            Producer<String> producer = client.newProducer(Schema.STRING)
+                .sendTimeout(0, TimeUnit.SECONDS)
+                .topic("transaction-topic").create()
+        ) {
+            final Transaction transaction = client.newTransaction().build().get();
+            producer
+                .newMessage(transaction)
+                .value("first")
+                .send();
+            transaction.commit();
+            Message<String> message = consumer.receive();
+            assertThat(message.getValue()).isEqualTo("first");
         }
     }
 }
