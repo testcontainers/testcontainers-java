@@ -201,6 +201,7 @@ A huge thank you to our sponsors:
 * [Togglz](https://www.togglz.org/) - Feature Flags for the Java platform
 * [Byzer](https://www.byzer.org/home) - Integration tests for Data and AI platforms are based on multiple versions of Byzer, Ray and Apache Spark.
 * [Apache SeaTunnel](https://github.com/apache/incubator-seatunnel) - Integration testing with different datasource.
+* [Bucket4j](https://github.com/bucket4j/bucket4j) - Java rate-limiting library based on the token-bucket algorithm.
 
 ## License
 
