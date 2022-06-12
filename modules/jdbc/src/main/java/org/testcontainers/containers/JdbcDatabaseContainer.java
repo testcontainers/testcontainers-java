@@ -178,7 +178,8 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
             String.format(
                 "Container is started, but cannot be accessed by (JDBC URL: %s), please check container logs",
                 this.getJdbcUrl()
-            ), lastConnectionException
+            ),
+            lastConnectionException
         );
     }
 
