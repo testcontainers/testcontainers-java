@@ -31,14 +31,17 @@ public enum PortForwardingContainer {
     private Connection createSSHSession() {
         String password = UUID.randomUUID().toString();
         container =
-            new GenericContainer<>(DockerImageName.parse("testcontainers/sshd:1.0.0"))
+            new GenericContainer<>(DockerImageName.parse("testcontainers/sshd:1.1.0"))
                 .withExposedPorts(22)
                 .withEnv("PASSWORD", password)
                 .withCommand(
                     "sh",
                     "-c",
                     // Disable ipv6 & Make it listen on all interfaces, not just localhost
-                    "echo \"root:$PASSWORD\" | chpasswd && /usr/sbin/sshd -D -o PermitRootLogin=yes -o AddressFamily=inet -o GatewayPorts=yes"
+                    // Enable Us supported by our ssh client library
+                    "echo \"root:$PASSWORD\" | chpasswd && /usr/sbin/sshd -D -o PermitRootLogin=yes "
+                        + "-o AddressFamily=inet -o GatewayPorts=yes -o AllowAgentForwarding=yes -o AllowTcpForwarding=yes "
+                        + "-o KexAlgorithms=+diffie-hellman-group1-sha1 -o HostkeyAlgorithms=+ssh-rsa "
                 );
         container.start();
 
