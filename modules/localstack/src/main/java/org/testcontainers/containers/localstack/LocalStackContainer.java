@@ -193,7 +193,9 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
      *
      * @param service the service that is to be accessed
      * @return an {@link AwsClientBuilder.EndpointConfiguration}
+     * @deprecated {@link LocalStackContainer} will not depend on aws sdk.
      */
+    @Deprecated
     public AwsClientBuilder.EndpointConfiguration getEndpointConfiguration(Service service) {
         return new AwsClientBuilder.EndpointConfiguration(getEndpointOverride(service).toString(), getRegion());
     }
@@ -257,7 +259,9 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
              .build()
      </code></pre>
      * @return an {@link AWSCredentialsProvider}
+     * @deprecated {@link LocalStackContainer} will not depend on aws sdk.
      */
+    @Deprecated
     public AWSCredentialsProvider getDefaultCredentialsProvider() {
         return new AWSStaticCredentialsProvider(new BasicAWSCredentials(getAccessKey(), getSecretKey()));
     }
