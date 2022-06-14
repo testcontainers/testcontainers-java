@@ -70,7 +70,7 @@ body:
     attributes:
       label: Docker version
       description: Please run `docker version` and copy and paste the output into this field.
-      render: markdown
+      render: shell
     validations:
       required: true
   - type: textarea
