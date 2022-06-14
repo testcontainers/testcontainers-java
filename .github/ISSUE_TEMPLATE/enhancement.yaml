@@ -51,6 +51,6 @@ body:
     id: proposal
     attributes:
       label: Proposal
-      description: Also tell us, what did you expect to happen?
+      description: What should be improved? What are the limitations of the current implications that would be solved by the proposal?
     validations:
       required: true
