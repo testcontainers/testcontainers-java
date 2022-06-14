@@ -58,7 +58,7 @@ body:
   - type: dropdown
     id: latest-version
     attributes:
-      label: Testcontainers latest version
+      label: Using the latest Testcontainers version?
       description: If you are not using the latest version, can you update and reproduce it? still happening?
       options:
         - 'Yes'
