@@ -89,7 +89,6 @@ public class LocalstackContainerTest {
                         new BasicAWSCredentials(localstack.getAccessKey(), localstack.getSecretKey())
                     )
                 )
-                .withRegion(localstack.getRegion())
                 .build();
             // }
 
