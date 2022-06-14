@@ -16,7 +16,7 @@ and will be able to override server settings when the container starts.
 
 If no custom password is specified, the container will use the default user password `test` for the `root` user as well.
 When you specify a custom password for the database user,
-this will also act as the password of the MySQL root user automatically. 
+this will also act as the password of the MySQL `root` user automatically. 
 
 ## Adding this module to your project dependencies
 
