@@ -49,7 +49,7 @@ body:
     id: problem
     attributes:
       label: Problem
-      description: Is your feature related to a problem? Please describe
+      description: Is this feature related to a problem? Please describe it.
     validations:
       required: true
   - type: textarea
