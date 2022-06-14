@@ -70,7 +70,7 @@ body:
     id: alternatives
     attributes:
       label: Benefit
-      description: Are there other alternatives? Please describe
+      description: Are there other alternatives? Please describe them.
     validations:
       required: true
   - type: dropdown
