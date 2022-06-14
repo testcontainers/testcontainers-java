@@ -1,5 +1,5 @@
 name: Feature
-description: File a feature
+description: Suggest a new feature
 title: "[Feature]: "
 labels: ["type/feature"]
 body:
