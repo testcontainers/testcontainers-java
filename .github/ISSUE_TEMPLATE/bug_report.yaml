@@ -93,4 +93,4 @@ body:
       description: |
         Any links or references to have more context about the issue.
 
-        Tip: You can attach a minimal sample project to reproduce the issue or log files by clicking this area to highlight it and then dragging files in.
+        Tip: You can attach a minimal sample project to reproduce the issue or provide further log files by clicking into this area to focus it and then dragging files in.
