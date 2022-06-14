@@ -11,7 +11,7 @@ body:
     id: module
     attributes:
       label: Module
-      description: Which testcontainers module are you using?
+      description: Which Testcontainers module are you using?
       options:
         - Core
         - Azure
