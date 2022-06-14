@@ -77,7 +77,6 @@ body:
     id: contribute
     attributes:
       label: Would you like to help contributing this feature?
-      description: Which testcontainers module are you using?
       options:
         - 'Yes'
         - 'No'
