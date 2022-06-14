@@ -69,7 +69,7 @@ body:
     id: docker-version
     attributes:
       label: Docker version
-      description: Run `docker version`, copy and paste the output here
+      description: Please run `docker version` and copy and paste the output into this field.
       render: markdown
     validations:
       required: true
