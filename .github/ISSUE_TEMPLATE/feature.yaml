@@ -45,6 +45,7 @@ body:
         - ToxiProxy
         - Trino
         - Vault
+        - New Module
   - type: textarea
     id: problem
     attributes:
