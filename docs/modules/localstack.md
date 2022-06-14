@@ -18,8 +18,8 @@ public void someTestMethod() {
     // AWS SDK v1
     AmazonS3 s3 = AmazonS3ClientBuilder
                     .standard()
-                    .withEndpointConfiguration(localstack.getEndpointConfiguration(S3))
-                    .withCredentials(localstack.getDefaultCredentialsProvider())
+                    .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(localstack.getEndpointOverride(S3).toString(), localstack.getRegion()))
+                    .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(localstack.getAccessKey(), localstack.getSecretKey())))
                     .build();
     
             s3.createBucket("foo");

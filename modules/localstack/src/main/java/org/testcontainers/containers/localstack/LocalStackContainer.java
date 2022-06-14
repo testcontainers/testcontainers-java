@@ -27,10 +27,30 @@ import java.util.stream.Collectors;
 /**
  * <p>Container for LocalStack, 'A fully functional local AWS cloud stack'.</p>
  * <p>{@link LocalStackContainer#withServices(Service...)} should be used to select which services
- * are to be launched. See {@link Service} for available choices. It is advised that
- * {@link LocalStackContainer#getEndpointConfiguration(Service)} and
- * {@link LocalStackContainer#getDefaultCredentialsProvider()}
- * be used to obtain compatible endpoint configuration and credentials, respectively.</p>
+ * are to be launched. See {@link Service} for available choices. Use it according to the AWS SDK
+ * version:
+ *
+ * AWS SDK V1:
+ * <pre>
+ *     AmazonS3 s3 = AmazonS3ClientBuilder
+ *                     .standard()
+ *                     .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(localstack.getEndpointOverride(S3).toString(), localstack.getRegion()))
+ *                     .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(localstack.getAccessKey(), localstack.getSecretKey())))
+ *                     .withRegion(localstack.getRegion())
+ *                     .build();
+ * </pre>
+ *
+ * AWS SDK V2:
+ * <pre>
+ *     S3Client s3 = S3Client
+ *                 .builder()
+ *                 .endpointOverride(localstack.getEndpointOverride(S3))
+ *                 .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(
+ *                     localstack.getAccessKey(), localstack.getSecretKey()
+ *                 )))
+ *                 .region(Region.of(localstack.getRegion()))
+ *                 .build();
+ * </pre>
  */
 @Slf4j
 public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
