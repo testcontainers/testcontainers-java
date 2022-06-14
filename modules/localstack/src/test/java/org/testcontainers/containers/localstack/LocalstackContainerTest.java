@@ -75,6 +75,7 @@ public class LocalstackContainerTest {
 
         @Test
         public void s3TestOverBridgeNetwork() throws IOException {
+            // with_aws_sdk_v1 {
             AmazonS3 s3 = AmazonS3ClientBuilder
                 .standard()
                 .withEndpointConfiguration(
@@ -88,7 +89,9 @@ public class LocalstackContainerTest {
                         new BasicAWSCredentials(localstack.getAccessKey(), localstack.getSecretKey())
                     )
                 )
+                .withRegion(localstack.getRegion())
                 .build();
+            // }
 
             final String bucketName = "foo";
             s3.createBucket(bucketName);
@@ -114,6 +117,7 @@ public class LocalstackContainerTest {
 
         @Test
         public void s3TestUsingAwsSdkV2() {
+            // with_aws_sdk_v2 {
             S3Client s3 = S3Client
                 .builder()
                 .endpointOverride(localstack.getEndpointOverride(Service.S3))
@@ -124,6 +128,7 @@ public class LocalstackContainerTest {
                 )
                 .region(Region.of(localstack.getRegion()))
                 .build();
+            // }
 
             final String bucketName = "foov2";
             s3.createBucket(b -> b.bucket(bucketName));
