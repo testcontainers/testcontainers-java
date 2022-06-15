@@ -5,6 +5,6 @@ dependencies {
     // TODO use JDK's HTTP client and/or Apache HttpClient5
     shaded 'com.squareup.okhttp3:okhttp:3.14.9'
 
-    testImplementation 'org.assertj:assertj-core:3.22.0'
+    testImplementation 'org.assertj:assertj-core:3.23.1'
     testImplementation 'com.azure:azure-cosmos:4.30.0'
 }
