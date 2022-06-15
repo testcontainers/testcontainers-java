@@ -2,8 +2,10 @@ package org.testcontainers.containers;
 
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
+import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.utility.DockerImageName;
-
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -20,7 +22,7 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
     /**
      * See <a href="https://github.com/apache/pulsar/blob/master/pulsar-common/src/main/java/org/apache/pulsar/common/naming/SystemTopicNames.java">SystemTopicNames</a>.
      */
-    public static final String TRANSACTION_TOPIC_ENDPOINT =
+    private static final String TRANSACTION_TOPIC_ENDPOINT =
         "/admin/v2/persistent/pulsar/system/transaction_coordinator_assign/partitions";
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("apachepulsar/pulsar");
@@ -30,7 +32,7 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
 
     private boolean functionsWorkerEnabled = false;
 
-    private boolean transactions = false;
+    private boolean transactionsEnabled = false;
 
     /**
      * @deprecated use {@link PulsarContainer(DockerImageName)} instead
@@ -66,7 +68,7 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
     }
 
     public PulsarContainer withTransactions() {
-        transactions = true;
+        transactionsEnabled = true;
         return this;
     }
 
@@ -75,7 +77,7 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
     }
 
     public PulsarContainer withConfiguration(Map<String, String> configuration) {
-        configuration.forEach((name, value) -> withEnv("PULSAR_PREFIX_" + name, value));
+        configuration.forEach((name, value) -> withConfiguration(name, value));
         return this;
     }
 
@@ -96,20 +98,25 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
         }
 
         withCommand("/bin/bash", "-c", standaloneBaseCommand);
-        if (transactions) {
-            withConfiguration("transactionCoordinatorEnabled", "true");
-        }
 
-        if (functionsWorkerEnabled) {
-            waitingFor(
-                new WaitAllStrategy()
-                    .withStrategy(waitStrategy)
-                    .withStrategy(Wait.forLogMessage(".*Function worker service started.*", 1))
+        List<WaitStrategy> waitStrategyList = new ArrayList<>();
+        waitStrategyList.add(this.waitStrategy);
+        waitStrategyList.add(
+            Wait.forHttp(METRICS_ENDPOINT).forStatusCode(200).forPort(BROKER_HTTP_PORT)
+        );
+        if (transactionsEnabled) {
+            withConfiguration("transactionCoordinatorEnabled", "true");
+            waitStrategyList.add(
+                Wait.forHttp(TRANSACTION_TOPIC_ENDPOINT).forStatusCode(200).forPort(BROKER_HTTP_PORT)
             );
-        } else if (transactions) {
-            waitingFor(Wait.forHttp(TRANSACTION_TOPIC_ENDPOINT).forStatusCode(200).forPort(BROKER_HTTP_PORT));
-        } else {
-            waitingFor(Wait.forHttp(METRICS_ENDPOINT).forStatusCode(200).forPort(BROKER_HTTP_PORT));
         }
+        if (functionsWorkerEnabled) {
+            waitStrategyList.add(
+                Wait.forLogMessage(".*Function worker service started.*", 1)
+            );
+        }
+        final WaitAllStrategy compoundedWaitStrategy = new WaitAllStrategy();
+        waitStrategyList.forEach(compoundedWaitStrategy::withStrategy);
+        waitingFor(compoundedWaitStrategy);
     }
 }
