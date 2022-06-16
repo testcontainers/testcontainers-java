@@ -10,7 +10,7 @@ dependencies {
     compileOnly "org.projectlombok:lombok:1.18.24"
     annotationProcessor "org.projectlombok:lombok:1.18.24"
     implementation 'biz.paluch.redis:spinach:0.3'
-    implementation 'com.google.code.gson:gson:2.8.9'
+    implementation 'com.google.code.gson:gson:2.9.0'
     implementation 'com.google.guava:guava:23.0'
     testImplementation 'ch.qos.logback:logback-classic:1.2.11'
     testImplementation 'org.mockito:mockito-all:1.10.19'

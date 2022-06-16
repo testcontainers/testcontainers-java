@@ -151,6 +151,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
         // Repeatedly try and open a connection to the DB and execute a test query
         long start = System.currentTimeMillis();
 
+        Exception lastConnectionException = null;
         while (System.currentTimeMillis() < start + (1000 * startupTimeoutSeconds)) {
             if (!isRunning()) {
                 Thread.sleep(100L);
@@ -165,6 +166,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
                     // we explicitly want this exception to fail fast without retries
                     throw e;
                 } catch (Exception e) {
+                    lastConnectionException = e;
                     // ignore so that we can try again
                     logger().debug("Failure when trying test query", e);
                     Thread.sleep(100L);
@@ -176,7 +178,8 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
             String.format(
                 "Container is started, but cannot be accessed by (JDBC URL: %s), please check container logs",
                 this.getJdbcUrl()
-            )
+            ),
+            lastConnectionException
         );
     }
 

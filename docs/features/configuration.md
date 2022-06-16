@@ -30,7 +30,6 @@ Before running any containers Testcontainers will perform a set of startup check
 ```
         ℹ︎ Checking the system...
         ✔ Docker version should be at least 1.6.0
-        ✔ Docker environment should have more than 2GB free disk space
         ✔ File should be mountable
         ✔ A port exposed by a docker container should be accessible
 ```
