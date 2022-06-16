@@ -9,10 +9,10 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.testcontainers.containers.BrowserWebDriverContainer;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import static java.util.Collections.emptyList;
-import static java.util.stream.Collectors.toList;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 
 public class BrowserWebDriverContainerTest {
@@ -40,7 +40,6 @@ public class BrowserWebDriverContainerTest {
         try (
             BrowserWebDriverContainer chromeWithoutNoProxySet = new BrowserWebDriverContainer()
                 .withCapabilities(new ChromeOptions())
-
         ) {
             chromeWithoutNoProxySet.start();
 
@@ -48,7 +47,6 @@ public class BrowserWebDriverContainerTest {
             assertEquals("no_proxy should be set to default if not already present", "localhost", noProxy);
         }
     }
-
 
     @Test
     public void createContainerWithShmVolume() {
@@ -76,19 +74,19 @@ public class BrowserWebDriverContainerTest {
         ) {
             webDriverContainer.start();
 
-            assertEquals("Shared memory size is configured",
-                512 * FileUtils.ONE_MB,
-                webDriverContainer.getShmSize());
+            assertEquals("Shared memory size is configured", 512 * FileUtils.ONE_MB, webDriverContainer.getShmSize());
 
-            assertEquals("No shm mounts present", emptyList(), shmVolumes(webDriverContainer));
+            assertEquals("No shm mounts present", Collections.emptyList(), shmVolumes(webDriverContainer));
         }
     }
 
     private List<InspectContainerResponse.Mount> shmVolumes(final BrowserWebDriverContainer container) {
-        return container.getContainerInfo().getMounts()
+        return container
+            .getContainerInfo()
+            .getMounts()
             .stream()
             // destination path is always /dev/shm
             .filter(m -> m.getDestination().getPath().equals("/dev/shm"))
-            .collect(toList());
+            .collect(Collectors.toList());
     }
 }

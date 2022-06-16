@@ -6,6 +6,8 @@ sourceSets {
     jarFileTest
 }
 
+test.maxParallelForks = 4
+
 idea.module.testSourceDirs += sourceSets.jarFileTest.allSource.srcDirs
 
 shadowJar {
@@ -38,15 +40,13 @@ tasks.japicmp {
         "org.testcontainers.shaded.*",
     ]
 
-    classExcludes = []
+    classExcludes = [
+        "org.testcontainers.utility.RyukResourceReaper",
+    ]
 
     methodExcludes = [
-        "org.testcontainers.utility.ResourceReaper#start(java.lang.String,com.github.dockerjava.api.DockerClient)",
-        "org.testcontainers.utility.ResourceReaper#start(com.github.dockerjava.api.DockerClient)",
-        "org.testcontainers.utility.ResourceReaper#registerNetworkForCleanup(java.lang.String)",
-        "org.testcontainers.utility.ResourceReaper#removeNetworks(java.lang.String)",
-        "org.testcontainers.images.builder.Transferable#of(java.lang.String)",
-        "org.testcontainers.images.builder.Transferable#updateChecksum(java.util.zip.Checksum)"
+        "org.testcontainers.containers.Container#getDockerClient()",
+        "org.testcontainers.containers.ContainerState#getDockerClient()",
     ]
 
     fieldExcludes = []
@@ -60,12 +60,8 @@ configurations.all {
 }
 
 dependencies {
-    baseline 'org.testcontainers:testcontainers:1.16.3', {
-        exclude group: "*", module: "*"
-    }
-
     api 'junit:junit:4.13.2'
-    api 'org.slf4j:slf4j-api:1.7.35'
+    api 'org.slf4j:slf4j-api:1.7.36'
     compileOnly 'org.jetbrains:annotations:23.0.0'
     testCompileClasspath 'org.jetbrains:annotations:23.0.0'
     api 'org.apache.commons:commons-compress:1.21'
@@ -91,18 +87,18 @@ dependencies {
     shaded 'org.zeroturnaround:zt-exec:1.12'
 
     testImplementation 'org.apache.httpcomponents:httpclient:4.5.9'
-    testImplementation 'redis.clients:jedis:4.0.1'
+    testImplementation 'redis.clients:jedis:4.2.3'
     testImplementation 'com.rabbitmq:amqp-client:5.14.2'
-    testImplementation 'org.mongodb:mongo-java-driver:3.12.10'
+    testImplementation 'org.mongodb:mongo-java-driver:3.12.11'
 
-    testImplementation ('org.mockito:mockito-core:4.3.1') {
+    testImplementation ('org.mockito:mockito-core:4.6.0') {
         exclude(module: 'hamcrest-core')
     }
     // Synthetic JAR used for MountableFileTest and DirectoryTarResourceTest
     testImplementation files('testlib/repo/fakejar/fakejar/0/fakejar-0.jar')
 
     testImplementation 'org.rnorth.visible-assertions:visible-assertions:2.1.2'
-    testImplementation 'org.assertj:assertj-core:3.22.0'
+    testImplementation 'org.assertj:assertj-core:3.23.1'
     testImplementation project(':test-support')
 
     jarFileTestCompileOnly "org.projectlombok:lombok:${lombok.version}"

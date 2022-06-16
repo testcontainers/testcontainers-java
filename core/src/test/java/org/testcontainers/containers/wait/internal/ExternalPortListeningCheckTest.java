@@ -16,8 +16,11 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
 public class ExternalPortListeningCheckTest {
 
     private ServerSocket listeningSocket1;
+
     private ServerSocket listeningSocket2;
+
     private ServerSocket nonListeningSocket;
+
     private WaitStrategyTarget mockContainer;
 
     @Before
@@ -34,8 +37,10 @@ public class ExternalPortListeningCheckTest {
 
     @Test
     public void singleListening() {
-
-        final ExternalPortListeningCheck check = new ExternalPortListeningCheck(mockContainer, ImmutableSet.of(listeningSocket1.getLocalPort()));
+        final ExternalPortListeningCheck check = new ExternalPortListeningCheck(
+            mockContainer,
+            ImmutableSet.of(listeningSocket1.getLocalPort())
+        );
 
         final Boolean result = check.call();
 
@@ -44,8 +49,10 @@ public class ExternalPortListeningCheckTest {
 
     @Test
     public void multipleListening() {
-
-        final ExternalPortListeningCheck check = new ExternalPortListeningCheck(mockContainer, ImmutableSet.of(listeningSocket1.getLocalPort(), listeningSocket2.getLocalPort()));
+        final ExternalPortListeningCheck check = new ExternalPortListeningCheck(
+            mockContainer,
+            ImmutableSet.of(listeningSocket1.getLocalPort(), listeningSocket2.getLocalPort())
+        );
 
         final Boolean result = check.call();
 
@@ -54,13 +61,16 @@ public class ExternalPortListeningCheckTest {
 
     @Test
     public void oneNotListening() {
+        final ExternalPortListeningCheck check = new ExternalPortListeningCheck(
+            mockContainer,
+            ImmutableSet.of(listeningSocket1.getLocalPort(), nonListeningSocket.getLocalPort())
+        );
 
-        final ExternalPortListeningCheck check = new ExternalPortListeningCheck(mockContainer, ImmutableSet.of(listeningSocket1.getLocalPort(), nonListeningSocket.getLocalPort()));
-
-        assertThrows("ExternalPortListeningCheck detects a non-listening port among many",
-                IllegalStateException.class,
-                (Runnable) check::call);
-
+        assertThrows(
+            "ExternalPortListeningCheck detects a non-listening port among many",
+            IllegalStateException.class,
+            (Runnable) check::call
+        );
     }
 
     @After

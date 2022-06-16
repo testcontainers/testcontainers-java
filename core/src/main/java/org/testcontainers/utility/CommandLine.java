@@ -2,6 +2,7 @@ package org.testcontainers.utility;
 
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zeroturnaround.exec.InvalidExitValueException;
 import org.zeroturnaround.exec.ProcessExecutor;
 import org.zeroturnaround.exec.ProcessResult;
@@ -14,14 +15,12 @@ import java.nio.file.Paths;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
 
-import static org.slf4j.LoggerFactory.getLogger;
-
 /**
  * Process execution utility methods.
  */
 public class CommandLine {
 
-    private static final Logger LOGGER = getLogger(CommandLine.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CommandLine.class);
 
     /**
      * Run a shell command synchronously.
@@ -30,16 +29,11 @@ public class CommandLine {
      * @return the stdout output of the command
      */
     public static String runShellCommand(String... command) {
-
         String joinedCommand = String.join(" ", command);
         LOGGER.debug("Executing shell command: `{}`", joinedCommand);
 
         try {
-            ProcessResult result = new ProcessExecutor()
-                .command(command)
-                .readOutput(true)
-                .exitValueNormal()
-                .execute();
+            ProcessResult result = new ProcessExecutor().command(command).readOutput(true).exitValueNormal().execute();
 
             return result.outputUTF8().trim();
         } catch (IOException | InterruptedException | TimeoutException | InvalidExitValueException e) {
@@ -55,7 +49,6 @@ public class CommandLine {
      * @return  whether the executable exists and is executable
      */
     public static boolean executableExists(String executable) {
-
         // First check if we've been given the full path already
         File directFile = new File(executable);
         if (directFile.exists() && directFile.canExecute()) {
@@ -78,6 +71,7 @@ public class CommandLine {
     }
 
     private static class ShellCommandException extends RuntimeException {
+
         public ShellCommandException(String message, Exception e) {
             super(message, e);
         }

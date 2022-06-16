@@ -18,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 public class PulsarContainerTest {
 
     public static final String TEST_TOPIC = "test_topic";
+
     private static final DockerImageName PULSAR_IMAGE = DockerImageName.parse("apachepulsar/pulsar:2.2.0");
 
     @Test
@@ -33,9 +34,7 @@ public class PulsarContainerTest {
         try (PulsarContainer pulsar = new PulsarContainer("2.5.1")) {
             pulsar.start();
 
-            PulsarAdmin pulsarAdmin = PulsarAdmin.builder()
-                .serviceHttpUrl(pulsar.getHttpServiceUrl())
-                .build();
+            PulsarAdmin pulsarAdmin = PulsarAdmin.builder().serviceHttpUrl(pulsar.getHttpServiceUrl()).build();
 
             assertThatThrownBy(() -> pulsarAdmin.functions().getFunctions("public", "default"))
                 .isInstanceOf(PulsarAdminException.class);
@@ -47,36 +46,23 @@ public class PulsarContainerTest {
         try (PulsarContainer pulsar = new PulsarContainer("2.5.1").withFunctionsWorker()) {
             pulsar.start();
 
-            PulsarAdmin pulsarAdmin = PulsarAdmin.builder()
-                .serviceHttpUrl(pulsar.getHttpServiceUrl())
-                .build();
+            PulsarAdmin pulsarAdmin = PulsarAdmin.builder().serviceHttpUrl(pulsar.getHttpServiceUrl()).build();
 
             assertThat(pulsarAdmin.functions().getFunctions("public", "default")).hasSize(0);
         }
     }
 
     protected void testPulsarFunctionality(String pulsarBrokerUrl) throws Exception {
-
         try (
-            PulsarClient client = PulsarClient.builder()
-                .serviceUrl(pulsarBrokerUrl)
-                .build();
-            Consumer consumer = client.newConsumer()
-                .topic(TEST_TOPIC)
-                .subscriptionName("test-subs")
-                .subscribe();
-            Producer<byte[]> producer = client.newProducer()
-                .topic(TEST_TOPIC)
-                .create()
+            PulsarClient client = PulsarClient.builder().serviceUrl(pulsarBrokerUrl).build();
+            Consumer consumer = client.newConsumer().topic(TEST_TOPIC).subscriptionName("test-subs").subscribe();
+            Producer<byte[]> producer = client.newProducer().topic(TEST_TOPIC).create()
         ) {
-
             producer.send("test containers".getBytes());
             CompletableFuture<Message> future = consumer.receiveAsync();
             Message message = future.get(5, TimeUnit.SECONDS);
 
-            assertThat(new String(message.getData()))
-                .isEqualTo("test containers");
+            assertThat(new String(message.getData())).isEqualTo("test containers");
         }
     }
-
 }

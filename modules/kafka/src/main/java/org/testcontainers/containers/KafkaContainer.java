@@ -11,6 +11,7 @@ import org.testcontainers.utility.DockerImageName;
 public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("confluentinc/cp-kafka");
+
     private static final String DEFAULT_TAG = "5.4.3";
 
     public static final int KAFKA_PORT = 9093;
@@ -39,7 +40,6 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     public KafkaContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         withExposedPorts(KAFKA_PORT);
@@ -77,12 +77,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     protected void configure() {
         withEnv(
             "KAFKA_ADVERTISED_LISTENERS",
-            String.format(
-                "BROKER://%s:9092",
-                getNetwork() != null
-                    ? getNetworkAliases().get(0)
-                    : "localhost"
-            )
+            String.format("BROKER://%s:9092", getNetwork() != null ? getNetworkAliases().get(0) : "localhost")
         );
 
         String command = "#!/bin/bash\n";
@@ -111,9 +106,12 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         ExecResult result = execInContainer(
             "kafka-configs",
             "--alter",
-            "--bootstrap-server", brokerAdvertisedListener,
-            "--entity-type", "brokers",
-            "--entity-name", getEnvMap().get("KAFKA_BROKER_ID"),
+            "--bootstrap-server",
+            brokerAdvertisedListener,
+            "--entity-type",
+            "brokers",
+            "--entity-name",
+            getEnvMap().get("KAFKA_BROKER_ID"),
             "--add-config",
             "advertised.listeners=[" + String.join(",", getBootstrapServers(), brokerAdvertisedListener) + "]"
         );

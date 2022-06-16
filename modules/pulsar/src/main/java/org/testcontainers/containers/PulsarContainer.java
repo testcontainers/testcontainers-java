@@ -10,10 +10,13 @@ import org.testcontainers.utility.DockerImageName;
 public class PulsarContainer extends GenericContainer<PulsarContainer> {
 
     public static final int BROKER_PORT = 6650;
+
     public static final int BROKER_HTTP_PORT = 8080;
+
     public static final String METRICS_ENDPOINT = "/metrics";
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("apachepulsar/pulsar");
+
     @Deprecated
     private static final String DEFAULT_TAG = "2.2.0";
 
@@ -37,7 +40,6 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
 
     public PulsarContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-
         dockerImageName.assertCompatibleWith(DockerImageName.parse("apachepulsar/pulsar"));
 
         withExposedPorts(BROKER_PORT, BROKER_HTTP_PORT);

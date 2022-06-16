@@ -10,7 +10,6 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.testcontainers.junit.jupiter.FilesystemFriendlyNameGenerator.filesystemFriendlyNameOf;
 
 class FilesystemFriendlyNameGeneratorTest {
 
@@ -18,10 +17,9 @@ class FilesystemFriendlyNameGeneratorTest {
     @MethodSource("provideDisplayNamesAndFilesystemFriendlyNames")
     void should_generate_filesystem_friendly_name(String displayName, String expectedName) {
         ExtensionContext context = mock(ExtensionContext.class);
-        doReturn(displayName)
-            .when(context).getUniqueId();
+        doReturn(displayName).when(context).getUniqueId();
 
-        String filesystemFriendlyName = filesystemFriendlyNameOf(context);
+        String filesystemFriendlyName = FilesystemFriendlyNameGenerator.filesystemFriendlyNameOf(context);
 
         assertThat(filesystemFriendlyName).isEqualTo(expectedName);
     }

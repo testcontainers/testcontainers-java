@@ -9,7 +9,6 @@ import java.nio.file.Paths;
  *
  */
 public interface ClasspathTrait<SELF extends ClasspathTrait<SELF> & BuildContextBuilderTrait<SELF> & FilesTrait<SELF>> {
-
     default SELF withFileFromClasspath(String path, String resourcePath) {
         final MountableFile mountableFile = MountableFile.forClasspathResource(resourcePath);
 

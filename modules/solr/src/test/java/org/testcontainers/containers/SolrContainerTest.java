@@ -10,9 +10,9 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
 
 /**
  * @author Simon Schneider
@@ -20,6 +20,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class SolrContainerTest {
 
     private static final DockerImageName SOLR_IMAGE = DockerImageName.parse("solr:8.3.0");
+
     private SolrClient client = null;
 
     @After
@@ -60,7 +61,10 @@ public class SolrContainerTest {
         container.start();
 
         // Do whatever you want with the client ...
-        SolrClient client = new Http2SolrClient.Builder("http://" + container.getContainerIpAddress() + ":" + container.getSolrPort() + "/solr").build();
+        SolrClient client = new Http2SolrClient.Builder(
+            "http://" + container.getHost() + ":" + container.getSolrPort() + "/solr"
+        )
+            .build();
         SolrPingResponse response = client.ping("dummy");
 
         // Stop the container.
@@ -70,9 +74,10 @@ public class SolrContainerTest {
 
     private SolrClient getClient(SolrContainer container) {
         if (client == null) {
-            client = new Http2SolrClient.Builder("http://" + container.getContainerIpAddress() + ":" + container.getSolrPort() + "/solr").build();
+            client =
+                new Http2SolrClient.Builder("http://" + container.getHost() + ":" + container.getSolrPort() + "/solr")
+                    .build();
         }
         return client;
     }
-
 }

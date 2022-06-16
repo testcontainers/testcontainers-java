@@ -37,7 +37,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 public interface ContainerState {
-
     String STATE_HEALTHY = "healthy";
 
     /**
@@ -50,6 +49,10 @@ public interface ContainerState {
     @Deprecated
     default String getContainerIpAddress() {
         return getHost();
+    }
+
+    default DockerClient getDockerClient() {
+        return DockerClientFactory.lazyClient();
     }
 
     /**
@@ -105,7 +108,9 @@ public interface ContainerState {
             InspectContainerResponse inspectContainerResponse = getCurrentContainerInfo();
             HealthState health = inspectContainerResponse.getState().getHealth();
             if (health == null) {
-                throw new RuntimeException("This container's image does not have a healthcheck declared, so health cannot be determined. Either amend the image or use another approach to determine whether containers are healthy.");
+                throw new RuntimeException(
+                    "This container's image does not have a healthcheck declared, so health cannot be determined. Either amend the image or use another approach to determine whether containers are healthy."
+                );
             }
 
             return STATE_HEALTHY.equals(health.getStatus());
@@ -115,7 +120,7 @@ public interface ContainerState {
     }
 
     default InspectContainerResponse getCurrentContainerInfo() {
-        return DockerClientFactory.instance().client().inspectContainerCmd(getContainerId()).exec();
+        return getDockerClient().inspectContainerCmd(getContainerId()).exec();
     }
 
     /**
@@ -141,7 +146,10 @@ public interface ContainerState {
      * @return the port that the exposed port is mapped to, or null if it is not exposed
      */
     default Integer getMappedPort(int originalPort) {
-        Preconditions.checkState(this.getContainerId() != null, "Mapped port can only be obtained after the container is started");
+        Preconditions.checkState(
+            this.getContainerId() != null,
+            "Mapped port can only be obtained after the container is started"
+        );
 
         Ports.Binding[] binding = new Ports.Binding[0];
         final InspectContainerResponse containerInfo = this.getContainerInfo();
@@ -179,7 +187,8 @@ public interface ContainerState {
      * @return the bound port numbers
      */
     default List<Integer> getBoundPortNumbers() {
-        return getPortBindings().stream()
+        return getPortBindings()
+            .stream()
             .map(PortBinding::parse)
             .map(PortBinding::getBinding)
             .map(Ports.Binding::getHostPortSpec)
@@ -190,12 +199,11 @@ public interface ContainerState {
             .collect(Collectors.toList());
     }
 
-
     /**
      * @return all log output from the container from start until the current instant (both stdout and stderr)
      */
     default String getLogs() {
-        return LogUtils.getOutput(DockerClientFactory.instance().client(), getContainerId());
+        return LogUtils.getOutput(getDockerClient(), getContainerId());
     }
 
     /**
@@ -203,7 +211,7 @@ public interface ContainerState {
      * @return all log output from the container from start until the current instant
      */
     default String getLogs(OutputFrame.OutputType... types) {
-        return LogUtils.getOutput(DockerClientFactory.instance().client(), getContainerId(), types);
+        return LogUtils.getOutput(getDockerClient(), getContainerId(), types);
     }
 
     /**
@@ -224,7 +232,8 @@ public interface ContainerState {
      * <p>
      * @see ExecInContainerPattern#execInContainer(com.github.dockerjava.api.command.InspectContainerResponse, String...)
      */
-    default Container.ExecResult execInContainer(String... command) throws UnsupportedOperationException, IOException, InterruptedException {
+    default Container.ExecResult execInContainer(String... command)
+        throws UnsupportedOperationException, IOException, InterruptedException {
         return execInContainer(StandardCharsets.UTF_8, command);
     }
 
@@ -233,8 +242,9 @@ public interface ContainerState {
      * <p>
      * @see ExecInContainerPattern#execInContainer(com.github.dockerjava.api.command.InspectContainerResponse, Charset, String...)
      */
-    default Container.ExecResult execInContainer(Charset outputCharset, String... command) throws UnsupportedOperationException, IOException, InterruptedException {
-        return ExecInContainerPattern.execInContainer(getContainerInfo(), outputCharset, command);
+    default Container.ExecResult execInContainer(Charset outputCharset, String... command)
+        throws UnsupportedOperationException, IOException, InterruptedException {
+        return ExecInContainerPattern.execInContainer(getDockerClient(), getContainerInfo(), outputCharset, command);
     }
 
     /**
@@ -249,7 +259,9 @@ public interface ContainerState {
 
         if (containerPath.endsWith("/") && sourceFile.isFile()) {
             final Logger logger = LoggerFactory.getLogger(GenericContainer.class);
-            logger.warn("folder-like containerPath in copyFileToContainer is deprecated, please explicitly specify a file path");
+            logger.warn(
+                "folder-like containerPath in copyFileToContainer is deprecated, please explicitly specify a file path"
+            );
             copyFileToContainer((Transferable) mountableFile, containerPath + sourceFile.getName());
         } else {
             copyFileToContainer((Transferable) mountableFile, containerPath);
@@ -279,7 +291,7 @@ public interface ContainerState {
             transferable.transferTo(tarArchive, containerPath);
             tarArchive.finish();
 
-            DockerClientFactory.instance().client()
+            getDockerClient()
                 .copyArchiveToContainerCmd(getContainerId())
                 .withTarInputStream(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()))
                 .withRemotePath("/")
@@ -295,13 +307,17 @@ public interface ContainerState {
      * @throws IOException if there's an issue communicating with Docker or receiving entry from TarArchiveInputStream
      * @throws InterruptedException if the thread waiting for the response is interrupted
      */
-    default void copyFileFromContainer(String containerPath, String destinationPath) throws IOException, InterruptedException {
-        copyFileFromContainer(containerPath, inputStream -> {
-            try(FileOutputStream output = new FileOutputStream(destinationPath)) {
-                IOUtils.copy(inputStream, output);
-                return null;
+    default void copyFileFromContainer(String containerPath, String destinationPath)
+        throws IOException, InterruptedException {
+        copyFileFromContainer(
+            containerPath,
+            inputStream -> {
+                try (FileOutputStream output = new FileOutputStream(destinationPath)) {
+                    IOUtils.copy(inputStream, output);
+                    return null;
+                }
             }
-        });
+        );
     }
 
     /**
@@ -311,12 +327,12 @@ public interface ContainerState {
      * @param function function that takes InputStream of the copied file
      */
     @SneakyThrows
-    default  <T> T copyFileFromContainer(String containerPath, ThrowingFunction<InputStream, T> function) {
+    default <T> T copyFileFromContainer(String containerPath, ThrowingFunction<InputStream, T> function) {
         if (getContainerId() == null) {
             throw new IllegalStateException("copyFileFromContainer can only be used when the Container is created.");
         }
 
-        DockerClient dockerClient = DockerClientFactory.instance().client();
+        DockerClient dockerClient = getDockerClient();
         try (
             InputStream inputStream = dockerClient.copyArchiveFromContainerCmd(getContainerId(), containerPath).exec();
             TarArchiveInputStream tarInputStream = new TarArchiveInputStream(inputStream)
