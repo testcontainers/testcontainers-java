@@ -202,6 +202,7 @@ A huge thank you to our sponsors:
 * [Byzer](https://www.byzer.org/home) - Integration tests for Data and AI platforms are based on multiple versions of Byzer, Ray and Apache Spark.
 * [Apache SeaTunnel](https://github.com/apache/incubator-seatunnel) - Integration testing with different datasource.
 * [Bucket4j](https://github.com/bucket4j/bucket4j) - Java rate-limiting library based on the token-bucket algorithm.
+* [Spark ClickHouse Connector](https://github.com/housepower/spark-clickhouse-connector) - Integration tests for Apache Spark with both single node ClickHouse instance and multi-node ClickHouse cluster.
 
 ## License
 
