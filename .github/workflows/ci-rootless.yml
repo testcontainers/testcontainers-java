@@ -16,7 +16,7 @@ jobs:
     env:
       XDG_RUNTIME_DIR: ${{ matrix.XDG_RUNTIME_DIR }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: debug
         run: id -u; whoami
       - name: uninstall rootful Docker

@@ -29,7 +29,7 @@ public class RedmineContainer extends GenericContainer<RedmineContainer> {
 
     public String getRedmineUrl() {
         return String.format("http://%s:%d",
-                this.getContainerIpAddress(),
+                this.getHost(),
                 this.getMappedPort(REDMINE_PORT));
     }
 }

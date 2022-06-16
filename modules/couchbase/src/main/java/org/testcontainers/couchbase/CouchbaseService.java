@@ -20,7 +20,6 @@ package org.testcontainers.couchbase;
  * Describes the different services that should be exposed on the container.
  */
 public enum CouchbaseService {
-
     /**
      * Key-Value service.
      */
@@ -88,5 +87,4 @@ public enum CouchbaseService {
     boolean hasQuota() {
         return minimumQuotaMb > 0;
     }
-
 }

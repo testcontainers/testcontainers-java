@@ -18,7 +18,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 public interface Network extends AutoCloseable, TestRule {
-
     Network SHARED = new NetworkImpl(false, null, Collections.emptySet(), null) {
         @Override
         public void close() {
@@ -87,6 +86,8 @@ public interface Network extends AutoCloseable, TestRule {
             Map<String, String> labels = createNetworkCmd.getLabels();
             labels = new HashMap<>(labels != null ? labels : Collections.emptyMap());
             labels.putAll(DockerClientFactory.DEFAULT_LABELS);
+            //noinspection deprecation
+            labels.putAll(ResourceReaper.instance().getLabels());
             createNetworkCmd.withLabels(labels);
 
             return createNetworkCmd.exec().getId();

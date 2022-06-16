@@ -14,17 +14,18 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public abstract class AbstractWaitStrategy implements WaitStrategy {
 
-    static final ExecutorService EXECUTOR = Executors.newCachedThreadPool(new ThreadFactory() {
+    static final ExecutorService EXECUTOR = Executors.newCachedThreadPool(
+        new ThreadFactory() {
+            private final AtomicLong COUNTER = new AtomicLong(0);
 
-        private final AtomicLong COUNTER = new AtomicLong(0);
-
-        @Override
-        public Thread newThread(Runnable r) {
-            Thread thread = new Thread(r, "testcontainers-wait-" + COUNTER.getAndIncrement());
-            thread.setDaemon(true);
-            return thread;
+            @Override
+            public Thread newThread(Runnable r) {
+                Thread thread = new Thread(r, "testcontainers-wait-" + COUNTER.getAndIncrement());
+                thread.setDaemon(true);
+                return thread;
+            }
         }
-    });
+    );
 
     private static final RateLimiter DOCKER_CLIENT_RATE_LIMITER = RateLimiterBuilder
         .newBuilder()

@@ -18,9 +18,10 @@ package org.testcontainers.jdbc.ext;
 
 import org.testcontainers.jdbc.ContainerLessJdbcDelegate;
 
-import javax.script.ScriptException;
 import java.sql.Connection;
 import java.util.List;
+
+import javax.script.ScriptException;
 
 /**
  * Wrapper for database-agnostic ScriptUtils
@@ -68,9 +69,24 @@ public abstract class ScriptUtils {
      * @see org.testcontainers.ext.ScriptUtils
      * @deprecated Needed only to keep binary compatibility for this internal API. Consider using database-agnostic ScriptUtils
      */
-    public static void splitSqlScript(String resource, String script, String separator, String commentPrefix,
-                                      String blockCommentStartDelimiter, String blockCommentEndDelimiter, List<String> statements) {
-        org.testcontainers.ext.ScriptUtils.splitSqlScript(resource, script, separator, commentPrefix, blockCommentStartDelimiter, blockCommentEndDelimiter, statements);
+    public static void splitSqlScript(
+        String resource,
+        String script,
+        String separator,
+        String commentPrefix,
+        String blockCommentStartDelimiter,
+        String blockCommentEndDelimiter,
+        List<String> statements
+    ) {
+        org.testcontainers.ext.ScriptUtils.splitSqlScript(
+            resource,
+            script,
+            separator,
+            commentPrefix,
+            blockCommentStartDelimiter,
+            blockCommentEndDelimiter,
+            statements
+        );
     }
 
     /**
@@ -85,18 +101,40 @@ public abstract class ScriptUtils {
      * @see org.testcontainers.ext.ScriptUtils
      * @deprecated Needed only to keep binary compatibility for this internal API. Consider using database-agnostic ScriptUtils
      */
-    public static void executeSqlScript(Connection connection, String scriptPath, String script) throws ScriptException {
-        org.testcontainers.ext.ScriptUtils.executeDatabaseScript(new ContainerLessJdbcDelegate(connection), scriptPath, script);
+    public static void executeSqlScript(Connection connection, String scriptPath, String script)
+        throws ScriptException {
+        org.testcontainers.ext.ScriptUtils.executeDatabaseScript(
+            new ContainerLessJdbcDelegate(connection),
+            scriptPath,
+            script
+        );
     }
 
     /**
      * @see org.testcontainers.ext.ScriptUtils
      * @deprecated Needed only to keep binary compatibility for this internal API. Consider using database-agnostic ScriptUtils
      */
-    public static void executeSqlScript(Connection connection, String scriptPath, String script, boolean continueOnError,
-                                        boolean ignoreFailedDrops, String commentPrefix, String separator, String blockCommentStartDelimiter,
-                                        String blockCommentEndDelimiter) throws ScriptException {
-        org.testcontainers.ext.ScriptUtils.executeDatabaseScript(new ContainerLessJdbcDelegate(connection), scriptPath,
-                script, continueOnError, ignoreFailedDrops, commentPrefix, separator, blockCommentStartDelimiter, blockCommentEndDelimiter);
+    public static void executeSqlScript(
+        Connection connection,
+        String scriptPath,
+        String script,
+        boolean continueOnError,
+        boolean ignoreFailedDrops,
+        String commentPrefix,
+        String separator,
+        String blockCommentStartDelimiter,
+        String blockCommentEndDelimiter
+    ) throws ScriptException {
+        org.testcontainers.ext.ScriptUtils.executeDatabaseScript(
+            new ContainerLessJdbcDelegate(connection),
+            scriptPath,
+            script,
+            continueOnError,
+            ignoreFailedDrops,
+            commentPrefix,
+            separator,
+            blockCommentStartDelimiter,
+            blockCommentEndDelimiter
+        );
     }
 }

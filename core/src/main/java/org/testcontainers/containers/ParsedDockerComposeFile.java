@@ -26,7 +26,9 @@ import java.util.Set;
 class ParsedDockerComposeFile {
 
     private final Map<String, Object> composeFileContent;
+
     private final String composeFileName;
+
     private final File composeFile;
 
     @Getter
@@ -57,14 +59,20 @@ class ParsedDockerComposeFile {
         final Map<String, ?> servicesMap;
         if (composeFileContent.containsKey("version")) {
             if ("2.0".equals(composeFileContent.get("version"))) {
-                log.warn("Testcontainers may not be able to clean up networks spawned using Docker Compose v2.0 files. " +
+                log.warn(
+                    "Testcontainers may not be able to clean up networks spawned using Docker Compose v2.0 files. " +
                     "Please see https://github.com/testcontainers/moby-ryuk/issues/2, and specify 'version: \"2.1\"' or " +
-                    "higher in {}", composeFileName);
+                    "higher in {}",
+                    composeFileName
+                );
             }
 
             final Object servicesElement = composeFileContent.get("services");
             if (servicesElement == null) {
-                log.debug("Compose file {} has an unknown format: 'version' is set but 'services' is not defined", composeFileName);
+                log.debug(
+                    "Compose file {} has an unknown format: 'version' is set but 'services' is not defined",
+                    composeFileName
+                );
                 return;
             }
             if (!(servicesElement instanceof Map)) {
@@ -81,7 +89,11 @@ class ParsedDockerComposeFile {
             String serviceName = entry.getKey();
             Object serviceDefinition = entry.getValue();
             if (!(serviceDefinition instanceof Map)) {
-                log.debug("Compose file {} has an unknown format: service '{}' is not Map", composeFileName, serviceName);
+                log.debug(
+                    "Compose file {} has an unknown format: service '{}' is not Map",
+                    composeFileName,
+                    serviceName
+                );
                 break;
             }
 
@@ -95,11 +107,13 @@ class ParsedDockerComposeFile {
 
     private void validateNoContainerNameSpecified(String serviceName, Map serviceDefinitionMap) {
         if (serviceDefinitionMap.containsKey("container_name")) {
-            throw new IllegalStateException(String.format(
-                "Compose file %s has 'container_name' property set for service '%s' but this property is not supported by Testcontainers, consider removing it",
-                composeFileName,
-                serviceName
-            ));
+            throw new IllegalStateException(
+                String.format(
+                    "Compose file %s has 'container_name' property set for service '%s' but this property is not supported by Testcontainers, consider removing it",
+                    composeFileName,
+                    serviceName
+                )
+            );
         }
     }
 
@@ -120,28 +134,35 @@ class ParsedDockerComposeFile {
             final Object dockerfileRelativePath = buildElement.get("dockerfile");
             final Object contextRelativePath = buildElement.get("context");
             if (dockerfileRelativePath instanceof String && contextRelativePath instanceof String) {
-                dockerfilePath = composeFile
+                dockerfilePath =
+                    composeFile
+                        .getAbsoluteFile()
+                        .getParentFile()
+                        .toPath()
+                        .resolve((String) contextRelativePath)
+                        .resolve((String) dockerfileRelativePath)
+                        .normalize();
+            }
+        } else if (buildNode instanceof String) {
+            dockerfilePath =
+                composeFile
                     .getAbsoluteFile()
                     .getParentFile()
                     .toPath()
-                    .resolve((String) contextRelativePath)
-                    .resolve((String) dockerfileRelativePath)
+                    .resolve((String) buildNode)
+                    .resolve("./Dockerfile")
                     .normalize();
-            }
-        } else if (buildNode instanceof String) {
-            dockerfilePath = composeFile
-                .getAbsoluteFile()
-                .getParentFile()
-                .toPath()
-                .resolve((String) buildNode)
-                .resolve("./Dockerfile")
-                .normalize();
         }
 
         if (dockerfilePath != null && Files.exists(dockerfilePath)) {
             Set<String> resolvedImageNames = new ParsedDockerfile(dockerfilePath).getDependencyImageNames();
             if (!resolvedImageNames.isEmpty()) {
-                log.debug("Resolved Dockerfile dependency images for Docker Compose in {} -> {}: {}", composeFileName, dockerfilePath, resolvedImageNames);
+                log.debug(
+                    "Resolved Dockerfile dependency images for Docker Compose in {} -> {}: {}",
+                    composeFileName,
+                    dockerfilePath,
+                    resolvedImageNames
+                );
                 this.serviceNameToImageNames.put(serviceName, resolvedImageNames);
             }
         }

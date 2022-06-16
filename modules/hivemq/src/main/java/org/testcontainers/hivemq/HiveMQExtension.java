@@ -1,12 +1,13 @@
 package org.testcontainers.hivemq;
 
-import javassist.ClassPool;
-import javassist.NotFoundException;
 import lombok.Getter;
 import org.apache.commons.io.FileUtils;
+import org.jboss.shrinkwrap.api.ExtensionLoader;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
+import org.jboss.shrinkwrap.impl.base.spec.JavaArchiveImpl;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -20,28 +21,35 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import javassist.ClassPool;
+import javassist.NotFoundException;
 
 public class HiveMQExtension {
 
     private static final String VALID_EXTENSION_XML =
         "<hivemq-extension>" + //
-            "   <id>%s</id>" + //
-            "   <name>%s</name>" + //
-            "   <version>%s</version>" + //
-            "   <priority>%s</priority>" +  //
-            "   <start-priority>%s</start-priority>" +  //
-            "</hivemq-extension>";
+        "   <id>%s</id>" + //
+        "   <name>%s</name>" + //
+        "   <version>%s</version>" + //
+        "   <priority>%s</priority>" + //
+        "   <start-priority>%s</start-priority>" + //
+        "</hivemq-extension>";
+
     private static final String EXTENSION_MAIN_CLASS_NAME = "com.hivemq.extension.sdk.api.ExtensionMain";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(HiveMQExtension.class);
 
     @Getter
-    private final @NotNull String id;
+    @NotNull
+    private final String id;
 
     @Getter
-    private final @NotNull String name;
+    @NotNull
+    private final String name;
 
     @Getter
-    private final @NotNull String version;
+    @NotNull
+    private final String version;
 
     @Getter
     private final int priority;
@@ -53,9 +61,11 @@ public class HiveMQExtension {
     private final boolean disabledOnStartup;
 
     @Getter
-    private final @NotNull Class<?> mainClass;
+    @NotNull
+    private final Class<?> mainClass;
 
-    private final @NotNull List<Class<?>> additionalClasses;
+    @NotNull
+    private final List<Class<?>> additionalClasses;
 
     private HiveMQExtension(
         final @NotNull String id,
@@ -65,8 +75,8 @@ public class HiveMQExtension {
         final int startPriority,
         final boolean disabledOnStartup,
         final @NotNull Class<?> mainClass,
-        final @NotNull List<Class<?>> additionalClasses) {
-
+        final @NotNull List<Class<?>> additionalClasses
+    ) {
         this.id = id;
         this.name = name;
         this.version = version;
@@ -77,33 +87,44 @@ public class HiveMQExtension {
         this.additionalClasses = additionalClasses;
     }
 
-    @NotNull File createExtension(final @NotNull HiveMQExtension hiveMQExtension)
-        throws Exception {
-
+    @NotNull
+    File createExtension(final @NotNull HiveMQExtension hiveMQExtension) throws Exception {
         final File tempDir = Files.createTempDirectory("").toFile();
 
         final File extensionDir = new File(tempDir, hiveMQExtension.getId());
-        FileUtils.writeStringToFile(new File(extensionDir, "hivemq-extension.xml"),
+        FileUtils.writeStringToFile(
+            new File(extensionDir, "hivemq-extension.xml"),
             String.format(
                 VALID_EXTENSION_XML,
                 hiveMQExtension.getId(),
                 hiveMQExtension.getName(),
                 hiveMQExtension.getVersion(),
                 hiveMQExtension.getPriority(),
-                hiveMQExtension.getStartPriority()),
-            Charset.defaultCharset());
+                hiveMQExtension.getStartPriority()
+            ),
+            Charset.defaultCharset()
+        );
 
         if (hiveMQExtension.isDisabledOnStartup()) {
             final File disabled = new File(extensionDir, "DISABLED");
             final boolean newFile = disabled.createNewFile();
             if (!newFile) {
-                throw new ContainerLaunchException("Could not create DISABLED file '" + disabled.getAbsolutePath() + "' on host machine.");
+                throw new ContainerLaunchException(
+                    "Could not create DISABLED file '" + disabled.getAbsolutePath() + "' on host machine."
+                );
             }
         }
 
-        final JavaArchive javaArchive =
-            ShrinkWrap.create(JavaArchive.class)
-                .addAsServiceProvider(EXTENSION_MAIN_CLASS_NAME, hiveMQExtension.getMainClass().getName());
+        // Shadow Gradle plugin doesn't know how to handle ShrinkWrap's SPI definitions
+        // This workaround creates the mappings programmatically
+        // TODO write a custom Gradle Shadow transformer?
+        ExtensionLoader extensionLoader = ShrinkWrap.getDefaultDomain().getConfiguration().getExtensionLoader();
+        extensionLoader.addOverride(JavaArchive.class, JavaArchiveImpl.class);
+        extensionLoader.addOverride(ZipExporter.class, ZipExporterImpl.class);
+
+        final JavaArchive javaArchive = ShrinkWrap
+            .create(JavaArchive.class)
+            .addAsServiceProvider(EXTENSION_MAIN_CLASS_NAME, hiveMQExtension.getMainClass().getName());
 
         putSubclassesIntoJar(hiveMQExtension.getId(), hiveMQExtension.getMainClass(), javaArchive);
         for (final Class<?> additionalClass : hiveMQExtension.getAdditionalClasses()) {
@@ -119,11 +140,15 @@ public class HiveMQExtension {
     private void putSubclassesIntoJar(
         final @NotNull String extensionId,
         final @Nullable Class<?> clazz,
-        final @NotNull JavaArchive javaArchive) throws NotFoundException {
-
+        final @NotNull JavaArchive javaArchive
+    ) throws NotFoundException {
         if (clazz != null) {
-            final Set<String> subClassNames =
-                ClassPool.getDefault().get(clazz.getName()).getClassFile().getConstPool().getClassNames();
+            final Set<String> subClassNames = ClassPool
+                .getDefault()
+                .get(clazz.getName())
+                .getClassFile()
+                .getConstPool()
+                .getClassNames();
             for (final String subClassName : subClassNames) {
                 final String className = subClassName.replaceAll("/", ".");
 
@@ -146,14 +171,27 @@ public class HiveMQExtension {
     }
 
     public static final class Builder {
-        private @Nullable String id;
-        private @Nullable String name;
-        private @Nullable String version;
+
+        @Nullable
+        private String id;
+
+        @Nullable
+        private String name;
+
+        @Nullable
+        private String version;
+
         private int priority = 0;
+
         private int startPriority = 0;
+
         private boolean disabledOnStartup = false;
-        private @Nullable Class<?> mainClass;
-        private final @NotNull LinkedList<Class<?>> additionalClasses = new LinkedList<>();
+
+        @Nullable
+        private Class<?> mainClass;
+
+        @NotNull
+        private final LinkedList<Class<?>> additionalClasses = new LinkedList<>();
 
         /**
          * Builds the {@link HiveMQExtension} with the provided values or default values.
@@ -264,12 +302,16 @@ public class HiveMQExtension {
             try {
                 final Class<?> extensionMain = Class.forName(EXTENSION_MAIN_CLASS_NAME);
                 if (!extensionMain.isAssignableFrom(mainClass)) {
-                    throw new IllegalArgumentException("The provided class does not implement '" + EXTENSION_MAIN_CLASS_NAME + "'");
+                    throw new IllegalArgumentException(
+                        "The provided class does not implement '" + EXTENSION_MAIN_CLASS_NAME + "'"
+                    );
                 }
                 this.mainClass = mainClass;
                 return this;
             } catch (final ClassNotFoundException e) {
-                throw new IllegalStateException("The class '" + EXTENSION_MAIN_CLASS_NAME + "' was not found in the classpath.");
+                throw new IllegalStateException(
+                    "The class '" + EXTENSION_MAIN_CLASS_NAME + "' was not found in the classpath."
+                );
             }
         }
 

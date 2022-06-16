@@ -1,6 +1,5 @@
 package quickstart;
 
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -9,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Disabled("This test class is deliberately invalid, as it relies on a non-existent local Redis")
 public class RedisBackedCacheIntTestStep0 {
+
     private RedisBackedCache underTest;
 
     @BeforeEach
