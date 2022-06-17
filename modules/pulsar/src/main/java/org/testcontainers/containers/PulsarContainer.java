@@ -4,6 +4,7 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.utility.DockerImageName;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -100,20 +101,14 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
         withCommand("/bin/bash", "-c", standaloneBaseCommand);
 
         List<WaitStrategy> waitStrategies = new ArrayList<>();
-        waitStrategies.add(this.waitStrategy);
-        waitStrategies.add(
-            Wait.forHttp(METRICS_ENDPOINT).forStatusCode(200).forPort(BROKER_HTTP_PORT)
-        );
+        waitStrategies.add(Wait.defaultWaitStrategy());
+        waitStrategies.add(Wait.forHttp(METRICS_ENDPOINT).forStatusCode(200).forPort(BROKER_HTTP_PORT));
         if (transactionsEnabled) {
             withConfiguration("transactionCoordinatorEnabled", "true");
-            waitStrategies.add(
-                Wait.forHttp(TRANSACTION_TOPIC_ENDPOINT).forStatusCode(200).forPort(BROKER_HTTP_PORT)
-            );
+            waitStrategies.add(Wait.forHttp(TRANSACTION_TOPIC_ENDPOINT).forStatusCode(200).forPort(BROKER_HTTP_PORT));
         }
         if (functionsWorkerEnabled) {
-            waitStrategies.add(
-                Wait.forLogMessage(".*Function worker service started.*", 1)
-            );
+            waitStrategies.add(Wait.forLogMessage(".*Function worker service started.*", 1));
         }
         final WaitAllStrategy compoundedWaitStrategy = new WaitAllStrategy();
         waitStrategies.forEach(compoundedWaitStrategy::withStrategy);

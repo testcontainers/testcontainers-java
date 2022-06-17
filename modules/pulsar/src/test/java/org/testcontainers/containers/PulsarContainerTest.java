@@ -114,7 +114,7 @@ public class PulsarContainerTest {
     public void testConfiguration() throws Exception {
         try (PulsarContainer pulsar = new PulsarContainer(PULSAR_IMAGE)) {
             pulsar.withConfiguration("clusterName", "mycluster");
-            assertThat(pulsar.getEnvMap()). containsEntry("PULSAR_PREFIX_clusterName", "mycluster");
+            assertThat(pulsar.getEnvMap()).containsEntry("PULSAR_PREFIX_clusterName", "mycluster");
 
             pulsar.withConfiguration(Maps.newHashMap("clusterName", "mycluster2", "maxTopicsPerNamespace", "10"));
             assertThat(pulsar.getEnvMap()).containsEntry("PULSAR_PREFIX_clusterName", "mycluster2");
