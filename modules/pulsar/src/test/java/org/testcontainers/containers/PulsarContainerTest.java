@@ -1,6 +1,5 @@
 package org.testcontainers.containers;
 
-import com.beust.jcommander.internal.Maps;
 import org.apache.pulsar.client.admin.PulsarAdmin;
 import org.apache.pulsar.client.admin.PulsarAdminException;
 import org.apache.pulsar.client.api.Consumer;
@@ -107,18 +106,6 @@ public class PulsarContainerTest {
                 assertThat(pulsarAdmin.functions().getFunctions("public", "default")).hasSize(0);
             }
             testTransactionFunctionality(pulsar.getPulsarBrokerUrl());
-        }
-    }
-
-    @Test
-    public void testConfiguration() throws Exception {
-        try (PulsarContainer pulsar = new PulsarContainer(PULSAR_IMAGE)) {
-            pulsar.withConfiguration("clusterName", "mycluster");
-            assertThat(pulsar.getEnvMap()).containsEntry("PULSAR_PREFIX_clusterName", "mycluster");
-
-            pulsar.withConfiguration(Maps.newHashMap("clusterName", "mycluster2", "maxTopicsPerNamespace", "10"));
-            assertThat(pulsar.getEnvMap()).containsEntry("PULSAR_PREFIX_clusterName", "mycluster2");
-            assertThat(pulsar.getEnvMap()).containsEntry("PULSAR_PREFIX_maxTopicsPerNamespace", "10");
         }
     }
 

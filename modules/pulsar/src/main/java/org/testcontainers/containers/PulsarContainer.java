@@ -7,7 +7,6 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * This container wraps Apache Pulsar running in standalone mode
@@ -30,6 +29,8 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
 
     @Deprecated
     private static final String DEFAULT_TAG = "2.10.0";
+
+    public static final String ENV_PULSAR_PREFIX = "PULSAR_PREFIX_";
 
     private boolean functionsWorkerEnabled = false;
 
@@ -73,15 +74,6 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
         return this;
     }
 
-    public PulsarContainer withConfiguration(String name, String value) {
-        return withEnv("PULSAR_PREFIX_" + name, value);
-    }
-
-    public PulsarContainer withConfiguration(Map<String, String> configuration) {
-        configuration.forEach((name, value) -> withConfiguration(name, value));
-        return this;
-    }
-
     public String getPulsarBrokerUrl() {
         return String.format("pulsar://%s:%s", getHost(), getMappedPort(BROKER_PORT));
     }
@@ -104,7 +96,7 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
         waitStrategies.add(Wait.defaultWaitStrategy());
         waitStrategies.add(Wait.forHttp(METRICS_ENDPOINT).forStatusCode(200).forPort(BROKER_HTTP_PORT));
         if (transactionsEnabled) {
-            withConfiguration("transactionCoordinatorEnabled", "true");
+            withEnv(ENV_PULSAR_PREFIX + "transactionCoordinatorEnabled", "true");
             waitStrategies.add(Wait.forHttp(TRANSACTION_TOPIC_ENDPOINT).forStatusCode(200).forPort(BROKER_HTTP_PORT));
         }
         if (functionsWorkerEnabled) {
