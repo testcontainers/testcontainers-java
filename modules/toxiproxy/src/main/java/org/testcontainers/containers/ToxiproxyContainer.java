@@ -77,7 +77,7 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
 
     /**
      * Obtain a {@link ContainerProxy} instance for target container that is managed by Testcontainers. The target
-     * container should be routable from this <b>from this {@link ToxiproxyContainer} instance</b> (e.g. on the same
+     * container should be routable <b>from this {@link ToxiproxyContainer} instance</b> (e.g. on the same
      * Docker {@link Network}).
      *
      * @param container target container
