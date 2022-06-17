@@ -99,24 +99,24 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
 
         withCommand("/bin/bash", "-c", standaloneBaseCommand);
 
-        List<WaitStrategy> waitStrategyList = new ArrayList<>();
-        waitStrategyList.add(this.waitStrategy);
-        waitStrategyList.add(
+        List<WaitStrategy> waitStrategies = new ArrayList<>();
+        waitStrategies.add(this.waitStrategy);
+        waitStrategies.add(
             Wait.forHttp(METRICS_ENDPOINT).forStatusCode(200).forPort(BROKER_HTTP_PORT)
         );
         if (transactionsEnabled) {
             withConfiguration("transactionCoordinatorEnabled", "true");
-            waitStrategyList.add(
+            waitStrategies.add(
                 Wait.forHttp(TRANSACTION_TOPIC_ENDPOINT).forStatusCode(200).forPort(BROKER_HTTP_PORT)
             );
         }
         if (functionsWorkerEnabled) {
-            waitStrategyList.add(
+            waitStrategies.add(
                 Wait.forLogMessage(".*Function worker service started.*", 1)
             );
         }
         final WaitAllStrategy compoundedWaitStrategy = new WaitAllStrategy();
-        waitStrategyList.forEach(compoundedWaitStrategy::withStrategy);
+        waitStrategies.forEach(compoundedWaitStrategy::withStrategy);
         waitingFor(compoundedWaitStrategy);
     }
 }

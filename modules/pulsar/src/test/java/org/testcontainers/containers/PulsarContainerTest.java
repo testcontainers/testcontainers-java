@@ -47,7 +47,7 @@ public class PulsarContainerTest {
         try (PulsarContainer pulsar = new PulsarContainer(PULSAR_IMAGE)) {
             pulsar.start();
 
-            try (PulsarAdmin pulsarAdmin = PulsarAdmin.builder().serviceHttpUrl(pulsar.getHttpServiceUrl()).build();) {
+            try (PulsarAdmin pulsarAdmin = PulsarAdmin.builder().serviceHttpUrl(pulsar.getHttpServiceUrl()).build()) {
                 assertThatThrownBy(() -> pulsarAdmin.functions().getFunctions("public", "default"))
                     .isInstanceOf(PulsarAdminException.class);
             }
@@ -63,7 +63,7 @@ public class PulsarContainerTest {
         ) {
             pulsar.start();
 
-            try (PulsarAdmin pulsarAdmin = PulsarAdmin.builder().serviceHttpUrl(pulsar.getHttpServiceUrl()).build();) {
+            try (PulsarAdmin pulsarAdmin = PulsarAdmin.builder().serviceHttpUrl(pulsar.getHttpServiceUrl()).build()) {
                 assertThat(pulsarAdmin.functions().getFunctions("public", "default")).hasSize(0);
             }
         }
@@ -78,7 +78,7 @@ public class PulsarContainerTest {
         ) {
             pulsar.start();
 
-            try (PulsarAdmin pulsarAdmin = PulsarAdmin.builder().serviceHttpUrl(pulsar.getHttpServiceUrl()).build();) {
+            try (PulsarAdmin pulsarAdmin = PulsarAdmin.builder().serviceHttpUrl(pulsar.getHttpServiceUrl()).build()) {
                 assertThat(
                     pulsarAdmin
                         .topics()
@@ -114,11 +114,11 @@ public class PulsarContainerTest {
     public void testConfiguration() throws Exception {
         try (PulsarContainer pulsar = new PulsarContainer(PULSAR_IMAGE)) {
             pulsar.withConfiguration("clusterName", "mycluster");
-            assertThat(pulsar.getEnvMap().get("PULSAR_PREFIX_clusterName")).isEqualTo("mycluster");
+            assertThat(pulsar.getEnvMap()). containsEntry("PULSAR_PREFIX_clusterName", "mycluster");
 
             pulsar.withConfiguration(Maps.newHashMap("clusterName", "mycluster2", "maxTopicsPerNamespace", "10"));
-            assertThat(pulsar.getEnvMap().get("PULSAR_PREFIX_clusterName")).isEqualTo("mycluster2");
-            assertThat(pulsar.getEnvMap().get("PULSAR_PREFIX_maxTopicsPerNamespace")).isEqualTo("10");
+            assertThat(pulsar.getEnvMap()).containsEntry("PULSAR_PREFIX_clusterName", "mycluster2");
+            assertThat(pulsar.getEnvMap()).containsEntry("PULSAR_PREFIX_maxTopicsPerNamespace", "10");
         }
     }
 
