@@ -89,6 +89,24 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
     }
 
     /**
+     * Obtain a {@link ContainerProxy} instance for target container that is managed by Testcontainers. The target
+     * container should be routable <b>from this {@link ToxiproxyContainer} instance</b> (e.g. on the same
+     * Docker {@link Network}).
+     *
+     * <p><code>subscript</code> allows multiple proxies to be created for the same target:
+     * one for each distinct subscript. The resulting proxies will be distinct from each other,
+     * and from the proxy with no subscript returned from {@link #getProxy(GenericContainer, int)}.
+     *
+     * @param container target container
+     * @param port port number on the target service that should be proxied
+     * @param subscript an arbitrary string that distinguishes different proxies for the same target
+     * @return a {@link ContainerProxy} instance
+     */
+    public ContainerProxy getProxy(GenericContainer<?> container, int port, String subscript) {
+        return this.getProxy(container.getNetworkAliases().get(0), port, subscript);
+    }
+
+    /**
      * Obtain a {@link ContainerProxy} instance for a specific hostname and port, which can be for any host
      * that is routable <b>from this {@link ToxiproxyContainer} instance</b> (e.g. on the same
      * Docker {@link Network} or on routable from the Docker host).
@@ -106,21 +124,51 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
 
         return proxies.computeIfAbsent(
             upstream,
-            __ -> {
-                try {
-                    final int toxiPort = nextPort.getAndIncrement();
-                    if (toxiPort > LAST_PROXIED_PORT) {
-                        throw new IllegalStateException("Maximum number of proxies exceeded");
-                    }
-
-                    final Proxy proxy = client.createProxy(upstream, "0.0.0.0:" + toxiPort, upstream);
-                    final int mappedPort = getMappedPort(toxiPort);
-                    return new ContainerProxy(proxy, getHost(), mappedPort, toxiPort);
-                } catch (IOException e) {
-                    throw new RuntimeException("Proxy could not be created", e);
-                }
-            }
+            __ -> createProxy(upstream, upstream)
         );
+    }
+
+    /**
+     * Obtain a {@link ContainerProxy} instance for a specific hostname and port, which can be for any host
+     * that is routable <b>from this {@link ToxiproxyContainer} instance</b> (e.g. on the same
+     * Docker {@link Network} or on routable from the Docker host).
+     *
+     * <p><code>subscript</code> allows multiple proxies to be created for the same target:
+     * one for each distinct subscript. The resulting proxies will be distinct from each other,
+     * and from the proxy with no subscript returned from {@link #getProxy(String, int)}.
+     *
+     * <p><em>It is expected that {@link ToxiproxyContainer#getProxy(GenericContainer, int, String)} will be more
+     * useful in most scenarios, but this method is present to allow use of Toxiproxy in front of containers
+     * or external servers that are not managed by Testcontainers.</em></p>
+     *
+     * @param hostname hostname of target server to be proxied
+     * @param port port number on the target server that should be proxied
+     * @param subscript an arbitrary string that distinguishes different proxies for the same target
+     * @return a {@link ContainerProxy} instance
+     */
+    public ContainerProxy getProxy(String hostname, int port, String subscript) {
+        String upstream = hostname + ":" + port;
+        String name = upstream + ":" + subscript;
+
+        return proxies.computeIfAbsent(
+            name,
+            __ -> createProxy(name, upstream)
+        );
+    }
+
+    private ContainerProxy createProxy(String name, String upstream) {
+        try {
+            final int toxiPort = nextPort.getAndIncrement();
+            if (toxiPort > LAST_PROXIED_PORT) {
+                throw new IllegalStateException("Maximum number of proxies exceeded");
+            }
+
+            final Proxy proxy = client.createProxy(name, "0.0.0.0:" + toxiPort, upstream);
+            final int mappedPort = getMappedPort(toxiPort);
+            return new ContainerProxy(proxy, getHost(), mappedPort, toxiPort);
+        } catch (IOException e) {
+            throw new RuntimeException("Proxy could not be created", e);
+        }
     }
 
     @RequiredArgsConstructor(access = AccessLevel.PROTECTED)

@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.time.Duration;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertSame;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
@@ -120,7 +121,7 @@ public class ToxiproxyTest {
     }
 
     @Test
-    public void testMultipleProxiesCanBeCreated() {
+    public void testProxiesForDifferentContainers() {
         try (
             GenericContainer<?> secondRedis = new GenericContainer<>(REDIS_IMAGE)
                 .withExposedPorts(6379)
@@ -149,6 +150,52 @@ public class ToxiproxyTest {
 
             assertEquals("access via a different proxy is OK", "somevalue", secondJedis.get("somekey"));
         }
+    }
+
+    @Test
+    public void testProxiesForTheSameContainer() {
+        final ToxiproxyContainer.ContainerProxy firstProxy = toxiproxy.getProxy(redis, 6379);
+        final ToxiproxyContainer.ContainerProxy proxyA = toxiproxy.getProxy(redis, 6379, "A");
+
+        assertSame(
+            "no subscript, same proxy",
+            firstProxy,
+            toxiproxy.getProxy(redis, 6379)
+        );
+
+        assertSame(
+            "same subscript, same proxy",
+            proxyA,
+            toxiproxy.getProxy(redis, 6379, "A")
+        );
+
+        assertTrue(
+            "subscript, different proxy",
+            firstProxy != proxyA
+        );
+
+        assertTrue(
+            "different subscripts, different proxies",
+            proxyA != toxiproxy.getProxy(redis, 6379, "B")
+        );
+
+        final Jedis firstJedis = createJedis(firstProxy.getContainerIpAddress(), firstProxy.getProxyPort());
+        final Jedis secondJedis = createJedis(proxyA.getContainerIpAddress(), proxyA.getProxyPort());
+
+        firstJedis.set("somekey", "somevalue");
+        secondJedis.set("somekey", "somevalue");
+
+        firstProxy.setConnectionCut(true);
+
+        assertThrows(
+            "calls fail when the connection is cut, for only the relevant proxy",
+            JedisConnectionException.class,
+            () -> {
+                firstJedis.get("somekey");
+            }
+        );
+
+        assertEquals("access via a different proxy is OK", "somevalue", secondJedis.get("somekey"));
     }
 
     @Test
