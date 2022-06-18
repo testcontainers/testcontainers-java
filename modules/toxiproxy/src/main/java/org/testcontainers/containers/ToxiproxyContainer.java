@@ -12,8 +12,8 @@ import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -33,7 +33,7 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
 
     private ToxiproxyClient client;
 
-    private final Map<String, ContainerProxy> proxies = new HashMap<>();
+    private final Map<String, ContainerProxy> proxies = new ConcurrentHashMap<>();
 
     private final AtomicInteger nextPort = new AtomicInteger(FIRST_PROXIED_PORT);
 
