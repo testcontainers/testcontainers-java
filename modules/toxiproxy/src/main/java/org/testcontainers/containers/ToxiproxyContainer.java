@@ -122,10 +122,7 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
     public ContainerProxy getProxy(String hostname, int port) {
         String upstream = hostname + ":" + port;
 
-        return proxies.computeIfAbsent(
-            upstream,
-            __ -> createProxy(upstream, upstream)
-        );
+        return proxies.computeIfAbsent(upstream, __ -> createProxy(upstream, upstream));
     }
 
     /**
@@ -150,10 +147,7 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
         String upstream = hostname + ":" + port;
         String name = upstream + ":" + subscript;
 
-        return proxies.computeIfAbsent(
-            name,
-            __ -> createProxy(name, upstream)
-        );
+        return proxies.computeIfAbsent(name, __ -> createProxy(name, upstream));
     }
 
     private ContainerProxy createProxy(String name, String upstream) {

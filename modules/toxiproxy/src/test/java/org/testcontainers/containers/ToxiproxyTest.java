@@ -157,27 +157,13 @@ public class ToxiproxyTest {
         final ToxiproxyContainer.ContainerProxy firstProxy = toxiproxy.getProxy(redis, 6379);
         final ToxiproxyContainer.ContainerProxy proxyA = toxiproxy.getProxy(redis, 6379, "A");
 
-        assertSame(
-            "no subscript, same proxy",
-            firstProxy,
-            toxiproxy.getProxy(redis, 6379)
-        );
+        assertSame("no subscript, same proxy", firstProxy, toxiproxy.getProxy(redis, 6379));
 
-        assertSame(
-            "same subscript, same proxy",
-            proxyA,
-            toxiproxy.getProxy(redis, 6379, "A")
-        );
+        assertSame("same subscript, same proxy", proxyA, toxiproxy.getProxy(redis, 6379, "A"));
 
-        assertTrue(
-            "subscript, different proxy",
-            firstProxy != proxyA
-        );
+        assertTrue("subscript, different proxy", firstProxy != proxyA);
 
-        assertTrue(
-            "different subscripts, different proxies",
-            proxyA != toxiproxy.getProxy(redis, 6379, "B")
-        );
+        assertTrue("different subscripts, different proxies", proxyA != toxiproxy.getProxy(redis, 6379, "B"));
 
         final Jedis firstJedis = createJedis(firstProxy.getContainerIpAddress(), firstProxy.getProxyPort());
         final Jedis secondJedis = createJedis(proxyA.getContainerIpAddress(), proxyA.getProxyPort());
