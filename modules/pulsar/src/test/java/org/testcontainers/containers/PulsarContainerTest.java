@@ -35,9 +35,22 @@ public class PulsarContainerTest {
             pulsar.start();
             // coordinates {
             final String pulsarBrokerUrl = pulsar.getPulsarBrokerUrl();
-            final String HttpServiceUrl = pulsar.getHttpServiceUrl();
+            final String httpServiceUrl = pulsar.getHttpServiceUrl();
             // }
             testPulsarFunctionality(pulsarBrokerUrl);
+        }
+    }
+
+    @Test
+    public void envVarsUsage() throws Exception {
+        try (
+            // constructorWithEnv {
+            PulsarContainer pulsar = new PulsarContainer(PULSAR_IMAGE)
+                .withEnv("PULSAR_PREFIX_brokerDeduplicationEnabled", "true");
+            // }
+        ) {
+            pulsar.start();
+            testPulsarFunctionality(pulsar.getPulsarBrokerUrl());
         }
     }
 

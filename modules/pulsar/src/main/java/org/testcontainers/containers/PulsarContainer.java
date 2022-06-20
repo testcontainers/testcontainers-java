@@ -30,11 +30,6 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
     @Deprecated
     private static final String DEFAULT_TAG = "2.10.0";
 
-    /**
-     * Environment variable prefix needed to configure Pulsar standalone. See <a href="https://pulsar.apache.org/docs/next/getting-started-docker/">the guide</a>.
-     */
-    public static final String ENV_PULSAR_PREFIX = "PULSAR_PREFIX_";
-
     private boolean functionsWorkerEnabled = false;
 
     private boolean transactionsEnabled = false;
@@ -99,7 +94,7 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
         waitStrategies.add(Wait.defaultWaitStrategy());
         waitStrategies.add(Wait.forHttp(METRICS_ENDPOINT).forStatusCode(200).forPort(BROKER_HTTP_PORT));
         if (transactionsEnabled) {
-            withEnv(ENV_PULSAR_PREFIX + "transactionCoordinatorEnabled", "true");
+            withEnv("PULSAR_PREFIX_transactionCoordinatorEnabled", "true");
             waitStrategies.add(Wait.forHttp(TRANSACTION_TOPIC_ENDPOINT).forStatusCode(200).forPort(BROKER_HTTP_PORT));
         }
         if (functionsWorkerEnabled) {

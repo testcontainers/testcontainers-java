@@ -18,12 +18,26 @@ Then you can retrieve the broker and the admin url:
 [Get broker and admin urls](../../modules/pulsar/src/test/java/org/testcontainers/containers/PulsarContainerTest.java) inside_block:coordinates
 <!--/codeinclude-->
 
+## Options
+
+### Configuration
+If you need to set Pulsar configuration variables you can use the native APIs and set each variable with `PULSAR_PREFIX_` as prefix.
+
+For example, if you want to enable `brokerDeduplicationEnabled`:
+
+<!--codeinclude-->
+[Set configuration variables](../../modules/pulsar/src/test/java/org/testcontainers/containers/PulsarContainerTest.java) inside_block:constructorWithEnv
+<!--/codeinclude-->
+
+### Pulsar IO
+
 If you need to test Pulsar IO framework you can enable the Pulsar Functions Worker:
 
 <!--codeinclude-->
 [Create a Pulsar container with functions worker](../../modules/pulsar/src/test/java/org/testcontainers/containers/PulsarContainerTest.java) inside_block:constructorWithFunctionsWorker
 <!--/codeinclude-->
 
+### Pulsar Transactions
 
 If you need to test Pulsar Transactions you can enable the transactions feature:
 
