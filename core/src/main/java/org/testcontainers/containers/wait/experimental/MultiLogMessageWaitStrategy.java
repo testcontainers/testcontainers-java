@@ -7,6 +7,7 @@ import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.output.FrameConsumerResultCallback;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.WaitingConsumer;
+import org.testcontainers.containers.wait.strategy.AbstractLogMessageWaitStrategy;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
 
 import java.io.IOException;
@@ -15,6 +16,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /*
     This wait strategy has following characteristics
@@ -24,48 +26,28 @@ import java.util.function.Predicate;
  */
 
 @Slf4j
-public class MultiLogMessageWaitStrategy extends AbstractWaitStrategy {
-
-    private static final int CHECK_TIMES = 1;
+public class MultiLogMessageWaitStrategy extends AbstractLogMessageWaitStrategy {
 
     private LinkedBlockingDeque<String> regEx;
 
     @Override
-    @SneakyThrows(IOException.class)
-    protected void waitUntilReady() {
-        WaitingConsumer waitingConsumer = new WaitingConsumer();
-
-        LogContainerCmd cmd = waitStrategyTarget
-            .getDockerClient()
-            .logContainerCmd(waitStrategyTarget.getContainerId())
-            .withFollowStream(true)
-            .withSince(0)
-            .withStdOut(true)
-            .withStdErr(true);
-
-        try (FrameConsumerResultCallback callback = new FrameConsumerResultCallback()) {
-            callback.addConsumer(OutputFrame.OutputType.STDOUT, waitingConsumer);
-            callback.addConsumer(OutputFrame.OutputType.STDERR, waitingConsumer);
-
-            cmd.exec(callback);
-
-            Predicate<OutputFrame> waitPredicate = outputFrame -> {
-                String nextExpectedRegex = regEx.peek();
-                // (?s) enables line terminator matching (equivalent to Pattern.DOTALL)
-                if(outputFrame.getUtf8String().matches("(?s)" + nextExpectedRegex)) {
-                    // remove the matched item from the collection.
-                    regEx.pop();
-                    log.info("Regex {} encountered. Waiting for {} more regex statements.", nextExpectedRegex, regEx.size());
-                }
-                // If collection is now empty, we are finished.
-                return regEx.isEmpty();
-            };
-            try {
-                waitingConsumer.waitUntil(waitPredicate, startupTimeout.getSeconds(), TimeUnit.SECONDS, CHECK_TIMES);
-            } catch (TimeoutException e) {
-                throw new ContainerLaunchException("Timed out waiting for log output matching '" + regEx + "'");
+    protected Predicate<OutputFrame> waitPredicate() {
+        return outputFrame -> {
+            String nextExpectedRegex = regEx.peek();
+            // (?s) enables line terminator matching (equivalent to Pattern.DOTALL)
+            if(outputFrame.getUtf8String().matches("(?s)" + nextExpectedRegex)) {
+                // remove the matched item from the collection.
+                regEx.pop();
+                log.info("Regex {} encountered. Waiting for {} more regex statements.", nextExpectedRegex, regEx.size());
             }
-        }
+            // If collection is now empty, we are finished.
+            return regEx.isEmpty();
+        };
+    }
+
+    @Override
+    protected String timeoutErrorMessage() {
+        return "Timed out waiting for log output. Still expecting following log lines: '" + String.join(",", regEx) + "'";
     }
 
     public MultiLogMessageWaitStrategy withRegex(String... regEx) {

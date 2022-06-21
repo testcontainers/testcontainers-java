@@ -12,41 +12,21 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
 
-public class LogMessageWaitStrategy extends AbstractWaitStrategy {
+public class LogMessageWaitStrategy extends AbstractLogMessageWaitStrategy {
 
     private String regEx;
 
-    private int times = 1;
+    @Override
+    protected Predicate<OutputFrame> waitPredicate() {
+        return outputFrame -> {
+            // (?s) enables line terminator matching (equivalent to Pattern.DOTALL)
+            return outputFrame.getUtf8String().matches("(?s)" + regEx);
+        };
+    }
 
     @Override
-    @SneakyThrows(IOException.class)
-    protected void waitUntilReady() {
-        WaitingConsumer waitingConsumer = new WaitingConsumer();
-
-        LogContainerCmd cmd = waitStrategyTarget
-            .getDockerClient()
-            .logContainerCmd(waitStrategyTarget.getContainerId())
-            .withFollowStream(true)
-            .withSince(0)
-            .withStdOut(true)
-            .withStdErr(true);
-
-        try (FrameConsumerResultCallback callback = new FrameConsumerResultCallback()) {
-            callback.addConsumer(OutputFrame.OutputType.STDOUT, waitingConsumer);
-            callback.addConsumer(OutputFrame.OutputType.STDERR, waitingConsumer);
-
-            cmd.exec(callback);
-
-            Predicate<OutputFrame> waitPredicate = outputFrame -> {
-                // (?s) enables line terminator matching (equivalent to Pattern.DOTALL)
-                return outputFrame.getUtf8String().matches("(?s)" + regEx);
-            };
-            try {
-                waitingConsumer.waitUntil(waitPredicate, startupTimeout.getSeconds(), TimeUnit.SECONDS, times);
-            } catch (TimeoutException e) {
-                throw new ContainerLaunchException("Timed out waiting for log output matching '" + regEx + "'");
-            }
-        }
+    protected String timeoutErrorMessage() {
+        return "Timed out waiting for log output matching '" + regEx + "'";
     }
 
     public LogMessageWaitStrategy withRegEx(String regEx) {
