@@ -5,6 +5,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 [data-md-color-scheme="testcontainers"] {
-    --md-primary-fg-color:        #291A3F;
+    --md-primary-fg-color:       #291A3F;
     --md-accent-fg-color:        #291A3F;
+    --md-typeset-a-color:        #0C94AA;
 }
