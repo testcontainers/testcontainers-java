@@ -126,21 +126,21 @@ public class TiDBContainer extends JdbcDatabaseContainer<TiDBContainer> {
     @Override
     public TiDBContainer withDatabaseName(final String databaseName) {
         throw new UnsupportedOperationException(
-            "The TiDB docker image does not currently support this - please see https://github.com/cockroachdb/cockroach/issues/19826"
+            "The TiDB docker image does not currently support this"
         );
     }
 
     @Override
     public TiDBContainer withUsername(final String username) {
         throw new UnsupportedOperationException(
-            "The TiDB docker image does not currently support this - please see https://github.com/cockroachdb/cockroach/issues/19826"
+            "The TiDB docker image does not currently support this"
         );
     }
 
     @Override
     public TiDBContainer withPassword(final String password) {
         throw new UnsupportedOperationException(
-            "The TiDB docker image does not currently support this - please see https://github.com/cockroachdb/cockroach/issues/19826"
+            "The TiDB docker image does not currently support this"
         );
     }
 }

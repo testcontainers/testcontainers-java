@@ -36,12 +36,12 @@ public class SimpleTiDBTest extends AbstractContainerDatabaseTest {
     @Test
     public void testExplicitInitScript() throws SQLException {
         try (
-            TiDBContainer cockroach = new TiDBContainer(TiDBTestImages.TIDB_IMAGE)
+            TiDBContainer tidb = new TiDBContainer(TiDBTestImages.TIDB_IMAGE)
                 .withInitScript("somepath/init_mysql.sql")
-        ) { // CockroachDB is expected to be compatible with Postgres
-            cockroach.start();
+        ) { // TiDB is expected to be compatible with MySQL
+            tidb.start();
 
-            ResultSet resultSet = performQuery(cockroach, "SELECT foo FROM bar");
+            ResultSet resultSet = performQuery(tidb, "SELECT foo FROM bar");
 
             String firstColumnValue = resultSet.getString(1);
             assertEquals("Value from init script should equal real value", "hello world", firstColumnValue);
@@ -50,19 +50,17 @@ public class SimpleTiDBTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testWithAdditionalUrlParamInJdbcUrl() {
-        TiDBContainer cockroach = new TiDBContainer(TiDBTestImages.TIDB_IMAGE)
-            .withUrlParam("sslmode", "disable")
-            .withUrlParam("application_name", "cockroach");
+        TiDBContainer tidb = new TiDBContainer(TiDBTestImages.TIDB_IMAGE)
+            .withUrlParam("sslmode", "disable");
 
         try {
-            cockroach.start();
-            String jdbcUrl = cockroach.getJdbcUrl();
+            tidb.start();
+            String jdbcUrl = tidb.getJdbcUrl();
             assertThat(jdbcUrl, containsString("?"));
             assertThat(jdbcUrl, containsString("&"));
             assertThat(jdbcUrl, containsString("sslmode=disable"));
-            assertThat(jdbcUrl, containsString("application_name=cockroach"));
         } finally {
-            cockroach.stop();
+            tidb.stop();
         }
     }
 }
