@@ -122,6 +122,17 @@ public class PulsarContainerTest {
         }
     }
 
+    @Test
+    public void testClusterFullyInitialized() throws Exception {
+        try (PulsarContainer pulsar = new PulsarContainer(PULSAR_IMAGE)) {
+            pulsar.start();
+
+            try (PulsarAdmin pulsarAdmin = PulsarAdmin.builder().serviceHttpUrl(pulsar.getHttpServiceUrl()).build()) {
+                assertThat(pulsarAdmin.clusters().getClusters()).hasSize(1).contains("standalone");
+            }
+        }
+    }
+
     protected void testPulsarFunctionality(String pulsarBrokerUrl) throws Exception {
         try (
             PulsarClient client = PulsarClient.builder().serviceUrl(pulsarBrokerUrl).build();

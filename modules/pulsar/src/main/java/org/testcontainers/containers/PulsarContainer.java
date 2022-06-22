@@ -17,7 +17,7 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
 
     public static final int BROKER_HTTP_PORT = 8080;
 
-    public static final String METRICS_ENDPOINT = "/metrics";
+    public static final String ADMIN_CLUSTERS_ENDPOINT = "/admin/v2/clusters";
 
     /**
      * See <a href="https://github.com/apache/pulsar/blob/master/pulsar-common/src/main/java/org/apache/pulsar/common/naming/SystemTopicNames.java">SystemTopicNames</a>.
@@ -92,7 +92,12 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
 
         List<WaitStrategy> waitStrategies = new ArrayList<>();
         waitStrategies.add(Wait.defaultWaitStrategy());
-        waitStrategies.add(Wait.forHttp(METRICS_ENDPOINT).forStatusCode(200).forPort(BROKER_HTTP_PORT));
+        waitStrategies.add(
+            Wait
+                .forHttp(ADMIN_CLUSTERS_ENDPOINT)
+                .forPort(BROKER_HTTP_PORT)
+                .forResponsePredicate("[\"standalone\"]"::equals)
+        );
         if (transactionsEnabled) {
             withEnv("PULSAR_PREFIX_transactionCoordinatorEnabled", "true");
             waitStrategies.add(Wait.forHttp(TRANSACTION_TOPIC_ENDPOINT).forStatusCode(200).forPort(BROKER_HTTP_PORT));
