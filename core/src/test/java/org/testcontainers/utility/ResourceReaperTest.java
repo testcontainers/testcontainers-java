@@ -6,6 +6,8 @@ import lombok.SneakyThrows;
 import org.awaitility.Awaitility;
 import org.awaitility.core.ConditionFactory;
 import org.junit.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.zeroturnaround.exec.ProcessExecutor;
@@ -21,6 +23,10 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
 
 public class ResourceReaperTest {
 
@@ -38,6 +44,28 @@ public class ResourceReaperTest {
         });
 
         assertCleanup(labels);
+    }
+
+    @Test
+    public void shouldCleanupWithJVM_ryukDisabledInConfiguration() {
+        Map<String, String> labels = runProcess(processExecutor -> {});
+
+        TestcontainersConfiguration actualConfiguration = TestcontainersConfiguration.getInstance();
+
+        try (
+            MockedStatic<TestcontainersConfiguration> mockedStaticConfiguration = Mockito.mockStatic(
+                TestcontainersConfiguration.class
+            )
+        ) {
+            TestcontainersConfiguration mockedConfiguration = spy(actualConfiguration);
+            mockedStaticConfiguration.when(TestcontainersConfiguration::getInstance).thenReturn(mockedConfiguration);
+
+            doReturn("true")
+                .when(mockedConfiguration)
+                .getEnvVarOrProperty(eq(ResourceReaper.RYUK_DISABLED_PROPERTY_KEY), anyString());
+
+            assertCleanup(labels);
+        }
     }
 
     private void assertCleanup(Map<String, String> labels) {

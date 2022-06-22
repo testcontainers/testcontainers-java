@@ -55,6 +55,9 @@ public class ResourceReaper {
         )
     );
 
+    @VisibleForTesting
+    static final String RYUK_DISABLED_PROPERTY_KEY = "ryuk.disabled";
+
     private static ResourceReaper instance;
 
     final DockerClient dockerClient = DockerClientFactory.lazyClient();
@@ -74,7 +77,11 @@ public class ResourceReaper {
 
     public static synchronized ResourceReaper instance() {
         if (instance == null) {
-            boolean useRyuk = !Boolean.parseBoolean(System.getenv("TESTCONTAINERS_RYUK_DISABLED"));
+            TestcontainersConfiguration configuration = TestcontainersConfiguration.getInstance();
+
+            boolean useRyuk = !Boolean.parseBoolean(
+                configuration.getEnvVarOrProperty(RYUK_DISABLED_PROPERTY_KEY, "false")
+            );
             if (useRyuk) {
                 //noinspection deprecation
                 instance = new RyukResourceReaper();

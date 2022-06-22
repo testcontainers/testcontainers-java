@@ -94,6 +94,7 @@ dependencies {
     testImplementation ('org.mockito:mockito-core:4.6.0') {
         exclude(module: 'hamcrest-core')
     }
+    testImplementation ('org.mockito:mockito-inline:4.6.0')
     // Synthetic JAR used for MountableFileTest and DirectoryTarResourceTest
     testImplementation files('testlib/repo/fakejar/fakejar/0/fakejar-0.jar')
 
