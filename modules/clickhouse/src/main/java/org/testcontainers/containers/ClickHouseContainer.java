@@ -13,6 +13,8 @@ public class ClickHouseContainer extends JdbcDatabaseContainer {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("yandex/clickhouse-server");
 
+    private static final DockerImageName CLICKHOUSE_IMAGE_NAME = DockerImageName.parse("clickhouse/clickhouse-server");
+
     @Deprecated
     public static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
 
@@ -49,7 +51,7 @@ public class ClickHouseContainer extends JdbcDatabaseContainer {
 
     public ClickHouseContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, CLICKHOUSE_IMAGE_NAME);
 
         withExposedPorts(HTTP_PORT, NATIVE_PORT);
         waitingFor(
