@@ -27,10 +27,7 @@ import java.util.stream.Collectors;
 /**
  * <p>Container for LocalStack, 'A fully functional local AWS cloud stack'.</p>
  * <p>{@link LocalStackContainer#withServices(Service...)} should be used to select which services
- * are to be launched. See {@link Service} for available choices. It is advised that
- * {@link LocalStackContainer#getEndpointConfiguration(Service)} and
- * {@link LocalStackContainer#getDefaultCredentialsProvider()}
- * be used to obtain compatible endpoint configuration and credentials, respectively.</p>
+ * are to be launched. See {@link Service} for available choices.
  */
 @Slf4j
 public class LocalStackContainer extends GenericContainer<LocalStackContainer> {

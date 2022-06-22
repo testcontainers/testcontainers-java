@@ -1,5 +1,7 @@
 package org.testcontainers.containers.localstack;
 
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.kms.AWSKMS;
 import com.amazonaws.services.kms.AWSKMSClientBuilder;
@@ -73,11 +75,22 @@ public class LocalstackContainerTest {
 
         @Test
         public void s3TestOverBridgeNetwork() throws IOException {
+            // with_aws_sdk_v1 {
             AmazonS3 s3 = AmazonS3ClientBuilder
                 .standard()
-                .withEndpointConfiguration(localstack.getEndpointConfiguration(Service.S3))
-                .withCredentials(localstack.getDefaultCredentialsProvider())
+                .withEndpointConfiguration(
+                    new AwsClientBuilder.EndpointConfiguration(
+                        localstack.getEndpointOverride(Service.S3).toString(),
+                        localstack.getRegion()
+                    )
+                )
+                .withCredentials(
+                    new AWSStaticCredentialsProvider(
+                        new BasicAWSCredentials(localstack.getAccessKey(), localstack.getSecretKey())
+                    )
+                )
                 .build();
+            // }
 
             final String bucketName = "foo";
             s3.createBucket(bucketName);
@@ -103,6 +116,7 @@ public class LocalstackContainerTest {
 
         @Test
         public void s3TestUsingAwsSdkV2() {
+            // with_aws_sdk_v2 {
             S3Client s3 = S3Client
                 .builder()
                 .endpointOverride(localstack.getEndpointOverride(Service.S3))
@@ -113,6 +127,7 @@ public class LocalstackContainerTest {
                 )
                 .region(Region.of(localstack.getRegion()))
                 .build();
+            // }
 
             final String bucketName = "foov2";
             s3.createBucket(b -> b.bucket(bucketName));
@@ -126,8 +141,17 @@ public class LocalstackContainerTest {
         public void sqsTestOverBridgeNetwork() {
             AmazonSQS sqs = AmazonSQSClientBuilder
                 .standard()
-                .withEndpointConfiguration(localstack.getEndpointConfiguration(Service.SQS))
-                .withCredentials(localstack.getDefaultCredentialsProvider())
+                .withEndpointConfiguration(
+                    new AwsClientBuilder.EndpointConfiguration(
+                        localstack.getEndpointOverride(Service.SQS).toString(),
+                        localstack.getRegion()
+                    )
+                )
+                .withCredentials(
+                    new AWSStaticCredentialsProvider(
+                        new BasicAWSCredentials(localstack.getAccessKey(), localstack.getSecretKey())
+                    )
+                )
                 .build();
 
             CreateQueueResult queueResult = sqs.createQueue("baz");
@@ -157,8 +181,17 @@ public class LocalstackContainerTest {
         public void cloudWatchLogsTestOverBridgeNetwork() {
             AWSLogs logs = AWSLogsClientBuilder
                 .standard()
-                .withEndpointConfiguration(localstack.getEndpointConfiguration(Service.CLOUDWATCHLOGS))
-                .withCredentials(localstack.getDefaultCredentialsProvider())
+                .withEndpointConfiguration(
+                    new AwsClientBuilder.EndpointConfiguration(
+                        localstack.getEndpointOverride(Service.CLOUDWATCHLOGS).toString(),
+                        localstack.getRegion()
+                    )
+                )
+                .withCredentials(
+                    new AWSStaticCredentialsProvider(
+                        new BasicAWSCredentials(localstack.getAccessKey(), localstack.getSecretKey())
+                    )
+                )
                 .build();
 
             logs.createLogGroup(new CreateLogGroupRequest("foo"));
@@ -172,8 +205,17 @@ public class LocalstackContainerTest {
         public void kmsKeyCreationTest() {
             AWSKMS awskms = AWSKMSClientBuilder
                 .standard()
-                .withEndpointConfiguration(localstack.getEndpointConfiguration(Service.KMS))
-                .withCredentials(localstack.getDefaultCredentialsProvider())
+                .withEndpointConfiguration(
+                    new AwsClientBuilder.EndpointConfiguration(
+                        localstack.getEndpointOverride(Service.KMS).toString(),
+                        localstack.getRegion()
+                    )
+                )
+                .withCredentials(
+                    new AWSStaticCredentialsProvider(
+                        new BasicAWSCredentials(localstack.getAccessKey(), localstack.getSecretKey())
+                    )
+                )
                 .build();
 
             String desc = String.format("AWS CMK Description");
@@ -198,8 +240,16 @@ public class LocalstackContainerTest {
             );
             assertEquals(
                 "Endpoint configuration have different endpoints",
-                localstack.getEndpointConfiguration(Service.S3).getServiceEndpoint(),
-                localstack.getEndpointConfiguration(Service.SQS).getServiceEndpoint()
+                new AwsClientBuilder.EndpointConfiguration(
+                    localstack.getEndpointOverride(Service.S3).toString(),
+                    localstack.getRegion()
+                )
+                    .getServiceEndpoint(),
+                new AwsClientBuilder.EndpointConfiguration(
+                    localstack.getEndpointOverride(Service.SQS).toString(),
+                    localstack.getRegion()
+                )
+                    .getServiceEndpoint()
             );
         }
     }
@@ -302,8 +352,9 @@ public class LocalstackContainerTest {
 
         @Test
         public void s3EndpointHasProperRegion() {
-            final AwsClientBuilder.EndpointConfiguration endpointConfiguration = localstack.getEndpointConfiguration(
-                Service.S3
+            final AwsClientBuilder.EndpointConfiguration endpointConfiguration = new AwsClientBuilder.EndpointConfiguration(
+                localstack.getEndpointOverride(Service.S3).toString(),
+                localstack.getRegion()
             );
             assertEquals(
                 "The endpoint configuration has right region",
