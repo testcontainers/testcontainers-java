@@ -17,7 +17,7 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
 
     public static final int BROKER_HTTP_PORT = 8080;
 
-    public static final String ADMIN_CLUSTERS_ENDPOINT = "/admin/v2/clusters";
+    private static final String ADMIN_CLUSTERS_ENDPOINT = "/admin/v2/clusters";
 
     /**
      * See <a href="https://github.com/apache/pulsar/blob/master/pulsar-common/src/main/java/org/apache/pulsar/common/naming/SystemTopicNames.java">SystemTopicNames</a>.
