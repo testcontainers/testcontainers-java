@@ -1,5 +1,6 @@
 package org.testcontainers.containers.localstack;
 
+import com.amazonaws.client.builder.AwsClientBuilder;
 import com.github.dockerjava.api.DockerClient;
 import lombok.AllArgsConstructor;
 import org.junit.BeforeClass;
@@ -8,6 +9,7 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.containers.localstack.LocalStackContainer.Service;
 import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.utility.DockerImageName;
 
@@ -46,20 +48,28 @@ public class LegacyModeTest {
 
         @Test
         public void samePortIsExposedForAllServices() {
-            localstack.withServices(LocalStackContainer.Service.S3, LocalStackContainer.Service.SQS);
+            localstack.withServices(Service.S3, Service.SQS);
             localstack.start();
 
             try {
                 assertTrue("A single port is exposed", localstack.getExposedPorts().size() == 1);
                 assertEquals(
                     "Endpoint overrides are different",
-                    localstack.getEndpointOverride(LocalStackContainer.Service.S3).toString(),
-                    localstack.getEndpointOverride(LocalStackContainer.Service.SQS).toString()
+                    localstack.getEndpointOverride(Service.S3).toString(),
+                    localstack.getEndpointOverride(Service.SQS).toString()
                 );
                 assertEquals(
                     "Endpoint configuration have different endpoints",
-                    localstack.getEndpointConfiguration(LocalStackContainer.Service.S3).getServiceEndpoint(),
-                    localstack.getEndpointConfiguration(LocalStackContainer.Service.SQS).getServiceEndpoint()
+                    new AwsClientBuilder.EndpointConfiguration(
+                        localstack.getEndpointOverride(Service.S3).toString(),
+                        localstack.getRegion()
+                    )
+                        .getServiceEndpoint(),
+                    new AwsClientBuilder.EndpointConfiguration(
+                        localstack.getEndpointOverride(Service.SQS).toString(),
+                        localstack.getRegion()
+                    )
+                        .getServiceEndpoint()
                 );
             } finally {
                 localstack.stop();
@@ -103,20 +113,28 @@ public class LegacyModeTest {
 
         @Test
         public void differentPortsAreExposed() {
-            localstack.withServices(LocalStackContainer.Service.S3, LocalStackContainer.Service.SQS);
+            localstack.withServices(Service.S3, Service.SQS);
             localstack.start();
 
             try {
                 assertTrue("Multiple ports are exposed", localstack.getExposedPorts().size() > 1);
                 assertNotEquals(
                     "Endpoint overrides are different",
-                    localstack.getEndpointOverride(LocalStackContainer.Service.S3).toString(),
-                    localstack.getEndpointOverride(LocalStackContainer.Service.SQS).toString()
+                    localstack.getEndpointOverride(Service.S3).toString(),
+                    localstack.getEndpointOverride(Service.SQS).toString()
                 );
                 assertNotEquals(
                     "Endpoint configuration have different endpoints",
-                    localstack.getEndpointConfiguration(LocalStackContainer.Service.S3).getServiceEndpoint(),
-                    localstack.getEndpointConfiguration(LocalStackContainer.Service.SQS).getServiceEndpoint()
+                    new AwsClientBuilder.EndpointConfiguration(
+                        localstack.getEndpointOverride(Service.S3).toString(),
+                        localstack.getRegion()
+                    )
+                        .getServiceEndpoint(),
+                    new AwsClientBuilder.EndpointConfiguration(
+                        localstack.getEndpointOverride(Service.SQS).toString(),
+                        localstack.getRegion()
+                    )
+                        .getServiceEndpoint()
                 );
             } finally {
                 localstack.stop();

@@ -13,6 +13,8 @@ public class ClickHouseContainer<SELF extends ClickHouseContainer<SELF>> extends
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("yandex/clickhouse-server");
 
+    private static final DockerImageName CLICKHOUSE_IMAGE_NAME = DockerImageName.parse("clickhouse/clickhouse-server");
+
     @Deprecated
     public static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
 
@@ -49,7 +51,7 @@ public class ClickHouseContainer<SELF extends ClickHouseContainer<SELF>> extends
 
     public ClickHouseContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, CLICKHOUSE_IMAGE_NAME);
 
         this.withExposedPorts(HTTP_PORT, NATIVE_PORT);
         this.waitingFor(
