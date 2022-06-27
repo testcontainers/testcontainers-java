@@ -25,7 +25,7 @@ public class ClickHouseContainer<SELF extends ClickHouseContainer<SELF>> extends
 
     public static final Integer NATIVE_PORT = 9000;
 
-    private static final String DRIVER_CLASS_NAME = "com.clickhouse.jdbc.ClickHouseDriver";
+    private static final String DRIVER_CLASS_NAME = "ru.yandex.clickhouse.ClickHouseDriver";
 
     private static final String JDBC_URL_PREFIX = "jdbc:" + NAME + "://";
 
@@ -53,13 +53,12 @@ public class ClickHouseContainer<SELF extends ClickHouseContainer<SELF>> extends
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, CLICKHOUSE_IMAGE_NAME);
 
-        this.withExposedPorts(HTTP_PORT, NATIVE_PORT);
-        this.waitingFor(
-                new HttpWaitStrategy()
-                    .forStatusCode(200)
-                    .forResponsePredicate("Ok."::equals)
-                    .withStartupTimeout(Duration.ofMinutes(1))
-            );
+        addExposedPorts(HTTP_PORT, NATIVE_PORT);
+        this.waitStrategy =
+            new HttpWaitStrategy()
+                .forStatusCode(200)
+                .forResponsePredicate("Ok."::equals)
+                .withStartupTimeout(Duration.ofMinutes(1));
     }
 
     @Override
@@ -69,7 +68,12 @@ public class ClickHouseContainer<SELF extends ClickHouseContainer<SELF>> extends
 
     @Override
     public String getDriverClassName() {
-        return DRIVER_CLASS_NAME;
+        try {
+            Class.forName(DRIVER_CLASS_NAME);
+            return DRIVER_CLASS_NAME;
+        } catch (ClassNotFoundException e) {
+            return "com.clickhouse.jdbc.ClickHouseDriver";
+        }
     }
 
     @Override
