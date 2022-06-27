@@ -36,7 +36,7 @@ public class DisqueBackedMailSenderTest {
     @Before
     public void setup() {
         context("");
-        disqueClient = new DisqueClient(DisqueURI.create(container.getContainerIpAddress(), container.getMappedPort(7711)));
+        disqueClient = new DisqueClient(DisqueURI.create(container.getHost(), container.getMappedPort(7711)));
         mockMailApiClient = mock(MailApiClient.class);
 
         service = new DisqueBackedMailSenderService(disqueClient, mockMailApiClient);

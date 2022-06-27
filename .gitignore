@@ -67,3 +67,6 @@ src/pip-delete-this-directory.txt
 
 # Codespaces / VSCode
 /.vscode/
+
+# Python virtual environment
+/.venv/

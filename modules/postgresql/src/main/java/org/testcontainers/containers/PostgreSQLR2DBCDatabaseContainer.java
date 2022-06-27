@@ -13,7 +13,8 @@ public final class PostgreSQLR2DBCDatabaseContainer implements R2DBCDatabaseCont
     private final PostgreSQLContainer<?> container;
 
     public static ConnectionFactoryOptions getOptions(PostgreSQLContainer<?> container) {
-        ConnectionFactoryOptions options = ConnectionFactoryOptions.builder()
+        ConnectionFactoryOptions options = ConnectionFactoryOptions
+            .builder()
             .option(ConnectionFactoryOptions.DRIVER, PostgreSQLR2DBCDatabaseContainerProvider.DRIVER)
             .build();
 
@@ -22,7 +23,8 @@ public final class PostgreSQLR2DBCDatabaseContainer implements R2DBCDatabaseCont
 
     @Override
     public ConnectionFactoryOptions configure(ConnectionFactoryOptions options) {
-        return options.mutate()
+        return options
+            .mutate()
             .option(ConnectionFactoryOptions.HOST, container.getHost())
             .option(ConnectionFactoryOptions.PORT, container.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT))
             .option(ConnectionFactoryOptions.DATABASE, container.getDatabaseName())

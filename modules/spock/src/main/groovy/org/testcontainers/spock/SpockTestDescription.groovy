@@ -12,25 +12,25 @@ import org.testcontainers.lifecycle.TestDescription
 @PackageScope
 class SpockTestDescription implements TestDescription {
 
-    String specName
-    String featureName
+	String specName
+	String featureName
 
-    static SpockTestDescription fromTestDescription(IMethodInvocation invocation) {
-        return new SpockTestDescription([
-            specName: invocation.spec.name,
-            featureName: invocation.feature.name
-        ])
-    }
+	static SpockTestDescription fromTestDescription(IMethodInvocation invocation) {
+		return new SpockTestDescription([
+			specName: invocation.spec.name,
+			featureName: invocation.feature.name
+		])
+	}
 
-    @Override
-    String getTestId() {
-        return getFilesystemFriendlyName()
-    }
+	@Override
+	String getTestId() {
+		return getFilesystemFriendlyName()
+	}
 
-    @Override
-    String getFilesystemFriendlyName() {
-        return [specName, featureName].collect {
-            URLEncoder.encode(it, 'UTF-8')
-        }.join('-')
-    }
+	@Override
+	String getFilesystemFriendlyName() {
+		return [specName, featureName].collect {
+			URLEncoder.encode(it, 'UTF-8')
+		}.join('-')
+	}
 }

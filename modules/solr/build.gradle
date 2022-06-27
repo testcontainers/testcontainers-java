@@ -2,6 +2,9 @@ description = "Testcontainers :: Solr"
 
 dependencies {
     api project(':testcontainers')
+    // TODO use JDK's HTTP client and/or Apache HttpClient5
+    shaded 'com.squareup.okhttp3:okhttp:4.9.3'
+
     testImplementation 'org.apache.solr:solr-solrj:8.11.1'
 
 }

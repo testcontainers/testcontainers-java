@@ -1,10 +1,11 @@
-@import url('https://fonts.googleapis.com/css?family=Inconsolata|Lato|Merriweather+Sans|Open+Sans|Source+Sans+Pro');
-body {
-    font-family: 'Lato', sans-serif;
+@import url('https://fonts.googleapis.com/css?family=Rubik');
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Rubik', sans-serif;
 
 }
 
-.md-typeset pre {
-    font-family: 'Inconsolata', monospace;
-    font-size: 100%;
+[data-md-color-scheme="testcontainers"] {
+    --md-primary-fg-color:       #291A3F;
+    --md-accent-fg-color:        #291A3F;
+    --md-typeset-a-color:        #0C94AA;
 }

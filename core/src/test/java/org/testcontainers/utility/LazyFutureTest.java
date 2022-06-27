@@ -8,9 +8,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static java.util.stream.Collectors.toList;
 import static org.rnorth.visibleassertions.VisibleAssertions.*;
 
 public class LazyFutureTest {
@@ -64,9 +64,14 @@ public class LazyFutureTest {
             }
         };
 
-        Future<List<Integer>> task = new ForkJoinPool(numOfThreads).submit(() -> {
-            return IntStream.rangeClosed(1, numOfThreads).parallel().mapToObj(i -> Futures.getUnchecked(lazyFuture)).collect(toList());
-        });
+        Future<List<Integer>> task = new ForkJoinPool(numOfThreads)
+            .submit(() -> {
+                return IntStream
+                    .rangeClosed(1, numOfThreads)
+                    .parallel()
+                    .mapToObj(i -> Futures.getUnchecked(lazyFuture))
+                    .collect(Collectors.toList());
+            });
 
         while (latch.getCount() > 0) {
             latch.countDown();
@@ -74,5 +79,4 @@ public class LazyFutureTest {
 
         assertEquals("All threads receives the same result", Collections.nCopies(numOfThreads, 1), task.get());
     }
-
 }

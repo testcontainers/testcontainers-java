@@ -45,8 +45,11 @@ interface Versioning {
 
     @EqualsAndHashCode
     class TagVersioning implements Versioning {
+
         public static final String TAG_REGEX = "[\\w][\\w.\\-]{0,127}";
+
         static final TagVersioning LATEST = new TagVersioning("latest");
+
         private final String tag;
 
         TagVersioning(String tag) {
@@ -71,7 +74,9 @@ interface Versioning {
 
     @EqualsAndHashCode
     class Sha256Versioning implements Versioning {
+
         public static final String HASH_REGEX = "[0-9a-fA-F]{32,}";
+
         private final String hash;
 
         Sha256Versioning(String hash) {

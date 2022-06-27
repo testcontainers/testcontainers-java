@@ -30,7 +30,7 @@ public class SolrQueryTest {
     @BeforeClass
     public static void setUp() throws IOException, SolrServerException {
         solrContainer.start();
-        solrClient = new Http2SolrClient.Builder("http://" + solrContainer.getContainerIpAddress() + ":" + solrContainer.getSolrPort() + "/solr").build();
+        solrClient = new Http2SolrClient.Builder("http://" + solrContainer.getHost() + ":" + solrContainer.getSolrPort() + "/solr").build();
 
         // Add Sample Data
         solrClient.add(COLLECTION_NAME, Collections.singletonList(

@@ -12,6 +12,6 @@ jobs:
     if: github.repository == 'testcontainers/testcontainers-java'
     runs-on: ubuntu-latest
     steps:
-      - uses: release-drafter/release-drafter@2f7ebf8ab5ef7f9835ee4b0b1eebaa2a14ca1669 # v5.15.0
+      - uses: release-drafter/release-drafter@ac463ffd9cc4c6ad5682af93dc3e3591c4657ee3 # v5.19.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

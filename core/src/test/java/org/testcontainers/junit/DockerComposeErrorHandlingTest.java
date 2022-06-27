@@ -10,11 +10,15 @@ public class DockerComposeErrorHandlingTest {
 
     @Test
     public void simpleTest() {
-        VisibleAssertions.assertThrows("starting with an invalid docker-compose file throws an exception",
+        VisibleAssertions.assertThrows(
+            "starting with an invalid docker-compose file throws an exception",
             IllegalArgumentException.class,
-                () -> {
-                    DockerComposeContainer environment = new DockerComposeContainer(new File("src/test/resources/invalid-compose.yml"))
-                        .withExposedService("something", 123);
-                });
+            () -> {
+                DockerComposeContainer environment = new DockerComposeContainer(
+                    new File("src/test/resources/invalid-compose.yml")
+                )
+                    .withExposedService("something", 123);
+            }
+        );
     }
 }

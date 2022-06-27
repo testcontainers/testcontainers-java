@@ -17,7 +17,7 @@ public abstract class LazyFuture<T> implements Future<T> {
     @Getter(value = AccessLevel.MODULE, lazy = true)
     private final T resolvedValue = resolve();
 
-    abstract protected T resolve();
+    protected abstract T resolve();
 
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {

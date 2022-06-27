@@ -25,22 +25,19 @@ public class AbstractJDBCDriverTest {
         CharacterSet,
         CustomIniFile,
         JDBCParams,
-        PmdKnownBroken
+        PmdKnownBroken,
     }
 
     @Parameter
     public String jdbcUrl;
+
     @Parameter(1)
     public EnumSet<Options> options;
 
     public static void sampleInitFunction(Connection connection) throws SQLException {
-        connection.createStatement().execute("CREATE TABLE bar (\n" +
-            "  foo VARCHAR(255)\n" +
-            ");");
+        connection.createStatement().execute("CREATE TABLE bar (\n" + "  foo VARCHAR(255)\n" + ");");
         connection.createStatement().execute("INSERT INTO bar (foo) VALUES ('hello world');");
-        connection.createStatement().execute("CREATE TABLE my_counter (\n" +
-            "  n INT\n" +
-            ");");
+        connection.createStatement().execute("CREATE TABLE my_counter (\n" + "  n INT\n" + ");");
     }
 
     @AfterClass
@@ -79,67 +76,99 @@ public class AbstractJDBCDriverTest {
             query = "SELECT 1 FROM SYSIBM.SYSDUMMY1";
         }
 
-        boolean result = new QueryRunner(dataSource, options.contains(Options.PmdKnownBroken)).query(query, rs -> {
-            rs.next();
-            int resultSetInt = rs.getInt(1);
-            assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
-            return true;
-        });
+        boolean result = new QueryRunner(dataSource, options.contains(Options.PmdKnownBroken))
+            .query(
+                query,
+                rs -> {
+                    rs.next();
+                    int resultSetInt = rs.getInt(1);
+                    assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+                    return true;
+                }
+            );
 
         assertTrue("The database returned a record as expected", result);
     }
 
     private void performTestForScriptedSchema(HikariDataSource dataSource) throws SQLException {
-        boolean result = new QueryRunner(dataSource).query("SELECT foo FROM bar WHERE foo LIKE '%world'", rs -> {
-            rs.next();
-            String resultSetString = rs.getString(1);
-            assertEquals("A basic SELECT query succeeds where the schema has been applied from a script", "hello world", resultSetString);
-            return true;
-        });
+        boolean result = new QueryRunner(dataSource)
+            .query(
+                "SELECT foo FROM bar WHERE foo LIKE '%world'",
+                rs -> {
+                    rs.next();
+                    String resultSetString = rs.getString(1);
+                    assertEquals(
+                        "A basic SELECT query succeeds where the schema has been applied from a script",
+                        "hello world",
+                        resultSetString
+                    );
+                    return true;
+                }
+            );
 
         assertTrue("The database returned a record as expected", result);
     }
 
     private void performTestForJDBCParamUsage(HikariDataSource dataSource) throws SQLException {
-        boolean result = new QueryRunner(dataSource).query("select CURRENT_USER", rs -> {
-            rs.next();
-            String resultUser = rs.getString(1);
-            // Not all databases (eg. Postgres) return @% at the end of user name. We just need to make sure the user name matches.
-            if (resultUser.endsWith("@%")) {
-                resultUser = resultUser.substring(0, resultUser.length() - 2);
-            }
-            assertEquals("User from query param is created.", "someuser", resultUser);
-            return true;
-        });
+        boolean result = new QueryRunner(dataSource)
+            .query(
+                "select CURRENT_USER",
+                rs -> {
+                    rs.next();
+                    String resultUser = rs.getString(1);
+                    // Not all databases (eg. Postgres) return @% at the end of user name. We just need to make sure the user name matches.
+                    if (resultUser.endsWith("@%")) {
+                        resultUser = resultUser.substring(0, resultUser.length() - 2);
+                    }
+                    assertEquals("User from query param is created.", "someuser", resultUser);
+                    return true;
+                }
+            );
 
         assertTrue("The database returned a record as expected", result);
 
         String databaseQuery = "SELECT DATABASE()";
         // Postgres does not have Database() as a function
         String databaseType = ConnectionUrl.newInstance(jdbcUrl).getDatabaseType();
-        if (databaseType.equalsIgnoreCase("postgresql") ||
+        if (
+            databaseType.equalsIgnoreCase("postgresql") ||
             databaseType.equalsIgnoreCase("postgis") ||
-            databaseType.equalsIgnoreCase("timescaledb")) {
+            databaseType.equalsIgnoreCase("timescaledb")
+        ) {
             databaseQuery = "SELECT CURRENT_DATABASE()";
         }
 
-        result = new QueryRunner(dataSource).query(databaseQuery, rs -> {
-            rs.next();
-            String resultDB = rs.getString(1);
-            assertEquals("Database name from URL String is used.", "databasename", resultDB);
-            return true;
-        });
+        result =
+            new QueryRunner(dataSource)
+                .query(
+                    databaseQuery,
+                    rs -> {
+                        rs.next();
+                        String resultDB = rs.getString(1);
+                        assertEquals("Database name from URL String is used.", "databasename", resultDB);
+                        return true;
+                    }
+                );
 
         assertTrue("The database returned a record as expected", result);
     }
 
-    private void performTestForCharacterEncodingForInitialScriptConnection(HikariDataSource dataSource) throws SQLException {
-        boolean result = new QueryRunner(dataSource).query("SELECT foo FROM bar WHERE foo LIKE '%мир'", rs -> {
-            rs.next();
-            String resultSetString = rs.getString(1);
-            assertEquals("A SELECT query succeed and the correct charset has been applied for the init script", "привет мир", resultSetString);
-            return true;
-        });
+    private void performTestForCharacterEncodingForInitialScriptConnection(HikariDataSource dataSource)
+        throws SQLException {
+        boolean result = new QueryRunner(dataSource)
+            .query(
+                "SELECT foo FROM bar WHERE foo LIKE '%мир'",
+                rs -> {
+                    rs.next();
+                    String resultSetString = rs.getString(1);
+                    assertEquals(
+                        "A SELECT query succeed and the correct charset has been applied for the init script",
+                        "привет мир",
+                        resultSetString
+                    );
+                    return true;
+                }
+            );
 
         assertTrue("The database returned a record as expected", result);
     }
@@ -160,12 +189,19 @@ public class AbstractJDBCDriverTest {
 
     private HikariDataSource verifyCharacterSet(String jdbcUrl) throws SQLException {
         HikariDataSource dataSource = getDataSource(jdbcUrl, 1);
-        boolean result = new QueryRunner(dataSource).query("SHOW VARIABLES LIKE 'character\\_set\\_connection'", rs -> {
-            rs.next();
-            String resultSetString = rs.getString(2);
-            assertTrue("Passing query parameters to set DB connection encoding is successful", resultSetString.startsWith("utf8"));
-            return true;
-        });
+        boolean result = new QueryRunner(dataSource)
+            .query(
+                "SHOW VARIABLES LIKE 'character\\_set\\_connection'",
+                rs -> {
+                    rs.next();
+                    String resultSetString = rs.getString(2);
+                    assertTrue(
+                        "Passing query parameters to set DB connection encoding is successful",
+                        resultSetString.startsWith("utf8")
+                    );
+                    return true;
+                }
+            );
 
         assertTrue("The database returned a record as expected", result);
         return dataSource;
