@@ -18,7 +18,7 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
     public static final int BROKER_HTTP_PORT = 8080;
 
     /**
-     * @deprecated The metrics endpoint is no longer being using for the WaitStrategy.
+     * @deprecated The metrics endpoint is no longer being used for the WaitStrategy.
      */
     @Deprecated
     public static final String METRICS_ENDPOINT = "/metrics";
