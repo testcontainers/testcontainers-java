@@ -25,9 +25,8 @@ import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
-import java.io.IOException;
-
 import javax.net.ssl.SSLHandshakeException;
+import java.io.IOException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -418,10 +417,11 @@ public class ElasticsearchContainerTest {
                 new UsernamePasswordCredentials(ELASTICSEARCH_USERNAME, ELASTICSEARCH_PASSWORD)
             );
 
+            String protocol = container.caCertAsBytes().isPresent() ? "https://" : "http://";
+
             client =
                 RestClient
-                    .builder(HttpHost.create(container.caCertAsBytes().isEmpty() ? "http://" : "https://" +
-                        container.getHttpHostAddress()))
+                    .builder(HttpHost.create(protocol + container.getHttpHostAddress()))
                     .setHttpClientConfigCallback(httpClientBuilder -> {
                         if (container.caCertAsBytes().isPresent()) {
                             httpClientBuilder.setSSLContext(container.createSslContextFromCa());
