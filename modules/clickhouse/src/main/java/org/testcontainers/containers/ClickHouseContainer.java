@@ -97,7 +97,7 @@ public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContain
     }
 
     @Override
-    public SELF withUrlParam(String paramName, String paramValue) {
+    public ClickHouseContainer withUrlParam(String paramName, String paramValue) {
         throw new UnsupportedOperationException("The ClickHouse does not support this");
     }
 }
