@@ -7,7 +7,7 @@ import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
 
-public class ClickHouseContainer<SELF extends ClickHouseContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
+public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContainer> {
 
     public static final String NAME = "clickhouse";
 
