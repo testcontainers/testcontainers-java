@@ -151,6 +151,18 @@ public class ElasticsearchContainerTest {
     }
 
     @Test
+    public void elasticsearchVersion83() throws IOException {
+        try (ElasticsearchContainer container = new ElasticsearchContainer(
+            "docker.elastic.co/elasticsearch/elasticsearch:8.3.0"
+        )) {
+            container.start();
+            Response response = getClient(container).performRequest(new Request("GET", "/"));
+            assertThat(response.getStatusLine().getStatusCode(), is(200));
+            assertThat(EntityUtils.toString(response.getEntity()), containsString("8.3.0"));
+        }
+    }
+
+    @Test
     public void elasticsearchOssImage() throws IOException {
         try (
             // ossContainer {
@@ -408,8 +420,12 @@ public class ElasticsearchContainerTest {
 
             client =
                 RestClient
-                    .builder(HttpHost.create(container.getHttpHostAddress()))
+                    .builder(HttpHost.create(container.caCertAsBytes().isEmpty() ? "http://" : "https://" +
+                        container.getHttpHostAddress()))
                     .setHttpClientConfigCallback(httpClientBuilder -> {
+                        if (container.caCertAsBytes().isPresent()) {
+                            httpClientBuilder.setSSLContext(container.createSslContextFromCa());
+                        }
                         return httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
                     })
                     .build();
