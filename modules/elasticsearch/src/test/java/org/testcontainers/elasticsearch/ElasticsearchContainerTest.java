@@ -25,8 +25,9 @@ import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
-import javax.net.ssl.SSLHandshakeException;
 import java.io.IOException;
+
+import javax.net.ssl.SSLHandshakeException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -151,9 +152,11 @@ public class ElasticsearchContainerTest {
 
     @Test
     public void elasticsearchVersion83() throws IOException {
-        try (ElasticsearchContainer container = new ElasticsearchContainer(
-            "docker.elastic.co/elasticsearch/elasticsearch:8.3.0"
-        )) {
+        try (
+            ElasticsearchContainer container = new ElasticsearchContainer(
+                "docker.elastic.co/elasticsearch/elasticsearch:8.3.0"
+            )
+        ) {
             container.start();
             Response response = getClient(container).performRequest(new Request("GET", "/"));
             assertThat(response.getStatusLine().getStatusCode(), is(200));
