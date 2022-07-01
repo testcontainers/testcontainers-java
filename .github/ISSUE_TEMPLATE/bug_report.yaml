@@ -78,7 +78,7 @@ body:
     attributes:
       label: Host Arch
       description: Which architecture are you using?
-      placeholder: ex. ARM64
+      placeholder: e.g. x86, ARM
     validations:
       required: true
   - type: textarea
