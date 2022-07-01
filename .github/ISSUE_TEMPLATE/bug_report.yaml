@@ -77,7 +77,7 @@ body:
     id: host-arch
     attributes:
       label: Host Arch
-      description: Which OS architecture are you using?
+      description: Which architecture are you using?
       placeholder: ex. ARM64
     validations:
       required: true
