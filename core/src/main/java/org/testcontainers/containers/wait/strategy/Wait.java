@@ -1,12 +1,11 @@
 package org.testcontainers.containers.wait.strategy;
 
-import java.net.HttpURLConnection;
-
 /**
  * Convenience class with logic for building common {@link WaitStrategy} instances.
  *
  */
 public class Wait {
+
     /**
      * Convenience method to return the default WaitStrategy.
      *
@@ -34,8 +33,7 @@ public class Wait {
      * @see HttpWaitStrategy
      */
     public static HttpWaitStrategy forHttp(String path) {
-        return new HttpWaitStrategy()
-                .forPath(path);
+        return new HttpWaitStrategy().forPath(path);
     }
 
     /**
@@ -46,8 +44,7 @@ public class Wait {
      * @see HttpWaitStrategy
      */
     public static HttpWaitStrategy forHttps(String path) {
-        return forHttp(path)
-                .usingTls();
+        return forHttp(path).usingTls();
     }
 
     /**

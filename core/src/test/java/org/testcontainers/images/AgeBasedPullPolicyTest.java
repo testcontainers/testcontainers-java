@@ -1,15 +1,15 @@
 package org.testcontainers.images;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.junit.Test;
+import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
-import org.junit.Test;
-import org.testcontainers.utility.DockerImageName;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class AgeBasedPullPolicyTest {
 
@@ -17,9 +17,7 @@ public class AgeBasedPullPolicyTest {
 
     @Test
     public void shouldPull() {
-        ImageData imageData = ImageData.builder()
-            .createdAt(Instant.now().minus(2, ChronoUnit.HOURS))
-            .build();
+        ImageData imageData = ImageData.builder().createdAt(Instant.now().minus(2, ChronoUnit.HOURS)).build();
 
         AgeBasedPullPolicy oneHour = new AgeBasedPullPolicy(Duration.of(1L, ChronoUnit.HOURS));
         assertTrue(oneHour.shouldPullCached(imageName, imageData));

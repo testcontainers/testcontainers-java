@@ -46,14 +46,10 @@ public class TestcontainersExtensionTests {
     }
 
     @Testcontainers(disabledWithoutDocker = true)
-    static final class DisabledWithoutDocker {
-
-    }
+    static final class DisabledWithoutDocker {}
 
     @Testcontainers
-    static final class EnabledWithoutDocker {
-
-    }
+    static final class EnabledWithoutDocker {}
 
     static final class TestTestcontainersExtension extends TestcontainersExtension {
 
@@ -66,7 +62,5 @@ public class TestcontainersExtensionTests {
         boolean isDockerAvailable() {
             return dockerAvailable;
         }
-
     }
-
 }

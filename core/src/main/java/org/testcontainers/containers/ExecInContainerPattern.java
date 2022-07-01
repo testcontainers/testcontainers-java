@@ -14,6 +14,7 @@ import org.testcontainers.utility.TestEnvironment;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Provides utility methods for executing commands in containers
@@ -23,16 +24,45 @@ import java.nio.charset.Charset;
 public class ExecInContainerPattern {
 
     /**
+     *
+     * @deprecated use {@link #execInContainer(DockerClient, InspectContainerResponse, String...)}
+     */
+    @Deprecated
+    public Container.ExecResult execInContainer(InspectContainerResponse containerInfo, String... command)
+        throws UnsupportedOperationException, IOException, InterruptedException {
+        DockerClient dockerClient = DockerClientFactory.instance().client();
+        return execInContainer(dockerClient, containerInfo, command);
+    }
+
+    /**
+     *
+     * @deprecated use {@link #execInContainer(DockerClient, InspectContainerResponse, Charset, String...)}
+     */
+    @Deprecated
+    public Container.ExecResult execInContainer(
+        InspectContainerResponse containerInfo,
+        Charset outputCharset,
+        String... command
+    ) throws UnsupportedOperationException, IOException, InterruptedException {
+        DockerClient dockerClient = DockerClientFactory.instance().client();
+        return execInContainer(dockerClient, containerInfo, outputCharset, command);
+    }
+
+    /**
      * Run a command inside a running container, as though using "docker exec", and interpreting
      * the output as UTF8.
      * <p></p>
+     * @param dockerClient the {@link DockerClient}
      * @param containerInfo the container info
      * @param command the command to execute
-     * @see #execInContainer(InspectContainerResponse, Charset, String...)
+     * @see #execInContainer(DockerClient, InspectContainerResponse, Charset, String...)
      */
-    public Container.ExecResult execInContainer(InspectContainerResponse containerInfo, String... command)
-        throws UnsupportedOperationException, IOException, InterruptedException {
-        return execInContainer(containerInfo, Charset.forName("UTF-8"), command);
+    public Container.ExecResult execInContainer(
+        DockerClient dockerClient,
+        InspectContainerResponse containerInfo,
+        String... command
+    ) throws UnsupportedOperationException, IOException, InterruptedException {
+        return execInContainer(dockerClient, containerInfo, StandardCharsets.UTF_8, command);
     }
 
     /**
@@ -40,6 +70,7 @@ public class ExecInContainerPattern {
      * <p>
      * This functionality is not available on a docker daemon running the older "lxc" execution driver. At
      * the time of writing, CircleCI was using this driver.
+     * @param dockerClient the {@link DockerClient}
      * @param containerInfo the container info
      * @param outputCharset the character set used to interpret the output.
      * @param command the parts of the command to run
@@ -48,13 +79,17 @@ public class ExecInContainerPattern {
      * @throws InterruptedException if the thread waiting for the response is interrupted
      * @throws UnsupportedOperationException if the docker daemon you're connecting to doesn't support "exec".
      */
-    public Container.ExecResult execInContainer(InspectContainerResponse containerInfo, Charset outputCharset, String... command)
-        throws UnsupportedOperationException, IOException, InterruptedException {
+    public Container.ExecResult execInContainer(
+        DockerClient dockerClient,
+        InspectContainerResponse containerInfo,
+        Charset outputCharset,
+        String... command
+    ) throws UnsupportedOperationException, IOException, InterruptedException {
         if (!TestEnvironment.dockerExecutionDriverSupportsExec()) {
             // at time of writing, this is the expected result in CircleCI.
             throw new UnsupportedOperationException(
-                "Your docker daemon is running the \"lxc\" driver, which doesn't support \"docker exec\".");
-
+                "Your docker daemon is running the \"lxc\" driver, which doesn't support \"docker exec\"."
+            );
         }
 
         if (!isRunning(containerInfo)) {
@@ -64,11 +99,13 @@ public class ExecInContainerPattern {
         String containerId = containerInfo.getId();
         String containerName = containerInfo.getName();
 
-        DockerClient dockerClient = DockerClientFactory.instance().client();
-
         log.debug("{}: Running \"exec\" command: {}", containerName, String.join(" ", command));
-        final ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(containerId)
-            .withAttachStdout(true).withAttachStderr(true).withCmd(command).exec();
+        final ExecCreateCmdResponse execCreateCmdResponse = dockerClient
+            .execCreateCmd(containerId)
+            .withAttachStdout(true)
+            .withAttachStderr(true)
+            .withCmd(command)
+            .exec();
 
         final ToStringConsumer stdoutConsumer = new ToStringConsumer();
         final ToStringConsumer stderrConsumer = new ToStringConsumer();
@@ -84,7 +121,8 @@ public class ExecInContainerPattern {
         final Container.ExecResult result = new Container.ExecResult(
             exitCode,
             stdoutConsumer.toString(outputCharset),
-            stderrConsumer.toString(outputCharset));
+            stderrConsumer.toString(outputCharset)
+        );
 
         log.trace("{}: stdout: {}", containerName, result.getStdout());
         log.trace("{}: stderr: {}", containerName, result.getStderr());

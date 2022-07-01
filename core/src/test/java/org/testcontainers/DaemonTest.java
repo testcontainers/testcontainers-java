@@ -10,7 +10,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
-import static org.testcontainers.TestImages.TINY_IMAGE;
 
 /**
  * This test forks a new JVM, otherwise it's not possible to reliably diff the threads
@@ -23,7 +22,7 @@ public class DaemonTest {
         GenericContainer<?> genericContainer = null;
 
         try {
-            genericContainer = new GenericContainer<>(TINY_IMAGE).withCommand("top");
+            genericContainer = new GenericContainer<>(TestImages.TINY_IMAGE).withCommand("top");
             genericContainer.start();
 
             Set<Thread> threads = new HashSet<>(Thread.getAllStackTraces().keySet());
@@ -34,11 +33,14 @@ public class DaemonTest {
             if (nonDaemonThreads.isEmpty()) {
                 VisibleAssertions.pass("All threads marked as daemon");
             } else {
-                String nonDaemonThreadNames = nonDaemonThreads.stream()
+                String nonDaemonThreadNames = nonDaemonThreads
+                    .stream()
                     .map(Thread::getName)
                     .collect(Collectors.joining("\n", "\n", ""));
 
-                VisibleAssertions.fail("Expected all threads to be daemons but the following are not:\n" + nonDaemonThreadNames);
+                VisibleAssertions.fail(
+                    "Expected all threads to be daemons but the following are not:\n" + nonDaemonThreadNames
+                );
             }
         } finally {
             if (genericContainer != null) {

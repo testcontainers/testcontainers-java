@@ -13,7 +13,9 @@ public class ImageNameSubstitutorTest {
 
     @Rule
     public MockTestcontainersConfigurationRule config = new MockTestcontainersConfigurationRule();
+
     private ImageNameSubstitutor originalInstance;
+
     private ImageNameSubstitutor originalDefaultImplementation;
 
     @Before
@@ -27,10 +29,7 @@ public class ImageNameSubstitutorTest {
             .doReturn(DockerImageName.parse("substituted-image"))
             .when(ImageNameSubstitutor.defaultImplementation)
             .apply(eq(DockerImageName.parse("original")));
-        Mockito
-            .doReturn("default implementation")
-            .when(ImageNameSubstitutor.defaultImplementation)
-            .getDescription();
+        Mockito.doReturn("default implementation").when(ImageNameSubstitutor.defaultImplementation).getDescription();
     }
 
     @After
@@ -58,10 +57,7 @@ public class ImageNameSubstitutorTest {
 
     @Test
     public void testWorksWithoutConfiguredImplementation() {
-        Mockito
-            .doReturn(null)
-            .when(TestcontainersConfiguration.getInstance())
-            .getImageSubstitutorClassName();
+        Mockito.doReturn(null).when(TestcontainersConfiguration.getInstance()).getImageSubstitutorClassName();
 
         final ImageNameSubstitutor imageNameSubstitutor = ImageNameSubstitutor.instance();
 

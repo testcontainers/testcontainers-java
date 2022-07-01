@@ -25,5 +25,4 @@ public class FailureDetectingExternalResourceTest {
         verify(res).starting(any());
         verify(res).finished(any());
     }
-
 }
