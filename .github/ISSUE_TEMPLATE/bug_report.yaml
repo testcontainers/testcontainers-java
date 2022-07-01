@@ -70,7 +70,7 @@ body:
     attributes:
       label: Host OS
       description: Which Operating System are you using?
-      placeholder: ex. Linux
+      placeholder: e.g. Linux, Windows
     validations:
       required: true
   - type: input
