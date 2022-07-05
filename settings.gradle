@@ -5,7 +5,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath "com.gradle.enterprise:com.gradle.enterprise.gradle.plugin:3.10.1"
+        classpath "com.gradle.enterprise:com.gradle.enterprise.gradle.plugin:3.10.2"
         classpath "com.gradle:common-custom-user-data-gradle-plugin:1.7"
     }
 }

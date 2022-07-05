@@ -6,5 +6,5 @@ dependencies {
     shaded 'com.squareup.okhttp3:okhttp:3.14.9'
 
     testImplementation 'org.assertj:assertj-core:3.23.1'
-    testImplementation 'com.azure:azure-cosmos:4.30.0'
+    testImplementation 'com.azure:azure-cosmos:4.32.1'
 }
