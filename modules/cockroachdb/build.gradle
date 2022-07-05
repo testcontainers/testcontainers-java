@@ -4,5 +4,5 @@ dependencies {
     api project(':jdbc')
 
     testImplementation project(':jdbc-test')
-    testImplementation 'org.postgresql:postgresql:42.3.6'
+    testImplementation 'org.postgresql:postgresql:42.4.0'
 }
