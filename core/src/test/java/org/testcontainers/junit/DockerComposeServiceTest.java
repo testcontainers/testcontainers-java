@@ -4,17 +4,18 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.containers.DockerComposeContainer;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertNotNull;
-
 import java.io.File;
+
+import static org.rnorth.visibleassertions.VisibleAssertions.assertNotNull;
 
 public class DockerComposeServiceTest extends BaseDockerComposeTest {
 
     @Rule
-    public DockerComposeContainer environment = new DockerComposeContainer(new File("src/test/resources/compose-test.yml"))
-            .withServices("redis")
-            .withExposedService("redis_1", REDIS_PORT);
-
+    public DockerComposeContainer environment = new DockerComposeContainer(
+        new File("src/test/resources/compose-test.yml")
+    )
+        .withServices("redis")
+        .withExposedService("redis_1", REDIS_PORT);
 
     @Override
     protected DockerComposeContainer getEnvironment() {

@@ -19,7 +19,6 @@ public abstract class AbstractStatementTest {
     public TestName testName = new TestName();
 
     protected void assertStatement(Statement statement) {
-
         String[] expectedLines = new String[0];
         try {
             String path = "fixtures/statements/" + getClass().getSimpleName() + "/" + testName.getMethodName();
@@ -39,7 +38,9 @@ public abstract class AbstractStatementTest {
         String[] resultLines = StringUtils.chomp(builder.toString().trim()).split("\n");
 
         if (expectedLines.length != resultLines.length) {
-            fail("number of lines is not the same. Expected " + expectedLines.length + " but got " + resultLines.length);
+            fail(
+                "number of lines is not the same. Expected " + expectedLines.length + " but got " + resultLines.length
+            );
         }
 
         if (!Arrays.equals(expectedLines, resultLines)) {
@@ -59,7 +60,6 @@ public abstract class AbstractStatementTest {
                     failureBuilder.append(expectedLine);
                     failureBuilder.append(">\n");
                 }
-
             }
 
             fail(failureBuilder.toString());

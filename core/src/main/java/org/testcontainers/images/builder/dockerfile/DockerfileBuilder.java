@@ -10,7 +10,9 @@ import java.util.List;
 
 @Data
 @Slf4j
-public class DockerfileBuilder implements DockerfileBuilderTrait<DockerfileBuilder>,
+public class DockerfileBuilder
+    implements
+        DockerfileBuilderTrait<DockerfileBuilder>,
         FromStatementTrait<DockerfileBuilder>,
         AddStatementTrait<DockerfileBuilder>,
         CopyStatementTrait<DockerfileBuilder>,
@@ -27,7 +29,6 @@ public class DockerfileBuilder implements DockerfileBuilderTrait<DockerfileBuild
     private final List<Statement> statements = new ArrayList<>();
 
     public String build() {
-
         StringBuilder builder = new StringBuilder();
 
         for (Statement statement : statements) {

@@ -24,10 +24,17 @@ public class TimescaleDBContainerTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testCommandOverride() throws SQLException {
-        try (GenericContainer<?> postgres = new TimescaleDBContainerProvider().newInstance().withCommand("postgres -c max_connections=42")) {
+        try (
+            GenericContainer<?> postgres = new TimescaleDBContainerProvider()
+                .newInstance()
+                .withCommand("postgres -c max_connections=42")
+        ) {
             postgres.start();
 
-            ResultSet resultSet = performQuery((JdbcDatabaseContainer<?>) postgres, "SELECT current_setting('max_connections')");
+            ResultSet resultSet = performQuery(
+                (JdbcDatabaseContainer<?>) postgres,
+                "SELECT current_setting('max_connections')"
+            );
             String result = resultSet.getString(1);
             assertEquals("max_connections should be overriden", "42", result);
         }
@@ -35,10 +42,18 @@ public class TimescaleDBContainerTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testUnsetCommand() throws SQLException {
-        try (GenericContainer<?> postgres = new TimescaleDBContainerProvider().newInstance().withCommand("postgres -c max_connections=42").withCommand()) {
+        try (
+            GenericContainer<?> postgres = new TimescaleDBContainerProvider()
+                .newInstance()
+                .withCommand("postgres -c max_connections=42")
+                .withCommand()
+        ) {
             postgres.start();
 
-            ResultSet resultSet = performQuery((JdbcDatabaseContainer<?>) postgres, "SELECT current_setting('max_connections')");
+            ResultSet resultSet = performQuery(
+                (JdbcDatabaseContainer<?>) postgres,
+                "SELECT current_setting('max_connections')"
+            );
             String result = resultSet.getString(1);
             assertNotEquals("max_connections should not be overriden", "42", result);
         }
@@ -46,7 +61,11 @@ public class TimescaleDBContainerTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testExplicitInitScript() throws SQLException {
-        try (JdbcDatabaseContainer<?> postgres = new TimescaleDBContainerProvider().newInstance().withInitScript("somepath/init_timescaledb.sql")) {
+        try (
+            JdbcDatabaseContainer<?> postgres = new TimescaleDBContainerProvider()
+                .newInstance()
+                .withInitScript("somepath/init_timescaledb.sql")
+        ) {
             postgres.start();
 
             ResultSet resultSet = performQuery(postgres, "SELECT foo FROM bar");

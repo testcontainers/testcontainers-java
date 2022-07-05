@@ -34,27 +34,38 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
     private static final Logger LOGGER = LoggerFactory.getLogger(HiveMQContainer.class);
 
     private static final DockerImageName DEFAULT_HIVEMQ_EE_IMAGE_NAME = DockerImageName.parse("hivemq/hivemq4");
+
     private static final DockerImageName DEFAULT_HIVEMQ_CE_IMAGE_NAME = DockerImageName.parse("hivemq/hivemq-ce");
 
     private static final int DEBUGGING_PORT = 9000;
+
     private static final int MQTT_PORT = 1883;
+
     private static final int CONTROL_CENTER_PORT = 8080;
+
     @SuppressWarnings("OctalInteger")
     private static final int MODE = 0777;
-    private static final @NotNull Pattern EXTENSION_ID_PATTERN = Pattern.compile("<id>(.+?)</id>");
 
-    private final @NotNull ConcurrentHashMap<String, CountDownLatch> containerOutputLatches = new ConcurrentHashMap<>();
+    @NotNull
+    private static final Pattern EXTENSION_ID_PATTERN = Pattern.compile("<id>(.+?)</id>");
+
+    @NotNull
+    private final ConcurrentHashMap<String, CountDownLatch> containerOutputLatches = new ConcurrentHashMap<>();
+
     private boolean controlCenterEnabled = false;
+
     private boolean debugging = false;
 
-    private final @NotNull Set<String> prepackagedExtensionsToRemove = new HashSet<>();
+    @NotNull
+    private final Set<String> prepackagedExtensionsToRemove = new HashSet<>();
+
     private boolean removeAllPrepackagedExtensions = false;
 
-    private final @NotNull WaitAllStrategy waitStrategy = new WaitAllStrategy();
+    @NotNull
+    private final WaitAllStrategy waitStrategy = new WaitAllStrategy();
 
     public HiveMQContainer(final @NotNull DockerImageName dockerImageName) {
         super(dockerImageName);
-
         dockerImageName.assertCompatibleWith(DEFAULT_HIVEMQ_CE_IMAGE_NAME, DEFAULT_HIVEMQ_EE_IMAGE_NAME);
 
         addExposedPort(MQTT_PORT);
@@ -96,13 +107,14 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
         withCreateContainerCmdModifier(it -> it.withEntrypoint("/bin/sh"));
 
         if (removeAllPrepackagedExtensions || !prepackagedExtensionsToRemove.isEmpty()) {
-
             if (removeAllPrepackagedExtensions) {
                 removeCommand = "rm -rf /opt/hivemq/extensions/** &&";
             } else {
-                removeCommand = prepackagedExtensionsToRemove.stream()
-                    .map(extensionId -> "rm -rf /opt/hivemq/extensions/" + extensionId + "&&")
-                    .collect(Collectors.joining());
+                removeCommand =
+                    prepackagedExtensionsToRemove
+                        .stream()
+                        .map(extensionId -> "rm -rf /opt/hivemq/extensions/" + extensionId + "&&")
+                        .collect(Collectors.joining());
             }
         } else {
             removeCommand = "";
@@ -110,16 +122,19 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
         setCommand(
             "-c",
             removeCommand +
-                "cp -r '/opt/hivemq/temp-extensions/'* /opt/hivemq/extensions/ " +
-                "; rm -rf /opt/hivemq/temp-extensions/** " +
-                "&& chmod -R 777 /opt/hivemq/extensions " +
-                "&& /opt/docker-entrypoint.sh /opt/hivemq/bin/run.sh"
+            "cp -r '/opt/hivemq/temp-extensions/'* /opt/hivemq/extensions/ " +
+            "; chmod -R 777 /opt/hivemq/extensions " +
+            "&& /opt/docker-entrypoint.sh /opt/hivemq/bin/run.sh"
         );
     }
 
     protected void containerIsStarted(final @NotNull InspectContainerResponse containerInfo) {
         if (controlCenterEnabled) {
-            LOGGER.info("The HiveMQ Control Center is reachable under: http://{}:{}", getHost(), getMappedPort(CONTROL_CENTER_PORT));
+            LOGGER.info(
+                "The HiveMQ Control Center is reachable under: http://{}:{}",
+                getHost(),
+                getMappedPort(CONTROL_CENTER_PORT)
+            );
         }
     }
 
@@ -159,7 +174,10 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
     public @NotNull HiveMQContainer withDebugging() {
         debugging = true;
         addExposedPorts(DEBUGGING_PORT);
-        withEnv("JAVA_OPTS", "-agentlib:jdwp=transport=dt_socket,address=0.0.0.0:" + DEBUGGING_PORT + ",server=y,suspend=y");
+        withEnv(
+            "JAVA_OPTS",
+            "-agentlib:jdwp=transport=dt_socket,address=0.0.0.0:" + DEBUGGING_PORT + ",server=y,suspend=y"
+        );
         return self();
     }
 
@@ -213,10 +231,16 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
     public @NotNull HiveMQContainer withExtension(final @NotNull MountableFile mountableExtension) {
         final File extensionDir = new File(mountableExtension.getResolvedPath());
         if (!extensionDir.exists()) {
-            throw new ContainerLaunchException("Extension '" + mountableExtension.getFilesystemPath() + "' could not be mounted. It does not exist.");
+            throw new ContainerLaunchException(
+                "Extension '" + mountableExtension.getFilesystemPath() + "' could not be mounted. It does not exist."
+            );
         }
         if (!extensionDir.isDirectory()) {
-            throw new ContainerLaunchException("Extension '" + mountableExtension.getFilesystemPath() + "' could not be mounted. It is not a directory.");
+            throw new ContainerLaunchException(
+                "Extension '" +
+                mountableExtension.getFilesystemPath() +
+                "' could not be mounted. It is not a directory."
+            );
         }
         try {
             final String extensionDirName = getExtensionDirectoryName(extensionDir);
@@ -277,10 +301,14 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
     public @NotNull HiveMQContainer withLicense(final @NotNull MountableFile mountableLicense) {
         final File licenseFile = new File(mountableLicense.getResolvedPath());
         if (!licenseFile.exists()) {
-            throw new ContainerLaunchException("License file '" + mountableLicense.getFilesystemPath() + "' does not exist.");
+            throw new ContainerLaunchException(
+                "License file '" + mountableLicense.getFilesystemPath() + "' does not exist."
+            );
         }
         if (!licenseFile.getName().endsWith(".lic") && !licenseFile.getName().endsWith(".elic")) {
-            throw new ContainerLaunchException("License file '" + mountableLicense.getFilesystemPath() + "' does not end wit '.lic' or '.elic'.");
+            throw new ContainerLaunchException(
+                "License file '" + mountableLicense.getFilesystemPath() + "' does not end wit '.lic' or '.elic'."
+            );
         }
         final String containerPath = "/opt/hivemq/license/" + licenseFile.getName();
         withCopyFileToContainer(cloneWithFileMode(mountableLicense), containerPath);
@@ -299,7 +327,9 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
     public @NotNull HiveMQContainer withHiveMQConfig(final @NotNull MountableFile mountableConfig) {
         final File config = new File(mountableConfig.getResolvedPath());
         if (!config.exists()) {
-            throw new ContainerLaunchException("HiveMQ config file '" + mountableConfig.getFilesystemPath() + "' does not exist.");
+            throw new ContainerLaunchException(
+                "HiveMQ config file '" + mountableConfig.getFilesystemPath() + "' does not exist."
+            );
         }
         final String containerPath = "/opt/hivemq/conf/config.xml";
         withCopyFileToContainer(cloneWithFileMode(mountableConfig), containerPath);
@@ -320,8 +350,8 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
      */
     public @NotNull HiveMQContainer withFileInExtensionHomeFolder(
         final @NotNull MountableFile file,
-        final @NotNull String extensionId) {
-
+        final @NotNull String extensionId
+    ) {
         return withFileInExtensionHomeFolder(file, extensionId, "");
     }
 
@@ -340,9 +370,12 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
     public @NotNull HiveMQContainer withFileInExtensionHomeFolder(
         final @NotNull MountableFile file,
         final @NotNull String extensionId,
-        final @NotNull String pathInExtensionHome) {
-
-        return withFileInHomeFolder(file, "/temp-extensions/" + extensionId + PathUtil.prepareAppendPath(pathInExtensionHome));
+        final @NotNull String pathInExtensionHome
+    ) {
+        return withFileInHomeFolder(
+            file,
+            "/temp-extensions/" + extensionId + PathUtil.prepareAppendPath(pathInExtensionHome)
+        );
     }
 
     /**
@@ -356,8 +389,8 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
      */
     public @NotNull HiveMQContainer withFileInHomeFolder(
         final @NotNull MountableFile mountableFile,
-        final @NotNull String pathInHomeFolder) {
-
+        final @NotNull String pathInHomeFolder
+    ) {
         final File file = new File(mountableFile.getResolvedPath());
 
         if (pathInHomeFolder.trim().isEmpty()) {
@@ -388,11 +421,12 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
     public void disableExtension(
         final @NotNull String extensionName,
         final @NotNull String extensionDirectory,
-        final @NotNull Duration timeout) throws TimeoutException {
-
+        final @NotNull Duration timeout
+    ) throws TimeoutException {
         final String regEX = "(.*)Extension \"" + extensionName + "\" version (.*) stopped successfully(.*)";
         try {
-            final String containerPath = "/opt/hivemq/extensions" + PathUtil.prepareInnerPath(extensionDirectory) + "DISABLED";
+            final String containerPath =
+                "/opt/hivemq/extensions" + PathUtil.prepareInnerPath(extensionDirectory) + "DISABLED";
 
             final CountDownLatch latch = new CountDownLatch(1);
             containerOutputLatches.put(regEX, latch);
@@ -402,9 +436,13 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
 
             final boolean await = latch.await(timeout.getSeconds(), TimeUnit.SECONDS);
             if (!await) {
-                throw new TimeoutException("Extension disabling timed out after '" + timeout.getSeconds() + "' seconds. " +
+                throw new TimeoutException(
+                    "Extension disabling timed out after '" +
+                    timeout.getSeconds() +
+                    "' seconds. " +
                     "Maybe you are using a HiveMQ Community Edition image, " +
-                    "which does not support disabling of extensions");
+                    "which does not support disabling of extensions"
+                );
             }
         } catch (final InterruptedException | IOException e) {
             throw new RuntimeException(e);
@@ -424,9 +462,8 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
      * @param extensionDirectory the name of the extension's directory
      * @throws TimeoutException if the extension was not disabled within 60 seconds
      */
-    public void disableExtension(
-        final @NotNull String extensionName,
-        final @NotNull String extensionDirectory) throws TimeoutException {
+    public void disableExtension(final @NotNull String extensionName, final @NotNull String extensionDirectory)
+        throws TimeoutException {
         disableExtension(extensionName, extensionDirectory, Duration.ofSeconds(60));
     }
 
@@ -441,9 +478,8 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
      * @param timeout         the timeout
      * @throws TimeoutException if the extension was not disabled within the configured timeout
      */
-    public void disableExtension(
-        final @NotNull HiveMQExtension hiveMQExtension,
-        final @NotNull Duration timeout) throws TimeoutException {
+    public void disableExtension(final @NotNull HiveMQExtension hiveMQExtension, final @NotNull Duration timeout)
+        throws TimeoutException {
         disableExtension(hiveMQExtension.getName(), hiveMQExtension.getId(), timeout);
     }
 
@@ -476,11 +512,12 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
     public void enableExtension(
         final @NotNull String extensionName,
         final @NotNull String extensionDirectory,
-        final @NotNull Duration timeout) throws TimeoutException {
-
+        final @NotNull Duration timeout
+    ) throws TimeoutException {
         final String regEX = "(.*)Extension \"" + extensionName + "\" version (.*) started successfully(.*)";
         try {
-            final String containerPath = "/opt/hivemq/extensions" + PathUtil.prepareInnerPath(extensionDirectory) + "DISABLED";
+            final String containerPath =
+                "/opt/hivemq/extensions" + PathUtil.prepareInnerPath(extensionDirectory) + "DISABLED";
 
             final CountDownLatch latch = new CountDownLatch(1);
             containerOutputLatches.put(regEX, latch);
@@ -490,9 +527,13 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
 
             final boolean await = latch.await(timeout.getSeconds(), TimeUnit.SECONDS);
             if (!await) {
-                throw new TimeoutException("Extension enabling timed out after '" + timeout.getSeconds() + "' seconds. " +
+                throw new TimeoutException(
+                    "Extension enabling timed out after '" +
+                    timeout.getSeconds() +
+                    "' seconds. " +
                     "Maybe you are using a HiveMQ Community Edition image, " +
-                    "which does not support disabling of extensions");
+                    "which does not support disabling of extensions"
+                );
             }
         } catch (final InterruptedException | IOException e) {
             throw new RuntimeException(e);
@@ -512,9 +553,8 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
      * @param extensionDirectory the name of the extension's directory
      * @throws TimeoutException if the extension was not enabled within 60 seconds
      */
-    public void enableExtension(
-        final @NotNull String extensionName,
-        final @NotNull String extensionDirectory) throws TimeoutException {
+    public void enableExtension(final @NotNull String extensionName, final @NotNull String extensionDirectory)
+        throws TimeoutException {
         enableExtension(extensionName, extensionDirectory, Duration.ofSeconds(60));
     }
 
@@ -529,9 +569,8 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
      * @param timeout         the timeout
      * @throws TimeoutException if the extension was not enabled within the configured timeout
      */
-    public void enableExtension(
-        final @NotNull HiveMQExtension hiveMQExtension,
-        final @NotNull Duration timeout) throws TimeoutException {
+    public void enableExtension(final @NotNull HiveMQExtension hiveMQExtension, final @NotNull Duration timeout)
+        throws TimeoutException {
         enableExtension(hiveMQExtension.getName(), hiveMQExtension.getId(), timeout);
     }
 

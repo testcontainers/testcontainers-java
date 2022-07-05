@@ -8,7 +8,7 @@ repositories {
 
 dependencies {
     testImplementation 'org.assertj:assertj-core:3.22.0'
-    testImplementation 'org.neo4j.driver:neo4j-java-driver:4.4.5'
+    testImplementation 'org.neo4j.driver:neo4j-java-driver:4.4.6'
     testImplementation 'org.testcontainers:neo4j'
     testImplementation 'org.testcontainers:junit-jupiter'
 }

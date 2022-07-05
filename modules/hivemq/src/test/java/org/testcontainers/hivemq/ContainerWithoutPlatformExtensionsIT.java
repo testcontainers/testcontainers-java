@@ -29,25 +29,28 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ContainerWithoutPlatformExtensionsIT {
 
-    private final @NotNull HiveMQExtension hiveMQExtension = HiveMQExtension.builder()
+    @NotNull
+    private final HiveMQExtension hiveMQExtension = HiveMQExtension
+        .builder()
         .name("MyExtension")
         .id("my-extension")
         .version("1.0.0")
-        .mainClass(CheckerExtension.class).build();
-
+        .mainClass(CheckerExtension.class)
+        .build();
 
     @Test
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
     public void removeAllPlatformExtensions() throws InterruptedException {
-
-        try (final HiveMQContainer hivemq = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq4").withTag("4.7.4"))
-            .withExtension(hiveMQExtension)
-            .waitForExtension(hiveMQExtension)
-            .withoutPrepackagedExtensions()) {
-
+        try (
+            final HiveMQContainer hivemq = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq4").withTag("4.7.4"))
+                .withExtension(hiveMQExtension)
+                .waitForExtension(hiveMQExtension)
+                .withoutPrepackagedExtensions()
+        ) {
             hivemq.start();
 
-            final Mqtt5BlockingClient client = MqttClient.builder()
+            final Mqtt5BlockingClient client = MqttClient
+                .builder()
                 .serverPort(hivemq.getMqttPort())
                 .serverHost(hivemq.getHost())
                 .useMqttVersion5()
@@ -73,15 +76,16 @@ public class ContainerWithoutPlatformExtensionsIT {
     @Test
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
     public void removeKafkaExtension() throws InterruptedException {
-
-        try (final HiveMQContainer hivemq = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq4").withTag("4.7.4"))
-            .withExtension(hiveMQExtension)
-            .waitForExtension(hiveMQExtension)
-            .withoutPrepackagedExtensions("hivemq-kafka-extension")) {
-
+        try (
+            final HiveMQContainer hivemq = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq4").withTag("4.7.4"))
+                .withExtension(hiveMQExtension)
+                .waitForExtension(hiveMQExtension)
+                .withoutPrepackagedExtensions("hivemq-kafka-extension")
+        ) {
             hivemq.start();
 
-            final Mqtt5BlockingClient client = MqttClient.builder()
+            final Mqtt5BlockingClient client = MqttClient
+                .builder()
                 .serverPort(hivemq.getMqttPort())
                 .serverHost(hivemq.getHost())
                 .useMqttVersion5()
@@ -107,31 +111,32 @@ public class ContainerWithoutPlatformExtensionsIT {
         @Override
         public void extensionStart(
             final @NotNull ExtensionStartInput extensionStartInput,
-            final @NotNull ExtensionStartOutput extensionStartOutput) {
-
-            final String extensionFolders = Arrays.stream(extensionStartInput.getServerInformation().getExtensionsFolder().listFiles())
+            final @NotNull ExtensionStartOutput extensionStartOutput
+        ) {
+            final String extensionFolders = Arrays
+                .stream(extensionStartInput.getServerInformation().getExtensionsFolder().listFiles())
                 .filter(File::isDirectory)
                 .map(File::getName)
                 .collect(Collectors.joining("\n"));
 
             final byte[] bytes = extensionFolders.getBytes(StandardCharsets.UTF_8);
-            Services.publishService().publish(Builders.publish()
-                .topic("extensions")
-                .retain(true)
-                .payload(ByteBuffer.wrap(bytes))
-                .build());
+            Services
+                .publishService()
+                .publish(Builders.publish().topic("extensions").retain(true).payload(ByteBuffer.wrap(bytes)).build());
 
-            Services.securityRegistry().setAuthenticatorProvider(authenticatorProviderInput ->
-                (SimpleAuthenticator) (simpleAuthInput, simpleAuthOutput) ->
-                    simpleAuthOutput.authenticateSuccessfully());
-
+            Services
+                .securityRegistry()
+                .setAuthenticatorProvider(authenticatorProviderInput -> {
+                    return (SimpleAuthenticator) (simpleAuthInput, simpleAuthOutput) -> {
+                        simpleAuthOutput.authenticateSuccessfully();
+                    };
+                });
         }
 
         @Override
         public void extensionStop(
             final @NotNull ExtensionStopInput extensionStopInput,
-            final @NotNull ExtensionStopOutput extensionStopOutput) {
-
-        }
+            final @NotNull ExtensionStopOutput extensionStopOutput
+        ) {}
     }
 }

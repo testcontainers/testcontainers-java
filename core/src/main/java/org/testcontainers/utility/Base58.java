@@ -7,8 +7,7 @@ import java.security.SecureRandom;
  */
 public class Base58 {
 
-    private static final char[] ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
-            .toCharArray();
+    private static final char[] ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz".toCharArray();
 
     private static final SecureRandom RANDOM = new SecureRandom();
 

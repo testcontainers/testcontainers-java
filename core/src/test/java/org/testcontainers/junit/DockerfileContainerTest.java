@@ -21,13 +21,16 @@ public class DockerfileContainerTest {
 
     @Rule
     public GenericContainer dslContainer = new GenericContainer(
-            new ImageFromDockerfile("tcdockerfile/nginx", false).withDockerfileFromBuilder(builder -> {
-                    builder
-                            .from("alpine:3.2")
-                            .run("apk add --update nginx")
-                            .cmd("nginx", "-g", "daemon off;")
-                            .build(); }))
-            .withExposedPorts(80);
+        new ImageFromDockerfile("tcdockerfile/nginx", false)
+            .withDockerfileFromBuilder(builder -> {
+                builder
+                    .from("alpine:3.2") //
+                    .run("apk add --update nginx")
+                    .cmd("nginx", "-g", "daemon off;")
+                    .build();
+            })
+    )
+        .withExposedPorts(80);
 
     @Test
     public void simpleDslTest() throws IOException {
@@ -37,11 +40,15 @@ public class DockerfileContainerTest {
         HttpGet get = new HttpGet(address);
 
         try (CloseableHttpResponse response = httpClient.execute(get)) {
-            assertEquals("A container built from a dockerfile can run nginx as expected, and returns a good status code",
-                            200,
-                            response.getStatusLine().getStatusCode());
-            assertTrue("A container built from a dockerfile can run nginx as expected, and returns an expected Server header",
-                            response.getHeaders("Server")[0].getValue().contains("nginx"));
+            assertEquals(
+                "A container built from a dockerfile can run nginx as expected, and returns a good status code",
+                200,
+                response.getStatusLine().getStatusCode()
+            );
+            assertTrue(
+                "A container built from a dockerfile can run nginx as expected, and returns an expected Server header",
+                response.getHeaders("Server")[0].getValue().contains("nginx")
+            );
         }
     }
 }
