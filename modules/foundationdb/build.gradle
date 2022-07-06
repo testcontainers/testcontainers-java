@@ -1,0 +1,7 @@
+description = "Testcontainers :: FoundationDB"
+
+dependencies {
+    api project(':testcontainers')
+
+    testImplementation("org.foundationdb:fdb-java:7.1.11")
+}

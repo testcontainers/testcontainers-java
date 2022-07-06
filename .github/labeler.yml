@@ -20,6 +20,8 @@
   - modules/dynalite/*
 "modules/elasticsearch":
   - modules/elasticsearch/*
+"modules/foundationdb":
+  - modules/foundationdb/*
 "modules/gcloud":
   - modules/gcloud/*
 "modules/hivemq":

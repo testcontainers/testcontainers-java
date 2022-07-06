@@ -53,6 +53,7 @@ nav:
                 - modules/databases/clickhouse.md
                 - modules/databases/db2.md
                 - modules/databases/dynalite.md
+                - modules/databases/foundationdb.md
                 - modules/databases/influxdb.md
                 - modules/databases/mariadb.md
                 - modules/databases/mongodb.md

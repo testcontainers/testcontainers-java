@@ -55,6 +55,14 @@ jobs:
         with:
           java-version: '8.0.302'
           distribution: temurin
+      - name: Install Foundation DB Client Library
+        run: |
+          apt update
+          apt upgrade -y
+          apt install wget -y
+          wget -P /tmp https://github.com/apple/foundationdb/releases/download/7.1.11/foundationdb-clients_7.1.11-1_amd64.deb
+          dpkg -i /tmp/foundationdb-clients_7.1.11-1_amd64.deb
+          export DYLD_LIBRARY_PATH=/usr/lib/
       - name: Cache Gradle Home files
         uses: actions/cache@v3.0.3
         continue-on-error: true
