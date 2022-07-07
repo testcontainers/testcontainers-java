@@ -10,6 +10,9 @@ env:
   GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
   GRADLE_ENTERPRISE_CACHE_PASSWORD: ${{ secrets.GRADLE_ENTERPRISE_CACHE_PASSWORD }}
 
+permissions:
+  contents: read
+
 jobs:
   find_gradle_jobs:
     runs-on: ubuntu-18.04
