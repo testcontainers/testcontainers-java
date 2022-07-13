@@ -19,6 +19,7 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
  * TODO: Move to the jdbc module and either (a) implement a barebones {@link org.testcontainers.containers.JdbcDatabaseContainerProvider} for testing, or (b) refactor into a unit test.
  */
 public class DatabaseDriverShutdownTest {
+
     @AfterClass
     public static void testCleanup() {
         ContainerDatabaseDriver.killContainers();

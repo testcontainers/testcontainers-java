@@ -10,12 +10,9 @@ import org.junit.Test;
 import org.testcontainers.containers.wait.CassandraQueryWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * @author Eugeny Karpov
@@ -42,7 +39,11 @@ public class CassandraContainerTest {
     @Test
     public void testSpecificVersion() {
         String cassandraVersion = "3.0.15";
-        try (CassandraContainer<?> cassandraContainer = new CassandraContainer<>(CASSANDRA_IMAGE.withTag(cassandraVersion))) {
+        try (
+            CassandraContainer<?> cassandraContainer = new CassandraContainer<>(
+                CASSANDRA_IMAGE.withTag(cassandraVersion)
+            )
+        ) {
             cassandraContainer.start();
             ResultSet resultSet = performQuery(cassandraContainer, BASIC_QUERY);
             assertTrue("Query was not applied", resultSet.wasApplied());
@@ -59,7 +60,11 @@ public class CassandraContainerTest {
             cassandraContainer.start();
             ResultSet resultSet = performQuery(cassandraContainer, "SELECT cluster_name FROM system.local");
             assertTrue("Query was not applied", resultSet.wasApplied());
-            assertEquals("Cassandra configuration is not overridden", TEST_CLUSTER_NAME_IN_CONF, resultSet.one().getString(0));
+            assertEquals(
+                "Cassandra configuration is not overridden",
+                TEST_CLUSTER_NAME_IN_CONF,
+                resultSet.one().getString(0)
+            );
         }
     }
 
@@ -87,7 +92,9 @@ public class CassandraContainerTest {
     @Test
     public void testInitScriptWithLegacyCassandra() {
         try (
-            CassandraContainer<?> cassandraContainer = new CassandraContainer<>(DockerImageName.parse("cassandra:2.2.11"))
+            CassandraContainer<?> cassandraContainer = new CassandraContainer<>(
+                DockerImageName.parse("cassandra:2.2.11")
+            )
                 .withInitScript("initial.cql")
         ) {
             cassandraContainer.start();
@@ -123,7 +130,8 @@ public class CassandraContainerTest {
     public void testCassandraGetContactPoint() {
         try (CassandraContainer<?> cassandraContainer = new CassandraContainer<>(CASSANDRA_IMAGE)) {
             cassandraContainer.start();
-            CqlSession session = CqlSession.builder()
+            CqlSession session = CqlSession
+                .builder()
                 .addContactPoint(cassandraContainer.getContactPoint())
                 .withLocalDatacenter(cassandraContainer.getLocalDatacenter())
                 .build();
@@ -142,7 +150,8 @@ public class CassandraContainerTest {
     }
 
     private ResultSet performQuery(CassandraContainer<?> cassandraContainer, String cql) {
-        Cluster explicitCluster = Cluster.builder()
+        Cluster explicitCluster = Cluster
+            .builder()
             .addContactPoint(cassandraContainer.getHost())
             .withPort(cassandraContainer.getMappedPort(CassandraContainer.CQL_PORT))
             .build();
@@ -158,7 +167,7 @@ public class CassandraContainerTest {
 
     private com.datastax.oss.driver.api.core.cql.ResultSet performQuery(CqlSession session, String cql) {
         try (CqlSession closeableSession = session) {
-          return closeableSession.execute(cql);
+            return closeableSession.execute(cql);
         }
     }
 }

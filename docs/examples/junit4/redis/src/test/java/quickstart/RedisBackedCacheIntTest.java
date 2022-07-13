@@ -1,6 +1,5 @@
 package quickstart;
 
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -16,9 +15,9 @@ public class RedisBackedCacheIntTest {
     // rule {
     @Rule
     public GenericContainer redis = new GenericContainer(DockerImageName.parse("redis:5.0.3-alpine"))
-                                            .withExposedPorts(6379);
-    // }
+        .withExposedPorts(6379);
 
+    // }
 
     @Before
     public void setUp() {

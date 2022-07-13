@@ -17,7 +17,7 @@ public class FooConcreteTestClass extends AbstractIntegrationTest {
 
     @Before
     public void setUp() throws Exception {
-        Jedis jedis = new Jedis(redis.getContainerIpAddress(), redis.getMappedPort(6379));
+        Jedis jedis = new Jedis(redis.getHost(), redis.getMappedPort(6379));
 
         cache = new RedisBackedCache(jedis, "foo");
     }

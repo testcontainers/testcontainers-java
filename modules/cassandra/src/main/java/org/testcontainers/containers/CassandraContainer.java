@@ -10,12 +10,13 @@ import org.testcontainers.ext.ScriptUtils.ScriptLoadException;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
-import javax.script.ScriptException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+
+import javax.script.ScriptException;
 
 /**
  * Cassandra container
@@ -27,19 +28,26 @@ import java.util.Optional;
 public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends GenericContainer<SELF> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("cassandra");
+
     private static final String DEFAULT_TAG = "3.11.2";
 
     @Deprecated
     public static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
 
     public static final Integer CQL_PORT = 9042;
+
     private static final String DEFAULT_LOCAL_DATACENTER = "datacenter1";
+
     private static final String CONTAINER_CONFIG_LOCATION = "/etc/cassandra";
+
     private static final String USERNAME = "cassandra";
+
     private static final String PASSWORD = "cassandra";
 
     private String configLocation;
+
     private String initScriptPath;
+
     private boolean enableJmxReporting;
 
     /**
@@ -56,17 +64,13 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
 
     public CassandraContainer(DockerImageName dockerImageName) {
         super(dockerImageName);
-
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         addExposedPort(CQL_PORT);
         this.enableJmxReporting = false;
 
         withEnv("CASSANDRA_SNITCH", "GossipingPropertyFileSnitch");
-        withEnv(
-            "JVM_OPTS",
-            "-Dcassandra.skip_wait_for_gossip_to_settle=0 -Dcassandra.initial_token=0"
-        );
+        withEnv("JVM_OPTS", "-Dcassandra.skip_wait_for_gossip_to_settle=0 -Dcassandra.initial_token=0");
         withEnv("HEAP_NEWSIZE", "128M");
         withEnv("MAX_HEAP_SIZE", "1024M");
     }
@@ -90,7 +94,9 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
                 URL resource = Thread.currentThread().getContextClassLoader().getResource(initScriptPath);
                 if (resource == null) {
                     logger().warn("Could not load classpath init script: {}", initScriptPath);
-                    throw new ScriptLoadException("Could not load classpath init script: " + initScriptPath + ". Resource not found.");
+                    throw new ScriptLoadException(
+                        "Could not load classpath init script: " + initScriptPath + ". Resource not found."
+                    );
                 }
                 String cql = IOUtils.toString(resource, StandardCharsets.UTF_8);
                 DatabaseDelegate databaseDelegate = getDatabaseDelegate();
@@ -100,7 +106,10 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
                 throw new ScriptLoadException("Could not load classpath init script: " + initScriptPath, e);
             } catch (ScriptException e) {
                 logger().error("Error while executing init script: {}", initScriptPath, e);
-                throw new ScriptUtils.UncategorizedScriptException("Error while executing init script: " + initScriptPath, e);
+                throw new ScriptUtils.UncategorizedScriptException(
+                    "Error while executing init script: " + initScriptPath,
+                    e
+                );
             }
         }
     }
@@ -114,9 +123,10 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
      * @param resourceLocation    relative classpath to resource
      */
     protected void optionallyMapResourceParameterAsVolume(String pathNameInContainer, String resourceLocation) {
-        Optional.ofNullable(resourceLocation)
-                .map(MountableFile::forClasspathResource)
-                .ifPresent(mountableFile -> withCopyFileToContainer(mountableFile, pathNameInContainer));
+        Optional
+            .ofNullable(resourceLocation)
+            .map(MountableFile::forClasspathResource)
+            .ifPresent(mountableFile -> withCopyFileToContainer(mountableFile, pathNameInContainer));
     }
 
     /**
@@ -181,7 +191,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
      *
      * Can be used to obtain connections to Cassandra in the container
      *
-     * @deprecated For Cassandra driver 3.x, use {@link #getHost()} and {@link #getMappedPort(int)} with 
+     * @deprecated For Cassandra driver 3.x, use {@link #getHost()} and {@link #getMappedPort(int)} with
      * the driver's {@link Cluster#builder() Cluster.Builder} {@code addContactPoint(String)} and
      * {@code withPort(int)} methods to create a Cluster object. For Cassandra driver 4.x, use
      * {@link #getContactPoint()} and {@link #getLocalDatacenter()} with the driver's {@code CqlSession.builder()}
@@ -195,7 +205,8 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
 
     @Deprecated
     public static Cluster getCluster(ContainerState containerState, boolean enableJmxReporting) {
-        final Cluster.Builder builder = Cluster.builder()
+        final Cluster.Builder builder = Cluster
+            .builder()
             .addContactPoint(containerState.getHost())
             .withPort(containerState.getMappedPort(CQL_PORT));
         if (!enableJmxReporting) {
@@ -224,7 +235,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
      * @return The configured local Datacenter name.
      */
     public String getLocalDatacenter() {
-      return DEFAULT_LOCAL_DATACENTER;
+        return DEFAULT_LOCAL_DATACENTER;
     }
 
     @Deprecated

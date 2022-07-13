@@ -10,7 +10,6 @@ public class SomeTest {
     @Rule
     public CassandraContainer cassandra = new CassandraContainer();
 
-
     @Test
     public void test(){
         try(CqlSession session = CqlSession.builder()
@@ -29,7 +28,6 @@ public class SomeTest {
             assertNotNull("Failed to create test keyspace", keyspace);
         }
     }
-
 }
 ```
 
@@ -38,7 +36,6 @@ public class SomeTest {
 
     @Rule
     public CassandraContainer cassandra = new CassandraContainer();
-
 
     @Test
     public void test(){
@@ -61,7 +58,6 @@ public class SomeTest {
             assertEquals(1, filteredKeyspaces.size());
         }
     }
-
 }
 ```
 
@@ -72,15 +68,17 @@ public class SomeTest {
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
-```groovy tab='Gradle'
-testImplementation "org.testcontainers:cassandra:{{latest_version}}"
-```
+=== "Gradle"
+    ```groovy
+    testImplementation "org.testcontainers:cassandra:{{latest_version}}"
+    ```
 
-```xml tab='Maven'
-<dependency>
-    <groupId>org.testcontainers</groupId>
-    <artifactId>cassandra</artifactId>
-    <version>{{latest_version}}</version>
-    <scope>test</scope>
-</dependency>
-```
+=== "Maven"
+    ```xml
+    <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>cassandra</artifactId>
+        <version>{{latest_version}}</version>
+        <scope>test</scope>
+    </dependency>
+    ```

@@ -10,19 +10,20 @@ import org.testcontainers.utility.DockerImageName;
  */
 public class SpannerEmulatorContainer extends GenericContainer<SpannerEmulatorContainer> {
 
-    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("gcr.io/cloud-spanner-emulator/emulator");
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse(
+        "gcr.io/cloud-spanner-emulator/emulator"
+    );
 
     private static final int GRPC_PORT = 9010;
+
     private static final int HTTP_PORT = 9020;
 
     public SpannerEmulatorContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         withExposedPorts(GRPC_PORT, HTTP_PORT);
-        setWaitStrategy(new LogMessageWaitStrategy()
-                .withRegEx(".*Cloud Spanner emulator running\\..*"));
+        setWaitStrategy(new LogMessageWaitStrategy().withRegEx(".*Cloud Spanner emulator running\\..*"));
     }
 
     /**
@@ -31,7 +32,7 @@ public class SpannerEmulatorContainer extends GenericContainer<SpannerEmulatorCo
      * com.google.cloud.spanner.SpannerOptions.Builder#setEmulatorHost(java.lang.String) method.
      */
     public String getEmulatorGrpcEndpoint() {
-        return getContainerIpAddress() + ":" + getMappedPort(GRPC_PORT);
+        return getHost() + ":" + getMappedPort(GRPC_PORT);
     }
 
     /**
@@ -39,6 +40,6 @@ public class SpannerEmulatorContainer extends GenericContainer<SpannerEmulatorCo
      * HTTP REST endpoint is reachable from the test host machine.
      */
     public String getEmulatorHttpEndpoint() {
-        return getContainerIpAddress() + ":" + getMappedPort(HTTP_PORT);
+        return getHost() + ":" + getMappedPort(HTTP_PORT);
     }
 }

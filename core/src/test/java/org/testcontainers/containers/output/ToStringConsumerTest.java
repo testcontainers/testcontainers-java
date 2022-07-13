@@ -1,20 +1,20 @@
 package org.testcontainers.containers.output;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.testcontainers.containers.Container.ExecResult;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 public class ToStringConsumerTest {
 
     private static final String LARGE_PAYLOAD;
 
     static {
-        StringBuilder builder = new StringBuilder(10_003 * 10);;
+        StringBuilder builder = new StringBuilder(10_003 * 10);
         for (int i = 0; i < 10; i++) {
             builder.append(' ').append(i).append(RandomStringUtils.randomAlphabetic(10000));
         }
@@ -29,9 +29,7 @@ public class ToStringConsumerTest {
             container.start();
 
             ExecResult build = container.execInContainer("echo", "-n", LARGE_PAYLOAD);
-            Assertions.assertThat(build.getStdout())
-                .doesNotContain("\n")
-                .isEqualTo(LARGE_PAYLOAD);
+            Assertions.assertThat(build.getStdout()).doesNotContain("\n").isEqualTo(LARGE_PAYLOAD);
         }
     }
 
@@ -39,18 +37,13 @@ public class ToStringConsumerTest {
     public void newlines_are_not_added_to_exec_output_with_tty() throws Exception {
         try (GenericContainer<?> container = new GenericContainer<>("alpine:3.14")) {
             container.withCreateContainerCmdModifier(cmd -> {
-                cmd
-                    .withAttachStdin(true)
-                    .withStdinOpen(true)
-                    .withTty(true);
+                cmd.withAttachStdin(true).withStdinOpen(true).withTty(true);
             });
             container.withCommand("sleep", "2m");
             container.start();
 
             ExecResult build = container.execInContainer("echo", "-n", LARGE_PAYLOAD);
-            assertThat(build.getStdout())
-                .isEqualTo(LARGE_PAYLOAD)
-                .doesNotContain("\n");
+            assertThat(build.getStdout()).isEqualTo(LARGE_PAYLOAD).doesNotContain("\n");
         }
     }
 
@@ -63,9 +56,7 @@ public class ToStringConsumerTest {
 
             container.getDockerClient().waitContainerCmd(container.getContainerId()).start().awaitStatusCode();
 
-            assertThat(container.getLogs())
-                .isEqualTo(LARGE_PAYLOAD)
-                .doesNotContain("\n");
+            assertThat(container.getLogs()).isEqualTo(LARGE_PAYLOAD).doesNotContain("\n");
         }
     }
 
@@ -81,9 +72,7 @@ public class ToStringConsumerTest {
 
             container.getDockerClient().waitContainerCmd(container.getContainerId()).start().awaitStatusCode();
 
-            assertThat(container.getLogs())
-                .isEqualTo(LARGE_PAYLOAD)
-                .doesNotContain("\n");
+            assertThat(container.getLogs()).isEqualTo(LARGE_PAYLOAD).doesNotContain("\n");
         }
     }
 }

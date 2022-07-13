@@ -12,15 +12,15 @@ class InheritedTests extends AbstractTestBase {
 
     @Test
     void step1() {
-        assertEquals(1, redisPerClass.getJedis().incr("key").longValue());
-        assertEquals(1, redisPerTest.getJedis().incr("key").longValue());
-        assertEquals(1, myRedis.getJedis().incr("key").longValue());
+        assertEquals(1, redisPerClass.getJedis().incr("key"));
+        assertEquals(1, redisPerTest.getJedis().incr("key"));
+        assertEquals(1, myRedis.getJedis().incr("key"));
     }
 
     @Test
     void step2() {
-        assertEquals(2, redisPerClass.getJedis().incr("key").longValue());
-        assertEquals(1, redisPerTest.getJedis().incr("key").longValue());
-        assertEquals(1, myRedis.getJedis().incr("key").longValue());
+        assertEquals(2, redisPerClass.getJedis().incr("key"));
+        assertEquals(1, redisPerTest.getJedis().incr("key"));
+        assertEquals(1, myRedis.getJedis().incr("key"));
     }
 }

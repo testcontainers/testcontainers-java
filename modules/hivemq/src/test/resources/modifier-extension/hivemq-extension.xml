@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<hivemq-extension>
+    <id>modifier-extension</id>
+    <version>1.0-SNAPSHOT</version>
+    <name>Modifier Extension</name>
+    <author>HiveMQ GmbH</author>
+    <priority>1000</priority>
+</hivemq-extension>
