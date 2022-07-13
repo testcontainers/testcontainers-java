@@ -116,7 +116,7 @@ public class MongoDBContainerTest {
         final String username = "my-name";
         final String password = "my-pass";
         try (
-            final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:5.0.9"))
+            final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.4"))
                 .withUsername(username)
                 .withPassword(password)
         ) {
