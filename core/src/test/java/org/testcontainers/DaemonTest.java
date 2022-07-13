@@ -19,10 +19,10 @@ public class DaemonTest {
     public static void main(String[] args) {
         Thread mainThread = Thread.currentThread();
 
-        GenericContainer genericContainer = null;
+        GenericContainer<?> genericContainer = null;
 
         try {
-            genericContainer = new GenericContainer().withCommand("top");
+            genericContainer = new GenericContainer<>(TestImages.TINY_IMAGE).withCommand("top");
             genericContainer.start();
 
             Set<Thread> threads = new HashSet<>(Thread.getAllStackTraces().keySet());
@@ -33,11 +33,14 @@ public class DaemonTest {
             if (nonDaemonThreads.isEmpty()) {
                 VisibleAssertions.pass("All threads marked as daemon");
             } else {
-                String nonDaemonThreadNames = nonDaemonThreads.stream()
+                String nonDaemonThreadNames = nonDaemonThreads
+                    .stream()
                     .map(Thread::getName)
                     .collect(Collectors.joining("\n", "\n", ""));
 
-                VisibleAssertions.fail("Expected all threads to be daemons but the following are not:\n" + nonDaemonThreadNames);
+                VisibleAssertions.fail(
+                    "Expected all threads to be daemons but the following are not:\n" + nonDaemonThreadNames
+                );
             }
         } finally {
             if (genericContainer != null) {

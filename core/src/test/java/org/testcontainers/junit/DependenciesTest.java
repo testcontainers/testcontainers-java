@@ -3,6 +3,7 @@ package org.testcontainers.junit;
 import lombok.Getter;
 import org.junit.Test;
 import org.rnorth.visibleassertions.VisibleAssertions;
+import org.testcontainers.TestImages;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 import org.testcontainers.lifecycle.Startable;
@@ -23,7 +24,7 @@ public class DependenciesTest {
         InvocationCountingStartable startable = new InvocationCountingStartable();
 
         try (
-            GenericContainer container = new GenericContainer()
+            GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
                 .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
                 .dependsOn(startable)
         ) {
@@ -40,7 +41,7 @@ public class DependenciesTest {
         InvocationCountingStartable startable2 = new InvocationCountingStartable();
 
         try (
-            GenericContainer container = new GenericContainer()
+            GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
                 .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
                 .dependsOn(startable1, startable2)
         ) {
@@ -56,7 +57,7 @@ public class DependenciesTest {
         InvocationCountingStartable startable = new InvocationCountingStartable();
 
         try (
-            GenericContainer container = new GenericContainer()
+            GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
                 .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
                 .dependsOn(startable)
         ) {
@@ -83,7 +84,7 @@ public class DependenciesTest {
         startable.getDependencies().add(transitiveStartable);
 
         try (
-            GenericContainer container = new GenericContainer()
+            GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
                 .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
                 .dependsOn(startable)
         ) {
@@ -92,8 +93,16 @@ public class DependenciesTest {
         }
 
         VisibleAssertions.assertEquals("Root started", 1, startable.getStartInvocationCount().intValue());
-        VisibleAssertions.assertEquals("Transitive started", 1, transitiveStartable.getStartInvocationCount().intValue());
-        VisibleAssertions.assertEquals("Transitive of transitive started", 1, transitiveOfTransitiveStartable.getStartInvocationCount().intValue());
+        VisibleAssertions.assertEquals(
+            "Transitive started",
+            1,
+            transitiveStartable.getStartInvocationCount().intValue()
+        );
+        VisibleAssertions.assertEquals(
+            "Transitive of transitive started",
+            1,
+            transitiveOfTransitiveStartable.getStartInvocationCount().intValue()
+        );
     }
 
     @Test
@@ -121,7 +130,8 @@ public class DependenciesTest {
 
     @Test
     public void shouldHandleParallelStream() throws Exception {
-        List<Startable> startables = Stream.generate(InvocationCountingStartable::new)
+        List<Startable> startables = Stream
+            .generate(InvocationCountingStartable::new)
             .limit(10)
             .collect(Collectors.toList());
 

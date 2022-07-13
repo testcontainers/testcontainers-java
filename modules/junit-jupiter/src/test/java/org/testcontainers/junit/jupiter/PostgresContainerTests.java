@@ -14,10 +14,12 @@ import static org.junit.Assert.assertEquals;
 class PostgresContainerTests {
 
     @Container
-    private static final PostgreSQLContainer POSTGRE_SQL_CONTAINER = new PostgreSQLContainer()
-            .withDatabaseName("foo")
-            .withUsername("foo")
-            .withPassword("secret");
+    private static final PostgreSQLContainer<?> POSTGRE_SQL_CONTAINER = new PostgreSQLContainer<>(
+        JUnitJupiterTestImages.POSTGRES_IMAGE
+    )
+        .withDatabaseName("foo")
+        .withUsername("foo")
+        .withPassword("secret");
 
     @Test
     void waits_until_postgres_accepts_jdbc_connections() throws Exception {
@@ -36,5 +38,4 @@ class PostgresContainerTests {
             assertEquals(1, resultSetInt);
         }
     }
-
 }

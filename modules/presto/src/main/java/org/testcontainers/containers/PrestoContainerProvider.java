@@ -1,8 +1,7 @@
 package org.testcontainers.containers;
 
 import org.testcontainers.jdbc.ConnectionUrl;
-
-import java.util.Objects;
+import org.testcontainers.utility.DockerImageName;
 
 /**
  * Factory for Presto containers.
@@ -10,6 +9,7 @@ import java.util.Objects;
 public class PrestoContainerProvider extends JdbcDatabaseContainerProvider {
 
     public static final String USER_PARAM = "user";
+
     public static final String PASSWORD_PARAM = "password";
 
     @Override
@@ -24,12 +24,11 @@ public class PrestoContainerProvider extends JdbcDatabaseContainerProvider {
 
     @Override
     public JdbcDatabaseContainer newInstance(String tag) {
-        return new PrestoContainer(PrestoContainer.IMAGE + ":" + tag);
+        return new PrestoContainer(DockerImageName.parse(PrestoContainer.IMAGE).withTag(tag));
     }
 
     @Override
     public JdbcDatabaseContainer newInstance(ConnectionUrl connectionUrl) {
         return newInstanceFromConnectionUrl(connectionUrl, USER_PARAM, PASSWORD_PARAM);
     }
-
 }

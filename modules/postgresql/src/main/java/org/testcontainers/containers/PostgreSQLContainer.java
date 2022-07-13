@@ -2,20 +2,25 @@ package org.testcontainers.containers;
 
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
-import java.util.HashSet;
+import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.Set;
-
-import static java.time.temporal.ChronoUnit.SECONDS;
 
 /**
  * @author richardnorth
  */
 public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
+
     public static final String NAME = "postgresql";
+
     public static final String IMAGE = "postgres";
+
     public static final String DEFAULT_TAG = "9.6.12";
+
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("postgres");
 
     public static final Integer POSTGRESQL_PORT = 5432;
 
@@ -24,23 +29,34 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
     static final String DEFAULT_PASSWORD = "test";
 
     private String databaseName = "test";
+
     private String username = "test";
+
     private String password = "test";
 
     private static final String FSYNC_OFF_OPTION = "fsync=off";
 
-    private static final String QUERY_PARAM_SEPARATOR = "&";
-
+    /**
+     * @deprecated use {@link #PostgreSQLContainer(DockerImageName)} or {@link #PostgreSQLContainer(String)} instead
+     */
+    @Deprecated
     public PostgreSQLContainer() {
-        this(IMAGE + ":" + DEFAULT_TAG);
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
 
     public PostgreSQLContainer(final String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
+    }
+
+    public PostgreSQLContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-        this.waitStrategy = new LogMessageWaitStrategy()
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+
+        this.waitStrategy =
+            new LogMessageWaitStrategy()
                 .withRegEx(".*database system is ready to accept connections.*\\s")
                 .withTimes(2)
-                .withStartupTimeout(Duration.of(60, SECONDS));
+                .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS));
         this.setCommand("postgres", "-c", FSYNC_OFF_OPTION);
 
         addExposedPort(POSTGRESQL_PORT);
@@ -49,7 +65,7 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
     @NotNull
     @Override
     protected Set<Integer> getLivenessCheckPorts() {
-        return new HashSet<>(getMappedPort(POSTGRESQL_PORT));
+        return Collections.singleton(getMappedPort(POSTGRESQL_PORT));
     }
 
     @Override
@@ -69,8 +85,15 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
     @Override
     public String getJdbcUrl() {
         String additionalUrlParams = constructUrlParameters("?", "&");
-        return "jdbc:postgresql://" + getContainerIpAddress() + ":" + getMappedPort(POSTGRESQL_PORT)
-            + "/" + databaseName + additionalUrlParams;
+        return (
+            "jdbc:postgresql://" +
+            getHost() +
+            ":" +
+            getMappedPort(POSTGRESQL_PORT) +
+            "/" +
+            databaseName +
+            additionalUrlParams
+        );
     }
 
     @Override

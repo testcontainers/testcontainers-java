@@ -1,7 +1,7 @@
 package org.testcontainers.containers;
 
 import org.testcontainers.utility.Base58;
-import org.testcontainers.utility.TestcontainersConfiguration;
+import org.testcontainers.utility.DockerImageName;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,7 +16,11 @@ public class SocatContainer extends GenericContainer<SocatContainer> {
     private final Map<Integer, String> targets = new HashMap<>();
 
     public SocatContainer() {
-        super(TestcontainersConfiguration.getInstance().getSocatContainerImage());
+        this(DockerImageName.parse("alpine/socat:1.7.4.3-r0"));
+    }
+
+    public SocatContainer(final DockerImageName dockerImageName) {
+        super(dockerImageName);
         withCreateContainerCmdModifier(it -> it.withEntrypoint("/bin/sh"));
         withCreateContainerCmdModifier(it -> it.withName("testcontainers-socat-" + Base58.randomString(8)));
     }
@@ -33,10 +37,13 @@ public class SocatContainer extends GenericContainer<SocatContainer> {
 
     @Override
     protected void configure() {
-        withCommand("-c",
-                targets.entrySet().stream()
-                        .map(entry -> "socat TCP-LISTEN:" + entry.getKey() + ",fork,reuseaddr TCP:" + entry.getValue())
-                        .collect(Collectors.joining(" & "))
+        withCommand(
+            "-c",
+            targets
+                .entrySet()
+                .stream()
+                .map(entry -> "socat TCP-LISTEN:" + entry.getKey() + ",fork,reuseaddr TCP:" + entry.getValue())
+                .collect(Collectors.joining(" & "))
         );
     }
 }

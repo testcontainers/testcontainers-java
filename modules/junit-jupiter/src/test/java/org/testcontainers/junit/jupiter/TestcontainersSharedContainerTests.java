@@ -11,7 +11,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class TestcontainersSharedContainerTests {
 
     @Container
-    private static final GenericContainer GENERIC_CONTAINER = new GenericContainer("httpd:2.4-alpine")
+    private static final GenericContainer<?> GENERIC_CONTAINER = new GenericContainer<>(
+        JUnitJupiterTestImages.HTTPD_IMAGE
+    )
         .withExposedPorts(80);
 
     private static String lastContainerId;
@@ -38,5 +40,4 @@ class TestcontainersSharedContainerTests {
             assertEquals(lastContainerId, GENERIC_CONTAINER.getContainerId());
         }
     }
-
 }

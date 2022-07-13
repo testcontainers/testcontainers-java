@@ -13,7 +13,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Objects;
 
-import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.Matchers.hasItem;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertNotNull;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertThat;
 
@@ -30,25 +30,27 @@ public class DockerComposePassthroughTest {
     }
 
     @Rule
-    public DockerComposeContainer compose =
-        new DockerComposeContainer(new File("src/test/resources/v2-compose-test-passthrough.yml"))
-            .withEnv("foo", "bar")
-            .withExposedService("alpine_1", 3000, waitStrategy);
-
+    public DockerComposeContainer compose = new DockerComposeContainer(
+        new File("src/test/resources/v2-compose-test-passthrough.yml")
+    )
+        .withEnv("foo", "bar")
+        .withExposedService("alpine_1", 3000, waitStrategy);
 
     @Test
     public void testContainerInstanceProperties() {
         final ContainerState container = waitStrategy.getContainer();
 
         //check environment variable was set
-        assertThat("Environment variable set correctly", Arrays.asList(Objects.requireNonNull(container.getContainerInfo()
-            .getConfig().getEnv())), hasItem("bar=bar"));
+        assertThat(
+            "Environment variable set correctly",
+            Arrays.asList(Objects.requireNonNull(container.getContainerInfo().getConfig().getEnv())),
+            hasItem("bar=bar")
+        );
 
         //check other container properties
         assertNotNull("Container id is not null", container.getContainerId());
         assertNotNull("Port mapped", container.getMappedPort(3000));
         assertThat("Exposed Ports", container.getExposedPorts(), hasItem(3000));
-
     }
 
     /*

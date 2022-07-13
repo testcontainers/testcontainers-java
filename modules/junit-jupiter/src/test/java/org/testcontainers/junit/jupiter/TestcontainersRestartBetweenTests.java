@@ -9,8 +9,8 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 class TestcontainersRestartBetweenTests {
 
     @Container
-    private GenericContainer genericContainer = new GenericContainer("httpd:2.4-alpine")
-            .withExposedPorts(80);
+    private GenericContainer<?> genericContainer = new GenericContainer<>(JUnitJupiterTestImages.HTTPD_IMAGE)
+        .withExposedPorts(80);
 
     private static String lastContainerId;
 
@@ -18,7 +18,7 @@ class TestcontainersRestartBetweenTests {
     void first_test() {
         if (lastContainerId == null) {
             lastContainerId = genericContainer.getContainerId();
-        }  else {
+        } else {
             assertNotEquals(lastContainerId, genericContainer.getContainerId());
         }
     }
@@ -27,9 +27,8 @@ class TestcontainersRestartBetweenTests {
     void second_test() {
         if (lastContainerId == null) {
             lastContainerId = genericContainer.getContainerId();
-        }  else {
+        } else {
             assertNotEquals(lastContainerId, genericContainer.getContainerId());
         }
     }
-
 }

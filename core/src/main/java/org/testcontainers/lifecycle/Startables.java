@@ -2,6 +2,7 @@ package org.testcontainers.lifecycle;
 
 import lombok.experimental.UtilityClass;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,17 +17,18 @@ import java.util.stream.StreamSupport;
 @UtilityClass
 public class Startables {
 
-    private static final Executor EXECUTOR = Executors.newCachedThreadPool(new ThreadFactory() {
+    private static final Executor EXECUTOR = Executors.newCachedThreadPool(
+        new ThreadFactory() {
+            private final AtomicLong COUNTER = new AtomicLong(0);
 
-        private final AtomicLong COUNTER = new AtomicLong(0);
-
-        @Override
-        public Thread newThread(Runnable r) {
-            Thread thread = new Thread(r, "testcontainers-lifecycle-" + COUNTER.getAndIncrement());
-            thread.setDaemon(true);
-            return thread;
+            @Override
+            public Thread newThread(Runnable r) {
+                Thread thread = new Thread(r, "testcontainers-lifecycle-" + COUNTER.getAndIncrement());
+                thread.setDaemon(true);
+                return thread;
+            }
         }
-    });
+    );
 
     /**
      * @see #deepStart(Stream)
@@ -40,6 +42,13 @@ public class Startables {
      */
     public CompletableFuture<Void> deepStart(Iterable<? extends Startable> startables) {
         return deepStart(StreamSupport.stream(startables.spliterator(), false));
+    }
+
+    /**
+     * @see #deepStart(Stream)
+     */
+    public CompletableFuture<Void> deepStart(Startable... startables) {
+        return deepStart(Arrays.stream(startables));
     }
 
     /**
@@ -69,15 +78,22 @@ public class Startables {
      * @param started an intermediate storage for already started {@link Startable}s to prevent multiple starts.
      * @param startables a {@link Stream} of {@link Startable}s to start and scan for transitive dependencies.
      */
-    private CompletableFuture<Void> deepStart(Map<Startable, CompletableFuture<Void>> started, Stream<? extends Startable> startables) {
+    private CompletableFuture<Void> deepStart(
+        Map<Startable, CompletableFuture<Void>> started,
+        Stream<? extends Startable> startables
+    ) {
         CompletableFuture[] futures = startables
             .sequential()
             .map(it -> {
                 // avoid a recursive update in `computeIfAbsent`
                 Map<Startable, CompletableFuture<Void>> subStarted = new HashMap<>(started);
-                CompletableFuture<Void> future = started.computeIfAbsent(it, startable -> {
-                    return deepStart(subStarted, startable.getDependencies().stream()).thenRunAsync(startable::start, EXECUTOR);
-                });
+                CompletableFuture<Void> future = started.computeIfAbsent(
+                    it,
+                    startable -> {
+                        return deepStart(subStarted, startable.getDependencies().stream())
+                            .thenRunAsync(startable::start, EXECUTOR);
+                    }
+                );
                 started.putAll(subStarted);
                 return future;
             })

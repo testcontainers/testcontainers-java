@@ -8,15 +8,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class TestLifecycleAwareContainerMock extends GenericContainer<TestLifecycleAwareContainerMock> implements TestLifecycleAware {
+public class TestLifecycleAwareContainerMock
+    extends GenericContainer<TestLifecycleAwareContainerMock>
+    implements TestLifecycleAware {
 
     static final String BEFORE_TEST = "beforeTest";
+
     static final String AFTER_TEST = "afterTest";
 
     final List<String> lifecycleMethodCalls = new ArrayList<>();
+
     final List<String> lifecycleFilesystemFriendlyNames = new ArrayList<>();
 
     Throwable capturedThrowable;
+
+    public TestLifecycleAwareContainerMock() {
+        super(SpockTestImages.TINY_IMAGE);
+    }
 
     @Override
     public void beforeTest(TestDescription description) {

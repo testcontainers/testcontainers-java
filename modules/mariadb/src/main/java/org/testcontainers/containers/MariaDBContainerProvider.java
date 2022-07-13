@@ -1,8 +1,7 @@
 package org.testcontainers.containers;
 
 import org.testcontainers.jdbc.ConnectionUrl;
-
-import java.util.Objects;
+import org.testcontainers.utility.DockerImageName;
 
 /**
  * Factory for MariaDB org.testcontainers.containers.
@@ -25,12 +24,11 @@ public class MariaDBContainerProvider extends JdbcDatabaseContainerProvider {
 
     @Override
     public JdbcDatabaseContainer newInstance(String tag) {
-        return new MariaDBContainer(MariaDBContainer.IMAGE + ":" + tag);
+        return new MariaDBContainer(DockerImageName.parse(MariaDBContainer.IMAGE).withTag(tag));
     }
 
     @Override
     public JdbcDatabaseContainer newInstance(ConnectionUrl connectionUrl) {
-       return newInstanceFromConnectionUrl(connectionUrl, USER_PARAM, PASSWORD_PARAM);
+        return newInstanceFromConnectionUrl(connectionUrl, USER_PARAM, PASSWORD_PARAM);
     }
-
 }

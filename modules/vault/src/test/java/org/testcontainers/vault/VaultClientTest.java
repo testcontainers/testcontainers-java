@@ -18,10 +18,9 @@ public class VaultClientTest {
     @Test
     public void writeAndReadMultipleValues() throws VaultException {
         try (
-            VaultContainer vaultContainer = new VaultContainer<>()
-                    .withVaultToken(VAULT_TOKEN)
+            VaultContainer<?> vaultContainer = new VaultContainer<>(VaultTestImages.VAULT_IMAGE)
+                .withVaultToken(VAULT_TOKEN)
         ) {
-
             vaultContainer.start();
 
             final VaultConfig config = new VaultConfig()
@@ -36,22 +35,14 @@ public class VaultClientTest {
             secrets.put("other_value", "another world");
 
             // Write operation
-            final LogicalResponse writeResponse = vault.logical()
-                .write("secret/hello", secrets);
+            final LogicalResponse writeResponse = vault.logical().write("secret/hello", secrets);
 
             assertThat(writeResponse.getRestResponse().getStatus()).isEqualTo(200);
 
             // Read operation
-            final Map<String, String> value = vault.logical()
-                .read("secret/hello")
-                .getData();
+            final Map<String, String> value = vault.logical().read("secret/hello").getData();
 
-
-            assertThat(value)
-                .containsEntry("value", "world")
-                .containsEntry("other_value", "another world");
-
+            assertThat(value).containsEntry("value", "world").containsEntry("other_value", "another world");
         }
-
     }
 }

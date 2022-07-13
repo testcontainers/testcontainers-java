@@ -22,11 +22,26 @@ package org.testcontainers.couchbase;
 public class BucketDefinition {
 
     private final String name;
+
+    private boolean flushEnabled = false;
+
     private boolean queryPrimaryIndex = true;
+
     private int quota = 100;
 
     public BucketDefinition(final String name) {
         this.name = name;
+    }
+
+    /**
+     * Enables flush for this bucket (disabled by default).
+     *
+     * @param flushEnabled if true, the bucket can be flushed.
+     * @return this {@link BucketDefinition} for chaining purposes.
+     */
+    public BucketDefinition withFlushEnabled(final boolean flushEnabled) {
+        this.flushEnabled = flushEnabled;
+        return this;
     }
 
     /**
@@ -37,7 +52,7 @@ public class BucketDefinition {
      */
     public BucketDefinition withQuota(final int quota) {
         if (quota < 100) {
-          throw new IllegalArgumentException("Bucket quota cannot be less than 100MB!");
+            throw new IllegalArgumentException("Bucket quota cannot be less than 100MB!");
         }
         this.quota = quota;
         return this;
@@ -58,6 +73,10 @@ public class BucketDefinition {
         return name;
     }
 
+    public boolean hasFlushEnabled() {
+        return flushEnabled;
+    }
+
     public boolean hasPrimaryIndex() {
         return queryPrimaryIndex;
     }
@@ -65,5 +84,4 @@ public class BucketDefinition {
     public int getQuota() {
         return quota;
     }
-
 }

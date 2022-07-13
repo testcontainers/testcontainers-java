@@ -1,18 +1,22 @@
 package org.testcontainers.containers;
 
-import static java.net.HttpURLConnection.*;
-import static java.util.stream.Collectors.*;
-
-import java.time.Duration;
-import java.util.Set;
-import java.util.stream.Stream;
-
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
+import org.testcontainers.utility.ComparableVersion;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.LicenseAcceptance;
 import org.testcontainers.utility.MountableFile;
+
+import java.net.HttpURLConnection;
+import java.time.Duration;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Testcontainer for Neo4j.
@@ -25,14 +29,14 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
     /**
      * The image defaults to the official Neo4j image: <a href="https://hub.docker.com/_/neo4j/">Neo4j</a>.
      */
-    private static final String DEFAULT_IMAGE_NAME = "neo4j";
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("neo4j");
 
     /**
      * The default tag (version) to use.
      */
-    private static final String DEFAULT_TAG = "3.5.0";
+    private static final String DEFAULT_TAG = "4.4";
 
-    private static final String DOCKER_IMAGE_NAME = DEFAULT_IMAGE_NAME + ":" + DEFAULT_TAG;
+    private static final String ENTERPRISE_TAG = DEFAULT_TAG + "-enterprise";
 
     /**
      * Default port for the binary Bolt protocol.
@@ -56,55 +60,76 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
 
     private static final String AUTH_FORMAT = "neo4j/%s";
 
+    private final boolean standardImage;
+
     private String adminPassword = DEFAULT_ADMIN_PASSWORD;
 
-    private boolean defaultImage = false;
+    private final Set<String> labsPlugins = new HashSet<>();
 
     /**
-     * Creates a Testcontainer using the official Neo4j docker image.
+     * Creates a Neo4jContainer using the official Neo4j docker image.
+     * @deprecated use {@link Neo4jContainer(DockerImageName)} instead
      */
+    @Deprecated
     public Neo4jContainer() {
-        this(DOCKER_IMAGE_NAME);
-
-        this.defaultImage = true;
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
 
     /**
-     * Creates a Testcontainer using a specific docker image.
+     * Creates a Neo4jContainer using a specific docker image.
      *
      * @param dockerImageName The docker image to use.
      */
     public Neo4jContainer(String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
+    }
+
+    /**
+     * Creates a Neo4jContainer using a specific docker image.
+     *
+     * @param dockerImageName The docker image to use.
+     */
+    public Neo4jContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
+        this.standardImage = dockerImageName.getUnversionedPart().equals(DEFAULT_IMAGE_NAME.getUnversionedPart());
+
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         WaitStrategy waitForBolt = new LogMessageWaitStrategy()
-            .withRegEx(String.format(".*Bolt enabled on 0\\.0\\.0\\.0:%d\\.\n", DEFAULT_BOLT_PORT));
+            .withRegEx(String.format(".*Bolt enabled on .*:%d\\.\n", DEFAULT_BOLT_PORT));
         WaitStrategy waitForHttp = new HttpWaitStrategy()
             .forPort(DEFAULT_HTTP_PORT)
-            .forStatusCodeMatching(response -> response == HTTP_OK);
+            .forStatusCodeMatching(response -> response == HttpURLConnection.HTTP_OK);
 
-        this.waitStrategy = new WaitAllStrategy()
-            .withStrategy(waitForBolt)
-            .withStrategy(waitForHttp)
-            .withStartupTimeout(Duration.ofMinutes(2));
+        this.waitStrategy =
+            new WaitAllStrategy()
+                .withStrategy(waitForBolt)
+                .withStrategy(waitForHttp)
+                .withStartupTimeout(Duration.ofMinutes(2));
 
         addExposedPorts(DEFAULT_BOLT_PORT, DEFAULT_HTTP_PORT, DEFAULT_HTTPS_PORT);
     }
 
     @Override
     public Set<Integer> getLivenessCheckPortNumbers() {
-
-        return Stream.of(DEFAULT_BOLT_PORT, DEFAULT_HTTP_PORT, DEFAULT_HTTPS_PORT)
+        return Stream
+            .of(DEFAULT_BOLT_PORT, DEFAULT_HTTP_PORT, DEFAULT_HTTPS_PORT)
             .map(this::getMappedPort)
-            .collect(toSet());
+            .collect(Collectors.toSet());
     }
 
     @Override
     protected void configure() {
-
         boolean emptyAdminPassword = this.adminPassword == null || this.adminPassword.isEmpty();
         String neo4jAuth = emptyAdminPassword ? "none" : String.format(AUTH_FORMAT, this.adminPassword);
         addEnv("NEO4J_AUTH", neo4jAuth);
+
+        if (!this.labsPlugins.isEmpty()) {
+            String enabledPlugins =
+                this.labsPlugins.stream().map(pluginName -> "\"" + pluginName + "\"").collect(Collectors.joining(","));
+
+            addEnv("NEO4JLABS_PLUGINS", "[" + enabledPlugins + "]");
+        }
     }
 
     /**
@@ -138,13 +163,13 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
      * @return This container.
      */
     public S withEnterpriseEdition() {
-
-        if (!defaultImage) {
+        if (!standardImage) {
             throw new IllegalStateException(
-                String.format("Cannot use enterprise version with alternative image %s.", getDockerImageName()));
+                String.format("Cannot use enterprise version with alternative image %s.", getDockerImageName())
+            );
         }
 
-        setDockerImageName(DOCKER_IMAGE_NAME + "-enterprise");
+        setDockerImageName(DEFAULT_IMAGE_NAME.withTag(ENTERPRISE_TAG).asCanonicalNameString());
         LicenseAcceptance.assertLicenseAccepted(getDockerImageName());
 
         addEnv("NEO4J_ACCEPT_LICENSE_AGREEMENT", "yes");
@@ -160,7 +185,6 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
      * @return This container.
      */
     public S withAdminPassword(final String adminPassword) {
-
         this.adminPassword = adminPassword;
         return self();
     }
@@ -181,6 +205,8 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
      * If you want to map your database into the container instead of copying them, please use {@code #withClasspathResourceMapping},
      * but this will only work when your test does not run in a container itself.
      * <br>
+     * Note: This method only works with Neo4j 3.5.
+     * <br>
      * Mapping would work like this:
      * <pre>
      *      &#64;Container
@@ -189,9 +215,15 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
      * </pre>
      *
      * @param graphDb The graph.db folder to copy into the container
+     * @throws IllegalArgumentException If the database version is not 3.5.
      * @return This container.
      */
     public S withDatabase(MountableFile graphDb) {
+        if (!isNeo4jDatabaseVersionSupportingDbCopy()) {
+            throw new IllegalArgumentException(
+                "Copying database folder is not supported for Neo4j instances with version 4.0 or higher."
+            );
+        }
         return withCopyFileToContainer(graphDb, "/data/databases/graph.db");
     }
 
@@ -218,7 +250,6 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
      * @return This container.
      */
     public S withNeo4jConfig(String key, String value) {
-
         addEnv(formatConfigurationKey(key), value);
         return self();
     }
@@ -230,11 +261,58 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
         return adminPassword;
     }
 
+    /**
+     * Registers one or more {@link Neo4jLabsPlugin} for download and server startup.
+
+     * @param neo4jLabsPlugins The Neo4j plugins that should get started with the server.
+     * @return This container.
+     */
+    public S withLabsPlugins(Neo4jLabsPlugin... neo4jLabsPlugins) {
+        List<String> pluginNames = Arrays
+            .stream(neo4jLabsPlugins)
+            .map(plugin -> plugin.pluginName)
+            .collect(Collectors.toList());
+
+        this.labsPlugins.addAll(pluginNames);
+        return self();
+    }
+
+    /**
+     * Registers one or more {@link Neo4jLabsPlugin} for download and server startup.
+
+     * @param neo4jLabsPlugins The Neo4j plugins that should get started with the server.
+     * @return This container.
+     */
+    public S withLabsPlugins(String... neo4jLabsPlugins) {
+        this.labsPlugins.addAll(Arrays.asList(neo4jLabsPlugins));
+        return self();
+    }
+
     private static String formatConfigurationKey(String plainConfigKey) {
         final String prefix = "NEO4J_";
 
-        return String.format("%s%s", prefix, plainConfigKey
-            .replaceAll("_", "__")
-            .replaceAll("\\.", "_"));
+        return String.format("%s%s", prefix, plainConfigKey.replaceAll("_", "__").replaceAll("\\.", "_"));
+    }
+
+    private boolean isNeo4jDatabaseVersionSupportingDbCopy() {
+        String usedImageVersion = DockerImageName.parse(getDockerImageName()).getVersionPart();
+        ComparableVersion usedComparableVersion = new ComparableVersion(usedImageVersion);
+
+        boolean versionSupportingDbCopy =
+            usedComparableVersion.isLessThan("4.0") && usedComparableVersion.isGreaterThanOrEqualTo("2");
+
+        if (versionSupportingDbCopy) {
+            return true;
+        }
+        if (!usedComparableVersion.isSemanticVersion()) {
+            logger()
+                .warn(
+                    "Version {} is not a semantic version. The function \"withDatabase\" will fail.",
+                    usedImageVersion
+                );
+            logger().warn("Copying databases is only supported for Neo4j versions 3.5.x");
+        }
+
+        return false;
     }
 }

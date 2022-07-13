@@ -1,28 +1,29 @@
 package org.testcontainers.images;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-
 import org.junit.Test;
 import org.testcontainers.utility.Base58;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.LazyFuture;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+
 public class RemoteDockerImageTest {
 
     @Test
     public void toStringContainsOnlyImageName() {
         String imageName = Base58.randomString(8).toLowerCase();
-        RemoteDockerImage remoteDockerImage = new RemoteDockerImage(imageName);
+        RemoteDockerImage remoteDockerImage = new RemoteDockerImage(DockerImageName.parse(imageName));
         assertThat(remoteDockerImage.toString(), containsString("imageName=" + imageName));
     }
 
     @Test
-    public void toStringWithExceptionContainsOnlyImageNameFuture()  {
+    public void toStringWithExceptionContainsOnlyImageNameFuture() {
         CompletableFuture<String> imageNameFuture = new CompletableFuture<>();
         imageNameFuture.completeExceptionally(new RuntimeException("arbitrary"));
 
@@ -30,8 +31,8 @@ public class RemoteDockerImageTest {
         assertThat(remoteDockerImage.toString(), containsString("imageName=java.lang.RuntimeException: arbitrary"));
     }
 
-    @Test(timeout=5000L)
-    public void toStringDoesntResolveImageNameFuture()  {
+    @Test(timeout = 5000L)
+    public void toStringDoesntResolveImageNameFuture() {
         CompletableFuture<String> imageNameFuture = new CompletableFuture<>();
 
         // verify that we've set up the test properly
@@ -48,7 +49,7 @@ public class RemoteDockerImageTest {
         assertThat(remoteDockerImage.toString(), containsString("imageName=" + imageName));
     }
 
-    @Test(timeout=5000L)
+    @Test(timeout = 5000L)
     public void toStringDoesntResolveLazyFuture() throws Exception {
         String imageName = Base58.randomString(8).toLowerCase();
         AtomicBoolean resolved = new AtomicBoolean(false);

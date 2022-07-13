@@ -7,10 +7,14 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import java.util.concurrent.TimeUnit;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.*;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertNotNull;
+import static org.rnorth.visibleassertions.VisibleAssertions.context;
+import static org.rnorth.visibleassertions.VisibleAssertions.info;
 
 /**
  * Created by rnorth on 03/01/2016.
@@ -18,7 +22,7 @@ import static org.rnorth.visibleassertions.VisibleAssertions.*;
 public class SingleDisqueInstanceTest {
 
     @Rule
-    public GenericContainer container = new GenericContainer("richnorth/disque:1.0-rc1")
+    public GenericContainer<?> container = new GenericContainer<>(DockerImageName.parse("richnorth/disque:1.0-rc1"))
                                                 .withExposedPorts(7711);
     private DisqueCommands<String, String> connection;
     private AddJobArgs retryAfter1Second;
@@ -26,7 +30,7 @@ public class SingleDisqueInstanceTest {
     @Before
     public void setup() {
         context("");
-        DisqueClient client = new DisqueClient(DisqueURI.create(container.getContainerIpAddress(), container.getMappedPort(7711)));
+        DisqueClient client = new DisqueClient(DisqueURI.create(container.getHost(), container.getMappedPort(7711)));
         connection = client.connect().sync();
         retryAfter1Second = AddJobArgs.builder().retry(1, TimeUnit.SECONDS).build();
 

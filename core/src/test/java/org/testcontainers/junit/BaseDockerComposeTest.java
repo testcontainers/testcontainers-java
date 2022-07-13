@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.is;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertThat;
 
@@ -37,7 +37,10 @@ public abstract class BaseDockerComposeTest {
 
     @Test
     public void simpleTest() {
-        Jedis jedis = new Jedis(getEnvironment().getServiceHost("redis_1", REDIS_PORT), getEnvironment().getServicePort("redis_1", REDIS_PORT));
+        Jedis jedis = new Jedis(
+            getEnvironment().getServiceHost("redis_1", REDIS_PORT),
+            getEnvironment().getServicePort("redis_1", REDIS_PORT)
+        );
 
         jedis.incr("test");
         jedis.incr("test");
@@ -49,7 +52,10 @@ public abstract class BaseDockerComposeTest {
     @Test
     public void secondTest() {
         // used in manual checking for cleanup in between tests
-        Jedis jedis = new Jedis(getEnvironment().getServiceHost("redis_1", REDIS_PORT), getEnvironment().getServicePort("redis_1", REDIS_PORT));
+        Jedis jedis = new Jedis(
+            getEnvironment().getServiceHost("redis_1", REDIS_PORT),
+            getEnvironment().getServicePort("redis_1", REDIS_PORT)
+        );
 
         jedis.incr("test");
         jedis.incr("test");
@@ -62,18 +68,23 @@ public abstract class BaseDockerComposeTest {
 
     @Before
     public void captureNetworks() {
-      existingNetworks.addAll(findAllNetworks());
+        existingNetworks.addAll(findAllNetworks());
     }
 
     @After
     public void verifyNoNetworks() {
-      assertThat("The networks", findAllNetworks(), is(existingNetworks));
+        assertThat("The networks", findAllNetworks(), is(existingNetworks));
     }
 
     private List<String> findAllNetworks() {
-      return DockerClientFactory.instance().client().listNetworksCmd().exec().stream()
-        .map(Network::getName)
-        .sorted()
-        .collect(Collectors.toList());
+        return DockerClientFactory
+            .instance()
+            .client()
+            .listNetworksCmd()
+            .exec()
+            .stream()
+            .map(Network::getName)
+            .sorted()
+            .collect(Collectors.toList());
     }
 }

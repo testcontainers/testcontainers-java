@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
+import org.testcontainers.TestImages;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
@@ -15,14 +16,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.*;
-import static org.testcontainers.containers.output.OutputFrame.OutputType.STDOUT;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertFalse;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
 @Slf4j
 public class OutputStreamWithTTYTest {
 
     @Rule
-    public GenericContainer container = new GenericContainer<>("alpine:3.2")
+    public GenericContainer<?> container = new GenericContainer<>(TestImages.ALPINE_IMAGE)
         .withCommand("ls -1")
         .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
         .withCreateContainerCmdModifier(command -> command.withTty(true));
@@ -34,30 +36,44 @@ public class OutputStreamWithTTYTest {
     public void testFetchStdout() throws TimeoutException {
         WaitingConsumer consumer = new WaitingConsumer();
 
-        container.followOutput(consumer, STDOUT);
+        container.followOutput(consumer, OutputFrame.OutputType.STDOUT);
 
-        consumer.waitUntil(frame -> frame.getType() == STDOUT && frame.getUtf8String().contains("home"), 4, TimeUnit.SECONDS);
+        consumer.waitUntil(
+            frame -> frame.getType() == OutputFrame.OutputType.STDOUT && frame.getUtf8String().contains("home"),
+            4,
+            TimeUnit.SECONDS
+        );
     }
 
     @Test
     public void testFetchStdoutWithTimeout() {
         WaitingConsumer consumer = new WaitingConsumer();
 
-        container.followOutput(consumer, STDOUT);
+        container.followOutput(consumer, OutputFrame.OutputType.STDOUT);
 
-        assertThrows("a TimeoutException should be thrown", TimeoutException.class, () -> {
-            consumer.waitUntil(frame -> frame.getType() == STDOUT && frame.getUtf8String().contains("qqq"), 1, TimeUnit.SECONDS);
-            return true;
-        });
+        assertThrows(
+            "a TimeoutException should be thrown",
+            TimeoutException.class,
+            () -> {
+                consumer.waitUntil(
+                    frame -> frame.getType() == OutputFrame.OutputType.STDOUT && frame.getUtf8String().contains("qqq"),
+                    1,
+                    TimeUnit.SECONDS
+                );
+                return true;
+            }
+        );
     }
 
     @Test
     public void testFetchStdoutWithNoLimit() throws TimeoutException {
         WaitingConsumer consumer = new WaitingConsumer();
 
-        container.followOutput(consumer, STDOUT);
+        container.followOutput(consumer, OutputFrame.OutputType.STDOUT);
 
-        consumer.waitUntil(frame -> frame.getType() == STDOUT && frame.getUtf8String().contains("home"));
+        consumer.waitUntil(frame -> {
+            return frame.getType() == OutputFrame.OutputType.STDOUT && frame.getUtf8String().contains("home");
+        });
     }
 
     @Test
@@ -68,7 +84,9 @@ public class OutputStreamWithTTYTest {
         Consumer<OutputFrame> composedConsumer = logConsumer.andThen(waitingConsumer);
         container.followOutput(composedConsumer);
 
-        waitingConsumer.waitUntil(frame -> frame.getType() == STDOUT && frame.getUtf8String().contains("home"));
+        waitingConsumer.waitUntil(frame -> {
+            return frame.getType() == OutputFrame.OutputType.STDOUT && frame.getUtf8String().contains("home");
+        });
     }
 
     @Test

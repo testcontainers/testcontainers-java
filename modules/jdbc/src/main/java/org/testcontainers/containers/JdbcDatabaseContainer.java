@@ -2,48 +2,64 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import lombok.NonNull;
-import org.apache.commons.lang.StringUtils;
+import lombok.SneakyThrows;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.delegate.DatabaseDelegate;
 import org.testcontainers.ext.ScriptUtils;
 import org.testcontainers.jdbc.JdbcDatabaseDelegate;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Future;
-
-import static java.util.stream.Collectors.joining;
+import java.util.stream.Collectors;
 
 /**
  * Base class for containers that expose a JDBC connection
  *
  * @author richardnorth
  */
-public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<SELF>> extends GenericContainer<SELF> implements LinkableContainer {
+public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<SELF>>
+    extends GenericContainer<SELF>
+    implements LinkableContainer {
 
     private static final Object DRIVER_LOAD_MUTEX = new Object();
+
     private Driver driver;
+
     private String initScriptPath;
+
     protected Map<String, String> parameters = new HashMap<>();
+
     protected Map<String, String> urlParameters = new HashMap<>();
 
     private int startupTimeoutSeconds = 120;
+
     private int connectTimeoutSeconds = 120;
 
     private static final String QUERY_PARAM_SEPARATOR = "&";
 
+    /**
+     * @deprecated use {@link JdbcDatabaseContainer(DockerImageName)} instead
+     */
     public JdbcDatabaseContainer(@NonNull final String dockerImageName) {
-        super(dockerImageName);
+        this(DockerImageName.parse(dockerImageName));
     }
 
     public JdbcDatabaseContainer(@NonNull final Future<String> image) {
         super(image);
+    }
+
+    public JdbcDatabaseContainer(final DockerImageName dockerImageName) {
+        super(dockerImageName);
     }
 
     /**
@@ -122,41 +138,49 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
         return self();
     }
 
+    @SneakyThrows(InterruptedException.class)
     @Override
     protected void waitUntilContainerStarted() {
-        logger().info("Waiting for database connection to become available at {} using query '{}'", getJdbcUrl(), getTestQueryString());
+        logger()
+            .info(
+                "Waiting for database connection to become available at {} using query '{}'",
+                getJdbcUrl(),
+                getTestQueryString()
+            );
 
         // Repeatedly try and open a connection to the DB and execute a test query
         long start = System.currentTimeMillis();
-        try {
-            while (System.currentTimeMillis() < start + (1000 * startupTimeoutSeconds)) {
-                try {
-                    if (!isRunning()) {
-                        Thread.sleep(100L);
-                        continue; // Don't attempt to connect yet
-                    }
 
-                    try (Connection connection = createConnection("")) {
-                        boolean testQuerySucceeded = connection.createStatement().execute(this.getTestQueryString());
-                        if (testQuerySucceeded) {
-                            break;
-                        }
+        Exception lastConnectionException = null;
+        while (System.currentTimeMillis() < start + (1000 * startupTimeoutSeconds)) {
+            if (!isRunning()) {
+                Thread.sleep(100L);
+            } else {
+                try (Connection connection = createConnection(""); Statement statement = connection.createStatement()) {
+                    boolean testQuerySucceeded = statement.execute(this.getTestQueryString());
+                    if (testQuerySucceeded) {
+                        logger().info("Container is started (JDBC URL: {})", this.getJdbcUrl());
+                        return;
                     }
                 } catch (NoDriverFoundException e) {
                     // we explicitly want this exception to fail fast without retries
                     throw e;
                 } catch (Exception e) {
+                    lastConnectionException = e;
                     // ignore so that we can try again
                     logger().debug("Failure when trying test query", e);
                     Thread.sleep(100L);
                 }
             }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new ContainerLaunchException("Container startup wait was interrupted", e);
         }
 
-        logger().info("Container is started (JDBC URL: {})", JdbcDatabaseContainer.this.getJdbcUrl());
+        throw new IllegalStateException(
+            String.format(
+                "Container is started, but cannot be accessed by (JDBC URL: %s), please check container logs",
+                this.getJdbcUrl()
+            ),
+            lastConnectionException
+        );
     }
 
     @Override
@@ -170,7 +194,6 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
      * @return a JDBC Driver
      */
     public Driver getJdbcDriverInstance() throws NoDriverFoundException {
-
         synchronized (DRIVER_LOAD_MUTEX) {
             if (driver == null) {
                 try {
@@ -206,7 +229,13 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
             // give up if we hit the time limit or the container stops running for some reason
             while (System.currentTimeMillis() < start + (1000 * connectTimeoutSeconds) && isRunning()) {
                 try {
-                    logger().debug("Trying to create JDBC connection using {} to {} with properties: {}", driver.getClass().getName(), url, info);
+                    logger()
+                        .debug(
+                            "Trying to create JDBC connection using {} to {} with properties: {}",
+                            jdbcDriverInstance.getClass().getName(),
+                            url,
+                            info
+                        );
 
                     return jdbcDriverInstance.connect(url, info);
                 } catch (SQLException e) {
@@ -252,15 +281,18 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
     protected String constructUrlParameters(String startCharacter, String delimiter, String endCharacter) {
         String urlParameters = "";
         if (!this.urlParameters.isEmpty()) {
-            String additionalParameters = this.urlParameters.entrySet().stream()
-                .map(Object::toString)
-                .collect(joining(delimiter));
+            String additionalParameters =
+                this.urlParameters.entrySet().stream().map(Object::toString).collect(Collectors.joining(delimiter));
             urlParameters = startCharacter + additionalParameters + endCharacter;
         }
         return urlParameters;
     }
 
-    protected void optionallyMapResourceParameterAsVolume(@NotNull String paramName, @NotNull String pathNameInContainer, @NotNull String defaultResource) {
+    protected void optionallyMapResourceParameterAsVolume(
+        @NotNull String paramName,
+        @NotNull String pathNameInContainer,
+        @NotNull String defaultResource
+    ) {
         String resourceName = parameters.getOrDefault(paramName, defaultResource);
 
         if (resourceName != null) {
@@ -310,6 +342,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
     }
 
     public static class NoDriverFoundException extends RuntimeException {
+
         public NoDriverFoundException(String message, Throwable e) {
             super(message, e);
         }
