@@ -135,7 +135,17 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
     }
 
     private String[] buildMongoEvalCommand(final String command) {
-        return new String[] { "mongo", "-u", username, "-p", password, "--authenticationDatabase", DEFAULT_AUTHENTICATION_DATABASE_NAME, "--eval", command };
+        return new String[] {
+            "mongo",
+            "-u",
+            username,
+            "-p",
+            password,
+            "--authenticationDatabase",
+            DEFAULT_AUTHENTICATION_DATABASE_NAME,
+            "--eval",
+            command,
+        };
     }
 
     private void checkMongoNodeExitCode(final Container.ExecResult execResult) {
@@ -204,7 +214,15 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
     }
 
     private String getDefaultConnectionString(final String databaseName, final String username, final String password) {
-        return String.format("mongodb://%s:%s@%s:%d/%s?authSource=%s", username, password, getHost(), getMappedPort(MONGODB_INTERNAL_PORT), databaseName, DEFAULT_AUTHENTICATION_DATABASE_NAME);
+        return String.format(
+            "mongodb://%s:%s@%s:%d/%s?authSource=%s",
+            username,
+            password,
+            getHost(),
+            getMappedPort(MONGODB_INTERNAL_PORT),
+            databaseName,
+            DEFAULT_AUTHENTICATION_DATABASE_NAME
+        );
     }
 
     public static class ReplicaSetInitializationException extends RuntimeException {
