@@ -6,8 +6,14 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermission;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Constructs a single node MongoDB replica set for testing transactions.
@@ -27,7 +33,19 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
 
     private static final int AWAIT_INIT_REPLICA_SET_ATTEMPTS = 60;
 
-    private static final String MONGODB_DATABASE_NAME_DEFAULT = "test";
+    static final String DEFAULT_DATABASE_NAME = "test";
+
+    private static final String DEFAULT_USER = "test";
+
+    private static final String DEFAULT_PASSWORD = "test";
+
+    static final String DEFAULT_AUTHENTICATION_DATABASE_NAME = "admin";
+
+    private static final String AUTHENTICATION_KEY_FILE_NAME = "keyFile.key";
+
+    private String username = DEFAULT_USER;
+
+    private String password = DEFAULT_PASSWORD;
 
     /**
      * @deprecated use {@link MongoDBContainer(DockerImageName)} instead
@@ -46,8 +64,31 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         withExposedPorts(MONGODB_INTERNAL_PORT);
-        withCommand("--replSet", "docker-rs");
-        waitingFor(Wait.forLogMessage("(?i).*waiting for connections.*", 1));
+
+        final MountableFile keyFileMountable = MountableFile.forClasspathResource(AUTHENTICATION_KEY_FILE_NAME, 400);
+        final String keyFilePath = keyFileMountable.getResolvedPath();
+        setPermissionsOnFile(keyFilePath);
+        final String keyFileContainerPath = "/usr/local/bin/" + AUTHENTICATION_KEY_FILE_NAME;
+        addFileSystemBind(keyFilePath, keyFileContainerPath, BindMode.READ_ONLY);
+
+        withCommand("--keyFile", keyFileContainerPath, "--replSet", "docker-rs");
+        waitingFor(Wait.forLogMessage("(?i).*waiting for connections.*", 2));
+    }
+
+    @Override
+    protected void configure() {
+        addEnv("MONGO_INITDB_ROOT_USERNAME", username);
+        addEnv("MONGO_INITDB_ROOT_PASSWORD", password);
+    }
+
+    public MongoDBContainer withUsername(final String username) {
+        this.username = username;
+        return self();
+    }
+
+    public MongoDBContainer withPassword(final String password) {
+        this.password = password;
+        return self();
     }
 
     /**
@@ -56,16 +97,16 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
      * @return a connection url pointing to a mongodb instance
      */
     public String getConnectionString() {
-        return String.format("mongodb://%s:%d", getHost(), getMappedPort(MONGODB_INTERNAL_PORT));
+        return getDefaultConnectionString(DEFAULT_DATABASE_NAME, username, password);
     }
 
     /**
-     * Gets a replica set url for the default {@value #MONGODB_DATABASE_NAME_DEFAULT} database.
+     * Gets a replica set url for the default {@value #DEFAULT_DATABASE_NAME} database.
      *
      * @return a replica set url.
      */
     public String getReplicaSetUrl() {
-        return getReplicaSetUrl(MONGODB_DATABASE_NAME_DEFAULT);
+        return getReplicaSetUrl(DEFAULT_DATABASE_NAME);
     }
 
     /**
@@ -78,7 +119,14 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
         if (!isRunning()) {
             throw new IllegalStateException("MongoDBContainer should be started first");
         }
-        return getConnectionString() + "/" + databaseName;
+        return getDefaultConnectionString(databaseName, username, password);
+    }
+
+    public String getReplicaSetUrl(final String databaseName, final String username, final String password) {
+        if (!isRunning()) {
+            throw new IllegalStateException("MongoDBContainer should be started first");
+        }
+        return getDefaultConnectionString(databaseName, username, password);
     }
 
     @Override
@@ -87,7 +135,7 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
     }
 
     private String[] buildMongoEvalCommand(final String command) {
-        return new String[] { "mongo", "--eval", command };
+        return new String[] { "mongo", "-u", username, "-p", password, "--authenticationDatabase", DEFAULT_AUTHENTICATION_DATABASE_NAME, "--eval", command };
     }
 
     private void checkMongoNodeExitCode(final Container.ExecResult execResult) {
@@ -139,6 +187,24 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
         log.debug(execResultWaitForMaster.getStdout());
 
         checkMongoNodeExitCodeAfterWaiting(execResultWaitForMaster);
+    }
+
+    private void setPermissionsOnFile(String resolvedPath) {
+        try {
+            Files.setPosixFilePermissions(Paths.get(resolvedPath), getOwnerReadPermissions());
+        } catch (IOException e) {
+            throw new IllegalStateException("Cannot set permissions on file: " + resolvedPath, e);
+        }
+    }
+
+    private Set<PosixFilePermission> getOwnerReadPermissions() {
+        final Set<PosixFilePermission> permissions = new HashSet<>();
+        permissions.add(PosixFilePermission.OWNER_READ);
+        return permissions;
+    }
+
+    private String getDefaultConnectionString(final String databaseName, final String username, final String password) {
+        return String.format("mongodb://%s:%s@%s:%d/%s?authSource=%s", username, password, getHost(), getMappedPort(MONGODB_INTERNAL_PORT), databaseName, DEFAULT_AUTHENTICATION_DATABASE_NAME);
     }
 
     public static class ReplicaSetInitializationException extends RuntimeException {

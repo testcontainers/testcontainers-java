@@ -1,5 +1,8 @@
 package org.testcontainers.containers;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.ConnectionString;
+import com.mongodb.MongoCommandException;
 import com.mongodb.ReadConcern;
 import com.mongodb.ReadPreference;
 import com.mongodb.TransactionOptions;
@@ -8,15 +11,20 @@ import com.mongodb.client.ClientSession;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.TransactionBody;
 import org.bson.Document;
 import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
 
-import static org.hamcrest.Matchers.endsWith;
+import java.util.Collections;
+import java.util.Objects;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertThrows;
+import static org.testcontainers.containers.MongoDBContainer.DEFAULT_AUTHENTICATION_DATABASE_NAME;
+import static org.testcontainers.containers.MongoDBContainer.DEFAULT_DATABASE_NAME;
 
 public class MongoDBContainerTest {
 
@@ -98,7 +106,46 @@ public class MongoDBContainerTest {
         try (final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.0.10"))) {
             mongoDBContainer.start();
             final String databaseName = "my-db";
-            assertThat(mongoDBContainer.getReplicaSetUrl(databaseName), endsWith(databaseName));
+            assertEquals(databaseName, new ConnectionString(mongoDBContainer.getReplicaSetUrl(databaseName)).getDatabase());
+        }
+    }
+
+    @Test
+    public void shouldTestAuthentication() {
+        final String username = "my-name";
+        final String password = "my-pass";
+        try (final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:5.0.9")).withUsername(username).withPassword(password)) {
+            mongoDBContainer.start();
+            final ConnectionString connectionString = new ConnectionString(mongoDBContainer.getReplicaSetUrl());
+            try (final MongoClient mongoSyncClientFullAccess = MongoClients.create(connectionString)) {
+                final MongoDatabase adminDatabase = mongoSyncClientFullAccess.getDatabase(DEFAULT_AUTHENTICATION_DATABASE_NAME);
+                final MongoDatabase testDatabaseFullAccess = mongoSyncClientFullAccess.getDatabase(DEFAULT_DATABASE_NAME);
+                final String collectionName = "my-collection";
+                final Document document = new Document("abc", 1);
+                testDatabaseFullAccess.getCollection(collectionName).insertOne(document);
+                final String username1 = username + "1";
+                final String password1 = password + "1";
+                adminDatabase.runCommand(new BasicDBObject("createUser", username1)
+                    .append("pwd", password1)
+                    .append("roles", Collections.singletonList(new BasicDBObject("role", "read")
+                        .append("db", DEFAULT_DATABASE_NAME))));
+                try (final MongoClient mongoSyncRestrictedAccess = MongoClients.create(mongoDBContainer.getReplicaSetUrl(DEFAULT_DATABASE_NAME, username1, password1))) {
+                    final MongoCollection<Document> collection = mongoSyncRestrictedAccess.getDatabase(DEFAULT_DATABASE_NAME).getCollection(collectionName);
+                    assertEquals(collection.find().first(), document);
+                    assertThrows(MongoCommandException.class, () -> collection.insertOne(new Document("abc", 2)));
+                    adminDatabase.runCommand(new BasicDBObject("updateUser", username1)
+                        .append("roles", Collections.singletonList(new BasicDBObject("role", "readWrite")
+                            .append("db", DEFAULT_DATABASE_NAME))));
+                    collection.insertOne(new Document("abc", 2));
+                    assertEquals(2, collection.countDocuments());
+                    assertEquals(username, connectionString.getUsername());
+                    assertEquals(password, new String(Objects.requireNonNull(connectionString.getPassword())));
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 }
