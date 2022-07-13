@@ -139,7 +139,7 @@ public class CassandraContainerTest {
                 .withLocalDatacenter(cassandraContainer.getLocalDatacenter())
                 .build();
             com.datastax.oss.driver.api.core.cql.ResultSet resultSet = performQuery(session, BASIC_QUERY);
-            assertEquals("CASSANDRA_DC ", "testdc", cassandraContainer.getEnvMap().get("CASSANDRA_DC"));
+            assertEquals("CASSANDRA_DC is not testdc", "testdc", cassandraContainer.getEnvMap().get("CASSANDRA_DC"));
             assertTrue("Query was not applied", resultSet.wasApplied());
             assertNotNull("Result set has no release_version", resultSet.one().getString(0));
         }
