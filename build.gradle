@@ -87,6 +87,7 @@ subprojects {
             showStackTraces = true
             exceptionFormat = 'full'
             events "STARTED", "PASSED", "FAILED", "SKIPPED"
+            showStandardStreams = true
         }
         ext.isCI = System.getenv("CI") != null
         if (isCI) {
