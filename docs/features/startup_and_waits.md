@@ -1,13 +1,5 @@
 # Waiting for containers to start or be ready
 
-## Depending on another container
-
-Sometimes, a container relies on another container to be ready before it should start itself. An example of this might be a database that needs to be started before your application container can link to it. You can tell a container that it depends on another container by using the `dependsOn` method:
-
-<!--codeinclude--> 
-[Depending on another container](../examples/junit4/generic/src/test/java/generic/DependsOnTest.java) inside_block:dependsOn
-<!--/codeinclude-->
-
 !!! info "Wait strategies vs Startup strategies"
 
     **Wait strategy:** is the container in a state that is useful for testing. This is generally approximated as 'can we talk to this container over the network'. However, there are quite a few variations and nuances.
@@ -131,3 +123,11 @@ If none of these options meet your requirements, you can create your own subclas
 /startupcheck/StartupCheckStrategy.html) with an appropriate startup check mechanism in `waitUntilStartupSuccessful()`.
 Or you can leave it as is and just implement the `checkStartupState(DockerClient dockerClient, String containerId)` if you still want to check state
  periodically.
+
+## Depending on another container
+
+Sometimes, a container relies on another container to be ready before it should start itself. An example of this might be a database that needs to be started before your application container can link to it. You can tell a container that it depends on another container by using the `dependsOn` method:
+
+<!--codeinclude--> 
+[Depending on another container](../examples/junit4/generic/src/test/java/generic/DependsOnTest.java) inside_block:dependsOn
+<!--/codeinclude-->
