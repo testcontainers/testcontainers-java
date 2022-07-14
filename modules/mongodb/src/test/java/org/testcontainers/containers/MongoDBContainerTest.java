@@ -113,16 +113,18 @@ public class MongoDBContainerTest {
 
     @Test
     public void shouldTestAuthentication() {
-        final String username = "my-name";
-        final String password = "my-pass";
+        final String usernameFullAccess = "my-name";
+        final String passwordFullAccess = "my-pass";
         try (
             final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.4"))
-                .withUsername(username)
-                .withPassword(password)
+                .withUsername(usernameFullAccess)
+                .withPassword(passwordFullAccess)
         ) {
             mongoDBContainer.start();
-            final ConnectionString connectionString = new ConnectionString(mongoDBContainer.getReplicaSetUrl());
-            try (final MongoClient mongoSyncClientFullAccess = MongoClients.create(connectionString)) {
+            final ConnectionString connectionStringFullAccess = new ConnectionString(
+                mongoDBContainer.getReplicaSetUrl()
+            );
+            try (final MongoClient mongoSyncClientFullAccess = MongoClients.create(connectionStringFullAccess)) {
                 final MongoDatabase adminDatabase = mongoSyncClientFullAccess.getDatabase(
                     MongoDBContainer.DEFAULT_AUTHENTICATION_DATABASE_NAME
                 );
@@ -132,21 +134,20 @@ public class MongoDBContainerTest {
                 final String collectionName = "my-collection";
                 final Document document = new Document("abc", 1);
                 testDatabaseFullAccess.getCollection(collectionName).insertOne(document);
-                final String username1 = username + "1";
-                final String password1 = password + "1";
-                adminDatabase.runCommand(
-                    new BasicDBObject("createUser", username1)
-                        .append("pwd", password1)
-                        .append(
-                            "roles",
-                            Collections.singletonList(
-                                new BasicDBObject("role", "read").append("db", MongoDBContainer.DEFAULT_DATABASE_NAME)
-                            )
-                        )
+                final String usernameRestrictedAccess = usernameFullAccess + "-restricted";
+                final String passwordRestrictedAccess = passwordFullAccess + "-restricted";
+                runCommand(
+                    adminDatabase,
+                    new BasicDBObject("createUser", usernameRestrictedAccess).append("pwd", passwordRestrictedAccess),
+                    "read"
                 );
                 try (
                     final MongoClient mongoSyncRestrictedAccess = MongoClients.create(
-                        mongoDBContainer.getReplicaSetUrl(MongoDBContainer.DEFAULT_DATABASE_NAME, username1, password1)
+                        mongoDBContainer.getReplicaSetUrl(
+                            MongoDBContainer.DEFAULT_DATABASE_NAME,
+                            usernameRestrictedAccess,
+                            passwordRestrictedAccess
+                        )
                     )
                 ) {
                     final MongoCollection<Document> collection = mongoSyncRestrictedAccess
@@ -154,20 +155,14 @@ public class MongoDBContainerTest {
                         .getCollection(collectionName);
                     assertEquals(collection.find().first(), document);
                     assertThrows(MongoCommandException.class, () -> collection.insertOne(new Document("abc", 2)));
-                    adminDatabase.runCommand(
-                        new BasicDBObject("updateUser", username1)
-                            .append(
-                                "roles",
-                                Collections.singletonList(
-                                    new BasicDBObject("role", "readWrite")
-                                        .append("db", MongoDBContainer.DEFAULT_DATABASE_NAME)
-                                )
-                            )
-                    );
+                    runCommand(adminDatabase, new BasicDBObject("updateUser", usernameRestrictedAccess), "readWrite");
                     collection.insertOne(new Document("abc", 2));
                     assertEquals(2, collection.countDocuments());
-                    assertEquals(username, connectionString.getUsername());
-                    assertEquals(password, new String(Objects.requireNonNull(connectionString.getPassword())));
+                    assertEquals(usernameFullAccess, connectionStringFullAccess.getUsername());
+                    assertEquals(
+                        passwordFullAccess,
+                        new String(Objects.requireNonNull(connectionStringFullAccess.getPassword()))
+                    );
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -175,5 +170,16 @@ public class MongoDBContainerTest {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    private void runCommand(MongoDatabase adminDatabase, BasicDBObject command, String role) {
+        adminDatabase.runCommand(
+            command.append(
+                "roles",
+                Collections.singletonList(
+                    new BasicDBObject("role", role).append("db", MongoDBContainer.DEFAULT_DATABASE_NAME)
+                )
+            )
+        );
     }
 }
