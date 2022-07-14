@@ -43,7 +43,7 @@ jobs:
           # we should not push empty results to the cache
           READ_ONLY_REMOTE_GRADLE_CACHE: true
         run: |
-          TASKS=$(./gradlew --no-daemon --parallel testMatrix)
+          TASKS=$(./gradlew --no-daemon --parallel -q testMatrix)
           echo $TASKS
           echo "::set-output name=matrix::{\"gradle_args\":$TASKS}"
   check:
