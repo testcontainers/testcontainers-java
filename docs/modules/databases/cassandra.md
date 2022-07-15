@@ -4,62 +4,10 @@
 
 This example connects to the Cassandra Cluster, creates a keyspaces and asserts that is has been created.
 
-```java tab="Cassandra Driver 4.x"
-public class SomeTest {
-
-    @Rule
-    public CassandraContainer cassandra = new CassandraContainer();
-
-    @Test
-    public void test(){
-        try(CqlSession session = CqlSession.builder()
-                .addContactPoint(cassandra.getContactPoint())
-                .withLocalDatacenter(cassandra.getLocalDatacenter())
-                .build()) {
-
-            session.execute("CREATE KEYSPACE IF NOT EXISTS test WITH replication = \n" +
-                    "{'class':'SimpleStrategy','replication_factor':'1'};");
-
-            KeyspaceMetadata keyspace = session
-                    .getMetadata()
-                    .getKeyspaces()
-                    .get(CqlIdentifier.fromCql("test"));
-
-            assertNotNull("Failed to create test keyspace", keyspace);
-        }
-    }
-}
-```
-
-```java tab="Cassandra Driver 3.x"
-public class SomeTest {
-
-    @Rule
-    public CassandraContainer cassandra = new CassandraContainer();
-
-    @Test
-    public void test(){
-        Cluster cluster = Cluster.builder()
-                .addContactPoint(cassandra.getHost())
-                .withPort(cassandra.getMappedPort(CassandraContainer.CQL_PORT))
-                .build();
-
-        try(Session session = cluster.connect()) {
-
-            session.execute("CREATE KEYSPACE IF NOT EXISTS test WITH replication = \n" +
-                    "{'class':'SimpleStrategy','replication_factor':'1'};");
-
-            List<KeyspaceMetadata> keyspaces = session.getCluster().getMetadata().getKeyspaces();
-            List<KeyspaceMetadata> filteredKeyspaces = keyspaces
-                    .stream()
-                    .filter(km -> km.getName().equals("test"))
-                    .collect(Collectors.toList());
-
-            assertEquals(1, filteredKeyspaces.size());
-        }
-    }
-}
-```
+<!--codeinclude-->
+[Cassandra Driver 4.x](../../../examples/cassandra-container/src/test/java/org/testcontainers/containers/CassandraDriver4Test.java) inside_block:cassandra4
+[Cassandra Driver 3.x](../../../examples/cassandra-container/src/test/java/org/testcontainers/containers/CassandraDriver3Test.java) inside_block:cassandra3
+<!--/codeinclude-->
 
 !!! warning
     All methods returning instances of the Cassandra Driver's Cluster object in CassandraContainer have been deprecated. Providing these methods unnecessarily couples the Container to the Driver and creates potential breaking changes if the driver is updated.

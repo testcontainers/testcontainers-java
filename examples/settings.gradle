@@ -33,6 +33,7 @@ include 'spring-boot'
 include 'cucumber'
 include 'spring-boot-kotlin-redis'
 include 'spock'
+include 'cassandra-container'
 
 ext.isCI = System.getenv("CI") != null
 

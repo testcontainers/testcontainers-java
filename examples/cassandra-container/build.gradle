@@ -1,0 +1,20 @@
+plugins {
+    id 'java'
+}
+
+repositories {
+    mavenCentral()
+}
+
+configurations.all {
+    resolutionStrategy {
+        force 'io.dropwizard.metrics:metrics-core:3.2.4'
+    }
+}
+
+dependencies {
+    testImplementation 'org.testcontainers:cassandra'
+    testImplementation 'junit:junit:4.13.2'
+//    testRuntimeOnly 'com.datastax.cassandra:cassandra-driver-core:3.10.0'
+    testImplementation 'com.datastax.oss:java-driver-core:4.8.0'
+}
