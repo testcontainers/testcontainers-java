@@ -1,17 +1,17 @@
 package org.testcontainers.containers;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
-import org.junit.Test;
-import org.testcontainers.containers.RabbitMQContainer.SslVerification;
-import org.testcontainers.utility.MountableFile;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -19,13 +19,13 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.Collections;
-
+import java.util.concurrent.TimeoutException;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
+import org.junit.Test;
+import org.testcontainers.containers.RabbitMQContainer.SslVerification;
+import org.testcontainers.utility.MountableFile;
 
 /**
  * @author Martin Greber
@@ -250,29 +250,63 @@ public class RabbitMQContainerTest {
                 MountableFile.forClasspathResource("/certs/server_key.pem", 0644),
                 MountableFile.forClasspathResource("/certs/server_certificate.pem", 0644),
                 MountableFile.forClasspathResource("/certs/ca_certificate.pem", 0644),
-                SslVerification.VERIFY_PEER,
-                true
+                SslVerification.VERIFY_PEER
             );
 
             container.start();
 
-            assertThatCode(() -> {
-                    ConnectionFactory connectionFactory = new ConnectionFactory();
-                    connectionFactory.useSslProtocol(
-                        createSslContext("certs/client_key.p12", "password", "certs/truststore.jks", "password")
-                    );
-                    connectionFactory.enableHostnameVerification();
-                    connectionFactory.setUri(container.getAmqpsUrl());
-                    connectionFactory.setPassword(container.getAdminPassword());
-                    Connection connection = connectionFactory.newConnection();
-                    Channel channel = connection
-                        .openChannel()
-                        .orElseThrow(() -> new RuntimeException("Failed to Open channel"));
-                    channel.close();
-                    connection.close();
-                })
-                .doesNotThrowAnyException();
+            assertThatCode(() -> connectThroughSsl(container)).doesNotThrowAnyException();
         }
+    }
+
+    @Test
+    public void shouldWorkWithSSLWithoutFailingIfNoCert() {
+        try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
+            container.withSSL(
+                MountableFile.forClasspathResource("/certs/server_key.pem", 0644),
+                MountableFile.forClasspathResource("/certs/server_certificate.pem", 0644),
+                MountableFile.forClasspathResource("/certs/ca_certificate.pem", 0644),
+                SslVerification.VERIFY_PEER,
+                false
+            );
+
+            container.start();
+
+            assertThatCode(() -> connectThroughSsl(container)).doesNotThrowAnyException();
+        }
+    }
+
+    @Test
+    public void shouldWorkWithSSLWithNonDefaultVerificationDepth() {
+        try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
+            container.withSSL(
+                MountableFile.forClasspathResource("/certs/server_key.pem", 0644),
+                MountableFile.forClasspathResource("/certs/server_certificate.pem", 0644),
+                MountableFile.forClasspathResource("/certs/ca_certificate.pem", 0644),
+                SslVerification.VERIFY_PEER,
+                true,
+                3
+            );
+
+            container.start();
+
+            assertThatCode(() -> connectThroughSsl(container)).doesNotThrowAnyException();
+        }
+    }
+
+    private void connectThroughSsl(RabbitMQContainer container)
+        throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException, UnrecoverableKeyException, KeyManagementException, URISyntaxException, TimeoutException {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+        connectionFactory.useSslProtocol(
+            createSslContext("certs/client_key.p12", "password", "certs/truststore.jks", "password")
+        );
+        connectionFactory.enableHostnameVerification();
+        connectionFactory.setUri(container.getAmqpsUrl());
+        connectionFactory.setPassword(container.getAdminPassword());
+        Connection connection = connectionFactory.newConnection();
+        Channel channel = connection.openChannel().orElseThrow(() -> new RuntimeException("Failed to Open channel"));
+        channel.close();
+        connection.close();
     }
 
     private SSLContext createSslContext(

@@ -3,12 +3,17 @@ package org.testcontainers.containers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,6 +42,8 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
     private static final int DEFAULT_HTTPS_PORT = 15671;
 
     private static final int DEFAULT_HTTP_PORT = 15672;
+
+    private static final int DEFAULT_SSL_VERIFICATION_DEPTH = 1;
 
     private String adminPassword = "guest";
 
@@ -69,7 +76,9 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
         addExposedPorts(DEFAULT_AMQP_PORT, DEFAULT_AMQPS_PORT, DEFAULT_HTTP_PORT, DEFAULT_HTTPS_PORT);
 
         this.waitStrategy =
-            Wait.forLogMessage(".*Server startup complete.*", 1).withStartupTimeout(Duration.ofSeconds(60));
+            Wait
+                .forLogMessage(".*Server startup complete.*", DEFAULT_SSL_VERIFICATION_DEPTH)
+                .withStartupTimeout(Duration.ofSeconds(60));
     }
 
     @Override
@@ -175,22 +184,9 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
         final MountableFile certFile,
         final MountableFile caFile,
         final SslVerification verify,
-        boolean failIfNoCert,
-        int verificationDepth
-    ) {
-        return withSSL(keyFile, certFile, caFile, verify, failIfNoCert)
-            .withEnv("RABBITMQ_SSL_DEPTH", String.valueOf(verificationDepth));
-    }
-
-    public RabbitMQContainer withSSL(
-        final MountableFile keyFile,
-        final MountableFile certFile,
-        final MountableFile caFile,
-        final SslVerification verify,
         boolean failIfNoCert
     ) {
-        return withSSL(keyFile, certFile, caFile, verify)
-            .withEnv("RABBITMQ_SSL_FAIL_IF_NO_PEER_CERT", String.valueOf(failIfNoCert));
+        return withSSL(keyFile, certFile, caFile, verify, failIfNoCert, DEFAULT_SSL_VERIFICATION_DEPTH);
     }
 
     public RabbitMQContainer withSSL(
@@ -199,13 +195,61 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
         final MountableFile caFile,
         final SslVerification verify
     ) {
-        return withEnv("RABBITMQ_SSL_CACERTFILE", "/etc/rabbitmq/ca_cert.pem")
-            .withEnv("RABBITMQ_SSL_CERTFILE", "/etc/rabbitmq/rabbitmq_cert.pem")
-            .withEnv("RABBITMQ_SSL_KEYFILE", "/etc/rabbitmq/rabbitmq_key.pem")
-            .withEnv("RABBITMQ_SSL_VERIFY", verify.value)
-            .withCopyFileToContainer(certFile, "/etc/rabbitmq/rabbitmq_cert.pem")
+        return withSSL(keyFile, certFile, caFile, verify, true);
+    }
+
+    @SneakyThrows(IOException.class)
+    public RabbitMQContainer withSSL(
+        final MountableFile keyFile,
+        final MountableFile certFile,
+        final MountableFile caFile,
+        final SslVerification verify,
+        boolean failIfNoCert,
+        int verificationDepth
+    ) {
+        Path advancedConfig = File.createTempFile("advanced-custom", ".config").toPath();
+        String advancedContent = createAdvancedConfigFileContent(
+            "/etc/rabbitmq/ca_cert.pem",
+            "/etc/rabbitmq/rabbitmq_cert.pem",
+            "/etc/rabbitmq/rabbitmq_key.pem",
+            verify,
+            failIfNoCert,
+            verificationDepth
+        );
+        Files.write(advancedConfig, advancedContent.getBytes(StandardCharsets.UTF_8));
+        return withCopyFileToContainer(certFile, "/etc/rabbitmq/rabbitmq_cert.pem")
             .withCopyFileToContainer(caFile, "/etc/rabbitmq/ca_cert.pem")
-            .withCopyFileToContainer(keyFile, "/etc/rabbitmq/rabbitmq_key.pem");
+            .withCopyFileToContainer(keyFile, "/etc/rabbitmq/rabbitmq_key.pem")
+            .withEnv("RABBITMQ_ADVANCED_CONFIG_FILE", "/etc/rabbitmq/advanced-custom.config")
+            .withCopyFileToContainer(MountableFile.forHostPath(advancedConfig), "/etc/rabbitmq/advanced-custom.config");
+    }
+
+    private String createAdvancedConfigFileContent(
+        String caCertFilePath,
+        String certFilePath,
+        String keyFilePath,
+        final SslVerification verify,
+        boolean failIfNoCert,
+        int verificationDepth
+    ) {
+        return String.format(
+            "[\n" +
+            "  {rabbit, [{ssl_listeners, [%d]},\n" +
+            "            {ssl_options,   [{cacertfile,           \"%s\"},\n" +
+            "                             {certfile,             \"%s\"},\n" +
+            "                             {keyfile,              \"%s\"},\n" +
+            "                             {verify,               %s},\n" +
+            "                             {fail_if_no_peer_cert, %b},\n" +
+            "                             {depth,                %d}]}]}\n" +
+            "].",
+            DEFAULT_AMQPS_PORT,
+            caCertFilePath,
+            certFilePath,
+            keyFilePath,
+            verify.value,
+            failIfNoCert,
+            verificationDepth
+        );
     }
 
     public RabbitMQContainer withPluginsEnabled(String... pluginNames) {
