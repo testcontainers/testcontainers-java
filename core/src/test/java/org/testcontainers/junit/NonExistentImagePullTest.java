@@ -14,10 +14,12 @@ public class NonExistentImagePullTest {
 
     @Test(timeout = 60_000L)
     public void pullingNonExistentImageFailsGracefully() {
-
-        assertThrows("Pulling a nonexistent container will cause an exception to be thrown",
-                ContainerFetchException.class, () -> {
-                    new GenericContainer<>(DockerImageName.parse("testcontainers/nonexistent:latest")).getDockerImageName();
-                });
+        assertThrows(
+            "Pulling a nonexistent container will cause an exception to be thrown",
+            ContainerFetchException.class,
+            () -> {
+                new GenericContainer<>(DockerImageName.parse("testcontainers/nonexistent:latest")).getDockerImageName();
+            }
+        );
     }
 }

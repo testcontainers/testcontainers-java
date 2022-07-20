@@ -22,13 +22,21 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("shopify/toxiproxy");
+
     private static final String DEFAULT_TAG = "2.1.0";
+
+    private static final DockerImageName GHCR_IMAGE_NAME = DockerImageName.parse("ghcr.io/shopify/toxiproxy");
+
     private static final int TOXIPROXY_CONTROL_PORT = 8474;
+
     private static final int FIRST_PROXIED_PORT = 8666;
+
     private static final int LAST_PROXIED_PORT = 8666 + 31;
 
     private ToxiproxyClient client;
+
     private final Map<String, ContainerProxy> proxies = new HashMap<>();
+
     private final AtomicInteger nextPort = new AtomicInteger(FIRST_PROXIED_PORT);
 
     /**
@@ -45,8 +53,7 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
 
     public ToxiproxyContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, GHCR_IMAGE_NAME);
 
         addExposedPorts(TOXIPROXY_CONTROL_PORT);
         setWaitStrategy(new HttpWaitStrategy().forPath("/version").forPort(TOXIPROXY_CONTROL_PORT));
@@ -72,7 +79,7 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
 
     /**
      * Obtain a {@link ContainerProxy} instance for target container that is managed by Testcontainers. The target
-     * container should be routable from this <b>from this {@link ToxiproxyContainer} instance</b> (e.g. on the same
+     * container should be routable <b>from this {@link ToxiproxyContainer} instance</b> (e.g. on the same
      * Docker {@link Network}).
      *
      * @param container target container
@@ -99,42 +106,55 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
     public ContainerProxy getProxy(String hostname, int port) {
         String upstream = hostname + ":" + port;
 
-        return proxies.computeIfAbsent(upstream, __ -> {
-            try {
-                final int toxiPort = nextPort.getAndIncrement();
-                if (toxiPort > LAST_PROXIED_PORT) {
-                    throw new IllegalStateException("Maximum number of proxies exceeded");
-                }
+        return proxies.computeIfAbsent(
+            upstream,
+            __ -> {
+                try {
+                    final int toxiPort = nextPort.getAndIncrement();
+                    if (toxiPort > LAST_PROXIED_PORT) {
+                        throw new IllegalStateException("Maximum number of proxies exceeded");
+                    }
 
-                final Proxy proxy = client.createProxy(upstream, "0.0.0.0:" + toxiPort, upstream);
-                final int mappedPort = getMappedPort(toxiPort);
-                return new ContainerProxy(proxy, getHost(), mappedPort, toxiPort);
-            } catch (IOException e) {
-                throw new RuntimeException("Proxy could not be created", e);
+                    final Proxy proxy = client.createProxy(upstream, "0.0.0.0:" + toxiPort, upstream);
+                    final int mappedPort = getMappedPort(toxiPort);
+                    return new ContainerProxy(proxy, getHost(), mappedPort, toxiPort);
+                } catch (IOException e) {
+                    throw new RuntimeException("Proxy could not be created", e);
+                }
             }
-        });
+        );
     }
 
     @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
     public static class ContainerProxy {
+
         private static final String CUT_CONNECTION_DOWNSTREAM = "CUT_CONNECTION_DOWNSTREAM";
+
         private static final String CUT_CONNECTION_UPSTREAM = "CUT_CONNECTION_UPSTREAM";
+
         private final Proxy toxi;
+
         /**
          * The IP address that this proxy container may be reached on from the host machine.
          */
-        @Getter private final String containerIpAddress;
+        @Getter
+        private final String containerIpAddress;
+
         /**
          * The mapped port of this proxy. This is a port of the host machine. It can be used to
          * access the Toxiproxy container from the host machine.
          */
-        @Getter private final int proxyPort;
+        @Getter
+        private final int proxyPort;
+
         /**
          * The original (exposed) port of this proxy. This is a port of the Toxiproxy Docker
          * container. It can be used to access this container from a different Docker container
          * on the same network.
          */
-        @Getter private final int originalProxyPort;
+        @Getter
+        private final int originalProxyPort;
+
         private boolean isCurrentlyCut;
 
         public String getName() {

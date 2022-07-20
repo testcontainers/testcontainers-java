@@ -16,7 +16,10 @@ public class PostgreSQLConnectionURLTest {
         String connectionUrl = postgres.constructUrlForConnection("?stringtype=unspecified&stringtype=unspecified");
         String queryString = connectionUrl.substring(connectionUrl.indexOf('?'));
 
-        assertTrue("Query String contains expected params", queryString.contains("?stringtype=unspecified&stringtype=unspecified"));
+        assertTrue(
+            "Query String contains expected params",
+            queryString.contains("?stringtype=unspecified&stringtype=unspecified")
+        );
         assertEquals("Query String starts with '?'", 0, queryString.indexOf('?'));
         assertFalse("Query String does not contain extra '?'", queryString.substring(1).contains("?"));
     }
@@ -27,7 +30,10 @@ public class PostgreSQLConnectionURLTest {
         String connectionUrl = postgres.constructUrlForConnection("?stringtype=unspecified&stringtype=unspecified");
         String queryString = connectionUrl.substring(connectionUrl.indexOf('?'));
 
-        assertTrue("Query String contains expected params", queryString.contains("?stringtype=unspecified&stringtype=unspecified"));
+        assertTrue(
+            "Query String contains expected params",
+            queryString.contains("?stringtype=unspecified&stringtype=unspecified")
+        );
         assertEquals("Query String starts with '?'", 0, queryString.indexOf('?'));
         assertFalse("Query String does not contain extra '?'", queryString.substring(1).contains("?"));
     }
@@ -42,11 +48,15 @@ public class PostgreSQLConnectionURLTest {
 
     @Test
     public void shouldRejectInvalidQueryString() {
-        assertThrows("Fails when invalid query string provided", IllegalArgumentException.class,
-            () -> new NoParamsUrlPostgreSQLContainer().constructUrlForConnection("stringtype=unspecified"));
+        assertThrows(
+            "Fails when invalid query string provided",
+            IllegalArgumentException.class,
+            () -> new NoParamsUrlPostgreSQLContainer().constructUrlForConnection("stringtype=unspecified")
+        );
     }
 
     static class FixedJdbcUrlPostgreSQLContainer extends PostgreSQLContainer<FixedJdbcUrlPostgreSQLContainer> {
+
         public FixedJdbcUrlPostgreSQLContainer() {
             super(PostgreSQLTestImages.POSTGRES_TEST_IMAGE);
         }
@@ -63,6 +73,7 @@ public class PostgreSQLConnectionURLTest {
     }
 
     static class NoParamsUrlPostgreSQLContainer extends PostgreSQLContainer<FixedJdbcUrlPostgreSQLContainer> {
+
         public NoParamsUrlPostgreSQLContainer() {
             super(PostgreSQLTestImages.POSTGRES_TEST_IMAGE);
         }

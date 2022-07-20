@@ -8,7 +8,7 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -50,17 +50,29 @@ public class TestcontainersConfiguration {
     private static File USER_CONFIG_FILE = new File(System.getProperty("user.home"), "." + PROPERTIES_FILE_NAME);
 
     private static final String AMBASSADOR_IMAGE = "richnorth/ambassador";
+
     private static final String SOCAT_IMAGE = "alpine/socat";
+
     private static final String VNC_RECORDER_IMAGE = "testcontainers/vnc-recorder";
+
     private static final String COMPOSE_IMAGE = "docker/compose";
+
     private static final String ALPINE_IMAGE = "alpine";
+
     private static final String RYUK_IMAGE = "testcontainers/ryuk";
+
     private static final String KAFKA_IMAGE = "confluentinc/cp-kafka";
+
     private static final String PULSAR_IMAGE = "apachepulsar/pulsar";
+
     private static final String LOCALSTACK_IMAGE = "localstack/localstack";
+
     private static final String SSHD_IMAGE = "testcontainers/sshd";
 
-    private static final ImmutableMap<DockerImageName, String> CONTAINER_MAPPING = ImmutableMap.<DockerImageName, String>builder()
+    private static final String ORACLE_IMAGE = "gvenzl/oracle-xe";
+
+    private static final ImmutableMap<DockerImageName, String> CONTAINER_MAPPING = ImmutableMap
+        .<DockerImageName, String>builder()
         .put(DockerImageName.parse(AMBASSADOR_IMAGE), "ambassador.container.image")
         .put(DockerImageName.parse(SOCAT_IMAGE), "socat.container.image")
         .put(DockerImageName.parse(VNC_RECORDER_IMAGE), "vncrecorder.container.image")
@@ -71,12 +83,13 @@ public class TestcontainersConfiguration {
         .put(DockerImageName.parse(PULSAR_IMAGE), "pulsar.container.image")
         .put(DockerImageName.parse(LOCALSTACK_IMAGE), "localstack.container.image")
         .put(DockerImageName.parse(SSHD_IMAGE), "sshd.container.image")
+        .put(DockerImageName.parse(ORACLE_IMAGE), "oracle.container.image")
         .build();
 
     @Getter(lazy = true)
     private static final TestcontainersConfiguration instance = loadConfiguration();
 
-    @SuppressWarnings({"ConstantConditions", "unchecked", "rawtypes"})
+    @SuppressWarnings({ "ConstantConditions", "unchecked", "rawtypes" })
     @VisibleForTesting
     static AtomicReference<TestcontainersConfiguration> getInstanceField() {
         // Lazy Getter from Lombok changes the field's type to AtomicReference
@@ -84,10 +97,16 @@ public class TestcontainersConfiguration {
     }
 
     private final Properties userProperties;
+
     private final Properties classpathProperties;
+
     private final Map<String, String> environment;
 
-    TestcontainersConfiguration(Properties userProperties, Properties classpathProperties, final Map<String, String> environment) {
+    TestcontainersConfiguration(
+        Properties userProperties,
+        Properties classpathProperties,
+        final Map<String, String> environment
+    ) {
         this.userProperties = userProperties;
         this.classpathProperties = classpathProperties;
         this.environment = environment;
@@ -119,8 +138,7 @@ public class TestcontainersConfiguration {
     }
 
     public boolean isRyukPrivileged() {
-        return Boolean
-            .parseBoolean(getEnvVarOrProperty("ryuk.container.privileged", "false"));
+        return Boolean.parseBoolean(getEnvVarOrProperty("ryuk.container.privileged", "false"));
     }
 
     @Deprecated
@@ -144,7 +162,7 @@ public class TestcontainersConfiguration {
 
     @Deprecated
     public String getOracleImage() {
-        return getEnvVarOrProperty("oracle.container.image", null);
+        return getImage(ORACLE_IMAGE).asCanonicalNameString();
     }
 
     @Deprecated
@@ -172,11 +190,19 @@ public class TestcontainersConfiguration {
         // Because of this overlap, and the desire to not change this specific TESTCONTAINERS_DOCKER_CLIENT_STRATEGY setting,
         // we special-case the logic here so that docker.client.strategy is used when reading properties files and
         // TESTCONTAINERS_DOCKER_CLIENT_STRATEGY is used when searching environment variables.
-        return getEnvVarOrUserProperty("docker.client.strategy", environment.get("TESTCONTAINERS_DOCKER_CLIENT_STRATEGY"));
+
+        // looks for TESTCONTAINERS_ prefixed env var only
+        String prefixedEnvVarStrategy = environment.get("TESTCONTAINERS_DOCKER_CLIENT_STRATEGY");
+        if (prefixedEnvVarStrategy != null) {
+            return prefixedEnvVarStrategy;
+        }
+
+        // looks for unprefixed env var or unprefixed property, or null if the strategy is not set at all
+        return getEnvVarOrUserProperty("docker.client.strategy", null);
     }
 
     public String getTransportType() {
-        return getEnvVarOrProperty("transport.type", "okhttp");
+        return getEnvVarOrProperty("transport.type", "httpclient5");
     }
 
     public Integer getImagePullPauseTimeout() {
@@ -187,9 +213,17 @@ public class TestcontainersConfiguration {
         return getEnvVarOrProperty("image.substitutor", null);
     }
 
+    public Integer getClientPingTimeout() {
+        return Integer.parseInt(getEnvVarOrProperty("client.ping.timeout", "10"));
+    }
+
     @Nullable
     @Contract("_, !null, _ -> !null")
-    private String getConfigurable(@NotNull final String propertyName, @Nullable final String defaultValue, Properties... propertiesSources) {
+    private String getConfigurable(
+        @NotNull final String propertyName,
+        @Nullable final String defaultValue,
+        Properties... propertiesSources
+    ) {
         String envVarName = propertyName.replaceAll("\\.", "_").toUpperCase();
         if (!envVarName.startsWith("TESTCONTAINERS_") && !envVarName.startsWith("DOCKER_")) {
             envVarName = "TESTCONTAINERS_" + envVarName;
@@ -265,11 +299,15 @@ public class TestcontainersConfiguration {
      */
     @Deprecated
     public Properties getProperties() {
-        return Stream.of(userProperties, classpathProperties)
-            .reduce(new Properties(), (a, b) -> {
-                a.putAll(b);
-                return a;
-            });
+        return Stream
+            .of(userProperties, classpathProperties)
+            .reduce(
+                new Properties(),
+                (a, b) -> {
+                    a.putAll(b);
+                    return a;
+                }
+            );
     }
 
     @Deprecated
@@ -304,15 +342,20 @@ public class TestcontainersConfiguration {
     private static TestcontainersConfiguration loadConfiguration() {
         return new TestcontainersConfiguration(
             readProperties(USER_CONFIG_FILE.toURI().toURL()),
-            ClasspathScanner.scanFor(PROPERTIES_FILE_NAME)
+            ClasspathScanner
+                .scanFor(PROPERTIES_FILE_NAME)
                 .map(TestcontainersConfiguration::readProperties)
-                .reduce(new Properties(), (a, b) -> {
-                    // first-write-wins merging - URLs appearing first on the classpath alphabetically will take priority.
-                    // Note that this means that file: URLs will always take priority over jar: URLs.
-                    b.putAll(a);
-                    return b;
-                }),
-            System.getenv());
+                .reduce(
+                    new Properties(),
+                    (a, b) -> {
+                        // first-write-wins merging - URLs appearing first on the classpath alphabetically will take priority.
+                        // Note that this means that file: URLs will always take priority over jar: URLs.
+                        b.putAll(a);
+                        return b;
+                    }
+                ),
+            System.getenv()
+        );
     }
 
     private static Properties readProperties(URL url) {
@@ -321,9 +364,17 @@ public class TestcontainersConfiguration {
         try (InputStream inputStream = url.openStream()) {
             properties.load(inputStream);
         } catch (FileNotFoundException e) {
-            log.warn("Attempted to read Testcontainers configuration file at {} but the file was not found. Exception message: {}", url, ExceptionUtils.getRootCauseMessage(e));
+            log.warn(
+                "Attempted to read Testcontainers configuration file at {} but the file was not found. Exception message: {}",
+                url,
+                ExceptionUtils.getRootCauseMessage(e)
+            );
         } catch (IOException e) {
-            log.warn("Attempted to read Testcontainers configuration file at {} but could it not be loaded. Exception message: {}", url, ExceptionUtils.getRootCauseMessage(e));
+            log.warn(
+                "Attempted to read Testcontainers configuration file at {} but could it not be loaded. Exception message: {}",
+                url,
+                ExceptionUtils.getRootCauseMessage(e)
+            );
         }
         return properties;
     }
@@ -335,14 +386,14 @@ public class TestcontainersConfiguration {
     DockerImageName getConfiguredSubstituteImage(DockerImageName original) {
         for (final Map.Entry<DockerImageName, String> entry : CONTAINER_MAPPING.entrySet()) {
             if (original.isCompatibleWith(entry.getKey())) {
-                return
-                    Optional.ofNullable(entry.getValue())
-                        .map(propertyName -> getEnvVarOrProperty(propertyName, null))
-                        .map(String::valueOf)
-                        .map(String::trim)
-                        .map(DockerImageName::parse)
-                        .orElse(original)
-                        .asCompatibleSubstituteFor(original);
+                return Optional
+                    .ofNullable(entry.getValue())
+                    .map(propertyName -> getEnvVarOrProperty(propertyName, null))
+                    .map(String::valueOf)
+                    .map(String::trim)
+                    .map(DockerImageName::parse)
+                    .orElse(original)
+                    .asCompatibleSubstituteFor(original);
             }
         }
         return original;

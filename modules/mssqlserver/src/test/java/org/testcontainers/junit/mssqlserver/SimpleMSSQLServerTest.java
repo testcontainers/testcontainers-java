@@ -5,21 +5,23 @@ import org.testcontainers.MSSQLServerTestImages;
 import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
-import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.assertThat;
+import javax.sql.DataSource;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
-import static org.testcontainers.MSSQLServerTestImages.MSSQL_SERVER_IMAGE;
 
 public class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSimple() throws SQLException {
-        try (MSSQLServerContainer<?> mssqlServer = new MSSQLServerContainer<>(MSSQL_SERVER_IMAGE)) {
+        try (
+            MSSQLServerContainer<?> mssqlServer = new MSSQLServerContainer<>(MSSQLServerTestImages.MSSQL_SERVER_IMAGE)
+        ) {
             mssqlServer.start();
             ResultSet resultSet = performQuery(mssqlServer, "SELECT 1");
 
@@ -30,10 +32,11 @@ public class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testWithAdditionalUrlParamInJdbcUrl() {
-        try (MSSQLServerContainer<?> mssqlServer = new MSSQLServerContainer<>(MSSQL_SERVER_IMAGE)
-            .withUrlParam("integratedSecurity", "false")
-            .withUrlParam("applicationName", "MyApp")) {
-
+        try (
+            MSSQLServerContainer<?> mssqlServer = new MSSQLServerContainer<>(MSSQLServerTestImages.MSSQL_SERVER_IMAGE)
+                .withUrlParam("integratedSecurity", "false")
+                .withUrlParam("applicationName", "MyApp")
+        ) {
             mssqlServer.start();
 
             String jdbcUrl = mssqlServer.getJdbcUrl();
@@ -41,10 +44,11 @@ public class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
         }
     }
 
-
     @Test
     public void testSetupDatabase() throws SQLException {
-        try (MSSQLServerContainer<?> mssqlServer = new MSSQLServerContainer<>(MSSQL_SERVER_IMAGE)) {
+        try (
+            MSSQLServerContainer<?> mssqlServer = new MSSQLServerContainer<>(MSSQLServerTestImages.MSSQL_SERVER_IMAGE)
+        ) {
             mssqlServer.start();
             DataSource ds = getDataSource(mssqlServer);
             Statement statement = ds.getConnection().createStatement();

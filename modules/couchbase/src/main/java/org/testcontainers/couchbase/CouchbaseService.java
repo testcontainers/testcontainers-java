@@ -20,34 +20,71 @@ package org.testcontainers.couchbase;
  * Describes the different services that should be exposed on the container.
  */
 public enum CouchbaseService {
+    /**
+     * Key-Value service.
+     */
+    KV("kv", 256),
 
-  /**
-   * Key-Value service.
-   */
-  KV("kv"),
+    /**
+     * Query (N1QL) service.
+     * <p>
+     * Note that the query service has no memory quota, so it is set to 0.
+     */
+    QUERY("n1ql", 0),
 
-  /**
-   * Query (N1QL) service.
-   */
-  QUERY("n1ql"),
+    /**
+     * Search (FTS) service.
+     */
+    SEARCH("fts", 256),
 
-  /**
-   * Search (FTS) service.
-   */
-  SEARCH("fts"),
+    /**
+     * Indexing service (needed if QUERY is also used!).
+     */
+    INDEX("index", 256),
 
-  /**
-   * Indexing service (needed if QUERY is also used!).
-   */
-  INDEX("index");
+    /**
+     * Analytics service.
+     */
+    ANALYTICS("cbas", 1024),
 
-  private final String identifier;
+    /**
+     * Eventing service.
+     */
+    EVENTING("eventing", 256);
 
-  CouchbaseService(String identifier) {
-    this.identifier = identifier;
-  }
+    private final String identifier;
 
-  String getIdentifier() {
-    return identifier;
-  }
+    private final int minimumQuotaMb;
+
+    CouchbaseService(final String identifier, final int minimumQuotaMb) {
+        this.identifier = identifier;
+        this.minimumQuotaMb = minimumQuotaMb;
+    }
+
+    /**
+     * Returns the internal service identifier.
+     *
+     * @return the internal service identifier.
+     */
+    String getIdentifier() {
+        return identifier;
+    }
+
+    /**
+     * Returns the minimum quota for the service in MB.
+     *
+     * @return the minimum quota in MB.
+     */
+    int getMinimumQuotaMb() {
+        return minimumQuotaMb;
+    }
+
+    /**
+     * Returns true if the service has a quota that needs to be applied.
+     *
+     * @return true if its quota needs to be applied.
+     */
+    boolean hasQuota() {
+        return minimumQuotaMb > 0;
+    }
 }

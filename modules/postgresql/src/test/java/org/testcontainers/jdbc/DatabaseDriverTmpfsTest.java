@@ -22,7 +22,6 @@ public class DatabaseDriverTmpfsTest {
     public void testDatabaseHasTmpFsViaConnectionString() throws Exception {
         final String jdbcUrl = "jdbc:tc:postgresql:9.6.8://hostname/databasename?TC_TMPFS=/testtmpfs:rw";
         try (Connection ignored = DriverManager.getConnection(jdbcUrl)) {
-
             JdbcDatabaseContainer<?> container = ContainerDatabaseDriver.getContainer(jdbcUrl);
             // check file doesn't exist
             String path = "/testtmpfs/test.file";

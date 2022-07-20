@@ -1,23 +1,27 @@
 apply plugin: 'maven-publish'
 
 task sourceJar(type: Jar) {
-    classifier = 'sources'
+    archiveClassifier.set( 'sources')
     from sourceSets.main.allJava
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
+    archiveClassifier.set('javadoc')
     from javadoc
 }
+
+jar.archiveClassifier.set("original")
 
 publishing {
     publications {
         mavenJava(MavenPublication) { publication ->
             artifactId = project.name
-
-            artifact project.tasks.jar
             artifact sourceJar
             artifact javadocJar
+
+            artifact project.tasks.jar
+            artifacts.removeAll { it.classifier == jar.archiveClassifier.get() }
+            artifact project.tasks.shadowJar
 
             pom.withXml {
                 def rootNode = asNode()
@@ -53,27 +57,43 @@ publishing {
 
                 def dependenciesNode = rootNode.appendNode('dependencies')
 
-                def addDependency = { dependency, scope ->
-                    dependenciesNode.appendNode('dependency').with {
-                        appendNode('groupId', dependency.group)
-                        appendNode('artifactId', dependency.name)
-                        appendNode('version', dependency.version)
-                        appendNode('scope', scope)
+                def addDependencies = { Configuration configuration, scope ->
+                    for (dependency in configuration.resolvedConfiguration.firstLevelModuleDependencies) {
+                        if (dependency.configuration.startsWith("platform-")) {
+                            continue
+                        }
+                        dependenciesNode.appendNode('dependency').with {
+                            if (!dependency.moduleGroup || !dependency.moduleName || !dependency.moduleVersion) {
+                                throw new IllegalStateException("Wrong dependency: $dependency")
+                            }
+                            appendNode('groupId', dependency.moduleGroup)
+                            appendNode('artifactId', dependency.moduleName)
+                            appendNode('version', dependency.moduleVersion)
+                            appendNode('scope', scope)
 
-                        if (dependency instanceof ModuleDependency && !dependency.excludeRules.empty) {
-                            def excludesNode = appendNode('exclusions')
-                            for (rule in dependency.excludeRules) {
-                                excludesNode.appendNode('exclusion').with {
-                                    appendNode('groupId', rule.group)
-                                    appendNode('artifactId', rule.module)
+                            if (dependency instanceof ModuleDependency && !dependency.excludeRules.empty) {
+                                def excludesNode = appendNode('exclusions')
+                                for (rule in dependency.excludeRules) {
+                                    excludesNode.appendNode('exclusion').with {
+                                        appendNode('groupId', rule.group)
+                                        appendNode('artifactId', rule.module)
+                                    }
                                 }
                             }
                         }
                     }
                 }
-
-                project.configurations.compile.dependencies.each { addDependency(it, 'compile') }
-                project.configurations.provided.dependencies.each { addDependency(it, 'provided') }
+                addDependencies(project.configurations.api, 'compile')
+                addDependencies(project.configurations.provided, 'provided')
+            }
+        }
+    }
+    repositories {
+        maven {
+            url("https://oss.sonatype.org/service/local/staging/deploy/maven2")
+            credentials {
+                username = System.getenv("OSSRH_USERNAME")
+                password = System.getenv("OSSRH_PASSWORD")
             }
         }
     }

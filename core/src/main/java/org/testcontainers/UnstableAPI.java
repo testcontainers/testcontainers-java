@@ -11,11 +11,7 @@ import java.lang.annotation.Target;
  * a stable API.
  */
 @Retention(RetentionPolicy.SOURCE)
-@Target({
-    ElementType.TYPE,
-    ElementType.METHOD,
-    ElementType.FIELD,
-})
+@Target({ ElementType.TYPE, ElementType.METHOD, ElementType.FIELD })
 @Documented
 public @interface UnstableAPI {
 }

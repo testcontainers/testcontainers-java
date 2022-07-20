@@ -7,9 +7,10 @@ theme:
     name: 'material'
     custom_dir: 'docs/theme'
     palette:
-        primary: 'blue'
-        accent: 'teal'
-    font: false
+        scheme: testcontainers
+    font:
+      text: Roboto
+      code: Roboto Mono
     logo: 'logo.svg'
     favicon: 'favicon.ico'
 extra_css:
@@ -21,6 +22,8 @@ markdown_extensions:
     - codehilite:
           linenums: False
     - pymdownx.superfences
+    - pymdownx.tabbed:
+        alternate_style: true
     - pymdownx.snippets
 nav:
     - Home: index.md
@@ -61,9 +64,12 @@ nav:
                 - modules/databases/postgres.md
                 - modules/databases/presto.md
                 - modules/databases/trino.md
+          - modules/azure.md
           - modules/docker_compose.md
           - modules/elasticsearch.md
           - modules/gcloud.md
+          - modules/hivemq.md
+          - modules/k3s.md
           - modules/kafka.md
           - modules/localstack.md
           - modules/mockserver.md
@@ -96,4 +102,4 @@ nav:
           - contributing_docs.md
           - bounty.md
 extra:
-    latest_version: 1.15.3
+    latest_version: 1.17.3
