@@ -4,15 +4,12 @@ import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
 
 /**
- * @author richardnorth
+ * @author Icemap
  */
 public class TiDBContainer extends JdbcDatabaseContainer<TiDBContainer> {
 
@@ -20,13 +17,7 @@ public class TiDBContainer extends JdbcDatabaseContainer<TiDBContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("pingcap/tidb");
 
-    @Deprecated
-    public static final String DEFAULT_TAG = "v6.1.0";
-
-    @Deprecated
-    public static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
-
-    public static final String IMAGE_TAG = DEFAULT_TAG;
+    private static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
 
     public static final Integer TIDB_PORT = 4000;
 
@@ -38,16 +29,8 @@ public class TiDBContainer extends JdbcDatabaseContainer<TiDBContainer> {
 
     private String password = "";
 
-    /**
-     * @deprecated use {@link TiDBContainer (DockerImageName)} instead
-     */
-    @Deprecated
-    public TiDBContainer() {
-        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
-    }
-
-    public TiDBContainer(String dockerImageName) {
-        this(DockerImageName.parse(dockerImageName));
+    public TiDBContainer(String tag) {
+        this(DockerImageName.parse(TiDBContainer.IMAGE).withTag(tag));
     }
 
     public TiDBContainer(final DockerImageName dockerImageName) {

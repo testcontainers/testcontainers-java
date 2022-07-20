@@ -1,16 +1,10 @@
 package org.testcontainers.containers;
 
-import org.testcontainers.jdbc.ConnectionUrl;
-import org.testcontainers.utility.DockerImageName;
-
 /**
  * Factory for TiDB containers.
  */
 public class TiDBContainerProvider extends JdbcDatabaseContainerProvider {
-
-    private static final String USER_PARAM = "root";
-
-    private static final String PASSWORD_PARAM = "";
+    private static final String DEFAULT_TAG = "v6.1.0";
 
     @Override
     public boolean supports(String databaseType) {
@@ -19,13 +13,13 @@ public class TiDBContainerProvider extends JdbcDatabaseContainerProvider {
 
     @Override
     public JdbcDatabaseContainer newInstance() {
-        return newInstance(TiDBContainer.DEFAULT_TAG);
+        return newInstance(DEFAULT_TAG);
     }
 
     @Override
     public JdbcDatabaseContainer newInstance(String tag) {
         if (tag != null) {
-            return new TiDBContainer(DockerImageName.parse(TiDBContainer.IMAGE).withTag(tag));
+            return new TiDBContainer(tag);
         } else {
             return newInstance();
         }
