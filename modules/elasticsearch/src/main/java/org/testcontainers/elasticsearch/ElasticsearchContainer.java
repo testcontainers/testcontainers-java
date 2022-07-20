@@ -102,10 +102,11 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
         this.isAtLeastMajorVersion8 =
             new ComparableVersion(dockerImageName.getVersionPart()).isGreaterThanOrEqualTo("8.0.0");
         // regex that
+        //   matches 8.3 JSON logging with started message and some follow up content within the message field
         //   matches 8.0 JSON logging with no whitespace between message field and content
         //   matches 7.x JSON logging with whitespace between message field and content
         //   matches 6.x text logging with node name in brackets and just a 'started' message till the end of the line
-        String regex = ".*(\"message\":\\s?\"started\".*|] started\n$)";
+        String regex = ".*(\"message\":\\s?\"started[\\s?|\"].*|] started\n$)";
         setWaitStrategy(new LogMessageWaitStrategy().withRegEx(regex));
         if (isAtLeastMajorVersion8) {
             withPassword(ELASTICSEARCH_DEFAULT_PASSWORD);

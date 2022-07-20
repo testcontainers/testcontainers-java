@@ -7,8 +7,14 @@ on:
   pull_request:
     types: [opened, reopened, synchronize]
 
+permissions:
+  contents: read
+
 jobs:
   update_release_draft:
+    permissions:
+      contents: write  # for release-drafter/release-drafter to create a github release
+      pull-requests: write  # for release-drafter/release-drafter to add label to PR
     if: github.repository == 'testcontainers/testcontainers-java'
     runs-on: ubuntu-latest
     steps:
