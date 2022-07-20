@@ -25,6 +25,8 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
 
     private static final String DEFAULT_TAG = "2.1.0";
 
+    private static final DockerImageName GHCR_IMAGE_NAME = DockerImageName.parse("ghcr.io/shopify/toxiproxy");
+
     private static final int TOXIPROXY_CONTROL_PORT = 8474;
 
     private static final int FIRST_PROXIED_PORT = 8666;
@@ -51,7 +53,7 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
 
     public ToxiproxyContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, GHCR_IMAGE_NAME);
 
         addExposedPorts(TOXIPROXY_CONTROL_PORT);
         setWaitStrategy(new HttpWaitStrategy().forPath("/version").forPort(TOXIPROXY_CONTROL_PORT));
@@ -77,7 +79,7 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
 
     /**
      * Obtain a {@link ContainerProxy} instance for target container that is managed by Testcontainers. The target
-     * container should be routable from this <b>from this {@link ToxiproxyContainer} instance</b> (e.g. on the same
+     * container should be routable <b>from this {@link ToxiproxyContainer} instance</b> (e.g. on the same
      * Docker {@link Network}).
      *
      * @param container target container

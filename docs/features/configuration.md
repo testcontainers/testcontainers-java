@@ -52,7 +52,7 @@ Some companies disallow the usage of Docker Hub, but you can override `*.image` 
 > **tinyimage.container.image = alpine:3.14**  
 > Used to check whether images can be pulled at startup, and always required (unless [startup checks are disabled](#disabling-the-startup-checks))
 
-> **sshd.container.image = testcontainers/sshd:1.0.0**  
+> **sshd.container.image = testcontainers/sshd:1.1.0**  
 > Required if [exposing host ports to containers](./networking.md#exposing-host-ports-to-the-container)
 
 > **vncrecorder.container.image = testcontainers/vnc-recorder:1.1.0**

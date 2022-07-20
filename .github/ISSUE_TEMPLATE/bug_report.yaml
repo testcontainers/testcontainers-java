@@ -65,6 +65,22 @@ body:
         - 'No'
     validations:
       required: true
+  - type: input
+    id: host-os
+    attributes:
+      label: Host OS
+      description: Which Operating System are you using?
+      placeholder: e.g. Linux, Windows
+    validations:
+      required: true
+  - type: input
+    id: host-arch
+    attributes:
+      label: Host Arch
+      description: Which architecture are you using?
+      placeholder: e.g. x86, ARM
+    validations:
+      required: true
   - type: textarea
     id: docker-version
     attributes:

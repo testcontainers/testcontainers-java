@@ -16,6 +16,7 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '7.0.0'
     id 'me.champeau.gradle.japicmp' version '0.2.9' apply false
     id 'com.diffplug.spotless' version '6.3.0' apply false
+    id 'org.gradle.test-retry' version '1.4.0'
 }
 
 apply from: "$rootDir/gradle/ci-support.gradle"
@@ -33,6 +34,7 @@ subprojects {
     apply from: "$rootDir/gradle/shading.gradle"
     apply plugin: 'com.diffplug.spotless'
     apply plugin: 'checkstyle'
+    apply plugin: 'org.gradle.test-retry'
 
     group = "org.testcontainers"
 
@@ -85,6 +87,14 @@ subprojects {
             showStackTraces = true
             exceptionFormat = 'full'
             events "STARTED", "PASSED", "FAILED", "SKIPPED"
+        }
+        ext.isCI = System.getenv("CI") != null
+        if (isCI) {
+            retry {
+                maxRetries = 2
+                maxFailures = 5
+                failOnPassedAfterRetry = false
+            }
         }
     }
 
