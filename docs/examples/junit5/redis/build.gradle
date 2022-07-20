@@ -9,3 +9,7 @@ dependencies {
     testImplementation project(":testcontainers")
     testImplementation project(":junit-jupiter")
 }
+
+test {
+    useJUnitPlatform()
+}
