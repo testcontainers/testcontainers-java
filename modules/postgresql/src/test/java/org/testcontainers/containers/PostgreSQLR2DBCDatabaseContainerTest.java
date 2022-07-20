@@ -13,11 +13,13 @@ public class PostgreSQLR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseC
 
     @Override
     protected ConnectionFactoryOptions getOptions(PostgreSQLContainer<?> container) {
+        // spotless:off
         // get_options {
         ConnectionFactoryOptions options = PostgreSQLR2DBCDatabaseContainer.getOptions(
             container
         );
         // }
+        // spotless:on
 
         return options;
     }

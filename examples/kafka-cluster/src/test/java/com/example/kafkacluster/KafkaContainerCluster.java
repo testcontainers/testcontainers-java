@@ -10,6 +10,7 @@ import org.testcontainers.lifecycle.Startables;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.utility.DockerImageName;
 
+import java.time.Duration;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -56,7 +57,8 @@ public class KafkaContainerCluster implements Startable {
                     .withEnv("KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", internalTopicsRf + "")
                     .withEnv("KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS", internalTopicsRf + "")
                     .withEnv("KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR", internalTopicsRf + "")
-                    .withEnv("KAFKA_TRANSACTION_STATE_LOG_MIN_ISR", internalTopicsRf + "");
+                    .withEnv("KAFKA_TRANSACTION_STATE_LOG_MIN_ISR", internalTopicsRf + "")
+                    .withStartupTimeout(Duration.ofMinutes(1));
             })
             .collect(Collectors.toList());
     }
@@ -81,8 +83,8 @@ public class KafkaContainerCluster implements Startable {
     @Override
     @SneakyThrows
     public void start() {
-        Stream<Startable> startables = this.brokers.stream().map(Startable.class::cast);
-        Startables.deepStart(startables).get(60, SECONDS);
+        // sequential start to avoid resource contention on CI systems with weaker hardware
+        brokers.forEach(GenericContainer::start);
 
         Unreliables.retryUntilTrue(30, TimeUnit.SECONDS, () -> {
             Container.ExecResult result = this.zookeeper.execInContainer(

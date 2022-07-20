@@ -1,6 +1,7 @@
 package org.testcontainers.junit.cockroachdb;
 
 import org.junit.Test;
+import org.testcontainers.CockroachDBTestImages;
 import org.testcontainers.containers.CockroachContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
@@ -9,13 +10,11 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 
-import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertThat;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
-import static org.testcontainers.CockroachDBTestImages.COCKROACHDB_IMAGE;
 
 public class SimpleCockroachDBTest extends AbstractContainerDatabaseTest {
-
     static {
         // Postgres JDBC driver uses JUL; disable it to avoid annoying, irrelevant, stderr logs during connection testing
         LogManager.getLogManager().getLogger("").setLevel(Level.OFF);
@@ -23,7 +22,7 @@ public class SimpleCockroachDBTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSimple() throws SQLException {
-        try (CockroachContainer cockroach = new CockroachContainer(COCKROACHDB_IMAGE)) {
+        try (CockroachContainer cockroach = new CockroachContainer(CockroachDBTestImages.COCKROACHDB_IMAGE)) {
             cockroach.start();
 
             ResultSet resultSet = performQuery(cockroach, "SELECT 1");
@@ -35,8 +34,10 @@ public class SimpleCockroachDBTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testExplicitInitScript() throws SQLException {
-        try (CockroachContainer cockroach = new CockroachContainer(COCKROACHDB_IMAGE)
-                .withInitScript("somepath/init_postgresql.sql")) { // CockroachDB is expected to be compatible with Postgres
+        try (
+            CockroachContainer cockroach = new CockroachContainer(CockroachDBTestImages.COCKROACHDB_IMAGE)
+                .withInitScript("somepath/init_postgresql.sql")
+        ) { // CockroachDB is expected to be compatible with Postgres
             cockroach.start();
 
             ResultSet resultSet = performQuery(cockroach, "SELECT foo FROM bar");
@@ -48,7 +49,7 @@ public class SimpleCockroachDBTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testWithAdditionalUrlParamInJdbcUrl() {
-        CockroachContainer cockroach = new CockroachContainer(COCKROACHDB_IMAGE)
+        CockroachContainer cockroach = new CockroachContainer(CockroachDBTestImages.COCKROACHDB_IMAGE)
             .withUrlParam("sslmode", "disable")
             .withUrlParam("application_name", "cockroach");
 

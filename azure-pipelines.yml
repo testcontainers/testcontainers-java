@@ -1,22 +1,8 @@
 jobs:
 
-- job: azure_pipeline_tests
+- job: core_tests
+  timeoutInMinutes: 60
   steps:
-
-  # Run a minimal set of tests in normal Linux pipeline builds
-  - task: Gradle@2
-    condition: eq(variables['Agent.OS'], 'Linux')
-    displayName: Build & test (Linux - minimal core)
-    env:
-      AWS_ACCESS_KEY_ID: $(aws.accessKeyId)
-      AWS_SECRET_ACCESS_KEY: $(aws.secretAccessKey)
-    inputs:
-        gradleWrapperFile: 'gradlew'
-        jdkVersionOption: '1.11'
-        options: "--no-daemon --continue"
-        tasks: "clean testcontainers:test --tests GenericContainerRuleTest"
-        publishJUnitResults: true
-        testResultsFiles: '**/TEST-*.xml'
 
   # Run all core tests when running the Windows CI tests
   - task: Gradle@2
@@ -27,12 +13,15 @@ jobs:
       AWS_SECRET_ACCESS_KEY: $(aws.secretAccessKey)
     inputs:
         gradleWrapperFile: 'gradlew'
-        jdkVersionOption: '1.11'
+        jdkVersionOption: '1.8'
         options: '--no-daemon --continue'
         tasks: 'clean testcontainers:check'
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
 
+- job: other_tests
+  timeoutInMinutes: 120
+  steps:
   # Run all non-core tests when running the Windows CI tests
   - task: Gradle@2
     condition: eq(variables['Agent.OS'], 'Windows_NT')
@@ -42,7 +31,7 @@ jobs:
       AWS_SECRET_ACCESS_KEY: $(aws.secretAccessKey)
     inputs:
         gradleWrapperFile: 'gradlew'
-        jdkVersionOption: '1.11'
+        jdkVersionOption: '1.8'
         options: '--no-daemon --continue'
         tasks: 'clean check -x testcontainers:test'
         publishJUnitResults: true

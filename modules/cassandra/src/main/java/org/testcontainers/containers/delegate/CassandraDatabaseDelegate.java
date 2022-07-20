@@ -25,8 +25,7 @@ public class CassandraDatabaseDelegate extends AbstractDatabaseDelegate<Session>
     @Override
     protected Session createNewConnection() {
         try {
-            return CassandraContainer.getCluster(container)
-                    .newSession();
+            return CassandraContainer.getCluster(container).newSession();
         } catch (DriverException e) {
             log.error("Could not obtain cassandra connection");
             throw new ConnectionCreationException("Could not obtain cassandra connection", e);
@@ -34,7 +33,13 @@ public class CassandraDatabaseDelegate extends AbstractDatabaseDelegate<Session>
     }
 
     @Override
-    public void execute(String statement, String scriptPath, int lineNumber, boolean continueOnError, boolean ignoreFailedDrops) {
+    public void execute(
+        String statement,
+        String scriptPath,
+        int lineNumber,
+        boolean continueOnError,
+        boolean ignoreFailedDrops
+    ) {
         try {
             ResultSet result = getConnection().execute(statement);
             if (result.wasApplied()) {

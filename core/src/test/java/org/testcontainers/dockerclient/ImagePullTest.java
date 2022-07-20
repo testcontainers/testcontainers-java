@@ -22,7 +22,7 @@ public class ImagePullTest {
             "quay.io/testcontainers/ryuk:latest",
             "quay.io/testcontainers/ryuk:0.2.3",
             "quay.io/testcontainers/ryuk@sha256:bb5a635cac4bd96c93cc476969ce11dc56436238ec7cd028d0524462f4739dd9",
-//            "ibmcom/db2express-c", // Big image for testing with slow networks
+            //            "ibmcom/db2express-c", // Big image for testing with slow networks
         };
     }
 
@@ -32,9 +32,11 @@ public class ImagePullTest {
 
     @Test
     public void test() {
-        try (final GenericContainer<?> container = new GenericContainer<>(DockerImageName.parse(image))
-            .withCommand("/bin/sh", "-c", "sleep 0")
-            .withStartupCheckStrategy(new OneShotStartupCheckStrategy())) {
+        try (
+            final GenericContainer<?> container = new GenericContainer<>(DockerImageName.parse(image))
+                .withCommand("/bin/sh", "-c", "sleep 0")
+                .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
+        ) {
             container.start();
             // do nothing other than start and stop
         }
