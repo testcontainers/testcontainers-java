@@ -108,22 +108,16 @@ public class TiDBContainer extends JdbcDatabaseContainer<TiDBContainer> {
 
     @Override
     public TiDBContainer withDatabaseName(final String databaseName) {
-        throw new UnsupportedOperationException(
-            "The TiDB docker image does not currently support this"
-        );
+        throw new UnsupportedOperationException("The TiDB docker image does not currently support this");
     }
 
     @Override
     public TiDBContainer withUsername(final String username) {
-        throw new UnsupportedOperationException(
-            "The TiDB docker image does not currently support this"
-        );
+        throw new UnsupportedOperationException("The TiDB docker image does not currently support this");
     }
 
     @Override
     public TiDBContainer withPassword(final String password) {
-        throw new UnsupportedOperationException(
-            "The TiDB docker image does not currently support this"
-        );
+        throw new UnsupportedOperationException("The TiDB docker image does not currently support this");
     }
 }

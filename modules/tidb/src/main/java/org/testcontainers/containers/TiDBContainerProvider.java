@@ -4,6 +4,7 @@ package org.testcontainers.containers;
  * Factory for TiDB containers.
  */
 public class TiDBContainerProvider extends JdbcDatabaseContainerProvider {
+
     private static final String DEFAULT_TAG = "v6.1.0";
 
     @Override

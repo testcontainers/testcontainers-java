@@ -15,7 +15,6 @@ import static org.junit.Assert.assertThat;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 
 public class SimpleTiDBTest extends AbstractContainerDatabaseTest {
-
     static {
         // Postgres JDBC driver uses JUL; disable it to avoid annoying, irrelevant, stderr logs during connection testing
         LogManager.getLogManager().getLogger("").setLevel(Level.OFF);
@@ -36,8 +35,7 @@ public class SimpleTiDBTest extends AbstractContainerDatabaseTest {
     @Test
     public void testExplicitInitScript() throws SQLException {
         try (
-            TiDBContainer tidb = new TiDBContainer(TiDBTestImages.TIDB_IMAGE)
-                .withInitScript("somepath/init_mysql.sql")
+            TiDBContainer tidb = new TiDBContainer(TiDBTestImages.TIDB_IMAGE).withInitScript("somepath/init_mysql.sql")
         ) { // TiDB is expected to be compatible with MySQL
             tidb.start();
 
@@ -50,8 +48,7 @@ public class SimpleTiDBTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testWithAdditionalUrlParamInJdbcUrl() {
-        TiDBContainer tidb = new TiDBContainer(TiDBTestImages.TIDB_IMAGE)
-            .withUrlParam("sslmode", "disable");
+        TiDBContainer tidb = new TiDBContainer(TiDBTestImages.TIDB_IMAGE).withUrlParam("sslmode", "disable");
 
         try {
             tidb.start();

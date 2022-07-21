@@ -13,9 +13,7 @@ public class TiDBJDBCDriverTest extends AbstractJDBCDriverTest {
     @Parameterized.Parameters(name = "{index} - {0}")
     public static Iterable<Object[]> data() {
         return Arrays.asList(
-            new Object[][] {
-                { "jdbc:tc:tidb://hostname/databasename", EnumSet.noneOf(Options.class) },
-            }
+            new Object[][] { { "jdbc:tc:tidb://hostname/databasename", EnumSet.noneOf(Options.class) } }
         );
     }
 }
