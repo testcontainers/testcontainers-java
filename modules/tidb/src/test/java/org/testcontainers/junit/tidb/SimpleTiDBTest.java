@@ -7,18 +7,12 @@ import org.testcontainers.db.AbstractContainerDatabaseTest;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.LogManager;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertThat;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 
 public class SimpleTiDBTest extends AbstractContainerDatabaseTest {
-    static {
-        // Postgres JDBC driver uses JUL; disable it to avoid annoying, irrelevant, stderr logs during connection testing
-        LogManager.getLogManager().getLogger("").setLevel(Level.OFF);
-    }
 
     @Test
     public void testSimple() throws SQLException {
