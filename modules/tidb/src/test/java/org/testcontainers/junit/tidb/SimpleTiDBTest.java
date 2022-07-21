@@ -54,7 +54,6 @@ public class SimpleTiDBTest extends AbstractContainerDatabaseTest {
             tidb.start();
             String jdbcUrl = tidb.getJdbcUrl();
             assertThat(jdbcUrl, containsString("?"));
-            assertThat(jdbcUrl, containsString("&"));
             assertThat(jdbcUrl, containsString("sslmode=disable"));
         } finally {
             tidb.stop();

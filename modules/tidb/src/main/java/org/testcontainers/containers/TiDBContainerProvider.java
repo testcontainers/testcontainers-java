@@ -1,5 +1,7 @@
 package org.testcontainers.containers;
 
+import org.testcontainers.utility.DockerImageName;
+
 /**
  * Factory for TiDB containers.
  */
@@ -20,7 +22,7 @@ public class TiDBContainerProvider extends JdbcDatabaseContainerProvider {
     @Override
     public JdbcDatabaseContainer newInstance(String tag) {
         if (tag != null) {
-            return new TiDBContainer(tag);
+            return new TiDBContainer(DockerImageName.parse(TiDBContainer.DOCKER_IMAGE_NAME).withTag(tag));
         } else {
             return newInstance();
         }

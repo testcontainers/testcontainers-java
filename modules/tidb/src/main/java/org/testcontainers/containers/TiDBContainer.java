@@ -15,9 +15,9 @@ public class TiDBContainer extends JdbcDatabaseContainer<TiDBContainer> {
 
     public static final String NAME = "tidb";
 
-    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("pingcap/tidb");
+    public static final String DOCKER_IMAGE_NAME = "pingcap/tidb";
 
-    private static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse(DOCKER_IMAGE_NAME);
 
     public static final Integer TIDB_PORT = 4000;
 
@@ -29,8 +29,8 @@ public class TiDBContainer extends JdbcDatabaseContainer<TiDBContainer> {
 
     private String password = "";
 
-    public TiDBContainer(String tag) {
-        this(DockerImageName.parse(TiDBContainer.IMAGE).withTag(tag));
+    public TiDBContainer(String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
     }
 
     public TiDBContainer(final DockerImageName dockerImageName) {
