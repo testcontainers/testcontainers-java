@@ -40,7 +40,7 @@ public class DockerfileTest {
                 super.configure(buildImageCmd);
 
                 List<String> dockerfile = Arrays.asList(
-                    "FROM alpine:3.14",
+                    "FROM alpine:3.16",
                     "RUN echo 'hello from Docker build process'",
                     "CMD yes"
                 );
@@ -60,7 +60,7 @@ public class DockerfileTest {
             .withFileFromString("folder/someFile.txt", "hello")
             .withDockerfileFromBuilder(builder -> {
                 builder
-                    .from("alpine:3.14")
+                    .from("alpine:3.16")
                     .workDir("/app")
                     .add("test.txt", "test file.txt")
                     .run("ls", "-la", "/app/test file.txt")
@@ -103,7 +103,7 @@ public class DockerfileTest {
             )
             .withDockerfileFromBuilder(builder -> {
                 builder
-                    .from("alpine:3.14") //
+                    .from("alpine:3.16") //
                     .copy("someFile.txt", "/someFile.txt")
                     .cmd("stat -c \"%a\" /someFile.txt");
             });
