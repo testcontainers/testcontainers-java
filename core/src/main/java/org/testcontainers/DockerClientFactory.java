@@ -60,7 +60,7 @@ public class DockerClientFactory {
 
     public static final Map<String, String> DEFAULT_LABELS = ImmutableMap.of(TESTCONTAINERS_LABEL, "true");
 
-    private static final DockerImageName TINY_IMAGE = DockerImageName.parse("alpine:3.14");
+    private static final DockerImageName TINY_IMAGE = DockerImageName.parse("alpine:3.16");
 
     private static DockerClientFactory instance;
 
