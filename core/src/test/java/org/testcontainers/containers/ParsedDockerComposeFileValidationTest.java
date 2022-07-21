@@ -98,9 +98,9 @@ public class ParsedDockerComposeFileValidationTest {
             .contains(
                 entry("mysql", Sets.newHashSet("mysql")),
                 entry("redis", Sets.newHashSet("redis")),
-                entry("custom", Sets.newHashSet("alpine:3.14"))
+                entry("custom", Sets.newHashSet("alpine:3.16"))
             )
-            .as("all defined images are found"); // r/ redis, mysql from compose file, alpine:3.14 from Dockerfile build
+            .as("all defined images are found"); // r/ redis, mysql from compose file, alpine:3.16 from Dockerfile build
     }
 
     @Test
@@ -112,8 +112,8 @@ public class ParsedDockerComposeFileValidationTest {
             .contains(
                 entry("mysql", Sets.newHashSet("mysql")),
                 entry("redis", Sets.newHashSet("redis")),
-                entry("custom", Sets.newHashSet("alpine:3.14"))
+                entry("custom", Sets.newHashSet("alpine:3.16"))
             )
-            .as("all defined images are found"); // redis, mysql from compose file, alpine:3.14 from Dockerfile build
+            .as("all defined images are found"); // redis, mysql from compose file, alpine:3.16 from Dockerfile build
     }
 }
