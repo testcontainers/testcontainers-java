@@ -1,0 +1,13 @@
+description = "Testcontainers :: QuestDB"
+
+dependencies {
+    api project(':testcontainers')
+    api project(':jdbc')
+
+    testImplementation project(':jdbc-test')
+    testImplementation project(':test-support')
+    testImplementation 'org.postgresql:postgresql:42.4.0'
+    testImplementation group: 'org.questdb', name: 'questdb', version: '6.4.3'
+    testImplementation 'org.awaitility:awaitility:4.2.0'
+    testImplementation 'org.apache.httpcomponents:httpclient:4.5.13'
+}
