@@ -1,13 +1,12 @@
 package org.testcontainers.junit.questdb;
 
+import com.zaxxer.hikari.HikariDataSource;
 import io.questdb.client.Sender;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import org.awaitility.Awaitility;
-import org.junit.Assert;
 import org.junit.Test;
 import org.testcontainers.containers.QuestDBContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
@@ -15,10 +14,14 @@ import org.testcontainers.db.AbstractContainerDatabaseTest;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public final class SimpleQuestDBTest extends AbstractContainerDatabaseTest {
 
@@ -36,17 +39,23 @@ public final class SimpleQuestDBTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testPgWire() {
+    public void testPgWire() throws SQLException {
         try (QuestDBContainer questdb = new QuestDBContainer(QuestDBTestImages.QUESTDB_TEST_IMAGE)) {
             questdb.start();
             populateByInfluxLineProtocol(questdb, 1_000);
-            Awaitility
-                .await()
-                .untilAsserted(() -> {
-                    try (ResultSet rs = performQuery(questdb, "SELECT count(*) from " + TABLE_NAME)) {
-                        assertEquals(1_000, rs.getInt(1));
-                    }
-                });
+            try (
+                HikariDataSource ds = getDataSource(questdb);
+                Connection conn = ds.getConnection();
+                PreparedStatement stmt = conn.prepareStatement("select count(*) from " + TABLE_NAME)
+            ) {
+                await()
+                    .untilAsserted(() -> {
+                        try (ResultSet rs = stmt.executeQuery()) {
+                            assertTrue(rs.next());
+                            assertEquals(1_000, rs.getInt(1));
+                        }
+                    });
+            }
         }
     }
 
@@ -58,13 +67,12 @@ public final class SimpleQuestDBTest extends AbstractContainerDatabaseTest {
             try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
                 String encodedSql = URLEncoder.encode("select * from " + TABLE_NAME, "UTF-8");
                 HttpGet httpGet = new HttpGet(questdb.getHttpUrl() + "/exec?query=" + encodedSql);
-                Awaitility
-                    .await()
+                await()
                     .untilAsserted(() -> {
                         try (CloseableHttpResponse response = client.execute(httpGet)) {
-                            Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+                            assertEquals(200, response.getStatusLine().getStatusCode());
                             String json = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-                            Assert.assertTrue(
+                            assertTrue(
                                 "questdb response '" + json + "' does not contain expected count 1000",
                                 json.contains("\"count\":1000")
                             );
