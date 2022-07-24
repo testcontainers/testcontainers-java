@@ -119,6 +119,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
 
     private RemoveImages removeImages;
 
+    private boolean composeV2 = false;
+
     @Deprecated
     public DockerComposeContainer(File composeFile, String identifier) {
         this(identifier, composeFile);
@@ -238,7 +240,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
             .distinct()
             .collect(Collectors.joining(" "));
 
-        String command = optionsAsString() + "up -d";
+        String command = optionsAsString() + getUpCommand();
 
         if (build) {
             command += " --build";
@@ -318,7 +320,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
     private String getServiceNameFromContainer(Container container) {
         final String containerName = container.getLabels().get("com.docker.compose.service");
         final String containerNumber = container.getLabels().get("com.docker.compose.container-number");
-        return String.format("%s_%s", containerName, containerNumber);
+        return String.format("%s%s%s", containerName, composeSeparator(), containerNumber);
     }
 
     private void runWithCompose(String cmd) {
@@ -329,7 +331,10 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
         if (localCompose) {
             dockerCompose = new LocalDockerCompose(composeFiles, project);
         } else {
-            dockerCompose = new ContainerisedDockerCompose(composeFiles, project);
+            DockerImageName composeImageName = composeV2
+                ? ContainerisedDockerCompose.DEFAULT_IMAGE_NAME
+                : ContainerisedDockerCompose.DEFAULT_COMPOSE_IMAGE_NAME;
+            dockerCompose = new ContainerisedDockerCompose(composeImageName, composeFiles, project);
         }
 
         dockerCompose.withCommand(cmd).withEnv(env).invoke();
@@ -366,7 +371,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
                 ambassadorContainer.stop();
 
                 // Kill the services using docker-compose
-                String cmd = "down -v";
+                String cmd = getDownCommand();
                 if (removeImages != null) {
                     cmd += " --rmi " + removeImages.dockerRemoveImagesType();
                 }
@@ -382,7 +387,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
     }
 
     public DockerComposeContainer withExposedService(String serviceName, int instance, int servicePort) {
-        return withExposedService(serviceName + "_" + instance, servicePort);
+        return withExposedService(serviceName + composeSeparator() + instance, servicePort);
     }
 
     public DockerComposeContainer withExposedService(
@@ -391,7 +396,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
         int servicePort,
         WaitStrategy waitStrategy
     ) {
-        return withExposedService(serviceName + "_" + instance, servicePort, waitStrategy);
+        return withExposedService(serviceName + composeSeparator() + instance, servicePort, waitStrategy);
     }
 
     public SELF withExposedService(String serviceName, int servicePort, @NonNull WaitStrategy waitStrategy) {
@@ -417,15 +422,19 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
             .computeIfAbsent(serviceInstanceName, __ -> new ConcurrentHashMap<>())
             .put(servicePort, ambassadorPort);
         ambassadorContainer.withTarget(ambassadorPort, serviceInstanceName, servicePort);
-        ambassadorContainer.addLink(new FutureContainer(this.project + "_" + serviceInstanceName), serviceInstanceName);
+        ambassadorContainer.addLink(
+            new FutureContainer(this.project + composeSeparator() + serviceInstanceName),
+            serviceInstanceName
+        );
         addWaitStrategy(serviceInstanceName, waitStrategy);
         return self();
     }
 
     private String getServiceInstanceName(String serviceName) {
         String serviceInstanceName = serviceName;
-        if (!serviceInstanceName.matches(".*_[0-9]+")) {
-            serviceInstanceName += "_1"; // implicit first instance of this service
+        String regex = String.format(".*%s[0-9]+", composeSeparator());
+        if (!serviceInstanceName.matches(regex)) {
+            serviceInstanceName += String.format("%s1", composeSeparator()); // implicit first instance of this service
         }
         return serviceInstanceName;
     }
@@ -502,6 +511,18 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
         } else {
             return ambassadorContainer.getMappedPort(portMap.get(servicePort));
         }
+    }
+
+    private String getUpCommand() {
+        return composeV2 ? "compose up -d" : "up -d";
+    }
+
+    private String getDownCommand() {
+        return composeV2 ? "compose down -v" : "down -v";
+    }
+
+    private String composeSeparator() {
+        return composeV2 ? "-" : "_";
     }
 
     public SELF withScaledService(String serviceBaseName, int numInstances) {
@@ -598,6 +619,11 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
         return self();
     }
 
+    public SELF withComposeV2() {
+        this.composeV2 = true;
+        return self();
+    }
+
     public Optional<ContainerState> getContainerByServiceName(String serviceName) {
         return Optional.ofNullable(serviceInstanceMap.get(serviceName));
     }
@@ -653,12 +679,14 @@ interface DockerCompose {
  */
 class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCompose> implements DockerCompose {
 
-    public static final char UNIX_PATH_SEPERATOR = ':';
+    public static final char UNIX_PATH_SEPARATOR = ':';
 
-    public static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("docker/compose:1.29.2");
+    public static final DockerImageName DEFAULT_COMPOSE_IMAGE_NAME = DockerImageName.parse("docker/compose:1.29.2");
 
-    public ContainerisedDockerCompose(List<File> composeFiles, String identifier) {
-        super(DEFAULT_IMAGE_NAME);
+    public static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("docker:20.10.17");
+
+    public ContainerisedDockerCompose(DockerImageName dockerImageName, List<File> composeFiles, String identifier) {
+        super(dockerImageName);
         addEnv(ENV_PROJECT_NAME, identifier);
 
         // Map the docker compose file into the container
@@ -673,7 +701,7 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
             .map(MountableFile::getFilesystemPath)
             .map(this::convertToUnixFilesystemPath)
             .collect(Collectors.toList());
-        final String composeFileEnvVariableValue = Joiner.on(UNIX_PATH_SEPERATOR).join(absoluteDockerComposeFiles); // we always need the UNIX path separator
+        final String composeFileEnvVariableValue = Joiner.on(UNIX_PATH_SEPARATOR).join(absoluteDockerComposeFiles); // we always need the UNIX path separator
         logger().debug("Set env COMPOSE_FILE={}", composeFileEnvVariableValue);
         addEnv(ENV_COMPOSE_FILE, composeFileEnvVariableValue);
         addFileSystemBind(pwd, containerPwd, BindMode.READ_WRITE);

@@ -119,6 +119,19 @@ public static DockerComposeContainer environment =
             .waitingFor("db_1", Wait.forLogMessage("started", 1))
             .withLocalCompose(true);
 ```
+
+## Compose V2
+
+[Compose V2 is GA](https://www.docker.com/blog/announcing-compose-v2-general-availability/) and it relies in `docker` command instead of `docker-compose`.
+
+```java
+public static DockerComposeContainer environment =
+    new DockerComposeContainer(new File("src/test/resources/compose-test.yml"))
+            .withComposeV2()
+            .withExposedService("redis-1", REDIS_PORT, Wait.forListeningPort())
+            .waitingFor("db-1", Wait.forLogMessage("started", 1));
+```
+
 ## Using private repositories in Docker compose
 When Docker Compose is used in container mode (not local), it's needs to be made aware of Docker settings for private repositories. 
 By default, those setting are located in `$HOME/.docker/config.json`. 
