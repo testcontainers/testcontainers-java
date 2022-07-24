@@ -56,10 +56,14 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
         ) {
             mysql.start();
 
-            ResultSet resultSet = performQuery(mysql, "SELECT 1");
-            int resultSetInt = resultSet.getInt(1);
-
-            assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+            assertQuery(
+                mysql,
+                "SELECT 1",
+                rs -> {
+                    int resultSetInt = rs.getInt(1);
+                    assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+                }
+            );
         }
     }
 
@@ -72,12 +76,16 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
         ) {
             mysqlOldVersion.start();
 
-            ResultSet resultSet = performQuery(mysqlOldVersion, "SELECT VERSION()");
-            String resultSetString = resultSet.getString(1);
-
-            assertTrue(
-                "The database version can be set using a container rule parameter",
-                resultSetString.startsWith("5.6")
+            assertQuery(
+                mysqlOldVersion,
+                "SELECT VERSION()",
+                rs -> {
+                    String resultSetString = rs.getString(1);
+                    assertTrue(
+                        "The database version can be set using a container rule parameter",
+                        resultSetString.startsWith("5.6")
+                    );
+                }
             );
         }
     }
@@ -92,10 +100,14 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
         ) {
             mysqlCustomConfig.start();
 
-            ResultSet resultSet = performQuery(mysqlCustomConfig, "SELECT @@GLOBAL.innodb_file_format");
-            String result = resultSet.getString(1);
-
-            assertEquals("The InnoDB file format has been set by the ini file content", "Barracuda", result);
+            assertQuery(
+                mysqlCustomConfig,
+                "SELECT @@GLOBAL.innodb_file_format",
+                rs -> {
+                    String result = rs.getString(1);
+                    assertEquals("The InnoDB file format has been set by the ini file content", "Barracuda", result);
+                }
+            );
         }
     }
 
@@ -106,11 +118,14 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
                 .withCommand("mysqld --auto_increment_increment=42")
         ) {
             mysqlCustomConfig.start();
-
-            ResultSet resultSet = performQuery(mysqlCustomConfig, "show variables like 'auto_increment_increment'");
-            String result = resultSet.getString("Value");
-
-            assertEquals("Auto increment increment should be overriden by command line", "42", result);
+            assertQuery(
+                mysqlCustomConfig,
+                "show variables like 'auto_increment_increment'",
+                rs -> {
+                    String result = rs.getString("Value");
+                    assertEquals("Auto increment increment should be overriden by command line", "42", result);
+                }
+            );
         }
     }
 
@@ -123,10 +138,14 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
         ) {
             container.start();
 
-            ResultSet resultSet = performQuery(container, "SELECT foo FROM bar");
-            String firstColumnValue = resultSet.getString(1);
-
-            assertEquals("Value from init script should equal real value", "hello world", firstColumnValue);
+            assertQuery(
+                container,
+                "SELECT foo FROM bar",
+                rs -> {
+                    String firstColumnValue = rs.getString(1);
+                    assertEquals("Value from init script should equal real value", "hello world", firstColumnValue);
+                }
+            );
         }
     }
 
@@ -156,10 +175,14 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
         ) {
             mysql.start();
 
-            ResultSet resultSet = performQuery(mysql, "SELECT 1");
-            int resultSetInt = resultSet.getInt(1);
-
-            assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+            assertQuery(
+                mysql,
+                "SELECT 1",
+                rs -> {
+                    int resultSetInt = rs.getInt(1);
+                    assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+                }
+            );
         }
     }
 
