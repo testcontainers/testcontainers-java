@@ -4,13 +4,10 @@ import java.net.InetSocketAddress;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
+import org.junit.Assert;
 import org.junit.Test;
 import org.testcontainers.containers.YugabyteDBYCQLContainer;
 import org.testcontainers.utility.DockerImageName;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * YugabyteDB YCQL API unit test class
@@ -25,19 +22,19 @@ public class YugabyteDBYCQLUnitTest {
 
 	private static final String LOCAL_DC = "datacenter1";
 
-    private static final int YCQL_PORT = 9042;
+	private static final int YCQL_PORT = 9042;
 
 	@Test
 	public void testSmoke() {
 		try (
-            // creatingYCQLContainer {
-            final YugabyteDBYCQLContainer ycqlContainer = new YugabyteDBYCQLContainer(IMAGE_NAME)
-		    // }
+				// creatingYCQLContainer {
+				final YugabyteDBYCQLContainer ycqlContainer = new YugabyteDBYCQLContainer(IMAGE_NAME)
+		// }
 		) {
 			// startingYCQLContainer {
 			ycqlContainer.start();
 			// }
-			assertNotNull("Smoke test simple query execution fails!",
+			Assert.assertNotNull("Smoke test simple query execution fails!",
 					performQuery(ycqlContainer, "SELECT release_version FROM system.local").one().getString(0));
 		}
 	}
@@ -48,7 +45,7 @@ public class YugabyteDBYCQLUnitTest {
 		try (final YugabyteDBYCQLContainer ycqlContainer = new YugabyteDBYCQLContainer(YBDB_TEST_IMAGE)
 				.withKeyspaceName(key)) {
 			ycqlContainer.start();
-			assertEquals("Custom keyspace creation fails!", key,
+			Assert.assertEquals("Custom keyspace creation fails!", key,
 					performQuery(ycqlContainer,
 							"SELECT keyspace_name FROM system_schema.keyspaces where keyspace_name='" + key + "'").one()
 									.getString(0));
@@ -58,10 +55,10 @@ public class YugabyteDBYCQLUnitTest {
 	@Test
 	public void testAuthenticationEnabled() throws InterruptedException {
 		String role = "random";
-		try (final YugabyteDBYCQLContainer ycqlContainer = new YugabyteDBYCQLContainer(YBDB_TEST_IMAGE).withUsername(role)
-				.withPassword(role)) {
+		try (final YugabyteDBYCQLContainer ycqlContainer = new YugabyteDBYCQLContainer(YBDB_TEST_IMAGE)
+				.withUsername(role).withPassword(role)) {
 			ycqlContainer.start();
-			assertEquals("Keyspace login fails with authentication enabled!", role,
+			Assert.assertEquals("Keyspace login fails with authentication enabled!", role,
 					performQuery(ycqlContainer, "SELECT role FROM system_auth.roles where role='" + role + "'").one()
 							.getString(0));
 		}
@@ -72,7 +69,7 @@ public class YugabyteDBYCQLUnitTest {
 		try (final YugabyteDBYCQLContainer ycqlContainer = new YugabyteDBYCQLContainer(YBDB_TEST_IMAGE).withPassword("")
 				.withUsername("")) {
 			ycqlContainer.start();
-			assertTrue("Query execution fails!",
+			Assert.assertTrue("Query execution fails!",
 					performQuery(ycqlContainer, "SELECT release_version FROM system.local").wasApplied());
 		}
 	}
@@ -83,7 +80,7 @@ public class YugabyteDBYCQLUnitTest {
 		try (final YugabyteDBYCQLContainer ycqlContainer = new YugabyteDBYCQLContainer(YBDB_TEST_IMAGE)
 				.withKeyspaceName(key).withUsername(key).withPassword(key).withInitScript("init/init_yql.sql")) {
 			ycqlContainer.start();
-			assertTrue("Query execution fails to execute statements from a custom script!",
+			Assert.assertTrue("Query execution fails to execute statements from a custom script!",
 					performQuery(ycqlContainer, "SELECT * FROM random.bar").wasApplied());
 		}
 	}

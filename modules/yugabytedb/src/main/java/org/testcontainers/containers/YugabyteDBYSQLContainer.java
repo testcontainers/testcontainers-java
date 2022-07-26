@@ -6,7 +6,7 @@ import java.util.Set;
 import org.testcontainers.containers.strategy.YugabyteDBYSQLWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
-import static java.util.Collections.singleton;
+import java.util.Collections;
 
 /**
  * YugabyteDB YSQL (Structured Query Language) API container
@@ -57,7 +57,7 @@ public class YugabyteDBYSQLContainer extends JdbcDatabaseContainer<YugabyteDBYSQ
 
 	@Override
 	public Set<Integer> getLivenessCheckPortNumbers() {
-		return singleton(getMappedPort(YSQL_PORT));
+		return Collections.singleton(getMappedPort(YSQL_PORT));
 	}
 
 	/**
