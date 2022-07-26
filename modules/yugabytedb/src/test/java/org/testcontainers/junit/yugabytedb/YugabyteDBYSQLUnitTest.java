@@ -24,9 +24,9 @@ public class YugabyteDBYSQLUnitTest extends AbstractContainerDatabaseTest {
 	@Test
 	public void testSmoke() throws SQLException {
 		try (
-				// creatingYSQLContainer {
-				final YugabyteDBYSQLContainer ysqlContainer = new YugabyteDBYSQLContainer(IMAGE_NAME)
-		// }
+            // creatingYSQLContainer {
+            final YugabyteDBYSQLContainer ysqlContainer = new YugabyteDBYSQLContainer(IMAGE_NAME)
+    		// }
 		) {
 			// startingYSQLContainer {
 			ysqlContainer.start();

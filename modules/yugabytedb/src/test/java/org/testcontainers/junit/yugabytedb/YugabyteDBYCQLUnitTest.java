@@ -27,9 +27,9 @@ public class YugabyteDBYCQLUnitTest {
 	@Test
 	public void testSmoke() {
 		try (
-				// creatingYCQLContainer {
-				final YugabyteDBYCQLContainer ycqlContainer = new YugabyteDBYCQLContainer(IMAGE_NAME)
-		// }
+            // creatingYCQLContainer {
+            final YugabyteDBYCQLContainer ycqlContainer = new YugabyteDBYCQLContainer(IMAGE_NAME)
+    		// }
 		) {
 			// startingYCQLContainer {
 			ycqlContainer.start();
