@@ -6,12 +6,13 @@ executor type in your `.circleci/config.yml` to be `machine` instead of the defa
 Here is a sample CircleCI configuration that does a checkout of a project and runs maven:
 
 ```yml
-# Check https://circleci.com/docs/2.0/language-java/ for more details
-#
-version: 2
-machine: true
+
 jobs:
   build:
+    # Check https://circleci.com/docs/executor-intro#linux-vm for more details
+    #
+    machine: true
+
     steps:
       - checkout
 
