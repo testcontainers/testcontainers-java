@@ -10,37 +10,27 @@ YugabyteDB supports two APIs.
 
 ### YSQL API 
 
-```java
-public class YugabyteDBTest {
+<!--codeinclude-->
+[Creating a YSQL container](../../../modules/yugabytedb/src/test/java/org/testcontainers/junit/yugabytedb/YugabyteDBYSQLUnitTest.java) inside_block:creatingYSQLContainer
+<!--/codeinclude-->
 
-    @Rule
-    public YugabyteYSQLContainer container = new YugabyteYSQLContainer("yugabytedb/yugabyte:2.12.1.0-b41");
-    
-    @Test
-    public void method() {
-        String url = container.getJdbcUrl();
 
-        ... create a connection and run the tests as usual. It also depends on the frameworks being used.
-```
+<!--codeinclude-->
+[Starting a YSQL container](../../../modules/yugabytedb/src/test/java/org/testcontainers/junit/yugabytedb/YugabyteDBYSQLUnitTest.java) inside_block:startingYSQLContainer
+<!--/codeinclude-->
 
-#### JDBC URL
-
-`jdbc:tc:yugabyte:2.12.1.0-b41:///yugabyte`
 
 ### YCQL API
 
-```java
-public class YugabyteDBTest {
+<!--codeinclude-->
+[Creating a YCQL container](../../../modules/yugabytedb/src/test/java/org/testcontainers/junit/yugabytedb/YugabyteDBYCQLUnitTest.java) inside_block:creatingYCQLContainer
+<!--/codeinclude-->
 
-    @Rule
-    public YugabyteYCQLContainer container = new YugabyteYCQLContainer("yugabytedb/yugabyte:2.12.1.0-b41");
-    
-    @Test
-    public void method() {
-        Session session = container.getSession();
 
-        ... create a connection and run the tests as usual. It also depends on the frameworks being used.
-```
+<!--codeinclude-->
+[Starting a YCQL container](../../../modules/yugabytedb/src/test/java/org/testcontainers/junit/yugabytedb/YugabyteDBYCQLUnitTest.java) inside_block:startingYCQLContainer
+<!--/codeinclude-->
+
 
 ## Adding this module to your project dependencies
 

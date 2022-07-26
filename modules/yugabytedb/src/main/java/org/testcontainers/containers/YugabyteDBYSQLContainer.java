@@ -3,17 +3,10 @@ package org.testcontainers.containers;
 import java.time.Duration;
 import java.util.Set;
 
-import org.testcontainers.containers.strategy.YugabyteYSQLWaitStrategy;
+import org.testcontainers.containers.strategy.YugabyteDBYSQLWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
 import static java.util.Collections.singleton;
-import static org.testcontainers.containers.YugabyteContainerConstants.DEFAULT_IMAGE_NAME;
-import static org.testcontainers.containers.YugabyteContainerConstants.ENTRYPOINT;
-import static org.testcontainers.containers.YugabyteContainerConstants.JDBC_CONNECT_PREFIX;
-import static org.testcontainers.containers.YugabyteContainerConstants.JDBC_DRIVER_CLASS;
-import static org.testcontainers.containers.YugabyteContainerConstants.MASTER_DASHBOARD_PORT;
-import static org.testcontainers.containers.YugabyteContainerConstants.TSERVER_DASHBOARD_PORT;
-import static org.testcontainers.containers.YugabyteContainerConstants.YSQL_PORT;
 
 /**
  * YugabyteDB YSQL (Structured Query Language) API container
@@ -22,7 +15,21 @@ import static org.testcontainers.containers.YugabyteContainerConstants.YSQL_PORT
  * @see <a href="https://docs.yugabyte.com/latest/api/ysql/">YSQL API</a>
  */
 
-public class YugabyteYSQLContainer extends JdbcDatabaseContainer<YugabyteYSQLContainer> {
+public class YugabyteDBYSQLContainer extends JdbcDatabaseContainer<YugabyteDBYSQLContainer> {
+
+	private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("yugabytedb/yugabyte");
+
+	private static final Integer YSQL_PORT = 5433;
+
+	private static final Integer MASTER_DASHBOARD_PORT = 7000;
+
+	private static final Integer TSERVER_DASHBOARD_PORT = 9000;
+
+	private static final String JDBC_DRIVER_CLASS = "com.yugabyte.Driver";
+
+	private static final String JDBC_CONNECT_PREFIX = "jdbc:yugabytedb";
+
+	private static final String ENTRYPOINT = "bin/yugabyted start --daemon=false";
 
 	private String database = "yugabyte";
 
@@ -33,18 +40,18 @@ public class YugabyteYSQLContainer extends JdbcDatabaseContainer<YugabyteYSQLCon
 	/**
 	 * @param imageName image name
 	 */
-	public YugabyteYSQLContainer(final String imageName) {
+	public YugabyteDBYSQLContainer(final String imageName) {
 		this(DockerImageName.parse(imageName));
 	}
 
 	/**
 	 * @param imageName image name
 	 */
-	public YugabyteYSQLContainer(final DockerImageName imageName) {
+	public YugabyteDBYSQLContainer(final DockerImageName imageName) {
 		super(imageName);
 		imageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 		withExposedPorts(YSQL_PORT, MASTER_DASHBOARD_PORT, TSERVER_DASHBOARD_PORT);
-		waitingFor(new YugabyteYSQLWaitStrategy(this).withStartupTimeout(Duration.ofSeconds(60)));
+		waitingFor(new YugabyteDBYSQLWaitStrategy(this).withStartupTimeout(Duration.ofSeconds(60)));
 		withCommand(ENTRYPOINT);
 	}
 
@@ -101,11 +108,11 @@ public class YugabyteYSQLContainer extends JdbcDatabaseContainer<YugabyteYSQLCon
 	/**
 	 * Setting this would create the keyspace
 	 * @param database database name
-	 * @return {@link YugabyteYSQLContainer} instance
+	 * @return {@link YugabyteDBYSQLContainer} instance
 	 */
 
 	@Override
-	public YugabyteYSQLContainer withDatabaseName(final String database) {
+	public YugabyteDBYSQLContainer withDatabaseName(final String database) {
 		this.database = database;
 		return this;
 	}
@@ -113,11 +120,11 @@ public class YugabyteYSQLContainer extends JdbcDatabaseContainer<YugabyteYSQLCon
 	/**
 	 * Setting this would create the custom user role
 	 * @param username user name
-	 * @return {@link YugabyteYSQLContainer} instance
+	 * @return {@link YugabyteDBYSQLContainer} instance
 	 */
 
 	@Override
-	public YugabyteYSQLContainer withUsername(final String username) {
+	public YugabyteDBYSQLContainer withUsername(final String username) {
 		this.username = username;
 		return this;
 	}
@@ -125,11 +132,11 @@ public class YugabyteYSQLContainer extends JdbcDatabaseContainer<YugabyteYSQLCon
 	/**
 	 * Setting this along with {@link #withUsername(String)} would enable authentication
 	 * @param password password
-	 * @return {@link YugabyteYSQLContainer} instance
+	 * @return {@link YugabyteDBYSQLContainer} instance
 	 */
 
 	@Override
-	public YugabyteYSQLContainer withPassword(final String password) {
+	public YugabyteDBYSQLContainer withPassword(final String password) {
 		this.password = password;
 		return this;
 	}

@@ -14,7 +14,7 @@ import static java.util.Arrays.asList;
  * @author srinivasa-vasu
  */
 @RunWith(Parameterized.class)
-public class YugabyteYSQLJDBCDriverTest extends AbstractJDBCDriverTest {
+public class YugabyteDBYSQLJDBCDriverTest extends AbstractJDBCDriverTest {
 
 	@Parameterized.Parameters(name = "{index} - {0}")
 	public static Iterable<Object[]> data() {

@@ -6,17 +6,10 @@ import java.time.Duration;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.CqlSessionBuilder;
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import org.testcontainers.containers.delegate.YugabyteYCQLDelegate;
-import org.testcontainers.containers.strategy.YugabyteYCQLWaitStrategy;
+import org.testcontainers.containers.delegate.YugabyteDBYCQLDelegate;
+import org.testcontainers.containers.strategy.YugabyteDBYCQLWaitStrategy;
 import org.testcontainers.ext.ScriptUtils;
 import org.testcontainers.utility.DockerImageName;
-
-import static org.testcontainers.containers.YugabyteContainerConstants.DEFAULT_IMAGE_NAME;
-import static org.testcontainers.containers.YugabyteContainerConstants.ENTRYPOINT;
-import static org.testcontainers.containers.YugabyteContainerConstants.LOCAL_DC;
-import static org.testcontainers.containers.YugabyteContainerConstants.MASTER_DASHBOARD_PORT;
-import static org.testcontainers.containers.YugabyteContainerConstants.TSERVER_DASHBOARD_PORT;
-import static org.testcontainers.containers.YugabyteContainerConstants.YCQL_PORT;
 
 /**
  * YugabyteDB YCQL (Cloud Query Language) API container
@@ -24,7 +17,19 @@ import static org.testcontainers.containers.YugabyteContainerConstants.YCQL_PORT
  * @author srinivasa-vasu
  * @see <a href="https://docs.yugabyte.com/latest/api/ycql/">YCQL API</a>
  */
-public class YugabyteYCQLContainer extends GenericContainer<YugabyteYCQLContainer> {
+public class YugabyteDBYCQLContainer extends GenericContainer<YugabyteDBYCQLContainer> {
+
+	private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("yugabytedb/yugabyte");
+
+	private static final Integer YCQL_PORT = 9042;
+
+	private static final Integer MASTER_DASHBOARD_PORT = 7000;
+
+	private static final Integer TSERVER_DASHBOARD_PORT = 9000;
+
+	private static final String ENTRYPOINT = "bin/yugabyted start --daemon=false";
+
+	private static final String LOCAL_DC = "datacenter1";
 
 	private String keyspace;
 
@@ -37,18 +42,18 @@ public class YugabyteYCQLContainer extends GenericContainer<YugabyteYCQLContaine
 	/**
 	 * @param imageName image name
 	 */
-	public YugabyteYCQLContainer(final String imageName) {
+	public YugabyteDBYCQLContainer(final String imageName) {
 		this(DockerImageName.parse(imageName));
 	}
 
 	/**
 	 * @param imageName image name
 	 */
-	public YugabyteYCQLContainer(final DockerImageName imageName) {
+	public YugabyteDBYCQLContainer(final DockerImageName imageName) {
 		super(imageName);
 		imageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 		withExposedPorts(YCQL_PORT, MASTER_DASHBOARD_PORT, TSERVER_DASHBOARD_PORT);
-		waitingFor(new YugabyteYCQLWaitStrategy(this).withStartupTimeout(Duration.ofSeconds(60)));
+		waitingFor(new YugabyteDBYCQLWaitStrategy(this).withStartupTimeout(Duration.ofSeconds(60)));
 		withCommand(ENTRYPOINT);
 	}
 
@@ -67,9 +72,9 @@ public class YugabyteYCQLContainer extends GenericContainer<YugabyteYCQLContaine
 
 	/**
 	 * @param initScript path of the initialization script file
-	 * @return {@link YugabyteYCQLContainer} instance
+	 * @return {@link YugabyteDBYCQLContainer} instance
 	 */
-	public YugabyteYCQLContainer withInitScript(String initScript) {
+	public YugabyteDBYCQLContainer withInitScript(String initScript) {
 		this.initScript = initScript;
 		return this;
 	}
@@ -77,9 +82,9 @@ public class YugabyteYCQLContainer extends GenericContainer<YugabyteYCQLContaine
 	/**
 	 * Setting this would create the keyspace
 	 * @param keyspace keyspace
-	 * @return {@link YugabyteYCQLContainer} instance
+	 * @return {@link YugabyteDBYCQLContainer} instance
 	 */
-	public YugabyteYCQLContainer withKeyspaceName(final String keyspace) {
+	public YugabyteDBYCQLContainer withKeyspaceName(final String keyspace) {
 		this.keyspace = keyspace;
 		return this;
 	}
@@ -87,9 +92,9 @@ public class YugabyteYCQLContainer extends GenericContainer<YugabyteYCQLContaine
 	/**
 	 * Setting this would create the custom user role
 	 * @param username user name
-	 * @return {@link YugabyteYCQLContainer} instance
+	 * @return {@link YugabyteDBYCQLContainer} instance
 	 */
-	public YugabyteYCQLContainer withUsername(final String username) {
+	public YugabyteDBYCQLContainer withUsername(final String username) {
 		this.username = username;
 		return this;
 	}
@@ -97,9 +102,9 @@ public class YugabyteYCQLContainer extends GenericContainer<YugabyteYCQLContaine
 	/**
 	 * Setting this along with {@link #withUsername(String)} would enable authentication
 	 * @param password password
-	 * @return {@link YugabyteYCQLContainer} instance
+	 * @return {@link YugabyteDBYCQLContainer} instance
 	 */
-	public YugabyteYCQLContainer withPassword(final String password) {
+	public YugabyteDBYCQLContainer withPassword(final String password) {
 		this.password = password;
 		return this;
 	}
@@ -111,7 +116,7 @@ public class YugabyteYCQLContainer extends GenericContainer<YugabyteYCQLContaine
 	@Override
 	protected void containerIsStarted(InspectContainerResponse containerInfo) {
 		if (initScript != null) {
-			ScriptUtils.runInitScript(new YugabyteYCQLDelegate(getSessionBuilder()), initScript);
+			ScriptUtils.runInitScript(new YugabyteDBYCQLDelegate(getSessionBuilder()), initScript);
 		}
 	}
 

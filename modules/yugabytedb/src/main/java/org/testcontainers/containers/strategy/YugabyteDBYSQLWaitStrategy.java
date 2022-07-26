@@ -6,12 +6,11 @@ import java.util.concurrent.TimeUnit;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.testcontainers.containers.YugabyteYSQLContainer;
+import org.testcontainers.containers.YugabyteDBYSQLContainer;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 
 import static org.rnorth.ducttape.unreliables.Unreliables.retryUntilSuccess;
-import static org.testcontainers.containers.YugabyteContainerConstants.YSQL_TEST_QUERY;
 
 /**
  * Custom wait strategy for YSQL API.
@@ -28,13 +27,15 @@ import static org.testcontainers.containers.YugabyteContainerConstants.YSQL_TEST
  */
 @RequiredArgsConstructor
 @Slf4j
-public final class YugabyteYSQLWaitStrategy extends AbstractWaitStrategy {
+public final class YugabyteDBYSQLWaitStrategy extends AbstractWaitStrategy {
+
+	private static final String YSQL_TEST_QUERY = "SELECT 1";
 
 	private final WaitStrategyTarget target;
 
 	@Override
 	public void waitUntilReady(WaitStrategyTarget target) {
-		YugabyteYSQLContainer container = (YugabyteYSQLContainer) target;
+		YugabyteDBYSQLContainer container = (YugabyteDBYSQLContainer) target;
 		retryUntilSuccess((int) startupTimeout.getSeconds(), TimeUnit.SECONDS, () -> {
 			getRateLimiter().doWhenReady(() -> {
 				try (Connection con = container.createConnection(container.getJdbcUrl())) {
