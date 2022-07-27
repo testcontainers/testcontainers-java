@@ -52,10 +52,12 @@ public class SimpleOracleTest extends AbstractContainerDatabaseTest {
     @Test
     public void testPluggableDatabaseAndCustomUser() throws SQLException {
         try (
-            OracleContainer oracle = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME)
+            // constructor {
+            OracleContainer oracle = new OracleContainer("gvenzl/oracle-xe:18.4.0-slim")
                 .withDatabaseName("testDB")
                 .withUsername("testUser")
                 .withPassword("testPassword")
+            // }
         ) {
             runTest(oracle, "testDB", "testUser", "testPassword");
         }
