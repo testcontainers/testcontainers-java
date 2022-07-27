@@ -11,7 +11,6 @@ jobs:
   build:
     # Check https://circleci.com/docs/executor-intro#linux-vm for more details
     machine: true
-
     steps:
       - checkout
 
