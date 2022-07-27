@@ -10,7 +10,6 @@ Here is a sample CircleCI configuration that does a checkout of a project and ru
 jobs:
   build:
     # Check https://circleci.com/docs/executor-intro#linux-vm for more details
-    #
     machine: true
 
     steps:
