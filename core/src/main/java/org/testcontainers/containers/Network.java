@@ -41,15 +41,14 @@ public interface Network extends AutoCloseable, TestRule {
 
     static Network ofContainer(@NonNull String containerId) {
         class ContainerNetwork extends ExternalResource implements Network {
+
             @Override
             public String getId() {
                 return "container:" + containerId;
             }
 
             @Override
-            public void close() {
-
-            }
+            public void close() {}
         }
         return new ContainerNetwork();
     }
