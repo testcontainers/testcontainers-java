@@ -10,7 +10,7 @@ This example connects to the Cassandra Cluster, creates a keyspaces and asserts 
 <!--/codeinclude-->
 
 !!! warning
-    All methods returning instances of the Cassandra Driver's Cluster object in CassandraContainer have been deprecated. Providing these methods unnecessarily couples the Container to the Driver and creates potential breaking changes if the driver is updated.
+    All methods returning instances of the Cassandra Driver's Cluster object in `CassandraContainer` have been deprecated. Providing these methods unnecessarily couples the Container to the Driver and creates potential breaking changes if the driver is updated.
 
 ## Adding this module to your project dependencies
 
