@@ -129,3 +129,9 @@ In addition, you can deactivate this behaviour by specifying:
 ```properties
 dockerconfig.source=autoIgnoringUserProperties # 'auto' by default
 ```
+
+## Enabling Compose V2 compatibility
+
+> **composev2.enable = [true|false]**
+
+By enabling it, [Compose V2](https://www.docker.com/blog/announcing-compose-v2-general-availability/) will be used. 
