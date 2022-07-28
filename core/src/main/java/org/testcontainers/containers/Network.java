@@ -50,6 +50,7 @@ public interface Network extends AutoCloseable, TestRule {
             @Override
             public void close() {}
         }
+
         return new ContainerNetwork();
     }
 
