@@ -4,7 +4,6 @@ import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
-import com.datastax.oss.driver.api.core.CqlSession;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.testcontainers.containers.wait.CassandraQueryWaitStrategy;
@@ -126,25 +125,6 @@ public class CassandraContainerTest {
         }
     }
 
-    @Test
-    public void testCassandraGetContactPoint() {
-        try (
-            CassandraContainer<?> cassandraContainer = new CassandraContainer<>(CASSANDRA_IMAGE)
-                .withEnv("CASSANDRA_DC", "testdc")
-        ) {
-            cassandraContainer.start();
-            CqlSession session = CqlSession
-                .builder()
-                .addContactPoint(cassandraContainer.getContactPoint())
-                .withLocalDatacenter(cassandraContainer.getLocalDatacenter())
-                .build();
-            com.datastax.oss.driver.api.core.cql.ResultSet resultSet = performQuery(session, BASIC_QUERY);
-            assertEquals("CASSANDRA_DC is not testdc", "testdc", cassandraContainer.getEnvMap().get("CASSANDRA_DC"));
-            assertTrue("Query was not applied", resultSet.wasApplied());
-            assertNotNull("Result set has no release_version", resultSet.one().getString(0));
-        }
-    }
-
     private void testInitScript(CassandraContainer<?> cassandraContainer) {
         ResultSet resultSet = performQuery(cassandraContainer, "SELECT * FROM keySpaceTest.catalog_category");
         assertTrue("Query was not applied", resultSet.wasApplied());
@@ -166,12 +146,6 @@ public class CassandraContainerTest {
         try (Cluster closeableCluster = cluster) {
             Session session = closeableCluster.newSession();
             return session.execute(cql);
-        }
-    }
-
-    private com.datastax.oss.driver.api.core.cql.ResultSet performQuery(CqlSession session, String cql) {
-        try (CqlSession closeableSession = session) {
-            return closeableSession.execute(cql);
         }
     }
 }

@@ -5,8 +5,7 @@
 This example connects to the Cassandra Cluster, creates a keyspaces and asserts that is has been created.
 
 <!--codeinclude-->
-[Cassandra Driver 4.x](../../../examples/cassandra-container/src/test/java/org/testcontainers/containers/CassandraDriver4Test.java) inside_block:cassandra4
-[Cassandra Driver 3.x](../../../examples/cassandra-container/src/test/java/org/testcontainers/containers/CassandraDriver3Test.java) inside_block:cassandra3
+[Building CqlSession](../../../modules/cassandra/src/test/java/org/testcontainers/containers/CassandraDriver3Test.java) inside_block:cassandra
 <!--/codeinclude-->
 
 !!! warning
