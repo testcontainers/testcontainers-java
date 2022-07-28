@@ -777,14 +777,13 @@ class LocalDockerCompose implements DockerCompose {
 
     private Map<String, String> env = new HashMap<>();
 
-    private static String executable;
+    private static String executable = TestcontainersConfiguration.getInstance().isComposeV2Enabled()
+        ? DOCKER_EXECUTABLE
+        : COMPOSE_EXECUTABLE;
 
     public LocalDockerCompose(List<File> composeFiles, String identifier) {
         this.composeFiles = composeFiles;
         this.identifier = identifier;
-
-        boolean composeV2Enabled = TestcontainersConfiguration.getInstance().isComposeV2Enabled();
-        executable = composeV2Enabled ? DOCKER_EXECUTABLE : COMPOSE_EXECUTABLE;
     }
 
     @Override
