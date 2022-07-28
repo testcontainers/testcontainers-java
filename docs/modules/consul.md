@@ -4,37 +4,9 @@ Testcontainers module for [Consul](https://github.com/hashicorp/consul). Consul 
 
 ## Usage example
 
-Running Consul in your Junit tests is easily done with an @Rule or @ClassRule such as the following:
-
-```java
-public class SomeTest {
-
-    @ClassRule
-    public static ConsulContainer consulContainer = new ConsulContainer<>()
-            .withPropertyInConsul("config/key", "value");
-    
-    @Test
-    public void someTestMethod() {       
-        //There are many integration clients for Consul so let's just define a general one here:
-        final ConsulClient consulClient = new ConsulClient(consulContainer.getHost(), consulContainer.getFirstMappedPort());
-
-        final Map<String, String> properties = new HashMap<>();
-        properties.put("value", "world");
-        properties.put("other_value", "another world");
-
-        // Write operation
-        properties.forEach((key, value) -> {
-            Response<Boolean> writeResponse = consulClient.setKVValue(key, value);
-            assertThat(writeResponse.getValue()).isTrue();
-        });
-
-        // Read operation
-        properties.forEach((key, value) -> {
-            Response<GetValue> readResponse = consulClient.getKVValue(key);
-            assertThat(readResponse.getValue().getDecodedValue()).isEqualTo(value);
-        });       
-    }
-```
+<!--codeinclude-->
+[Running Consul in your Junit tests](../../modules/consul/src/test/java/org/testcontainers/consul/ConsulContainerTest.java)
+<!--/codeinclude-->
 
 ## Why Consul in Junit tests?
 
