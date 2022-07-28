@@ -10,6 +10,7 @@ import org.junit.Test;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.utility.TestEnvironment;
+import org.testcontainers.utility.TestcontainersConfiguration;
 import redis.clients.jedis.Jedis;
 
 import java.io.File;
@@ -36,7 +37,7 @@ public class DockerComposeV2Test {
     @BeforeClass
     public static void checkVersion() {
         Assume.assumeTrue(TestEnvironment.dockerApiAtLeast("1.22"));
-        Assume.assumeTrue(Boolean.parseBoolean(System.getenv("TESTCONTAINERS_COMPOSEV2_ENABLE")));
+        Assume.assumeTrue(TestcontainersConfiguration.getInstance().isComposeV2Enabled());
     }
 
     @Test
