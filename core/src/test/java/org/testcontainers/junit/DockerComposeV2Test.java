@@ -27,7 +27,6 @@ public class DockerComposeV2Test {
     public DockerComposeContainer environment = new DockerComposeContainer(
         new File("src/test/resources/v2-compose-test.yml")
     )
-        .withComposeV2()
         .withExposedService("redis-1", REDIS_PORT);
 
     protected static final int REDIS_PORT = 6379;
@@ -37,6 +36,7 @@ public class DockerComposeV2Test {
     @BeforeClass
     public static void checkVersion() {
         Assume.assumeTrue(TestEnvironment.dockerApiAtLeast("1.22"));
+        Assume.assumeTrue(Boolean.parseBoolean(System.getenv("TESTCONTAINERS_COMPOSEV2_ENABLE")));
     }
 
     @Test

@@ -39,6 +39,7 @@ import org.testcontainers.utility.LogUtils;
 import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.PathUtils;
 import org.testcontainers.utility.ResourceReaper;
+import org.testcontainers.utility.TestcontainersConfiguration;
 import org.zeroturnaround.exec.InvalidExitValueException;
 import org.zeroturnaround.exec.ProcessExecutor;
 import org.zeroturnaround.exec.stream.slf4j.Slf4jStream;
@@ -139,6 +140,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
     }
 
     public DockerComposeContainer(String identifier, List<File> composeFiles) {
+        this.composeV2 = TestcontainersConfiguration.getInstance().isComposeV2Enabled();
         this.composeFiles = composeFiles;
         this.dockerComposeFiles = new DockerComposeFiles(composeFiles);
 
@@ -619,11 +621,6 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
         return self();
     }
 
-    public SELF withComposeV2() {
-        this.composeV2 = true;
-        return self();
-    }
-
     public Optional<ContainerState> getContainerByServiceName(String serviceName) {
         return Optional.ofNullable(serviceInstanceMap.get(serviceName));
     }
@@ -770,6 +767,8 @@ class LocalDockerCompose implements DockerCompose {
         ? "docker-compose.exe"
         : "docker-compose";
 
+    private static final String DOCKER_EXECUTABLE = SystemUtils.IS_OS_WINDOWS ? "docker.exe" : "docker";
+
     private final List<File> composeFiles;
 
     private final String identifier;
@@ -778,9 +777,14 @@ class LocalDockerCompose implements DockerCompose {
 
     private Map<String, String> env = new HashMap<>();
 
+    private static String executable;
+
     public LocalDockerCompose(List<File> composeFiles, String identifier) {
         this.composeFiles = composeFiles;
         this.identifier = identifier;
+
+        boolean composeV2Enabled = TestcontainersConfiguration.getInstance().isComposeV2Enabled();
+        executable = composeV2Enabled ? DOCKER_EXECUTABLE : COMPOSE_EXECUTABLE;
     }
 
     @Override
@@ -797,16 +801,14 @@ class LocalDockerCompose implements DockerCompose {
 
     @VisibleForTesting
     static boolean executableExists() {
-        return CommandLine.executableExists(COMPOSE_EXECUTABLE);
+        return CommandLine.executableExists(executable);
     }
 
     @Override
     public void invoke() {
         // bail out early
         if (!executableExists()) {
-            throw new ContainerLaunchException(
-                "Local Docker Compose not found. Is " + COMPOSE_EXECUTABLE + " on the PATH?"
-            );
+            throw new ContainerLaunchException("Local Docker Compose not found. Is " + executable + " on the PATH?");
         }
 
         final Map<String, String> environment = Maps.newHashMap(env);
@@ -843,10 +845,7 @@ class LocalDockerCompose implements DockerCompose {
 
         logger().info("Local Docker Compose is running command: {}", cmd);
 
-        final List<String> command = Splitter
-            .onPattern(" ")
-            .omitEmptyStrings()
-            .splitToList(COMPOSE_EXECUTABLE + " " + cmd);
+        final List<String> command = Splitter.onPattern(" ").omitEmptyStrings().splitToList(executable + " " + cmd);
 
         try {
             new ProcessExecutor()
@@ -875,6 +874,6 @@ class LocalDockerCompose implements DockerCompose {
      * @return a logger
      */
     private Logger logger() {
-        return DockerLoggerFactory.getLogger(COMPOSE_EXECUTABLE);
+        return DockerLoggerFactory.getLogger(executable);
     }
 }
