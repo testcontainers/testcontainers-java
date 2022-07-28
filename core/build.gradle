@@ -47,6 +47,7 @@ tasks.japicmp {
     methodExcludes = [
         "org.testcontainers.containers.Container#getDockerClient()",
         "org.testcontainers.containers.ContainerState#getDockerClient()",
+        "org.testcontainers.containers.Network#ofContainer(java.lang.String)",
     ]
 
     fieldExcludes = []
