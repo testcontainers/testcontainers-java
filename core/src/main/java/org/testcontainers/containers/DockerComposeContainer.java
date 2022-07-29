@@ -107,6 +107,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
 
     private final Map<String, WaitAllStrategy> waitStrategyMap = new ConcurrentHashMap<>();
 
+    private Duration startupTimeout = Duration.ofMinutes(30);
+
     private final SocatContainer ambassadorContainer = new SocatContainer();
 
     private final Map<String, List<Consumer<OutputFrame>>> logConsumers = new ConcurrentHashMap<>();
@@ -475,14 +477,15 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
     /*
      * can have multiple wait strategies for a single container, e.g. if waiting on several ports
      * if no wait strategy is defined, the WaitAllStrategy will return immediately.
-     * The WaitAllStrategy uses a long timeout, because timeouts should be handled by the inner strategies.
+     * The WaitAllStrategy uses the startup timeout for everything as a global maximum,
+     * but we expect timeouts to be handled by the inner strategies.
      */
     private void addWaitStrategy(String serviceInstanceName, @NonNull WaitStrategy waitStrategy) {
         final WaitAllStrategy waitAllStrategy = waitStrategyMap.computeIfAbsent(
             serviceInstanceName,
             __ -> {
                 return new WaitAllStrategy(WaitAllStrategy.Mode.WITH_MAXIMUM_OUTER_TIMEOUT)
-                    .withStartupTimeout(Duration.ofMinutes(30));
+                    .withStartupTimeout(startupTimeout);
             }
         );
         waitAllStrategy.withStrategy(waitStrategy);
@@ -649,6 +652,16 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
      */
     public SELF withRemoveImages(RemoveImages removeImages) {
         this.removeImages = removeImages;
+        return self();
+    }
+
+    /**
+     * Set the maximum startup timeout all the waits set are bounded to.
+     *
+     * @return this instance. for chaining
+     */
+    public SELF withStartupTimeout(Duration startupTimeout) {
+        this.startupTimeout = startupTimeout;
         return self();
     }
 

@@ -246,12 +246,11 @@ public abstract class DockerClientProviderStrategy {
             .findFirst()
             .orElseThrow(() -> {
                 log.error(
-                    "Could not find a valid Docker environment. Please check configuration. Attempted configurations were:"
+                    "Could not find a valid Docker environment. Please check configuration. Attempted configurations were:\n" +
+                    configurationFailures.stream().map(it -> "\t" + it).collect(Collectors.joining("\n")) +
+                    "As no valid configuration was found, execution cannot continue.\n" +
+                    "See https://www.testcontainers.org/on_failure.html for more details."
                 );
-                for (String failureMessage : configurationFailures) {
-                    log.error("    " + failureMessage);
-                }
-                log.error("As no valid configuration was found, execution cannot continue");
 
                 FAIL_FAST_ALWAYS.set(true);
                 return new IllegalStateException(
