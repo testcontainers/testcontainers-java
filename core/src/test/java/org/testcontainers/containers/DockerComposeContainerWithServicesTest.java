@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
 
 public class DockerComposeContainerWithServicesTest {
 
@@ -92,17 +92,24 @@ public class DockerComposeContainerWithServicesTest {
 
     @Test
     public void testStartupTimeoutSetsTheHighestTimeout() {
-        assertThrows("We expect a timeout from the startup timeout", org.rnorth.ducttape.TimeoutException.class,
+        assertThrows(
+            "We expect a timeout from the startup timeout",
+            org.rnorth.ducttape.TimeoutException.class,
             () -> {
                 try (
                     DockerComposeContainer<?> compose = new DockerComposeContainer<>(SIMPLE_COMPOSE_FILE)
                         .withServices("redis")
                         .withStartupTimeout(Duration.ofMillis(1))
-                        .withExposedService("redis", 80, Wait.forListeningPort().withStartupTimeout(Duration.ofMinutes(1)));
+                        .withExposedService(
+                            "redis",
+                            80,
+                            Wait.forListeningPort().withStartupTimeout(Duration.ofMinutes(1))
+                        );
                 ) {
                     compose.start();
                 }
-            });
+            }
+        );
     }
 
     private void verifyStartedContainers(final DockerComposeContainer<?> compose, final String... names) {
