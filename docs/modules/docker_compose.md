@@ -122,7 +122,7 @@ public static DockerComposeContainer environment =
 
 ## Compose V2
 
-[Compose V2 is GA](https://www.docker.com/blog/announcing-compose-v2-general-availability/) and it relies in `docker` command instead of `docker-compose`.
+[Compose V2 is GA](https://www.docker.com/blog/announcing-compose-v2-general-availability/) and it relies on the `docker` command itself instead of `docker-compose`.
 
 ```java
 public static DockerComposeContainer environment =
