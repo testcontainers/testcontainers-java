@@ -1,0 +1,8 @@
+description = "TestContainers :: opensearch"
+
+dependencies {
+    api project(':testcontainers')
+    testImplementation "org.opensearch.client:opensearch-rest-client:1.3.4"
+    testImplementation "org.opensearch.client:transport:1.3.4"
+    testImplementation 'org.rnorth.visible-assertions:visible-assertions:2.1.2'
+}
