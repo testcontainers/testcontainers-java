@@ -12,6 +12,8 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.Uninterruptibles;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -45,6 +47,7 @@ import org.zeroturnaround.exec.ProcessExecutor;
 import org.zeroturnaround.exec.stream.slf4j.Slf4jStream;
 
 import java.io.File;
+import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -112,6 +115,19 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
 
     private List<String> services = new ArrayList<>();
 
+    private List<ExposedService> exposedServices = new ArrayList<>();
+
+    @AllArgsConstructor
+    @Getter
+    class ExposedService {
+
+        private String name;
+
+        private int port;
+
+        private WaitStrategy waitStrategy;
+    }
+
     /**
      * Properties that should be passed through to all Compose and ambassador containers (not
      * necessarily to containers that are spawned by Compose itself)
@@ -120,7 +136,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
 
     private RemoveImages removeImages;
 
-    private boolean composeV2 = false;
+    private boolean composeV2;
 
     @Deprecated
     public DockerComposeContainer(File composeFile, String identifier) {
@@ -140,7 +156,6 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
     }
 
     public DockerComposeContainer(String identifier, List<File> composeFiles) {
-        this.composeV2 = TestcontainersConfiguration.getInstance().isComposeV2Enabled();
         this.composeFiles = composeFiles;
         this.dockerComposeFiles = new DockerComposeFiles(composeFiles);
 
@@ -188,10 +203,52 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
                     log.warn("Exception while pulling images, using local images if available", e);
                 }
             }
+            resolveDockerComposeVersion();
+            registerServices();
             createServices();
             startAmbassadorContainers();
             waitUntilServiceStarted();
         }
+    }
+
+    private void resolveDockerComposeVersion() {
+        if (this.localCompose) {
+            this.composeV2 = LocalDockerCompose.IS_COMPOSE_V2;
+            return;
+        }
+        this.composeV2 = TestcontainersConfiguration.getInstance().isComposeV2Enabled();
+    }
+
+    private void registerServices() {
+        this.exposedServices.forEach(exposedService -> {
+                String serviceInstanceName = getServiceInstanceName(exposedService.getName());
+
+                /*
+                 * For every service/port pair that needs to be exposed, we register a target on an 'ambassador container'.
+                 *
+                 * The ambassador container's role is to link (within the Docker network) to one of the
+                 * compose services, and proxy TCP network I/O out to a port that the ambassador container
+                 * exposes.
+                 *
+                 * This avoids the need for the docker compose file to explicitly expose ports on all the
+                 * services.
+                 *
+                 * {@link GenericContainer} should ensure that the ambassador container is on the same network
+                 * as the rest of the compose environment.
+                 */
+
+                // Ambassador container will be started together after docker compose has started
+                int ambassadorPort = nextAmbassadorPort.getAndIncrement();
+                ambassadorPortMappings
+                    .computeIfAbsent(serviceInstanceName, __ -> new ConcurrentHashMap<>())
+                    .put(exposedService.getPort(), ambassadorPort);
+                ambassadorContainer.withTarget(ambassadorPort, serviceInstanceName, exposedService.getPort());
+                ambassadorContainer.addLink(
+                    new FutureContainer(this.project + composeSeparator() + serviceInstanceName),
+                    serviceInstanceName
+                );
+                addWaitStrategy(serviceInstanceName, exposedService.getWaitStrategy());
+            });
     }
 
     private void pullImages() {
@@ -333,7 +390,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
         if (localCompose) {
             dockerCompose = new LocalDockerCompose(composeFiles, project);
         } else {
-            DockerImageName composeImageName = composeV2
+            DockerImageName composeImageName = this.composeV2
                 ? ContainerisedDockerCompose.DEFAULT_IMAGE_NAME
                 : ContainerisedDockerCompose.DEFAULT_COMPOSE_IMAGE_NAME;
             dockerCompose = new ContainerisedDockerCompose(composeImageName, composeFiles, project);
@@ -402,33 +459,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
     }
 
     public SELF withExposedService(String serviceName, int servicePort, @NonNull WaitStrategy waitStrategy) {
-        String serviceInstanceName = getServiceInstanceName(serviceName);
-
-        /*
-         * For every service/port pair that needs to be exposed, we register a target on an 'ambassador container'.
-         *
-         * The ambassador container's role is to link (within the Docker network) to one of the
-         * compose services, and proxy TCP network I/O out to a port that the ambassador container
-         * exposes.
-         *
-         * This avoids the need for the docker compose file to explicitly expose ports on all the
-         * services.
-         *
-         * {@link GenericContainer} should ensure that the ambassador container is on the same network
-         * as the rest of the compose environment.
-         */
-
-        // Ambassador container will be started together after docker compose has started
-        int ambassadorPort = nextAmbassadorPort.getAndIncrement();
-        ambassadorPortMappings
-            .computeIfAbsent(serviceInstanceName, __ -> new ConcurrentHashMap<>())
-            .put(servicePort, ambassadorPort);
-        ambassadorContainer.withTarget(ambassadorPort, serviceInstanceName, servicePort);
-        ambassadorContainer.addLink(
-            new FutureContainer(this.project + composeSeparator() + serviceInstanceName),
-            serviceInstanceName
-        );
-        addWaitStrategy(serviceInstanceName, waitStrategy);
+        this.exposedServices.add(new ExposedService(serviceName, servicePort, waitStrategy));
         return self();
     }
 
@@ -444,7 +475,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
     /*
      * can have multiple wait strategies for a single container, e.g. if waiting on several ports
      * if no wait strategy is defined, the WaitAllStrategy will return immediately.
-     * The WaitAllStrategy uses an long timeout, because timeouts should be handled by the inner strategies.
+     * The WaitAllStrategy uses a long timeout, because timeouts should be handled by the inner strategies.
      */
     private void addWaitStrategy(String serviceInstanceName, @NonNull WaitStrategy waitStrategy) {
         final WaitAllStrategy waitAllStrategy = waitStrategyMap.computeIfAbsent(
@@ -516,15 +547,15 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
     }
 
     private String getUpCommand() {
-        return composeV2 ? "compose up -d" : "up -d";
+        return this.composeV2 ? "compose up -d" : "up -d";
     }
 
     private String getDownCommand() {
-        return composeV2 ? "compose down -v" : "down -v";
+        return this.composeV2 ? "compose down -v" : "down -v";
     }
 
     private String composeSeparator() {
-        return composeV2 ? "-" : "_";
+        return this.composeV2 ? "-" : "_";
     }
 
     public SELF withScaledService(String serviceBaseName, int numInstances) {
@@ -777,9 +808,28 @@ class LocalDockerCompose implements DockerCompose {
 
     private Map<String, String> env = new HashMap<>();
 
-    private static String executable = TestcontainersConfiguration.getInstance().isComposeV2Enabled()
-        ? DOCKER_EXECUTABLE
-        : COMPOSE_EXECUTABLE;
+    private static final String executable = resolveDockerComposeExecutable();
+
+    public static final boolean IS_COMPOSE_V2 = DOCKER_EXECUTABLE.equals(executable);
+
+    private static String resolveDockerComposeExecutable() {
+        try {
+            ProcessBuilder processBuilder = new ProcessBuilder(DOCKER_EXECUTABLE, "compose", "--help");
+            int exitValue = processBuilder.start().waitFor();
+            if (exitValue == 0) {
+                return DOCKER_EXECUTABLE;
+            }
+        } catch (IOException | InterruptedException e) {
+            try {
+                ProcessBuilder processBuilder = new ProcessBuilder(COMPOSE_EXECUTABLE, "--help");
+                int exitValue = processBuilder.start().waitFor();
+                if (exitValue == 0) {
+                    return COMPOSE_EXECUTABLE;
+                }
+            } catch (IOException | InterruptedException ex) {}
+        }
+        throw new RuntimeException("docker or docker-compose commands were not found");
+    }
 
     public LocalDockerCompose(List<File> composeFiles, String identifier) {
         this.composeFiles = composeFiles;

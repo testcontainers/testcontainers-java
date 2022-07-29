@@ -127,7 +127,6 @@ public static DockerComposeContainer environment =
 ```java
 public static DockerComposeContainer environment =
     new DockerComposeContainer(new File("src/test/resources/compose-test.yml"))
-            .withComposeV2()
             .withExposedService("redis-1", REDIS_PORT, Wait.forListeningPort())
             .waitingFor("db-1", Wait.forLogMessage("started", 1));
 ```
