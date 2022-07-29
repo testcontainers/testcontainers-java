@@ -186,7 +186,7 @@ public class TestcontainersConfiguration {
     }
 
     public boolean isComposeV2Enabled() {
-        return Boolean.parseBoolean(getEnvVarOrUserProperty("composev2.enable", "false"));
+        return Boolean.parseBoolean(getEnvVarOrUserProperty("testcontainers.composev2.enable", "false"));
     }
 
     public String getDockerClientStrategyClassName() {

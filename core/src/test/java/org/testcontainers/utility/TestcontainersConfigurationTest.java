@@ -265,7 +265,7 @@ public class TestcontainersConfigurationTest {
     public void shouldReadComposeV2FromUserProperties() {
         assertFalse("compose v2 enabled by default", newConfig().isComposeV2Enabled());
 
-        userProperties.setProperty("composev2.enable", "true");
+        userProperties.setProperty("testcontainers.composev2.enable", "true");
         assertTrue("compose v2 disabled via user properties", newConfig().isComposeV2Enabled());
     }
 
@@ -273,7 +273,7 @@ public class TestcontainersConfigurationTest {
     public void shouldReadComposeV2FromEnvironment() {
         assertFalse("compose v2 enabled by default", newConfig().isComposeV2Enabled());
 
-        userProperties.remove("composev2.enable");
+        userProperties.remove("testcontainers.composev2.enable");
         environment.put("TESTCONTAINERS_COMPOSEV2_ENABLE", "true");
         assertTrue("compose v2 disabled via env var", newConfig().isComposeV2Enabled());
     }
