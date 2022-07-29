@@ -3,7 +3,10 @@ package org.testcontainers.consul;
 import com.ecwid.consul.v1.ConsulClient;
 import com.ecwid.consul.v1.Response;
 import com.ecwid.consul.v1.kv.model.GetValue;
+import io.restassured.RestAssured;
 import org.assertj.core.api.Assertions;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;
@@ -13,11 +16,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
-
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * This test shows the pattern to use the ConsulContainer @ClassRule for a junit test. It also has tests that ensure
@@ -33,19 +31,20 @@ public class ConsulContainerTest {
     public void readFirstPropertyPathWithCli() throws IOException, InterruptedException {
         GenericContainer.ExecResult result = consulContainer.execInContainer("consul", "kv", "get", "config/testing1");
         final String output = result.getStdout().replaceAll("\\r?\\n", "");
-        assertThat(output, containsString("value123"));
+        MatcherAssert.assertThat(output, CoreMatchers.containsString("value123"));
     }
 
     @Test
     public void readFirstSecretPathOverHttpApi() throws InterruptedException {
-        given()
+        RestAssured
+            .given()
             .when()
             .get("http://" + getHostAndPort() + "/v1/kv/config/testing1")
             .then()
             .assertThat()
             .body(
                 "[0].Value",
-                equalTo(Base64.getEncoder().encodeToString("value123".getBytes(StandardCharsets.UTF_8)))
+                CoreMatchers.equalTo(Base64.getEncoder().encodeToString("value123".getBytes(StandardCharsets.UTF_8)))
             );
     }
 

@@ -23,6 +23,7 @@ public class ConsulContainer extends GenericContainer<ConsulContainer> {
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("consul");
 
     private static final int CONSUL_HTTP_PORT = 8500;
+
     private static final int CONSUL_GRPC_PORT = 8502;
 
     private List<String> initCommands = new ArrayList<>();
@@ -40,7 +41,7 @@ public class ConsulContainer extends GenericContainer<ConsulContainer> {
         // Use the status leader endpoint to verify if consul is running.
         setWaitStrategy(Wait.forHttp("/v1/status/leader").forPort(CONSUL_HTTP_PORT).forStatusCode(200));
 
-        withCreateContainerCmdModifier(cmd -> cmd.withCapAdd(Capability.IPC_LOCK));
+        withCreateContainerCmdModifier(cmd -> cmd.getHostConfig().withCapAdd(Capability.IPC_LOCK));
         withEnv("CONSUL_ADDR", "http://0.0.0.0:" + CONSUL_HTTP_PORT);
         withCommand(startConsulCmd);
         withExposedPorts(CONSUL_HTTP_PORT, CONSUL_GRPC_PORT);
