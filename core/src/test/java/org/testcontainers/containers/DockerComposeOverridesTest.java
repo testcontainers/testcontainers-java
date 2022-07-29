@@ -34,7 +34,7 @@ public class DockerComposeOverridesTest {
 
     private static final int SERVICE_PORT = 3000;
 
-    private static final String SERVICE_NAME = "alpine_1";
+    private final String serviceName;
 
     private final boolean localMode;
 
@@ -42,20 +42,26 @@ public class DockerComposeOverridesTest {
 
     private final File[] composeFiles;
 
-    public DockerComposeOverridesTest(boolean localMode, String expectedEnvVar, File... composeFiles) {
+    public DockerComposeOverridesTest(
+        String serviceName,
+        boolean localMode,
+        String expectedEnvVar,
+        File... composeFiles
+    ) {
+        this.serviceName = serviceName;
         this.localMode = localMode;
         this.expectedEnvVar = expectedEnvVar;
         this.composeFiles = composeFiles;
     }
 
-    @Parameters(name = "{index}: local[{0}], composeFiles[{2}], expectedEnvVar[{1}]")
+    @Parameters(name = "{index}: serviceName[{0}] local[{1}], composeFiles[{3}], expectedEnvVar[{2}]")
     public static Iterable<Object[]> data() {
         return Arrays.asList(
             new Object[][] {
-                { true, BASE_ENV_VAR, new File[] { BASE_COMPOSE_FILE } },
-                { true, OVERRIDE_ENV_VAR, new File[] { BASE_COMPOSE_FILE, OVERRIDE_COMPOSE_FILE } },
-                { false, BASE_ENV_VAR, new File[] { BASE_COMPOSE_FILE } },
-                { false, OVERRIDE_ENV_VAR, new File[] { BASE_COMPOSE_FILE, OVERRIDE_COMPOSE_FILE } },
+                { "alpine-1", true, BASE_ENV_VAR, new File[] { BASE_COMPOSE_FILE } },
+                { "alpine-1", true, OVERRIDE_ENV_VAR, new File[] { BASE_COMPOSE_FILE, OVERRIDE_COMPOSE_FILE } },
+                { "alpine_1", false, BASE_ENV_VAR, new File[] { BASE_COMPOSE_FILE } },
+                { "alpine_1", false, OVERRIDE_ENV_VAR, new File[] { BASE_COMPOSE_FILE, OVERRIDE_COMPOSE_FILE } },
             }
         );
     }
@@ -63,10 +69,7 @@ public class DockerComposeOverridesTest {
     @Before
     public void setUp() {
         if (localMode) {
-            Assumptions
-                .assumeThat(LocalDockerCompose.executableExists())
-                .as("docker-compose executable exists")
-                .isTrue();
+            Assumptions.assumeThat(LocalDockerCompose.executableExists()).as("docker executable exists").isTrue();
         }
     }
 
@@ -75,7 +78,7 @@ public class DockerComposeOverridesTest {
         try (
             DockerComposeContainer compose = new DockerComposeContainer(composeFiles)
                 .withLocalCompose(localMode)
-                .withExposedService(SERVICE_NAME, SERVICE_PORT)
+                .withExposedService(serviceName, SERVICE_PORT)
         ) {
             compose.start();
 
@@ -86,8 +89,8 @@ public class DockerComposeOverridesTest {
                     Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
 
                     Socket socket = new Socket(
-                        compose.getServiceHost(SERVICE_NAME, SERVICE_PORT),
-                        compose.getServicePort(SERVICE_NAME, SERVICE_PORT)
+                        compose.getServiceHost(serviceName, SERVICE_PORT),
+                        compose.getServicePort(serviceName, SERVICE_PORT)
                     );
                     return new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 }
