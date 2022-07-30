@@ -301,7 +301,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
             .distinct()
             .collect(Collectors.joining(" "));
 
-        String command = optionsAsString() + getUpCommand();
+        String command = getUpCommand(optionsAsString());
 
         if (build) {
             command += " --build";
@@ -323,7 +323,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
         String optionsString = options.stream().collect(Collectors.joining(" "));
         if (optionsString.length() != 0) {
             // ensures that there is a space between the options and 'up' if options are passed.
-            return optionsString + " ";
+            return optionsString;
         } else {
             // otherwise two spaces would appear between 'docker-compose' and 'up'
             return StringUtils.EMPTY;
@@ -549,8 +549,12 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
         }
     }
 
-    private String getUpCommand() {
-        return this.composeV2 ? "compose up -d" : "up -d";
+    private String getUpCommand(String options) {
+        if (options == null || options.equals("")) {
+            return this.composeV2 ? "compose up -d" : "up -d";
+        }
+        String cmd = this.composeV2 ? "compose %s up -d" : "%s up -d";
+        return String.format(cmd, options);
     }
 
     private String getDownCommand() {
