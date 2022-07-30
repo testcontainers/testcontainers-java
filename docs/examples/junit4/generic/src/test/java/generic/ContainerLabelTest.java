@@ -7,17 +7,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ContainerLabelTest {
+
     // single_label {
-    public GenericContainer containerWithLabel = new GenericContainer(DockerImageName.parse("alpine:3.14"))
+    public GenericContainer containerWithLabel = new GenericContainer(DockerImageName.parse("alpine:3.16"))
         .withLabel("key", "value");
     // }
-
 
     // multiple_labels {
     private Map<String, String> mapOfLabels = new HashMap<>();
     // populate map, e.g. mapOfLabels.put("key1", "value1");
 
-    public GenericContainer containerWithMultipleLabels = new GenericContainer(DockerImageName.parse("alpine:3.14"))
+    public GenericContainer containerWithMultipleLabels = new GenericContainer(DockerImageName.parse("alpine:3.16"))
         .withLabels(mapOfLabels);
     // }
 }

@@ -19,9 +19,9 @@ public class LogMessageWaitStrategyTest extends AbstractWaitStrategyTest<LogMess
     @Parameterized.Parameters(name = "{0}")
     public static Object[] parameters() {
         return new String[] {
-            ".*ready.*\\s",     // previous recommended style (explicit line ending)
-            ".*ready!\\s",      // explicit line ending without wildcard after expected text
-            ".*ready.*"         // new style (line ending matched by wildcard)
+            ".*ready.*\\s", // previous recommended style (explicit line ending)
+            ".*ready!\\s", // explicit line ending without wildcard after expected text
+            ".*ready.*", // new style (line ending matched by wildcard)
         };
     }
 
@@ -33,29 +33,34 @@ public class LogMessageWaitStrategyTest extends AbstractWaitStrategyTest<LogMess
 
     @Test
     public void testWaitUntilReady_Success() {
-        waitUntilReadyAndSucceed("echo -e \"" + READY_MESSAGE + "\";" +
-                "echo -e \"foobar\";" +
-                "echo -e \"" + READY_MESSAGE + "\";" +
-                "sleep 300");
+        waitUntilReadyAndSucceed(
+            "echo -e \"" +
+            READY_MESSAGE +
+            "\";" +
+            "echo -e \"foobar\";" +
+            "echo -e \"" +
+            READY_MESSAGE +
+            "\";" +
+            "sleep 300"
+        );
     }
 
     @Test
     public void testWaitUntilReady_Timeout() {
-        waitUntilReadyAndTimeout("echo -e \"" + READY_MESSAGE + "\";" +
-                "echo -e \"foobar\";" +
-                "sleep 300");
+        waitUntilReadyAndTimeout("echo -e \"" + READY_MESSAGE + "\";" + "echo -e \"foobar\";" + "sleep 300");
     }
 
     @NotNull
     @Override
     protected LogMessageWaitStrategy buildWaitStrategy(AtomicBoolean ready) {
-
         return new LogMessageWaitStrategy() {
             @Override
             protected void waitUntilReady() {
                 super.waitUntilReady();
                 ready.set(true);
             }
-        }.withRegEx(pattern).withTimes(2);
+        }
+            .withRegEx(pattern)
+            .withTimes(2);
     }
 }

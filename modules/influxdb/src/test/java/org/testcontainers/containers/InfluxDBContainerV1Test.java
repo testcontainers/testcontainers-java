@@ -4,15 +4,16 @@ import org.influxdb.InfluxDB;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 public class InfluxDBContainerV1Test {
 
     @ClassRule
-    public static InfluxDBContainer influxDBContainer =
-        new InfluxDBContainer(InfluxDBTestImages.INFLUXDB_V1_TEST_IMAGE);
+    public static InfluxDBContainer<?> influxDBContainer = new InfluxDBContainer<>(
+        InfluxDBTestImages.INFLUXDB_V1_TEST_IMAGE
+    );
 
     @Test
     public void getUrl() {

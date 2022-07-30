@@ -20,7 +20,6 @@ package org.testcontainers.couchbase;
  * Describes the different services that should be exposed on the container.
  */
 public enum CouchbaseService {
-
     /**
      * Key-Value service.
      */
@@ -46,7 +45,12 @@ public enum CouchbaseService {
     /**
      * Analytics service.
      */
-    ANALYTICS("cbas", 1024);
+    ANALYTICS("cbas", 1024),
+
+    /**
+     * Eventing service.
+     */
+    EVENTING("eventing", 256);
 
     private final String identifier;
 
@@ -83,5 +87,4 @@ public enum CouchbaseService {
     boolean hasQuota() {
         return minimumQuotaMb > 0;
     }
-
 }

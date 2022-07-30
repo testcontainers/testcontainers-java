@@ -9,21 +9,24 @@ import org.junit.Test;
 
 import java.util.concurrent.TimeUnit;
 
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 public class InfluxDBContainerV1WithUserTest {
 
     private static final String TEST_VERSION = InfluxDBTestImages.INFLUXDB_V1_TEST_IMAGE.getVersionPart();
+
     private static final String DATABASE = "test";
+
     private static final String USER = "test-user";
+
     private static final String PASSWORD = "test-password";
 
     @Rule
-    public InfluxDBContainer influxDBContainer = new InfluxDBContainer(InfluxDBTestImages.INFLUXDB_V1_TEST_IMAGE)
+    public InfluxDBContainer<?> influxDBContainer = new InfluxDBContainer<>(InfluxDBTestImages.INFLUXDB_V1_TEST_IMAGE)
         .withDatabase(DATABASE)
         .withUsername(USER)
         .withPassword(PASSWORD);
@@ -52,7 +55,8 @@ public class InfluxDBContainerV1WithUserTest {
     public void queryForWriteAndRead() {
         final InfluxDB influxDB = this.influxDBContainer.getNewInfluxDB();
 
-        final Point point = Point.measurement("cpu")
+        final Point point = Point
+            .measurement("cpu")
             .time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
             .addField("idle", 90L)
             .addField("user", 9L)
@@ -67,6 +71,5 @@ public class InfluxDBContainerV1WithUserTest {
         assertThat(actual.getError(), nullValue());
         assertThat(actual.getResults(), notNullValue());
         assertThat(actual.getResults().size(), is(1));
-
     }
 }

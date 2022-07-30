@@ -36,7 +36,6 @@ public abstract class AbstractImagePullPolicy implements ImagePullPolicy {
             log.debug("Using locally available and not pulling image: {}", imageName);
             return false;
         }
-
     }
 
     /**
@@ -45,5 +44,5 @@ public abstract class AbstractImagePullPolicy implements ImagePullPolicy {
      *
      * @return {@code true} to update the locally available image, {@code false} to use local instead
      */
-    abstract protected boolean shouldPullCached(DockerImageName imageName, ImageData localImageData);
+    protected abstract boolean shouldPullCached(DockerImageName imageName, ImageData localImageData);
 }

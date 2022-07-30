@@ -6,13 +6,14 @@ import org.testcontainers.containers.GenericContainer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.testcontainers.junit.jupiter.JUnitJupiterTestImages.HTTPD_IMAGE;
 
 @Testcontainers
 class TestcontainersSharedContainerTests {
 
     @Container
-    private static final GenericContainer<?> GENERIC_CONTAINER = new GenericContainer<>(HTTPD_IMAGE)
+    private static final GenericContainer<?> GENERIC_CONTAINER = new GenericContainer<>(
+        JUnitJupiterTestImages.HTTPD_IMAGE
+    )
         .withExposedPorts(80);
 
     private static String lastContainerId;
@@ -39,5 +40,4 @@ class TestcontainersSharedContainerTests {
             assertEquals(lastContainerId, GENERIC_CONTAINER.getContainerId());
         }
     }
-
 }

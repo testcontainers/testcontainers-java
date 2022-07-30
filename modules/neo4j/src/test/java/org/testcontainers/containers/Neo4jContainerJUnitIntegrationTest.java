@@ -20,16 +20,15 @@ import static org.assertj.core.api.Assertions.fail;
 public class Neo4jContainerJUnitIntegrationTest {
 
     @ClassRule
-    public static Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>(Neo4jTestImages.NEO4J_TEST_IMAGE);
+    public static Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4");
 
     @Test
     public void shouldStart() {
-
         boolean actual = neo4jContainer.isRunning();
         assertThat(actual).isTrue();
 
-        try (Driver driver = GraphDatabase
-            .driver(neo4jContainer.getBoltUrl(), AuthTokens.basic("neo4j", "password"));
+        try (
+            Driver driver = GraphDatabase.driver(neo4jContainer.getBoltUrl(), AuthTokens.basic("neo4j", "password"));
             Session session = driver.session()
         ) {
             long one = session.run("RETURN 1", Collections.emptyMap()).next().get(0).asLong();

@@ -1,8 +1,5 @@
 package org.testcontainers.junit.oracle;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
 import org.junit.Test;
 import org.testcontainers.containers.OracleContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
@@ -11,16 +8,22 @@ import org.testcontainers.utility.DockerImageName;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 public class SimpleOracleTest extends AbstractContainerDatabaseTest {
 
-    public static final DockerImageName ORACLE_DOCKER_IMAGE_NAME = DockerImageName.parse("gvenzl/oracle-xe:18.4.0-slim");
+    public static final DockerImageName ORACLE_DOCKER_IMAGE_NAME = DockerImageName.parse(
+        "gvenzl/oracle-xe:18.4.0-slim"
+    );
 
-    private void runTest(OracleContainer container, String databaseName, String username, String password) throws SQLException {
+    private void runTest(OracleContainer container, String databaseName, String username, String password)
+        throws SQLException {
         //Test config was honored
         assertEquals(databaseName, container.getDatabaseName());
         assertEquals(username, container.getUsername());
         assertEquals(password, container.getPassword());
-        
+
         //Test we can get a connection
         container.start();
         ResultSet resultSet = performQuery(container, "SELECT 1 FROM dual");
@@ -30,9 +33,7 @@ public class SimpleOracleTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testDefaultSettings() throws SQLException {
-        try (
-            OracleContainer oracle = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME);
-        ) {
+        try (OracleContainer oracle = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME);) {
             runTest(oracle, "xepdb1", "test", "test");
 
             // Match against the last '/'
@@ -43,10 +44,7 @@ public class SimpleOracleTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testPluggableDatabase() throws SQLException {
-        try (
-            OracleContainer oracle = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME)
-                .withDatabaseName("testDB")
-        ) {
+        try (OracleContainer oracle = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME).withDatabaseName("testDB")) {
             runTest(oracle, "testDB", "test", "test");
         }
     }
@@ -54,10 +52,12 @@ public class SimpleOracleTest extends AbstractContainerDatabaseTest {
     @Test
     public void testPluggableDatabaseAndCustomUser() throws SQLException {
         try (
-            OracleContainer oracle = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME)
+            // constructor {
+            OracleContainer oracle = new OracleContainer("gvenzl/oracle-xe:18.4.0-slim")
                 .withDatabaseName("testDB")
                 .withUsername("testUser")
                 .withPassword("testPassword")
+            // }
         ) {
             runTest(oracle, "testDB", "testUser", "testPassword");
         }
@@ -76,10 +76,7 @@ public class SimpleOracleTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSID() throws SQLException {
-        try (
-            OracleContainer oracle = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME)
-                .usingSid();
-        ) {
+        try (OracleContainer oracle = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME).usingSid();) {
             runTest(oracle, "xepdb1", "system", "test");
 
             // Match against the last ':'

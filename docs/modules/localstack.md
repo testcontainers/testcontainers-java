@@ -12,32 +12,17 @@ DockerImageName localstackImage = DockerImageName.parse("localstack/localstack:0
 @Rule
 public LocalStackContainer localstack = new LocalStackContainer(localstackImage)
         .withServices(S3);
-
-@Test
-public void someTestMethod() {
-    // AWS SDK v1
-    AmazonS3 s3 = AmazonS3ClientBuilder
-                    .standard()
-                    .withEndpointConfiguration(localstack.getEndpointConfiguration(S3))
-                    .withCredentials(localstack.getDefaultCredentialsProvider())
-                    .build();
-    
-            s3.createBucket("foo");
-            s3.putObject("foo", "bar", "baz");
-
-    // AWS SDK v2
-    S3Client s3 = S3Client
-                .builder()
-                .endpointOverride(localstack.getEndpointOverride(LocalStackContainer.Service.S3))
-                .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(
-                    localstack.getAccessKey(), localstack.getSecretKey()
-                )))
-                .region(Region.of(localstack.getRegion()))
-                .build();
-
-            s3.createBucket(b -> b.bucket("foo"));
-            s3.putObject(b -> b.bucket("foo").key("bar"), RequestBody.fromBytes("baz".getBytes()));
 ```
+
+## Creating a client using AWS SDK
+
+<!--codeinclude-->
+[AWS SDK V1](../../modules/localstack/src/test/java/org/testcontainers/containers/localstack/LocalstackContainerTest.java) inside_block:with_aws_sdk_v1
+<!--/codeinclude-->
+
+<!--codeinclude-->
+[AWS SDK V2](../../modules/localstack/src/test/java/org/testcontainers/containers/localstack/LocalstackContainerTest.java) inside_block:with_aws_sdk_v2
+<!--/codeinclude-->
 
 Environment variables listed in [Localstack's README](https://github.com/localstack/localstack#configurations) may be used to customize Localstack's configuration. 
 Use the `.withEnv(key, value)` method on `LocalStackContainer` to apply configuration settings.
@@ -66,15 +51,16 @@ Testcontainers will inform Localstack of the best hostname automatically, using 
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
-```groovy tab='Gradle'
-testImplementation "org.testcontainers:localstack:{{latest_version}}"
-```
-
-```xml tab='Maven'
-<dependency>
-    <groupId>org.testcontainers</groupId>
-    <artifactId>localstack</artifactId>
-    <version>{{latest_version}}</version>
-    <scope>test</scope>
-</dependency>
-```
+=== "Gradle"
+    ```groovy
+    testImplementation "org.testcontainers:localstack:{{latest_version}}"
+    ```
+=== "Maven"
+    ```xml
+    <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>localstack</artifactId>
+        <version>{{latest_version}}</version>
+        <scope>test</scope>
+    </dependency>
+    ```

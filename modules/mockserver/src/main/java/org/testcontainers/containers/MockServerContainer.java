@@ -8,6 +8,7 @@ import org.testcontainers.utility.DockerImageName;
 public class MockServerContainer extends GenericContainer<MockServerContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("jamesdbloom/mockserver");
+
     private static final String DEFAULT_TAG = "mockserver-5.5.4";
 
     @Deprecated
@@ -33,7 +34,6 @@ public class MockServerContainer extends GenericContainer<MockServerContainer> {
 
     public MockServerContainer(DockerImageName dockerImageName) {
         super(dockerImageName);
-
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, DockerImageName.parse("mockserver/mockserver"));
 
         waitingFor(Wait.forHttp("/mockserver/status").withMethod("PUT").forStatusCode(200));
