@@ -9,12 +9,12 @@ public final class InfluxDBV2TestHelper {
     private InfluxDBV2TestHelper() {
     }
 
-    public static InfluxDBClient getInfluxDBClient(final InfluxDBContainerV2 influxDBContainerV2) {
+    public static InfluxDBClient getInfluxDBClient(final InfluxDBContainer influxDBContainer) {
         final InfluxDBClientOptions influxDBClientOptions = InfluxDBClientOptions.builder()
-            .url(influxDBContainerV2.getUrl())
-            .authenticate(influxDBContainerV2.getUsername(), influxDBContainerV2.getPassword().toCharArray())
-            .bucket(influxDBContainerV2.getBucket())
-            .org(influxDBContainerV2.getOrganization())
+            .url(influxDBContainer.getUrl())
+            .authenticate(influxDBContainer.getUsername(), influxDBContainer.getPassword().toCharArray())
+            .bucket(influxDBContainer.getBucket())
+            .org(influxDBContainer.getOrganization())
             .build();
         return InfluxDBClientFactory.create(influxDBClientOptions);
     }

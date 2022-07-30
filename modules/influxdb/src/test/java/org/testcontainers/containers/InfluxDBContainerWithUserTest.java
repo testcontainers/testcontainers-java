@@ -20,7 +20,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
-public class InfluxDBContainerV2WithUserTest {
+public class InfluxDBContainerWithUserTest {
 
     private static final String USERNAME = "new-test-user";
     private static final String PASSWORD = "new-test-password";
@@ -33,8 +33,8 @@ public class InfluxDBContainerV2WithUserTest {
     private InfluxDBClient client = null;
 
     @ClassRule
-    public static final InfluxDBContainerV2 influxDBContainerV2 =
-        new InfluxDBContainerV2(InfluxDBTestImages.INFLUXDB_V2_TEST_IMAGE)
+    public static final InfluxDBContainer INFLUX_DB_CONTAINER =
+        new InfluxDBContainer(InfluxDBTestImages.INFLUXDB_V2_TEST_IMAGE)
             .withUsername(USERNAME)
             .withPassword(PASSWORD)
             .withOrganization(ORG)
@@ -44,7 +44,7 @@ public class InfluxDBContainerV2WithUserTest {
 
     @Before
     public void setUp() {
-        this.client = InfluxDBV2TestHelper.getInfluxDBClient(influxDBContainerV2);
+        this.client = InfluxDBV2TestHelper.getInfluxDBClient(INFLUX_DB_CONTAINER);
     }
 
     @After

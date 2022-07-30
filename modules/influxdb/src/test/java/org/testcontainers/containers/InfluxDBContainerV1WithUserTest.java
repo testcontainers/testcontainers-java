@@ -26,7 +26,7 @@ public class InfluxDBContainerV1WithUserTest {
     private static final String PASSWORD = "test-password";
 
     @Rule
-    public InfluxDBContainer<?> influxDBContainer = new InfluxDBContainer<>(InfluxDBTestImages.INFLUXDB_V1_TEST_IMAGE)
+    public InfluxDBContainer influxDBContainer = new InfluxDBContainer(InfluxDBTestImages.INFLUXDB_V1_TEST_IMAGE)
         .withDatabase(DATABASE)
         .withUsername(USER)
         .withPassword(PASSWORD);

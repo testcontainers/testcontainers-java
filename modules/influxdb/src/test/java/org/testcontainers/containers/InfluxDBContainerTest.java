@@ -11,19 +11,19 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
-public class InfluxDBContainerV2Test {
+public class InfluxDBContainerTest {
 
     private static final String TEST_VERSION = InfluxDBTestImages.INFLUXDB_V2_TEST_IMAGE.getVersionPart();
 
     @ClassRule
-    public static final InfluxDBContainerV2 influxDBContainerV2 =
-        new InfluxDBContainerV2(InfluxDBTestImages.INFLUXDB_V2_TEST_IMAGE);
+    public static final InfluxDBContainer INFLUX_DB_CONTAINER =
+        new InfluxDBContainer(InfluxDBTestImages.INFLUXDB_V2_TEST_IMAGE);
 
     private InfluxDBClient client = null;
 
     @Before
     public void setUp() {
-        this.client = InfluxDBV2TestHelper.getInfluxDBClient(influxDBContainerV2);
+        this.client = InfluxDBV2TestHelper.getInfluxDBClient(INFLUX_DB_CONTAINER);
     }
 
     @After
@@ -33,14 +33,14 @@ public class InfluxDBContainerV2Test {
 
     @Test
     public void getUrl() {
-        final String actual = influxDBContainerV2.getUrl();
+        final String actual = INFLUX_DB_CONTAINER.getUrl();
 
         assertThat(actual, notNullValue());
     }
 
     @Test
     public void getNewInfluxDB() {
-        final InfluxDBClient actual = InfluxDBV2TestHelper.getInfluxDBClient(influxDBContainerV2);
+        final InfluxDBClient actual = InfluxDBV2TestHelper.getInfluxDBClient(INFLUX_DB_CONTAINER);
 
         assertThat(actual, notNullValue());
         assertThat(actual.health().getStatus(), is(StatusEnum.PASS));
@@ -59,7 +59,7 @@ public class InfluxDBContainerV2Test {
 
     @Test
     public void isRunning() {
-        final boolean actual = influxDBContainerV2.isRunning();
+        final boolean actual = INFLUX_DB_CONTAINER.isRunning();
 
         assertThat(actual, is(true));
     }

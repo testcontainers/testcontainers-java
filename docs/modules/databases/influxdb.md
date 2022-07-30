@@ -4,7 +4,7 @@ Testcontainers module for InfluxData [InfluxDB](https://www.influxdata.com/produ
 
 ## Important Note
 
-They are breaking changes in InfluxDB v2.x. For more information refer to the
+They are breaking changes in InfluxDB 2.x. For more information refer to the
 main [documentation](https://docs.influxdata.com/influxdb/v2.0/upgrade/v1-to-v2/). InfluxDB
 official [container registry](https://hub.docker.com/_/influxdb) on docker hub.
 
@@ -13,7 +13,7 @@ official [container registry](https://hub.docker.com/_/influxdb) on docker hub.
 Running influxDbContainer as a stand-in for InfluxDB in a test:
 
 <!--codeinclude-->
-[InfluxDBContainerV2Test](../../../modules/influxdb/src/test/java/org/testcontainers/containers/InfluxDBContainerV2Test.java)
+[InfluxDBContainerTest](../../../modules/influxdb/src/test/java/org/testcontainers/containers/InfluxDBContainerTest.java)
 <!--/codeinclude-->
 
 
@@ -35,15 +35,15 @@ official [docs](https://docs.influxdata.com/influxdb/v2.0/upgrade/v1-to-v2/docke
 It is possible to override the default values, take a look at these tests:
 
 <!--codeinclude-->
-[InfluxDBContainerV2WithUserTest](../../../modules/influxdb/src/test/java/org/testcontainers/containers/InfluxDBContainerV2WithUserTest.java)
+[InfluxDBContainerWithUserTest](../../../modules/influxdb/src/test/java/org/testcontainers/containers/InfluxDBContainerWithUserTest.java)
 <!--/codeinclude-->
 
-**NOTE**: You can find the latest documentation about the influxdb v2.x java
+**NOTE**: You can find the latest documentation about the InfluxDB 2.x java
 client [here](https://github.com/influxdata/influxdb-client-java).
 
-## InfluxDB V1.x Usage example (Deprecated)
+## InfluxDB 1.x Usage example (Deprecated)
 
-Running influxDbContainer as a stand-in for InfluxDB in a test:
+Running InfluxDb Container as a stand-in for InfluxDB in a test:
 
 <!--codeinclude-->
 [InfluxDBContainerV1Test](../../../modules/influxdb/src/test/java/org/testcontainers/containers/InfluxDBContainerV1Test.java)
