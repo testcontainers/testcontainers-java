@@ -8,7 +8,7 @@ They are breaking changes in InfluxDB 2.x. For more information refer to the
 main [documentation](https://docs.influxdata.com/influxdb/v2.0/upgrade/v1-to-v2/). InfluxDB
 official [container registry](https://hub.docker.com/_/influxdb) on docker hub.
 
-## InfluxDB V2.x Usage example
+## InfluxDB 2.x usage example
 
 Running influxDbContainer as a stand-in for InfluxDB in a test:
 
@@ -41,7 +41,7 @@ It is possible to override the default values, take a look at these tests:
 **NOTE**: You can find the latest documentation about the InfluxDB 2.x java
 client [here](https://github.com/influxdata/influxdb-client-java).
 
-## InfluxDB 1.x Usage example (Deprecated)
+## InfluxDB 1.x usage example
 
 Running InfluxDb Container as a stand-in for InfluxDB in a test:
 
