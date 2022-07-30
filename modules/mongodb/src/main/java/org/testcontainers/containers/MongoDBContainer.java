@@ -234,6 +234,7 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
         private final String databaseName = DEFAULT_DATABASE_NAME;
 
         private final String username;
+
         private final String password;
     }
 }
