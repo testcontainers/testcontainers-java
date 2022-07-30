@@ -24,7 +24,7 @@ import static org.hamcrest.Matchers.equalTo;
  */
 public class FixedHostPortContainerTest {
 
-    private static final String TEST_IMAGE = "alpine:3.14";
+    private static final String TEST_IMAGE = "alpine:3.16";
 
     /**
      * Default http server port (just something different from default)
