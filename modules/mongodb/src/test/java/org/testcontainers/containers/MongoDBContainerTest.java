@@ -144,9 +144,11 @@ public class MongoDBContainerTest {
                 try (
                     final MongoClient mongoSyncRestrictedAccess = MongoClients.create(
                         mongoDBContainer.getReplicaSetUrl(
-                            MongoDBContainer.DEFAULT_DATABASE_NAME,
-                            usernameRestrictedAccess,
-                            passwordRestrictedAccess
+                            MongoDBContainer.ConnectionString
+                                .builder()
+                                .username(usernameRestrictedAccess)
+                                .password(passwordRestrictedAccess)
+                                .build()
                         )
                     )
                 ) {
@@ -163,11 +165,7 @@ public class MongoDBContainerTest {
                         passwordFullAccess,
                         new String(Objects.requireNonNull(connectionStringFullAccess.getPassword()))
                     );
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
                 }
-            } catch (Exception e) {
-                throw new RuntimeException(e);
             }
         }
     }
