@@ -55,7 +55,7 @@ tasks.japicmp {
 configurations.all {
     resolutionStrategy {
         // use lower Jackson version
-        force 'com.fasterxml.jackson.core:jackson-databind:2.8.8'
+        force 'com.fasterxml.jackson.core:jackson-databind:2.10.0'
     }
 }
 
@@ -68,6 +68,7 @@ dependencies {
     api ('org.rnorth.duct-tape:duct-tape:1.0.8') {
         exclude(group: 'org.jetbrains', module: 'annotations')
     }
+    api 'com.google.cloud.tools:jib-core:0.22.0'
 
     shaded 'org.awaitility:awaitility:4.2.0'
 

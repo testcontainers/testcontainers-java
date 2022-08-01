@@ -1,4 +1,4 @@
-package org.testcontainers.jib;
+package org.testcontainers.containers;
 
 import com.google.cloud.tools.jib.api.DescriptorDigest;
 import com.google.cloud.tools.jib.api.ImageDetails;

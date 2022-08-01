@@ -1,8 +1,6 @@
-package org.testcontainers.jib;
+package org.testcontainers.containers;
 
 import com.github.dockerjava.api.command.InspectImageResponse;
-import com.github.dockerjava.api.command.PullImageCmd;
-import com.github.dockerjava.api.command.PullImageResultCallback;
 import com.google.cloud.tools.jib.api.DockerClient;
 import com.google.cloud.tools.jib.api.ImageDetails;
 import com.google.cloud.tools.jib.api.ImageReference;
@@ -32,7 +30,7 @@ public class JibDockerClient implements DockerClient {
 
     @Override
     public boolean supported(Map<String, String> map) {
-        return false;
+        return true;
     }
 
     @Override
@@ -49,8 +47,7 @@ public class JibDockerClient implements DockerClient {
     @Override
     public void save(ImageReference imageReference, Path outputPath, Consumer<Long> writtenByteCountListener)
         throws IOException {
-        InputStream inputStream =
-            this.dockerClient.saveImageCmd(imageReference + ":" + imageReference.getTag().get()).exec();
+        InputStream inputStream = this.dockerClient.saveImageCmd(imageReference.toString()).exec();
         try (
             InputStream stdout = new BufferedInputStream(inputStream);
             OutputStream fileStream = new BufferedOutputStream(Files.newOutputStream(outputPath));
@@ -61,15 +58,8 @@ public class JibDockerClient implements DockerClient {
     }
 
     @Override
-    public ImageDetails inspect(ImageReference imageReference) throws InterruptedException {
-        PullImageCmd pullImageCmd =
-            this.dockerClient.pullImageCmd(imageReference.getRepository())
-                .withRegistry(imageReference.getRegistry())
-                .withTag(imageReference.getTag().get());
-        pullImageCmd.exec(new PullImageResultCallback()).awaitCompletion();
-        InspectImageResponse response =
-            this.dockerClient.inspectImageCmd(imageReference.getRepository() + ":" + imageReference.getTag().get())
-                .exec();
+    public ImageDetails inspect(ImageReference imageReference) {
+        InspectImageResponse response = this.dockerClient.inspectImageCmd(imageReference.toString()).exec();
         return new JibImageDetails(response.getSize(), response.getId(), response.getRootFS().getLayers());
     }
 }
