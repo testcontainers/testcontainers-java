@@ -7,7 +7,7 @@ import java.security.DigestException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TcImageDetails implements ImageDetails {
+class JibImageDetails implements ImageDetails {
 
     private long size;
 
@@ -15,7 +15,7 @@ public class TcImageDetails implements ImageDetails {
 
     private List<String> layers;
 
-    public TcImageDetails(long size, String imageId, List<String> layers) {
+    public JibImageDetails(long size, String imageId, List<String> layers) {
         this.size = size;
         this.imageId = imageId;
         this.layers = layers;

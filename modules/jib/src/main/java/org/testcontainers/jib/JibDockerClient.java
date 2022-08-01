@@ -26,7 +26,7 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public class TcDockerClient implements DockerClient {
+public class JibDockerClient implements DockerClient {
 
     com.github.dockerjava.api.DockerClient dockerClient = DockerClientFactory.lazyClient();
 
@@ -40,7 +40,7 @@ public class TcDockerClient implements DockerClient {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         imageTarball.writeTo(out);
         ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-        dockerClient.loadImageCmd(in).exec();
+        this.dockerClient.loadImageCmd(in).exec();
         try (InputStreamReader stdout = new InputStreamReader(in, StandardCharsets.UTF_8)) {
             return CharStreams.toString(stdout);
         }
@@ -49,9 +49,8 @@ public class TcDockerClient implements DockerClient {
     @Override
     public void save(ImageReference imageReference, Path outputPath, Consumer<Long> writtenByteCountListener)
         throws IOException {
-        InputStream inputStream = dockerClient
-            .saveImageCmd(imageReference + ":" + imageReference.getTag().get())
-            .exec();
+        InputStream inputStream =
+            this.dockerClient.saveImageCmd(imageReference + ":" + imageReference.getTag().get()).exec();
         try (
             InputStream stdout = new BufferedInputStream(inputStream);
             OutputStream fileStream = new BufferedOutputStream(Files.newOutputStream(outputPath));
@@ -63,14 +62,14 @@ public class TcDockerClient implements DockerClient {
 
     @Override
     public ImageDetails inspect(ImageReference imageReference) throws InterruptedException {
-        PullImageCmd pullImageCmd = dockerClient
-            .pullImageCmd(imageReference.getRepository())
-            .withRegistry(imageReference.getRegistry())
-            .withTag(imageReference.getTag().get());
+        PullImageCmd pullImageCmd =
+            this.dockerClient.pullImageCmd(imageReference.getRepository())
+                .withRegistry(imageReference.getRegistry())
+                .withTag(imageReference.getTag().get());
         pullImageCmd.exec(new PullImageResultCallback()).awaitCompletion();
-        InspectImageResponse response = dockerClient
-            .inspectImageCmd(imageReference.getRepository() + ":" + imageReference.getTag().get())
-            .exec();
-        return new TcImageDetails(response.getSize(), response.getId(), response.getRootFS().getLayers());
+        InspectImageResponse response =
+            this.dockerClient.inspectImageCmd(imageReference.getRepository() + ":" + imageReference.getTag().get())
+                .exec();
+        return new JibImageDetails(response.getSize(), response.getId(), response.getRootFS().getLayers());
     }
 }
