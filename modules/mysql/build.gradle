@@ -10,7 +10,7 @@ dependencies {
     compileOnly 'dev.miku:r2dbc-mysql:0.8.2.RELEASE'
 
     testImplementation project(':jdbc-test')
-    testImplementation 'mysql:mysql-connector-java:8.0.29'
+    testImplementation 'mysql:mysql-connector-java:8.0.30'
 
     testImplementation testFixtures(project(':r2dbc'))
     testImplementation 'dev.miku:r2dbc-mysql:0.8.2.RELEASE'
