@@ -1,0 +1,10 @@
+description = "Testcontainers :: ConfluentPlatform"
+
+dependencies {
+    api project(':testcontainers')
+    implementation("com.squareup.okhttp3:okhttp:4.10.0")
+    implementation('org.json:json:20220320')
+
+    testImplementation 'org.assertj:assertj-core:3.23.1'
+
+}
