@@ -12,9 +12,8 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.Uninterruptibles;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.NonNull;
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
@@ -117,17 +116,16 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
 
     private List<String> services = new ArrayList<>();
 
-    private List<ExposedService> exposedServices = new ArrayList<>();
+    private Set<ExposedService> exposedServices = new HashSet<>();
 
-    @AllArgsConstructor
-    @Getter
+    @Value
     class ExposedService {
 
-        private String name;
+        String name;
 
-        private int port;
+        int port;
 
-        private WaitStrategy waitStrategy;
+        WaitStrategy waitStrategy;
     }
 
     /**
