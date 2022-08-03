@@ -14,24 +14,24 @@ YugabyteDB supports two APIs.
 ### YSQL API 
 
 <!--codeinclude-->
-[Creating a YSQL container](../../../modules/yugabytedb/src/test/java/org/testcontainers/junit/yugabytedb/YugabyteDBYSQLUnitTest.java) inside_block:creatingYSQLContainer
+[Creating a YSQL container](../../../modules/yugabytedb/src/test/java/org/testcontainers/junit/yugabytedb/YugabyteDBYSQLTest.java) inside_block:creatingYSQLContainer
 <!--/codeinclude-->
 
 
 <!--codeinclude-->
-[Starting a YSQL container](../../../modules/yugabytedb/src/test/java/org/testcontainers/junit/yugabytedb/YugabyteDBYSQLUnitTest.java) inside_block:startingYSQLContainer
+[Starting a YSQL container](../../../modules/yugabytedb/src/test/java/org/testcontainers/junit/yugabytedb/YugabyteDBYSQLTest.java) inside_block:startingYSQLContainer
 <!--/codeinclude-->
 
 
 ### YCQL API
 
 <!--codeinclude-->
-[Creating a YCQL container](../../../modules/yugabytedb/src/test/java/org/testcontainers/junit/yugabytedb/YugabyteDBYCQLUnitTest.java) inside_block:creatingYCQLContainer
+[Creating a YCQL container](../../../modules/yugabytedb/src/test/java/org/testcontainers/junit/yugabytedb/YugabyteDBYCQLTest.java) inside_block:creatingYCQLContainer
 <!--/codeinclude-->
 
 
 <!--codeinclude-->
-[Starting a YCQL container](../../../modules/yugabytedb/src/test/java/org/testcontainers/junit/yugabytedb/YugabyteDBYCQLUnitTest.java) inside_block:startingYCQLContainer
+[Starting a YCQL container](../../../modules/yugabytedb/src/test/java/org/testcontainers/junit/yugabytedb/YugabyteDBYCQLTest.java) inside_block:startingYCQLContainer
 <!--/codeinclude-->
 
 
