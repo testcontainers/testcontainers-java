@@ -12,7 +12,7 @@ import java.util.Collections;
  * YugabyteDB YSQL (Structured Query Language) API container
  *
  * @author srinivasa-vasu
- * @see <a href="https://docs.yugabyte.com/latest/api/ysql/">YSQL API</a>
+ * @see <a href="https://docs.yugabyte.com/stable/api/ysql/">YSQL API</a>
  */
 
 public class YugabyteDBYSQLContainer extends JdbcDatabaseContainer<YugabyteDBYSQLContainer> {

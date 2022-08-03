@@ -15,7 +15,7 @@ import org.testcontainers.utility.DockerImageName;
  *
  * @author srinivasa-vasu
  */
-public class YugabyteDBYSQLUnitTest extends AbstractContainerDatabaseTest {
+public class YugabyteDBYSQLTest extends AbstractContainerDatabaseTest {
 
 	private static final String IMAGE_NAME = "yugabytedb/yugabyte:2.14.0.0-b94";
 

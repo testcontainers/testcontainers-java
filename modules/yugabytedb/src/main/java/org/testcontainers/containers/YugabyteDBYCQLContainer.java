@@ -3,8 +3,6 @@ package org.testcontainers.containers;
 import java.net.InetSocketAddress;
 import java.time.Duration;
 
-import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.CqlSessionBuilder;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.testcontainers.containers.delegate.YugabyteDBYCQLDelegate;
 import org.testcontainers.containers.strategy.YugabyteDBYCQLWaitStrategy;
@@ -15,7 +13,7 @@ import org.testcontainers.utility.DockerImageName;
  * YugabyteDB YCQL (Cloud Query Language) API container
  *
  * @author srinivasa-vasu
- * @see <a href="https://docs.yugabyte.com/latest/api/ycql/">YCQL API</a>
+ * @see <a href="https://docs.yugabyte.com/stable/api/ycql/">YCQL API</a>
  */
 public class YugabyteDBYCQLContainer extends GenericContainer<YugabyteDBYCQLContainer> {
 
@@ -116,26 +114,24 @@ public class YugabyteDBYCQLContainer extends GenericContainer<YugabyteDBYCQLCont
 	@Override
 	protected void containerIsStarted(InspectContainerResponse containerInfo) {
 		if (initScript != null) {
-			ScriptUtils.runInitScript(new YugabyteDBYCQLDelegate(getSessionBuilder()), initScript);
+			ScriptUtils.runInitScript(new YugabyteDBYCQLDelegate(this), initScript);
 		}
 	}
 
 	/**
-	 * Builds a {@link CqlSession} instance
-	 * @return {@link CqlSession} instance
+	 * Returns a {@link InetSocketAddress} representation of YCQL's contact point info
+	 * @return contactpoint
 	 */
-	public CqlSession getSession() {
-		return getSessionBuilder().build();
+	public InetSocketAddress getContactPoint() {
+		return new InetSocketAddress(getHost(), getMappedPort(YCQL_PORT));
 	}
 
 	/**
-	 * Builder method for {#com.datastax.oss.driver.api.core.CqlSession}
-	 * @return {@link CqlSessionBuilder}
+	 * Returns the local datacenter name
+	 * @return localdc name
 	 */
-	public CqlSessionBuilder getSessionBuilder() {
-		return CqlSession.builder().withLocalDatacenter(LOCAL_DC).withKeyspace(this.getKeyspace())
-				.withAuthCredentials(this.getUsername(), this.getPassword())
-				.addContactPoint(new InetSocketAddress(this.getHost(), this.getMappedPort(YCQL_PORT)));
+	public String getLocalDc() {
+		return LOCAL_DC;
 	}
 
 	/**

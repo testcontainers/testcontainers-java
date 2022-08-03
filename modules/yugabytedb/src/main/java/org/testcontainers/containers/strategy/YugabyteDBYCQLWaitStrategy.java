@@ -4,6 +4,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import lombok.RequiredArgsConstructor;
+import org.testcontainers.containers.YCQLSessionDelegate;
 import org.testcontainers.containers.YugabyteDBYCQLContainer;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
@@ -24,7 +25,7 @@ import static org.rnorth.ducttape.unreliables.Unreliables.retryUntilSuccess;
  * @author srinivasa-vasu
  */
 @RequiredArgsConstructor
-public final class YugabyteDBYCQLWaitStrategy extends AbstractWaitStrategy {
+public final class YugabyteDBYCQLWaitStrategy extends AbstractWaitStrategy implements YCQLSessionDelegate {
 
 	private static final String YCQL_TEST_QUERY = "SELECT release_version FROM system.local";
 
@@ -35,7 +36,7 @@ public final class YugabyteDBYCQLWaitStrategy extends AbstractWaitStrategy {
 		YugabyteDBYCQLContainer container = (YugabyteDBYCQLContainer) target;
 		retryUntilSuccess((int) startupTimeout.getSeconds(), TimeUnit.SECONDS, () -> {
 			getRateLimiter().doWhenReady(() -> {
-				try (CqlSession session = container.getSession()) {
+				try (CqlSession session = builder(container)) {
 					session.execute(YCQL_TEST_QUERY);
 				}
 			});

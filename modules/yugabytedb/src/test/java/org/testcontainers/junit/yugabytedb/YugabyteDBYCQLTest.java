@@ -14,7 +14,7 @@ import org.testcontainers.utility.DockerImageName;
  *
  * @author srinivasa-vasu
  */
-public class YugabyteDBYCQLUnitTest {
+public class YugabyteDBYCQLTest {
 
 	private static final String IMAGE_NAME = "yugabytedb/yugabyte:2.14.0.0-b94";
 

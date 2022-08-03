@@ -1,10 +1,8 @@
 package org.testcontainers.containers.delegate;
 
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.CqlSessionBuilder;
-import com.datastax.oss.driver.api.core.session.Session;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.testcontainers.containers.YCQLSessionDelegate;
 import org.testcontainers.containers.YugabyteDBYCQLContainer;
 import org.testcontainers.delegate.AbstractDatabaseDelegate;
 
@@ -14,25 +12,24 @@ import org.testcontainers.delegate.AbstractDatabaseDelegate;
  * @author srinivasa-vasu
  * @see YugabyteDBYCQLContainer
  */
-@Slf4j
 @RequiredArgsConstructor
-public final class YugabyteDBYCQLDelegate extends AbstractDatabaseDelegate<Session> {
+public final class YugabyteDBYCQLDelegate extends AbstractDatabaseDelegate<CqlSession> implements YCQLSessionDelegate {
 
-	private final CqlSessionBuilder builder;
+	private final YugabyteDBYCQLContainer container;
 
 	@Override
-	protected Session createNewConnection() {
-		return builder.build();
+	protected CqlSession createNewConnection() {
+		return builder(container);
 	}
 
 	@Override
 	public void execute(String statement, String scriptPath, int lineNumber, boolean continueOnError,
 			boolean ignoreFailedDrops) {
-		((CqlSession) getConnection()).execute(statement);
+		getConnection().execute(statement);
 	}
 
 	@Override
-	protected void closeConnectionQuietly(Session session) {
+	protected void closeConnectionQuietly(CqlSession session) {
 		if (session != null) {
 			session.close();
 		}
