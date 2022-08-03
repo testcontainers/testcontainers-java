@@ -17,7 +17,7 @@
 
 In order to run testcontainers against [colima](https://github.com/abiosoft/colima) the env vars bellow should be set
 
-```
+```bash
 export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock
 export DOCKER_HOST="unix://${HOME}/.colima/docker.sock"
 ```
