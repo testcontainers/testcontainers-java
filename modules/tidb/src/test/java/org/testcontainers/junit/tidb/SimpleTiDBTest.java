@@ -29,7 +29,7 @@ public class SimpleTiDBTest extends AbstractContainerDatabaseTest {
     @Test
     public void testExplicitInitScript() throws SQLException {
         try (
-            TiDBContainer tidb = new TiDBContainer(TiDBTestImages.TIDB_IMAGE).withInitScript("somepath/init_mysql.sql")
+            TiDBContainer tidb = new TiDBContainer(TiDBTestImages.TIDB_IMAGE).withInitScript("somepath/init_tidb.sql")
         ) { // TiDB is expected to be compatible with MySQL
             tidb.start();
 
