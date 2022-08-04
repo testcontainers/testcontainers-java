@@ -23,11 +23,13 @@ public class CassandraContainerTest {
 
     private static final String TEST_CLUSTER_NAME_IN_CONF = "Test Cluster Integration Test";
 
+    private static final String BASIC_QUERY = "SELECT release_version FROM system.local";
+
     @Test
     public void testSimple() {
         try (CassandraContainer<?> cassandraContainer = new CassandraContainer<>(CASSANDRA_IMAGE)) {
             cassandraContainer.start();
-            ResultSet resultSet = performQuery(cassandraContainer, "SELECT release_version FROM system.local");
+            ResultSet resultSet = performQuery(cassandraContainer, BASIC_QUERY);
             assertTrue("Query was not applied", resultSet.wasApplied());
             assertNotNull("Result set has no release_version", resultSet.one().getString(0));
         }
@@ -42,7 +44,7 @@ public class CassandraContainerTest {
             )
         ) {
             cassandraContainer.start();
-            ResultSet resultSet = performQuery(cassandraContainer, "SELECT release_version FROM system.local");
+            ResultSet resultSet = performQuery(cassandraContainer, BASIC_QUERY);
             assertTrue("Query was not applied", resultSet.wasApplied());
             assertEquals("Cassandra has wrong version", cassandraVersion, resultSet.one().getString(0));
         }
@@ -107,7 +109,7 @@ public class CassandraContainerTest {
                 .waitingFor(new CassandraQueryWaitStrategy())
         ) {
             cassandraContainer.start();
-            ResultSet resultSet = performQuery(cassandraContainer, "SELECT release_version FROM system.local");
+            ResultSet resultSet = performQuery(cassandraContainer, BASIC_QUERY);
             assertTrue("Query was not applied", resultSet.wasApplied());
         }
     }
@@ -117,10 +119,7 @@ public class CassandraContainerTest {
     public void testCassandraGetCluster() {
         try (CassandraContainer<?> cassandraContainer = new CassandraContainer<>()) {
             cassandraContainer.start();
-            ResultSet resultSet = performQuery(
-                cassandraContainer.getCluster(),
-                "SELECT release_version FROM system.local"
-            );
+            ResultSet resultSet = performQuery(cassandraContainer.getCluster(), BASIC_QUERY);
             assertTrue("Query was not applied", resultSet.wasApplied());
             assertNotNull("Result set has no release_version", resultSet.one().getString(0));
         }

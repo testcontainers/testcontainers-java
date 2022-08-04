@@ -11,6 +11,7 @@ import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
@@ -34,6 +35,8 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
     public static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
 
     public static final Integer CQL_PORT = 9042;
+
+    private static final String DEFAULT_LOCAL_DATACENTER = "datacenter1";
 
     private static final String CONTAINER_CONFIG_LOCATION = "/etc/cassandra";
 
@@ -70,6 +73,8 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
         withEnv("JVM_OPTS", "-Dcassandra.skip_wait_for_gossip_to_settle=0 -Dcassandra.initial_token=0");
         withEnv("HEAP_NEWSIZE", "128M");
         withEnv("MAX_HEAP_SIZE", "1024M");
+        withEnv("CASSANDRA_ENDPOINT_SNITCH", "GossipingPropertyFileSnitch");
+        withEnv("CASSANDRA_DC", DEFAULT_LOCAL_DATACENTER);
     }
 
     @Override
@@ -187,11 +192,20 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
      * Get configured Cluster
      *
      * Can be used to obtain connections to Cassandra in the container
+     *
+     * @deprecated For Cassandra driver 3.x, use {@link #getHost()} and {@link #getMappedPort(int)} with
+     * the driver's {@link Cluster#builder() Cluster.Builder} {@code addContactPoint(String)} and
+     * {@code withPort(int)} methods to create a Cluster object. For Cassandra driver 4.x, use
+     * {@link #getContactPoint()} and {@link #getLocalDatacenter()} with the driver's {@code CqlSession.builder()}
+     * {@code addContactPoint(InetSocketAddress)} and {@code withLocalDatacenter(String)} methods to create
+     * a Session Object. See https://docs.datastax.com/en/developer/java-driver/ for more on the driver.
      */
+    @Deprecated
     public Cluster getCluster() {
         return getCluster(this, enableJmxReporting);
     }
 
+    @Deprecated
     public static Cluster getCluster(ContainerState containerState, boolean enableJmxReporting) {
         final Cluster.Builder builder = Cluster
             .builder()
@@ -203,10 +217,30 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
         return builder.build();
     }
 
+    @Deprecated
     public static Cluster getCluster(ContainerState containerState) {
         return getCluster(containerState, false);
     }
 
+    /**
+     * Retrieve an {@link InetSocketAddress} for connecting to the Cassandra container via the driver.
+     *
+     * @return A InetSocketAddrss representation of this Cassandra container's host and port.
+     */
+    public InetSocketAddress getContactPoint() {
+        return new InetSocketAddress(getHost(), getMappedPort(CQL_PORT));
+    }
+
+    /**
+     * Retrieve the Local Datacenter for connecting to the Cassandra container via the driver.
+     *
+     * @return The configured local Datacenter name.
+     */
+    public String getLocalDatacenter() {
+        return getEnvMap().getOrDefault("CASSANDRA_DC", DEFAULT_LOCAL_DATACENTER);
+    }
+
+    @Deprecated
     private DatabaseDelegate getDatabaseDelegate() {
         return new CassandraDatabaseDelegate(this);
     }
