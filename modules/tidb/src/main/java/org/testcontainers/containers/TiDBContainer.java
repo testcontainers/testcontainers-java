@@ -19,7 +19,7 @@ public class TiDBContainer extends JdbcDatabaseContainer<TiDBContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse(DOCKER_IMAGE_NAME);
 
-    public static final Integer TIDB_PORT = 4000;
+    private static final Integer TIDB_PORT = 4000;
 
     private static final int REST_API_PORT = 10080;
 
