@@ -13,9 +13,9 @@ import java.util.Set;
  */
 public class TiDBContainer extends JdbcDatabaseContainer<TiDBContainer> {
 
-    public static final String NAME = "tidb";
+    private static final String NAME = "tidb";
 
-    public static final String DOCKER_IMAGE_NAME = "pingcap/tidb";
+    private static final String DOCKER_IMAGE_NAME = "pingcap/tidb";
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse(DOCKER_IMAGE_NAME);
 
