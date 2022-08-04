@@ -4,7 +4,7 @@ Testcontainers module for InfluxData [InfluxDB](https://www.influxdata.com/produ
 
 ## Important Note
 
-They are breaking changes in InfluxDB 2.x. For more information refer to the
+There are breaking changes in InfluxDB 2.x. For more information refer to the
 main [documentation](https://docs.influxdata.com/influxdb/v2.0/upgrade/v1-to-v2/). InfluxDB
 official [container registry](https://hub.docker.com/_/influxdb) on docker hub.
 
