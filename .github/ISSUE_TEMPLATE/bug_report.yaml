@@ -18,6 +18,7 @@ body:
         - Cassandra
         - Clickhouse
         - CockroachDB
+        - Consul
         - Couchbase
         - DB2
         - Dynalite
