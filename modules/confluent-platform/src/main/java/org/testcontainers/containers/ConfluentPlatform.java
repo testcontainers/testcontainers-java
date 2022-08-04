@@ -125,14 +125,6 @@ public class ConfluentPlatform {
                 // We need more than 1 Min to startup currently we picked 15 min maybe we need to make configurable
                 Wait.forListeningPort().withStartupTimeout(Duration.ofMinutes(60))
             );
-//            .waitingFor(
-//                Wait.forLogMessage("\".*INFO Loading plugin from: /usr/share/java/confluent-metadata-service \\(org\\.apache\\.kafka\\.connect\\.runtime\\.isolation\\.DelegatingClassLoader\\)*.\"gm", 1)
-//                    .withStartupTimeout(Duration.ofMinutes(2))
-//            )
-//        INFO Kafka Connect started (org.apache.kafka.connect.runtime.Connect)
-
-
-
 
         GenericContainer<?> cp_control_center = new GenericContainer<>(CP_CONTROL_CENTER)
             .withNetwork(network)
@@ -250,9 +242,11 @@ public class ConfluentPlatform {
             .post(body)
             .build();
         try (Response response = client.newCall(request).execute()) {
-            if (response.code() == 200)
+            System.out.println(response.code());
+            if (response.code() == 200 || response.code() == 201)
                 return true;
         } catch (IOException ioe) {
+
             return false;
         }
         return false;
@@ -266,6 +260,7 @@ public class ConfluentPlatform {
             .url(kafkaTopicEndpoint)
             .build();
         try (Response response = client.newCall(request).execute()) {
+            System.out.println(response.code());
             if (response.code() == 200)
                 return true;
             if (response.code() == 404)
@@ -276,19 +271,22 @@ public class ConfluentPlatform {
         return false;
     }
 
+    // TODO: fix logic of topic delete
     public boolean deleteTopic(String topicName) {
-        //DELETE /clusters/{cluster_id}/topics/{topic_name}
         String restProxyEndpoint = getRestProxyEndpoint();
         OkHttpClient client = new OkHttpClient();
-        String kafkaTopicEndpoint = String.format("%s/clusters/%s/topics/%s", restProxyEndpoint, clusterId, topicName);
+
+        String kafkaTopicEndpoint = String.format("%s/kafka/v3/clusters/%s/topics/%s", restProxyEndpoint, clusterId, topicName);
         Request request = new Request.Builder()
             .url(kafkaTopicEndpoint)
             .delete()
             .build();
         try (Response response = client.newCall(request).execute()) {
+            System.out.println(response.code());
             if (response.code() == 200)
                 return true;
         } catch (IOException ioe) {
+
             return false;
         }
         return false;
