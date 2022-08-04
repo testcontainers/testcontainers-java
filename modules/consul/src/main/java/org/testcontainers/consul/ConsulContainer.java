@@ -13,10 +13,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * GenericContainer subclass for Consul specific configuration and features. The main feature is the
- * withConsulCommand method, where users can specify consul commands to prepare Consul for
- * their specific test scenario.
- * <p>
+ * Testcontainers implementation for Consul.
  */
 public class ConsulContainer extends GenericContainer<ConsulContainer> {
 
