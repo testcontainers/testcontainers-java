@@ -2,6 +2,8 @@ package org.testcontainers.containers;
 
 import java.net.InetSocketAddress;
 import java.time.Duration;
+import java.util.Collections;
+import java.util.Set;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.testcontainers.containers.delegate.YugabyteDBYCQLDelegate;
@@ -10,7 +12,7 @@ import org.testcontainers.ext.ScriptUtils;
 import org.testcontainers.utility.DockerImageName;
 
 /**
- * YugabyteDB YCQL (Cloud Query Language) API container
+ * Testcontainers implementation for YugabyteDB YCQL API.
  *
  * @author srinivasa-vasu
  * @see <a href="https://docs.yugabyte.com/stable/api/ycql/">YCQL API</a>
@@ -53,6 +55,11 @@ public class YugabyteDBYCQLContainer extends GenericContainer<YugabyteDBYCQLCont
 		withExposedPorts(YCQL_PORT, MASTER_DASHBOARD_PORT, TSERVER_DASHBOARD_PORT);
 		waitingFor(new YugabyteDBYCQLWaitStrategy(this).withStartupTimeout(Duration.ofSeconds(60)));
 		withCommand(ENTRYPOINT);
+	}
+
+	@Override
+	public Set<Integer> getLivenessCheckPortNumbers() {
+		return Collections.singleton(getMappedPort(YCQL_PORT));
 	}
 
 	/**

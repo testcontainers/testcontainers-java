@@ -87,5 +87,7 @@
   - modules/trino/**/*
 "modules/vault":
   - modules/vault/**/*
+"modules/yugabytedb":
+  - modules/yugabytedb/*
 "type/docs":
   - docs/**/*.md

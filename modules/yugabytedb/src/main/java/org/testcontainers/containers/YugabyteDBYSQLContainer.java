@@ -9,7 +9,7 @@ import org.testcontainers.utility.DockerImageName;
 import java.util.Collections;
 
 /**
- * YugabyteDB YSQL (Structured Query Language) API container
+ * Testcontainers implementation for YugabyteDB YSQL API.
  *
  * @author srinivasa-vasu
  * @see <a href="https://docs.yugabyte.com/stable/api/ysql/">YSQL API</a>
