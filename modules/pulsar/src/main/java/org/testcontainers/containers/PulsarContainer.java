@@ -96,13 +96,13 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
 
         withCommand("/bin/bash", "-c", standaloneBaseCommand);
 
+        final String clusterName = getEnvMap().getOrDefault("PULSAR_PREFIX_clusterName", "standalone");
+        final String response = String.format("[\"%s\"]", clusterName);
+
         List<WaitStrategy> waitStrategies = new ArrayList<>();
         waitStrategies.add(Wait.defaultWaitStrategy());
         waitStrategies.add(
-            Wait
-                .forHttp(ADMIN_CLUSTERS_ENDPOINT)
-                .forPort(BROKER_HTTP_PORT)
-                .forResponsePredicate("[\"standalone\"]"::equals)
+            Wait.forHttp(ADMIN_CLUSTERS_ENDPOINT).forPort(BROKER_HTTP_PORT).forResponsePredicate(response::equals)
         );
         if (transactionsEnabled) {
             withEnv("PULSAR_PREFIX_transactionCoordinatorEnabled", "true");

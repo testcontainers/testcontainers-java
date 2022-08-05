@@ -55,6 +55,17 @@ public class PulsarContainerTest {
     }
 
     @Test
+    public void customClusterName() throws Exception {
+        try (
+            PulsarContainer pulsar = new PulsarContainer(PULSAR_IMAGE)
+                .withEnv("PULSAR_PREFIX_clusterName", "tc-cluster");
+        ) {
+            pulsar.start();
+            testPulsarFunctionality(pulsar.getPulsarBrokerUrl());
+        }
+    }
+
+    @Test
     public void shouldNotEnableFunctionsWorkerByDefault() throws Exception {
         try (PulsarContainer pulsar = new PulsarContainer(PULSAR_IMAGE)) {
             pulsar.start();
