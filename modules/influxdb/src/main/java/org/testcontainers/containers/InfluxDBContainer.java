@@ -20,13 +20,15 @@ public class InfluxDBContainer extends GenericContainer<InfluxDBContainer> {
 
     private static final Integer INFLUXDB_PORT = 8086;
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("influxdb");
+    private static final String DEFAULT_TAG = "1.4.3";
+    @Deprecated
+    public static final String VERSION = DEFAULT_TAG;
     private static final int NO_CONTENT_STATUS_CODE = 204;
 
-
     @Getter
-    private String username = "any";
+    private String username = "test-user";
     @Getter
-    private String password = "any";
+    private String password = "test-password";
 
     /**
      * Properties InfluxDB &lt;= 2
@@ -50,16 +52,27 @@ public class InfluxDBContainer extends GenericContainer<InfluxDBContainer> {
 
     private final boolean isAtLeastMajorVersion2;
 
+    /**
+     * @deprecated use {@link InfluxDBContainer(DockerImageName)} instead
+     */
+    @Deprecated
+    public InfluxDBContainer() {
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
+    }
 
-    public InfluxDBContainer(final String dockerImageName) {
-        this(DockerImageName.parse(dockerImageName));
+    /**
+     * @deprecated use {@link InfluxDBContainer(DockerImageName)} instead
+     */
+    @Deprecated
+    public InfluxDBContainer(final String version) {
+        this(DEFAULT_IMAGE_NAME.withTag(version));
     }
 
     public InfluxDBContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
-        logger().info("Starting an InfluxDB container using [{}]", dockerImageName);
+        this.logger().info("Starting an InfluxDB container using [{}]", dockerImageName);
         this.waitStrategy = new WaitAllStrategy()
             .withStrategy(
                 Wait
@@ -79,10 +92,10 @@ public class InfluxDBContainer extends GenericContainer<InfluxDBContainer> {
      */
     @Override
     protected void configure() {
-        if (isAtLeastMajorVersion2) {
-            setInfluxDBV2Envs();
+        if (this.isAtLeastMajorVersion2) {
+            this.setInfluxDBV2Envs();
         } else {
-            setInfluxDBV1Envs();
+            this.setInfluxDBV1Envs();
         }
     }
 
@@ -258,7 +271,9 @@ public class InfluxDBContainer extends GenericContainer<InfluxDBContainer> {
 
     /**
      * @return a InfluxDB client for InfluxDB &lt;= 2.
+     * @deprecated Use the new <a href="https://github.com/influxdata/influxdb-client-java">InfluxDB client library.</a>
      */
+    @Deprecated
     public InfluxDB getNewInfluxDB() {
         final InfluxDB influxDB = InfluxDBFactory.connect(this.getUrl(), this.username, this.password);
         influxDB.setDatabase(this.database);

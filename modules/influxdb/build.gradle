@@ -6,5 +6,5 @@ dependencies {
     compileOnly 'org.influxdb:influxdb-java:2.23'
     testImplementation 'org.influxdb:influxdb-java:2.23'
 
-    testImplementation "com.influxdb:influxdb-client-java:3.1.0"
+    testImplementation "com.influxdb:influxdb-client-java:6.4.0"
 }
