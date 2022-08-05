@@ -17,6 +17,7 @@ body:
         - Azure
         - Cassandra
         - Clickhouse
+        - CockroachDB
         - Couchbase
         - DB2
         - Dynalite
