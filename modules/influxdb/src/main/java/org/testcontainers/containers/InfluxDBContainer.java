@@ -11,10 +11,7 @@ import org.testcontainers.utility.DockerImageName;
 import java.util.Optional;
 
 /**
- * Represents an InfluxDB Docker instance.
- * Refer to
- * <a href="https://hub.docker.com/_/influxdb"> the official InfluxDB 1.x and 2.x container repository</a>
- * on docker hub for detailed documentation and newest tags.
+ * Testcontainers implementation for InfluxDB.
  */
 public class InfluxDBContainer extends GenericContainer<InfluxDBContainer> {
 
