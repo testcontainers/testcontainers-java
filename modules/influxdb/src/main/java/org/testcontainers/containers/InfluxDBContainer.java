@@ -8,15 +8,19 @@ import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 
+import java.util.Collections;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Testcontainers implementation for InfluxDB.
  */
 public class InfluxDBContainer extends GenericContainer<InfluxDBContainer> {
 
-    private static final Integer INFLUXDB_PORT = 8086;
+    public static final Integer INFLUXDB_PORT = 8086;
+
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("influxdb");
+
     private static final String DEFAULT_TAG = "1.4.3";
 
     @Deprecated
@@ -34,8 +38,11 @@ public class InfluxDBContainer extends GenericContainer<InfluxDBContainer> {
      * Properties InfluxDB &lt;= 2
      */
     private boolean authEnabled = true;
+
     private String admin = "admin";
+
     private String adminPassword = "password";
+
     private String database;
 
     /**
@@ -149,9 +156,14 @@ public class InfluxDBContainer extends GenericContainer<InfluxDBContainer> {
         this.addEnv("INFLUXDB_DB", this.database);
     }
 
+    @Override
+    public Set<Integer> getLivenessCheckPortNumbers() {
+        return Collections.singleton(getMappedPort(INFLUXDB_PORT));
+    }
+
     /**
-     * Set env variable `INFLUXDB_USER` for InfluxDB &lt;= 2.<br/>
-     *
+     * Set env variable `INFLUXDB_USER` for InfluxDB &lt;= 2.
+     * <p>
      * Set env variable `DOCKER_INFLUXDB_INIT_USERNAME` for InfluxDB &gt;= 2.
      *
      * @param username The name of a user to be created with no privileges. If `INFLUXDB_BUCKET` is set, this user will
@@ -164,8 +176,8 @@ public class InfluxDBContainer extends GenericContainer<InfluxDBContainer> {
     }
 
     /**
-     * Set env variable `INFLUXDB_USER_PASSWORD` for InfluxDB &lt;= 1.<br/>
-     *
+     * Set env variable `INFLUXDB_USER_PASSWORD` for InfluxDB &lt;= 1.
+     * <p>
      * Set env variable `DOCKER_INFLUXDB_INIT_PASSWORD` for InfluxDB &gt;= 2.
      *
      * @param password The password for the user configured with `INFLUXDB_USER`. If this is unset, a random password is

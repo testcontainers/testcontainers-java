@@ -20,10 +20,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class InfluxDBContainerTest {
 
     private static final String USERNAME = "new-test-user";
+
     private static final String PASSWORD = "new-test-password";
+
     private static final String ORG = "new-test-org";
+
     private static final String BUCKET = "new-test-bucket";
+
     private static final String RETENTION = "1w";
+
     private static final String ADMIN_TOKEN = "super-secret-token";
 
     @Nullable
