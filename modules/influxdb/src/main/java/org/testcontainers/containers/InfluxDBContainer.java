@@ -18,12 +18,15 @@ public class InfluxDBContainer extends GenericContainer<InfluxDBContainer> {
     private static final Integer INFLUXDB_PORT = 8086;
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("influxdb");
     private static final String DEFAULT_TAG = "1.4.3";
+
     @Deprecated
     public static final String VERSION = DEFAULT_TAG;
+
     private static final int NO_CONTENT_STATUS_CODE = 204;
 
     @Getter
     private String username = "test-user";
+
     @Getter
     private String password = "test-password";
 
@@ -40,10 +43,13 @@ public class InfluxDBContainer extends GenericContainer<InfluxDBContainer> {
      */
     @Getter
     private String bucket = "test-bucket";
+
     @Getter
     private String organization = "test-org";
+
     @Getter
     private Optional<String> retention = Optional.empty();
+
     @Getter
     private Optional<String> adminToken = Optional.empty();
 
@@ -70,14 +76,15 @@ public class InfluxDBContainer extends GenericContainer<InfluxDBContainer> {
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         this.logger().info("Starting an InfluxDB container using [{}]", dockerImageName);
-        this.waitStrategy = new WaitAllStrategy()
-            .withStrategy(
-                Wait
-                    .forHttp("/ping")
-                    .withBasicCredentials(this.username, this.password)
-                    .forStatusCode(NO_CONTENT_STATUS_CODE)
-            )
-            .withStrategy(Wait.forListeningPort());
+        this.waitStrategy =
+            new WaitAllStrategy()
+                .withStrategy(
+                    Wait
+                        .forHttp("/ping")
+                        .withBasicCredentials(this.username, this.password)
+                        .forStatusCode(NO_CONTENT_STATUS_CODE)
+                )
+                .withStrategy(Wait.forListeningPort());
 
         this.isAtLeastMajorVersion2 =
             new ComparableVersion(dockerImageName.getVersionPart()).isGreaterThanOrEqualTo("2.0.0");

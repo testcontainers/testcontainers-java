@@ -1,14 +1,5 @@
 package org.testcontainers.containers;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
-
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import org.hamcrest.CoreMatchers;
 import org.influxdb.InfluxDB;
 import org.influxdb.dto.Point;
 import org.influxdb.dto.Query;
@@ -16,6 +7,11 @@ import org.influxdb.dto.QueryResult;
 import org.jetbrains.annotations.Nullable;
 import org.junit.After;
 import org.junit.Test;
+
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class InfluxDBContainerV1Test {
 
@@ -26,6 +22,7 @@ public class InfluxDBContainerV1Test {
     private static final String USER = "new-test-user";
 
     private static final String PASSWORD = "new-test-password";
+
     @Nullable
     private InfluxDB influxDBClient = null;
 
@@ -39,102 +36,97 @@ public class InfluxDBContainerV1Test {
 
     @Test
     public void getUrl() {
-        try (final InfluxDBContainer influxDBContainer = new InfluxDBContainer(
-            InfluxDBTestUtils.INFLUXDB_V1_TEST_IMAGE)) {
-
+        try (
+            final InfluxDBContainer influxDBContainer = new InfluxDBContainer(InfluxDBTestUtils.INFLUXDB_V1_TEST_IMAGE)
+        ) {
             // Start the container. This step might take some time...
             influxDBContainer.start();
-            assertThat(influxDBContainer.isRunning(), CoreMatchers.is(true));
+            assertThat(influxDBContainer.isRunning()).isTrue();
 
             final String actual = influxDBContainer.getUrl();
 
-            assertThat(actual, notNullValue());
+            assertThat(actual).isNotNull();
         }
     }
 
     @Test
     public void getNewInfluxDB() {
-        try (final InfluxDBContainer influxDBContainer = new InfluxDBContainer(
-            InfluxDBTestUtils.INFLUXDB_V1_TEST_IMAGE)) {
-
+        try (
+            final InfluxDBContainer influxDBContainer = new InfluxDBContainer(InfluxDBTestUtils.INFLUXDB_V1_TEST_IMAGE)
+        ) {
             // Start the container. This step might take some time...
             influxDBContainer.start();
-            assertThat(influxDBContainer.isRunning(), CoreMatchers.is(true));
+            assertThat(influxDBContainer.isRunning()).isTrue();
 
             final InfluxDB influxDBClient = influxDBContainer.getNewInfluxDB();
 
-            assertThat(influxDBClient, notNullValue());
-            assertThat(influxDBClient.ping(), notNullValue());
+            assertThat(influxDBClient).isNotNull();
+            assertThat(influxDBClient.ping().isGood()).isTrue();
         }
     }
 
     @Test
     public void getLivenessCheckPort() {
-        try (final InfluxDBContainer influxDBContainer = new InfluxDBContainer(
-            InfluxDBTestUtils.INFLUXDB_V1_TEST_IMAGE)) {
-
+        try (
+            final InfluxDBContainer influxDBContainer = new InfluxDBContainer(InfluxDBTestUtils.INFLUXDB_V1_TEST_IMAGE)
+        ) {
             // Start the container. This step might take some time...
             influxDBContainer.start();
-            assertThat(influxDBContainer.isRunning(), CoreMatchers.is(true));
+            assertThat(influxDBContainer.isRunning()).isTrue();
 
             final Set<Integer> actual = influxDBContainer.getLivenessCheckPortNumbers();
 
-            assertThat(actual, notNullValue());
+            assertThat(actual).isNotNull();
         }
     }
 
     @Test
     public void describeDatabases() {
-        try (final InfluxDBContainer influxDBContainer = new InfluxDBContainer(
-            InfluxDBTestUtils.INFLUXDB_V1_TEST_IMAGE)) {
-            influxDBContainer.withDatabase(DATABASE)
-                .withUsername(USER)
-                .withPassword(PASSWORD);
+        try (
+            final InfluxDBContainer influxDBContainer = new InfluxDBContainer(InfluxDBTestUtils.INFLUXDB_V1_TEST_IMAGE)
+        ) {
+            influxDBContainer.withDatabase(DATABASE).withUsername(USER).withPassword(PASSWORD);
 
             // Start the container. This step might take some time...
             influxDBContainer.start();
-            assertThat(influxDBContainer.isRunning(), CoreMatchers.is(true));
+            assertThat(influxDBContainer.isRunning()).isTrue();
 
             this.influxDBClient = influxDBContainer.getNewInfluxDB();
 
-            assertThat(this.influxDBClient, notNullValue());
-            assertThat(this.influxDBClient.describeDatabases(), hasItem(DATABASE));
+            assertThat(this.influxDBClient).isNotNull();
+            assertThat(this.influxDBClient.describeDatabases()).contains(DATABASE);
         }
     }
 
     @Test
     public void checkVersion() {
-        try (final InfluxDBContainer influxDBContainer = new InfluxDBContainer(
-            InfluxDBTestUtils.INFLUXDB_V1_TEST_IMAGE)) {
-            influxDBContainer.withDatabase(DATABASE)
-                .withUsername(USER)
-                .withPassword(PASSWORD);
+        try (
+            final InfluxDBContainer influxDBContainer = new InfluxDBContainer(InfluxDBTestUtils.INFLUXDB_V1_TEST_IMAGE)
+        ) {
+            influxDBContainer.withDatabase(DATABASE).withUsername(USER).withPassword(PASSWORD);
 
             // Start the container. This step might take some time...
             influxDBContainer.start();
-            assertThat(influxDBContainer.isRunning(), CoreMatchers.is(true));
+            assertThat(influxDBContainer.isRunning()).isTrue();
 
             this.influxDBClient = influxDBContainer.getNewInfluxDB();
 
-            assertThat(this.influxDBClient, notNullValue());
-
-            assertThat(this.influxDBClient.ping(), notNullValue());
-
-            assertThat(this.influxDBClient.version(), is(TEST_VERSION));
+            assertThat(this.influxDBClient).isNotNull();
+            assertThat(this.influxDBClient.ping().isGood()).isTrue();
+            assertThat(this.influxDBClient.version()).isEqualTo(TEST_VERSION);
         }
     }
 
     @Test
     public void queryForWriteAndRead() {
-        try (final InfluxDBContainer influxDBContainer = new InfluxDBContainer(
-            InfluxDBTestUtils.INFLUXDB_V1_TEST_IMAGE)) {
-            influxDBContainer.withDatabase(DATABASE)
-                .withUsername(USER)
-                .withPassword(PASSWORD);
+        try (
+            final InfluxDBContainer influxDBContainer = new InfluxDBContainer(InfluxDBTestUtils.INFLUXDB_V1_TEST_IMAGE)
+        ) {
+            influxDBContainer.withDatabase(DATABASE).withUsername(USER).withPassword(PASSWORD);
 
             // Start the container. This step might take some time...
             influxDBContainer.start();
-            assertThat(influxDBContainer.isRunning(), CoreMatchers.is(true));
+            assertThat(influxDBContainer.isRunning()).isTrue();
 
             this.influxDBClient = influxDBContainer.getNewInfluxDB();
 
@@ -150,10 +142,10 @@ public class InfluxDBContainerV1Test {
             final Query query = new Query("SELECT idle FROM cpu", DATABASE);
             final QueryResult actual = this.influxDBClient.query(query);
 
-            assertThat(actual, notNullValue());
-            assertThat(actual.getError(), nullValue());
-            assertThat(actual.getResults(), notNullValue());
-            assertThat(actual.getResults().size(), is(1));
+            assertThat(actual).isNotNull();
+            assertThat(actual.getError()).isNull();
+            assertThat(actual.getResults()).isNotNull();
+            assertThat(actual.getResults()).hasSize(1);
         }
     }
 }
