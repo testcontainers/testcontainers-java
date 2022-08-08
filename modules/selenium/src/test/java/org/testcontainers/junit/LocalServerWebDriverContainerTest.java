@@ -10,7 +10,7 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 import org.testcontainers.Testcontainers;
 import org.testcontainers.containers.BrowserWebDriverContainer;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Test that a browser running in a container can access a web server hosted on the host machine (i.e. the one running
@@ -53,10 +53,8 @@ public class LocalServerWebDriverContainerTest {
 
         String headingText = driver.findElement(By.cssSelector("h1")).getText().trim();
 
-        assertEquals(
-            "The hardcoded success message was found on a page fetched from a local server",
-            "It worked",
-            headingText
-        );
+        assertThat(headingText)
+            .as("The hardcoded success message was found on a page fetched from a local server")
+            .isEqualTo("It worked");
     }
 }

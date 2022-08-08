@@ -29,10 +29,8 @@ import java.io.IOException;
 
 import javax.net.ssl.SSLHandshakeException;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.is;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 public class ElasticsearchContainerTest {
 
@@ -84,14 +82,14 @@ public class ElasticsearchContainerTest {
 
             // Do whatever you want with the rest client ...
             Response response = getClient(container).performRequest(new Request("GET", "/"));
-            assertThat(response.getStatusLine().getStatusCode(), is(200));
-            assertThat(EntityUtils.toString(response.getEntity()), containsString(ELASTICSEARCH_VERSION));
+            assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
+            assertThat(EntityUtils.toString(response.getEntity())).contains(ELASTICSEARCH_VERSION);
 
             // The default image is running with the features under Elastic License
             response = getClient(container).performRequest(new Request("GET", "/_xpack/"));
-            assertThat(response.getStatusLine().getStatusCode(), is(200));
+            assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
             // For now we test that we have the monitoring feature available
-            assertThat(EntityUtils.toString(response.getEntity()), containsString("monitoring"));
+            assertThat(EntityUtils.toString(response.getEntity())).contains("monitoring");
         }
     }
 
@@ -106,14 +104,14 @@ public class ElasticsearchContainerTest {
 
             // Do whatever you want with the rest client ...
             Response response = getClient(container).performRequest(new Request("GET", "/"));
-            assertThat(response.getStatusLine().getStatusCode(), is(200));
-            assertThat(EntityUtils.toString(response.getEntity()), containsString(ELASTICSEARCH_VERSION));
+            assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
+            assertThat(EntityUtils.toString(response.getEntity())).contains(ELASTICSEARCH_VERSION);
 
             // The default image is running with the features under Elastic License
             response = getClient(container).performRequest(new Request("GET", "/_xpack/"));
-            assertThat(response.getStatusLine().getStatusCode(), is(200));
+            assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
             // For now we test that we have the monitoring feature available
-            assertThat(EntityUtils.toString(response.getEntity()), containsString("monitoring"));
+            assertThat(EntityUtils.toString(response.getEntity())).contains("monitoring");
         }
     }
 
@@ -126,16 +124,14 @@ public class ElasticsearchContainerTest {
             container.start();
 
             // The cluster should be secured so it must fail when we try to access / without credentials
-            assertThrows(
-                "We should not be able to access / URI with an anonymous client.",
-                ResponseException.class,
-                () -> getAnonymousClient(container).performRequest(new Request("GET", "/"))
-            );
+            assertThat(catchThrowable(() -> getAnonymousClient(container).performRequest(new Request("GET", "/"))))
+                .as("We should not be able to access / URI with an anonymous client.")
+                .isInstanceOf(ResponseException.class);
 
             // But it should work when we try to access / with the proper login and password
             Response response = getClient(container).performRequest(new Request("GET", "/"));
-            assertThat(response.getStatusLine().getStatusCode(), is(200));
-            assertThat(EntityUtils.toString(response.getEntity()), containsString(ELASTICSEARCH_VERSION));
+            assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
+            assertThat(EntityUtils.toString(response.getEntity())).contains(ELASTICSEARCH_VERSION);
         }
     }
 
@@ -144,9 +140,9 @@ public class ElasticsearchContainerTest {
         try (ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE)) {
             container.start();
             Response response = getClient(container).performRequest(new Request("GET", "/"));
-            assertThat(response.getStatusLine().getStatusCode(), is(200));
+            assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
             String responseAsString = EntityUtils.toString(response.getEntity());
-            assertThat(responseAsString, containsString(ELASTICSEARCH_VERSION));
+            assertThat(responseAsString).contains(ELASTICSEARCH_VERSION);
         }
     }
 
@@ -159,8 +155,8 @@ public class ElasticsearchContainerTest {
         ) {
             container.start();
             Response response = getClient(container).performRequest(new Request("GET", "/"));
-            assertThat(response.getStatusLine().getStatusCode(), is(200));
-            assertThat(EntityUtils.toString(response.getEntity()), containsString("8.3.0"));
+            assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
+            assertThat(EntityUtils.toString(response.getEntity())).contains("8.3.0");
         }
     }
 
@@ -177,13 +173,11 @@ public class ElasticsearchContainerTest {
         ) {
             container.start();
             Response response = getClient(container).performRequest(new Request("GET", "/"));
-            assertThat(response.getStatusLine().getStatusCode(), is(200));
+            assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
             // The OSS image does not have any feature under Elastic License
-            assertThrows(
-                "We should not have /_xpack endpoint with an OSS License",
-                ResponseException.class,
-                () -> getClient(container).performRequest(new Request("GET", "/_xpack/"))
-            );
+            assertThat(catchThrowable(() -> getClient(container).performRequest(new Request("GET", "/_xpack/"))))
+                .as("We should not have /_xpack endpoint with an OSS License")
+                .isInstanceOf(ResponseException.class);
         }
     }
 
@@ -212,8 +206,8 @@ public class ElasticsearchContainerTest {
 
             Response response = client.performRequest(new Request("GET", "/_cluster/health"));
             // }}
-            assertThat(response.getStatusLine().getStatusCode(), is(200));
-            assertThat(EntityUtils.toString(response.getEntity()), containsString("cluster_name"));
+            assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
+            assertThat(EntityUtils.toString(response.getEntity())).contains("cluster_name");
             // httpClientContainer {{
         }
         // }
@@ -248,8 +242,8 @@ public class ElasticsearchContainerTest {
 
             Response response = client.performRequest(new Request("GET", "/_cluster/health"));
             // }}
-            assertThat(response.getStatusLine().getStatusCode(), is(200));
-            assertThat(EntityUtils.toString(response.getEntity()), containsString("cluster_name"));
+            assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
+            assertThat(EntityUtils.toString(response.getEntity())).contains("cluster_name");
             // httpClientSecuredContainer {{
         }
         // }
@@ -275,7 +269,7 @@ public class ElasticsearchContainerTest {
                 ClusterHealthResponse healths = transportClient.admin().cluster().prepareHealth().get();
                 String clusterName = healths.getClusterName();
                 // }}}
-                assertThat(clusterName, is(expectedClusterName));
+                assertThat(clusterName).isEqualTo(expectedClusterName);
                 // transportClientContainer {{{
             }
         }
@@ -285,18 +279,18 @@ public class ElasticsearchContainerTest {
     @Test
     public void incompatibleSettingsTest() {
         // The OSS image can not use security feature
-        assertThrows(
-            "We should not be able to activate security with an OSS License",
-            IllegalArgumentException.class,
-            () -> {
+        assertThat(
+            catchThrowable(() -> {
                 new ElasticsearchContainer(
                     DockerImageName
                         .parse("docker.elastic.co/elasticsearch/elasticsearch-oss")
                         .withTag(ELASTICSEARCH_VERSION)
                 )
                     .withPassword("foo");
-            }
-        );
+            })
+        )
+            .as("We should not be able to activate security with an OSS License")
+            .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -310,8 +304,8 @@ public class ElasticsearchContainerTest {
             container.start();
 
             Response response = getClusterHealth(container);
-            assertThat(response.getStatusLine().getStatusCode(), is(200));
-            assertThat(EntityUtils.toString(response.getEntity()), containsString("cluster_name"));
+            assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
+            assertThat(EntityUtils.toString(response.getEntity())).contains("cluster_name");
         }
     }
 
@@ -329,11 +323,11 @@ public class ElasticsearchContainerTest {
             container.start();
 
             // this is expected, as a different cert is used for creating the SSL context
-            assertThrows(
-                "PKIX path validation failed: java.security.cert.CertPathValidatorException: Path does not chain with any of the trust anchors",
-                SSLHandshakeException.class,
-                () -> getClusterHealth(container)
-            );
+            assertThat(catchThrowable(() -> getClusterHealth(container)))
+                .as(
+                    "PKIX path validation failed: java.security.cert.CertPathValidatorException: Path does not chain with any of the trust anchors"
+                )
+                .isInstanceOf(SSLHandshakeException.class);
         }
     }
 
@@ -357,8 +351,8 @@ public class ElasticsearchContainerTest {
             container.start();
 
             Response response = getClusterHealth(container);
-            assertThat(response.getStatusLine().getStatusCode(), is(200));
-            assertThat(EntityUtils.toString(response.getEntity()), containsString("cluster_name"));
+            assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
+            assertThat(EntityUtils.toString(response.getEntity())).contains("cluster_name");
         }
     }
 
@@ -376,8 +370,8 @@ public class ElasticsearchContainerTest {
             container.start();
 
             Response response = getClient(container).performRequest(new Request("GET", "/_cluster/health"));
-            assertThat(response.getStatusLine().getStatusCode(), is(200));
-            assertThat(EntityUtils.toString(response.getEntity()), containsString("cluster_name"));
+            assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
+            assertThat(EntityUtils.toString(response.getEntity())).contains("cluster_name");
         }
     }
 

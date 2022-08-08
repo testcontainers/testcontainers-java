@@ -9,9 +9,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
-import static org.rnorth.visibleassertions.VisibleAssertions.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 public class MissingJdbcDriverTest {
 
@@ -24,12 +23,16 @@ public class MissingJdbcDriverTest {
             fail("The container is expected to fail to start");
         } catch (Exception e) {
             final Throwable rootCause = Throwables.getRootCause(e);
-            assertTrue("ClassNotFoundException is the root cause", rootCause instanceof ClassNotFoundException);
+            assertThat(rootCause)
+                .as("ClassNotFoundException is the root cause")
+                .isInstanceOf(ClassNotFoundException.class);
         } finally {
             container.stop();
         }
 
-        assertEquals("only one connection attempt should have been made", 1, container.getConnectionAttempts());
+        assertThat(container.getConnectionAttempts())
+            .as("only one connection attempt should have been made")
+            .isEqualTo(1);
     }
 
     /**

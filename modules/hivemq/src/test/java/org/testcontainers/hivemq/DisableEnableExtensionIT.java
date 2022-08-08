@@ -11,7 +11,7 @@ import org.testcontainers.utility.DockerImageName;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 public class DisableEnableExtensionIT {
 
@@ -35,17 +35,13 @@ public class DisableEnableExtensionIT {
         ) {
             hivemq.start();
 
-            assertThrows(
-                ExecutionException.class,
-                () -> TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort(), hivemq.getHost())
-            );
+            assertThatExceptionOfType(ExecutionException.class)
+                .isThrownBy(() -> TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort(), hivemq.getHost()));
             hivemq.enableExtension(hiveMQExtension);
             TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort(), hivemq.getHost());
             hivemq.disableExtension(hiveMQExtension);
-            assertThrows(
-                ExecutionException.class,
-                () -> TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort(), hivemq.getHost())
-            );
+            assertThatExceptionOfType(ExecutionException.class)
+                .isThrownBy(() -> TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort(), hivemq.getHost()));
             hivemq.enableExtension(hiveMQExtension);
             TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort(), hivemq.getHost());
         }

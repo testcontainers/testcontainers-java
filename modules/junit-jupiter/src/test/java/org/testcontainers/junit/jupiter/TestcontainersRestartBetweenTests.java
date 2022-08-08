@@ -3,7 +3,7 @@ package org.testcontainers.junit.jupiter;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @Testcontainers
 class TestcontainersRestartBetweenTests {
@@ -19,7 +19,7 @@ class TestcontainersRestartBetweenTests {
         if (lastContainerId == null) {
             lastContainerId = genericContainer.getContainerId();
         } else {
-            assertNotEquals(lastContainerId, genericContainer.getContainerId());
+            assertThat(genericContainer.getContainerId()).isNotEqualTo(lastContainerId);
         }
     }
 
@@ -28,7 +28,7 @@ class TestcontainersRestartBetweenTests {
         if (lastContainerId == null) {
             lastContainerId = genericContainer.getContainerId();
         } else {
-            assertNotEquals(lastContainerId, genericContainer.getContainerId());
+            assertThat(genericContainer.getContainerId()).isNotEqualTo(lastContainerId);
         }
     }
 }

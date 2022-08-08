@@ -7,7 +7,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 // class {
 @Testcontainers
@@ -36,7 +36,7 @@ public class RedisBackedCacheIntTest {
         underTest.put("test", "example");
 
         String retrieved = underTest.get("test");
-        assertEquals("example", retrieved);
+        assertThat(retrieved).isEqualTo("example");
     }
 }
 // }

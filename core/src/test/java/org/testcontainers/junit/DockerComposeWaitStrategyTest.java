@@ -5,7 +5,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.Description;
 import org.mockito.Mockito;
-import org.rnorth.visibleassertions.VisibleAssertions;
 import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
@@ -15,6 +14,7 @@ import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.assertj.core.api.Assertions.fail;
 
 public class DockerComposeWaitStrategyTest {
 
@@ -38,11 +38,8 @@ public class DockerComposeWaitStrategyTest {
 
         try {
             environment.starting(Description.createTestDescription(Object.class, "name"));
-            VisibleAssertions.pass("Docker compose should start after waiting for listening port");
         } catch (RuntimeException e) {
-            VisibleAssertions.fail(
-                "Docker compose should start after waiting for listening port with failed with: " + e
-            );
+            fail("Docker compose should start after waiting for listening port with failed with: " + e);
         }
     }
 
@@ -55,11 +52,8 @@ public class DockerComposeWaitStrategyTest {
 
         try {
             environment.starting(Description.createTestDescription(Object.class, "name"));
-            VisibleAssertions.pass("Docker compose should start after waiting for listening port");
         } catch (RuntimeException e) {
-            VisibleAssertions.fail(
-                "Docker compose should start after waiting for listening port with failed with: " + e
-            );
+            fail("Docker compose should start after waiting for listening port with failed with: " + e);
         }
     }
 
@@ -70,11 +64,9 @@ public class DockerComposeWaitStrategyTest {
             REDIS_PORT,
             Wait.forHttp("/test").withStartupTimeout(Duration.ofSeconds(10))
         );
-        VisibleAssertions.assertThrows(
-            "waiting on an invalid http path times out",
-            RuntimeException.class,
-            () -> environment.starting(Description.createTestDescription(Object.class, "name"))
-        );
+        assertThat(catchThrowable(() -> environment.starting(Description.createTestDescription(Object.class, "name"))))
+            .as("waiting on an invalid http path times out")
+            .isInstanceOf(RuntimeException.class);
     }
 
     @Test
@@ -91,11 +83,9 @@ public class DockerComposeWaitStrategyTest {
             )
             .withTailChildContainers(true);
 
-        VisibleAssertions.assertThrows(
-            "waiting on one failing strategy to time out",
-            RuntimeException.class,
-            () -> environment.starting(Description.createTestDescription(Object.class, "name"))
-        );
+        assertThat(catchThrowable(() -> environment.starting(Description.createTestDescription(Object.class, "name"))))
+            .as("waiting on one failing strategy to time out")
+            .isInstanceOf(RuntimeException.class);
     }
 
     @Test

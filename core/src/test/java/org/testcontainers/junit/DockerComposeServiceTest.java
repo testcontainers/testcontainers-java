@@ -6,7 +6,7 @@ import org.testcontainers.containers.DockerComposeContainer;
 
 import java.io.File;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class DockerComposeServiceTest extends BaseDockerComposeTest {
 
@@ -29,6 +29,6 @@ public class DockerComposeServiceTest extends BaseDockerComposeTest {
 
     @Test
     public void testRedisIsStarting() {
-        assertNotNull("Redis server started", environment.getServicePort("redis_1", REDIS_PORT));
+        assertThat(environment.getServicePort("redis_1", REDIS_PORT)).as("Redis server started").isNotNull();
     }
 }

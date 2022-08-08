@@ -14,9 +14,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.EnumSet;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assume.assumeFalse;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
 public class AbstractJDBCDriverTest {
 
@@ -82,12 +81,12 @@ public class AbstractJDBCDriverTest {
                 rs -> {
                     rs.next();
                     int resultSetInt = rs.getInt(1);
-                    assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+                    assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
                     return true;
                 }
             );
 
-        assertTrue("The database returned a record as expected", result);
+        assertThat(result).as("The database returned a record as expected").isTrue();
     }
 
     private void performTestForScriptedSchema(HikariDataSource dataSource) throws SQLException {
@@ -97,16 +96,14 @@ public class AbstractJDBCDriverTest {
                 rs -> {
                     rs.next();
                     String resultSetString = rs.getString(1);
-                    assertEquals(
-                        "A basic SELECT query succeeds where the schema has been applied from a script",
-                        "hello world",
-                        resultSetString
-                    );
+                    assertThat(resultSetString)
+                        .as("A basic SELECT query succeeds where the schema has been applied from a script")
+                        .isEqualTo("hello world");
                     return true;
                 }
             );
 
-        assertTrue("The database returned a record as expected", result);
+        assertThat(result).as("The database returned a record as expected").isTrue();
     }
 
     private void performTestForJDBCParamUsage(HikariDataSource dataSource) throws SQLException {
@@ -120,12 +117,12 @@ public class AbstractJDBCDriverTest {
                     if (resultUser.endsWith("@%")) {
                         resultUser = resultUser.substring(0, resultUser.length() - 2);
                     }
-                    assertEquals("User from query param is created.", "someuser", resultUser);
+                    assertThat(resultUser).as("User from query param is created.").isEqualTo("someuser");
                     return true;
                 }
             );
 
-        assertTrue("The database returned a record as expected", result);
+        assertThat(result).as("The database returned a record as expected").isTrue();
 
         String databaseQuery = "SELECT DATABASE()";
         // Postgres does not have Database() as a function
@@ -145,12 +142,12 @@ public class AbstractJDBCDriverTest {
                     rs -> {
                         rs.next();
                         String resultDB = rs.getString(1);
-                        assertEquals("Database name from URL String is used.", "databasename", resultDB);
+                        assertThat(resultDB).as("Database name from URL String is used.").isEqualTo("databasename");
                         return true;
                     }
                 );
 
-        assertTrue("The database returned a record as expected", result);
+        assertThat(result).as("The database returned a record as expected").isTrue();
     }
 
     private void performTestForCharacterEncodingForInitialScriptConnection(HikariDataSource dataSource)
@@ -161,16 +158,14 @@ public class AbstractJDBCDriverTest {
                 rs -> {
                     rs.next();
                     String resultSetString = rs.getString(1);
-                    assertEquals(
-                        "A SELECT query succeed and the correct charset has been applied for the init script",
-                        "привет мир",
-                        resultSetString
-                    );
+                    assertThat(resultSetString)
+                        .as("A basic SELECT query succeeds where the schema has been applied from a script")
+                        .isEqualTo("привет мир");
                     return true;
                 }
             );
 
-        assertTrue("The database returned a record as expected", result);
+        assertThat(result).as("The database returned a record as expected").isTrue();
     }
 
     /**
@@ -195,15 +190,14 @@ public class AbstractJDBCDriverTest {
                 rs -> {
                     rs.next();
                     String resultSetString = rs.getString(2);
-                    assertTrue(
-                        "Passing query parameters to set DB connection encoding is successful",
-                        resultSetString.startsWith("utf8")
-                    );
+                    assertThat(resultSetString)
+                        .as("Passing query parameters to set DB connection encoding is successful")
+                        .startsWith("utf8");
                     return true;
                 }
             );
 
-        assertTrue("The database returned a record as expected", result);
+        assertThat(result).as("The database returned a record as expected").isTrue();
         return dataSource;
     }
 
@@ -213,10 +207,10 @@ public class AbstractJDBCDriverTest {
         statement.execute("SELECT @@GLOBAL.innodb_file_format");
         ResultSet resultSet = statement.getResultSet();
 
-        assertTrue("The query returns a result", resultSet.next());
+        assertThat(resultSet.next()).as("The query returns a result").isTrue();
         String result = resultSet.getString(1);
 
-        assertEquals("The InnoDB file format has been set by the ini file content", "Barracuda", result);
+        assertThat(result).as("The InnoDB file format has been set by the ini file content").isEqualTo("Barracuda");
     }
 
     private HikariDataSource getDataSource(String jdbcUrl, int poolSize) {

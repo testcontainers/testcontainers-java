@@ -7,7 +7,7 @@ import org.junit.runners.Parameterized;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Simple test case / demonstration of creating a fresh container image from a Dockerfile DSL when the test
@@ -52,6 +52,6 @@ public class ParameterizedDockerfileContainerTest {
     public void simpleTest() throws Exception {
         final String release = container.execInContainer("cat", "/etc/alpine-release").getStdout();
 
-        assertTrue("/etc/alpine-release starts with " + expectedVersion, release.startsWith(expectedVersion));
+        assertThat(release).as("/etc/alpine-release starts with " + expectedVersion).startsWith(expectedVersion);
     }
 }
