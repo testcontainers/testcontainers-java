@@ -5,7 +5,6 @@ import org.testcontainers.MySQLTestImages;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
@@ -30,10 +29,14 @@ public class CustomizableMysqlTest extends AbstractContainerDatabaseTest {
         ) {
             mysql.start();
 
-            ResultSet resultSet = performQuery(mysql, "SELECT 1");
-
-            int resultSetInt = resultSet.getInt(1);
-            assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+            assertQuery(
+                mysql,
+                "SELECT 1",
+                rs -> {
+                    int resultSetInt = rs.getInt(1);
+                    assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+                }
+            );
         }
     }
 }

@@ -3,7 +3,6 @@ package org.testcontainers.containers;
 import org.junit.Test;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
@@ -15,10 +14,14 @@ public class TimescaleDBContainerTest extends AbstractContainerDatabaseTest {
     public void testSimple() throws SQLException {
         try (JdbcDatabaseContainer<?> postgres = new TimescaleDBContainerProvider().newInstance()) {
             postgres.start();
-
-            ResultSet resultSet = performQuery(postgres, "SELECT 1");
-            int resultSetInt = resultSet.getInt(1);
-            assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+            assertQuery(
+                postgres,
+                "SELECT 1",
+                rs -> {
+                    int resultSetInt = rs.getInt(1);
+                    assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+                }
+            );
         }
     }
 
@@ -31,12 +34,14 @@ public class TimescaleDBContainerTest extends AbstractContainerDatabaseTest {
         ) {
             postgres.start();
 
-            ResultSet resultSet = performQuery(
+            assertQuery(
                 (JdbcDatabaseContainer<?>) postgres,
-                "SELECT current_setting('max_connections')"
+                "SELECT current_setting('max_connections')",
+                rs -> {
+                    String result = rs.getString(1);
+                    assertEquals("max_connections should be overriden", "42", result);
+                }
             );
-            String result = resultSet.getString(1);
-            assertEquals("max_connections should be overriden", "42", result);
         }
     }
 
@@ -50,12 +55,14 @@ public class TimescaleDBContainerTest extends AbstractContainerDatabaseTest {
         ) {
             postgres.start();
 
-            ResultSet resultSet = performQuery(
+            assertQuery(
                 (JdbcDatabaseContainer<?>) postgres,
-                "SELECT current_setting('max_connections')"
+                "SELECT current_setting('max_connections')",
+                rs -> {
+                    String result = rs.getString(1);
+                    assertNotEquals("max_connections should not be overriden", "42", result);
+                }
             );
-            String result = resultSet.getString(1);
-            assertNotEquals("max_connections should not be overriden", "42", result);
         }
     }
 
@@ -68,10 +75,14 @@ public class TimescaleDBContainerTest extends AbstractContainerDatabaseTest {
         ) {
             postgres.start();
 
-            ResultSet resultSet = performQuery(postgres, "SELECT foo FROM bar");
-
-            String firstColumnValue = resultSet.getString(1);
-            assertEquals("Value from init script should equal real value", "hello world", firstColumnValue);
+            assertQuery(
+                postgres,
+                "SELECT foo FROM bar",
+                rs -> {
+                    String firstColumnValue = rs.getString(1);
+                    assertEquals("Value from init script should equal real value", "hello world", firstColumnValue);
+                }
+            );
         }
     }
 }

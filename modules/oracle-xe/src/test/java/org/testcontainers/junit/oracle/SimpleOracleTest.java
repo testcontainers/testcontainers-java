@@ -5,7 +5,6 @@ import org.testcontainers.containers.OracleContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 import org.testcontainers.utility.DockerImageName;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static org.junit.Assert.assertEquals;
@@ -26,9 +25,14 @@ public class SimpleOracleTest extends AbstractContainerDatabaseTest {
 
         //Test we can get a connection
         container.start();
-        ResultSet resultSet = performQuery(container, "SELECT 1 FROM dual");
-        int resultSetInt = resultSet.getInt(1);
-        assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+        assertQuery(
+            container,
+            "SELECT 1 FROM dual",
+            rs -> {
+                int resultSetInt = rs.getInt(1);
+                assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+            }
+        );
     }
 
     @Test

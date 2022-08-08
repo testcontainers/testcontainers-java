@@ -5,7 +5,6 @@ import org.testcontainers.CockroachDBTestImages;
 import org.testcontainers.containers.CockroachContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -24,11 +23,14 @@ public class SimpleCockroachDBTest extends AbstractContainerDatabaseTest {
     public void testSimple() throws SQLException {
         try (CockroachContainer cockroach = new CockroachContainer(CockroachDBTestImages.COCKROACHDB_IMAGE)) {
             cockroach.start();
-
-            ResultSet resultSet = performQuery(cockroach, "SELECT 1");
-
-            int resultSetInt = resultSet.getInt(1);
-            assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+            assertQuery(
+                cockroach,
+                "SELECT 1",
+                rs -> {
+                    int resultSetInt = rs.getInt(1);
+                    assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+                }
+            );
         }
     }
 
@@ -40,10 +42,14 @@ public class SimpleCockroachDBTest extends AbstractContainerDatabaseTest {
         ) { // CockroachDB is expected to be compatible with Postgres
             cockroach.start();
 
-            ResultSet resultSet = performQuery(cockroach, "SELECT foo FROM bar");
-
-            String firstColumnValue = resultSet.getString(1);
-            assertEquals("Value from init script should equal real value", "hello world", firstColumnValue);
+            assertQuery(
+                cockroach,
+                "SELECT foo FROM bar",
+                rs -> {
+                    String firstColumnValue = rs.getString(1);
+                    assertEquals("Value from init script should equal real value", "hello world", firstColumnValue);
+                }
+            );
         }
     }
 

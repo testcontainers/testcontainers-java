@@ -5,7 +5,6 @@ import org.testcontainers.PostgreSQLTestImages;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
@@ -31,10 +30,14 @@ public class CustomizablePostgreSQLTest extends AbstractContainerDatabaseTest {
         ) {
             postgres.start();
 
-            ResultSet resultSet = performQuery(postgres, "SELECT 1");
-
-            int resultSetInt = resultSet.getInt(1);
-            assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+            assertQuery(
+                postgres,
+                "SELECT 1",
+                rs -> {
+                    int resultSetInt = rs.getInt(1);
+                    assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+                }
+            );
         }
     }
 }

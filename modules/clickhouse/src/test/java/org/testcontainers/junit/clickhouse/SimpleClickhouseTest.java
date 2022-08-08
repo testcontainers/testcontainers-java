@@ -8,7 +8,6 @@ import org.testcontainers.containers.ClickHouseContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 import org.testcontainers.utility.DockerImageName;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
@@ -34,11 +33,14 @@ public class SimpleClickhouseTest extends AbstractContainerDatabaseTest {
     public void testSimple() throws SQLException {
         try (ClickHouseContainer clickhouse = new ClickHouseContainer(this.imageName)) {
             clickhouse.start();
-
-            ResultSet resultSet = performQuery(clickhouse, "SELECT 1");
-
-            int resultSetInt = resultSet.getInt(1);
-            assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+            assertQuery(
+                clickhouse,
+                "SELECT 1",
+                rs -> {
+                    int resultSetInt = rs.getInt(1);
+                    assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+                }
+            );
         }
     }
 }

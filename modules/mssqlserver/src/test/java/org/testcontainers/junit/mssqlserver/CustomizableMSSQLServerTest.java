@@ -5,7 +5,6 @@ import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 import org.testcontainers.utility.DockerImageName;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
@@ -24,9 +23,14 @@ public class CustomizableMSSQLServerTest extends AbstractContainerDatabaseTest {
         ) {
             mssqlServerContainer.start();
 
-            ResultSet resultSet = performQuery(mssqlServerContainer, mssqlServerContainer.getTestQueryString());
-            int resultSetInt = resultSet.getInt(1);
-            assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+            assertQuery(
+                mssqlServerContainer,
+                mssqlServerContainer.getTestQueryString(),
+                rs -> {
+                    int resultSetInt = rs.getInt(1);
+                    assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+                }
+            );
         }
     }
 }
