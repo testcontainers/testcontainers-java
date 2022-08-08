@@ -1,4 +1,4 @@
-package org.testcontainers.elasticsearch;
+package org.testcontainers.opensearch;
 
 import com.github.dockerjava.api.DockerClient;
 import org.apache.http.HttpHost;
@@ -16,7 +16,6 @@ import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.RemoteDockerImage;
-import org.testcontainers.opensearch.OpenSearchContainer;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
