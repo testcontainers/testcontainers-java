@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
@@ -163,6 +164,19 @@ public class GenericContainerTest {
 
             assertEquals("Only withExposedPort should be exposed", 1, container.getExposedPorts().size());
             assertTrue("withExposedPort should be exposed", container.getExposedPorts().contains(8080));
+        }
+    }
+
+    @Test
+    public void testContainerIsAlreadyConfiguredWhenUsedMultipleTimes() {
+        try (GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE).withCommand("top")) {
+            assertThat(container.isConfigured()).isFalse();
+            container.start();
+            assertThat(container.isConfigured()).isTrue();
+            container.stop();
+            assertThat(container.isConfigured()).isTrue();
+            container.start();
+            assertThat(container.isConfigured()).isTrue();
         }
     }
 

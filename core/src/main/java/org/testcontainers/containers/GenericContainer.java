@@ -238,6 +238,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private boolean hostAccessible = false;
 
+    @Setter(AccessLevel.NONE)
+    @Getter(AccessLevel.MODULE)
+    @VisibleForTesting
+    private boolean configured = false;
+
     public GenericContainer(@NonNull final DockerImageName dockerImageName) {
         this.image = new RemoteDockerImage(dockerImageName);
     }
@@ -324,7 +329,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     protected void doStart() {
         try {
-            configure();
+            synchronized (this) {
+                if (!this.configured) {
+                    configure();
+                    configured = true;
+                }
+            }
 
             Instant startedAt = Instant.now();
 
@@ -807,10 +817,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             }
         }
 
-        Bind[] bindsArray = binds.stream().toArray(Bind[]::new);
+        Bind[] bindsArray = binds.stream().distinct().toArray(Bind[]::new);
         createCommand.withBinds(bindsArray);
 
-        VolumesFrom[] volumesFromsArray = volumesFroms.stream().toArray(VolumesFrom[]::new);
+        VolumesFrom[] volumesFromsArray = volumesFroms.stream().distinct().toArray(VolumesFrom[]::new);
         createCommand.withVolumesFrom(volumesFromsArray);
 
         Set<Link> allLinks = new HashSet<>();
@@ -861,7 +871,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 withExtraHost(INTERNAL_HOST_HOSTNAME, it.getIpAddress());
             });
 
-        String[] extraHostsArray = extraHosts.stream().toArray(String[]::new);
+        String[] extraHostsArray = extraHosts.stream().distinct().toArray(String[]::new);
         createCommand.withExtraHosts(extraHostsArray);
 
         if (network != null) {
