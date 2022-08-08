@@ -66,7 +66,7 @@ public class OpenSearchContainerTest {
 
     @Test
     public void openSearchDefaultTest() throws IOException {
-        // Create the elasticsearch container.
+        // Create the OpenSearch container.
         try (
             OpenSearchContainer container = new OpenSearchContainer(OPENSEARCH_IMAGE).withEnv("foo", "bar") // dummy env for compiler checking correct generics usage
         ) {
