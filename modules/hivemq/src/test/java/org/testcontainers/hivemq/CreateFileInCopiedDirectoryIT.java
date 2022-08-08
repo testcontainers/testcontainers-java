@@ -22,15 +22,15 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class CreateFileInCopiedDirectoryIT {
 
     private @NotNull MountableFile createDirectory() throws IOException {
         final File directory = new File(Files.createTempDirectory("").toFile(), "directory");
-        assertTrue(directory.mkdir());
+        assertThat(directory.mkdir()).isTrue();
         final File subdirectory = new File(directory, "sub-directory");
-        assertTrue(subdirectory.mkdir());
+        assertThat(subdirectory.mkdir()).isTrue();
         return MountableFile.forHostPath(directory.getPath());
     }
 

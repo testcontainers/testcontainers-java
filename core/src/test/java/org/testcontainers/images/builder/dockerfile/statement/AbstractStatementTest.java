@@ -10,8 +10,7 @@ import org.rnorth.ducttape.Preconditions;
 import java.io.InputStream;
 import java.util.Arrays;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.fail;
-import static org.rnorth.visibleassertions.VisibleAssertions.pass;
+import static org.assertj.core.api.Assertions.fail;
 
 public abstract class AbstractStatementTest {
 
@@ -64,7 +63,5 @@ public abstract class AbstractStatementTest {
 
             fail(failureBuilder.toString());
         }
-
-        pass(testName.getMethodName());
     }
 }

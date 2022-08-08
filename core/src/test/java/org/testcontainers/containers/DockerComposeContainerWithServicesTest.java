@@ -1,6 +1,7 @@
 package org.testcontainers.containers;
 
 import org.junit.Test;
+import org.rnorth.ducttape.TimeoutException;
 import org.testcontainers.containers.wait.strategy.Wait;
 
 import java.io.File;
@@ -9,8 +10,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 public class DockerComposeContainerWithServicesTest {
 
@@ -92,10 +93,8 @@ public class DockerComposeContainerWithServicesTest {
 
     @Test
     public void testStartupTimeoutSetsTheHighestTimeout() {
-        assertThrows(
-            "We expect a timeout from the startup timeout",
-            org.rnorth.ducttape.TimeoutException.class,
-            () -> {
+        assertThat(
+            catchThrowable(() -> {
                 try (
                     DockerComposeContainer<?> compose = new DockerComposeContainer<>(SIMPLE_COMPOSE_FILE)
                         .withServices("redis")
@@ -108,8 +107,10 @@ public class DockerComposeContainerWithServicesTest {
                 ) {
                     compose.start();
                 }
-            }
-        );
+            })
+        )
+            .as("We expect a timeout from the startup timeout")
+            .isInstanceOf(TimeoutException.class);
     }
 
     private void verifyStartedContainers(final DockerComposeContainer<?> compose, final String... names) {
@@ -119,16 +120,16 @@ public class DockerComposeContainerWithServicesTest {
             .flatMap(container -> Stream.of(container.getNames()))
             .collect(Collectors.toList());
 
-        assertEquals(
-            "number of running services of docker-compose is the same as length of listOfServices",
-            names.length,
-            containerNames.size()
-        );
+        assertThat(containerNames)
+            .as("number of running services of docker-compose is the same as length of listOfServices")
+            .hasSize(names.length);
 
         for (final String expectedName : names) {
             final long matches = containerNames.stream().filter(foundName -> foundName.endsWith(expectedName)).count();
 
-            assertEquals("container with name starting '" + expectedName + "' should be running", 1L, matches);
+            assertThat(matches)
+                .as("container with name starting '" + expectedName + "' should be running")
+                .isEqualTo(1L);
         }
     }
 }

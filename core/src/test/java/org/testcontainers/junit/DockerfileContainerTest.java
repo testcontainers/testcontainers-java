@@ -11,8 +11,7 @@ import org.testcontainers.images.builder.ImageFromDockerfile;
 
 import java.io.IOException;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Simple test case / demonstration of creating a fresh container image from a Dockerfile DSL
@@ -40,15 +39,14 @@ public class DockerfileContainerTest {
         HttpGet get = new HttpGet(address);
 
         try (CloseableHttpResponse response = httpClient.execute(get)) {
-            assertEquals(
-                "A container built from a dockerfile can run nginx as expected, and returns a good status code",
-                200,
-                response.getStatusLine().getStatusCode()
-            );
-            assertTrue(
-                "A container built from a dockerfile can run nginx as expected, and returns an expected Server header",
-                response.getHeaders("Server")[0].getValue().contains("nginx")
-            );
+            assertThat(response.getStatusLine().getStatusCode())
+                .as("A container built from a dockerfile can run nginx as expected, and returns a good status code")
+                .isEqualTo(200);
+            assertThat(response.getHeaders("Server")[0].getValue())
+                .as(
+                    "A container built from a dockerfile can run nginx as expected, and returns an expected Server header"
+                )
+                .contains("nginx");
         }
     }
 }

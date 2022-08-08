@@ -7,12 +7,13 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.rnorth.ducttape.TimeoutException;
 import org.rnorth.ducttape.unreliables.Unreliables;
-import org.rnorth.visibleassertions.VisibleAssertions;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
+
+import static org.assertj.core.api.Assertions.fail;
 
 @RunWith(Parameterized.class)
 public class InternalCommandPortListeningCheckTest {
@@ -48,8 +49,6 @@ public class InternalCommandPortListeningCheckTest {
         );
 
         Unreliables.retryUntilTrue(5, TimeUnit.SECONDS, check);
-
-        VisibleAssertions.pass("InternalCommandPortListeningCheck identifies a single listening port");
     }
 
     @Test
@@ -61,7 +60,7 @@ public class InternalCommandPortListeningCheckTest {
 
         try {
             Unreliables.retryUntilTrue(5, TimeUnit.SECONDS, check);
-            VisibleAssertions.fail("expected to fail");
+            fail("expected to fail");
         } catch (TimeoutException e) {}
     }
 
@@ -73,7 +72,5 @@ public class InternalCommandPortListeningCheckTest {
         );
 
         Unreliables.retryUntilTrue(5, TimeUnit.SECONDS, check);
-
-        VisibleAssertions.pass("InternalCommandPortListeningCheck identifies a low and a high port");
     }
 }

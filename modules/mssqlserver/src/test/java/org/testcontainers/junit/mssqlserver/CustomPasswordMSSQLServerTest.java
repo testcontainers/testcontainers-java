@@ -10,7 +10,7 @@ import org.testcontainers.containers.MSSQLServerContainer;
 import java.util.Arrays;
 import java.util.Collection;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.fail;
+import static org.assertj.core.api.Assertions.fail;
 
 /**
  * Tests if the password passed to the container satisfied the password policy described at

@@ -15,9 +15,7 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.util.Arrays;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertNotEquals;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(Enclosed.class)
 public class LegacyModeTest {
@@ -52,25 +50,25 @@ public class LegacyModeTest {
             localstack.start();
 
             try {
-                assertTrue("A single port is exposed", localstack.getExposedPorts().size() == 1);
-                assertEquals(
-                    "Endpoint overrides are different",
-                    localstack.getEndpointOverride(Service.S3).toString(),
-                    localstack.getEndpointOverride(Service.SQS).toString()
-                );
-                assertEquals(
-                    "Endpoint configuration have different endpoints",
-                    new AwsClientBuilder.EndpointConfiguration(
-                        localstack.getEndpointOverride(Service.S3).toString(),
-                        localstack.getRegion()
-                    )
-                        .getServiceEndpoint(),
+                assertThat(localstack.getExposedPorts()).as("A single port is exposed").hasSize(1);
+                assertThat(localstack.getEndpointOverride(Service.SQS).toString())
+                    .as("Endpoint overrides are different")
+                    .isEqualTo(localstack.getEndpointOverride(Service.S3).toString());
+                assertThat(
                     new AwsClientBuilder.EndpointConfiguration(
                         localstack.getEndpointOverride(Service.SQS).toString(),
                         localstack.getRegion()
                     )
                         .getServiceEndpoint()
-                );
+                )
+                    .as("Endpoint configuration have different endpoints")
+                    .isEqualTo(
+                        new AwsClientBuilder.EndpointConfiguration(
+                            localstack.getEndpointOverride(Service.S3).toString(),
+                            localstack.getRegion()
+                        )
+                            .getServiceEndpoint()
+                    );
             } finally {
                 localstack.stop();
             }
@@ -117,25 +115,25 @@ public class LegacyModeTest {
             localstack.start();
 
             try {
-                assertTrue("Multiple ports are exposed", localstack.getExposedPorts().size() > 1);
-                assertNotEquals(
-                    "Endpoint overrides are different",
-                    localstack.getEndpointOverride(Service.S3).toString(),
-                    localstack.getEndpointOverride(Service.SQS).toString()
-                );
-                assertNotEquals(
-                    "Endpoint configuration have different endpoints",
-                    new AwsClientBuilder.EndpointConfiguration(
-                        localstack.getEndpointOverride(Service.S3).toString(),
-                        localstack.getRegion()
-                    )
-                        .getServiceEndpoint(),
+                assertThat(localstack.getExposedPorts()).as("Multiple ports are exposed").hasSizeGreaterThan(1);
+                assertThat(localstack.getEndpointOverride(Service.SQS).toString())
+                    .as("Endpoint overrides are different")
+                    .isNotEqualTo(localstack.getEndpointOverride(Service.S3).toString());
+                assertThat(
                     new AwsClientBuilder.EndpointConfiguration(
                         localstack.getEndpointOverride(Service.SQS).toString(),
                         localstack.getRegion()
                     )
                         .getServiceEndpoint()
-                );
+                )
+                    .as("Endpoint configuration have different endpoints")
+                    .isNotEqualTo(
+                        new AwsClientBuilder.EndpointConfiguration(
+                            localstack.getEndpointOverride(Service.S3).toString(),
+                            localstack.getRegion()
+                        )
+                            .getServiceEndpoint()
+                    );
             } finally {
                 localstack.stop();
             }
