@@ -15,9 +15,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertFalse;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 /**
  * Simple test for following container output.
@@ -49,10 +48,8 @@ public class OutputStreamTest {
 
         container.followOutput(consumer, OutputFrame.OutputType.STDOUT);
 
-        assertThrows(
-            "a TimeoutException should be thrown",
-            TimeoutException.class,
-            () -> {
+        assertThat(
+            catchThrowable(() -> {
                 consumer.waitUntil(
                     frame -> {
                         return (
@@ -62,9 +59,10 @@ public class OutputStreamTest {
                     2,
                     TimeUnit.SECONDS
                 );
-                return true;
-            }
-        );
+            })
+        )
+            .as("a TimeoutException should be thrown")
+            .isInstanceOf(TimeoutException.class);
     }
 
     @Test(timeout = 60_000L)
@@ -102,8 +100,8 @@ public class OutputStreamTest {
         waitingConsumer.waitUntilEnd(30, TimeUnit.SECONDS);
 
         String utf8String = toStringConsumer.toUtf8String();
-        assertTrue("the expected first value was found", utf8String.contains("seq=1"));
-        assertTrue("the expected last value was found", utf8String.contains("seq=4"));
-        assertFalse("a non-expected value was found", utf8String.contains("seq=42"));
+        assertThat(utf8String).as("the expected first value was found").contains("seq=1");
+        assertThat(utf8String).as("the expected last value was found").contains("seq=4");
+        assertThat(utf8String).as("a non-expected value was found").doesNotContain("seq=42");
     }
 }

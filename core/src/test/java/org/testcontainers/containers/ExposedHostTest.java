@@ -13,7 +13,7 @@ import org.testcontainers.Testcontainers;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ExposedHostTest {
 
@@ -95,7 +95,7 @@ public class ExposedHostTest {
                 .execInContainer("wget", "-O", "-", "http://host.testcontainers.internal:" + port)
                 .getStdout();
 
-            assertEquals("received response", "Hello World!", response);
+            assertThat(response).as("received response").isEqualTo("Hello World!");
         } finally {
             container.stop();
         }

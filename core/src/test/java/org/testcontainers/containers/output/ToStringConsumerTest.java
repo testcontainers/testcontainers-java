@@ -1,7 +1,6 @@
 package org.testcontainers.containers.output;
 
 import org.apache.commons.lang3.RandomStringUtils;
-import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.testcontainers.containers.Container.ExecResult;
 import org.testcontainers.containers.GenericContainer;
@@ -19,7 +18,7 @@ public class ToStringConsumerTest {
             builder.append(' ').append(i).append(RandomStringUtils.randomAlphabetic(10000));
         }
         LARGE_PAYLOAD = builder.toString();
-        Assertions.assertThat(LARGE_PAYLOAD).doesNotContain("\n");
+        assertThat(LARGE_PAYLOAD).doesNotContain("\n");
     }
 
     @Test
@@ -29,7 +28,7 @@ public class ToStringConsumerTest {
             container.start();
 
             ExecResult build = container.execInContainer("echo", "-n", LARGE_PAYLOAD);
-            Assertions.assertThat(build.getStdout()).doesNotContain("\n").isEqualTo(LARGE_PAYLOAD);
+            assertThat(build.getStdout()).doesNotContain("\n").isEqualTo(LARGE_PAYLOAD);
         }
     }
 

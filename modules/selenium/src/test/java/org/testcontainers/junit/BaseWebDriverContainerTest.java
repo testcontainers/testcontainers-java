@@ -13,8 +13,7 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.util.concurrent.TimeUnit;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  *
@@ -41,13 +40,15 @@ public class BaseWebDriverContainerTest {
         driver.get("http://helloworld:8080");
         WebElement title = driver.findElement(By.tagName("h1"));
 
-        assertEquals("the index page contains the title 'Hello world'", "Hello world", title.getText().trim());
+        assertThat(title.getText().trim())
+            .as("the index page contains the title 'Hello world'")
+            .isEqualTo("Hello world");
     }
 
     protected void assertBrowserNameIs(BrowserWebDriverContainer<?> rule, String expectedName) {
         RemoteWebDriver driver = setupDriverFromRule(rule);
         String actual = driver.getCapabilities().getBrowserName();
-        assertTrue(String.format("actual browser name is %s", actual), actual.equals(expectedName));
+        assertThat(actual).as(String.format("actual browser name is %s", actual)).isEqualTo(expectedName);
     }
 
     @NotNull
