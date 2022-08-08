@@ -2,7 +2,7 @@ package org.testcontainers.hivemq;
 
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 class HiveMQExtensionTest {
 

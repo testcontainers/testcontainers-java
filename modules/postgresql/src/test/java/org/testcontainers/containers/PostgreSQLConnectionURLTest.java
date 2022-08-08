@@ -45,9 +45,9 @@ public class PostgreSQLConnectionURLTest {
     @Test
     public void shouldRejectInvalidQueryString() {
         assertThat(
-            catchThrowable(() ->
-                new NoParamsUrlPostgreSQLContainer().constructUrlForConnection("stringtype=unspecified")
-            )
+            catchThrowable(() -> {
+                new NoParamsUrlPostgreSQLContainer().constructUrlForConnection("stringtype=unspecified");
+            })
         )
             .as("Fails when invalid query string provided")
             .isInstanceOf(IllegalArgumentException.class);

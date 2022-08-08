@@ -49,14 +49,17 @@ public class OutputStreamTest {
         container.followOutput(consumer, OutputFrame.OutputType.STDOUT);
 
         assertThat(
-            catchThrowable(() ->
+            catchThrowable(() -> {
                 consumer.waitUntil(
-                    frame ->
-                        frame.getType() == OutputFrame.OutputType.STDOUT && frame.getUtf8String().contains("seq=5"),
+                    frame -> {
+                        return (
+                            frame.getType() == OutputFrame.OutputType.STDOUT && frame.getUtf8String().contains("seq=5")
+                        );
+                    },
                     2,
                     TimeUnit.SECONDS
-                )
-            )
+                );
+            })
         )
             .as("a TimeoutException should be thrown")
             .isInstanceOf(TimeoutException.class);

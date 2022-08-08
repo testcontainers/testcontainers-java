@@ -38,7 +38,9 @@ public class OutputStreamWithTTYTest {
         container.followOutput(consumer, OutputFrame.OutputType.STDOUT);
 
         consumer.waitUntil(
-            frame -> frame.getType() == OutputFrame.OutputType.STDOUT && frame.getUtf8String().contains("home"),
+            frame -> {
+                return frame.getType() == OutputFrame.OutputType.STDOUT && frame.getUtf8String().contains("home");
+            },
             4,
             TimeUnit.SECONDS
         );
@@ -51,13 +53,17 @@ public class OutputStreamWithTTYTest {
         container.followOutput(consumer, OutputFrame.OutputType.STDOUT);
 
         assertThat(
-            catchThrowable(() ->
+            catchThrowable(() -> {
                 consumer.waitUntil(
-                    frame -> frame.getType() == OutputFrame.OutputType.STDOUT && frame.getUtf8String().contains("qqq"),
+                    frame -> {
+                        return (
+                            frame.getType() == OutputFrame.OutputType.STDOUT && frame.getUtf8String().contains("qqq")
+                        );
+                    },
                     1,
                     TimeUnit.SECONDS
-                )
-            )
+                );
+            })
         )
             .as("a TimeoutException should be thrown")
             .isInstanceOf(TimeoutException.class);

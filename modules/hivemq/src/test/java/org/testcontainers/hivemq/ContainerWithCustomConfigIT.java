@@ -11,7 +11,7 @@ import org.testcontainers.utility.MountableFile;
 
 import java.util.concurrent.TimeUnit;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 public class ContainerWithCustomConfigIT {
 
