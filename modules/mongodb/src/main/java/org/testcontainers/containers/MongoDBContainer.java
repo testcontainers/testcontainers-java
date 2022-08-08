@@ -103,7 +103,7 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
      * @return a connection url pointing to a mongodb instance
      */
     public String getConnectionString() {
-        return getDefaultConnectionString(ConnectionString.builder().username(username).password(password).build());
+        return constructConnectionString(ConnectionString.builder().username(username).password(password).build());
     }
 
     /**
@@ -125,16 +125,22 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
         if (!isRunning()) {
             throw new IllegalStateException("MongoDBContainer should be started first");
         }
-        return getDefaultConnectionString(
+        return constructConnectionString(
             ConnectionString.builder().databaseName(databaseName).username(username).password(password).build()
         );
     }
 
+    /**
+     * Gets a replica set url for a provided {@link org.testcontainers.containers.MongoDBContainer.ConnectionString}.
+     *
+     * @param connectionString an object describing a connection string.
+     * @return a replica set url.
+     */
     public String getReplicaSetUrl(final ConnectionString connectionString) {
         if (!isRunning()) {
             throw new IllegalStateException("MongoDBContainer should be started first");
         }
-        return getDefaultConnectionString(connectionString);
+        return constructConnectionString(connectionString);
     }
 
     @Override
@@ -207,7 +213,7 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
         checkMongoNodeExitCodeAfterWaiting(execResultWaitForMaster);
     }
 
-    private String getDefaultConnectionString(final ConnectionString connectionString) {
+    private String constructConnectionString(final ConnectionString connectionString) {
         return String.format(
             "mongodb://%s:%s@%s:%d/%s?authSource=%s",
             connectionString.getUsername(),
