@@ -45,7 +45,7 @@ public class SeleniumContainerTest {
         driver.get("http://host.testcontainers.internal:" + port + "/foo.html");
         List<WebElement> hElement = driver.findElementsByTagName("h");
 
-        assertThat(hElement != null && hElement.size() > 0).as("The h element is found").isTrue();
+        assertThat(hElement).as("The h element is found").isNotEmpty();
     }
 
     public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {

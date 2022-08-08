@@ -1,6 +1,7 @@
 package org.testcontainers;
 
 import lombok.RequiredArgsConstructor;
+import org.assertj.core.api.Assertions;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,7 +27,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.registerFormatterForType;
 
 /**
  * This test checks that we don't expose any shaded class in our public API.
@@ -41,9 +41,9 @@ public class PublicBinaryAPITest extends AbstractJarFileTest {
     private static String SHADED_PACKAGE_PATH = SHADED_PACKAGE.replaceAll("\\.", "/");
 
     static {
-        registerFormatterForType(ClassNode.class, it -> it.name);
-        registerFormatterForType(FieldNode.class, it -> it.name);
-        registerFormatterForType(MethodNode.class, it -> it.name + it.desc);
+        Assertions.registerFormatterForType(ClassNode.class, it -> it.name);
+        Assertions.registerFormatterForType(FieldNode.class, it -> it.name);
+        Assertions.registerFormatterForType(MethodNode.class, it -> it.name + it.desc);
     }
 
     @Parameters(name = "{0}")
