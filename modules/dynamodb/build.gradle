@@ -3,5 +3,5 @@ description = "Testcontainers :: AWS DynamoDB"
 dependencies {
     api project(':testcontainers')
 
-    implementation("software.amazon.awssdk:dynamodb:2.17.247")
+    testImplementation("software.amazon.awssdk:dynamodb:2.17.247")
 }
