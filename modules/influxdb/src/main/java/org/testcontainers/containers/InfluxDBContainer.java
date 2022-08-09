@@ -35,7 +35,7 @@ public class InfluxDBContainer extends GenericContainer<InfluxDBContainer> {
     private String password = "test-password";
 
     /**
-     * Properties InfluxDB &lt;= 2
+     * Properties of InfluxDB 1.x
      */
     private boolean authEnabled = true;
 
@@ -46,7 +46,7 @@ public class InfluxDBContainer extends GenericContainer<InfluxDBContainer> {
     private String database;
 
     /**
-     * InfluxDB &gt;= 2
+     * Properties of InfluxDB 2.x
      */
     @Getter
     private String bucket = "test-bucket";
@@ -162,9 +162,9 @@ public class InfluxDBContainer extends GenericContainer<InfluxDBContainer> {
     }
 
     /**
-     * Set env variable `INFLUXDB_USER` for InfluxDB &lt;= 2.
+     * Set env variable `INFLUXDB_USER` for InfluxDB 1.x.
      * <p>
-     * Set env variable `DOCKER_INFLUXDB_INIT_USERNAME` for InfluxDB &gt;= 2.
+     * Set env variable `DOCKER_INFLUXDB_INIT_USERNAME` for InfluxDB 2.x.
      *
      * @param username The name of a user to be created with no privileges. If `INFLUXDB_BUCKET` is set, this user will
      * be granted read and write permissions for that database.
@@ -176,9 +176,9 @@ public class InfluxDBContainer extends GenericContainer<InfluxDBContainer> {
     }
 
     /**
-     * Set env variable `INFLUXDB_USER_PASSWORD` for InfluxDB &lt;= 1.
+     * Set env variable `INFLUXDB_USER_PASSWORD` for InfluxDB 1.x.
      * <p>
-     * Set env variable `DOCKER_INFLUXDB_INIT_PASSWORD` for InfluxDB &gt;= 2.
+     * Set env variable `DOCKER_INFLUXDB_INIT_PASSWORD` for InfluxDB 2.x.
      *
      * @param password The password for the user configured with `INFLUXDB_USER`. If this is unset, a random password is
      * generated and printed to standard out.
@@ -286,7 +286,7 @@ public class InfluxDBContainer extends GenericContainer<InfluxDBContainer> {
     }
 
     /**
-     * @return a InfluxDB client for InfluxDB &lt;= 2.
+     * @return a InfluxDB client for InfluxDB 1.x.
      * @deprecated Use the new <a href="https://github.com/influxdata/influxdb-client-java">InfluxDB client library.</a>
      */
     @Deprecated
