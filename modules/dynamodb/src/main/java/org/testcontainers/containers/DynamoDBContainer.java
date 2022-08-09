@@ -172,6 +172,7 @@ public class DynamoDBContainer extends GenericContainer<DynamoDBContainer> {
     /**
      * Set the flag '-sharedDb' on container commands.
      *
+     * @param isActiveFlag Define if flag is enable or disable
      * @return self instance.
      * @see <a href="https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.UsageNotes.html#DynamoDBLocal.CommandLineOptions">AWS DynamoDB Docs for Downloaded version</a>
      */
@@ -205,6 +206,7 @@ public class DynamoDBContainer extends GenericContainer<DynamoDBContainer> {
     /**
      * Set the flag '-delayTransientStatuses' on container commands.
      *
+     * @param isActiveFlag Define if flag is enable or disable
      * @return self instance.
      * @see <a href="https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.UsageNotes.html#DynamoDBLocal.CommandLineOptions">AWS DynamoDB Docs for Downloaded version</a>
      */
@@ -238,6 +240,7 @@ public class DynamoDBContainer extends GenericContainer<DynamoDBContainer> {
     /**
      * Set the flag '-optimizeDbBeforeStartup' on container commands.
      *
+     * @param isActiveFlag Define if flag is enable or disable
      * @return self instance.
      * @see <a href="https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.UsageNotes.html#DynamoDBLocal.CommandLineOptions">AWS DynamoDB Docs for Downloaded version</a>
      */
