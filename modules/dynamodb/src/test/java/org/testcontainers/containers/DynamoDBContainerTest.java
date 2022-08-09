@@ -87,7 +87,7 @@ public class DynamoDBContainerTest {
         try (val container = new DynamoDBContainer(DynamoDBTestImages.AWS_DYNAMODB_IMAGE)) {
             container
                 .withEnableSharedDB()
-                .withSetUp(helper ->
+                .withSetUpHelper(helper ->
                     helper
                         .withClientRegion(Region.EU_WEST_1)
                         .withClientCredentials("test", "test")

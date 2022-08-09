@@ -346,7 +346,7 @@ public class DynamoDBContainer extends GenericContainer<DynamoDBContainer> {
         return self();
     }
 
-    public DynamoDBContainer withSetUp(final Consumer<DynamoDBSetUpBuilder.Helper> helper) {
+    public DynamoDBContainer withSetUpHelper(final Consumer<DynamoDBSetUpBuilder.Helper> helper) {
         this.dbSetUpBuilder.addSetUp(this::clientBuilder, helper);
         return self();
     }
