@@ -81,15 +81,11 @@ class DynamoDBSetUpBuilder {
         }
     }
 
-    public DynamoDBSetUpBuilder withSetUp(
-        final Supplier<DynamoDbClientBuilder> builder,
-        final Consumer<Helper> helper
-    ) {
+    public void addSetUp(final Supplier<DynamoDbClientBuilder> builder, final Consumer<Helper> helper) {
         val helperInstance = new Helper(builder);
 
         helper.accept(helperInstance);
 
         this.helpers.add(helperInstance);
-        return this;
     }
 }
