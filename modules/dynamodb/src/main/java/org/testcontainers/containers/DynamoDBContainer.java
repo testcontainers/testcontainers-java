@@ -1,5 +1,7 @@
 package org.testcontainers.containers;
 
+import com.google.common.base.Preconditions;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
@@ -10,7 +12,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Testcontiners for DynamoDB
+ * Testcontainers for AWS DynamoDB
  *
  * @author Aran Moncusi
  */
@@ -24,10 +26,6 @@ public class DynamoDBContainer extends GenericContainer<DynamoDBContainer> {
 
     private static final Integer DEFAULT_HTTP_PORT = 8000;
 
-    private static final String DEFAULT_ACCESS_KEY = "DUMMYIDEXAMPLE";
-
-    private static final String DEFAULT_SECRET_ACCESS_KEY = "DUMMYIDEXAMPLE";
-
     private String cors = "*";
 
     private Boolean flagSharedDb = false;
@@ -35,6 +33,8 @@ public class DynamoDBContainer extends GenericContainer<DynamoDBContainer> {
     private Boolean flagDelayTransientStatuses = false;
 
     private Boolean flagOptimizeDbBeforeStartup = false;
+
+    private Boolean flagInMemory = false;
 
     private String dbPath;
 
@@ -50,11 +50,14 @@ public class DynamoDBContainer extends GenericContainer<DynamoDBContainer> {
         this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
 
+    public DynamoDBContainer(final String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
+    }
+
     public DynamoDBContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
-        withAccessKeys(DEFAULT_ACCESS_KEY, DEFAULT_SECRET_ACCESS_KEY);
         addExposedPort(DEFAULT_HTTP_PORT);
 
         waitingFor(
@@ -90,12 +93,23 @@ public class DynamoDBContainer extends GenericContainer<DynamoDBContainer> {
         }
 
         if (flagOptimizeDbBeforeStartup) {
+            Preconditions.checkState(
+                Objects.nonNull(dbPath),
+                "If you use the 'optimizeDbBeforeStartup' option, you must also specify the 'dbPath' parameter so " +
+                "that DynamoDB can find its database file."
+            );
+
             commands.add("-optimizeDbBeforeStartup");
         }
 
-        if (Objects.isNull(dbPath)) {
+        if (flagInMemory) {
+
+            Preconditions.checkState(Objects.isNull(dbPath), "You can't specify both dbPath and inMemory at once.");
+
             commands.add("-inMemory");
-        } else {
+        }
+
+        if (Objects.nonNull(dbPath)) {
             commands.add("-dbPath");
             commands.add(dbPath);
         }
@@ -116,7 +130,6 @@ public class DynamoDBContainer extends GenericContainer<DynamoDBContainer> {
 
     public DynamoDBContainer withCors(final String cors) {
         this.cors = cors;
-
         return self();
     }
 
@@ -174,17 +187,19 @@ public class DynamoDBContainer extends GenericContainer<DynamoDBContainer> {
     }
 
     public DynamoDBContainer withInMemory() {
+        this.flagInMemory = true;
         this.dbPath = null;
         return self();
     }
 
     public DynamoDBContainer withFilePath(final String path) {
+        this.flagInMemory = false;
         this.dbPath = path;
         return self();
     }
 
     public DynamoDBContainer withFilePath() {
-        return withFilePath(".");
+        return withFilePath(null);
     }
 
     @SuppressWarnings("HttpUrlsUsage")
