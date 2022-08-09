@@ -85,11 +85,16 @@ public class DynamoDBContainerTest {
     @Test
     public void shouldDescribeTableInDifferentRegionsWithSharedDB() {
         try (val container = new DynamoDBContainer(DynamoDBTestImages.AWS_DYNAMODB_IMAGE)) {
-            container.withEnableSharedDB().start();
-
-            try (val client = builderClient(container).region(Region.EU_WEST_1).build()) {
-                createTable(client, "foo");
-            }
+            container
+                .withEnableSharedDB()
+                .withSetUp(helper ->
+                    helper
+                        .withClientRegion(Region.EU_WEST_1)
+                        .withClientCredentials("test", "test")
+                        .withSetUp(client -> createTable(client, "foo"))
+                        .withSetUp(client -> createTable(client, "oof"))
+                )
+                .start();
 
             try (val client = builderClient(container).region(Region.US_WEST_1).build()) {
                 val response = client.describeTable(table -> table.tableName("foo"));
@@ -101,6 +106,12 @@ public class DynamoDBContainerTest {
                 val response = client.describeTable(table -> table.tableName("foo"));
 
                 Assert.assertEquals("foo", response.table().tableName());
+            }
+
+            try (val client = builderClient(container).region(Region.AF_SOUTH_1).build()) {
+                val response = client.describeTable(table -> table.tableName("oof"));
+
+                Assert.assertEquals("oof", response.table().tableName());
             }
         }
     }
@@ -143,9 +154,9 @@ public class DynamoDBContainerTest {
     public static CreateTableResponse createTable(DynamoDbClient client, String tableName) {
         return client.createTable(table -> {
             table
+                .tableName(tableName)
                 .keySchema(sh -> sh.keyType(KeyType.HASH).attributeName("id"))
                 .attributeDefinitions(df -> df.attributeName("id").attributeType(ScalarAttributeType.S))
-                .tableName(tableName)
                 .provisionedThroughput(builder -> builder.readCapacityUnits(1L).writeCapacityUnits(1L));
         });
     }
