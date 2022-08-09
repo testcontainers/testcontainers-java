@@ -11,7 +11,7 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class RegistryAuthLocatorTest {
 
@@ -24,13 +24,11 @@ public class RegistryAuthLocatorTest {
             new AuthConfig()
         );
 
-        assertEquals(
-            "Default docker registry URL is set on auth config",
-            "https://index.docker.io/v1/",
-            authConfig.getRegistryAddress()
-        );
-        assertNull("No username is set", authConfig.getUsername());
-        assertNull("No password is set", authConfig.getPassword());
+        assertThat(authConfig.getRegistryAddress())
+            .as("Default docker registry URL is set on auth config")
+            .isEqualTo("https://index.docker.io/v1/");
+        assertThat(authConfig.getUsername()).as("No username is set").isNull();
+        assertThat(authConfig.getPassword()).as("No password is set").isNull();
     }
 
     @Test
@@ -42,13 +40,11 @@ public class RegistryAuthLocatorTest {
             new AuthConfig()
         );
 
-        assertEquals(
-            "Default docker registry URL is set on auth config",
-            "https://registry.example.com",
-            authConfig.getRegistryAddress()
-        );
-        assertEquals("Username is set", "user", authConfig.getUsername());
-        assertEquals("Password is set", "pass", authConfig.getPassword());
+        assertThat(authConfig.getRegistryAddress())
+            .as("Default docker registry URL is set on auth config")
+            .isEqualTo("https://registry.example.com");
+        assertThat(authConfig.getUsername()).as("Username is set").isEqualTo("user");
+        assertThat(authConfig.getPassword()).as("Password is set").isEqualTo("pass");
     }
 
     @Test
@@ -60,13 +56,11 @@ public class RegistryAuthLocatorTest {
             new AuthConfig()
         );
 
-        assertEquals(
-            "Default docker registry URL is set on auth config",
-            "https://registry.example.com",
-            authConfig.getRegistryAddress()
-        );
-        assertEquals("Username is set", "_json_key", authConfig.getUsername());
-        assertNotNull("Password is set", authConfig.getPassword());
+        assertThat(authConfig.getRegistryAddress())
+            .as("Default docker registry URL is set on auth config")
+            .isEqualTo("https://registry.example.com");
+        assertThat(authConfig.getUsername()).as("Username is set").isEqualTo("_json_key");
+        assertThat(authConfig.getPassword()).as("Password is set").isNotNull();
     }
 
     @Test
@@ -78,9 +72,15 @@ public class RegistryAuthLocatorTest {
             new AuthConfig()
         );
 
-        assertEquals("Correct server URL is obtained from a credential store", "url", authConfig.getRegistryAddress());
-        assertEquals("Correct username is obtained from a credential store", "username", authConfig.getUsername());
-        assertEquals("Correct secret is obtained from a credential store", "secret", authConfig.getPassword());
+        assertThat(authConfig.getRegistryAddress())
+            .as("Correct server URL is obtained from a credential store")
+            .isEqualTo("url");
+        assertThat(authConfig.getUsername())
+            .as("Correct username is obtained from a credential store")
+            .isEqualTo("username");
+        assertThat(authConfig.getPassword())
+            .as("Correct secret is obtained from a credential store")
+            .isEqualTo("secret");
     }
 
     @Test
@@ -92,9 +92,15 @@ public class RegistryAuthLocatorTest {
             new AuthConfig()
         );
 
-        assertEquals("Correct server URL is obtained from a credential store", "url", authConfig.getRegistryAddress());
-        assertEquals("Correct username is obtained from a credential store", "username", authConfig.getUsername());
-        assertEquals("Correct secret is obtained from a credential store", "secret", authConfig.getPassword());
+        assertThat(authConfig.getRegistryAddress())
+            .as("Correct server URL is obtained from a credential store")
+            .isEqualTo("url");
+        assertThat(authConfig.getUsername())
+            .as("Correct username is obtained from a credential store")
+            .isEqualTo("username");
+        assertThat(authConfig.getPassword())
+            .as("Correct secret is obtained from a credential store")
+            .isEqualTo("secret");
     }
 
     @Test
@@ -106,11 +112,9 @@ public class RegistryAuthLocatorTest {
             new AuthConfig()
         );
 
-        assertEquals(
-            "Correct identitytoken is obtained from a credential store",
-            "secret",
-            authConfig.getIdentitytoken()
-        );
+        assertThat(authConfig.getIdentitytoken())
+            .as("Correct identitytoken is obtained from a credential store")
+            .isEqualTo("secret");
     }
 
     @Test
@@ -122,9 +126,15 @@ public class RegistryAuthLocatorTest {
             new AuthConfig()
         );
 
-        assertEquals("Correct server URL is obtained from a credential store", "url", authConfig.getRegistryAddress());
-        assertEquals("Correct username is obtained from a credential store", "username", authConfig.getUsername());
-        assertEquals("Correct secret is obtained from a credential store", "secret", authConfig.getPassword());
+        assertThat(authConfig.getRegistryAddress())
+            .as("Correct server URL is obtained from a credential store")
+            .isEqualTo("url");
+        assertThat(authConfig.getUsername())
+            .as("Correct username is obtained from a credential store")
+            .isEqualTo("username");
+        assertThat(authConfig.getPassword())
+            .as("Correct secret is obtained from a credential store")
+            .isEqualTo("secret");
     }
 
     @Test
@@ -136,9 +146,15 @@ public class RegistryAuthLocatorTest {
             new AuthConfig()
         );
 
-        assertEquals("Correct server URL is obtained from a credential helper", "url", authConfig.getRegistryAddress());
-        assertEquals("Correct username is obtained from a credential helper", "username", authConfig.getUsername());
-        assertEquals("Correct password is obtained from a credential helper", "secret", authConfig.getPassword());
+        assertThat(authConfig.getRegistryAddress())
+            .as("Correct server URL is obtained from a credential helper")
+            .isEqualTo("url");
+        assertThat(authConfig.getUsername())
+            .as("Correct username is obtained from a credential helper")
+            .isEqualTo("username");
+        assertThat(authConfig.getPassword())
+            .as("Correct password is obtained from a credential helper")
+            .isEqualTo("secret");
     }
 
     @Test
@@ -152,17 +168,19 @@ public class RegistryAuthLocatorTest {
         DockerImageName dockerImageName = DockerImageName.parse("registry2.example.com/org/repo");
         final AuthConfig authConfig = authLocator.lookupAuthConfig(dockerImageName, new AuthConfig());
 
-        assertNull("No username should have been obtained from a credential store", authConfig.getUsername());
-        assertNull("No secret should have been obtained from a credential store", authConfig.getPassword());
-        assertEquals("Should have one 'credentials not found' message discovered", 1, notFoundMessagesReference.size());
+        assertThat(authConfig.getUsername())
+            .as("No username should have been obtained from a credential store")
+            .isNull();
+        assertThat(authConfig.getPassword()).as("No secret should have been obtained from a credential store").isNull();
+        assertThat(notFoundMessagesReference.size())
+            .as("Should have one 'credentials not found' message discovered")
+            .isEqualTo(1);
 
         String discoveredMessage = notFoundMessagesReference.values().iterator().next();
 
-        assertEquals(
-            "Not correct message discovered",
-            "Fake credentials not found on credentials store 'https://not.a.real.registry/url'",
-            discoveredMessage
-        );
+        assertThat(discoveredMessage)
+            .as("Not correct message discovered")
+            .isEqualTo("Fake credentials not found on credentials store 'https://not.a.real.registry/url'");
     }
 
     @Test
@@ -172,7 +190,7 @@ public class RegistryAuthLocatorTest {
         DockerImageName dockerImageName = DockerImageName.parse("registry2.example.com/org/repo");
         final AuthConfig authConfig = authLocator.lookupAuthConfig(dockerImageName, new AuthConfig());
 
-        assertNull("CredStore field will be ignored, because value is blank", authConfig.getAuth());
+        assertThat(authConfig.getAuth()).as("CredStore field will be ignored, because value is blank").isNull();
     }
 
     @NotNull

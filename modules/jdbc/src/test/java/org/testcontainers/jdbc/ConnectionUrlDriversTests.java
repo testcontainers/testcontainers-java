@@ -8,7 +8,7 @@ import org.junit.runners.Parameterized.Parameter;
 import java.util.Arrays;
 import java.util.Optional;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * This Test class validates that all supported JDBC URL's can be parsed by ConnectionUrl class.
@@ -125,9 +125,9 @@ public class ConnectionUrlDriversTests {
     @Test
     public void test() {
         ConnectionUrl url = ConnectionUrl.newInstance(jdbcUrl);
-        assertEquals("Database Type is as expected", databaseType, url.getDatabaseType());
-        assertEquals("Image tag is as expected", tag, url.getImageTag());
-        assertEquals("Database Host String is as expected", dbHostString, url.getDbHostString());
-        assertEquals("Database Name is as expected", databaseName, url.getDatabaseName().orElse(""));
+        assertThat(url.getDatabaseType()).as("Database Type is as expected").isEqualTo(databaseType);
+        assertThat(url.getImageTag()).as("Image tag is as expected").isEqualTo(tag);
+        assertThat(url.getDbHostString()).as("Database Host String is as expected").isEqualTo(dbHostString);
+        assertThat(url.getDatabaseName().orElse("")).as("Database Name is as expected").isEqualTo(databaseName);
     }
 }

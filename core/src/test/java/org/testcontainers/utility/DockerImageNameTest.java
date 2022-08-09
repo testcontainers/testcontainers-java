@@ -4,9 +4,8 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.rnorth.visibleassertions.VisibleAssertions;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(Enclosed.class)
 public class DockerImageNameTest {
@@ -122,50 +121,35 @@ public class DockerImageNameTest {
                 canonicalName = unversionedPart + ":latest";
             }
 
-            VisibleAssertions.context("For " + combined);
-            VisibleAssertions.context("Using single-arg constructor:", 2);
-
             final DockerImageName imageName = DockerImageName.parse(combined);
-            assertEquals(combined + " has registry address: " + registry, registry, imageName.getRegistry());
-            assertEquals(
-                combined + " has unversioned part: " + unversionedPart,
-                unversionedPart,
-                imageName.getUnversionedPart()
-            );
+            assertThat(imageName.getRegistry()).as(combined + " has registry address: " + registry).isEqualTo(registry);
+            assertThat(imageName.getUnversionedPart())
+                .as(combined + " has unversioned part: " + unversionedPart)
+                .isEqualTo(unversionedPart);
             if (version != null) {
-                assertEquals(combined + " has version part: " + version, version, imageName.getVersionPart());
+                assertThat(imageName.getVersionPart())
+                    .as(combined + " has version part: " + version)
+                    .isEqualTo(version);
             } else {
-                assertEquals(
-                    combined + " has automatic 'latest' version specified",
-                    "latest",
-                    imageName.getVersionPart()
-                );
+                assertThat(imageName.getVersionPart())
+                    .as(combined + " has automatic 'latest' version specified")
+                    .isEqualTo("latest");
             }
-            assertEquals(
-                combined + " has canonical name: " + canonicalName,
-                canonicalName,
-                imageName.asCanonicalNameString()
-            );
+            assertThat(imageName.asCanonicalNameString())
+                .as(combined + " has canonical name: " + canonicalName)
+                .isEqualTo(canonicalName);
 
             if (version != null) {
-                VisibleAssertions.context("Using two-arg constructor:", 2);
-
                 final DockerImageName imageNameFromSecondaryConstructor = new DockerImageName(unversionedPart, version);
-                assertEquals(
-                    combined + " has registry address: " + registry,
-                    registry,
-                    imageNameFromSecondaryConstructor.getRegistry()
-                );
-                assertEquals(
-                    combined + " has unversioned part: " + unversionedPart,
-                    unversionedPart,
-                    imageNameFromSecondaryConstructor.getUnversionedPart()
-                );
-                assertEquals(
-                    combined + " has version part: " + version,
-                    version,
-                    imageNameFromSecondaryConstructor.getVersionPart()
-                );
+                assertThat(imageNameFromSecondaryConstructor.getRegistry())
+                    .as(combined + " has registry address: " + registry)
+                    .isEqualTo(registry);
+                assertThat(imageNameFromSecondaryConstructor.getUnversionedPart())
+                    .as(combined + " has unversioned part: " + unversionedPart)
+                    .isEqualTo(unversionedPart);
+                assertThat(imageNameFromSecondaryConstructor.getVersionPart())
+                    .as(combined + " has version part: " + version)
+                    .isEqualTo(version);
             }
         }
     }

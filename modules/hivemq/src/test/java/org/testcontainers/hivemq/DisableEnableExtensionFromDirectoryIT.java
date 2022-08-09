@@ -10,7 +10,7 @@ import org.testcontainers.utility.MountableFile;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 public class DisableEnableExtensionFromDirectoryIT {
 
@@ -27,10 +27,8 @@ public class DisableEnableExtensionFromDirectoryIT {
 
             TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort(), hivemq.getHost());
             hivemq.disableExtension("Modifier Extension", "modifier-extension");
-            assertThrows(
-                ExecutionException.class,
-                () -> TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort(), hivemq.getHost())
-            );
+            assertThatExceptionOfType(ExecutionException.class)
+                .isThrownBy(() -> TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort(), hivemq.getHost()));
             hivemq.enableExtension("Modifier Extension", "modifier-extension");
             TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort(), hivemq.getHost());
         }
