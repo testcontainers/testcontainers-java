@@ -3,7 +3,6 @@ package org.testcontainers.junit;
 import com.github.dockerjava.api.exception.NotFoundException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.assertj.core.api.Assertions;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -16,7 +15,7 @@ import java.io.File;
 import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class FileOperationsTest {
 
@@ -37,7 +36,7 @@ public class FileOperationsTest {
             alpineCopyToContainer.copyFileFromContainer("/test.txt", actualFile.getPath());
 
             File expectedFile = new File(mountableFile.getResolvedPath());
-            assertTrue("Files aren't same ", FileUtils.contentEquals(expectedFile, actualFile));
+            assertThat(FileUtils.contentEquals(expectedFile, actualFile)).as("Files aren't same ").isTrue();
         }
     }
 
@@ -55,7 +54,7 @@ public class FileOperationsTest {
             alpineCopyToContainer.copyFileFromContainer("/home/test_copy_to_container.txt", actualFile.getPath());
 
             File expectedFile = new File(mountableFile.getResolvedPath());
-            assertTrue("Files aren't same ", FileUtils.contentEquals(expectedFile, actualFile));
+            assertThat(FileUtils.contentEquals(expectedFile, actualFile)).as("Files aren't same ").isTrue();
         }
     }
 
@@ -73,7 +72,7 @@ public class FileOperationsTest {
             alpineCopyToContainer.copyFileFromContainer("/home/test/test-resource.txt", actualFile.getPath());
 
             File expectedFile = new File(mountableFile.getResolvedPath() + "/test-resource.txt");
-            assertTrue("Files aren't same ", FileUtils.contentEquals(expectedFile, actualFile));
+            assertThat(FileUtils.contentEquals(expectedFile, actualFile)).as("Files aren't same ").isTrue();
         }
     }
 
@@ -102,23 +101,21 @@ public class FileOperationsTest {
             alpineCopyToContainer.copyFileFromContainer("/home/test_copy_to_container.txt", actualFile.getPath());
 
             File expectedFile = new File(mountableFile.getResolvedPath());
-            assertTrue("Files aren't same ", FileUtils.contentEquals(expectedFile, actualFile));
+            assertThat(FileUtils.contentEquals(expectedFile, actualFile)).as("Files aren't same ").isTrue();
         }
     }
 
     @Test
     public void copyFileOperationsShouldFailWhenNotStartedTest() {
         try (GenericContainer<?> container = new GenericContainer<>(TestImages.ALPINE_IMAGE).withCommand("top")) {
-            Assertions
-                .assertThatThrownBy(() -> {
+            assertThatThrownBy(() -> {
                     MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");
                     container.copyFileToContainer(mountableFile, "/home/test.txt");
                 })
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("can only be used with created / running container");
 
-            Assertions
-                .assertThatThrownBy(() -> {
+            assertThatThrownBy(() -> {
                     container.copyFileFromContainer("/home/test_copy_to_container.txt", IOUtils::toByteArray);
                 })
                 .isInstanceOf(IllegalStateException.class)
@@ -137,7 +134,7 @@ public class FileOperationsTest {
             assertThat(
                 container.getDockerClient().waitContainerCmd(container.getContainerId()).start().awaitStatusCode()
             )
-                .isEqualTo(0);
+                .isZero();
 
             container.copyFileFromContainer("/home/file_in_container.txt", IOUtils::toByteArray);
 

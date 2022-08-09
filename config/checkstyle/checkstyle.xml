@@ -39,7 +39,6 @@
                       org.mockserver.model.HttpRequest.*,
                       org.mockserver.model.HttpResponse.*,
                       org.rnorth.ducttape.unreliables.Unreliables.*,
-                      org.rnorth.visibleassertions.VisibleAssertions.*,
                       "
             />
         </module>

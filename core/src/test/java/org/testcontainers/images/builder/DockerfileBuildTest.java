@@ -9,7 +9,7 @@ import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(Parameterized.class)
 public class DockerfileBuildTest {
@@ -71,10 +71,9 @@ public class DockerfileBuildTest {
             container.start();
 
             final String logs = container.getLogs();
-            assertTrue(
-                "expected file content indicates that dockerfile build steps have been run",
-                logs.contains(expectedFileContent)
-            );
+            assertThat(logs)
+                .as("expected file content indicates that dockerfile build steps have been run")
+                .contains(expectedFileContent);
         }
     }
 }

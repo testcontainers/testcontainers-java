@@ -2,42 +2,42 @@ package org.testcontainers.hivemq;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class PathUtilTest {
 
     @Test
     void prepareInnerPath_emptyString() {
-        assertEquals("/", PathUtil.prepareInnerPath(""));
+        assertThat(PathUtil.prepareInnerPath("")).isEqualTo("/");
     }
 
     @Test
     void prepareInnerPath_onlyDelimiter() {
-        assertEquals("/", PathUtil.prepareInnerPath("/"));
+        assertThat(PathUtil.prepareInnerPath("/")).isEqualTo("/");
     }
 
     @Test
     void prepareInnerPath_noDelimiter() {
-        assertEquals("/path/", PathUtil.prepareInnerPath("path"));
+        assertThat(PathUtil.prepareInnerPath("path")).isEqualTo("/path/");
     }
 
     @Test
     void prepareInnerPath_delimiterAtEnd() {
-        assertEquals("/path/", PathUtil.prepareInnerPath("path/"));
+        assertThat(PathUtil.prepareInnerPath("path/")).isEqualTo("/path/");
     }
 
     @Test
     void prepareInnerPath_delimiterAtBeginning() {
-        assertEquals("/path/", PathUtil.prepareInnerPath("/path"));
+        assertThat(PathUtil.prepareInnerPath("/path")).isEqualTo("/path/");
     }
 
     @Test
     void prepareAppendPath_delimiterAtBeginning_noChange() {
-        assertEquals("/path", PathUtil.prepareAppendPath("/path"));
+        assertThat(PathUtil.prepareAppendPath("/path")).isEqualTo("/path");
     }
 
     @Test
     void prepareAppendPath_delimiterAtBeginning_delimiterAdded() {
-        assertEquals("/path", PathUtil.prepareAppendPath("path"));
+        assertThat(PathUtil.prepareAppendPath("path")).isEqualTo("/path");
     }
 }

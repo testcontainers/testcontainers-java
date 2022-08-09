@@ -6,8 +6,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 
 public class ImageNameSubstitutorTest {
 
@@ -48,11 +48,9 @@ public class ImageNameSubstitutorTest {
         final ImageNameSubstitutor imageNameSubstitutor = ImageNameSubstitutor.instance();
 
         DockerImageName result = imageNameSubstitutor.apply(DockerImageName.parse("original"));
-        assertEquals(
-            "the image has been substituted by default then configured implementations",
-            "transformed-substituted-image:latest",
-            result.asCanonicalNameString()
-        );
+        assertThat(result.asCanonicalNameString())
+            .as("the image has been substituted by default then configured implementations")
+            .isEqualTo("transformed-substituted-image:latest");
     }
 
     @Test
@@ -62,10 +60,8 @@ public class ImageNameSubstitutorTest {
         final ImageNameSubstitutor imageNameSubstitutor = ImageNameSubstitutor.instance();
 
         DockerImageName result = imageNameSubstitutor.apply(DockerImageName.parse("original"));
-        assertEquals(
-            "the image has been substituted by default then configured implementations",
-            "substituted-image:latest",
-            result.asCanonicalNameString()
-        );
+        assertThat(result.asCanonicalNameString())
+            .as("the image has been substituted by default then configured implementations")
+            .isEqualTo("substituted-image:latest");
     }
 }
