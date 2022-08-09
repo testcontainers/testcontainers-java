@@ -59,7 +59,7 @@ class DynamoDBSetUpBuilder {
         }
 
         protected void run(InspectContainerResponse containerInfo) {
-            var builder = builderSupplier.get();
+            DynamoDbClientBuilder builder = builderSupplier.get();
 
             for (Function<DynamoDbClientBuilder, DynamoDbClientBuilder> builderFunction : builders) {
                 builder = builderFunction.apply(builder);
@@ -81,7 +81,10 @@ class DynamoDBSetUpBuilder {
         }
     }
 
-    public void addSetUp(final Supplier<DynamoDbClientBuilder> builder, final Consumer<Helper> helper) {
+    public void addSetUp(
+        final Supplier<DynamoDbClientBuilder> builder,
+        final Consumer<Helper> helper
+    ) {
         val helperInstance = new Helper(builder);
 
         helper.accept(helperInstance);
