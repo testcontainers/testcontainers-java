@@ -1,10 +1,13 @@
 package org.testcontainers.containers;
 
+import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.google.common.base.Preconditions;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
+import software.amazon.awssdk.services.dynamodb.DynamoDbClientBuilder;
 
 import java.io.File;
 import java.net.URI;
@@ -13,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 /**
  * Testcontainers for AWS DynamoDB
@@ -28,6 +32,8 @@ public class DynamoDBContainer extends GenericContainer<DynamoDBContainer> {
     private static final String DEFAULT_TAG = "1.18.0";
 
     private static final Integer DEFAULT_HTTP_PORT = 8000;
+
+    private final DynamoDBSetUpBuilder dbSetUpBuilder = new DynamoDBSetUpBuilder();
 
     private String cors = "*";
 
@@ -73,6 +79,11 @@ public class DynamoDBContainer extends GenericContainer<DynamoDBContainer> {
     @Override
     protected void configure() {
         setCommandParts(getCommand());
+    }
+
+    @Override
+    protected void containerIsStarted(InspectContainerResponse containerInfo) {
+        dbSetUpBuilder.run(containerInfo);
     }
 
     private String[] getCommand() {
@@ -335,6 +346,11 @@ public class DynamoDBContainer extends GenericContainer<DynamoDBContainer> {
         return self();
     }
 
+    public DynamoDBContainer withSetUp(final Consumer<DynamoDBSetUpBuilder.Helper> helper) {
+        this.dbSetUpBuilder.withSetUp(clientBuilder(), helper);
+        return self();
+    }
+
     /**
      * Build a URI allowed for AWS SDK endpoint attribute.
      *
@@ -344,5 +360,9 @@ public class DynamoDBContainer extends GenericContainer<DynamoDBContainer> {
     @SuppressWarnings("HttpUrlsUsage")
     public URI getEndpointUri() {
         return URI.create("http://" + getHost() + ":" + getPort());
+    }
+
+    public DynamoDbClientBuilder clientBuilder() {
+        return DynamoDbClient.builder().endpointOverride(getEndpointUri());
     }
 }
