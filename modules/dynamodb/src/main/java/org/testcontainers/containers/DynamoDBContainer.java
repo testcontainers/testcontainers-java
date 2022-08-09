@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
+import java.net.URI;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -298,13 +299,13 @@ public class DynamoDBContainer extends GenericContainer<DynamoDBContainer> {
     }
 
     /**
-     * Build a URL allowed for AWS SDK parameter '--endpoint' attribute.
+     * Build a URI allowed for AWS SDK endpoint attribute.
      *
      * @return HTTP URL for current instance.
      * @see <a href="https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.UsageNotes.html#DynamoDBLocal.Endpoint">AWS DynamoDB Docs for Downloaded version</a>
      */
     @SuppressWarnings("HttpUrlsUsage")
-    public String getEndpointUrl() {
-        return "http://" + getHost() + ":" + getPort().toString();
+    public URI getEndpointUri() {
+        return URI.create("http://" + getHost() + ":" + getPort());
     }
 }
