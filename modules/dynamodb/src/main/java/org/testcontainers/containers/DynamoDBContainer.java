@@ -25,7 +25,7 @@ import java.util.function.Consumer;
  */
 @Slf4j
 @SuppressWarnings("resource")
-public class DynamoDBContainer extends GenericContainer<DynamoDBContainer> {
+public class DynamoDBContainer<SELF extends DynamoDBContainer<SELF>> extends GenericContainer<SELF> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("amazon/dynamodb-local");
 
@@ -153,7 +153,7 @@ public class DynamoDBContainer extends GenericContainer<DynamoDBContainer> {
      * @return self instance.
      * @see <a href="https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.UsageNotes.html#DynamoDBLocal.CommandLineOptions">AWS DynamoDB Docs for Downloaded version</a>
      */
-    public DynamoDBContainer withCors(@NonNull final String cors) {
+    public SELF withCors(@NonNull final String cors) {
         this.cors = cors;
         return self();
     }
@@ -164,7 +164,7 @@ public class DynamoDBContainer extends GenericContainer<DynamoDBContainer> {
      * @return self instance.
      * @see <a href="https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.UsageNotes.html#DynamoDBLocal.CommandLineOptions">AWS DynamoDB Docs for Downloaded version</a>
      */
-    public DynamoDBContainer withCors() {
+    public SELF withCors() {
         return withCors("*");
     }
 
@@ -176,7 +176,7 @@ public class DynamoDBContainer extends GenericContainer<DynamoDBContainer> {
      * @return self instance.
      * @see <a href="https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.UsageNotes.html#DynamoDBLocal.CommandLineOptions">AWS DynamoDB Docs for Downloaded version</a>
      */
-    public DynamoDBContainer withCors(final String... domains) {
+    public SELF withCors(final String... domains) {
         return withCors(String.join(",", domains));
     }
 
@@ -187,7 +187,7 @@ public class DynamoDBContainer extends GenericContainer<DynamoDBContainer> {
      * @return self instance.
      * @see <a href="https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.UsageNotes.html#DynamoDBLocal.CommandLineOptions">AWS DynamoDB Docs for Downloaded version</a>
      */
-    public DynamoDBContainer withFlagSharedDB(@NonNull final Boolean isActiveFlag) {
+    public SELF withFlagSharedDB(@NonNull final Boolean isActiveFlag) {
         this.flagSharedDb = isActiveFlag;
         return self();
     }
@@ -198,7 +198,7 @@ public class DynamoDBContainer extends GenericContainer<DynamoDBContainer> {
      * @return self instance.
      * @see #withFlagSharedDB(Boolean)
      */
-    public DynamoDBContainer withEnableSharedDB() {
+    public SELF withEnableSharedDB() {
         withFlagSharedDB(true);
         return self();
     }
@@ -209,7 +209,7 @@ public class DynamoDBContainer extends GenericContainer<DynamoDBContainer> {
      * @return self instance.
      * @see #withFlagSharedDB(Boolean)
      */
-    public DynamoDBContainer withDisableSharedDB() {
+    public SELF withDisableSharedDB() {
         withFlagSharedDB(false);
         return self();
     }
@@ -221,7 +221,7 @@ public class DynamoDBContainer extends GenericContainer<DynamoDBContainer> {
      * @return self instance.
      * @see <a href="https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.UsageNotes.html#DynamoDBLocal.CommandLineOptions">AWS DynamoDB Docs for Downloaded version</a>
      */
-    public DynamoDBContainer withFlagDelayTransientStatuses(@NonNull final Boolean isActiveFlag) {
+    public SELF withFlagDelayTransientStatuses(@NonNull final Boolean isActiveFlag) {
         this.flagDelayTransientStatuses = isActiveFlag;
         return self();
     }
@@ -232,7 +232,7 @@ public class DynamoDBContainer extends GenericContainer<DynamoDBContainer> {
      * @return self instance.
      * @see #withFlagDelayTransientStatuses(Boolean)
      */
-    public DynamoDBContainer withEnableDelayTransientStatuses() {
+    public SELF withEnableDelayTransientStatuses() {
         withFlagDelayTransientStatuses(true);
         return self();
     }
@@ -243,7 +243,7 @@ public class DynamoDBContainer extends GenericContainer<DynamoDBContainer> {
      * @return self instance.
      * @see #withFlagDelayTransientStatuses(Boolean)
      */
-    public DynamoDBContainer withDisableDelayTransientStatuses() {
+    public SELF withDisableDelayTransientStatuses() {
         withFlagDelayTransientStatuses(false);
         return self();
     }
@@ -255,7 +255,7 @@ public class DynamoDBContainer extends GenericContainer<DynamoDBContainer> {
      * @return self instance.
      * @see <a href="https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.UsageNotes.html#DynamoDBLocal.CommandLineOptions">AWS DynamoDB Docs for Downloaded version</a>
      */
-    public DynamoDBContainer withFlagOptimizeDbBeforeStartup(@NonNull final Boolean isActiveFlag) {
+    public SELF withFlagOptimizeDbBeforeStartup(@NonNull final Boolean isActiveFlag) {
         this.flagOptimizeDbBeforeStartup = isActiveFlag;
         return self();
     }
@@ -266,7 +266,7 @@ public class DynamoDBContainer extends GenericContainer<DynamoDBContainer> {
      * @return self instance.
      * @see #withFlagOptimizeDbBeforeStartup(Boolean)
      */
-    public DynamoDBContainer withEnableOptimizeDbBeforeStartup() {
+    public SELF withEnableOptimizeDbBeforeStartup() {
         withFlagOptimizeDbBeforeStartup(true);
         return self();
     }
@@ -277,7 +277,7 @@ public class DynamoDBContainer extends GenericContainer<DynamoDBContainer> {
      * @return self instance.
      * @see #withFlagOptimizeDbBeforeStartup(Boolean)
      */
-    public DynamoDBContainer withDisableOptimizeDbBeforeStartup() {
+    public SELF withDisableOptimizeDbBeforeStartup() {
         withFlagOptimizeDbBeforeStartup(false);
         return self();
     }
@@ -288,7 +288,7 @@ public class DynamoDBContainer extends GenericContainer<DynamoDBContainer> {
      * @return self instance.
      * @see <a href="https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.UsageNotes.html#DynamoDBLocal.CommandLineOptions">AWS DynamoDB Docs for Downloaded version</a>
      */
-    public DynamoDBContainer withInMemory() {
+    public SELF withInMemory() {
         this.flagInMemory = true;
         this.dbPath = null;
         return self();
@@ -302,7 +302,7 @@ public class DynamoDBContainer extends GenericContainer<DynamoDBContainer> {
      * @return self instance.
      * @see <a href="https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.UsageNotes.html#DynamoDBLocal.CommandLineOptions">AWS DynamoDB Docs for Downloaded version</a>
      */
-    public DynamoDBContainer withFilePath(@NonNull final String path) {
+    public SELF withFilePath(@NonNull final String path) {
         return withFilePath(path, path);
     }
 
@@ -315,7 +315,7 @@ public class DynamoDBContainer extends GenericContainer<DynamoDBContainer> {
      * @return self instance.
      * @see <a href="https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.UsageNotes.html#DynamoDBLocal.CommandLineOptions">AWS DynamoDB Docs for Downloaded version</a>
      */
-    public DynamoDBContainer withFilePath(@NonNull final File hostPath, @NonNull final String containerPath) {
+    public SELF withFilePath(@NonNull final File hostPath, @NonNull final String containerPath) {
         return withFilePath(hostPath.getAbsolutePath(), containerPath);
     }
 
@@ -328,7 +328,7 @@ public class DynamoDBContainer extends GenericContainer<DynamoDBContainer> {
      * @return self instance.
      * @see <a href="https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.UsageNotes.html#DynamoDBLocal.CommandLineOptions">AWS DynamoDB Docs for Downloaded version</a>
      */
-    public DynamoDBContainer withFilePath(@NonNull final String hostPath, @NonNull final String containerPath) {
+    public SELF withFilePath(@NonNull final String hostPath, @NonNull final String containerPath) {
         this.flagInMemory = false;
         this.dbPath = containerPath;
         return withFileSystemBind(hostPath, containerPath);
@@ -340,13 +340,13 @@ public class DynamoDBContainer extends GenericContainer<DynamoDBContainer> {
      * @return self instance.
      * @see <a href="https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.UsageNotes.html#DynamoDBLocal.CommandLineOptions">AWS DynamoDB Docs for Downloaded version</a>
      */
-    public DynamoDBContainer withFilePath() {
+    public SELF withFilePath() {
         this.flagInMemory = false;
         this.dbPath = null;
         return self();
     }
 
-    public DynamoDBContainer withSetUpHelper(final Consumer<DynamoDBSetUpBuilder.Helper> helper) {
+    public SELF withSetUpHelper(final Consumer<DynamoDBSetUpBuilder.Helper> helper) {
         this.dbSetUpBuilder.addSetUp(this::clientBuilder, helper);
         return self();
     }
