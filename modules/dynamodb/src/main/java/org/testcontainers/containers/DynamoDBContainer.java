@@ -4,12 +4,14 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.google.common.base.Preconditions;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClientBuilder;
 
 import java.io.File;
+import java.lang.reflect.Array;
 import java.net.URI;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -17,6 +19,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 /**
  * Testcontainers for AWS DynamoDB
@@ -78,7 +81,14 @@ public class DynamoDBContainer<SELF extends DynamoDBContainer<SELF>> extends Gen
 
     @Override
     protected void configure() {
-        setCommandParts(getCommand());
+        val customCommands = Arrays.stream(getCommandParts());
+        val dynamoDBCommands = Arrays.stream(getCommand());
+
+        val commands = Stream
+            .concat(dynamoDBCommands, customCommands)
+            .toArray(size -> (String[]) Array.newInstance(String[].class.getComponentType(), size));
+
+        setCommandParts(commands);
     }
 
     @Override
@@ -126,8 +136,6 @@ public class DynamoDBContainer<SELF extends DynamoDBContainer<SELF>> extends Gen
             commands.add("-dbPath");
             commands.add(dbPath);
         }
-
-        commands.addAll(Arrays.asList(getCommandParts()));
 
         logger().debug("Build command {}", String.join(" ", commands));
 
