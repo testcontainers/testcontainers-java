@@ -28,22 +28,22 @@ class DynamoDBSetUpBuilder {
         @NonNull
         private Supplier<DynamoDbClientBuilder> builderSupplier;
 
-        private final List<Function<DynamoDbClientBuilder, DynamoDbClientBuilder>> builders = new ArrayList<>();
+        private final List<Consumer<DynamoDbClientBuilder>> builders = new ArrayList<>();
 
         private final List<BiConsumer<DynamoDbClient, InspectContainerResponse>> clients = new ArrayList<>();
 
-        public Helper withClient(final Function<DynamoDbClientBuilder, DynamoDbClientBuilder> builderSetUp) {
+        public Helper withBuilder(final Consumer<DynamoDbClientBuilder> builderSetUp) {
             this.builders.add(builderSetUp);
             return this;
         }
 
-        public Helper withClientRegion(final Region region) {
-            return withClient(b -> b.region(region));
+        public Helper withBuilderRegion(final Region region) {
+            return withBuilder(b -> b.region(region));
         }
 
-        public Helper withClientCredentials(final String accessKeyId, final String secretKeyId) {
-            return withClient(b -> {
-                return b.credentialsProvider(
+        public Helper withBuilderCredentials(final String accessKeyId, final String secretKeyId) {
+            return withBuilder(b -> {
+                b.credentialsProvider(
                     StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKeyId, secretKeyId))
                 );
             });
@@ -61,8 +61,8 @@ class DynamoDBSetUpBuilder {
         protected void run(InspectContainerResponse containerInfo) {
             DynamoDbClientBuilder builder = builderSupplier.get();
 
-            for (Function<DynamoDbClientBuilder, DynamoDbClientBuilder> builderFunction : builders) {
-                builder = builderFunction.apply(builder);
+            for (Consumer<DynamoDbClientBuilder> builderFunction : builders) {
+                builderFunction.accept(builder);
             }
 
             try (val client = builder.build()) {
