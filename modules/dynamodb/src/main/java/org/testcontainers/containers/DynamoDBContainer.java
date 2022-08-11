@@ -33,7 +33,7 @@ public class DynamoDBContainer<SELF extends DynamoDBContainer<SELF>> extends Gen
 
     private static final Integer DEFAULT_HTTP_PORT = 8000;
 
-    private final DynamoDBSetUpBuilder dbSetUpBuilder = new DynamoDBSetUpBuilder();
+    private final DynamoDBSetUpBuilder dbRunningSetUp = new DynamoDBSetUpBuilder();
 
     private String cors = "*";
 
@@ -83,7 +83,7 @@ public class DynamoDBContainer<SELF extends DynamoDBContainer<SELF>> extends Gen
 
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
-        dbSetUpBuilder.run(containerInfo);
+        dbRunningSetUp.run(containerInfo);
     }
 
     private String[] getCommand() {
@@ -346,8 +346,15 @@ public class DynamoDBContainer<SELF extends DynamoDBContainer<SELF>> extends Gen
         return self();
     }
 
-    public SELF withSetUpHelper(final Consumer<DynamoDBSetUpBuilder.Helper> helper) {
-        this.dbSetUpBuilder.addSetUp(this::clientBuilder, helper);
+    /**
+     * Functional method to help with the set-up for the container. The current operations run when the container is up
+     * and the client is configured with these. The functional methods run in the same order that was added.
+     *
+     * @param helper New {@link org.testcontainers.containers.DynamoDBSetUpBuilder.Helper} instance.
+     * @return self instance.
+     */
+    public SELF withRunningSetUp(final Consumer<DynamoDBSetUpBuilder.Helper> helper) {
+        this.dbRunningSetUp.addSetUp(this::clientBuilder, helper);
         return self();
     }
 

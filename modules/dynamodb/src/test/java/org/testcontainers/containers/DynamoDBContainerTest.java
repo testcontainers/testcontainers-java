@@ -87,10 +87,10 @@ public class DynamoDBContainerTest {
         try (DynamoDBContainer<?> container = new DynamoDBContainer<>(DynamoDBTestImages.AWS_DYNAMODB_IMAGE)) {
             container
                 .withEnableSharedDB()
-                .withSetUpHelper(helper -> {
+                .withRunningSetUp(helper -> {
                     helper
-                        .withClientRegion(Region.EU_WEST_1)
-                        .withClientCredentials("test", "test")
+                        .withBuilderRegion(Region.EU_WEST_1)
+                        .withBuilderCredentials("test", "test")
                         .withSetUp(client -> createTable(client, "foo"))
                         .withSetUp(client -> createTable(client, "oof"));
                 })
