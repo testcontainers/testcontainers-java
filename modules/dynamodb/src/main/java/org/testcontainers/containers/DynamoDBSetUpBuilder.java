@@ -42,11 +42,11 @@ class DynamoDBSetUpBuilder {
         }
 
         public Helper withClientCredentials(final String accessKeyId, final String secretKeyId) {
-            return withClient(b ->
-                b.credentialsProvider(
+            return withClient(b -> {
+                return b.credentialsProvider(
                     StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKeyId, secretKeyId))
-                )
-            );
+                );
+            });
         }
 
         public Helper withSetUp(final BiConsumer<DynamoDbClient, InspectContainerResponse> clientSetUp) {
@@ -81,10 +81,7 @@ class DynamoDBSetUpBuilder {
         }
     }
 
-    public void addSetUp(
-        final Supplier<DynamoDbClientBuilder> builder,
-        final Consumer<Helper> helper
-    ) {
+    public void addSetUp(final Supplier<DynamoDbClientBuilder> builder, final Consumer<Helper> helper) {
         val helperInstance = new Helper(builder);
 
         helper.accept(helperInstance);

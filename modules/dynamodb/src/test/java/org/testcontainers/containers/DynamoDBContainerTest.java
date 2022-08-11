@@ -24,7 +24,7 @@ public class DynamoDBContainerTest {
 
     @Test
     public void checkInMemoryParameterIsAddedAndValid() {
-        try (val container = new DynamoDBContainer(DynamoDBTestImages.AWS_DYNAMODB_IMAGE)) {
+        try (DynamoDBContainer<?> container = new DynamoDBContainer<>(DynamoDBTestImages.AWS_DYNAMODB_IMAGE)) {
             container.withInMemory().start();
 
             Assert.assertTrue(ArrayUtils.contains(container.getCommandParts(), "-inMemory"));
@@ -34,7 +34,7 @@ public class DynamoDBContainerTest {
 
     @Test
     public void checkPreconditionFailsIfFieldDBPathIsNullWithFlagOptimizeDbBeforeStartup() {
-        try (val container = new DynamoDBContainer(DynamoDBTestImages.AWS_DYNAMODB_IMAGE)) {
+        try (DynamoDBContainer<?> container = new DynamoDBContainer<>(DynamoDBTestImages.AWS_DYNAMODB_IMAGE)) {
             Assert.assertThrows(
                 ContainerLaunchException.class,
                 () -> container.withEnableOptimizeDbBeforeStartup().start()
@@ -44,14 +44,14 @@ public class DynamoDBContainerTest {
 
     @Test
     public void checkCorsFormatsAllowedDomainsCorrectly() {
-        try (val container = new DynamoDBContainer(DynamoDBTestImages.AWS_DYNAMODB_IMAGE)) {
+        try (DynamoDBContainer<?> container = new DynamoDBContainer<>(DynamoDBTestImages.AWS_DYNAMODB_IMAGE)) {
             container.withCors("foo.com", "testcontainers.org").start();
 
             Assert.assertTrue(ArrayUtils.contains(container.getCommandParts(), "-cors"));
             Assert.assertTrue(ArrayUtils.contains(container.getCommandParts(), "foo.com,testcontainers.org"));
         }
 
-        try (val container = new DynamoDBContainer(DynamoDBTestImages.AWS_DYNAMODB_IMAGE)) {
+        try (DynamoDBContainer<?> container = new DynamoDBContainer<>(DynamoDBTestImages.AWS_DYNAMODB_IMAGE)) {
             container.withCors("testcontainers.org").start();
 
             Assert.assertTrue(ArrayUtils.contains(container.getCommandParts(), "-cors"));
@@ -61,7 +61,7 @@ public class DynamoDBContainerTest {
 
     @Test
     public void shouldCreateSameTableInDifferentRegions() {
-        try (val container = new DynamoDBContainer(DynamoDBTestImages.AWS_DYNAMODB_IMAGE)) {
+        try (DynamoDBContainer<?> container = new DynamoDBContainer<>(DynamoDBTestImages.AWS_DYNAMODB_IMAGE)) {
             container.start();
 
             try (val client = builderClient(container).region(Region.US_WEST_1).build()) {
@@ -84,16 +84,16 @@ public class DynamoDBContainerTest {
 
     @Test
     public void shouldDescribeTableInDifferentRegionsWithSharedDB() {
-        try (val container = new DynamoDBContainer(DynamoDBTestImages.AWS_DYNAMODB_IMAGE)) {
+        try (DynamoDBContainer<?> container = new DynamoDBContainer<>(DynamoDBTestImages.AWS_DYNAMODB_IMAGE)) {
             container
                 .withEnableSharedDB()
-                .withSetUpHelper(helper ->
+                .withSetUpHelper(helper -> {
                     helper
                         .withClientRegion(Region.EU_WEST_1)
                         .withClientCredentials("test", "test")
                         .withSetUp(client -> createTable(client, "foo"))
-                        .withSetUp(client -> createTable(client, "oof"))
-                )
+                        .withSetUp(client -> createTable(client, "oof"));
+                })
                 .start();
 
             try (val client = builderClient(container).region(Region.US_WEST_1).build()) {
@@ -120,7 +120,7 @@ public class DynamoDBContainerTest {
     public void shouldShareDBBetweenExecutionsWithDBPath() throws IOException {
         val tmp = tempFolder.newFolder("dynamo_db");
 
-        try (val container = new DynamoDBContainer(DynamoDBTestImages.AWS_DYNAMODB_IMAGE)) {
+        try (DynamoDBContainer<?> container = new DynamoDBContainer<>(DynamoDBTestImages.AWS_DYNAMODB_IMAGE)) {
             container.withFilePath(tmp, "/dynamo_db").start();
 
             try (val client = builderClient(container).region(Region.EU_WEST_1).build()) {
@@ -132,7 +132,7 @@ public class DynamoDBContainerTest {
             }
         }
 
-        try (val container = new DynamoDBContainer(DynamoDBTestImages.AWS_DYNAMODB_IMAGE)) {
+        try (DynamoDBContainer<?> container = new DynamoDBContainer<>(DynamoDBTestImages.AWS_DYNAMODB_IMAGE)) {
             container.withFilePath(tmp, "/dynamo_db").start();
 
             try (val client = builderClient(container).region(Region.EU_WEST_1).build()) {
@@ -143,10 +143,9 @@ public class DynamoDBContainerTest {
         }
     }
 
-    public static DynamoDbClientBuilder builderClient(final DynamoDBContainer container) {
-        return DynamoDbClient
-            .builder()
-            .endpointOverride(container.getEndpointUri())
+    public static DynamoDbClientBuilder builderClient(final DynamoDBContainer<?> container) {
+        return container
+            .clientBuilder()
             .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create("test", "test")));
     }
 
