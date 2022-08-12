@@ -1,16 +1,15 @@
 package org.testcontainers.junit.tidb;
 
+import org.hamcrest.Matchers;
+import org.junit.Assert;
 import org.junit.Test;
+import org.rnorth.visibleassertions.VisibleAssertions;
 import org.testcontainers.TiDBTestImages;
 import org.testcontainers.tidb.TiDBContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
-import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertThat;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 
 public class SimpleTiDBTest extends AbstractContainerDatabaseTest {
 
@@ -22,7 +21,7 @@ public class SimpleTiDBTest extends AbstractContainerDatabaseTest {
             ResultSet resultSet = performQuery(tidb, "SELECT 1");
 
             int resultSetInt = resultSet.getInt(1);
-            assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+            VisibleAssertions.assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
         }
     }
 
@@ -36,7 +35,7 @@ public class SimpleTiDBTest extends AbstractContainerDatabaseTest {
             ResultSet resultSet = performQuery(tidb, "SELECT foo FROM bar");
 
             String firstColumnValue = resultSet.getString(1);
-            assertEquals("Value from init script should equal real value", "hello world", firstColumnValue);
+            VisibleAssertions.assertEquals("Value from init script should equal real value", "hello world", firstColumnValue);
         }
     }
 
@@ -47,8 +46,8 @@ public class SimpleTiDBTest extends AbstractContainerDatabaseTest {
         try {
             tidb.start();
             String jdbcUrl = tidb.getJdbcUrl();
-            assertThat(jdbcUrl, containsString("?"));
-            assertThat(jdbcUrl, containsString("sslmode=disable"));
+            Assert.assertThat(jdbcUrl, Matchers.containsString("?"));
+            Assert.assertThat(jdbcUrl, Matchers.containsString("sslmode=disable"));
         } finally {
             tidb.stop();
         }
