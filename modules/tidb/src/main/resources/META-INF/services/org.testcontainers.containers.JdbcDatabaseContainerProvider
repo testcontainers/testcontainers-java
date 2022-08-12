@@ -1,1 +1,1 @@
-org.testcontainers.containers.TiDBContainerProvider
+org.testcontainers.tidb.TiDBContainerProvider

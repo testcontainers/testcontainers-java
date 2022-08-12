@@ -1,6 +1,7 @@
-package org.testcontainers.containers;
+package org.testcontainers.tidb;
 
 import org.jetbrains.annotations.NotNull;
+import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 

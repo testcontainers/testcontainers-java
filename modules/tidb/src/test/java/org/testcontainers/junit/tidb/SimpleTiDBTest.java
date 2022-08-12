@@ -2,7 +2,7 @@ package org.testcontainers.junit.tidb;
 
 import org.junit.Test;
 import org.testcontainers.TiDBTestImages;
-import org.testcontainers.containers.TiDBContainer;
+import org.testcontainers.tidb.TiDBContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
 import java.sql.ResultSet;
