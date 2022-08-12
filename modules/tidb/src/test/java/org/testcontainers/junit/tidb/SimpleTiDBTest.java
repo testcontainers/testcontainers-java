@@ -3,7 +3,6 @@ package org.testcontainers.junit.tidb;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
-import org.rnorth.visibleassertions.VisibleAssertions;
 import org.testcontainers.TiDBTestImages;
 import org.testcontainers.tidb.TiDBContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
@@ -21,7 +20,7 @@ public class SimpleTiDBTest extends AbstractContainerDatabaseTest {
             ResultSet resultSet = performQuery(tidb, "SELECT 1");
 
             int resultSetInt = resultSet.getInt(1);
-            VisibleAssertions.assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+            Assert.assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
         }
     }
 
@@ -35,7 +34,7 @@ public class SimpleTiDBTest extends AbstractContainerDatabaseTest {
             ResultSet resultSet = performQuery(tidb, "SELECT foo FROM bar");
 
             String firstColumnValue = resultSet.getString(1);
-            VisibleAssertions.assertEquals("Value from init script should equal real value", "hello world", firstColumnValue);
+            Assert.assertEquals("Value from init script should equal real value", "hello world", firstColumnValue);
         }
     }
 
