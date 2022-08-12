@@ -1,13 +1,13 @@
 package org.testcontainers.ext;
 
-import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 public class ScriptSplittingTest {
 
@@ -283,7 +283,7 @@ public class ScriptSplittingTest {
 
     private void splitAndCompare(String script, List<String> expected) {
         final List<String> statements = doSplit(script);
-        Assertions.assertThat(statements).isEqualTo(expected);
+        assertThat(statements).isEqualTo(expected);
     }
 
     private List<String> doSplit(String script) {

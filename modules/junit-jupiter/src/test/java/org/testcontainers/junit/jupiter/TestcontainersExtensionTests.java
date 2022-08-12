@@ -4,8 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ConditionEvaluationResult;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -15,28 +14,28 @@ public class TestcontainersExtensionTests {
     void whenDisabledWithoutDockerAndDockerIsAvailableTestsAreEnabled() {
         ConditionEvaluationResult result = new TestTestcontainersExtension(true)
             .evaluateExecutionCondition(extensionContext(DisabledWithoutDocker.class));
-        assertFalse(result.isDisabled());
+        assertThat(result.isDisabled()).isFalse();
     }
 
     @Test
     void whenDisabledWithoutDockerAndDockerIsUnavailableTestsAreDisabled() {
         ConditionEvaluationResult result = new TestTestcontainersExtension(false)
             .evaluateExecutionCondition(extensionContext(DisabledWithoutDocker.class));
-        assertTrue(result.isDisabled());
+        assertThat(result.isDisabled()).isTrue();
     }
 
     @Test
     void whenEnabledWithoutDockerAndDockerIsAvailableTestsAreEnabled() {
         ConditionEvaluationResult result = new TestTestcontainersExtension(true)
             .evaluateExecutionCondition(extensionContext(EnabledWithoutDocker.class));
-        assertFalse(result.isDisabled());
+        assertThat(result.isDisabled()).isFalse();
     }
 
     @Test
     void whenEnabledWithoutDockerAndDockerIsUnavailableTestsAreEnabled() {
         ConditionEvaluationResult result = new TestTestcontainersExtension(false)
             .evaluateExecutionCondition(extensionContext(EnabledWithoutDocker.class));
-        assertFalse(result.isDisabled());
+        assertThat(result.isDisabled()).isFalse();
     }
 
     private ExtensionContext extensionContext(Class clazz) {

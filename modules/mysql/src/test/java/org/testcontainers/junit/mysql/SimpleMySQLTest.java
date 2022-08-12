@@ -19,12 +19,9 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assume.assumeFalse;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
-import static org.rnorth.visibleassertions.VisibleAssertions.fail;
 
 public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
 
@@ -59,7 +56,7 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
             ResultSet resultSet = performQuery(mysql, "SELECT 1");
             int resultSetInt = resultSet.getInt(1);
 
-            assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
         }
     }
 
@@ -75,10 +72,9 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
             ResultSet resultSet = performQuery(mysqlOldVersion, "SELECT VERSION()");
             String resultSetString = resultSet.getString(1);
 
-            assertTrue(
-                "The database version can be set using a container rule parameter",
-                resultSetString.startsWith("5.6")
-            );
+            assertThat(resultSetString)
+                .as("The database version can be set using a container rule parameter")
+                .startsWith("5.6");
         }
     }
 
@@ -95,7 +91,7 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
             ResultSet resultSet = performQuery(mysqlCustomConfig, "SELECT @@GLOBAL.innodb_file_format");
             String result = resultSet.getString(1);
 
-            assertEquals("The InnoDB file format has been set by the ini file content", "Barracuda", result);
+            assertThat(result).as("The InnoDB file format has been set by the ini file content").isEqualTo("Barracuda");
         }
     }
 
@@ -110,7 +106,7 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
             ResultSet resultSet = performQuery(mysqlCustomConfig, "show variables like 'auto_increment_increment'");
             String result = resultSet.getString("Value");
 
-            assertEquals("Auto increment increment should be overriden by command line", "42", result);
+            assertThat(result).as("Auto increment increment should be overriden by command line").isEqualTo("42");
         }
     }
 
@@ -126,7 +122,7 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
             ResultSet resultSet = performQuery(container, "SELECT foo FROM bar");
             String firstColumnValue = resultSet.getString(1);
 
-            assertEquals("Value from init script should equal real value", "hello world", firstColumnValue);
+            assertThat(firstColumnValue).as("Value from init script should equal real value").isEqualTo("hello world");
         }
     }
 
@@ -159,7 +155,7 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
             ResultSet resultSet = performQuery(mysql, "SELECT 1");
             int resultSetInt = resultSet.getInt(1);
 
-            assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
         }
     }
 
@@ -191,7 +187,7 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
                     actualDateTime,
                     expectedDateTime
                 );
-                assertTrue(message, actualDateTime.equals(expectedDateTime));
+                assertThat(actualDateTime).as(message).isEqualTo(expectedDateTime);
             }
         } finally {
             mysql.stop();
@@ -216,7 +212,7 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
             try (ResultSet resultSet = statement.getResultSet()) {
                 resultSet.next();
                 String firstColumnValue = resultSet.getString(1);
-                assertEquals("Value from bar should equal real value", "hello world", firstColumnValue);
+                assertThat(firstColumnValue).as("Value from bar should equal real value").isEqualTo("hello world");
             }
         } finally {
             mysql.stop();
@@ -233,10 +229,10 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
         try {
             mysql.start();
             String jdbcUrl = mysql.getJdbcUrl();
-            assertThat(jdbcUrl, containsString("?"));
-            assertThat(jdbcUrl, containsString("&"));
-            assertThat(jdbcUrl, containsString("rewriteBatchedStatements=true"));
-            assertThat(jdbcUrl, containsString("allowMultiQueries=true"));
+            assertThat(jdbcUrl).contains("?");
+            assertThat(jdbcUrl).contains("&");
+            assertThat(jdbcUrl).contains("rewriteBatchedStatements=true");
+            assertThat(jdbcUrl).contains("allowMultiQueries=true");
         } finally {
             mysql.stop();
         }

@@ -10,10 +10,7 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertThat;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertNotEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
     static {
@@ -28,7 +25,7 @@ public class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
 
             ResultSet resultSet = performQuery(postgres, "SELECT 1");
             int resultSetInt = resultSet.getInt(1);
-            assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
         }
     }
 
@@ -42,7 +39,7 @@ public class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
 
             ResultSet resultSet = performQuery(postgres, "SELECT current_setting('max_connections')");
             String result = resultSet.getString(1);
-            assertEquals("max_connections should be overriden", "42", result);
+            assertThat(result).as("max_connections should be overriden").isEqualTo("42");
         }
     }
 
@@ -57,7 +54,7 @@ public class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
 
             ResultSet resultSet = performQuery(postgres, "SELECT current_setting('max_connections')");
             String result = resultSet.getString(1);
-            assertNotEquals("max_connections should not be overriden", "42", result);
+            assertThat(result).as("max_connections should not be overriden").isNotEqualTo("42");
         }
     }
 
@@ -72,7 +69,7 @@ public class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
             ResultSet resultSet = performQuery(postgres, "SELECT foo FROM bar");
 
             String firstColumnValue = resultSet.getString(1);
-            assertEquals("Value from init script should equal real value", "hello world", firstColumnValue);
+            assertThat(firstColumnValue).as("Value from init script should equal real value").isEqualTo("hello world");
         }
     }
 
@@ -84,9 +81,9 @@ public class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
         ) {
             postgres.start();
             String jdbcUrl = postgres.getJdbcUrl();
-            assertThat(jdbcUrl, containsString("?"));
-            assertThat(jdbcUrl, containsString("&"));
-            assertThat(jdbcUrl, containsString("charSet=UNICODE"));
+            assertThat(jdbcUrl).contains("?");
+            assertThat(jdbcUrl).contains("&");
+            assertThat(jdbcUrl).contains("charSet=UNICODE");
         }
     }
 }

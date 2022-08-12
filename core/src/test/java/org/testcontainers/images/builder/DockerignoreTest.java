@@ -9,8 +9,8 @@ import org.testcontainers.utility.DockerImageName;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
-import static org.rnorth.visibleassertions.VisibleAssertions.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 public class DockerignoreTest {
 
@@ -45,14 +45,12 @@ public class DockerignoreTest {
             container.start();
 
             final String logs = container.getLogs();
-            assertTrue(
-                "Files in the container indicated the .dockerignore was not applied. Output was: " + logs,
-                logs.contains("should_not_be_ignored.txt")
-            );
-            assertTrue(
-                "Files in the container indicated the .dockerignore was not applied. Output was: " + logs,
-                !logs.contains("should_be_ignored.txt")
-            );
+            assertThat(logs)
+                .as("Files in the container indicated the .dockerignore was not applied. Output was: " + logs)
+                .contains("should_not_be_ignored.txt");
+            assertThat(logs)
+                .as("Files in the container indicated the .dockerignore was not applied. Output was: " + logs)
+                .doesNotContain("should_be_ignored.txt");
         }
     }
 }

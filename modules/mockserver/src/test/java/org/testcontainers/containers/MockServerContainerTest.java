@@ -4,11 +4,9 @@ import org.junit.Test;
 import org.mockserver.client.MockServerClient;
 import org.testcontainers.utility.DockerImageName;
 
-import static org.hamcrest.Matchers.equalTo;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertThat;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
 public class MockServerContainerTest {
 
@@ -30,15 +28,13 @@ public class MockServerContainerTest {
 
             MockServerClient client = new MockServerClient(mockServer.getHost(), mockServer.getServerPort());
 
-            assertTrue("Mockserver running", client.isRunning());
+            assertThat(client.isRunning()).as("Mockserver running").isTrue();
 
             client.when(request().withPath("/hello")).respond(response().withBody(expectedBody));
 
-            assertThat(
-                "MockServer returns correct result",
-                SimpleHttpClient.responseFromMockserver(mockServer, "/hello"),
-                equalTo(expectedBody)
-            );
+            assertThat(SimpleHttpClient.responseFromMockserver(mockServer, "/hello"))
+                .as("MockServer returns correct result")
+                .isEqualTo(expectedBody);
         }
     }
 

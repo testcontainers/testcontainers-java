@@ -25,7 +25,6 @@ import org.junit.runners.Parameterized;
 import org.mockito.Answers;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
-import org.rnorth.visibleassertions.VisibleAssertions;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.TestImages;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
@@ -82,9 +81,9 @@ public class ReusabilityUnitTests {
         @Test
         public void shouldBeReusable() {
             if (reusable) {
-                VisibleAssertions.assertTrue("Is reusable", container.canBeReused());
+                assertThat(container.canBeReused()).as("Is reusable").isTrue();
             } else {
-                VisibleAssertions.assertFalse("Is not reusable", container.canBeReused());
+                assertThat(container.canBeReused()).as("Is not reusable").isFalse();
             }
         }
 
