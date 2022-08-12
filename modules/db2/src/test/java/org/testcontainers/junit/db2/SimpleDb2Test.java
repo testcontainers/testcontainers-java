@@ -8,9 +8,7 @@ import org.testcontainers.db.AbstractContainerDatabaseTest;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertThat;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class SimpleDb2Test extends AbstractContainerDatabaseTest {
 
@@ -22,7 +20,7 @@ public class SimpleDb2Test extends AbstractContainerDatabaseTest {
             ResultSet resultSet = performQuery(db2, "SELECT 1 FROM SYSIBM.SYSDUMMY1");
 
             int resultSetInt = resultSet.getInt(1);
-            assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
         }
     }
 
@@ -36,7 +34,7 @@ public class SimpleDb2Test extends AbstractContainerDatabaseTest {
             db2.start();
 
             String jdbcUrl = db2.getJdbcUrl();
-            assertThat(jdbcUrl, containsString(":sslConnection=false;"));
+            assertThat(jdbcUrl).contains(":sslConnection=false;");
         }
     }
 }

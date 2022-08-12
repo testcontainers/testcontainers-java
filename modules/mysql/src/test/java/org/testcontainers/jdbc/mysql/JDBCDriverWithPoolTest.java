@@ -21,7 +21,7 @@ import java.util.function.Supplier;
 
 import javax.sql.DataSource;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * This test belongs in the jdbc module, as it is focused on testing the behaviour of {@link org.testcontainers.containers.JdbcDatabaseContainer}.
@@ -82,7 +82,7 @@ public class JDBCDriverWithPoolTest {
                     return rs.getInt(1);
                 }
             );
-        assertEquals("Reuse of a datasource points to the same DB container", 100, count);
+        assertThat(count).as("Reuse of a datasource points to the same DB container").isEqualTo(100);
 
         int sum = new QueryRunner(dataSource)
             .query(
@@ -93,7 +93,7 @@ public class JDBCDriverWithPoolTest {
                 }
             );
         // 100 records * 5 = 500 expected
-        assertEquals("Reuse of a datasource points to the same DB container", 500, sum);
+        assertThat(sum).as("Reuse of a datasource points to the same DB container").isEqualTo(500);
     }
 
     private static DataSource getTomcatDataSourceWithDriverClassName() {

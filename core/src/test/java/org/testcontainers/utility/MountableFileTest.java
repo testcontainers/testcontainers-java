@@ -15,7 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Consumer;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class MountableFileTest {
 
@@ -68,11 +68,10 @@ public class MountableFileTest {
 
         performChecks(mountableFile);
 
-        assertTrue("The resolved path contains the original space", mountableFile.getResolvedPath().contains(" "));
-        assertFalse(
-            "The resolved path does not contain an escaped space",
-            mountableFile.getResolvedPath().contains("\\ ")
-        );
+        assertThat(mountableFile.getResolvedPath()).as("The resolved path contains the original space").contains(" ");
+        assertThat(mountableFile.getResolvedPath())
+            .as("The resolved path does not contain an escaped space")
+            .doesNotContain("\\ ");
     }
 
     @Test
@@ -82,11 +81,10 @@ public class MountableFileTest {
 
         performChecks(mountableFile);
 
-        assertTrue("The resolved path contains the original space", mountableFile.getResolvedPath().contains("+"));
-        assertFalse(
-            "The resolved path does not contain an escaped space",
-            mountableFile.getResolvedPath().contains(" ")
-        );
+        assertThat(mountableFile.getResolvedPath()).as("The resolved path contains the original space").contains("+");
+        assertThat(mountableFile.getResolvedPath())
+            .as("The resolved path does not contain an escaped space")
+            .doesNotContain(" ");
     }
 
     @Test
@@ -97,7 +95,7 @@ public class MountableFileTest {
         );
 
         performChecks(mountableFile);
-        assertEquals("Valid file mode.", BASE_FILE_MODE | TEST_FILE_MODE, mountableFile.getFileMode());
+        assertThat(mountableFile.getFileMode()).as("Valid file mode.").isEqualTo(BASE_FILE_MODE | TEST_FILE_MODE);
     }
 
     @Test
@@ -105,7 +103,7 @@ public class MountableFileTest {
         final Path file = createTempFile("somepath");
         final MountableFile mountableFile = MountableFile.forHostPath(file.toString(), TEST_FILE_MODE);
         performChecks(mountableFile);
-        assertEquals("Valid file mode.", BASE_FILE_MODE | TEST_FILE_MODE, mountableFile.getFileMode());
+        assertThat(mountableFile.getFileMode()).as("Valid file mode.").isEqualTo(BASE_FILE_MODE | TEST_FILE_MODE);
     }
 
     @Test
@@ -113,7 +111,7 @@ public class MountableFileTest {
         final Path dir = createTempDir();
         final MountableFile mountableFile = MountableFile.forHostPath(dir.toString(), TEST_FILE_MODE);
         performChecks(mountableFile);
-        assertEquals("Valid dir mode.", BASE_DIR_MODE | TEST_FILE_MODE, mountableFile.getFileMode());
+        assertThat(mountableFile.getFileMode()).as("Valid dir mode.").isEqualTo(BASE_DIR_MODE | TEST_FILE_MODE);
     }
 
     @Test
@@ -129,7 +127,7 @@ public class MountableFileTest {
 
         ArchiveEntry entry;
         while ((entry = tais.getNextEntry()) != null) {
-            assertFalse("no entries should have a trailing slash", entry.getName().endsWith("/"));
+            assertThat(entry.getName()).as("no entries should have a trailing slash").doesNotEndWith("/");
         }
     }
 
@@ -163,10 +161,9 @@ public class MountableFileTest {
 
     private void performChecks(final MountableFile mountableFile) {
         final String mountablePath = mountableFile.getResolvedPath();
-        assertTrue("The filesystem path '" + mountablePath + "' can be found", new File(mountablePath).exists());
-        assertFalse(
-            "The filesystem path '" + mountablePath + "' does not contain any URL escaping",
-            mountablePath.contains("%20")
-        );
+        assertThat(new File(mountablePath)).as("The filesystem path '" + mountablePath + "' can be found").exists();
+        assertThat(mountablePath)
+            .as("The filesystem path '" + mountablePath + "' does not contain any URL escaping")
+            .doesNotContain("%20");
     }
 }

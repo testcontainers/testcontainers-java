@@ -32,7 +32,6 @@ include 'solr-container'
 include 'spring-boot'
 include 'cucumber'
 include 'spring-boot-kotlin-redis'
-include 'spock'
 
 ext.isCI = System.getenv("CI") != null
 

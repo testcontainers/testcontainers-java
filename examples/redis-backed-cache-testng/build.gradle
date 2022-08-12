@@ -14,7 +14,7 @@ dependencies {
     testImplementation 'org.testcontainers:testcontainers'
     testImplementation 'ch.qos.logback:logback-classic:1.2.11'
     testImplementation 'org.testng:testng:7.5'
-    testImplementation 'org.rnorth.visible-assertions:visible-assertions:2.1.2'
+    testImplementation 'org.assertj:assertj-core:3.23.1'
 }
 
 test {
