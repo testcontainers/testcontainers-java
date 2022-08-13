@@ -219,27 +219,27 @@ public class TestcontainersConfigurationTest {
 
     @Test
     public void shouldNotReadComposeV2FromClasspathProperties() {
-        assertFalse("compose v2 enabled by default", newConfig().isComposeV2Enabled());
+        assertThat(newConfig().isComposeV2Enabled()).as("compose v2 enabled by default").isTrue();
 
-        classpathProperties.setProperty("composev2.enable", "true");
-        assertFalse("compose v2 are not affected by classpath properties", newConfig().isComposeV2Enabled());
+        classpathProperties.setProperty("testcontainers.composev2.enable", "false");
+        assertThat(newConfig().isComposeV2Enabled()).as("compose v2 are not affected by classpath properties").isTrue();
     }
 
     @Test
     public void shouldReadComposeV2FromUserProperties() {
-        assertFalse("compose v2 enabled by default", newConfig().isComposeV2Enabled());
+        assertThat(newConfig().isComposeV2Enabled()).as("compose v2 enabled by default").isTrue();
 
-        userProperties.setProperty("testcontainers.composev2.enable", "true");
-        assertTrue("compose v2 disabled via user properties", newConfig().isComposeV2Enabled());
+        userProperties.setProperty("testcontainers.composev2.enable", "false");
+        assertThat(newConfig().isComposeV2Enabled()).as("compose v2 disabled via user properties").isFalse();
     }
 
     @Test
     public void shouldReadComposeV2FromEnvironment() {
-        assertFalse("compose v2 enabled by default", newConfig().isComposeV2Enabled());
+        assertThat(newConfig().isComposeV2Enabled()).as("compose v2 enabled by default").isTrue();
 
         userProperties.remove("testcontainers.composev2.enable");
-        environment.put("TESTCONTAINERS_COMPOSEV2_ENABLE", "true");
-        assertTrue("compose v2 disabled via env var", newConfig().isComposeV2Enabled());
+        environment.put("TESTCONTAINERS_COMPOSEV2_ENABLE", "false");
+        assertThat(newConfig().isComposeV2Enabled()).as("compose v2 disabled via env var").isFalse();
     }
 
     private TestcontainersConfiguration newConfig() {
