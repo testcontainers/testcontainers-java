@@ -4,8 +4,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @Testcontainers
 class TestcontainersSharedContainerTests {
@@ -20,7 +19,7 @@ class TestcontainersSharedContainerTests {
 
     @BeforeAll
     static void doSomethingWithAContainer() {
-        assertTrue(GENERIC_CONTAINER.isRunning());
+        assertThat(GENERIC_CONTAINER.isRunning()).isTrue();
     }
 
     @Test
@@ -28,7 +27,7 @@ class TestcontainersSharedContainerTests {
         if (lastContainerId == null) {
             lastContainerId = GENERIC_CONTAINER.getContainerId();
         } else {
-            assertEquals(lastContainerId, GENERIC_CONTAINER.getContainerId());
+            assertThat(GENERIC_CONTAINER.getContainerId()).isEqualTo(lastContainerId);
         }
     }
 
@@ -37,7 +36,7 @@ class TestcontainersSharedContainerTests {
         if (lastContainerId == null) {
             lastContainerId = GENERIC_CONTAINER.getContainerId();
         } else {
-            assertEquals(lastContainerId, GENERIC_CONTAINER.getContainerId());
+            assertThat(GENERIC_CONTAINER.getContainerId()).isEqualTo(lastContainerId);
         }
     }
 }

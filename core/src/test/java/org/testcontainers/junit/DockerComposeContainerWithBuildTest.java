@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(Parameterized.class)
 public class DockerComposeContainerWithBuildTest {
@@ -59,11 +59,13 @@ public class DockerComposeContainerWithBuildTest {
 
             builtImageName.set(imageNameForRunningContainer("_customredis_1"));
             final boolean isBuiltImagePresentWhileRunning = isImagePresent(builtImageName.get());
-            assertEquals("the built image is present while running", true, isBuiltImagePresentWhileRunning);
+            assertThat(isBuiltImagePresentWhileRunning).as("the built image is present while running").isEqualTo(true);
 
             pulledImageName.set(imageNameForRunningContainer("_normalredis_1"));
             final boolean isPulledImagePresentWhileRunning = isImagePresent(pulledImageName.get());
-            assertEquals("the pulled image is present while running", true, isPulledImagePresentWhileRunning);
+            assertThat(isPulledImagePresentWhileRunning)
+                .as("the pulled image is present while running")
+                .isEqualTo(true);
         }
 
         Unreliables.retryUntilSuccess(
@@ -71,11 +73,9 @@ public class DockerComposeContainerWithBuildTest {
             TimeUnit.SECONDS,
             () -> {
                 final boolean isBuiltImagePresentAfterRunning = isImagePresent(builtImageName.get());
-                assertEquals(
-                    "the built image is not present after running",
-                    shouldBuiltImageBePresentAfterRunning,
-                    isBuiltImagePresentAfterRunning
-                );
+                assertThat(isBuiltImagePresentAfterRunning)
+                    .as("the built image is not present after running")
+                    .isEqualTo(shouldBuiltImageBePresentAfterRunning);
                 return null;
             }
         );
@@ -85,11 +85,9 @@ public class DockerComposeContainerWithBuildTest {
             TimeUnit.SECONDS,
             () -> {
                 final boolean isPulledImagePresentAfterRunning = isImagePresent(pulledImageName.get());
-                assertEquals(
-                    "the pulled image is present after running",
-                    shouldPulledImageBePresentAfterRunning,
-                    isPulledImagePresentAfterRunning
-                );
+                assertThat(isPulledImagePresentAfterRunning)
+                    .as("the pulled image is present after running")
+                    .isEqualTo(shouldPulledImageBePresentAfterRunning);
                 return null;
             }
         );

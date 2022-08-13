@@ -16,8 +16,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.pass;
-
 public class DockerfileTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DockerfileTest.class);
@@ -130,8 +128,6 @@ public class DockerfileTest {
 
         try {
             container.start();
-
-            pass("Should start from Dockerfile");
         } finally {
             container.stop();
         }
