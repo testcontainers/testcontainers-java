@@ -9,7 +9,7 @@ import redis.clients.jedis.Jedis;
 
 import java.io.File;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class DockerComposeV2Test {
 
@@ -38,7 +38,9 @@ public class DockerComposeV2Test {
             jedis.incr("test");
             jedis.incr("test");
 
-            assertEquals("A redis instance defined in compose can be used in isolation", "3", jedis.get("test"));
+            assertThat(jedis.get("test"))
+                .as("A redis instance defined in compose can be used in isolation")
+                .isEqualTo("3");
         }
     }
 }
