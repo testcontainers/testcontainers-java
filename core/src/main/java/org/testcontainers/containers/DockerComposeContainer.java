@@ -12,6 +12,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.Uninterruptibles;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -119,6 +120,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
     private Set<ExposedService> exposedServices = new HashSet<>();
 
     @Value
+    @EqualsAndHashCode(of = { "name", "port" })
     class ExposedService {
 
         String name;
@@ -204,10 +206,19 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
                 }
             }
             resolveDockerComposeVersion();
+            resolveComposeV2WithCompatibility();
             registerServices();
             createServices();
             startAmbassadorContainers();
             waitUntilServiceStarted();
+        }
+    }
+
+    private void resolveComposeV2WithCompatibility() {
+        boolean useComposeV1Naming =
+            this.exposedServices.stream().anyMatch(exposedService -> exposedService.getName().matches(".*_[0-9]+"));
+        if (this.composeV2 && useComposeV1Naming) {
+            this.options.add("--compatibility");
         }
     }
 
@@ -220,35 +231,35 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
     }
 
     private void registerServices() {
-        this.exposedServices.forEach(exposedService -> {
-                String serviceInstanceName = getServiceInstanceName(exposedService.getName());
+        for (ExposedService exposedService : this.exposedServices) {
+            String serviceInstanceName = getServiceInstanceName(exposedService.getName());
 
-                /*
-                 * For every service/port pair that needs to be exposed, we register a target on an 'ambassador container'.
-                 *
-                 * The ambassador container's role is to link (within the Docker network) to one of the
-                 * compose services, and proxy TCP network I/O out to a port that the ambassador container
-                 * exposes.
-                 *
-                 * This avoids the need for the docker compose file to explicitly expose ports on all the
-                 * services.
-                 *
-                 * {@link GenericContainer} should ensure that the ambassador container is on the same network
-                 * as the rest of the compose environment.
-                 */
+            /*
+             * For every service/port pair that needs to be exposed, we register a target on an 'ambassador container'.
+             *
+             * The ambassador container's role is to link (within the Docker network) to one of the
+             * compose services, and proxy TCP network I/O out to a port that the ambassador container
+             * exposes.
+             *
+             * This avoids the need for the docker compose file to explicitly expose ports on all the
+             * services.
+             *
+             * {@link GenericContainer} should ensure that the ambassador container is on the same network
+             * as the rest of the compose environment.
+             */
 
-                // Ambassador container will be started together after docker compose has started
-                int ambassadorPort = nextAmbassadorPort.getAndIncrement();
-                ambassadorPortMappings
-                    .computeIfAbsent(serviceInstanceName, __ -> new ConcurrentHashMap<>())
-                    .put(exposedService.getPort(), ambassadorPort);
-                ambassadorContainer.withTarget(ambassadorPort, serviceInstanceName, exposedService.getPort());
-                ambassadorContainer.addLink(
-                    new FutureContainer(this.project + composeSeparator() + serviceInstanceName),
-                    serviceInstanceName
-                );
-                addWaitStrategy(serviceInstanceName, exposedService.getWaitStrategy());
-            });
+            // Ambassador container will be started together after docker compose has started
+            int ambassadorPort = nextAmbassadorPort.getAndIncrement();
+            ambassadorPortMappings
+                .computeIfAbsent(serviceInstanceName, __ -> new ConcurrentHashMap<>())
+                .put(exposedService.getPort(), ambassadorPort);
+            ambassadorContainer.withTarget(ambassadorPort, serviceInstanceName, exposedService.getPort());
+            ambassadorContainer.addLink(
+                new FutureContainer(this.project + composeSeparator() + serviceInstanceName),
+                serviceInstanceName
+            );
+            addWaitStrategy(serviceInstanceName, exposedService.getWaitStrategy());
+        }
     }
 
     private void pullImages() {
@@ -560,7 +571,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
     }
 
     private String composeSeparator() {
-        return this.composeV2 ? "-" : "_";
+        return !this.composeV2 || this.options.contains("--compatibility") ? "_" : "-";
     }
 
     public SELF withScaledService(String serviceBaseName, int numInstances) {
