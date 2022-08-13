@@ -8,7 +8,7 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
 
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ExecTest {
 
@@ -26,8 +26,8 @@ public class ExecTest {
         Container.ExecResult lsResult = container.execInContainer("ls", "-al", "/");
         String stdout = lsResult.getStdout();
         int exitCode = lsResult.getExitCode();
-        assertTrue(stdout.contains("somefile.txt"));
-        assertTrue(exitCode == 0);
+        assertThat(stdout.contains("somefile.txt")).isTrue();
+        assertThat(exitCode == 0).isTrue();
         // }
     }
 }

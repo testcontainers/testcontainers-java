@@ -25,8 +25,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(Enclosed.class)
 public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContainerTest {
@@ -56,7 +55,7 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
                     .withNetwork(NETWORK)
             ) {
                 File[] files = runSimpleExploreInContainer(chrome, "PASSED-.*\\.flv");
-                assertEquals("Recorded file not found", 1, files.length);
+                assertThat(files.length).as("Recorded file not found").isEqualTo(1);
             }
         }
 
@@ -98,7 +97,7 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
                     .withNetwork(NETWORK)
             ) {
                 File[] files = runSimpleExploreInContainer(chrome, "PASSED-.*\\.flv");
-                assertEquals("Recorded file not found", 1, files.length);
+                assertThat(files.length).as("Recorded file not found").isEqualTo(1);
             }
         }
 
@@ -116,7 +115,7 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
                     .withNetwork(NETWORK)
             ) {
                 File[] files = runSimpleExploreInContainer(chrome, "PASSED-.*\\.mp4");
-                assertEquals("Recorded file not found", 1, files.length);
+                assertThat(files.length).as("Recorded file not found").isEqualTo(1);
             }
         }
 
@@ -152,10 +151,9 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
                     .start();
                 String ffmpegOutput = container.getLogs();
 
-                assertTrue(
-                    "Duration is incorrect in:\n " + ffmpegOutput,
-                    ffmpegOutput.contains("Duration: 00:") && !(ffmpegOutput.contains("Duration: 00:00:00.00"))
-                );
+                assertThat(ffmpegOutput.contains("Duration: 00:") && !(ffmpegOutput.contains("Duration: 00:00:00.00")))
+                    .as("Duration is incorrect in:\n " + ffmpegOutput)
+                    .isTrue();
             }
         }
     }
@@ -216,7 +214,7 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
                 );
 
                 String[] files = vncRecordingDirectory.getRoot().list(new PatternFilenameFilter("FAILED-.*\\.flv"));
-                assertEquals("Recorded file not found", 1, files.length);
+                assertThat(files.length).as("Recorded file not found").isEqualTo(1);
             }
         }
 

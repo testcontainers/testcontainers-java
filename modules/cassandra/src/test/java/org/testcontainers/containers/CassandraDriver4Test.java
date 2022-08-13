@@ -6,7 +6,7 @@ import com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata;
 import org.junit.Rule;
 import org.junit.Test;
 
-import static org.junit.Assert.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class CassandraDriver4Test {
 
@@ -29,7 +29,7 @@ public class CassandraDriver4Test {
 
             KeyspaceMetadata keyspace = session.getMetadata().getKeyspaces().get(CqlIdentifier.fromCql("test"));
 
-            assertNotNull("Failed to create test keyspace", keyspace);
+            assertThat(keyspace).as("Failed to create test keyspace").isNotNull();
         }
     }
 }

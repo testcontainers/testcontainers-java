@@ -11,8 +11,7 @@ import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Tests for {@link HttpWaitStrategy}.
@@ -55,8 +54,8 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
 
             String logs = container.getLogs();
 
-            assertThat(logs, containsString("foo: bar"));
-            assertThat(logs, containsString("baz: boo"));
+            assertThat(logs).contains("foo: bar");
+            assertThat(logs).contains("baz: boo");
         }
     }
 

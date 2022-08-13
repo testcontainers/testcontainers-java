@@ -1,6 +1,5 @@
 package org.testcontainers.containers;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.testcontainers.PrestoTestImages;
 
@@ -13,9 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author findepi
@@ -31,8 +28,10 @@ public class PrestoContainerTest {
                 Statement statement = connection.createStatement();
                 ResultSet resultSet = statement.executeQuery("SELECT DISTINCT node_version FROM system.runtime.nodes")
             ) {
-                assertTrue("No result", resultSet.next());
-                assertEquals("Presto version", PrestoContainer.DEFAULT_TAG, resultSet.getString("node_version"));
+                assertThat(resultSet.next()).as("No result").isTrue();
+                assertThat(resultSet.getString("node_version"))
+                    .as("Presto version")
+                    .isEqualTo(PrestoContainer.DEFAULT_TAG);
             }
         }
     }
@@ -48,12 +47,10 @@ public class PrestoContainerTest {
                 Statement statement = connection.createStatement();
                 ResultSet resultSet = statement.executeQuery("SELECT DISTINCT node_version FROM system.runtime.nodes")
             ) {
-                assertTrue("No result", resultSet.next());
-                assertEquals(
-                    "Presto version",
-                    PrestoTestImages.PRESTO_PREVIOUS_VERSION_TEST_IMAGE.getVersionPart(),
-                    resultSet.getString("node_version")
-                );
+                assertThat(resultSet.next()).as("No result").isTrue();
+                assertThat(resultSet.getString("node_version"))
+                    .as("Presto version")
+                    .isEqualTo(PrestoTestImages.PRESTO_PREVIOUS_VERSION_TEST_IMAGE.getVersionPart());
             }
         }
     }
@@ -86,7 +83,7 @@ public class PrestoContainerTest {
                     while (resultSet.next()) {
                         actualElements.add(resultSet.getInt("element"));
                     }
-                    Assert.assertEquals(Arrays.asList(2, 4, 42, 42, 42), actualElements);
+                    assertThat(actualElements).isEqualTo(Arrays.asList(2, 4, 42, 42, 42));
                 }
             }
         }
@@ -102,9 +99,9 @@ public class PrestoContainerTest {
                 Statement statement = connection.createStatement();
                 ResultSet resultSet = statement.executeQuery("SELECT a FROM memory.default.test_table")
             ) {
-                assertTrue("No result", resultSet.next());
-                assertEquals("Value", 12345678909324L, resultSet.getObject("a"));
-                assertFalse("Too many result", resultSet.next());
+                assertThat(resultSet.next()).as("No result").isTrue();
+                assertThat(resultSet.getObject("a")).as("Value").isEqualTo(12345678909324L);
+                assertThat(resultSet.next()).as("Too many result").isFalse();
             }
         }
     }
@@ -117,47 +114,39 @@ public class PrestoContainerTest {
             )
         ) {
             // Verify metadata with tc: JDBC connection URI
-            assertEquals(
-                connection.getMetaData().getDatabaseMajorVersion(),
-                Integer.parseInt(PrestoContainer.DEFAULT_TAG)
-            );
+            assertThat(Integer.parseInt(PrestoContainer.DEFAULT_TAG))
+                .isEqualTo(connection.getMetaData().getDatabaseMajorVersion());
 
             // Verify transactions with tc: JDBC connection URI
-            assertTrue("Is autocommit", connection.getAutoCommit());
+            assertThat(connection.getAutoCommit()).as("Is autocommit").isTrue();
             connection.setAutoCommit(false);
-            assertFalse("Is autocommit", connection.getAutoCommit());
-            assertEquals(
-                "Transaction isolation",
-                Connection.TRANSACTION_READ_UNCOMMITTED,
-                connection.getTransactionIsolation()
-            );
+            assertThat(connection.getAutoCommit()).as("Is autocommit").isFalse();
+            assertThat(connection.getTransactionIsolation())
+                .as("Transaction isolation")
+                .isEqualTo(Connection.TRANSACTION_READ_UNCOMMITTED);
 
             try (Statement statement = connection.createStatement()) {
-                assertEquals(
-                    "Update result",
-                    0,
-                    statement.executeUpdate("CREATE TABLE memory.default.test_tc(a bigint)")
-                );
+                assertThat(statement.executeUpdate("CREATE TABLE memory.default.test_tc(a bigint)"))
+                    .as("Update result")
+                    .isEqualTo(0);
                 try (
                     ResultSet resultSet = statement.executeQuery(
                         "SELECT sum(cast(node_version AS bigint)) AS v FROM system.runtime.nodes"
                     )
                 ) {
-                    assertTrue(resultSet.next());
-                    assertEquals(PrestoContainer.DEFAULT_TAG, resultSet.getString("v"));
-                    assertFalse(resultSet.next());
+                    assertThat(resultSet.next()).isTrue();
+                    assertThat(resultSet.getString("v")).isEqualTo(PrestoContainer.DEFAULT_TAG);
+                    assertThat(resultSet.next()).isFalse();
                 }
                 connection.commit();
             } finally {
                 connection.rollback();
             }
             connection.setAutoCommit(true);
-            assertTrue("Is autocommit", connection.getAutoCommit());
-            assertEquals(
-                "Transaction isolation should be retained",
-                Connection.TRANSACTION_READ_UNCOMMITTED,
-                connection.getTransactionIsolation()
-            );
+            assertThat(connection.getAutoCommit()).as("Is autocommit").isTrue();
+            assertThat(connection.getTransactionIsolation())
+                .as("Transaction isolation should be retained")
+                .isEqualTo(Connection.TRANSACTION_READ_UNCOMMITTED);
         }
     }
 }

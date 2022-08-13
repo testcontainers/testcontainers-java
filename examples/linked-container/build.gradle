@@ -12,5 +12,6 @@ dependencies {
     testImplementation 'org.postgresql:postgresql:42.4.0'
     testImplementation 'ch.qos.logback:logback-classic:1.2.11'
     testImplementation 'org.testcontainers:postgresql'
+    testImplementation 'org.assertj:assertj-core:3.23.1'
 }
 

@@ -13,7 +13,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Common test methods for {@link WaitStrategy} implementations.
@@ -124,9 +123,8 @@ public abstract class AbstractWaitStrategyTest<W extends WaitStrategy> {
         // start() blocks until successful or timeout
         container.start();
 
-        assertTrue(
-            String.format("Expected container to be ready after timeout of %sms", WAIT_TIMEOUT_MILLIS),
-            ready.get()
-        );
+        assertThat(ready.get())
+            .as(String.format("Expected container to be ready after timeout of %sms", WAIT_TIMEOUT_MILLIS))
+            .isTrue();
     }
 }

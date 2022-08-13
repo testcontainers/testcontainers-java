@@ -13,7 +13,7 @@ import org.testcontainers.containers.BrowserWebDriverContainer;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class HostPortExposedTest {
 
@@ -62,6 +62,6 @@ public class HostPortExposedTest {
         // }
 
         final String pageSource = webDriver.getPageSource();
-        assertTrue(pageSource.contains("Hello World!"));
+        assertThat(pageSource.contains("Hello World!")).isTrue();
     }
 }
