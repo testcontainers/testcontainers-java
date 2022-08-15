@@ -4,8 +4,8 @@ import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.testcontainers.TiDBTestImages;
-import org.testcontainers.tidb.TiDBContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
+import org.testcontainers.tidb.TiDBContainer;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
