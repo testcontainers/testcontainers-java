@@ -73,6 +73,8 @@
   - modules/solr/*
 "modules/spock":
   - modules/spock/*
+"modules/tidb":
+  - modules/tidb/*
 "modules/toxiproxy":
   - modules/toxiproxy/*
 "modules/trino":
