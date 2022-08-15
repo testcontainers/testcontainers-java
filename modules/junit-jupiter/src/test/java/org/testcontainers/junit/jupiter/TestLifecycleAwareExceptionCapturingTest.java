@@ -31,7 +31,7 @@ class TestLifecycleAwareExceptionCapturingTest {
     @Order(2)
     void should_have_captured_thrownException() {
         Throwable capturedThrowable = startedTestContainer.getCapturedThrowable();
-        assertThat(capturedThrowable instanceof AssumptionViolatedException).isTrue();
+        assertThat(capturedThrowable).isInstanceOf(AssumptionViolatedException);
         assertThat(capturedThrowable.getMessage()).isEqualTo("got: <false>, expected: is <true>");
     }
 }
