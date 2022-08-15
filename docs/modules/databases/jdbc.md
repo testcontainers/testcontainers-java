@@ -51,6 +51,10 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 
 `jdbc:tc:cockroach:v21.2.3:///databasename`
 
+#### Using TiDB
+
+`jdbc:tc:tidb:v6.1.0:///databasename`
+
 ### Using a classpath init script
 
 Testcontainers can run an init script after the database container is started, but before your code is given a connection to it. The script must be on the classpath, and is referenced as follows:
