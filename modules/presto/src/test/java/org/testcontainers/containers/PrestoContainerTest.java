@@ -99,9 +99,9 @@ public class PrestoContainerTest {
                 Statement statement = connection.createStatement();
                 ResultSet resultSet = statement.executeQuery("SELECT a FROM memory.default.test_table")
             ) {
-                assertThat(resultSet.next()).as("No result").isTrue();
+                assertThat(resultSet.next()).as("has result").isTrue();
                 assertThat(resultSet.getObject("a")).as("Value").isEqualTo(12345678909324L);
-                assertThat(resultSet.next()).as("Too many result").isFalse();
+                assertThat(resultSet.next()).as("only has one result").isFalse();
             }
         }
     }
