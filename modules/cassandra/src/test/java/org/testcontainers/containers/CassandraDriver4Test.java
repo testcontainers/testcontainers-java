@@ -29,7 +29,7 @@ public class CassandraDriver4Test {
 
             KeyspaceMetadata keyspace = session.getMetadata().getKeyspaces().get(CqlIdentifier.fromCql("test"));
 
-            assertThat(keyspace).as("Failed to create test keyspace").isNotNull();
+            assertThat(keyspace).as("test keyspace created").isNotNull();
         }
     }
 }
