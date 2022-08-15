@@ -26,8 +26,8 @@ public class ExecTest {
         Container.ExecResult lsResult = container.execInContainer("ls", "-al", "/");
         String stdout = lsResult.getStdout();
         int exitCode = lsResult.getExitCode();
-        assertThat(stdout.contains("somefile.txt")).isTrue();
-        assertThat(exitCode == 0).isTrue();
+        assertThat(stdout).contains("somefile.txt");
+        assertThat(exitCode).isZero();
         // }
     }
 }
