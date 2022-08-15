@@ -47,7 +47,7 @@ public class PrestoContainerTest {
                 Statement statement = connection.createStatement();
                 ResultSet resultSet = statement.executeQuery("SELECT DISTINCT node_version FROM system.runtime.nodes")
             ) {
-                assertThat(resultSet.next()).as("No result").isTrue();
+                assertThat(resultSet.next()).as("has result").isTrue();
                 assertThat(resultSet.getString("node_version"))
                     .as("Presto version")
                     .isEqualTo(PrestoTestImages.PRESTO_PREVIOUS_VERSION_TEST_IMAGE.getVersionPart());
