@@ -3,7 +3,7 @@ description = "TestContainers :: Orientdb"
 dependencies {
     api project(":testcontainers")
 
-    api "com.orientechnologies:orientdb-client:3.0.24"
+    api "com.orientechnologies:orientdb-client:3.2.9"
 
     testImplementation 'org.assertj:assertj-core:3.23.1'
     testImplementation 'org.apache.tinkerpop:gremlin-driver:3.3.4'
