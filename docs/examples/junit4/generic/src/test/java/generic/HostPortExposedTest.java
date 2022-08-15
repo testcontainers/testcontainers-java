@@ -62,6 +62,6 @@ public class HostPortExposedTest {
         // }
 
         final String pageSource = webDriver.getPageSource();
-        assertThat(pageSource.contains("Hello World!")).isTrue();
+        assertThat(pageSource).contains("Hello World!");
     }
 }
