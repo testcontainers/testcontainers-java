@@ -43,6 +43,7 @@ body:
         - RabbitMQ
         - Selenium
         - Solr
+        - TiDB
         - ToxiProxy
         - Trino
         - Vault
