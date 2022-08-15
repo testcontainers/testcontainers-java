@@ -382,12 +382,7 @@ public class ElasticsearchContainerTest {
 
         try (ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE)) {
             container.start();
-
-            Response response = getClient(container).performRequest(new Request("GET", "/_nodes/_all/jvm"));
-            String responseBody = EntityUtils.toString(response.getEntity());
-            assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
-            assertThat(responseBody).contains("\"heap_init_in_bytes\":" + defaultHeapSize);
-            assertThat(responseBody).contains("\"heap_max_in_bytes\":" + defaultHeapSize);
+            assertElasticsearchContainerHasHeapSize(container, defaultHeapSize);
         }
     }
 
@@ -400,12 +395,7 @@ public class ElasticsearchContainerTest {
                 .withEnv("ES_JAVA_OPTS", String.format("-Xms%d  -Xmx%d", customHeapSize, customHeapSize))
         ) {
             container.start();
-
-            Response response = getClient(container).performRequest(new Request("GET", "/_nodes/_all/jvm"));
-            String responseBody = EntityUtils.toString(response.getEntity());
-            assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
-            assertThat(responseBody).contains("\"heap_init_in_bytes\":" + customHeapSize);
-            assertThat(responseBody).contains("\"heap_max_in_bytes\":" + customHeapSize);
+            assertElasticsearchContainerHasHeapSize(container, customHeapSize);
         }
     }
 
@@ -422,12 +412,7 @@ public class ElasticsearchContainerTest {
                 );
         ) {
             container.start();
-
-            Response response = getClient(container).performRequest(new Request("GET", "/_nodes/_all/jvm"));
-            String responseBody = EntityUtils.toString(response.getEntity());
-            assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
-            assertThat(responseBody).contains("\"heap_init_in_bytes\":" + customHeapSize);
-            assertThat(responseBody).contains("\"heap_max_in_bytes\":" + customHeapSize);
+            assertElasticsearchContainerHasHeapSize(container, customHeapSize);
         }
     }
 
@@ -493,5 +478,14 @@ public class ElasticsearchContainerTest {
         }
 
         return anonymousClient;
+    }
+
+    private void assertElasticsearchContainerHasHeapSize(ElasticsearchContainer container, long heapSizeInBytes)
+        throws Exception {
+        Response response = getClient(container).performRequest(new Request("GET", "/_nodes/_all/jvm"));
+        String responseBody = EntityUtils.toString(response.getEntity());
+        assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
+        assertThat(responseBody).contains("\"heap_init_in_bytes\":" + heapSizeInBytes);
+        assertThat(responseBody).contains("\"heap_max_in_bytes\":" + heapSizeInBytes);
     }
 }
