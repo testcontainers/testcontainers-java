@@ -66,6 +66,7 @@ nav:
                 - modules/databases/tidb.md
                 - modules/databases/trino.md
           - modules/azure.md
+          - modules/consul.md
           - modules/docker_compose.md
           - modules/elasticsearch.md
           - modules/gcloud.md
