@@ -1,0 +1,6 @@
+# Ignore everything
+*
+# Except these files
+!.gitignore
+!gradle.xml
+!misc.xml
