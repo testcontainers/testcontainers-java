@@ -214,7 +214,7 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
                 );
 
                 String[] files = vncRecordingDirectory.getRoot().list(new PatternFilenameFilter("FAILED-.*\\.flv"));
-                assertThat(files.length).as("Recorded file not found").isEqualTo(1);
+                assertThat(files.length).as("recorded file count").isEqualTo(1);
             }
         }
 
