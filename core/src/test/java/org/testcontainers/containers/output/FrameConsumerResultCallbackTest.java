@@ -10,8 +10,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class FrameConsumerResultCallbackTest {
 
@@ -26,7 +25,7 @@ public class FrameConsumerResultCallbackTest {
         ToStringConsumer consumer = new ToStringConsumer();
         callback.addConsumer(OutputFrame.OutputType.STDERR, consumer);
         callback.onNext(new Frame(StreamType.STDERR, FRAME_PAYLOAD.getBytes()));
-        assertEquals(LOG_RESULT, consumer.toUtf8String());
+        assertThat(consumer.toUtf8String()).isEqualTo(LOG_RESULT);
     }
 
     @Test
@@ -35,7 +34,7 @@ public class FrameConsumerResultCallbackTest {
         ToStringConsumer consumer = new ToStringConsumer().withRemoveAnsiCodes(false);
         callback.addConsumer(OutputFrame.OutputType.STDERR, consumer);
         callback.onNext(new Frame(StreamType.STDERR, FRAME_PAYLOAD.getBytes()));
-        assertEquals(FRAME_PAYLOAD, consumer.toUtf8String());
+        assertThat(consumer.toUtf8String()).isEqualTo(FRAME_PAYLOAD);
     }
 
     @Test
@@ -44,7 +43,7 @@ public class FrameConsumerResultCallbackTest {
         ToStringConsumer consumer = new ToStringConsumer();
         callback.addConsumer(OutputFrame.OutputType.STDOUT, consumer);
         callback.onNext(new Frame(StreamType.STDOUT, FRAME_PAYLOAD.getBytes()));
-        assertEquals(LOG_RESULT, consumer.toUtf8String());
+        assertThat(consumer.toUtf8String()).isEqualTo(LOG_RESULT);
     }
 
     @Test
@@ -53,7 +52,7 @@ public class FrameConsumerResultCallbackTest {
         ToStringConsumer consumer = new ToStringConsumer().withRemoveAnsiCodes(false);
         callback.addConsumer(OutputFrame.OutputType.STDOUT, consumer);
         callback.onNext(new Frame(StreamType.STDOUT, FRAME_PAYLOAD.getBytes()));
-        assertEquals(FRAME_PAYLOAD, consumer.toUtf8String());
+        assertThat(consumer.toUtf8String()).isEqualTo(FRAME_PAYLOAD);
     }
 
     @Test
@@ -62,7 +61,7 @@ public class FrameConsumerResultCallbackTest {
         BasicConsumer consumer = new BasicConsumer();
         callback.addConsumer(OutputFrame.OutputType.STDOUT, consumer);
         callback.onNext(new Frame(StreamType.STDOUT, FRAME_PAYLOAD.getBytes()));
-        assertEquals(LOG_RESULT, consumer.toString());
+        assertThat(consumer.toString()).isEqualTo(LOG_RESULT);
     }
 
     @Test
@@ -71,7 +70,7 @@ public class FrameConsumerResultCallbackTest {
         ToStringConsumer consumer = new ToStringConsumer().withRemoveAnsiCodes(false);
         callback.addConsumer(OutputFrame.OutputType.STDOUT, consumer);
         callback.onNext(new Frame(StreamType.STDOUT, null));
-        assertEquals("", consumer.toUtf8String());
+        assertThat(consumer.toUtf8String()).isEqualTo("");
     }
 
     @Test
@@ -81,7 +80,7 @@ public class FrameConsumerResultCallbackTest {
         ToStringConsumer consumer = new ToStringConsumer().withRemoveAnsiCodes(false);
         callback.addConsumer(OutputFrame.OutputType.STDOUT, consumer);
         callback.onNext(new Frame(StreamType.STDOUT, payload.getBytes()));
-        assertEquals(payload, consumer.toUtf8String());
+        assertThat(consumer.toUtf8String()).isEqualTo(payload);
     }
 
     @Test
@@ -91,7 +90,7 @@ public class FrameConsumerResultCallbackTest {
         ToStringConsumer consumer = new ToStringConsumer().withRemoveAnsiCodes(false);
         callback.addConsumer(OutputFrame.OutputType.STDOUT, consumer);
         callback.onNext(new Frame(StreamType.STDOUT, payload.getBytes()));
-        assertEquals(payload, consumer.toUtf8String());
+        assertThat(consumer.toUtf8String()).isEqualTo(payload);
     }
 
     @Test
@@ -101,7 +100,7 @@ public class FrameConsumerResultCallbackTest {
         ToStringConsumer consumer = new ToStringConsumer().withRemoveAnsiCodes(false);
         callback.addConsumer(OutputFrame.OutputType.STDOUT, consumer);
         callback.onNext(new Frame(StreamType.STDOUT, payload.getBytes()));
-        assertEquals(payload, consumer.toUtf8String());
+        assertThat(consumer.toUtf8String()).isEqualTo(payload);
     }
 
     @Test
@@ -130,7 +129,7 @@ public class FrameConsumerResultCallbackTest {
         } catch (Exception e) {
             exception = e;
         }
-        assertTrue(exception instanceof TimeoutException);
+        assertThat(exception instanceof TimeoutException).isTrue();
         callback.close();
         waitConsumer.waitUntil(
             frame -> frame.getType() == OutputFrame.OutputType.STDOUT && frame.getUtf8String().equals("Test3"),
@@ -180,7 +179,7 @@ public class FrameConsumerResultCallbackTest {
         } catch (Exception e) {
             exception = e;
         }
-        assertTrue(exception instanceof TimeoutException);
+        assertThat(exception instanceof TimeoutException).isTrue();
         callback.close();
         waitConsumer.waitUntil(
             frame -> {
@@ -208,7 +207,7 @@ public class FrameConsumerResultCallbackTest {
         callback.onNext(new Frame(StreamType.RAW, bytes1));
         callback.onNext(new Frame(StreamType.RAW, bytes2));
         callback.close();
-        assertEquals(payload, consumer.toUtf8String());
+        assertThat(consumer.toUtf8String()).isEqualTo(payload);
     }
 
     private static class BasicConsumer implements Consumer<OutputFrame> {

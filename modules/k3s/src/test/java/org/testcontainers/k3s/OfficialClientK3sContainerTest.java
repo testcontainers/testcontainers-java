@@ -6,13 +6,14 @@ import io.kubernetes.client.openapi.apis.CoreV1Api;
 import io.kubernetes.client.openapi.models.V1NodeList;
 import io.kubernetes.client.util.Config;
 import lombok.extern.slf4j.Slf4j;
-import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
 import java.io.StringReader;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @Slf4j
 public class OfficialClientK3sContainerTest {
@@ -37,7 +38,7 @@ public class OfficialClientK3sContainerTest {
             V1NodeList nodes = api.listNode(null, null, null, null, null, null, null, null, null, null);
             // }
 
-            Assertions.assertThat(nodes.getItems()).hasSize(1);
+            assertThat(nodes.getItems()).hasSize(1);
         }
     }
 }

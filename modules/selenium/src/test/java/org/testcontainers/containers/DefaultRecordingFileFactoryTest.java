@@ -15,8 +15,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import static org.hamcrest.Matchers.hasItem;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(Parameterized.class)
 @Value
@@ -68,6 +67,6 @@ public class DefaultRecordingFileFactoryTest {
             )
         );
 
-        assertThat(expectedPossibleFileNames, hasItem(recordingFile));
+        assertThat(expectedPossibleFileNames).contains(recordingFile);
     }
 }

@@ -4,7 +4,7 @@ import com.orientechnologies.orient.core.db.ODatabaseSession;
 import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author robfrank

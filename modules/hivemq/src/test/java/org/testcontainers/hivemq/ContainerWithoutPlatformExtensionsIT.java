@@ -24,8 +24,7 @@ import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ContainerWithoutPlatformExtensionsIT {
 
@@ -61,13 +60,13 @@ public class ContainerWithoutPlatformExtensionsIT {
             client.subscribeWith().topicFilter("extensions").send();
 
             final Mqtt5Publish receive = publishes.receive();
-            assertTrue(receive.getPayload().isPresent());
+            assertThat(receive.getPayload()).isPresent();
             final String extensionInfo = new String(receive.getPayloadAsBytes());
 
-            assertFalse(extensionInfo.contains("hivemq-allow-all-extension"));
-            assertFalse(extensionInfo.contains("hivemq-kafka-extension"));
-            assertFalse(extensionInfo.contains("hivemq-bridge-extension"));
-            assertFalse(extensionInfo.contains("hivemq-enterprise-security-extension"));
+            assertThat(extensionInfo).doesNotContain("hivemq-allow-all-extension");
+            assertThat(extensionInfo).doesNotContain("hivemq-kafka-extension");
+            assertThat(extensionInfo).doesNotContain("hivemq-bridge-extension");
+            assertThat(extensionInfo).doesNotContain("hivemq-enterprise-security-extension");
 
             hivemq.start();
         }
@@ -96,13 +95,13 @@ public class ContainerWithoutPlatformExtensionsIT {
             client.subscribeWith().topicFilter("extensions").send();
 
             final Mqtt5Publish receive = publishes.receive();
-            assertTrue(receive.getPayload().isPresent());
+            assertThat(receive.getPayload().isPresent()).isTrue();
             final String extensionInfo = new String(receive.getPayloadAsBytes());
 
-            assertTrue(extensionInfo.contains("hivemq-allow-all-extension"));
-            assertFalse(extensionInfo.contains("hivemq-kafka-extension"));
-            assertTrue(extensionInfo.contains("hivemq-bridge-extension"));
-            assertTrue(extensionInfo.contains("hivemq-enterprise-security-extension"));
+            assertThat(extensionInfo).contains("hivemq-allow-all-extension");
+            assertThat(extensionInfo).doesNotContain("hivemq-kafka-extension");
+            assertThat(extensionInfo).contains("hivemq-bridge-extension");
+            assertThat(extensionInfo).contains("hivemq-enterprise-security-extension");
         }
     }
 

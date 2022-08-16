@@ -11,9 +11,7 @@ import java.sql.Statement;
 
 import javax.sql.DataSource;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
 
@@ -26,7 +24,7 @@ public class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
             ResultSet resultSet = performQuery(mssqlServer, "SELECT 1");
 
             int resultSetInt = resultSet.getInt(1);
-            assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
         }
     }
 
@@ -40,7 +38,7 @@ public class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
             mssqlServer.start();
 
             String jdbcUrl = mssqlServer.getJdbcUrl();
-            assertThat(jdbcUrl, containsString(";integratedSecurity=false;applicationName=MyApp"));
+            assertThat(jdbcUrl).contains(";integratedSecurity=false;applicationName=MyApp");
         }
     }
 
@@ -63,7 +61,7 @@ public class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
 
             resultSet.next();
             int resultSetInt = resultSet.getInt("ID");
-            assertEquals("A basic SELECT query succeeds", 3, resultSetInt);
+            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(3);
         }
     }
 }

@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 // testClass {
 @Testcontainers
@@ -23,8 +23,8 @@ class MixedLifecycleTests {
 
     @Test
     void test() {
-        assertTrue(MY_SQL_CONTAINER.isRunning());
-        assertTrue(postgresqlContainer.isRunning());
+        assertThat(MY_SQL_CONTAINER.isRunning()).isTrue();
+        assertThat(postgresqlContainer.isRunning()).isTrue();
     }
 }
 // }
