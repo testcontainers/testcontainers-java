@@ -20,7 +20,7 @@ public class TrinoContainerTest {
                 Statement statement = connection.createStatement();
                 ResultSet resultSet = statement.executeQuery("SELECT DISTINCT node_version FROM system.runtime.nodes")
             ) {
-                assertThat(resultSet.next()).as("No result").isTrue();
+                assertThat(resultSet.next()).as("results").isTrue();
                 assertThat(resultSet.getString("node_version"))
                     .as("Trino version")
                     .isEqualTo(TrinoContainer.DEFAULT_TAG);
