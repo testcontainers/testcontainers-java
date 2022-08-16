@@ -13,10 +13,7 @@ import org.bson.Document;
 import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
 
-import static org.hamcrest.Matchers.endsWith;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class MongoDBContainerTest {
 
@@ -35,7 +32,7 @@ public class MongoDBContainerTest {
             // }
 
             final String mongoRsUrl = mongoDBContainer.getReplicaSetUrl();
-            assertNotNull(mongoRsUrl);
+            assertThat(mongoRsUrl).isNotNull();
             final String connectionString = mongoDBContainer.getConnectionString();
             final MongoClient mongoSyncClientBase = MongoClients.create(connectionString);
             final MongoClient mongoSyncClient = MongoClients.create(mongoRsUrl);
@@ -76,7 +73,7 @@ public class MongoDBContainerTest {
 
             try {
                 final String trxResultActual = clientSession.withTransaction(txnBody, txnOptions);
-                assertEquals(trxResult, trxResultActual);
+                assertThat(trxResultActual).isEqualTo(trxResult);
             } catch (RuntimeException re) {
                 throw new IllegalStateException(re.getMessage(), re);
             } finally {
@@ -98,7 +95,7 @@ public class MongoDBContainerTest {
         try (final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.0.10"))) {
             mongoDBContainer.start();
             final String databaseName = "my-db";
-            assertThat(mongoDBContainer.getReplicaSetUrl(databaseName), endsWith(databaseName));
+            assertThat(mongoDBContainer.getReplicaSetUrl(databaseName)).endsWith(databaseName);
         }
     }
 }

@@ -1,7 +1,5 @@
 package org.testcontainers.junit.tidb;
 
-import org.hamcrest.Matchers;
-import org.junit.Assert;
 import org.junit.Test;
 import org.testcontainers.TiDBTestImages;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
@@ -9,6 +7,8 @@ import org.testcontainers.tidb.TiDBContainer;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class SimpleTiDBTest extends AbstractContainerDatabaseTest {
 
@@ -20,7 +20,7 @@ public class SimpleTiDBTest extends AbstractContainerDatabaseTest {
             ResultSet resultSet = performQuery(tidb, "SELECT 1");
 
             int resultSetInt = resultSet.getInt(1);
-            Assert.assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+            assertThat(resultSetInt).isEqualTo(1);
         }
     }
 
@@ -34,7 +34,7 @@ public class SimpleTiDBTest extends AbstractContainerDatabaseTest {
             ResultSet resultSet = performQuery(tidb, "SELECT foo FROM bar");
 
             String firstColumnValue = resultSet.getString(1);
-            Assert.assertEquals("Value from init script should equal real value", "hello world", firstColumnValue);
+            assertThat(firstColumnValue).isEqualTo("hello world");
         }
     }
 
@@ -45,8 +45,8 @@ public class SimpleTiDBTest extends AbstractContainerDatabaseTest {
         try {
             tidb.start();
             String jdbcUrl = tidb.getJdbcUrl();
-            Assert.assertThat(jdbcUrl, Matchers.containsString("?"));
-            Assert.assertThat(jdbcUrl, Matchers.containsString("sslmode=disable"));
+            assertThat(jdbcUrl).contains("?");
+            assertThat(jdbcUrl).contains("sslmode=disable");
         } finally {
             tidb.stop();
         }

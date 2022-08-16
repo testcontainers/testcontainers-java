@@ -6,8 +6,8 @@ import org.junit.runners.model.Statement;
 
 import java.lang.annotation.Annotation;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 public class FlakyRuleTest {
 
@@ -33,7 +33,9 @@ public class FlakyRuleTest {
             rule.apply(statement, description).evaluate();
             fail("Should not reach here");
         } catch (Exception ignored) {}
-        assertEquals("The statement should only be invoked once, even if it throws", 1, statement.invocationCount);
+        assertThat(statement.invocationCount)
+            .as("The statement should only be invoked once, even if it throws")
+            .isEqualTo(1);
     }
 
     @Test
@@ -45,7 +47,7 @@ public class FlakyRuleTest {
             rule.apply(statement, description).evaluate();
             fail("Should not reach here");
         } catch (Exception ignored) {}
-        assertEquals("The statement should be invoked three times", 3, statement.invocationCount);
+        assertThat(statement.invocationCount).as("The statement should be invoked three times").isEqualTo(3);
     }
 
     @Test
@@ -57,7 +59,7 @@ public class FlakyRuleTest {
             rule.apply(statement, description).evaluate();
             fail("Should not reach here");
         } catch (Exception ignored) {}
-        assertEquals("The statement should be invoked ten times", 10, statement.invocationCount);
+        assertThat(statement.invocationCount).as("The statement should be invoked ten times").isEqualTo(10);
     }
 
     @Test
@@ -68,11 +70,9 @@ public class FlakyRuleTest {
 
         rule.apply(statement, description).evaluate();
 
-        assertEquals(
-            "The statement should be invoked three times, and succeed the third time",
-            3,
-            statement.invocationCount
-        );
+        assertThat(statement.invocationCount)
+            .as("The statement should be invoked three times, and succeed the third time")
+            .isEqualTo(3);
     }
 
     @Test
@@ -83,7 +83,7 @@ public class FlakyRuleTest {
 
         rule.apply(statement, description).evaluate();
 
-        assertEquals("The statement should be invoked once", 1, statement.invocationCount);
+        assertThat(statement.invocationCount).as("The statement should be invoked once").isEqualTo(1);
     }
 
     @Test
@@ -94,7 +94,9 @@ public class FlakyRuleTest {
             rule.apply(statement, description).evaluate();
             fail("Should not reach here");
         } catch (Exception ignored) {}
-        assertEquals("The statement should only be invoked once, even if it throws", 1, statement.invocationCount);
+        assertThat(statement.invocationCount)
+            .as("The statement should only be invoked once, even if it throws")
+            .isEqualTo(1);
     }
 
     @Test
@@ -105,7 +107,9 @@ public class FlakyRuleTest {
             rule.apply(statement, description).evaluate();
             fail("Should not reach here");
         } catch (IllegalArgumentException ignored) {}
-        assertEquals("The statement should not be invoked if the annotation is invalid", 0, statement.invocationCount);
+        assertThat(statement.invocationCount)
+            .as("The statement should not be invoked if the annotation is invalid")
+            .isEqualTo(0);
     }
 
     @Test
@@ -116,7 +120,9 @@ public class FlakyRuleTest {
             rule.apply(statement, description).evaluate();
             fail("Should not reach here");
         } catch (IllegalArgumentException ignored) {}
-        assertEquals("The statement should not be invoked if the annotation is invalid", 0, statement.invocationCount);
+        assertThat(statement.invocationCount)
+            .as("The statement should not be invoked if the annotation is invalid")
+            .isEqualTo(0);
     }
 
     private Description newDescriptionWithAnnotation(String reviewDate, String gitHubUrl) {
