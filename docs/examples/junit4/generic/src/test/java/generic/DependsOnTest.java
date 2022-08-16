@@ -4,7 +4,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;
 
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class DependsOnTest {
 
@@ -19,7 +19,7 @@ public class DependsOnTest {
 
     @Test
     public void testContainersAllStarted() {
-        assertTrue(redis.isRunning());
-        assertTrue(nginx.isRunning());
+        assertThat(redis.isRunning()).isTrue();
+        assertThat(nginx.isRunning()).isTrue();
     }
 }

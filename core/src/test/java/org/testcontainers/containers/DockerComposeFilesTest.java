@@ -1,10 +1,11 @@
 package org.testcontainers.containers;
 
 import com.google.common.collect.Lists;
-import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
 import java.io.File;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class DockerComposeFilesTest {
 
@@ -13,8 +14,7 @@ public class DockerComposeFilesTest {
         DockerComposeFiles dockerComposeFiles = new DockerComposeFiles(
             Lists.newArrayList(new File("src/test/resources/docker-compose-imagename-parsing-v2.yml"))
         );
-        Assertions
-            .assertThat(dockerComposeFiles.getDependencyImages())
+        assertThat(dockerComposeFiles.getDependencyImages())
             .containsExactlyInAnyOrder("postgres:latest", "redis:latest", "mysql:latest");
     }
 
@@ -26,8 +26,7 @@ public class DockerComposeFilesTest {
                 new File("src/test/resources/docker-compose-imagename-overriding-b.yml")
             )
         );
-        Assertions
-            .assertThat(dockerComposeFiles.getDependencyImages())
+        assertThat(dockerComposeFiles.getDependencyImages())
             .containsExactlyInAnyOrder("alpine:3.16", "redis:b", "mysql:b", "aservice:latest");
     }
 }

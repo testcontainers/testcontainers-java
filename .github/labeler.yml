@@ -15,6 +15,8 @@
   - modules/clickhouse/*
 "modules/cockroachdb":
   - modules/cockroachdb/*
+"modules/consul":
+  - modules/consul/*
 "modules/couchbase":
   - modules/couchbase/*
 "modules/db2":
@@ -73,6 +75,8 @@
   - modules/solr/*
 "modules/spock":
   - modules/spock/*
+"modules/tidb":
+  - modules/tidb/*
 "modules/toxiproxy":
   - modules/toxiproxy/*
 "modules/trino":

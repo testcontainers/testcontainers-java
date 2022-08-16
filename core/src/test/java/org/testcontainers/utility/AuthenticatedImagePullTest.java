@@ -19,10 +19,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.when;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
 /**
  * This test checks the integration between Testcontainers and an authenticated registry, but uses
@@ -91,7 +91,7 @@ public class AuthenticatedImagePullTest {
         ) {
             container.start();
 
-            assertTrue("container started following an authenticated pull", container.isRunning());
+            assertThat(container.isRunning()).as("container started following an authenticated pull").isTrue();
         }
     }
 
@@ -111,7 +111,7 @@ public class AuthenticatedImagePullTest {
         ) {
             container.start();
 
-            assertTrue("container started following an authenticated pull", container.isRunning());
+            assertThat(container.isRunning()).as("container started following an authenticated pull").isTrue();
         }
     }
 
@@ -133,10 +133,11 @@ public class AuthenticatedImagePullTest {
         try (final DockerComposeContainer<?> compose = new DockerComposeContainer<>(tempFile.toFile())) {
             compose.start();
 
-            assertTrue(
-                "container started following an authenticated pull",
+            assertThat(
                 compose.getContainerByServiceName("privateservice_1").map(ContainerState::isRunning).orElse(false)
-            );
+            )
+                .as("container started following an authenticated pull")
+                .isTrue();
         }
     }
 

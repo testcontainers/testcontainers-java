@@ -10,9 +10,7 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Simon Schneider
@@ -36,8 +34,8 @@ public class SolrContainerTest {
         try (SolrContainer container = new SolrContainer(SOLR_IMAGE)) {
             container.start();
             SolrPingResponse response = getClient(container).ping("dummy");
-            assertThat(response.getStatus(), is(0));
-            assertThat(response.jsonStr(), containsString("zkConnected\":true"));
+            assertThat(response.getStatus()).isZero();
+            assertThat(response.jsonStr()).contains("zkConnected\":true");
         }
     }
 
@@ -46,8 +44,8 @@ public class SolrContainerTest {
         try (SolrContainer container = new SolrContainer(SOLR_IMAGE).withZookeeper(false)) {
             container.start();
             SolrPingResponse response = getClient(container).ping("dummy");
-            assertThat(response.getStatus(), is(0));
-            assertThat(response.jsonStr(), containsString("zkConnected\":null"));
+            assertThat(response.getStatus()).isZero();
+            assertThat(response.jsonStr()).contains("zkConnected\":null");
         }
     }
 

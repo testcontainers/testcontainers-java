@@ -1,6 +1,5 @@
 package org.testcontainers.containers;
 
-import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -8,6 +7,7 @@ import org.junit.runners.Parameterized;
 import java.util.Collections;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -44,6 +44,6 @@ public class ContainerStateTest {
         when(containerState.getPortBindings()).thenReturn(Collections.singletonList(testSet));
 
         List<Integer> result = containerState.getBoundPortNumbers();
-        Assertions.assertThat(result).hasSameElementsAs(expectedResult);
+        assertThat(result).hasSameElementsAs(expectedResult);
     }
 }

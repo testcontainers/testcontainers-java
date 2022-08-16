@@ -11,7 +11,7 @@ import org.testcontainers.containers.wait.strategy.Wait;
 
 import java.io.File;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @Testcontainers
 class ComposeContainerTests {
@@ -38,6 +38,6 @@ class ComposeContainerTests {
 
         HttpResponse response = client.execute(new HttpGet("http://" + host + ":" + port));
 
-        assertEquals(200, response.getStatusLine().getStatusCode());
+        assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
     }
 }

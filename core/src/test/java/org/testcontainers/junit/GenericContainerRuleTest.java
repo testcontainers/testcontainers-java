@@ -47,12 +47,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertFalse;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertThat;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 /**
  * Tests for GenericContainerRules
@@ -158,9 +154,9 @@ public class GenericContainerRuleTest {
     @Test
     public void testIsRunning() {
         try (GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE).withCommand("top")) {
-            assertFalse("Container is not started and not running", container.isRunning());
+            assertThat(container.isRunning()).as("Container is not started and not running").isFalse();
             container.start();
-            assertTrue("Container is started and running", container.isRunning());
+            assertThat(container.isRunning()).as("Container is started and running").isTrue();
         }
     }
 
@@ -175,15 +171,13 @@ public class GenericContainerRuleTest {
             // check file doesn't exist
             String path = "/testtmpfs/test.file";
             Container.ExecResult execResult = container.execInContainer("ls", path);
-            assertEquals(
-                "tmpfs inside container works fine",
-                execResult.getStderr(),
-                "ls: /testtmpfs/test.file: No such file or directory\n"
-            );
+            assertThat(execResult.getStderr())
+                .as("tmpfs inside container works fine")
+                .isEqualTo("ls: /testtmpfs/test.file: No such file or directory\n");
             // touch && check file does exist
             container.execInContainer("touch", path);
             execResult = container.execInContainer("ls", path);
-            assertEquals("tmpfs inside container works fine", execResult.getStdout(), path + "\n");
+            assertThat(execResult.getStdout()).as("tmpfs inside container works fine").isEqualTo(path + "\n");
         }
     }
 
@@ -221,8 +215,7 @@ public class GenericContainerRuleTest {
         channel.basicPublish(RABBIQMQ_TEST_EXCHANGE, RABBITMQ_TEST_ROUTING_KEY, null, RABBITMQ_TEST_MESSAGE.getBytes());
 
         // check the message was received
-        assertTrue(
-            "The message was received",
+        assertThat(
             Unreliables.retryUntilSuccess(
                 5,
                 TimeUnit.SECONDS,
@@ -233,7 +226,9 @@ public class GenericContainerRuleTest {
                     return true;
                 }
             )
-        );
+        )
+            .as("The message was received")
+            .isTrue();
     }
 
     @Test
@@ -246,21 +241,21 @@ public class GenericContainerRuleTest {
         collection.insertOne(doc);
 
         Document doc2 = collection.find(new Document("name", "foo")).first();
-        assertEquals("A record can be inserted into and retrieved from MongoDB", 1, doc2.get("value"));
+        assertThat(doc2.get("value")).as("A record can be inserted into and retrieved from MongoDB").isEqualTo(1);
     }
 
     @Test
     public void environmentAndCustomCommandTest() throws IOException {
         String line = getReaderForContainerPort80(alpineEnvVar).readLine();
 
-        assertEquals("An environment variable can be passed into a command", "42", line);
+        assertThat(line).as("An environment variable can be passed into a command").isEqualTo("42");
     }
 
     @Test
     public void environmentFromMapTest() throws IOException {
         String line = getReaderForContainerPort80(alpineEnvVarFromMap).readLine();
 
-        assertEquals("Environment variables can be passed into a command from a map", "42 and 50", line);
+        assertThat(line).as("Environment variables can be passed into a command from a map").isEqualTo("42 and 50");
     }
 
     @Test
@@ -273,21 +268,21 @@ public class GenericContainerRuleTest {
             alpineCustomLabel.start();
 
             Map<String, String> labels = alpineCustomLabel.getCurrentContainerInfo().getConfig().getLabels();
-            assertTrue("org.testcontainers label is present", labels.containsKey("org.testcontainers"));
-            assertTrue("our.custom label is present", labels.containsKey("our.custom"));
-            assertEquals("our.custom label value is label", labels.get("our.custom"), "label");
+            assertThat(labels).as("org.testcontainers label is present").containsKey("org.testcontainers");
+            assertThat(labels).as("our.custom label is present").containsKey("our.custom");
+            assertThat(labels).as("our.custom label value is label").containsEntry("our.custom", "label");
         }
     }
 
     @Test
     public void exceptionThrownWhenTryingToOverrideTestcontainersLabels() {
-        assertThrows(
-            "When trying to overwrite an 'org.testcontainers' label, withLabel() throws an exception",
-            IllegalArgumentException.class,
-            () -> {
+        assertThat(
+            catchThrowable(() -> {
                 new GenericContainer<>(TestImages.ALPINE_IMAGE).withLabel("org.testcontainers.foo", "false");
-            }
-        );
+            })
+        )
+            .as("When trying to overwrite an 'org.testcontainers' label, withLabel() throws an exception")
+            .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -296,32 +291,24 @@ public class GenericContainerRuleTest {
         // in that case this test will fail.
         String line = getReaderForContainerPort80(alpineClasspathResource).readLine();
 
-        assertEquals(
-            "Resource on the classpath can be mapped using calls to withClasspathResourceMapping",
-            "FOOBAR",
-            line
-        );
+        assertThat(line)
+            .as("Resource on the classpath can be mapped using calls to withClasspathResourceMapping")
+            .isEqualTo("FOOBAR");
     }
 
     @Test
     public void customClasspathResourceMappingWithSelinuxTest() throws IOException {
         String line = getReaderForContainerPort80(alpineClasspathResourceSelinux).readLine();
-        assertEquals(
-            "Resource on the classpath can be mapped using calls to withClasspathResourceMappingSelinux",
-            "FOOBAR",
-            line
-        );
+        assertThat(line)
+            .as("Resource on the classpath can be mapped using calls to withClasspathResourceMappingSelinux")
+            .isEqualTo("FOOBAR");
     }
 
     @Test
     public void exceptionThrownWhenMappedPortNotFound() {
-        assertThrows(
-            "When the requested port is not mapped, getMappedPort() throws an exception",
-            IllegalArgumentException.class,
-            () -> {
-                return redis.getMappedPort(666);
-            }
-        );
+        assertThat(catchThrowable(() -> redis.getMappedPort(666)))
+            .as("When the requested port is not mapped, getMappedPort() throws an exception")
+            .isInstanceOf(IllegalArgumentException.class);
     }
 
     protected static void writeStringToFile(File contentFolder, String filename, String string)
@@ -342,14 +329,9 @@ public class GenericContainerRuleTest {
             .withMinimumRunningDuration(Duration.ofMillis(100));
 
         try {
-            assertThrows(
-                "When we start a container that halts immediately, an exception is thrown",
-                RetryCountExceededException.class,
-                () -> {
-                    failsImmediately.start();
-                    return null;
-                }
-            );
+            assertThat(catchThrowable(failsImmediately::start))
+                .as("When we start a container that halts immediately, an exception is thrown")
+                .isInstanceOf(RetryCountExceededException.class);
 
             // Check how long it took, to verify that we ARE bailing out early.
             // Want to strike a balance here; too short and this test will fail intermittently
@@ -357,10 +339,9 @@ public class GenericContainerRuleTest {
             // what we're intending to test.
             int allowedSecondsToFailure = GenericContainer.CONTAINER_RUNNING_TIMEOUT_SEC / 2;
             long completedTimeMs = System.currentTimeMillis();
-            assertTrue(
-                "container should not take long to start up",
-                completedTimeMs - startingTimeMs < 1000L * allowedSecondsToFailure
-            );
+            assertThat(completedTimeMs - startingTimeMs < 1000L * allowedSecondsToFailure)
+                .as("container should not take long to start up")
+                .isTrue();
         } finally {
             failsImmediately.stop();
         }
@@ -374,11 +355,10 @@ public class GenericContainerRuleTest {
         Assume.assumeTrue(TestEnvironment.dockerExecutionDriverSupportsExec());
 
         final GenericContainer.ExecResult result = redis.execInContainer("redis-cli", "role");
-        assertTrue(
-            "Output for \"redis-cli role\" command should start with \"master\"",
-            result.getStdout().startsWith("master")
-        );
-        assertEquals("Stderr for \"redis-cli role\" command should be empty", "", result.getStderr());
+        assertThat(result.getStdout())
+            .as("Output for \"redis-cli role\" command should start with \"master\"")
+            .startsWith("master");
+        assertThat(result.getStderr()).as("Stderr for \"redis-cli role\" command should be empty").isEmpty();
         // We expect to reach this point for modern Docker versions.
     }
 
@@ -396,7 +376,7 @@ public class GenericContainerRuleTest {
         }
 
         Matcher matcher = Pattern.compile("^192.168.1.10\\s.*somehost", Pattern.MULTILINE).matcher(hosts.toString());
-        assertTrue("The hosts file of container contains extra host", matcher.find());
+        assertThat(matcher.find()).as("The hosts file of container contains extra host").isTrue();
     }
 
     @Test
@@ -414,12 +394,10 @@ public class GenericContainerRuleTest {
         ) {
             container.start();
 
-            assertEquals("Name is configured", "/" + randomName, container.getContainerInfo().getName());
-            assertEquals(
-                "Command is configured",
-                "[redis-server, --port, 6379]",
-                Arrays.toString(container.getContainerInfo().getConfig().getCmd())
-            );
+            assertThat(container.getContainerInfo().getName()).as("Name is configured").isEqualTo("/" + randomName);
+            assertThat(Arrays.toString(container.getContainerInfo().getConfig().getCmd()))
+                .as("Command is configured")
+                .isEqualTo("[redis-server, --port, 6379]");
         }
     }
 
@@ -439,18 +417,18 @@ public class GenericContainerRuleTest {
     @Test
     public void addExposedPortAfterWithExposedPortsTest() {
         redis.addExposedPort(8987);
-        assertThat("Both ports should be exposed", redis.getExposedPorts().size(), equalTo(2));
-        assertTrue("withExposedPort should be exposed", redis.getExposedPorts().contains(REDIS_PORT));
-        assertTrue("addExposedPort should be exposed", redis.getExposedPorts().contains(8987));
+        assertThat(redis.getExposedPorts()).as("Both ports should be exposed").hasSize(2);
+        assertThat(redis.getExposedPorts()).as("withExposedPort should be exposed").contains(REDIS_PORT);
+        assertThat(redis.getExposedPorts()).as("addExposedPort should be exposed").contains(8987);
     }
 
     @Test
     public void addingExposedPortTwiceShouldNotFail() {
         redis.addExposedPort(8987);
         redis.addExposedPort(8987);
-        assertThat("Both ports should be exposed", redis.getExposedPorts().size(), equalTo(2)); // 2 ports = de-duplicated port 8897 and original port 6379
-        assertTrue("withExposedPort should be exposed", redis.getExposedPorts().contains(REDIS_PORT));
-        assertTrue("addExposedPort should be exposed", redis.getExposedPorts().contains(8987));
+        assertThat(redis.getExposedPorts()).as("Both ports should be exposed").hasSize(2); // 2 ports = de-duplicated port 8897 and original port 6379
+        assertThat(redis.getExposedPorts()).as("withExposedPort should be exposed").contains(REDIS_PORT);
+        assertThat(redis.getExposedPorts()).as("addExposedPort should be exposed").contains(8987);
     }
 
     @Test
@@ -463,7 +441,9 @@ public class GenericContainerRuleTest {
             containerWithSharedMemory.start();
 
             HostConfig hostConfig = containerWithSharedMemory.getContainerInfo().getHostConfig();
-            assertEquals("Shared memory not set on container", hostConfig.getShmSize(), 42L * FileUtils.ONE_MB);
+            assertThat(hostConfig.getShmSize())
+                .as("Shared memory not set on container")
+                .isEqualTo(42L * FileUtils.ONE_MB);
         }
     }
 }

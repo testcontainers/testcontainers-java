@@ -8,7 +8,7 @@ import org.testcontainers.db.AbstractContainerDatabaseTest;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class CustomizableMysqlTest extends AbstractContainerDatabaseTest {
 
@@ -33,7 +33,7 @@ public class CustomizableMysqlTest extends AbstractContainerDatabaseTest {
             ResultSet resultSet = performQuery(mysql, "SELECT 1");
 
             int resultSetInt = resultSet.getInt(1);
-            assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
         }
     }
 }

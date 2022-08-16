@@ -5,7 +5,7 @@ import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class CommandsTest {
 
@@ -18,6 +18,6 @@ public class CommandsTest {
 
     @Test
     public void testStartupCommandOverrideApplied() {
-        assertTrue(redisWithCustomPort.isRunning()); // good enough to check that the container started listening
+        assertThat(redisWithCustomPort.isRunning()).isTrue(); // good enough to check that the container started listening
     }
 }

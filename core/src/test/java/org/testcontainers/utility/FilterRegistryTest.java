@@ -13,9 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class FilterRegistryTest {
 
@@ -38,7 +36,7 @@ public class FilterRegistryTest {
 
         boolean successful = registry.register(FILTERS);
 
-        assertTrue(successful);
+        assertThat(successful).isTrue();
     }
 
     @Test
@@ -47,7 +45,7 @@ public class FilterRegistryTest {
 
         boolean successful = registry.register(FILTERS);
 
-        assertFalse(successful);
+        assertThat(successful).isFalse();
     }
 
     @Test
@@ -57,7 +55,7 @@ public class FilterRegistryTest {
 
         registry.register(FILTERS);
 
-        assertEquals(URL_ENCODED_FILTERS + NEW_LINE, new String(outputStream.toByteArray()));
+        assertThat(new String(outputStream.toByteArray())).isEqualTo(URL_ENCODED_FILTERS + NEW_LINE);
     }
 
     private static InputStream inputStream(byte[] bytes) {

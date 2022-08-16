@@ -16,9 +16,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertFalse;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 @Slf4j
 public class OutputStreamWithTTYTest {
@@ -39,7 +38,9 @@ public class OutputStreamWithTTYTest {
         container.followOutput(consumer, OutputFrame.OutputType.STDOUT);
 
         consumer.waitUntil(
-            frame -> frame.getType() == OutputFrame.OutputType.STDOUT && frame.getUtf8String().contains("home"),
+            frame -> {
+                return frame.getType() == OutputFrame.OutputType.STDOUT && frame.getUtf8String().contains("home");
+            },
             4,
             TimeUnit.SECONDS
         );
@@ -51,18 +52,21 @@ public class OutputStreamWithTTYTest {
 
         container.followOutput(consumer, OutputFrame.OutputType.STDOUT);
 
-        assertThrows(
-            "a TimeoutException should be thrown",
-            TimeoutException.class,
-            () -> {
+        assertThat(
+            catchThrowable(() -> {
                 consumer.waitUntil(
-                    frame -> frame.getType() == OutputFrame.OutputType.STDOUT && frame.getUtf8String().contains("qqq"),
+                    frame -> {
+                        return (
+                            frame.getType() == OutputFrame.OutputType.STDOUT && frame.getUtf8String().contains("qqq")
+                        );
+                    },
                     1,
                     TimeUnit.SECONDS
                 );
-                return true;
-            }
-        );
+            })
+        )
+            .as("a TimeoutException should be thrown")
+            .isInstanceOf(TimeoutException.class);
     }
 
     @Test
@@ -100,8 +104,8 @@ public class OutputStreamWithTTYTest {
         waitingConsumer.waitUntilEnd(4, TimeUnit.SECONDS);
 
         String utf8String = toStringConsumer.toUtf8String();
-        assertTrue("the expected first value was found", utf8String.contains("home"));
-        assertTrue("the expected last value was found", utf8String.contains("media"));
-        assertFalse("a non-expected value was found", utf8String.contains("qqq"));
+        assertThat(utf8String).as("the expected first value was found").contains("home");
+        assertThat(utf8String).as("the expected last value was found").contains("media");
+        assertThat(utf8String).as("a non-expected value was found").doesNotContain("qqq");
     }
 }

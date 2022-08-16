@@ -19,7 +19,7 @@ import org.testcontainers.containers.BrowserWebDriverContainer;
 import java.io.File;
 import java.util.List;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.testcontainers.containers.BrowserWebDriverContainer.VncRecordingMode.RECORD_ALL;
 
 /**
@@ -45,7 +45,7 @@ public class SeleniumContainerTest {
         driver.get("http://host.testcontainers.internal:" + port + "/foo.html");
         List<WebElement> hElement = driver.findElementsByTagName("h");
 
-        assertTrue("The h element is found", hElement != null && hElement.size() > 0);
+        assertThat(hElement).as("The h element is found").isNotEmpty();
     }
 
     public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {

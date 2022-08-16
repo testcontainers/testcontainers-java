@@ -32,7 +32,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-class TestcontainersExtension
+public class TestcontainersExtension
     implements BeforeEachCallback, BeforeAllCallback, AfterEachCallback, AfterAllCallback, ExecutionCondition {
 
     private static final Namespace NAMESPACE = Namespace.create(TestcontainersExtension.class);

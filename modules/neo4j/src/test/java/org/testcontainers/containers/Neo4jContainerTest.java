@@ -1,6 +1,5 @@
 package org.testcontainers.containers;
 
-import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.neo4j.driver.AuthToken;
 import org.neo4j.driver.AuthTokens;
@@ -13,8 +12,7 @@ import org.testcontainers.utility.MountableFile;
 
 import java.util.Collections;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
 /**
@@ -64,16 +62,14 @@ public class Neo4jContainerTest {
 
     @Test
     public void shouldFailOnCopyDatabaseForDefaultNeo4j4Image() {
-        Assertions
-            .assertThatIllegalArgumentException()
+        assertThatIllegalArgumentException()
             .isThrownBy(() -> new Neo4jContainer<>().withDatabase(MountableFile.forClasspathResource("/test-graph.db")))
             .withMessage("Copying database folder is not supported for Neo4j instances with version 4.0 or higher.");
     }
 
     @Test
     public void shouldFailOnCopyDatabaseForCustomNeo4j4Image() {
-        Assertions
-            .assertThatIllegalArgumentException()
+        assertThatIllegalArgumentException()
             .isThrownBy(() -> {
                 new Neo4jContainer<>("neo4j:4.4.1").withDatabase(MountableFile.forClasspathResource("/test-graph.db"));
             })
@@ -82,8 +78,7 @@ public class Neo4jContainerTest {
 
     @Test
     public void shouldFailOnCopyDatabaseForCustomNonSemverNeo4j4Image() {
-        Assertions
-            .assertThatIllegalArgumentException()
+        assertThatIllegalArgumentException()
             .isThrownBy(() -> {
                 new Neo4jContainer<>("neo4j:latest").withDatabase(MountableFile.forClasspathResource("/test-graph.db"));
             })
