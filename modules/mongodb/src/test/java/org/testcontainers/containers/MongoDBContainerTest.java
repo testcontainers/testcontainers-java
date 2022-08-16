@@ -1,5 +1,8 @@
 package org.testcontainers.containers;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.ConnectionString;
+import com.mongodb.MongoCommandException;
 import com.mongodb.ReadConcern;
 import com.mongodb.ReadPreference;
 import com.mongodb.TransactionOptions;
@@ -14,7 +17,11 @@ import org.bson.Document;
 import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
 
+import java.util.Collections;
+import java.util.Objects;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class MongoDBContainerTest {
 
@@ -96,8 +103,8 @@ public class MongoDBContainerTest {
         try (final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.0.10"))) {
             mongoDBContainer.start();
             final String databaseName = "my-db";
-            assertThat(mongoDBContainer.getReplicaSetUrl(databaseName)).endsWith(databaseName);
-            assertThat(databaseName).isEqualTo(new ConnectionString(mongoDBContainer.getReplicaSetUrl(databaseName)).getDatabase());
+            assertThat(databaseName)
+                .isEqualTo(new ConnectionString(mongoDBContainer.getReplicaSetUrl(databaseName)).getDatabase());
         }
     }
 
@@ -146,12 +153,14 @@ public class MongoDBContainerTest {
                         .getDatabase(MongoDBContainer.DEFAULT_DATABASE_NAME)
                         .getCollection(collectionName);
                     assertThat(collection.find().first()).isEqualTo(document);
-                    assertThrown(() -> collection.insertOne(new Document("abc", 2))).isInstanceOf(MongoCommandException.class);
+                    assertThatThrownBy(() -> collection.insertOne(new Document("abc", 2)))
+                        .isInstanceOf(MongoCommandException.class);
                     runCommand(adminDatabase, new BasicDBObject("updateUser", usernameRestrictedAccess), "readWrite");
                     collection.insertOne(new Document("abc", 2));
                     assertThat(collection.countDocuments()).isEqualTo(2);
                     assertThat(connectionStringFullAccess.getUsername()).isEqualTo(usernameFullAccess);
-                    assertThat(new String(Objects.requireNonNull(connectionStringFullAccess.getPassword())).isEqialTo(passwordFullAccess);
+                    assertThat(new String(Objects.requireNonNull(connectionStringFullAccess.getPassword())))
+                        .isEqualTo(passwordFullAccess);
                 }
             }
         }
