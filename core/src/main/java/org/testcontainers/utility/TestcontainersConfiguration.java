@@ -185,10 +185,6 @@ public class TestcontainersConfiguration {
         return Boolean.parseBoolean(getEnvVarOrUserProperty("testcontainers.reuse.enable", "false"));
     }
 
-    public boolean isComposeV2Enabled() {
-        return Boolean.parseBoolean(getEnvVarOrUserProperty("testcontainers.composev2.enable", "true"));
-    }
-
     public String getDockerClientStrategyClassName() {
         // getConfigurable won't apply the TESTCONTAINERS_ prefix when looking for env vars if DOCKER_ appears at the beginning.
         // Because of this overlap, and the desire to not change this specific TESTCONTAINERS_DOCKER_CLIENT_STRATEGY setting,

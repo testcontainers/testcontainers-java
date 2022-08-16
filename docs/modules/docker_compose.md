@@ -123,10 +123,11 @@ public static DockerComposeContainer environment =
 ## Compose V2
 
 [Compose V2 is GA](https://www.docker.com/blog/announcing-compose-v2-general-availability/) and it relies on the `docker` command itself instead of `docker-compose`.
+Testcontainers provides `ComposeContainer`.
 
 ```java
-public static DockerComposeContainer environment =
-    new DockerComposeContainer(new File("src/test/resources/compose-test.yml"))
+public static ComposeContainer environment =
+    new ComposeContainer(new File("src/test/resources/compose-test.yml"))
             .withExposedService("redis-1", REDIS_PORT, Wait.forListeningPort())
             .waitingFor("db-1", Wait.forLogMessage("started", 1));
 ```

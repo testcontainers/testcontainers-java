@@ -12,7 +12,9 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.Uninterruptibles;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
@@ -62,11 +64,8 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-/**
- * Container which launches Docker Compose, for the purposes of launching a defined set of containers.
- */
 @Slf4j
-public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
+public class ComposeContainer<SELF extends ComposeContainer<SELF>>
     extends FailureDetectingExternalResource
     implements Startable {
 
@@ -113,6 +112,19 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
 
     private List<String> services = new ArrayList<>();
 
+    private Set<ExposedService> exposedServices = new HashSet<>();
+
+    @Value
+    @EqualsAndHashCode(of = { "name", "port" })
+    class ExposedService {
+
+        String name;
+
+        int port;
+
+        WaitStrategy waitStrategy;
+    }
+
     /**
      * Properties that should be passed through to all Compose and ambassador containers (not
      * necessarily to containers that are spawned by Compose itself)
@@ -121,24 +133,19 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
 
     private RemoveImages removeImages;
 
-    @Deprecated
-    public DockerComposeContainer(File composeFile, String identifier) {
-        this(identifier, composeFile);
-    }
-
-    public DockerComposeContainer(File... composeFiles) {
+    public ComposeContainer(File... composeFiles) {
         this(Arrays.asList(composeFiles));
     }
 
-    public DockerComposeContainer(List<File> composeFiles) {
+    public ComposeContainer(List<File> composeFiles) {
         this(Base58.randomString(6).toLowerCase(), composeFiles);
     }
 
-    public DockerComposeContainer(String identifier, File... composeFiles) {
+    public ComposeContainer(String identifier, File... composeFiles) {
         this(identifier, Arrays.asList(composeFiles));
     }
 
-    public DockerComposeContainer(String identifier, List<File> composeFiles) {
+    public ComposeContainer(String identifier, List<File> composeFiles) {
         this.composeFiles = composeFiles;
         this.dockerComposeFiles = new DockerComposeFiles(composeFiles);
 
@@ -186,9 +193,42 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
                     log.warn("Exception while pulling images, using local images if available", e);
                 }
             }
+            registerServices();
             createServices();
             startAmbassadorContainers();
             waitUntilServiceStarted();
+        }
+    }
+
+    private void registerServices() {
+        for (ExposedService exposedService : this.exposedServices) {
+            String serviceInstanceName = getServiceInstanceName(exposedService.getName());
+
+            /*
+             * For every service/port pair that needs to be exposed, we register a target on an 'ambassador container'.
+             *
+             * The ambassador container's role is to link (within the Docker network) to one of the
+             * compose services, and proxy TCP network I/O out to a port that the ambassador container
+             * exposes.
+             *
+             * This avoids the need for the docker compose file to explicitly expose ports on all the
+             * services.
+             *
+             * {@link GenericContainer} should ensure that the ambassador container is on the same network
+             * as the rest of the compose environment.
+             */
+
+            // Ambassador container will be started together after docker compose has started
+            int ambassadorPort = nextAmbassadorPort.getAndIncrement();
+            ambassadorPortMappings
+                .computeIfAbsent(serviceInstanceName, __ -> new ConcurrentHashMap<>())
+                .put(exposedService.getPort(), ambassadorPort);
+            ambassadorContainer.withTarget(ambassadorPort, serviceInstanceName, exposedService.getPort());
+            ambassadorContainer.addLink(
+                new FutureContainer(this.project + composeSeparator() + serviceInstanceName),
+                serviceInstanceName
+            );
+            addWaitStrategy(serviceInstanceName, exposedService.getWaitStrategy());
         }
     }
 
@@ -240,7 +280,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
             .distinct()
             .collect(Collectors.joining(" "));
 
-        String command = optionsAsString() + "up -d";
+        String command = getUpCommand(optionsAsString());
 
         if (build) {
             command += " --build";
@@ -262,7 +302,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
         String optionsString = options.stream().collect(Collectors.joining(" "));
         if (optionsString.length() != 0) {
             // ensures that there is a space between the options and 'up' if options are passed.
-            return optionsString + " ";
+            return optionsString;
         } else {
             // otherwise two spaces would appear between 'docker-compose' and 'up'
             return StringUtils.EMPTY;
@@ -290,7 +330,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
         serviceInstanceMap.forEach(this::waitUntilServiceStarted);
     }
 
-    private void createServiceInstance(Container container) {
+    private void createServiceInstance(com.github.dockerjava.api.model.Container container) {
         String serviceName = getServiceNameFromContainer(container);
         final ComposeServiceWaitStrategyTarget containerInstance = new ComposeServiceWaitStrategyTarget(
             dockerClient,
@@ -317,10 +357,10 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
         }
     }
 
-    private String getServiceNameFromContainer(Container container) {
+    private String getServiceNameFromContainer(com.github.dockerjava.api.model.Container container) {
         final String containerName = container.getLabels().get("com.docker.compose.service");
         final String containerNumber = container.getLabels().get("com.docker.compose.container-number");
-        return String.format("%s_%s", containerName, containerNumber);
+        return String.format("%s%s%s", containerName, composeSeparator(), containerNumber);
     }
 
     private void runWithCompose(String cmd) {
@@ -368,7 +408,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
                 ambassadorContainer.stop();
 
                 // Kill the services using docker-compose
-                String cmd = "down -v";
+                String cmd = getDownCommand();
                 if (removeImages != null) {
                     cmd += " --rmi " + removeImages.dockerRemoveImagesType();
                 }
@@ -383,51 +423,29 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
         return withExposedService(serviceName, servicePort, Wait.defaultWaitStrategy());
     }
 
-    public DockerComposeContainer withExposedService(String serviceName, int instance, int servicePort) {
-        return withExposedService(serviceName + "_" + instance, servicePort);
+    public ComposeContainer withExposedService(String serviceName, int instance, int servicePort) {
+        return withExposedService(serviceName + composeSeparator() + instance, servicePort);
     }
 
-    public DockerComposeContainer withExposedService(
+    public ComposeContainer withExposedService(
         String serviceName,
         int instance,
         int servicePort,
         WaitStrategy waitStrategy
     ) {
-        return withExposedService(serviceName + "_" + instance, servicePort, waitStrategy);
+        return withExposedService(serviceName + composeSeparator() + instance, servicePort, waitStrategy);
     }
 
     public SELF withExposedService(String serviceName, int servicePort, @NonNull WaitStrategy waitStrategy) {
-        String serviceInstanceName = getServiceInstanceName(serviceName);
-
-        /*
-         * For every service/port pair that needs to be exposed, we register a target on an 'ambassador container'.
-         *
-         * The ambassador container's role is to link (within the Docker network) to one of the
-         * compose services, and proxy TCP network I/O out to a port that the ambassador container
-         * exposes.
-         *
-         * This avoids the need for the docker compose file to explicitly expose ports on all the
-         * services.
-         *
-         * {@link GenericContainer} should ensure that the ambassador container is on the same network
-         * as the rest of the compose environment.
-         */
-
-        // Ambassador container will be started together after docker compose has started
-        int ambassadorPort = nextAmbassadorPort.getAndIncrement();
-        ambassadorPortMappings
-            .computeIfAbsent(serviceInstanceName, __ -> new ConcurrentHashMap<>())
-            .put(servicePort, ambassadorPort);
-        ambassadorContainer.withTarget(ambassadorPort, serviceInstanceName, servicePort);
-        ambassadorContainer.addLink(new FutureContainer(this.project + "_" + serviceInstanceName), serviceInstanceName);
-        addWaitStrategy(serviceInstanceName, waitStrategy);
+        this.exposedServices.add(new ExposedService(serviceName, servicePort, waitStrategy));
         return self();
     }
 
     private String getServiceInstanceName(String serviceName) {
         String serviceInstanceName = serviceName;
-        if (!serviceInstanceName.matches(".*_[0-9]+")) {
-            serviceInstanceName += "_1"; // implicit first instance of this service
+        String regex = String.format(".*%s[0-9]+", composeSeparator());
+        if (!serviceInstanceName.matches(regex)) {
+            serviceInstanceName += String.format("%s1", composeSeparator()); // implicit first instance of this service
         }
         return serviceInstanceName;
     }
@@ -435,7 +453,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
     /*
      * can have multiple wait strategies for a single container, e.g. if waiting on several ports
      * if no wait strategy is defined, the WaitAllStrategy will return immediately.
-     * The WaitAllStrategy uses the startup timeout for everything as a global maximum, but we expect timeouts to be handled by the inner strategies.
+     * The WaitAllStrategy uses the startup timeout for everything as a global maximum,
+     * but we expect timeouts to be handled by the inner strategies.
      */
     private void addWaitStrategy(String serviceInstanceName, @NonNull WaitStrategy waitStrategy) {
         final WaitAllStrategy waitAllStrategy = waitStrategyMap.computeIfAbsent(
@@ -504,6 +523,22 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
         } else {
             return ambassadorContainer.getMappedPort(portMap.get(servicePort));
         }
+    }
+
+    private String getUpCommand(String options) {
+        if (options != null && !options.isEmpty()) {
+            String cmd = "compose %s up -d";
+            return String.format(cmd, options);
+        }
+        return "compose up -d";
+    }
+
+    private String getDownCommand() {
+        return "compose down -v";
+    }
+
+    private String composeSeparator() {
+        return "-";
     }
 
     public SELF withScaledService(String serviceBaseName, int numInstances) {
@@ -647,218 +682,216 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
             return dockerRemoveImagesType;
         }
     }
-}
 
-interface DockerCompose {
-    String ENV_PROJECT_NAME = "COMPOSE_PROJECT_NAME";
-    String ENV_COMPOSE_FILE = "COMPOSE_FILE";
+    interface DockerCompose {
+        String ENV_PROJECT_NAME = "COMPOSE_PROJECT_NAME";
+        String ENV_COMPOSE_FILE = "COMPOSE_FILE";
 
-    DockerCompose withCommand(String cmd);
+        DockerCompose withCommand(String cmd);
 
-    DockerCompose withEnv(Map<String, String> env);
+        DockerCompose withEnv(Map<String, String> env);
 
-    void invoke();
-}
-
-/**
- * Use Docker Compose container.
- */
-class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCompose> implements DockerCompose {
-
-    public static final char UNIX_PATH_SEPARATOR = ':';
-
-    public static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("docker/compose:1.29.2");
-
-    public ContainerisedDockerCompose(List<File> composeFiles, String identifier) {
-        super(DEFAULT_IMAGE_NAME);
-        addEnv(ENV_PROJECT_NAME, identifier);
-
-        // Map the docker compose file into the container
-        final File dockerComposeBaseFile = composeFiles.get(0);
-        final String pwd = dockerComposeBaseFile.getAbsoluteFile().getParentFile().getAbsolutePath();
-        final String containerPwd = convertToUnixFilesystemPath(pwd);
-
-        final List<String> absoluteDockerComposeFiles = composeFiles
-            .stream()
-            .map(File::getAbsolutePath)
-            .map(MountableFile::forHostPath)
-            .map(MountableFile::getFilesystemPath)
-            .map(this::convertToUnixFilesystemPath)
-            .collect(Collectors.toList());
-        final String composeFileEnvVariableValue = Joiner.on(UNIX_PATH_SEPARATOR).join(absoluteDockerComposeFiles); // we always need the UNIX path separator
-        logger().debug("Set env COMPOSE_FILE={}", composeFileEnvVariableValue);
-        addEnv(ENV_COMPOSE_FILE, composeFileEnvVariableValue);
-        addFileSystemBind(pwd, containerPwd, BindMode.READ_WRITE);
-
-        // Ensure that compose can access docker. Since the container is assumed to be running on the same machine
-        //  as the docker daemon, just mapping the docker control socket is OK.
-        // As there seems to be a problem with mapping to the /var/run directory in certain environments (e.g. CircleCI)
-        //  we map the socket file outside of /var/run, as just /docker.sock
-        addFileSystemBind(
-            DockerClientFactory.instance().getRemoteDockerUnixSocketPath(),
-            "/docker.sock",
-            BindMode.READ_WRITE
-        );
-        addEnv("DOCKER_HOST", "unix:///docker.sock");
-        setStartupCheckStrategy(new IndefiniteWaitOneShotStartupCheckStrategy());
-        setWorkingDirectory(containerPwd);
+        void invoke();
     }
-
-    @Override
-    public void invoke() {
-        super.start();
-
-        this.followOutput(new Slf4jLogConsumer(logger()));
-
-        // wait for the compose container to stop, which should only happen after it has spawned all the service containers
-        logger()
-            .info("Docker Compose container is running for command: {}", Joiner.on(" ").join(this.getCommandParts()));
-        while (this.isRunning()) {
-            logger().trace("Compose container is still running");
-            Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
-        }
-        logger().info("Docker Compose has finished running");
-
-        AuditLogger.doComposeLog(this.getCommandParts(), this.getEnv());
-
-        final Integer exitCode = getDockerClient()
-            .inspectContainerCmd(getContainerId())
-            .exec()
-            .getState()
-            .getExitCode();
-
-        if (exitCode == null || exitCode != 0) {
-            throw new ContainerLaunchException(
-                "Containerised Docker Compose exited abnormally with code " +
-                exitCode +
-                " whilst running command: " +
-                StringUtils.join(this.getCommandParts(), ' ')
-            );
-        }
-    }
-
-    private String convertToUnixFilesystemPath(String path) {
-        return SystemUtils.IS_OS_WINDOWS ? PathUtils.createMinGWPath(path).substring(1) : path;
-    }
-}
-
-/**
- * Use local Docker Compose binary, if present.
- */
-class LocalDockerCompose implements DockerCompose {
 
     /**
-     * Executable name for Docker Compose.
+     * Use Docker Compose container.
      */
-    private static final String COMPOSE_EXECUTABLE = SystemUtils.IS_OS_WINDOWS
-        ? "docker-compose.exe"
-        : "docker-compose";
+    static class ContainerisedDockerCompose
+        extends GenericContainer<ContainerisedDockerCompose>
+        implements DockerCompose {
 
-    private final List<File> composeFiles;
+        public static final char UNIX_PATH_SEPARATOR = ':';
 
-    private final String identifier;
+        public static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("docker:20.10.17");
 
-    private String cmd = "";
+        public ContainerisedDockerCompose(List<File> composeFiles, String identifier) {
+            super(DEFAULT_IMAGE_NAME);
+            addEnv(ENV_PROJECT_NAME, identifier);
 
-    private Map<String, String> env = new HashMap<>();
+            // Map the docker compose file into the container
+            final File dockerComposeBaseFile = composeFiles.get(0);
+            final String pwd = dockerComposeBaseFile.getAbsoluteFile().getParentFile().getAbsolutePath();
+            final String containerPwd = convertToUnixFilesystemPath(pwd);
 
-    public LocalDockerCompose(List<File> composeFiles, String identifier) {
-        this.composeFiles = composeFiles;
-        this.identifier = identifier;
-    }
+            final List<String> absoluteDockerComposeFiles = composeFiles
+                .stream()
+                .map(File::getAbsolutePath)
+                .map(MountableFile::forHostPath)
+                .map(MountableFile::getFilesystemPath)
+                .map(this::convertToUnixFilesystemPath)
+                .collect(Collectors.toList());
+            final String composeFileEnvVariableValue = Joiner.on(UNIX_PATH_SEPARATOR).join(absoluteDockerComposeFiles); // we always need the UNIX path separator
+            logger().debug("Set env COMPOSE_FILE={}", composeFileEnvVariableValue);
+            addEnv(ENV_COMPOSE_FILE, composeFileEnvVariableValue);
+            addFileSystemBind(pwd, containerPwd, BindMode.READ_WRITE);
 
-    @Override
-    public DockerCompose withCommand(String cmd) {
-        this.cmd = cmd;
-        return this;
-    }
-
-    @Override
-    public DockerCompose withEnv(Map<String, String> env) {
-        this.env = env;
-        return this;
-    }
-
-    @VisibleForTesting
-    static boolean executableExists() {
-        return CommandLine.executableExists(COMPOSE_EXECUTABLE);
-    }
-
-    @Override
-    public void invoke() {
-        // bail out early
-        if (!executableExists()) {
-            throw new ContainerLaunchException(
-                "Local Docker Compose not found. Is " + COMPOSE_EXECUTABLE + " on the PATH?"
+            // Ensure that compose can access docker. Since the container is assumed to be running on the same machine
+            //  as the docker daemon, just mapping the docker control socket is OK.
+            // As there seems to be a problem with mapping to the /var/run directory in certain environments (e.g. CircleCI)
+            //  we map the socket file outside of /var/run, as just /docker.sock
+            addFileSystemBind(
+                DockerClientFactory.instance().getRemoteDockerUnixSocketPath(),
+                "/docker.sock",
+                BindMode.READ_WRITE
             );
+            addEnv("DOCKER_HOST", "unix:///docker.sock");
+            setStartupCheckStrategy(new IndefiniteWaitOneShotStartupCheckStrategy());
+            setWorkingDirectory(containerPwd);
         }
 
-        final Map<String, String> environment = Maps.newHashMap(env);
-        environment.put(ENV_PROJECT_NAME, identifier);
+        @Override
+        public void invoke() {
+            super.start();
 
-        TransportConfig transportConfig = DockerClientFactory.instance().getTransportConfig();
-        SSLConfig sslConfig = transportConfig.getSslConfig();
-        if (sslConfig != null) {
-            if (sslConfig instanceof LocalDirectorySSLConfig) {
-                environment.put("DOCKER_CERT_PATH", ((LocalDirectorySSLConfig) sslConfig).getDockerCertPath());
-                environment.put("DOCKER_TLS_VERIFY", "true");
-            } else {
-                logger()
-                    .warn(
-                        "Couldn't set DOCKER_CERT_PATH. `sslConfig` is present but it's not LocalDirectorySSLConfig."
-                    );
+            this.followOutput(new Slf4jLogConsumer(logger()));
+
+            // wait for the compose container to stop, which should only happen after it has spawned all the service containers
+            logger()
+                .info(
+                    "Docker Compose container is running for command: {}",
+                    Joiner.on(" ").join(this.getCommandParts())
+                );
+            while (this.isRunning()) {
+                logger().trace("Compose container is still running");
+                Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
+            }
+            logger().info("Docker Compose has finished running");
+
+            AuditLogger.doComposeLog(this.getCommandParts(), this.getEnv());
+
+            final Integer exitCode = getDockerClient()
+                .inspectContainerCmd(getContainerId())
+                .exec()
+                .getState()
+                .getExitCode();
+
+            if (exitCode == null || exitCode != 0) {
+                throw new ContainerLaunchException(
+                    "Containerised Docker Compose exited abnormally with code " +
+                    exitCode +
+                    " whilst running command: " +
+                    StringUtils.join(this.getCommandParts(), ' ')
+                );
             }
         }
-        String dockerHost = transportConfig.getDockerHost().toString();
-        environment.put("DOCKER_HOST", dockerHost);
 
-        final Stream<String> absoluteDockerComposeFilePaths = composeFiles
-            .stream()
-            .map(File::getAbsolutePath)
-            .map(Objects::toString);
-
-        final String composeFileEnvVariableValue = absoluteDockerComposeFilePaths.collect(
-            Collectors.joining(File.pathSeparator + "")
-        );
-        logger().debug("Set env COMPOSE_FILE={}", composeFileEnvVariableValue);
-
-        final File pwd = composeFiles.get(0).getAbsoluteFile().getParentFile().getAbsoluteFile();
-        environment.put(ENV_COMPOSE_FILE, composeFileEnvVariableValue);
-
-        logger().info("Local Docker Compose is running command: {}", cmd);
-
-        final List<String> command = Splitter
-            .onPattern(" ")
-            .omitEmptyStrings()
-            .splitToList(COMPOSE_EXECUTABLE + " " + cmd);
-
-        try {
-            new ProcessExecutor()
-                .command(command)
-                .redirectOutput(Slf4jStream.of(logger()).asInfo())
-                .redirectError(Slf4jStream.of(logger()).asInfo()) // docker-compose will log pull information to stderr
-                .environment(environment)
-                .directory(pwd)
-                .exitValueNormal()
-                .executeNoTimeout();
-
-            logger().info("Docker Compose has finished running");
-        } catch (InvalidExitValueException e) {
-            throw new ContainerLaunchException(
-                "Local Docker Compose exited abnormally with code " +
-                e.getExitValue() +
-                " whilst running command: " +
-                cmd
-            );
-        } catch (Exception e) {
-            throw new ContainerLaunchException("Error running local Docker Compose command: " + cmd, e);
+        private String convertToUnixFilesystemPath(String path) {
+            return SystemUtils.IS_OS_WINDOWS ? PathUtils.createMinGWPath(path).substring(1) : path;
         }
     }
 
     /**
-     * @return a logger
+     * Use local Docker Compose binary, if present.
      */
-    private Logger logger() {
-        return DockerLoggerFactory.getLogger(COMPOSE_EXECUTABLE);
+    static class LocalDockerCompose implements DockerCompose {
+
+        private static final String DOCKER_EXECUTABLE = SystemUtils.IS_OS_WINDOWS ? "docker.exe" : "docker";
+
+        private final List<File> composeFiles;
+
+        private final String identifier;
+
+        private String cmd = "";
+
+        private Map<String, String> env = new HashMap<>();
+
+        public LocalDockerCompose(List<File> composeFiles, String identifier) {
+            this.composeFiles = composeFiles;
+            this.identifier = identifier;
+        }
+
+        @Override
+        public DockerCompose withCommand(String cmd) {
+            this.cmd = cmd;
+            return this;
+        }
+
+        @Override
+        public DockerCompose withEnv(Map<String, String> env) {
+            this.env = env;
+            return this;
+        }
+
+        @VisibleForTesting
+        static boolean executableExists() {
+            return CommandLine.executableExists(DOCKER_EXECUTABLE);
+        }
+
+        @Override
+        public void invoke() {
+            // bail out early
+            if (!executableExists()) {
+                throw new ContainerLaunchException("Local Docker not found. Is " + DOCKER_EXECUTABLE + " on the PATH?");
+            }
+
+            final Map<String, String> environment = Maps.newHashMap(env);
+            environment.put(ENV_PROJECT_NAME, identifier);
+
+            TransportConfig transportConfig = DockerClientFactory.instance().getTransportConfig();
+            SSLConfig sslConfig = transportConfig.getSslConfig();
+            if (sslConfig != null) {
+                if (sslConfig instanceof LocalDirectorySSLConfig) {
+                    environment.put("DOCKER_CERT_PATH", ((LocalDirectorySSLConfig) sslConfig).getDockerCertPath());
+                    environment.put("DOCKER_TLS_VERIFY", "true");
+                } else {
+                    logger()
+                        .warn(
+                            "Couldn't set DOCKER_CERT_PATH. `sslConfig` is present but it's not LocalDirectorySSLConfig."
+                        );
+                }
+            }
+            String dockerHost = transportConfig.getDockerHost().toString();
+            environment.put("DOCKER_HOST", dockerHost);
+
+            final Stream<String> absoluteDockerComposeFilePaths = composeFiles
+                .stream()
+                .map(File::getAbsolutePath)
+                .map(Objects::toString);
+
+            final String composeFileEnvVariableValue = absoluteDockerComposeFilePaths.collect(
+                Collectors.joining(File.pathSeparator + "")
+            );
+            logger().debug("Set env COMPOSE_FILE={}", composeFileEnvVariableValue);
+
+            final File pwd = composeFiles.get(0).getAbsoluteFile().getParentFile().getAbsoluteFile();
+            environment.put(ENV_COMPOSE_FILE, composeFileEnvVariableValue);
+
+            logger().info("Local Docker Compose is running command: {}", cmd);
+
+            final List<String> command = Splitter
+                .onPattern(" ")
+                .omitEmptyStrings()
+                .splitToList(DOCKER_EXECUTABLE + " " + cmd);
+
+            try {
+                new ProcessExecutor()
+                    .command(command)
+                    .redirectOutput(Slf4jStream.of(logger()).asInfo())
+                    .redirectError(Slf4jStream.of(logger()).asInfo()) // docker-compose will log pull information to stderr
+                    .environment(environment)
+                    .directory(pwd)
+                    .exitValueNormal()
+                    .executeNoTimeout();
+
+                logger().info("Docker Compose has finished running");
+            } catch (InvalidExitValueException e) {
+                throw new ContainerLaunchException(
+                    "Local Docker Compose exited abnormally with code " +
+                    e.getExitValue() +
+                    " whilst running command: " +
+                    cmd
+                );
+            } catch (Exception e) {
+                throw new ContainerLaunchException("Error running local Docker Compose command: " + cmd, e);
+            }
+        }
+
+        /**
+         * @return a logger
+         */
+        private Logger logger() {
+            return DockerLoggerFactory.getLogger(DOCKER_EXECUTABLE);
+        }
     }
 }

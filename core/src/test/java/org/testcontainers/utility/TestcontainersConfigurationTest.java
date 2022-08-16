@@ -217,31 +217,6 @@ public class TestcontainersConfigurationTest {
             .isEqualTo("testcontainers/ryuk:0.3.2");
     }
 
-    @Test
-    public void shouldNotReadComposeV2FromClasspathProperties() {
-        assertThat(newConfig().isComposeV2Enabled()).as("compose v2 enabled by default").isTrue();
-
-        classpathProperties.setProperty("testcontainers.composev2.enable", "false");
-        assertThat(newConfig().isComposeV2Enabled()).as("compose v2 are not affected by classpath properties").isTrue();
-    }
-
-    @Test
-    public void shouldReadComposeV2FromUserProperties() {
-        assertThat(newConfig().isComposeV2Enabled()).as("compose v2 enabled by default").isTrue();
-
-        userProperties.setProperty("testcontainers.composev2.enable", "false");
-        assertThat(newConfig().isComposeV2Enabled()).as("compose v2 disabled via user properties").isFalse();
-    }
-
-    @Test
-    public void shouldReadComposeV2FromEnvironment() {
-        assertThat(newConfig().isComposeV2Enabled()).as("compose v2 enabled by default").isTrue();
-
-        userProperties.remove("testcontainers.composev2.enable");
-        environment.put("TESTCONTAINERS_COMPOSEV2_ENABLE", "false");
-        assertThat(newConfig().isComposeV2Enabled()).as("compose v2 disabled via env var").isFalse();
-    }
-
     private TestcontainersConfiguration newConfig() {
         return new TestcontainersConfiguration(userProperties, classpathProperties, environment);
     }
