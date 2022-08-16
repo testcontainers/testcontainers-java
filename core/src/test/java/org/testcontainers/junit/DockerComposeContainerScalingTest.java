@@ -7,7 +7,7 @@ import redis.clients.jedis.Jedis;
 
 import java.io.File;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Created by rnorth on 08/08/2015.
@@ -47,7 +47,7 @@ public class DockerComposeContainerScalingTest {
         for (int i = 0; i < 3; i++) {
             clients[i].incr("somekey");
 
-            assertEquals("Each redis instance is separate", "1", clients[i].get("somekey"));
+            assertThat(clients[i].get("somekey")).as("Each redis instance is separate").isEqualTo("1");
         }
     }
 }

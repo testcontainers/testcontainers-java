@@ -7,9 +7,7 @@ import org.testcontainers.DockerClientFactory;
 
 import java.net.URI;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class DockerClientConfigUtilsTest {
 
@@ -23,7 +21,7 @@ public class DockerClientConfigUtilsTest {
             client,
             URI.create("unix:///var/run/docker.sock")
         );
-        assertEquals("localhost", actual);
+        assertThat(actual).isEqualTo("localhost");
     }
 
     @Test
@@ -32,7 +30,7 @@ public class DockerClientConfigUtilsTest {
             client,
             URI.create("http://12.23.34.45")
         );
-        assertEquals("12.23.34.45", actual);
+        assertThat(actual).isEqualTo("12.23.34.45");
     }
 
     @Test
@@ -41,7 +39,7 @@ public class DockerClientConfigUtilsTest {
             client,
             URI.create("tcp://12.23.34.45")
         );
-        assertEquals("12.23.34.45", actual);
+        assertThat(actual).isEqualTo("12.23.34.45");
     }
 
     @Test
@@ -50,11 +48,11 @@ public class DockerClientConfigUtilsTest {
             client,
             URI.create("gopher://12.23.34.45")
         );
-        assertNull(actual);
+        assertThat(actual).isNull();
     }
 
     @Test(timeout = 5_000)
     public void getDefaultGateway() {
-        assertNotNull(DockerClientConfigUtils.getDefaultGateway());
+        assertThat(DockerClientConfigUtils.getDefaultGateway()).isNotNull();
     }
 }

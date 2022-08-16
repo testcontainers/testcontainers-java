@@ -6,7 +6,7 @@ import org.testcontainers.TestImages;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Created by rnorth on 26/07/2016.
@@ -23,8 +23,8 @@ public class WorkingDirectoryTest {
     public void checkOutput() {
         String listing = container.getLogs();
 
-        assertTrue("Directory listing contains expected /etc content", listing.contains("hostname"));
-        assertTrue("Directory listing contains expected /etc content", listing.contains("init.d"));
-        assertTrue("Directory listing contains expected /etc content", listing.contains("passwd"));
+        assertThat(listing).as("Directory listing contains expected /etc content").contains("hostname");
+        assertThat(listing).as("Directory listing contains expected /etc content").contains("init.d");
+        assertThat(listing).as("Directory listing contains expected /etc content").contains("passwd");
     }
 }

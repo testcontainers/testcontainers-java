@@ -9,11 +9,8 @@ import org.testcontainers.db.AbstractContainerDatabaseTest;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assume.assumeFalse;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
 public class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
 
@@ -25,7 +22,7 @@ public class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
             ResultSet resultSet = performQuery(mariadb, "SELECT 1");
             int resultSetInt = resultSet.getInt(1);
 
-            assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
         }
     }
 
@@ -41,10 +38,9 @@ public class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
             ResultSet resultSet = performQuery(mariadbOldVersion, "SELECT VERSION()");
             String resultSetString = resultSet.getString(1);
 
-            assertTrue(
-                "The database version can be set using a container rule parameter",
-                resultSetString.startsWith("5.5.51")
-            );
+            assertThat(resultSetString)
+                .as("The database version can be set using a container rule parameter")
+                .startsWith("5.5.51");
         }
     }
 
@@ -63,7 +59,7 @@ public class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
             ResultSet resultSet = performQuery(mariadbCustomConfig, "SELECT @@GLOBAL.innodb_file_format");
             String result = resultSet.getString(1);
 
-            assertEquals("The InnoDB file format has been set by the ini file content", "Barracuda", result);
+            assertThat(result).as("The InnoDB file format has been set by the ini file content").isEqualTo("Barracuda");
         }
     }
 
@@ -77,7 +73,7 @@ public class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
             ResultSet resultSet = performQuery(mariadbCustomConfig, "show variables like 'auto_increment_increment'");
             String result = resultSet.getString("Value");
 
-            assertEquals("Auto increment increment should be overriden by command line", "10", result);
+            assertThat(result).as("Auto increment increment should be overriden by command line").isEqualTo("10");
         }
     }
 
@@ -90,10 +86,10 @@ public class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
         try {
             mariaDBContainer.start();
             String jdbcUrl = mariaDBContainer.getJdbcUrl();
-            assertThat(jdbcUrl, containsString("?"));
-            assertThat(jdbcUrl, containsString("&"));
-            assertThat(jdbcUrl, containsString("rewriteBatchedStatements=true"));
-            assertThat(jdbcUrl, containsString("connectTimeout=40000"));
+            assertThat(jdbcUrl).contains("?");
+            assertThat(jdbcUrl).contains("&");
+            assertThat(jdbcUrl).contains("rewriteBatchedStatements=true");
+            assertThat(jdbcUrl).contains("connectTimeout=40000");
         } finally {
             mariaDBContainer.stop();
         }

@@ -13,7 +13,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class BrowserWebDriverContainerTest {
 
@@ -31,7 +31,7 @@ public class BrowserWebDriverContainerTest {
             chromeWithNoProxySet.start();
 
             Object noProxy = chromeWithNoProxySet.getEnvMap().get(NO_PROXY_KEY);
-            assertEquals("no_proxy should be preserved by the container rule", NO_PROXY_VALUE, noProxy);
+            assertThat(noProxy).as("no_proxy should be preserved by the container rule").isEqualTo(NO_PROXY_VALUE);
         }
     }
 
@@ -44,7 +44,7 @@ public class BrowserWebDriverContainerTest {
             chromeWithoutNoProxySet.start();
 
             Object noProxy = chromeWithoutNoProxySet.getEnvMap().get(NO_PROXY_KEY);
-            assertEquals("no_proxy should be set to default if not already present", "localhost", noProxy);
+            assertThat(noProxy).as("no_proxy should be set to default if not already present").isEqualTo("localhost");
         }
     }
 
@@ -59,9 +59,9 @@ public class BrowserWebDriverContainerTest {
 
             final List<InspectContainerResponse.Mount> shmVolumes = shmVolumes(webDriverContainer);
 
-            assertEquals("Only one shm mount present", 1, shmVolumes.size());
-            assertEquals("Shm mount source is correct", "/dev/shm", shmVolumes.get(0).getSource());
-            assertEquals("Shm mount mode is correct", "rw", shmVolumes.get(0).getMode());
+            assertThat(shmVolumes).as("Only one shm mount present").hasSize(1);
+            assertThat(shmVolumes.get(0).getSource()).as("Shm mount source is correct").isEqualTo("/dev/shm");
+            assertThat(shmVolumes.get(0).getMode()).as("Shm mount mode is correct").isEqualTo("rw");
         }
     }
 
@@ -74,9 +74,11 @@ public class BrowserWebDriverContainerTest {
         ) {
             webDriverContainer.start();
 
-            assertEquals("Shared memory size is configured", 512 * FileUtils.ONE_MB, webDriverContainer.getShmSize());
+            assertThat(webDriverContainer.getShmSize())
+                .as("Shared memory size is configured")
+                .isEqualTo(512 * FileUtils.ONE_MB);
 
-            assertEquals("No shm mounts present", Collections.emptyList(), shmVolumes(webDriverContainer));
+            assertThat(shmVolumes(webDriverContainer)).as("No shm mounts present").isEqualTo(Collections.emptyList());
         }
     }
 

@@ -1,8 +1,5 @@
 package org.testcontainers.containers;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.ConnectionString;
-import com.mongodb.MongoCommandException;
 import com.mongodb.ReadConcern;
 import com.mongodb.ReadPreference;
 import com.mongodb.TransactionOptions;
@@ -17,12 +14,7 @@ import org.bson.Document;
 import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
 
-import java.util.Collections;
-import java.util.Objects;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class MongoDBContainerTest {
 
@@ -41,7 +33,7 @@ public class MongoDBContainerTest {
             // }
 
             final String mongoRsUrl = mongoDBContainer.getReplicaSetUrl();
-            assertNotNull(mongoRsUrl);
+            assertThat(mongoRsUrl).isNotNull();
             final String connectionString = mongoDBContainer.getConnectionString();
             final MongoClient mongoSyncClientBase = MongoClients.create(connectionString);
             final MongoClient mongoSyncClient = MongoClients.create(mongoRsUrl);
@@ -82,7 +74,7 @@ public class MongoDBContainerTest {
 
             try {
                 final String trxResultActual = clientSession.withTransaction(txnBody, txnOptions);
-                assertEquals(trxResult, trxResultActual);
+                assertThat(trxResultActual).isEqualTo(trxResult);
             } catch (RuntimeException re) {
                 throw new IllegalStateException(re.getMessage(), re);
             } finally {
@@ -104,10 +96,8 @@ public class MongoDBContainerTest {
         try (final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.0.10"))) {
             mongoDBContainer.start();
             final String databaseName = "my-db";
-            assertEquals(
-                databaseName,
-                new ConnectionString(mongoDBContainer.getReplicaSetUrl(databaseName)).getDatabase()
-            );
+            assertThat(mongoDBContainer.getReplicaSetUrl(databaseName)).endsWith(databaseName);
+            assertThat(databaseName).isEqualTo(new ConnectionString(mongoDBContainer.getReplicaSetUrl(databaseName)).getDatabase());
         }
     }
 
@@ -155,16 +145,13 @@ public class MongoDBContainerTest {
                     final MongoCollection<Document> collection = mongoSyncRestrictedAccess
                         .getDatabase(MongoDBContainer.DEFAULT_DATABASE_NAME)
                         .getCollection(collectionName);
-                    assertEquals(collection.find().first(), document);
-                    assertThrows(MongoCommandException.class, () -> collection.insertOne(new Document("abc", 2)));
+                    assertThat(collection.find().first()).isEqualTo(document);
+                    assertThrown(() -> collection.insertOne(new Document("abc", 2))).isInstanceOf(MongoCommandException.class);
                     runCommand(adminDatabase, new BasicDBObject("updateUser", usernameRestrictedAccess), "readWrite");
                     collection.insertOne(new Document("abc", 2));
-                    assertEquals(2, collection.countDocuments());
-                    assertEquals(usernameFullAccess, connectionStringFullAccess.getUsername());
-                    assertEquals(
-                        passwordFullAccess,
-                        new String(Objects.requireNonNull(connectionStringFullAccess.getPassword()))
-                    );
+                    assertThat(collection.countDocuments()).isEqualTo(2);
+                    assertThat(connectionStringFullAccess.getUsername()).isEqualTo(usernameFullAccess);
+                    assertThat(new String(Objects.requireNonNull(connectionStringFullAccess.getPassword())).isEqialTo(passwordFullAccess);
                 }
             }
         }
