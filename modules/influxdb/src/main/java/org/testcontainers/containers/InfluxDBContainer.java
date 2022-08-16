@@ -162,9 +162,7 @@ public class InfluxDBContainer extends GenericContainer<InfluxDBContainer> {
     }
 
     /**
-     * Set env variable `INFLUXDB_USER` for InfluxDB 1.x.
-     * <p>
-     * Set env variable `DOCKER_INFLUXDB_INIT_USERNAME` for InfluxDB 2.x.
+     * Set user for InfluxDB.
      *
      * @param username The name of a user to be created with no privileges. If `INFLUXDB_BUCKET` is set, this user will
      * be granted read and write permissions for that database.
@@ -176,9 +174,7 @@ public class InfluxDBContainer extends GenericContainer<InfluxDBContainer> {
     }
 
     /**
-     * Set env variable `INFLUXDB_USER_PASSWORD` for InfluxDB 1.x.
-     * <p>
-     * Set env variable `DOCKER_INFLUXDB_INIT_PASSWORD` for InfluxDB 2.x.
+     * Set password for InfluxDB.
      *
      * @param password The password for the user configured with `INFLUXDB_USER`. If this is unset, a random password is
      * generated and printed to standard out.
