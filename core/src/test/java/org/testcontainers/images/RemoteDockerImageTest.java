@@ -34,13 +34,13 @@ public class RemoteDockerImageTest {
         CompletableFuture<String> imageNameFuture = new CompletableFuture<>();
 
         // verify that we've set up the test properly
-        assertThat(imageNameFuture.isDone()).isFalse();
+        assertThat(imageNameFuture).isNotDone();
 
         RemoteDockerImage remoteDockerImage = new RemoteDockerImage(imageNameFuture);
         assertThat(remoteDockerImage.toString()).contains("imageName=<resolving>");
 
         // Make sure the act of calling toString doesn't resolve the imageNameFuture
-        assertThat(imageNameFuture.isDone()).isFalse();
+        assertThat(imageNameFuture).isNotDone();
 
         String imageName = Base58.randomString(8).toLowerCase();
         imageNameFuture.complete(imageName);
@@ -60,14 +60,14 @@ public class RemoteDockerImageTest {
         };
 
         // verify that we've set up the test properly
-        assertThat(imageNameFuture.isDone()).isFalse();
+        assertThat(imageNameFuture).isNotDone();
 
         RemoteDockerImage remoteDockerImage = new RemoteDockerImage(imageNameFuture);
         assertThat(remoteDockerImage.toString()).contains("imageName=<resolving>");
 
         // Make sure the act of calling toString doesn't resolve the imageNameFuture
-        assertThat(imageNameFuture.isDone()).isFalse();
-        assertThat(resolved.get()).isFalse();
+        assertThat(imageNameFuture).isNotDone();
+        assertThat(resolved).isFalse();
 
         // Trigger resolve
         imageNameFuture.get();

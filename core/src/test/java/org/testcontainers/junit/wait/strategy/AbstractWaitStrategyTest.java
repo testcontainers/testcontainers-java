@@ -123,7 +123,7 @@ public abstract class AbstractWaitStrategyTest<W extends WaitStrategy> {
         // start() blocks until successful or timeout
         container.start();
 
-        assertThat(ready.get())
+        assertThat(ready)
             .as(String.format("Expected container to be ready after timeout of %sms", WAIT_TIMEOUT_MILLIS))
             .isTrue();
     }
