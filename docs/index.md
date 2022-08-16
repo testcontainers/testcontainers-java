@@ -176,7 +176,8 @@ A huge thank you to our sponsors:
 * [Instana](https://www.instana.com) - Testing agents and stream processing backends
 * [eBay Marketing](https://www.ebay.com) - Testing for MySQL, Cassandra, Redis, Couchbase, Kafka, etc.
 * [Skyscanner](https://www.skyscanner.net/) - Integration testing against HTTP service mocks and various data stores
-* [Neo4j-OGM](https://neo4j.com/developer/neo4j-ogm/) - Testing new, reactive client implementations
+* [Neo4j-OGM](https://neo4j.com/developer/neo4j-ogm/) - Testing with Neo4j
+* [Spring Data Neo4j](https://github.com/spring-projects/spring-data-neo4j/) - Testing imperative and reactive implementations with Neo4j
 * [Lightbend](https://www.lightbend.com/) - Testing [Alpakka Kafka](https://doc.akka.io/docs/alpakka-kafka/current/) and support in [Alpakka Kafka Testkit](https://doc.akka.io/docs/alpakka-kafka/current/testing.html#testing-with-kafka-in-docker)
 * [Zalando SE](https://corporate.zalando.com/en) - Testing core business services
 * [Europace AG](https://tech.europace.de/) - Integration testing for databases and micro services
@@ -198,7 +199,10 @@ A huge thank you to our sponsors:
 * [Elastic](https://www.elastic.co) - Integration testing of the Java APM agent
 * [Alkira](https://www.alkira.com/) - Testing of multiple micro-services using Kafka, PostgreSQL, Apache Zookeeper, Etcd and so on.
 * [Togglz](https://www.togglz.org/) - Feature Flags for the Java platform
-
+* [Byzer](https://www.byzer.org/home) - Integration tests for Data and AI platforms are based on multiple versions of Byzer, Ray and Apache Spark.
+* [Apache SeaTunnel](https://github.com/apache/incubator-seatunnel) - Integration testing with different datasource.
+* [Bucket4j](https://github.com/bucket4j/bucket4j) - Java rate-limiting library based on the token-bucket algorithm.
+* [Spark ClickHouse Connector](https://github.com/housepower/spark-clickhouse-connector) - Integration tests for Apache Spark with both single node ClickHouse instance and multi-node ClickHouse cluster.
 
 ## License
 

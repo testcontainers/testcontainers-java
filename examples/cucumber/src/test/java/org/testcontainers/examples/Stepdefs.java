@@ -1,4 +1,4 @@
-package org.testcontainsers.examples;
+package org.testcontainers.examples;
 
 import io.cucumber.java.After;
 import io.cucumber.java.Before;

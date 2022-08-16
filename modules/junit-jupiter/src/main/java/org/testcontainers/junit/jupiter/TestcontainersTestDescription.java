@@ -5,6 +5,8 @@ import org.testcontainers.lifecycle.TestDescription;
 
 @Value
 class TestcontainersTestDescription implements TestDescription {
+
     String testId;
+
     String filesystemFriendlyName;
 }

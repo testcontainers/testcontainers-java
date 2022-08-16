@@ -12,7 +12,9 @@ import static org.mockito.ArgumentMatchers.eq;
 public class DefaultImageNameSubstitutorTest {
 
     public static final DockerImageName ORIGINAL_IMAGE = DockerImageName.parse("foo");
+
     public static final DockerImageName SUBSTITUTE_IMAGE = DockerImageName.parse("bar");
+
     private ConfigurationFileImageNameSubstitutor underTest;
 
     @Rule

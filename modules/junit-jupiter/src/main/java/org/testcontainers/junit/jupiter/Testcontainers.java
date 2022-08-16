@@ -59,7 +59,6 @@ import java.lang.annotation.Target;
 @ExtendWith(TestcontainersExtension.class)
 @Inherited
 public @interface Testcontainers {
-
     /**
      * Whether tests should be disabled (rather than failing) when Docker is not available.
      */

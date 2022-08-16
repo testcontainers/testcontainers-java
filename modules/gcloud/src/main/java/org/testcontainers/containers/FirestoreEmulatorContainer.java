@@ -12,19 +12,20 @@ import org.testcontainers.utility.DockerImageName;
  */
 public class FirestoreEmulatorContainer extends GenericContainer<FirestoreEmulatorContainer> {
 
-    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("gcr.io/google.com/cloudsdktool/cloud-sdk");
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse(
+        "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    );
 
     private static final String CMD = "gcloud beta emulators firestore start --host-port 0.0.0.0:8080";
+
     private static final int PORT = 8080;
 
     public FirestoreEmulatorContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         withExposedPorts(PORT);
-        setWaitStrategy(new LogMessageWaitStrategy()
-                .withRegEx("(?s).*running.*$"));
+        setWaitStrategy(new LogMessageWaitStrategy().withRegEx("(?s).*running.*$"));
         withCommand("/bin/sh", "-c", CMD);
     }
 
@@ -34,6 +35,6 @@ public class FirestoreEmulatorContainer extends GenericContainer<FirestoreEmulat
      * com.google.cloud.ServiceOptions.Builder#setHost(java.lang.String) method.
      */
     public String getEmulatorEndpoint() {
-        return getContainerIpAddress() + ":" + getMappedPort(8080);
+        return getHost() + ":" + getMappedPort(8080);
     }
 }

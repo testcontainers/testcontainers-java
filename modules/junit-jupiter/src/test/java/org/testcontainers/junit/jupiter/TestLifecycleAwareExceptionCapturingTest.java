@@ -14,6 +14,7 @@ import static org.junit.Assume.assumeTrue;
 @Testcontainers
 @TestMethodOrder(OrderAnnotation.class)
 class TestLifecycleAwareExceptionCapturingTest {
+
     @Container
     private final TestLifecycleAwareContainerMock testContainer = new TestLifecycleAwareContainerMock();
 

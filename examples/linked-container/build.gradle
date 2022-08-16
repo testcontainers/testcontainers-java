@@ -6,11 +6,11 @@ repositories {
     mavenCentral()
 }
 dependencies {
-    compileOnly 'org.slf4j:slf4j-api:1.7.32'
-    implementation 'com.squareup.okhttp3:okhttp:4.9.3'
-    implementation 'org.json:json:20211205'
-    testImplementation 'org.postgresql:postgresql:42.3.2'
-    testImplementation 'ch.qos.logback:logback-classic:1.2.10'
+    compileOnly 'org.slf4j:slf4j-api:1.7.36'
+    implementation 'com.squareup.okhttp3:okhttp:4.10.0'
+    implementation 'org.json:json:20220320'
+    testImplementation 'org.postgresql:postgresql:42.4.1'
+    testImplementation 'ch.qos.logback:logback-classic:1.2.11'
     testImplementation 'org.testcontainers:postgresql'
 }
 

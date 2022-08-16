@@ -3,10 +3,10 @@ description = "Testcontainers :: GCloud"
 dependencies {
     api project(':testcontainers')
 
-    testImplementation 'com.google.cloud:google-cloud-datastore:2.2.2'
-    testImplementation 'com.google.cloud:google-cloud-firestore:3.0.11'
-    testImplementation 'com.google.cloud:google-cloud-pubsub:1.115.1'
-    testImplementation 'com.google.cloud:google-cloud-spanner:6.17.4'
-    testImplementation 'com.google.cloud:google-cloud-bigtable:2.5.2'
-    testImplementation 'org.assertj:assertj-core:3.22.0'
+    testImplementation 'com.google.cloud:google-cloud-datastore:2.11.0'
+    testImplementation 'com.google.cloud:google-cloud-firestore:3.4.0'
+    testImplementation 'com.google.cloud:google-cloud-pubsub:1.120.11'
+    testImplementation 'com.google.cloud:google-cloud-spanner:6.28.0'
+    testImplementation 'com.google.cloud:google-cloud-bigtable:2.10.3'
+    testImplementation 'org.assertj:assertj-core:3.23.1'
 }

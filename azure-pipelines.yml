@@ -1,7 +1,7 @@
 jobs:
 
-- job: azure_pipeline_tests
-  timeoutInMinutes: 120
+- job: core_tests
+  timeoutInMinutes: 60
   steps:
 
   # Run all core tests when running the Windows CI tests
@@ -19,6 +19,9 @@ jobs:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
 
+- job: other_tests
+  timeoutInMinutes: 120
+  steps:
   # Run all non-core tests when running the Windows CI tests
   - task: Gradle@2
     condition: eq(variables['Agent.OS'], 'Windows_NT')

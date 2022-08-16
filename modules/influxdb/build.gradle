@@ -3,6 +3,6 @@ description = "Testcontainers :: InfluxDB"
 dependencies {
     api project(':testcontainers')
 
-    compileOnly 'org.influxdb:influxdb-java:2.22'
-    testImplementation 'org.influxdb:influxdb-java:2.21'
+    compileOnly 'org.influxdb:influxdb-java:2.23'
+    testImplementation 'org.influxdb:influxdb-java:2.23'
 }

@@ -10,7 +10,7 @@ dependencies {
     compileOnly 'org.mariadb:r2dbc-mariadb:1.0.3'
 
     testImplementation project(':jdbc-test')
-    testImplementation 'org.mariadb.jdbc:mariadb-java-client:3.0.3'
+    testImplementation 'org.mariadb.jdbc:mariadb-java-client:3.0.7'
 
     testImplementation testFixtures(project(':r2dbc'))
     testImplementation 'org.mariadb:r2dbc-mariadb:1.0.2'

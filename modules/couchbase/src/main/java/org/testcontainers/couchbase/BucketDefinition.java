@@ -22,8 +22,11 @@ package org.testcontainers.couchbase;
 public class BucketDefinition {
 
     private final String name;
+
     private boolean flushEnabled = false;
+
     private boolean queryPrimaryIndex = true;
+
     private int quota = 100;
 
     public BucketDefinition(final String name) {
@@ -49,7 +52,7 @@ public class BucketDefinition {
      */
     public BucketDefinition withQuota(final int quota) {
         if (quota < 100) {
-          throw new IllegalArgumentException("Bucket quota cannot be less than 100MB!");
+            throw new IllegalArgumentException("Bucket quota cannot be less than 100MB!");
         }
         this.quota = quota;
         return this;
@@ -81,5 +84,4 @@ public class BucketDefinition {
     public int getQuota() {
         return quota;
     }
-
 }

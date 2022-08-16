@@ -10,15 +10,14 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import java.io.IOException;
 import java.time.Duration;
 
-import static java.lang.String.format;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 public class ToxiproxyTest {
 
     private static final Duration JEDIS_TIMEOUT = Duration.ofSeconds(10);
 
+    // spotless:off
     // creatingProxy {
     // An alias that can be used to resolve the Toxiproxy container by name in the network it is connected to.
     // It can be used as a hostname of the Toxiproxy container by other containers in the same network.
@@ -29,6 +28,7 @@ public class ToxiproxyTest {
     public Network network = Network.newNetwork();
 
     private static final DockerImageName REDIS_IMAGE = DockerImageName.parse("redis:5.0.4");
+
     // The target container - this could be anything
     @Rule
     public GenericContainer<?> redis = new GenericContainer<>(REDIS_IMAGE)
@@ -36,12 +36,15 @@ public class ToxiproxyTest {
         .withNetwork(network);
 
     private static final DockerImageName TOXIPROXY_IMAGE = DockerImageName.parse("shopify/toxiproxy:2.1.0");
+
     // Toxiproxy container, which will be used as a TCP proxy
     @Rule
     public ToxiproxyContainer toxiproxy = new ToxiproxyContainer(TOXIPROXY_IMAGE)
         .withNetwork(network)
         .withNetworkAliases(TOXIPROXY_NETWORK_ALIAS);
+
     // }
+    // spotless:on
 
     @Test
     public void testDirect() {
@@ -49,7 +52,7 @@ public class ToxiproxyTest {
         jedis.set("somekey", "somevalue");
 
         final String s = jedis.get("somekey");
-        assertEquals("direct access to the container works OK", "somevalue", s);
+        assertThat(s).as("direct access to the container works OK").isEqualTo("somevalue");
     }
 
     @Test
@@ -68,12 +71,14 @@ public class ToxiproxyTest {
 
         checkCallWithLatency(jedis, "without interference", 0, 250);
 
+        // spotless:off
         // addingLatency {
         proxy.toxics()
             .latency("latency", ToxicDirection.DOWNSTREAM, 1_100)
             .setJitter(100);
         // from now on the connection latency should be from 1000-1200 ms.
         // }
+        // spotless:on
 
         checkCallWithLatency(jedis, "with interference", 1_000, 1_500);
     }
@@ -84,30 +89,38 @@ public class ToxiproxyTest {
         final Jedis jedis = createJedis(proxy.getContainerIpAddress(), proxy.getProxyPort());
         jedis.set("somekey", "somevalue");
 
-        assertEquals("access to the container works OK before cutting the connection", "somevalue", jedis.get("somekey"));
+        assertThat(jedis.get("somekey"))
+            .as("access to the container works OK before cutting the connection")
+            .isEqualTo("somevalue");
 
         // disableProxy {
         proxy.setConnectionCut(true);
 
         // for example, expect failure when the connection is cut
-        assertThrows("calls fail when the connection is cut",
-            JedisConnectionException.class, () -> {
+        assertThat(
+            catchThrowable(() -> {
                 jedis.get("somekey");
-            });
+            })
+        )
+            .as("calls fail when the connection is cut")
+            .isInstanceOf(JedisConnectionException.class);
 
         proxy.setConnectionCut(false);
 
         // and with the connection re-established, expect success
-        assertEquals("access to the container works OK after re-establishing the connection", "somevalue", jedis.get("somekey"));
+        assertThat(jedis.get("somekey"))
+            .as("access to the container works OK after re-establishing the connection")
+            .isEqualTo("somevalue");
         // }
     }
 
     @Test
     public void testMultipleProxiesCanBeCreated() {
-        try (GenericContainer<?> secondRedis = new GenericContainer<>(REDIS_IMAGE)
-            .withExposedPorts(6379)
-            .withNetwork(network)) {
-
+        try (
+            GenericContainer<?> secondRedis = new GenericContainer<>(REDIS_IMAGE)
+                .withExposedPorts(6379)
+                .withNetwork(network)
+        ) {
             secondRedis.start();
 
             final ToxiproxyContainer.ContainerProxy firstProxy = toxiproxy.getProxy(redis, 6379);
@@ -121,12 +134,15 @@ public class ToxiproxyTest {
 
             firstProxy.setConnectionCut(true);
 
-            assertThrows("calls fail when the connection is cut, for only the relevant proxy",
-                JedisConnectionException.class, () -> {
+            assertThat(
+                catchThrowable(() -> {
                     firstJedis.get("somekey");
-                });
+                })
+            )
+                .as("calls fail when the connection is cut, for only the relevant proxy")
+                .isInstanceOf(JedisConnectionException.class);
 
-            assertEquals("access via a different proxy is OK", "somevalue", secondJedis.get("somekey"));
+            assertThat(secondJedis.get("somekey")).as("access via a different proxy is OK").isEqualTo("somevalue");
         }
     }
 
@@ -137,41 +153,54 @@ public class ToxiproxyTest {
         final String hostViaToxiproxy = TOXIPROXY_NETWORK_ALIAS;
         final int portViaToxiproxy = proxy.getOriginalProxyPort();
         // }
-        assertEquals("host is correct", TOXIPROXY_NETWORK_ALIAS, hostViaToxiproxy);
-        assertEquals("original port is correct", 8666, portViaToxiproxy);
+        assertThat(hostViaToxiproxy).as("host is correct").isEqualTo(TOXIPROXY_NETWORK_ALIAS);
+        assertThat(portViaToxiproxy).as("original port is correct").isEqualTo(8666);
 
         final ToxiproxyContainer.ContainerProxy proxy1 = toxiproxy.getProxy("hostname1", 8080);
-        assertEquals("original port is correct", 8667, proxy1.getOriginalProxyPort());
-        assertEquals("mapped port is correct", toxiproxy.getMappedPort(proxy1.getOriginalProxyPort()), proxy1.getProxyPort());
+        assertThat(proxy1.getOriginalProxyPort()).as("original port is correct").isEqualTo(8667);
+        assertThat(proxy1.getProxyPort())
+            .as("mapped port is correct")
+            .isEqualTo(toxiproxy.getMappedPort(proxy1.getOriginalProxyPort()));
 
         final ToxiproxyContainer.ContainerProxy proxy2 = toxiproxy.getProxy("hostname2", 9090);
-        assertEquals("original port is correct", 8668, proxy2.getOriginalProxyPort());
-        assertEquals("mapped port is correct", toxiproxy.getMappedPort(proxy2.getOriginalProxyPort()), proxy2.getProxyPort());
+        assertThat(proxy2.getOriginalProxyPort()).as("original port is correct").isEqualTo(8668);
+        assertThat(proxy2.getProxyPort())
+            .as("mapped port is correct")
+            .isEqualTo(toxiproxy.getMappedPort(proxy2.getOriginalProxyPort()));
     }
 
     @Test
     public void testProxyName() {
         final ToxiproxyContainer.ContainerProxy proxy = toxiproxy.getProxy("hostname", 7070);
 
-        assertEquals("proxy name is hostname and port", "hostname:7070", proxy.getName());
+        assertThat(proxy.getName()).as("proxy name is hostname and port").isEqualTo("hostname:7070");
     }
 
     @Test
     public void testControlPort() {
         final int controlPort = toxiproxy.getControlPort();
 
-        assertEquals("control port is mapped from port 8474", toxiproxy.getMappedPort(8474), controlPort);
+        assertThat(controlPort).as("control port is mapped from port 8474").isEqualTo(toxiproxy.getMappedPort(8474));
     }
 
-    private void checkCallWithLatency(Jedis jedis, final String description, int expectedMinLatency, long expectedMaxLatency) {
+    private void checkCallWithLatency(
+        Jedis jedis,
+        final String description,
+        int expectedMinLatency,
+        long expectedMaxLatency
+    ) {
         final long start = System.currentTimeMillis();
         String s = jedis.get("somekey");
         final long end = System.currentTimeMillis();
         final long duration = end - start;
 
-        assertEquals(format("access to the container %s works OK", description), "somevalue", s);
-        assertTrue(format("%s there is at least %dms latency", description, expectedMinLatency), duration >= expectedMinLatency);
-        assertTrue(format("%s there is no more than %dms latency", description, expectedMaxLatency), duration < expectedMaxLatency);
+        assertThat(s).as(String.format("access to the container %s works OK", description)).isEqualTo("somevalue");
+        assertThat(duration >= expectedMinLatency)
+            .as(String.format("%s there is at least %dms latency", description, expectedMinLatency))
+            .isTrue();
+        assertThat(duration < expectedMaxLatency)
+            .as(String.format("%s there is no more than %dms latency", description, expectedMaxLatency))
+            .isTrue();
     }
 
     private static Jedis createJedis(String host, int port) {

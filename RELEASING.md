@@ -16,7 +16,8 @@ Testcontainers' release process is semi-automated through GitHub Actions. This d
 7. Close the release in Sonatype. This will evaluate the release based on given Sonatype rules.
 8. After successful closing, the release button needs to be clicked and afterwards it is automatically synced to Maven Central.
 9. Handcraft and polish some of the release notes (e.g. substitute combinded dependency PRs and highlight certain features).
-10. When available through Maven Central, poke [Richard North](https://github.com/rnorth) to announce the release on Twitter!
+10. Rename existing milestone corresponding to new release and close it. Then create a new `next` milstestone.
+11. When available through Maven Central, poke [Richard North](https://github.com/rnorth) to announce the release on Twitter!
 
 ## Internal details
 

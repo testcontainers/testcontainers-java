@@ -11,8 +11,10 @@ import java.io.File;
 public class DockerComposeV2FormatTest extends BaseDockerComposeTest {
 
     @Rule
-    public DockerComposeContainer environment = new DockerComposeContainer(new File("src/test/resources/v2-compose-test.yml"))
-            .withExposedService("redis_1", REDIS_PORT);
+    public DockerComposeContainer environment = new DockerComposeContainer(
+        new File("src/test/resources/v2-compose-test.yml")
+    )
+        .withExposedService("redis_1", REDIS_PORT);
 
     @Override
     protected DockerComposeContainer getEnvironment() {

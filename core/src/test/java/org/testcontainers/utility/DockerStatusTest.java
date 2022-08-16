@@ -8,7 +8,7 @@ import org.mockito.Mockito;
 
 import java.time.Duration;
 import java.time.Instant;
-import 	java.time.ZoneId;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
 import static org.junit.Assert.assertFalse;
@@ -18,8 +18,9 @@ import static org.mockito.Mockito.when;
 /**
  *
  */
- @RunWith(Parameterized.class)
+@RunWith(Parameterized.class)
 public class DockerStatusTest {
+
     private final DateTimeFormatter dateTimeFormatter;
 
     private static final Instant now = Instant.now();
@@ -55,8 +56,8 @@ public class DockerStatusTest {
     @Parameterized.Parameters
     public static Object[][] parameters() {
         return new Object[][] {
-            { DateTimeFormatter.ISO_INSTANT},
-            { DateTimeFormatter.ISO_OFFSET_DATE_TIME.withZone(ZoneId.of("America/New_York")) }
+            { DateTimeFormatter.ISO_INSTANT },
+            { DateTimeFormatter.ISO_OFFSET_DATE_TIME.withZone(ZoneId.of("America/New_York")) },
         };
     }
 
@@ -88,9 +89,12 @@ public class DockerStatusTest {
 
     // ContainerState is a non-static inner class, with private member variables, in a different package.
     // It's simpler to mock it that to try to create one.
-    private static InspectContainerResponse.ContainerState buildState(boolean running, boolean paused,
-                                                                      String startedAt, String finishedAt) {
-
+    private static InspectContainerResponse.ContainerState buildState(
+        boolean running,
+        boolean paused,
+        String startedAt,
+        String finishedAt
+    ) {
         InspectContainerResponse.ContainerState state = Mockito.mock(InspectContainerResponse.ContainerState.class);
         when(state.getRunning()).thenReturn(running);
         when(state.getPaused()).thenReturn(paused);

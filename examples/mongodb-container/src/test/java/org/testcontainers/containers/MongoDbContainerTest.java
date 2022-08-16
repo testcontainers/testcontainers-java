@@ -19,7 +19,7 @@ public class MongoDbContainerTest {
 
     private void assertThatPortIsAvailable(MongoDbContainer container) {
         try {
-            new Socket(container.getContainerIpAddress(), container.getPort());
+            new Socket(container.getHost(), container.getPort());
         } catch (IOException e) {
             throw new AssertionError("The expected port " + container.getPort() + " is not available!");
         }

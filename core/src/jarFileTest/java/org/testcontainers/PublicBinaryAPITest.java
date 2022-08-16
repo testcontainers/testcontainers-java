@@ -37,6 +37,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class PublicBinaryAPITest extends AbstractJarFileTest {
 
     private static String SHADED_PACKAGE = "org.testcontainers.shaded.";
+
     private static String SHADED_PACKAGE_PATH = SHADED_PACKAGE.replaceAll("\\.", "/");
 
     static {
@@ -49,36 +50,38 @@ public class PublicBinaryAPITest extends AbstractJarFileTest {
     public static List<Object[]> data() throws Exception {
         List<Object[]> result = new ArrayList<>();
 
-        Files.walkFileTree(root, new SimpleFileVisitor<Path>() {
+        Files.walkFileTree(
+            root,
+            new SimpleFileVisitor<Path>() {
+                @Override
+                public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
+                    String fileName = path.toString();
 
-            @Override
-            public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
-                String fileName = path.toString();
-
-                if (!fileName.endsWith(".class")) {
-                    return super.visitFile(path, attrs);
-                }
-
-                if (!fileName.startsWith("/org/testcontainers/") ) {
-                     return super.visitFile(path, attrs);
-                }
-
-                if (fileName.startsWith("/" + SHADED_PACKAGE_PATH)) {
-                    return super.visitFile(path, attrs);
-                }
-
-                try(InputStream inputStream = Files.newInputStream(path)) {
-                    ClassReader reader = new ClassReader(inputStream);
-                    ClassNode node = new ClassNode();
-                    reader.accept(node, ClassReader.SKIP_CODE);
-                    if ((node.access & Opcodes.ACC_PUBLIC) != 0) {
-                        result.add(new Object[]{ fileName, node });
+                    if (!fileName.endsWith(".class")) {
+                        return super.visitFile(path, attrs);
                     }
-                }
 
-                return super.visitFile(path, attrs);
+                    if (!fileName.startsWith("/org/testcontainers/")) {
+                        return super.visitFile(path, attrs);
+                    }
+
+                    if (fileName.startsWith("/" + SHADED_PACKAGE_PATH)) {
+                        return super.visitFile(path, attrs);
+                    }
+
+                    try (InputStream inputStream = Files.newInputStream(path)) {
+                        ClassReader reader = new ClassReader(inputStream);
+                        ClassNode node = new ClassNode();
+                        reader.accept(node, ClassReader.SKIP_CODE);
+                        if ((node.access & Opcodes.ACC_PUBLIC) != 0) {
+                            result.add(new Object[] { fileName, node });
+                        }
+                    }
+
+                    return super.visitFile(path, attrs);
+                }
             }
-        });
+        );
         return result;
     }
 
@@ -100,39 +103,36 @@ public class PublicBinaryAPITest extends AbstractJarFileTest {
 
     @Test
     public void testSuperClass() {
-        assertThat(classNode.superName)
-                .doesNotStartWith(SHADED_PACKAGE_PATH);
+        assertThat(classNode.superName).doesNotStartWith(SHADED_PACKAGE_PATH);
     }
 
     @Test
     public void testInterfaces() {
-        assertThat(classNode.interfaces)
-                .allSatisfy(it -> assertThat(it).doesNotStartWith(SHADED_PACKAGE_PATH));
+        assertThat(classNode.interfaces).allSatisfy(it -> assertThat(it).doesNotStartWith(SHADED_PACKAGE_PATH));
     }
 
     @Test
     public void testMethodReturnTypes() {
         assertThat(classNode.methods)
-                .filteredOn(it -> (it.access & (Opcodes.ACC_PUBLIC | Opcodes.ACC_PROTECTED)) != 0)
-                .allSatisfy(it -> assertThat(Type.getReturnType(it.desc).getClassName()).doesNotStartWith(SHADED_PACKAGE));
+            .filteredOn(it -> (it.access & (Opcodes.ACC_PUBLIC | Opcodes.ACC_PROTECTED)) != 0)
+            .allSatisfy(it -> assertThat(Type.getReturnType(it.desc).getClassName()).doesNotStartWith(SHADED_PACKAGE));
     }
 
     @Test
     public void testMethodArguments() {
         assertThat(classNode.methods)
-                .filteredOn(it -> (it.access & (Opcodes.ACC_PUBLIC | Opcodes.ACC_PROTECTED)) != 0)
-                .allSatisfy(method -> assertThat(Arrays.asList(Type.getArgumentTypes(method.desc)))
-                        .extracting(Type::getClassName)
-                        .allSatisfy(it -> assertThat(it).doesNotStartWith(SHADED_PACKAGE))
-                );
+            .filteredOn(it -> (it.access & (Opcodes.ACC_PUBLIC | Opcodes.ACC_PROTECTED)) != 0)
+            .allSatisfy(method -> {
+                assertThat(Arrays.asList(Type.getArgumentTypes(method.desc)))
+                    .extracting(Type::getClassName)
+                    .allSatisfy(it -> assertThat(it).doesNotStartWith(SHADED_PACKAGE));
+            });
     }
 
     @Test
     public void testFields() {
         assertThat(classNode.fields)
-                .filteredOn(it -> (it.access & (Opcodes.ACC_PUBLIC | Opcodes.ACC_PROTECTED)) != 0)
-                .allSatisfy(it -> assertThat(Type.getType(it.desc).getClassName())
-                        .doesNotStartWith(SHADED_PACKAGE)
-                );
+            .filteredOn(it -> (it.access & (Opcodes.ACC_PUBLIC | Opcodes.ACC_PROTECTED)) != 0)
+            .allSatisfy(it -> assertThat(Type.getType(it.desc).getClassName()).doesNotStartWith(SHADED_PACKAGE));
     }
 }

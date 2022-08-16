@@ -4,10 +4,9 @@ import com.github.dockerjava.api.model.AuthConfig;
 import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.DockerClientConfigDelegate;
 import lombok.extern.slf4j.Slf4j;
+import org.testcontainers.utility.AuthConfigUtil;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.RegistryAuthLocator;
-
-import static org.testcontainers.utility.AuthConfigUtil.toSafeString;
 
 /**
  * Facade implementation for {@link DockerClientConfig} which overrides how authentication
@@ -31,18 +30,21 @@ class AuthDelegatingDockerClientConfig extends DockerClientConfigDelegate {
         try {
             fallbackAuthConfig = super.effectiveAuthConfig(imageName);
         } catch (Exception e) {
-            log.debug("Delegate call to effectiveAuthConfig failed with cause: '{}'. " +
+            log.debug(
+                "Delegate call to effectiveAuthConfig failed with cause: '{}'. " +
                 "Resolution of auth config will continue using RegistryAuthLocator.",
-                e.getMessage());
+                e.getMessage()
+            );
             fallbackAuthConfig = new AuthConfig();
         }
 
         // try and obtain more accurate auth config using our resolution
         final DockerImageName parsed = DockerImageName.parse(imageName);
-        final AuthConfig effectiveAuthConfig = RegistryAuthLocator.instance()
+        final AuthConfig effectiveAuthConfig = RegistryAuthLocator
+            .instance()
             .lookupAuthConfig(parsed, fallbackAuthConfig);
 
-        log.debug("Effective auth config [{}]", toSafeString(effectiveAuthConfig));
+        log.debug("Effective auth config [{}]", AuthConfigUtil.toSafeString(effectiveAuthConfig));
         return effectiveAuthConfig;
     }
 }

@@ -36,34 +36,36 @@ class TestcontainersR2DBCConnectionFactory implements ConnectionFactory, Closeab
     TestcontainersR2DBCConnectionFactory(ConnectionFactoryOptions options) {
         this.options = options;
 
-        containerProvider = StreamSupport.stream(ServiceLoader.load(R2DBCDatabaseContainerProvider.class).spliterator(), false)
-            .filter(it -> it.supports(options))
-            .findAny()
-            .orElseThrow(() -> new IllegalArgumentException("Missing provider for " + options));
+        containerProvider =
+            StreamSupport
+                .stream(ServiceLoader.load(R2DBCDatabaseContainerProvider.class).spliterator(), false)
+                .filter(it -> it.supports(options))
+                .findAny()
+                .orElseThrow(() -> new IllegalArgumentException("Missing provider for " + options));
     }
 
     @Override
     public Publisher<? extends Connection> create() {
-        return new ConnectionPublisher(
-            () -> {
-                if (future == null) {
-                    synchronized (this) {
-                        if (future == null) {
-                            future = CompletableFuture.supplyAsync(() -> {
-                                R2DBCDatabaseContainer container = containerProvider.createContainer(options);
-                                container.start();
-                                return container;
-                            }, EXECUTOR);
-                        }
+        return new ConnectionPublisher(() -> {
+            if (future == null) {
+                synchronized (this) {
+                    if (future == null) {
+                        future =
+                            CompletableFuture.supplyAsync(
+                                () -> {
+                                    R2DBCDatabaseContainer container = containerProvider.createContainer(options);
+                                    container.start();
+                                    return container;
+                                },
+                                EXECUTOR
+                            );
                     }
                 }
-                return future.thenApply(it -> {
-                    return ConnectionFactories.find(
-                        it.configure(options)
-                    );
-                });
             }
-        );
+            return future.thenApply(it -> {
+                return ConnectionFactories.find(it.configure(options));
+            });
+        });
     }
 
     @Override
@@ -99,5 +101,4 @@ class TestcontainersR2DBCConnectionFactory implements ConnectionFactory, Closeab
             }
         };
     }
-
 }

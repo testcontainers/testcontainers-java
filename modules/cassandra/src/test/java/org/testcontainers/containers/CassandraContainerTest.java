@@ -23,11 +23,13 @@ public class CassandraContainerTest {
 
     private static final String TEST_CLUSTER_NAME_IN_CONF = "Test Cluster Integration Test";
 
+    private static final String BASIC_QUERY = "SELECT release_version FROM system.local";
+
     @Test
     public void testSimple() {
         try (CassandraContainer<?> cassandraContainer = new CassandraContainer<>(CASSANDRA_IMAGE)) {
             cassandraContainer.start();
-            ResultSet resultSet = performQuery(cassandraContainer, "SELECT release_version FROM system.local");
+            ResultSet resultSet = performQuery(cassandraContainer, BASIC_QUERY);
             assertTrue("Query was not applied", resultSet.wasApplied());
             assertNotNull("Result set has no release_version", resultSet.one().getString(0));
         }
@@ -36,9 +38,13 @@ public class CassandraContainerTest {
     @Test
     public void testSpecificVersion() {
         String cassandraVersion = "3.0.15";
-        try (CassandraContainer<?> cassandraContainer = new CassandraContainer<>(CASSANDRA_IMAGE.withTag(cassandraVersion))) {
+        try (
+            CassandraContainer<?> cassandraContainer = new CassandraContainer<>(
+                CASSANDRA_IMAGE.withTag(cassandraVersion)
+            )
+        ) {
             cassandraContainer.start();
-            ResultSet resultSet = performQuery(cassandraContainer, "SELECT release_version FROM system.local");
+            ResultSet resultSet = performQuery(cassandraContainer, BASIC_QUERY);
             assertTrue("Query was not applied", resultSet.wasApplied());
             assertEquals("Cassandra has wrong version", cassandraVersion, resultSet.one().getString(0));
         }
@@ -53,7 +59,11 @@ public class CassandraContainerTest {
             cassandraContainer.start();
             ResultSet resultSet = performQuery(cassandraContainer, "SELECT cluster_name FROM system.local");
             assertTrue("Query was not applied", resultSet.wasApplied());
-            assertEquals("Cassandra configuration is not overridden", TEST_CLUSTER_NAME_IN_CONF, resultSet.one().getString(0));
+            assertEquals(
+                "Cassandra configuration is not overridden",
+                TEST_CLUSTER_NAME_IN_CONF,
+                resultSet.one().getString(0)
+            );
         }
     }
 
@@ -81,7 +91,9 @@ public class CassandraContainerTest {
     @Test
     public void testInitScriptWithLegacyCassandra() {
         try (
-            CassandraContainer<?> cassandraContainer = new CassandraContainer<>(DockerImageName.parse("cassandra:2.2.11"))
+            CassandraContainer<?> cassandraContainer = new CassandraContainer<>(
+                DockerImageName.parse("cassandra:2.2.11")
+            )
                 .withInitScript("initial.cql")
         ) {
             cassandraContainer.start();
@@ -97,7 +109,7 @@ public class CassandraContainerTest {
                 .waitingFor(new CassandraQueryWaitStrategy())
         ) {
             cassandraContainer.start();
-            ResultSet resultSet = performQuery(cassandraContainer, "SELECT release_version FROM system.local");
+            ResultSet resultSet = performQuery(cassandraContainer, BASIC_QUERY);
             assertTrue("Query was not applied", resultSet.wasApplied());
         }
     }
@@ -107,7 +119,7 @@ public class CassandraContainerTest {
     public void testCassandraGetCluster() {
         try (CassandraContainer<?> cassandraContainer = new CassandraContainer<>()) {
             cassandraContainer.start();
-            ResultSet resultSet = performQuery(cassandraContainer.getCluster(), "SELECT release_version FROM system.local");
+            ResultSet resultSet = performQuery(cassandraContainer.getCluster(), BASIC_QUERY);
             assertTrue("Query was not applied", resultSet.wasApplied());
             assertNotNull("Result set has no release_version", resultSet.one().getString(0));
         }
@@ -122,7 +134,8 @@ public class CassandraContainerTest {
     }
 
     private ResultSet performQuery(CassandraContainer<?> cassandraContainer, String cql) {
-        Cluster explicitCluster = Cluster.builder()
+        Cluster explicitCluster = Cluster
+            .builder()
             .addContactPoint(cassandraContainer.getHost())
             .withPort(cassandraContainer.getMappedPort(CassandraContainer.CQL_PORT))
             .build();

@@ -13,7 +13,7 @@ import static org.junit.Assert.assertTrue;
 public class ExecTest {
 
     @Rule
-    public GenericContainer<?> container = new GenericContainer<>(DockerImageName.parse("alpine:3.14"))
+    public GenericContainer<?> container = new GenericContainer<>(DockerImageName.parse("alpine:3.16"))
         .withCommand("top");
 
     @Test

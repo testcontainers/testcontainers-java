@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 public final class DockerLoggerFactory {
 
     public static Logger getLogger(String dockerImageName) {
-
         final String abbreviatedName;
         if (dockerImageName.contains("@sha256")) {
             abbreviatedName = dockerImageName.substring(0, dockerImageName.indexOf("@sha256") + 14) + "...";

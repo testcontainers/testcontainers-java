@@ -7,9 +7,10 @@ theme:
     name: 'material'
     custom_dir: 'docs/theme'
     palette:
-        primary: 'blue'
-        accent: 'teal'
-    font: false
+        scheme: testcontainers
+    font:
+      text: Roboto
+      code: Roboto Mono
     logo: 'logo.svg'
     favicon: 'favicon.ico'
 extra_css:
@@ -62,8 +63,10 @@ nav:
                 - modules/databases/orientdb.md
                 - modules/databases/postgres.md
                 - modules/databases/presto.md
+                - modules/databases/tidb.md
                 - modules/databases/trino.md
           - modules/azure.md
+          - modules/consul.md
           - modules/docker_compose.md
           - modules/elasticsearch.md
           - modules/gcloud.md
@@ -87,11 +90,13 @@ nav:
     - System Requirements:
           - supported_docker_environment/index.md
           - Continuous Integration:
+                - supported_docker_environment/continuous_integration/aws_codebuild.md
                 - supported_docker_environment/continuous_integration/dind_patterns.md
                 - supported_docker_environment/continuous_integration/circle_ci.md
                 - supported_docker_environment/continuous_integration/drone.md
                 - supported_docker_environment/continuous_integration/gitlab_ci.md
                 - supported_docker_environment/continuous_integration/bitbucket_pipelines.md
+                - supported_docker_environment/continuous_integration/tekton.md
           - supported_docker_environment/windows.md
           - supported_docker_environment/logging_config.md
           - supported_docker_environment/image_registry_rate_limiting.md
@@ -101,4 +106,4 @@ nav:
           - contributing_docs.md
           - bounty.md
 extra:
-    latest_version: 1.16.3
+    latest_version: 1.17.3

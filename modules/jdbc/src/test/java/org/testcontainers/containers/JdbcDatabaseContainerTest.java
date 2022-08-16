@@ -1,10 +1,11 @@
 package org.testcontainers.containers;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import lombok.NonNull;
 import org.junit.Test;
 import org.slf4j.Logger;
+
+import java.sql.Connection;
+import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.mock;

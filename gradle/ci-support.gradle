@@ -17,7 +17,7 @@ task testMatrix {
     }
 }
 
-// If we're executing the `taskMatrix` task, disable tests and other slow tasks
+// If we're executing the `testMatrix` task, disable tests and other slow tasks
 //  so that we can get a result quickly.
 gradle.taskGraph.whenReady {
     if (it.hasTask(tasks.testMatrix)) {

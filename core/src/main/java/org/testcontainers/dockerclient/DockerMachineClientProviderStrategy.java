@@ -1,6 +1,7 @@
 package org.testcontainers.dockerclient;
 
 import com.github.dockerjava.core.LocalDirectorySSLConfig;
+import com.google.common.base.Preconditions;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.utility.CommandLine;
@@ -10,8 +11,6 @@ import java.net.URI;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Optional;
-
-import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * Use Docker machine (if available on the PATH) to locate a Docker environment.
@@ -27,10 +26,16 @@ public final class DockerMachineClientProviderStrategy extends DockerClientProvi
 
     private TransportConfig resolveTransportConfig() throws InvalidConfigurationException {
         boolean installed = DockerMachineClient.instance().isInstalled();
-        checkArgument(installed, "docker-machine executable was not found on PATH (" + Arrays.toString(CommandLine.getSystemPath()) + ")");
+        Preconditions.checkArgument(
+            installed,
+            "docker-machine executable was not found on PATH (" + Arrays.toString(CommandLine.getSystemPath()) + ")"
+        );
 
         Optional<String> machineNameOptional = DockerMachineClient.instance().getDefaultMachine();
-        checkArgument(machineNameOptional.isPresent(), "docker-machine is installed but no default machine could be found");
+        Preconditions.checkArgument(
+            machineNameOptional.isPresent(),
+            "docker-machine is installed but no default machine could be found"
+        );
         String machineName = machineNameOptional.get();
 
         log.info("Found docker-machine, and will use machine named {}", machineName);
@@ -41,7 +46,8 @@ public final class DockerMachineClientProviderStrategy extends DockerClientProvi
 
         log.info("Docker daemon URL for docker machine {} is {}", machineName, dockerDaemonUrl);
 
-        return TransportConfig.builder()
+        return TransportConfig
+            .builder()
             .dockerHost(URI.create(dockerDaemonUrl))
             .sslConfig(
                 new LocalDirectorySSLConfig(
@@ -55,7 +61,10 @@ public final class DockerMachineClientProviderStrategy extends DockerClientProvi
     protected boolean isApplicable() {
         boolean installed = DockerMachineClient.instance().isInstalled();
         if (!installed) {
-            log.info("docker-machine executable was not found on PATH ({})", Arrays.toString(CommandLine.getSystemPath()));
+            log.info(
+                "docker-machine executable was not found on PATH ({})",
+                Arrays.toString(CommandLine.getSystemPath())
+            );
             return false;
         }
 

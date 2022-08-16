@@ -1,4 +1,4 @@
-package org.testcontainsers.examples;
+package org.testcontainers.examples;
 
 import io.cucumber.junit.Cucumber;
 import io.cucumber.junit.CucumberOptions;

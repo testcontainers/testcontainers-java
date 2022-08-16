@@ -9,9 +9,7 @@ import redis.clients.jedis.Jedis;
 
 import java.util.Optional;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertFalse;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Integration test for Redis-backed cache implementation.
@@ -25,7 +23,7 @@ public class RedisBackedCacheTest {
 
     @Before
     public void setUp() throws Exception {
-        Jedis jedis = new Jedis(redis.getContainerIpAddress(), redis.getMappedPort(6379));
+        Jedis jedis = new Jedis(redis.getHost(), redis.getMappedPort(6379));
 
         cache = new RedisBackedCache(jedis, "test");
     }
@@ -35,18 +33,14 @@ public class RedisBackedCacheTest {
         cache.put("foo", "FOO");
         Optional<String> foundObject = cache.get("foo", String.class);
 
-        assertTrue("When an object in the cache is retrieved, it can be found",
-                        foundObject.isPresent());
-        assertEquals("When we put a String in to the cache and retrieve it, the value is the same",
-                        "FOO",
-                        foundObject.get());
+        assertThat(foundObject.isPresent()).as("When an object in the cache is retrieved, it can be found").isTrue();
+        assertThat(foundObject.get()).as("When we put a String in to the cache and retrieve it, the value is the same").isEqualTo("FOO");
     }
 
     @Test
     public void testNotFindingAValueThatWasNotInserted() {
         Optional<String> foundObject = cache.get("bar", String.class);
 
-        assertFalse("When an object that's not in the cache is retrieved, nothing is found",
-                foundObject.isPresent());
+        assertThat(foundObject.isPresent()).as("When an object that's not in the cache is retrieved, nothing is found").isFalse();
     }
 }

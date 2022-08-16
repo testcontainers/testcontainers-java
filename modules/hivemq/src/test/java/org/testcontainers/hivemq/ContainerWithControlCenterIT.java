@@ -17,18 +17,18 @@ public class ContainerWithControlCenterIT {
     @Test
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
     public void test() throws Exception {
-
-        try (final HiveMQContainer hivemq =
-                 new HiveMQContainer(DockerImageName.parse("hivemq/hivemq4").withTag("4.7.4"))
-                     .withControlCenter()) {
-
+        try (
+            final HiveMQContainer hivemq = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq4").withTag("4.7.4"))
+                .withControlCenter()
+        ) {
             hivemq.start();
 
             try (final CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
-                final HttpUriRequest request = new HttpGet("http://" + hivemq.getHost() + ":" + hivemq.getMappedPort(CONTROL_CENTER_PORT));
+                final HttpUriRequest request = new HttpGet(
+                    "http://" + hivemq.getHost() + ":" + hivemq.getMappedPort(CONTROL_CENTER_PORT)
+                );
                 httpClient.execute(request);
             }
         }
-
     }
 }

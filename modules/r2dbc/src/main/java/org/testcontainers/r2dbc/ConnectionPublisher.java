@@ -56,8 +56,8 @@ class ConnectionPublisher implements Publisher<Connection> {
         }
 
         abstract class SubscriptionState implements Subscription {
-            void enter() {
-            }
+
+            void enter() {}
         }
 
         class WaitRequestSubscriptionState extends SubscriptionState {
@@ -68,8 +68,7 @@ class ConnectionPublisher implements Publisher<Connection> {
             }
 
             @Override
-            public void cancel() {
-            }
+            public void cancel() {}
         }
 
         class WaitFutureCompletionSubscriptionState extends SubscriptionState {
@@ -93,8 +92,7 @@ class ConnectionPublisher implements Publisher<Connection> {
             }
 
             @Override
-            public void request(long n) {
-            }
+            public void request(long n) {}
 
             @Override
             public void cancel() {
