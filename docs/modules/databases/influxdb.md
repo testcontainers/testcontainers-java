@@ -35,9 +35,20 @@ official [InfluxDB docs](https://docs.influxdata.com/influxdb/v2.0/upgrade/v1-to
 In the following you will find a snippet to create a InfluxDB client using the java client:
 
 ```java
-class InfluxDBClient {
-    public static InfluxDBClient getInfluxDBClient(final InfluxDBContainer influxDBContainer) {
-        final InfluxDBClientOptions influxDBClientOptions = InfluxDBClientOptions.builder()
+public class SomeTest {
+
+    @Rule
+    public InfluxDBContainer influxDbContainer = new InfluxDBContainer();
+
+    @Test
+    public void someTestMethod() {
+        InfluxDBClient influxDB = getInfluxDBClient(this.influxDbContainer);
+        // ...
+    }
+    
+    private static InfluxDBClient getInfluxDBClient(final InfluxDBContainer influxDBContainer) {
+        final InfluxDBClientOptions influxDBClientOptions = InfluxDBClientOptions
+            .builder()
             .url(influxDBContainer.getUrl())
             .authenticate(influxDBContainer.getUsername(), influxDBContainer.getPassword().toCharArray())
             .bucket(influxDBContainer.getBucket())
@@ -73,11 +84,15 @@ The influxDB will be setup with the following data:<br/>
 In the following you will find a snippet to create a InfluxDB client using the java client:
 
 ```java
-class InfluxDBClient {
-    public static InfluxDBClient getInfluxDBClient(final InfluxDBContainer influxDBContainer) {
-        final InfluxDB influxDB = InfluxDBFactory.connect(influxDBContainer.getUrl(), influxDBContainer.getUsername(), influxDBContainer.getPassword());
-        influxDB.setDatabase(influxDBContainer.getDatabase());
-        return influxDB;
+public class SomeTest {
+
+    @Rule
+    public InfluxDBContainer influxDbContainer = new InfluxDBContainer();
+
+    @Test
+    public void someTestMethod() {
+        InfluxDB influxDB = influxDbContainer.getNewInfluxDB();
+        // ...
     }
 }
 ```
