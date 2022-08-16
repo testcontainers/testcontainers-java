@@ -152,7 +152,7 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
                 String ffmpegOutput = container.getLogs();
 
                 assertThat(ffmpegOutput)
-                    .as("Duration is incorrect in:\n " + ffmpegOutput)
+                    .as("Duration starts with 00:")
                     .contains("Duration: 00:")
                     .doesNotContain("Duration: 00:00:00.00");
             }
