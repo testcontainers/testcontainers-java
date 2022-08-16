@@ -8,7 +8,7 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class WaitStrategiesTest {
 
@@ -69,8 +69,8 @@ public class WaitStrategiesTest {
 
     @Test
     public void testContainersAllStarted() {
-        assertTrue(nginx.isRunning());
-        assertTrue(nginxWithHttpWait.isRunning());
-        assertTrue(containerWithLogWait.isRunning());
+        assertThat(nginx.isRunning()).isTrue();
+        assertThat(nginxWithHttpWait.isRunning()).isTrue();
+        assertThat(containerWithLogWait.isRunning()).isTrue();
     }
 }

@@ -7,7 +7,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import java.util.Arrays;
 
-import static org.junit.Assert.assertArrayEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(Parameterized.class)
 public class ComparableVersionTest {
@@ -23,7 +23,7 @@ public class ComparableVersionTest {
 
     @Test
     public void shouldParseVersions() {
-        assertArrayEquals(expected, ComparableVersion.parseVersion(given));
+        assertThat(ComparableVersion.parseVersion(given)).containsExactly(expected);
     }
 
     @Parameters(name = "Parsed version: {0}={1}")

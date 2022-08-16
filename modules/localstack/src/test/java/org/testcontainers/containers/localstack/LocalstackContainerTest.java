@@ -22,7 +22,6 @@ import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import com.amazonaws.services.sqs.model.CreateQueueResult;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -320,7 +319,7 @@ public class LocalstackContainerTest {
                 )
                 .split(" ");
             final Container.ExecResult execResult = awsCliInDockerNetwork.execInContainer(commandParts);
-            Assert.assertEquals(0, execResult.getExitCode());
+            assertThat(execResult.getExitCode()).isEqualTo(0);
 
             final String logs = execResult.getStdout() + execResult.getStderr();
             log.info(logs);

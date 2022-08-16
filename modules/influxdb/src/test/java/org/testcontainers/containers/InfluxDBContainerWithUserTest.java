@@ -9,11 +9,7 @@ import org.junit.Test;
 
 import java.util.concurrent.TimeUnit;
 
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class InfluxDBContainerWithUserTest {
 
@@ -35,20 +31,20 @@ public class InfluxDBContainerWithUserTest {
     public void describeDatabases() {
         InfluxDB actual = influxDBContainer.getNewInfluxDB();
 
-        assertThat(actual, notNullValue());
-        assertThat(actual.describeDatabases(), hasItem(DATABASE));
+        assertThat(actual).isNotNull();
+        assertThat(actual.describeDatabases()).contains(DATABASE);
     }
 
     @Test
     public void checkVersion() {
         InfluxDB actual = influxDBContainer.getNewInfluxDB();
 
-        assertThat(actual, notNullValue());
+        assertThat(actual).isNotNull();
 
-        assertThat(actual.ping(), notNullValue());
-        assertThat(actual.ping().getVersion(), is(TEST_VERSION));
+        assertThat(actual.ping()).isNotNull();
+        assertThat(actual.ping().getVersion()).isEqualTo(TEST_VERSION);
 
-        assertThat(actual.version(), is(TEST_VERSION));
+        assertThat(actual.version()).isEqualTo(TEST_VERSION);
     }
 
     @Test
@@ -67,9 +63,9 @@ public class InfluxDBContainerWithUserTest {
         Query query = new Query("SELECT idle FROM cpu", DATABASE);
         QueryResult actual = influxDB.query(query);
 
-        assertThat(actual, notNullValue());
-        assertThat(actual.getError(), nullValue());
-        assertThat(actual.getResults(), notNullValue());
-        assertThat(actual.getResults().size(), is(1));
+        assertThat(actual).isNotNull();
+        assertThat(actual.getError()).isNull();
+        assertThat(actual.getResults()).isNotNull();
+        assertThat(actual.getResults()).hasSize(1);
     }
 }

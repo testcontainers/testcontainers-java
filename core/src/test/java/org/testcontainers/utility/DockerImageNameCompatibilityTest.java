@@ -1,16 +1,11 @@
 package org.testcontainers.utility;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.containsString;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class DockerImageNameCompatibilityTest {
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void testPlainImage() {
@@ -98,10 +93,9 @@ public class DockerImageNameCompatibilityTest {
 
     @Test
     public void testAssertMethodRejectsIncompatible() {
-        thrown.expect(IllegalStateException.class);
-        thrown.expectMessage(containsString("Failed to verify that image 'foo' is a compatible substitute for 'bar'"));
-
         DockerImageName subject = DockerImageName.parse("foo");
-        subject.assertCompatibleWith(DockerImageName.parse("bar"));
+        assertThatThrownBy(() -> subject.assertCompatibleWith(DockerImageName.parse("bar")))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("Failed to verify that image 'foo' is a compatible substitute for 'bar'");
     }
 }
