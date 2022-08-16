@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="GradleMigrationSettings" migrationVersion="1" />
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
         <option name="distributionType" value="DEFAULT_WRAPPED" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="gradleJvm" value="17 (2)" />
+        <option name="gradleJvm" value="17" />
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
@@ -25,6 +26,7 @@
             <option value="$PROJECT_DIR$/modules/cassandra" />
             <option value="$PROJECT_DIR$/modules/clickhouse" />
             <option value="$PROJECT_DIR$/modules/cockroachdb" />
+            <option value="$PROJECT_DIR$/modules/consul" />
             <option value="$PROJECT_DIR$/modules/couchbase" />
             <option value="$PROJECT_DIR$/modules/database-commons" />
             <option value="$PROJECT_DIR$/modules/db2" />
@@ -56,6 +58,7 @@
             <option value="$PROJECT_DIR$/modules/selenium" />
             <option value="$PROJECT_DIR$/modules/solr" />
             <option value="$PROJECT_DIR$/modules/spock" />
+            <option value="$PROJECT_DIR$/modules/tidb" />
             <option value="$PROJECT_DIR$/modules/toxiproxy" />
             <option value="$PROJECT_DIR$/modules/trino" />
             <option value="$PROJECT_DIR$/modules/vault" />
