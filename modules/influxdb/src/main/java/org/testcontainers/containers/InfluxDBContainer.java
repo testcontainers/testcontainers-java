@@ -174,9 +174,7 @@ public class InfluxDBContainer extends GenericContainer<InfluxDBContainer> {
     }
 
     /**
-     * Set env variable `INFLUXDB_USER_PASSWORD` for InfluxDB 1.x.
-     * <p>
-     * Set env variable `DOCKER_INFLUXDB_INIT_PASSWORD` for InfluxDB 2.x.
+     * Set password for InfluxDB.
      *
      * @param password The password for the user configured with `INFLUXDB_USER`. If this is unset, a random password is
      * generated and printed to standard out.
