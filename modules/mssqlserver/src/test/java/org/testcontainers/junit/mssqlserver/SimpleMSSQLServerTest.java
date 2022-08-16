@@ -3,6 +3,7 @@ package org.testcontainers.junit.mssqlserver;
 import org.junit.Test;
 import org.testcontainers.MSSQLServerTestImages;
 import org.testcontainers.containers.MSSQLServerContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
 import java.sql.ResultSet;
@@ -62,6 +63,16 @@ public class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
             resultSet.next();
             int resultSetInt = resultSet.getInt("ID");
             assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(3);
+        }
+    }
+
+    @Test
+    public void testListeningPortWaitStrategy() throws Exception {
+        try (
+            MSSQLServerContainer<?> mssqlServer = new MSSQLServerContainer<>(MSSQLServerTestImages.MSSQL_SERVER_IMAGE)
+        ) {
+            mssqlServer.start();
+            Wait.forListeningPort().waitUntilReady(mssqlServer);
         }
     }
 }

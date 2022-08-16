@@ -64,7 +64,7 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
 
     @Override
     public Set<Integer> getLivenessCheckPortNumbers() {
-        return Sets.newHashSet(MS_SQL_SERVER_PORT);
+        return Sets.newHashSet(getMappedPort(MS_SQL_SERVER_PORT));
     }
 
     @Override
