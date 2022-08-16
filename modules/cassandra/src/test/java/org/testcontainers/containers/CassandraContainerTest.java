@@ -28,8 +28,8 @@ public class CassandraContainerTest {
         try (CassandraContainer<?> cassandraContainer = new CassandraContainer<>(CASSANDRA_IMAGE)) {
             cassandraContainer.start();
             ResultSet resultSet = performQuery(cassandraContainer, BASIC_QUERY);
-            assertThat(resultSet.wasApplied()).as("Query was not applied").isTrue();
-            assertThat(resultSet.one().getString(0)).as("Result set has no release_version").isNotNull();
+            assertThat(resultSet.wasApplied()).as("Query was applied").isTrue();
+            assertThat(resultSet.one().getString(0)).as("Result set has release_version").isNotNull();
         }
     }
 
@@ -43,8 +43,8 @@ public class CassandraContainerTest {
         ) {
             cassandraContainer.start();
             ResultSet resultSet = performQuery(cassandraContainer, BASIC_QUERY);
-            assertThat(resultSet.wasApplied()).as("Query was not applied").isTrue();
-            assertThat(resultSet.one().getString(0)).as("Cassandra has wrong version").isEqualTo(cassandraVersion);
+            assertThat(resultSet.wasApplied()).as("Query was applied").isTrue();
+            assertThat(resultSet.one().getString(0)).as("Cassandra has right version").isEqualTo(cassandraVersion);
         }
     }
 
@@ -56,9 +56,9 @@ public class CassandraContainerTest {
         ) {
             cassandraContainer.start();
             ResultSet resultSet = performQuery(cassandraContainer, "SELECT cluster_name FROM system.local");
-            assertThat(resultSet.wasApplied()).as("Query was not applied").isTrue();
+            assertThat(resultSet.wasApplied()).as("Query was applied").isTrue();
             assertThat(resultSet.one().getString(0))
-                .as("Cassandra configuration is not overridden")
+                .as("Cassandra configuration is overridden")
                 .isEqualTo(TEST_CLUSTER_NAME_IN_CONF);
         }
     }
@@ -106,7 +106,7 @@ public class CassandraContainerTest {
         ) {
             cassandraContainer.start();
             ResultSet resultSet = performQuery(cassandraContainer, BASIC_QUERY);
-            assertThat(resultSet.wasApplied()).as("Query was not applied").isTrue();
+            assertThat(resultSet.wasApplied()).as("Query was applied").isTrue();
         }
     }
 
@@ -116,17 +116,17 @@ public class CassandraContainerTest {
         try (CassandraContainer<?> cassandraContainer = new CassandraContainer<>()) {
             cassandraContainer.start();
             ResultSet resultSet = performQuery(cassandraContainer.getCluster(), BASIC_QUERY);
-            assertThat(resultSet.wasApplied()).as("Query was not applied").isTrue();
-            assertThat(resultSet.one().getString(0)).as("Result set has no release_version").isNotNull();
+            assertThat(resultSet.wasApplied()).as("Query was applied").isTrue();
+            assertThat(resultSet.one().getString(0)).as("Result set has release_version").isNotNull();
         }
     }
 
     private void testInitScript(CassandraContainer<?> cassandraContainer) {
         ResultSet resultSet = performQuery(cassandraContainer, "SELECT * FROM keySpaceTest.catalog_category");
-        assertThat(resultSet.wasApplied()).as("Query was not applied").isTrue();
+        assertThat(resultSet.wasApplied()).as("Query was applied").isTrue();
         Row row = resultSet.one();
-        assertThat(row.getLong(0)).as("Inserted row is not in expected state").isEqualTo(1);
-        assertThat(row.getString(1)).as("Inserted row is not in expected state").isEqualTo("test_category");
+        assertThat(row.getLong(0)).as("Inserted row is in expected state").isEqualTo(1);
+        assertThat(row.getString(1)).as("Inserted row is in expected state").isEqualTo("test_category");
     }
 
     private ResultSet performQuery(CassandraContainer<?> cassandraContainer, String cql) {

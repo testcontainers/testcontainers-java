@@ -55,7 +55,7 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
                     .withNetwork(NETWORK)
             ) {
                 File[] files = runSimpleExploreInContainer(chrome, "PASSED-.*\\.flv");
-                assertThat(files.length).as("Recorded file not found").isEqualTo(1);
+                assertThat(files).as("Recorded file found").hasSize(1);
             }
         }
 
@@ -97,7 +97,7 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
                     .withNetwork(NETWORK)
             ) {
                 File[] files = runSimpleExploreInContainer(chrome, "PASSED-.*\\.flv");
-                assertThat(files.length).as("Recorded file not found").isEqualTo(1);
+                assertThat(files).as("Recorded file found").hasSize(1);
             }
         }
 
@@ -115,7 +115,7 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
                     .withNetwork(NETWORK)
             ) {
                 File[] files = runSimpleExploreInContainer(chrome, "PASSED-.*\\.mp4");
-                assertThat(files.length).as("Recorded file not found").isEqualTo(1);
+                assertThat(files).as("Recorded file found").hasSize(1);
             }
         }
 
@@ -151,9 +151,10 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
                     .start();
                 String ffmpegOutput = container.getLogs();
 
-                assertThat(ffmpegOutput.contains("Duration: 00:") && !(ffmpegOutput.contains("Duration: 00:00:00.00")))
+                assertThat(ffmpegOutput)
                     .as("Duration is incorrect in:\n " + ffmpegOutput)
-                    .isTrue();
+                    .contains("Duration: 00:")
+                    .doesNotContain("Duration: 00:00:00.00");
             }
         }
     }
@@ -214,7 +215,7 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
                 );
 
                 String[] files = vncRecordingDirectory.getRoot().list(new PatternFilenameFilter("FAILED-.*\\.flv"));
-                assertThat(files.length).as("recorded file count").isEqualTo(1);
+                assertThat(files).as("recorded file count").hasSize(1);
             }
         }
 
