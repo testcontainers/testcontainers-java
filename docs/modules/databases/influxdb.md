@@ -34,30 +34,9 @@ official [InfluxDB docs](https://docs.influxdata.com/influxdb/v2.0/upgrade/v1-to
 
 In the following you will find a snippet to create a InfluxDB client using the java client:
 
-```java
-public class SomeTest {
-
-    @Rule
-    public InfluxDBContainer influxDbContainer = new InfluxDBContainer();
-
-    @Test
-    public void someTestMethod() {
-        InfluxDBClient influxDB = getInfluxDBClient(this.influxDbContainer);
-        // ...
-    }
-    
-    private static InfluxDBClient getInfluxDBClient(final InfluxDBContainer influxDBContainer) {
-        final InfluxDBClientOptions influxDBClientOptions = InfluxDBClientOptions
-            .builder()
-            .url(influxDBContainer.getUrl())
-            .authenticate(influxDBContainer.getUsername(), influxDBContainer.getPassword().toCharArray())
-            .bucket(influxDBContainer.getBucket())
-            .org(influxDBContainer.getOrganization())
-            .build();
-        return InfluxDBClientFactory.create(influxDBClientOptions);
-    }
-}
-```
+<!--codeinclude-->
+[InfluxDBTestUtils.getInfluxDBClient()](../../../modules/influxdb/src/test/java/org/testcontainers/containers/InfluxDBTestUtils.java)
+<!--/codeinclude-->
 
 !!! hint
     You can find the latest documentation about the InfluxDB 2.x java client [here](https://github.com/influxdata/influxdb-client-java).
@@ -83,19 +62,9 @@ The influxDB will be setup with the following data:<br/>
 
 In the following you will find a snippet to create a InfluxDB client using the java client:
 
-```java
-public class SomeTest {
-
-    @Rule
-    public InfluxDBContainer influxDbContainer = new InfluxDBContainer();
-
-    @Test
-    public void someTestMethod() {
-        InfluxDB influxDB = influxDbContainer.getNewInfluxDB();
-        // ...
-    }
-}
-```
+<!--codeinclude-->
+[InfluxDBContainer.getNewInfluxDB()](../../../modules/influxdb/src/main/java/org/testcontainers/containers/InfluxDBContainer.java)
+<!--/codeinclude-->
 
 !!! hint
     You can find the latest documentation about the InfluxDB 1.x java client [here](https://github.com/influxdata/influxdb-java).
