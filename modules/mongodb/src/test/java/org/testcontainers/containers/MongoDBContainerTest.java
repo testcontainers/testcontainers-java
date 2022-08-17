@@ -129,8 +129,8 @@ public class MongoDBContainerTest {
                     MongoDBContainer.DEFAULT_DATABASE_NAME
                 );
                 final String collectionName = "my-collection";
-                final Document document = new Document("abc", 1);
-                testDatabaseFullAccess.getCollection(collectionName).insertOne(document);
+                final Document document1 = new Document("abc", 1);
+                testDatabaseFullAccess.getCollection(collectionName).insertOne(document1);
                 final String usernameRestrictedAccess = usernameFullAccess + "-restricted";
                 final String passwordRestrictedAccess = passwordFullAccess + "-restricted";
                 runCommand(
@@ -152,11 +152,11 @@ public class MongoDBContainerTest {
                     final MongoCollection<Document> collection = mongoSyncRestrictedAccess
                         .getDatabase(MongoDBContainer.DEFAULT_DATABASE_NAME)
                         .getCollection(collectionName);
-                    assertThat(collection.find().first()).isEqualTo(document);
-                    assertThatThrownBy(() -> collection.insertOne(new Document("abc", 2)))
-                        .isInstanceOf(MongoCommandException.class);
+                    assertThat(collection.find().first()).isEqualTo(document1);
+                    final Document document2 = new Document("abc", 2);
+                    assertThatThrownBy(() -> collection.insertOne(document2)).isInstanceOf(MongoCommandException.class);
                     runCommand(adminDatabase, new BasicDBObject("updateUser", usernameRestrictedAccess), "readWrite");
-                    collection.insertOne(new Document("abc", 2));
+                    collection.insertOne(document2);
                     assertThat(collection.countDocuments()).isEqualTo(2);
                     assertThat(connectionStringFullAccess.getUsername()).isEqualTo(usernameFullAccess);
                     assertThat(new String(Objects.requireNonNull(connectionStringFullAccess.getPassword())))
