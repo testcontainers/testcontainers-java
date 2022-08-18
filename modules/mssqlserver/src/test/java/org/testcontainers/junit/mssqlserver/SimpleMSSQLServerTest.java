@@ -13,6 +13,7 @@ import java.sql.Statement;
 import javax.sql.DataSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 
 public class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
 
@@ -67,12 +68,13 @@ public class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testListeningPortWaitStrategy() throws Exception {
+    public void testExposedAndLivenessCheckPorts() throws Exception {
         try (
             MSSQLServerContainer<?> mssqlServer = new MSSQLServerContainer<>(MSSQLServerTestImages.MSSQL_SERVER_IMAGE)
         ) {
             mssqlServer.start();
-            Wait.forListeningPort().waitUntilReady(mssqlServer);
+            assertThat(mssqlServer.getExposedPorts()).containsExactly(MSSQLServerContainer.MS_SQL_SERVER_PORT);
+            assertThat(mssqlServer.getLivenessCheckPortNumbers()).containsExactly(mssqlServer.getMappedPort(1433));
         }
     }
 }
