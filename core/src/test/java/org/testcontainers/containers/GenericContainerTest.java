@@ -85,6 +85,19 @@ public class GenericContainerTest {
     }
 
     @Test
+    public void shouldCopyTransferableAsFileWithFileMode() {
+        try (
+            GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
+                .withStartupCheckStrategy(new NoopStartupCheckStrategy())
+                .withCopyToContainer(Transferable.of("test", 0777), "/tmp/test")
+                .waitingFor(new WaitForExitedState(state -> state.getExitCodeLong() > 0))
+                .withCommand("sh", "-c", "ls -ll /tmp | grep '\\-rwxrwxrwx\\|test' && exit 100")
+        ) {
+            assertThatThrownBy(container::start).hasStackTraceContaining("Container exited with code 100");
+        }
+    }
+
+    @Test
     public void shouldCopyTransferableAfterMountableFile() {
         try (
             GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
