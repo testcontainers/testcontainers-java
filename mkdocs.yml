@@ -78,6 +78,7 @@ nav:
           - modules/nginx.md
           - modules/pulsar.md
           - modules/rabbitmq.md
+          - modules/redpanda.md
           - modules/solr.md
           - modules/toxiproxy.md
           - modules/vault.md
