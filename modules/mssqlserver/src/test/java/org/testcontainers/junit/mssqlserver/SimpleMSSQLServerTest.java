@@ -3,7 +3,6 @@ package org.testcontainers.junit.mssqlserver;
 import org.junit.Test;
 import org.testcontainers.MSSQLServerTestImages;
 import org.testcontainers.containers.MSSQLServerContainer;
-import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
 import java.sql.ResultSet;
@@ -13,7 +12,6 @@ import java.sql.Statement;
 import javax.sql.DataSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
 
 public class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
 

@@ -1,10 +1,8 @@
 package org.testcontainers.containers;
 
-import com.google.common.collect.Sets;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.LicenseAcceptance;
 
-import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
