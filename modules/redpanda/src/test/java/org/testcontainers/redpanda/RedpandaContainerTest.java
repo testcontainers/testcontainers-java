@@ -29,7 +29,7 @@ import static org.assertj.core.api.Assertions.tuple;
 
 public class RedpandaContainerTest {
 
-    private static final String REDPANDA_IMAGE = "vectorized/redpanda:v22.2.1";
+    private static final String REDPANDA_IMAGE = "docker.redpanda.com/vectorized/redpanda:v22.2.1";
 
     private static final DockerImageName REDPANDA_DOCKER_IMAGE = DockerImageName.parse(REDPANDA_IMAGE);
 
@@ -45,7 +45,7 @@ public class RedpandaContainerTest {
     public void testUsageWithStringImage() throws Exception {
         try (
             // constructorWithVersion {
-            RedpandaContainer container = new RedpandaContainer("vectorized/redpanda:v22.2.1")
+            RedpandaContainer container = new RedpandaContainer("docker.redpanda.com/vectorized/redpanda:v22.2.1")
             // }
         ) {
             container.start();
@@ -59,7 +59,7 @@ public class RedpandaContainerTest {
 
     @Test
     public void testNotCompatibleVersion() {
-        assertThatThrownBy(() -> new RedpandaContainer("vectorized/redpanda:v21.11.19"))
+        assertThatThrownBy(() -> new RedpandaContainer("docker.redpanda.com/vectorized/redpanda:v21.11.19"))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("Redpanda version must be >= v22.2.1");
     }

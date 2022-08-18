@@ -11,7 +11,9 @@ import java.nio.charset.StandardCharsets;
 
 public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
 
-    private static final DockerImageName REDPANDA_IMAGE = DockerImageName.parse("vectorized/redpanda");
+    private static final String REDPANDA_FULL_IMAGE_NAME = "docker.redpanda.com/vectorized/redpanda";
+
+    private static final DockerImageName REDPANDA_IMAGE = DockerImageName.parse(REDPANDA_FULL_IMAGE_NAME);
 
     private static final int REDPANDA_PORT = 9092;
 
@@ -25,8 +27,8 @@ public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
         super(imageName);
         imageName.assertCompatibleWith(REDPANDA_IMAGE);
 
-        boolean isLessThan22_2_1 = new ComparableVersion(imageName.getVersionPart()).isLessThan("v22.2.1");
-        if (isLessThan22_2_1) {
+        boolean isLessThanBaseVersion = new ComparableVersion(imageName.getVersionPart()).isLessThan("v22.2.1");
+        if (REDPANDA_FULL_IMAGE_NAME.equals(imageName.getUnversionedPart()) && isLessThanBaseVersion) {
             throw new IllegalArgumentException("Redpanda version must be >= v22.2.1");
         }
 
