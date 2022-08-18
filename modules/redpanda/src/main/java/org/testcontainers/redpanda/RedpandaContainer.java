@@ -50,7 +50,7 @@ public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
         command += "--kafka-addr PLAINTEXT://0.0.0.0:29092,OUTSIDE://0.0.0.0:9092 ";
         command += "--advertise-kafka-addr PLAINTEXT://kafka:29092,OUTSIDE://" + getHost() + ":" + getMappedPort(9092);
 
-        copyFileToContainer(Transferable.of(command.getBytes(StandardCharsets.UTF_8), 0777), STARTER_SCRIPT);
+        copyFileToContainer(Transferable.of(command, 0777), STARTER_SCRIPT);
     }
 
     public String getBootstrapServers() {
