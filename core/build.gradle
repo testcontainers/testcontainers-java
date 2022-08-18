@@ -113,3 +113,9 @@ tasks.generatePomFileForMavenJavaPublication.finalizedBy(
         ]
     }
 )
+
+tasks.japicmp {
+    methodExcludes = [
+        "org.testcontainers.images.builder.Transferable#of(java.lang.String,int)"
+    ]
+}
