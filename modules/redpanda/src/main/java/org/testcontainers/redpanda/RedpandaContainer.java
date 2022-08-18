@@ -7,8 +7,9 @@ import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 
-import java.nio.charset.StandardCharsets;
-
+/**
+ * Testcontainers implementation for Redpanda.
+ */
 public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
 
     private static final String REDPANDA_FULL_IMAGE_NAME = "docker.redpanda.com/vectorized/redpanda";
