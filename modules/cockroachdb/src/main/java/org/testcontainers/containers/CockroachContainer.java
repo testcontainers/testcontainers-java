@@ -9,7 +9,7 @@ public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("cockroachdb/cockroach");
 
-    private static final String DEFAULT_TAG = "v19.2.11";
+    private static final String DEFAULT_TAG = "v22.1.5";
 
     public static final String NAME = "cockroach";
 
