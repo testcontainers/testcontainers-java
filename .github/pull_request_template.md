@@ -10,8 +10,8 @@ Before comitting, run `./gradlew checkstyleMain checkstyleTest spotlessApply` an
 
 Describing Your Changes:
 
-If, having reviewed the notes above, you're ready to submit your pull request, please
-provide a brief description of the proposed changes. If they fix a bug, please
+If, after having reviewed the notes above, you're ready to submit your pull request, please
+provide a brief description of the proposed changes and their context. If they fix a bug, please
 describe the broken behaviour and how the changes fix it. If they make an enhancement,
 please describe the new functionality and why you believe it's useful. If your pull
 request relates to any existing issues, please reference them by using the issue number
