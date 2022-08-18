@@ -69,6 +69,8 @@
   - modules/r2dbc/*
 "modules/rabbitmq":
   - modules/rabbitmq/*
+"modules/redpanda":
+  - modules/redpanda/*
 "modules/selenium":
   - modules/selenium/*
 "modules/solr":
