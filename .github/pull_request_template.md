@@ -2,7 +2,7 @@
 Thanks for contributing to Testcontainers. Please review the following notes before
 submitting a pull request.
 
-New Modules
+New Modules:
 Make sure to add it to `bug_report.yaml`, `enhancement.yaml` and `feature.yaml`.
 Also, add it to `dependabot.yml` and `labeler.yml`.
 
