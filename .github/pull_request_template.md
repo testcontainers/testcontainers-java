@@ -6,7 +6,7 @@ New Modules:
 Make sure to add it to `bug_report.yaml`, `enhancement.yaml` and `feature.yaml`.
 Also, add it to `dependabot.yml` and `labeler.yml`.
 
-Run `./gradlew checkstyleMain checkstyleTest spotlessApply` and fix any issues.
+Before comitting, run `./gradlew checkstyleMain checkstyleTest spotlessApply` and fix any issues that occur.
 
 Describing Your Changes
 
