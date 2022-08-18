@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.testcontainers.utility.DockerImageName;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -54,12 +55,6 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         addExposedPort(MYSQL_PORT);
-    }
-
-    @NotNull
-    @Override
-    protected Set<Integer> getLivenessCheckPorts() {
-        return new HashSet<>(getMappedPort(MYSQL_PORT));
     }
 
     @Override
