@@ -42,6 +42,7 @@ body:
         - Presto
         - Pulsar
         - RabbitMQ
+        - Redpanda
         - Selenium
         - Solr
         - TiDB
