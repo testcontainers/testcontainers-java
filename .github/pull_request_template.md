@@ -8,7 +8,7 @@ Also, add it to `dependabot.yml` and `labeler.yml`.
 
 Before comitting, run `./gradlew checkstyleMain checkstyleTest spotlessApply` and fix any issues that occur.
 
-Describing Your Changes
+Describing Your Changes:
 
 If, having reviewed the notes above, you're ready to submit your pull request, please
 provide a brief description of the proposed changes. If they fix a bug, please
