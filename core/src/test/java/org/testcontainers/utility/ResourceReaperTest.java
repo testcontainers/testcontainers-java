@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
 
 public class ResourceReaperTest {
 
@@ -81,7 +80,7 @@ public class ResourceReaperTest {
         processExecutorConsumer.accept(processExecutor);
 
         ProcessResult result = processExecutor.execute();
-        assertEquals(0, result.getExitValue());
+        assertThat(result.getExitValue()).isEqualTo(0);
 
         String labelsJson = Stream
             .of(result.outputUTF8().split("\n"))

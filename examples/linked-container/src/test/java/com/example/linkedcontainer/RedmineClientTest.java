@@ -5,7 +5,7 @@ import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Tests for RedmineClient.
@@ -33,9 +33,6 @@ public class RedmineClientTest {
         RedmineClient redmineClient = new RedmineClient(
                 redmineContainer.getRedmineUrl());
 
-        assertEquals(
-                "The issue count can be retrieved.",
-                0,
-                redmineClient.getIssueCount());
+        assertThat(redmineClient.getIssueCount()).as("The issue count can be retrieved.").isZero();
     }
 }

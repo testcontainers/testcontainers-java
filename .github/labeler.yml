@@ -15,6 +15,8 @@
   - modules/clickhouse/*
 "modules/cockroachdb":
   - modules/cockroachdb/*
+"modules/consul":
+  - modules/consul/*
 "modules/couchbase":
   - modules/couchbase/*
 "modules/db2":
@@ -67,12 +69,16 @@
   - modules/r2dbc/*
 "modules/rabbitmq":
   - modules/rabbitmq/*
+"modules/redpanda":
+  - modules/redpanda/*
 "modules/selenium":
   - modules/selenium/*
 "modules/solr":
   - modules/solr/*
 "modules/spock":
   - modules/spock/*
+"modules/tidb":
+  - modules/tidb/*
 "modules/toxiproxy":
   - modules/toxiproxy/*
 "modules/trino":
