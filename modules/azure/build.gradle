@@ -3,7 +3,7 @@ description = "Testcontainers :: Azure"
 dependencies {
     api project(':testcontainers')
     // TODO use JDK's HTTP client and/or Apache HttpClient5
-    shaded 'com.squareup.okhttp3:okhttp:3.14.9'
+    shaded 'com.squareup.okhttp3:okhttp:4.10.0'
 
     testImplementation 'org.assertj:assertj-core:3.23.1'
     testImplementation 'com.azure:azure-cosmos:4.34.0'
