@@ -3,6 +3,7 @@ package org.testcontainers.containers;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.LicenseAcceptance;
 
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -58,6 +59,11 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
         withStartupTimeoutSeconds(DEFAULT_STARTUP_TIMEOUT_SECONDS);
         withConnectTimeoutSeconds(DEFAULT_CONNECT_TIMEOUT_SECONDS);
         addExposedPort(MS_SQL_SERVER_PORT);
+    }
+
+    @Override
+    public Set<Integer> getLivenessCheckPortNumbers() {
+        return super.getLivenessCheckPortNumbers();
     }
 
     @Override

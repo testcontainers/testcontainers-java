@@ -1,6 +1,9 @@
 package org.testcontainers.containers;
 
+import org.jetbrains.annotations.NotNull;
 import org.testcontainers.utility.DockerImageName;
+
+import java.util.Set;
 
 /**
  * @author richardnorth
@@ -50,6 +53,16 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         addExposedPort(MYSQL_PORT);
+    }
+
+    /**
+     * @deprecated use {@link #getLivenessCheckPortNumbers()} instead
+     */
+    @NotNull
+    @Override
+    @Deprecated
+    protected Set<Integer> getLivenessCheckPorts() {
+        return super.getLivenessCheckPorts();
     }
 
     @Override
