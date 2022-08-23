@@ -37,10 +37,15 @@ public class TrinoContainer extends JdbcDatabaseContainer<TrinoContainer> {
         addExposedPort(TRINO_PORT);
     }
 
+    /**
+     * @return the ports on which to check if the container is ready
+     * @deprecated use {@link #getLivenessCheckPortNumbers()} instead
+     */
     @NotNull
     @Override
+    @Deprecated
     protected Set<Integer> getLivenessCheckPorts() {
-        return new HashSet<>(getMappedPort(TRINO_PORT));
+        return super.getLivenessCheckPorts();
     }
 
     @Override

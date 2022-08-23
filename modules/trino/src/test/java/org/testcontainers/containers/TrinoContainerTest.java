@@ -61,4 +61,14 @@ public class TrinoContainerTest {
             }
         }
     }
+
+    @Test
+    public void testExposedAndLivenessCheckPorts() {
+        try (TrinoContainer trino = new TrinoContainer(TrinoTestImages.TRINO_TEST_IMAGE)) {
+            trino.start();
+            assertThat(trino.getExposedPorts()).containsExactly(8080);
+            assertThat(trino.getLivenessCheckPortNumbers())
+                .containsExactly(trino.getMappedPort(8080));
+        }
+    }
 }
