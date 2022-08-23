@@ -4,20 +4,20 @@ Testcontainers module for InfluxData [InfluxDB](https://www.influxdata.com/produ
 
 ## Important note
 
-There are breaking changes in InfluxDB 2.x. For more information refer to the
-main [documentation](https://docs.influxdata.com/influxdb/v2.0/upgrade/v1-to-v2/). InfluxDB
-official [container registry](https://hub.docker.com/_/influxdb) on docker hub.
+There are breaking changes in InfluxDB 2.x.
+For more information refer to the main [documentation](https://docs.influxdata.com/influxdb/v2.0/upgrade/v1-to-v2/).
+You can find more information about the official InfluxDB image on [Docker Hub](https://hub.docker.com/_/influxdb).
 
 ## InfluxDB 2.x usage example
 
-Running influxDb container as a stand-in for InfluxDB in a test:
+Running a `InfluxDBContainer` as a stand-in for InfluxDB in a test:
 
 <!--codeinclude-->
 [InfluxDBContainerTest](../../../modules/influxdb/src/test/java/org/testcontainers/containers/InfluxDBContainerTest.java)
 <!--/codeinclude-->
 
 
-The influxDB will be setup with the following data:<br/>
+The InfluxDB instance will be setup with the following data:<br/>
 
 | Property     | Default Value | 
 |--------------|:-------------:|
@@ -28,28 +28,26 @@ The influxDB will be setup with the following data:<br/>
 | retention    | 0 (infinite)  |
 | adminToken   |       -       |
 
-For more details about the InfluxDB setup go to the
-official [InfluxDB docs](https://docs.influxdata.com/influxdb/v2.0/upgrade/v1-to-v2/docker/#influxdb-2x-initialization-credentials)
-.
+For more details about the InfluxDB setup, please visit the official [InfluxDB documentation](https://docs.influxdata.com/influxdb/v2.0/upgrade/v1-to-v2/docker/#influxdb-2x-initialization-credentials).
 
-In the following you will find a snippet to create a InfluxDB client using the java client:
+In the following example you will find a snippet to create an InfluxDB client using the official Java client:
 
 <!--codeinclude-->
 [InfluxDBTestUtils.getInfluxDBClient()](../../../modules/influxdb/src/test/java/org/testcontainers/containers/InfluxDBTestUtils.java)
 <!--/codeinclude-->
 
 !!! hint
-    You can find the latest documentation about the InfluxDB 2.x java client [here](https://github.com/influxdata/influxdb-client-java).
+    You can find the latest documentation about the InfluxDB 2.x Java client [here](https://github.com/influxdata/influxdb-client-java).
 
 ## InfluxDB 1.x usage example
 
-Running InfluxDb container as a stand-in for InfluxDB in a test:
+Running a `InfluxDBContainer` as a stand-in for InfluxDB in a test:
 
 <!--codeinclude-->
 [InfluxDBContainerV1Test](../../../modules/influxdb/src/test/java/org/testcontainers/containers/InfluxDBContainerV1Test.java)
 <!--/codeinclude-->
 
-The influxDB will be setup with the following data:<br/>
+The InfluxDB instance will be setup with the following data:<br/>
 
 | Property      | Default Value | 
 |---------------|:-------------:|
@@ -60,14 +58,14 @@ The influxDB will be setup with the following data:<br/>
 | adminPassword |   password    |
 | database      |       -       |
 
-In the following you will find a snippet to create a InfluxDB client using the java client:
+In the following example you will find a snippet to create an InfluxDB client using the official Java client:
 
 <!--codeinclude-->
 [InfluxDBContainer.getNewInfluxDB()](../../../modules/influxdb/src/main/java/org/testcontainers/containers/InfluxDBContainer.java)
 <!--/codeinclude-->
 
 !!! hint
-    You can find the latest documentation about the InfluxDB 1.x java client [here](https://github.com/influxdata/influxdb-java).
+    You can find the latest documentation about the InfluxDB 1.x Java client [here](https://github.com/influxdata/influxdb-java).
 
 ## Adding this module to your project dependencies
 

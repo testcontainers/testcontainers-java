@@ -3,6 +3,8 @@ package org.testcontainers.containers;
 import com.influxdb.client.InfluxDBClient;
 import com.influxdb.client.InfluxDBClientFactory;
 import com.influxdb.client.InfluxDBClientOptions;
+import org.influxdb.InfluxDB;
+import org.influxdb.InfluxDBFactory;
 import org.testcontainers.utility.DockerImageName;
 
 public final class InfluxDBTestUtils {
@@ -13,7 +15,7 @@ public final class InfluxDBTestUtils {
 
     private InfluxDBTestUtils() {}
 
-    public static InfluxDBClient getInfluxDBClient(final InfluxDBContainer influxDBContainer) {
+    public static InfluxDBClient createInfluxDBClient(final InfluxDBContainer influxDBContainer) {
         final InfluxDBClientOptions influxDBClientOptions = InfluxDBClientOptions
             .builder()
             .url(influxDBContainer.getUrl())
@@ -22,5 +24,13 @@ public final class InfluxDBTestUtils {
             .org(influxDBContainer.getOrganization())
             .build();
         return InfluxDBClientFactory.create(influxDBClientOptions);
+    }
+
+    public static InfluxDBClient createInfluxDBClientWithToken(final String url, final String token) {
+        return InfluxDBClientFactory.create(url, token.toCharArray());
+    }
+
+    public static InfluxDB createInfluxDBWithUrl(final String url) {
+        return InfluxDBFactory.connect(url);
     }
 }

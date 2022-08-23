@@ -1,21 +1,19 @@
 package org.testcontainers.containers;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.influxdb.client.InfluxDBClient;
 import com.influxdb.client.QueryApi;
 import com.influxdb.client.WriteApi;
 import com.influxdb.client.domain.Bucket;
+import com.influxdb.client.domain.BucketRetentionRules;
 import com.influxdb.client.domain.WritePrecision;
 import com.influxdb.client.write.Point;
 import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
-import org.jetbrains.annotations.Nullable;
-import org.junit.After;
-import org.junit.Test;
-
 import java.time.Instant;
 import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.Test;
 
 public class InfluxDBContainerTest {
 
@@ -30,30 +28,7 @@ public class InfluxDBContainerTest {
     private static final String RETENTION = "1w";
 
     private static final String ADMIN_TOKEN = "super-secret-token";
-
-    @Nullable
-    private InfluxDBClient influxDBClient = null;
-
-    @After
-    public void stopInfluxDBClient() {
-        if (this.influxDBClient != null) {
-            this.influxDBClient.close();
-            this.influxDBClient = null;
-        }
-    }
-
-    @Test
-    public void getUrl() {
-        try (
-            final InfluxDBContainer influxDBContainer = new InfluxDBContainer(InfluxDBTestUtils.INFLUXDB_V2_TEST_IMAGE)
-        ) {
-            influxDBContainer.start();
-            assertThat(influxDBContainer.isRunning()).isTrue();
-
-            final String actual = influxDBContainer.getUrl();
-            assertThat(actual).isNotNull();
-        }
-    }
+    private static final int SECONDS_IN_WEEK = 604800;
 
     @Test
     public void getInfluxDBClient() {
@@ -61,12 +36,27 @@ public class InfluxDBContainerTest {
             final InfluxDBContainer influxDBContainer = new InfluxDBContainer(InfluxDBTestUtils.INFLUXDB_V2_TEST_IMAGE)
         ) {
             influxDBContainer.start();
-            assertThat(influxDBContainer.isRunning()).isTrue();
 
-            this.influxDBClient = InfluxDBTestUtils.getInfluxDBClient(influxDBContainer);
+            try (final InfluxDBClient influxDBClient = InfluxDBTestUtils.createInfluxDBClient(influxDBContainer)) {
+                assertThat(influxDBClient).isNotNull();
+                assertThat(influxDBClient.ping()).isTrue();
+            }
+        }
+    }
 
-            assertThat(this.influxDBClient).isNotNull();
-            assertThat(this.influxDBClient.ping()).isTrue();
+    @Test
+    public void getInfluxDBClientWithAdminToken() {
+        try (
+            final InfluxDBContainer influxDBContainer = new InfluxDBContainer(InfluxDBTestUtils.INFLUXDB_V2_TEST_IMAGE)
+        ) {
+            influxDBContainer.withAdminToken(ADMIN_TOKEN).start();
+            assertThat(influxDBContainer.getAdminToken()).isNotEmpty();
+
+            try (final InfluxDBClient influxDBClient = InfluxDBTestUtils.createInfluxDBClientWithToken(
+                influxDBContainer.getUrl(), influxDBContainer.getAdminToken().get())) {
+                assertThat(influxDBClient).isNotNull();
+                assertThat(influxDBClient.ping()).isTrue();
+            }
         }
     }
 
@@ -80,20 +70,21 @@ public class InfluxDBContainerTest {
                 .withPassword(PASSWORD)
                 .withOrganization(ORG)
                 .withBucket(BUCKET)
-                .withRetention(RETENTION)
-                .withAdminToken(ADMIN_TOKEN);
+                .withRetention(RETENTION);
 
             influxDBContainer.start();
-            assertThat(influxDBContainer.isRunning()).isTrue();
 
-            this.influxDBClient = InfluxDBTestUtils.getInfluxDBClient(influxDBContainer);
+            try (final InfluxDBClient influxDBClient = InfluxDBTestUtils.createInfluxDBClient(influxDBContainer)) {
+                final Bucket bucket = influxDBClient.getBucketsApi().findBucketByName(BUCKET);
+                assertThat(bucket).isNotNull();
 
-            assertThat(this.influxDBClient).isNotNull();
-
-            final Bucket bucket = this.influxDBClient.getBucketsApi().findBucketByName(BUCKET);
-            assertThat(bucket).isNotNull();
-
-            assertThat(bucket.getName()).isEqualTo(BUCKET);
+                assertThat(bucket.getName()).isEqualTo(BUCKET);
+                assertThat(bucket.getRetentionRules()).
+                    hasSize(1)
+                    .first()
+                    .extracting(BucketRetentionRules::getEverySeconds)
+                    .isEqualTo(SECONDS_IN_WEEK);
+            }
         }
     }
 
@@ -106,32 +97,28 @@ public class InfluxDBContainerTest {
                 .withOrganization(ORG)
                 .withBucket(BUCKET)
                 .withRetention(RETENTION)
-                .withAdminToken(ADMIN_TOKEN)
         ) {
             influxDBContainer.start();
-            assertThat(influxDBContainer.isRunning()).isTrue();
 
-            this.influxDBClient = InfluxDBTestUtils.getInfluxDBClient(influxDBContainer);
+            try (final InfluxDBClient influxDBClient = InfluxDBTestUtils.createInfluxDBClient(influxDBContainer)) {
+                try (final WriteApi writeApi = influxDBClient.makeWriteApi()) {
+                    final Point point = Point
+                        .measurement("temperature")
+                        .addTag("location", "west")
+                        .addField("value", 55.0D)
+                        .time(Instant.now().toEpochMilli(), WritePrecision.MS);
 
-            assertThat(this.influxDBClient).isNotNull();
+                    writeApi.writePoint(point);
+                }
 
-            try (final WriteApi writeApi = this.influxDBClient.makeWriteApi()) {
-                final Point point = Point
-                    .measurement("temperature")
-                    .addTag("location", "west")
-                    .addField("value", 55.0D)
-                    .time(Instant.now().toEpochMilli(), WritePrecision.MS);
+                final String flux = String.format("from(bucket:\"%s\") |> range(start: 0)", BUCKET);
 
-                writeApi.writePoint(point);
+                final QueryApi queryApi = influxDBClient.getQueryApi();
+
+                final FluxTable fluxTable = queryApi.query(flux).get(0);
+                final List<FluxRecord> records = fluxTable.getRecords();
+                assertThat(records).hasSize(1);
             }
-
-            final String flux = String.format("from(bucket:\"%s\") |> range(start: 0)", BUCKET);
-
-            final QueryApi queryApi = this.influxDBClient.getQueryApi();
-
-            final FluxTable fluxTable = queryApi.query(flux).get(0);
-            final List<FluxRecord> records = fluxTable.getRecords();
-            assertThat(records).hasSize(1);
         }
     }
 }
