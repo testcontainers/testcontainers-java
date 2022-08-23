@@ -56,6 +56,7 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
     }
 
     /**
+     * @return the ports on which to check if the container is ready
      * @deprecated use {@link #getLivenessCheckPortNumbers()} instead
      */
     @NotNull

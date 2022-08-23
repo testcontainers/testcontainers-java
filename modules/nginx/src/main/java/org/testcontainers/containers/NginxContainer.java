@@ -42,6 +42,7 @@ public class NginxContainer<SELF extends NginxContainer<SELF>>
     }
 
     /**
+     * @return the ports on which to check if the container is ready
      * @deprecated use {@link #getLivenessCheckPortNumbers()} instead
      */
     @NotNull

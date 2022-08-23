@@ -62,8 +62,14 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
         addExposedPort(POSTGRESQL_PORT);
     }
 
+
+    /**
+     * @return the ports on which to check if the container is ready
+     * @deprecated use {@link #getLivenessCheckPortNumbers()} instead
+     */
     @NotNull
     @Override
+    @Deprecated
     protected Set<Integer> getLivenessCheckPorts() {
         return Collections.singleton(getMappedPort(POSTGRESQL_PORT));
     }
