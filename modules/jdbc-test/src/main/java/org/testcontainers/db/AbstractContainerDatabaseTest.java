@@ -4,10 +4,11 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 
-import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+
+import javax.sql.DataSource;
 
 public abstract class AbstractContainerDatabaseTest {
 

@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.example.SolrSearchEngine.COLLECTION_NAME;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class SolrQueryTest {
 
@@ -30,7 +30,7 @@ public class SolrQueryTest {
     @BeforeClass
     public static void setUp() throws IOException, SolrServerException {
         solrContainer.start();
-        solrClient = new Http2SolrClient.Builder("http://" + solrContainer.getContainerIpAddress() + ":" + solrContainer.getSolrPort() + "/solr").build();
+        solrClient = new Http2SolrClient.Builder("http://" + solrContainer.getHost() + ":" + solrContainer.getSolrPort() + "/solr").build();
 
         // Add Sample Data
         solrClient.add(COLLECTION_NAME, Collections.singletonList(
@@ -55,8 +55,8 @@ public class SolrQueryTest {
         SolrSearchEngine searchEngine = new SolrSearchEngine(solrClient);
 
         SearchResult result = searchEngine.search("shoes");
-        assertEquals("When searching for shoes we expect one result", 1L, result.getTotalHits());
-        assertEquals("The result should have the id 1", "1", result.getResults().get(0).get("id"));
+        assertThat(result.getTotalHits()).as("When searching for shoes we expect one result").isEqualTo(1L);
+        assertThat(result.getResults().get(0).get("id")).as("The result should have the id 1").isEqualTo("1");
     }
 
     @Test
@@ -64,8 +64,8 @@ public class SolrQueryTest {
         SolrSearchEngine searchEngine = new SolrSearchEngine(solrClient);
 
         SearchResult result = searchEngine.search("t-shirt");
-        assertEquals("When searching for t-shirt we expect one result", 1L, result.getTotalHits());
-        assertEquals("The result should have the id 2", "2", result.getResults().get(0).get("id"));
+        assertThat(result.getTotalHits()).as("When searching for t-shirt we expect one result").isEqualTo(1L);
+        assertThat(result.getResults().get(0).get("id")).as("The result should have the id 2").isEqualTo("2");
     }
 
     @Test
@@ -73,7 +73,7 @@ public class SolrQueryTest {
         SolrSearchEngine searchEngine = new SolrSearchEngine(solrClient);
 
         SearchResult result = searchEngine.search("*");
-        assertEquals("When searching for * we expect no results", 0L, result.getTotalHits());
+        assertThat(result.getTotalHits()).as("When searching for * we expect no results").isEqualTo(0L);
     }
 
     private static SolrInputField createInputField(String key, String value) {

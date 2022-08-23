@@ -4,7 +4,7 @@ import com.orientechnologies.orient.core.db.ODatabaseSession;
 import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author robfrank
@@ -42,7 +42,6 @@ public class OrientDBContainerTest {
 
     @Test
     public void shouldQueryWithGremlin() {
-
         try (OrientDBContainer container = new OrientDBContainer(ORIENTDB_IMAGE)) {
             container.start();
 
@@ -52,17 +51,17 @@ public class OrientDBContainerTest {
             session.command("INSERT INTO Person set name='john'");
             session.command("INSERT INTO Person set name='jane'");
 
-            assertThat(session.execute("gremlin",
-                "g.V().hasLabel('Person')").stream()).hasSize(2);
+            assertThat(session.execute("gremlin", "g.V().hasLabel('Person')").stream()).hasSize(2);
         }
     }
 
     @Test
     public void shouldInitializeDatabaseFromScript() {
-        try (OrientDBContainer container = new OrientDBContainer(ORIENTDB_IMAGE)
-            .withScriptPath("initscript.osql")
-            .withDatabaseName("persons")) {
-
+        try (
+            OrientDBContainer container = new OrientDBContainer(ORIENTDB_IMAGE)
+                .withScriptPath("initscript.osql")
+                .withDatabaseName("persons")
+        ) {
             container.start();
 
             assertThat(container.getDbUrl())

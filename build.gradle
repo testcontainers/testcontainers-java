@@ -1,27 +1,40 @@
 buildscript {
     repositories {
         mavenCentral()
+        maven { url 'https://jitpack.io' }
     }
 
     dependencies {
         // https://github.com/melix/japicmp-gradle-plugin/issues/36
         classpath 'com.google.guava:guava:30.1.1-jre'
+        classpath 'com.github.kiview:captain-hook:76a1c11a16'
     }
 }
 
 plugins {
-    id 'io.franzbecker.gradle-lombok' version '4.0.0'
+    id 'io.franzbecker.gradle-lombok' version '5.0.0'
     id 'com.github.johnrengelman.shadow' version '7.0.0'
     id 'me.champeau.gradle.japicmp' version '0.2.9' apply false
+    id 'com.diffplug.spotless' version '6.8.0' apply false
+    id 'org.gradle.test-retry' version '1.4.0'
 }
 
 apply from: "$rootDir/gradle/ci-support.gradle"
+apply plugin: 'com.github.tjni.captainhook'
+
+captainHook {
+    autoApplyGitHooks = Boolean.valueOf(System.getenv("AUTO_APPLY_GIT_HOOKS"))
+    preCommit = './gradlew spotlessApply'
+}
 
 subprojects {
     apply plugin: 'java-library'
     apply plugin: 'idea'
     apply plugin: 'io.franzbecker.gradle-lombok'
     apply from: "$rootDir/gradle/shading.gradle"
+    apply plugin: 'com.diffplug.spotless'
+    apply plugin: 'checkstyle'
+    apply plugin: 'org.gradle.test-retry'
 
     group = "org.testcontainers"
 
@@ -29,6 +42,7 @@ subprojects {
     targetCompatibility = 1.8
     compileJava.options.encoding = 'UTF-8'
     compileTestJava.options.encoding = 'UTF-8'
+    javadoc.options.encoding = 'UTF-8'
 
     repositories {
         mavenCentral()
@@ -40,16 +54,17 @@ subprojects {
     }
 
     lombok {
-        version = '1.18.20'
+        version = '1.18.24'
     }
 
+
     task delombok(type: io.franzbecker.gradle.lombok.task.DelombokTask) {
-        def outputDir = file("$buildDir/delombok")
-        outputs.dir(outputDir)
-        for (srcDir in project.sourceSets.main.java.srcDirs) {
-            inputs.dir(srcDir)
-            args(srcDir, "-d", outputDir)
+        outputs.cacheIf {
+            true
         }
+        argumentProviders.addAll(
+            new org.testcontainers.build.DelombokArgumentProvider(srcDirs: project.sourceSets.main.java.srcDirs, outputDir: file("$buildDir/delombok"))
+        )
     }
     delombok.onlyIf {
         project.sourceSets.main.java.srcDirs.find { it.exists() }
@@ -73,6 +88,14 @@ subprojects {
             showStackTraces = true
             exceptionFormat = 'full'
             events "STARTED", "PASSED", "FAILED", "SKIPPED"
+        }
+        ext.isCI = System.getenv("CI") != null
+        if (isCI) {
+            retry {
+                maxRetries = 2
+                maxFailures = 5
+                failOnPassedAfterRetry = false
+            }
         }
     }
 
@@ -103,5 +126,32 @@ subprojects {
 
     dependencies {
         testImplementation 'ch.qos.logback:logback-classic:1.2.3'
+    }
+
+    spotless {
+        java {
+            toggleOffOn()
+            removeUnusedImports()
+            trimTrailingWhitespace()
+            endWithNewline()
+
+            prettier(['prettier': '2.5.1', 'prettier-plugin-java': '1.6.1'])
+                .config([
+                    'parser'    : 'java',
+                    'tabWidth'  : 4,
+                    'printWidth': 120
+                ])
+
+            importOrder('', 'java', 'javax', '\\#')
+        }
+        groovyGradle {
+            target '**/*.groovy'
+            greclipse('4.19.0')
+        }
+    }
+
+    checkstyle {
+        toolVersion = "9.3"
+        configFile = rootProject.file('config/checkstyle/checkstyle.xml')
     }
 }

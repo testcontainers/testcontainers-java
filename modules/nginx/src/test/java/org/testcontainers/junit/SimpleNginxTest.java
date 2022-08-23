@@ -12,8 +12,7 @@ import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.rnorth.visibleassertions.VisibleAssertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author richardnorth
@@ -29,9 +28,10 @@ public class SimpleNginxTest {
     public NginxContainer<?> nginx = new NginxContainer<>(NGINX_IMAGE)
         .withCustomContent(tmpDirectory)
         .waitingFor(new HttpWaitStrategy());
+
     // }
 
-    @SuppressWarnings({"Duplicates", "ResultOfMethodCallIgnored"})
+    @SuppressWarnings({ "Duplicates", "ResultOfMethodCallIgnored" })
     @BeforeClass
     public static void setupContent() throws Exception {
         // addCustomContent {
@@ -43,7 +43,8 @@ public class SimpleNginxTest {
         // And "hello world" HTTP file
         File indexFile = new File(contentFolder, "index.html");
         indexFile.deleteOnExit();
-        @Cleanup PrintStream printStream = new PrintStream(new FileOutputStream(indexFile));
+        @Cleanup
+        PrintStream printStream = new PrintStream(new FileOutputStream(indexFile));
         printStream.println("<html><body>Hello World!</body></html>");
         // }
     }
@@ -53,16 +54,16 @@ public class SimpleNginxTest {
         // getFromNginxServer {
         URL baseUrl = nginx.getBaseUrl("http", 80);
 
-        assertThat("An HTTP GET from the Nginx server returns the index.html from the custom content directory",
-            responseFromNginx(baseUrl),
-            containsString("Hello World!")
-        );
+        assertThat(responseFromNginx(baseUrl))
+            .as("An HTTP GET from the Nginx server returns the index.html from the custom content directory")
+            .contains("Hello World!");
         // }
     }
 
     private static String responseFromNginx(URL baseUrl) throws IOException {
         URLConnection urlConnection = baseUrl.openConnection();
-        @Cleanup BufferedReader reader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+        @Cleanup
+        BufferedReader reader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
         return reader.readLine();
     }
 }

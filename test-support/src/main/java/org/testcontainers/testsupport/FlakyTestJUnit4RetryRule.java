@@ -31,7 +31,6 @@ public class FlakyTestJUnit4RetryRule implements TestRule {
 
     @Override
     public Statement apply(Statement base, Description description) {
-
         final Flaky annotation = description.getAnnotation(Flaky.class);
 
         if (annotation == null) {
@@ -53,11 +52,13 @@ public class FlakyTestJUnit4RetryRule implements TestRule {
         try {
             reviewDate = LocalDate.parse(annotation.reviewDate());
         } catch (DateTimeParseException e) {
-            throw new IllegalArgumentException("@Flaky reviewDate could not be parsed. Please provide a date in yyyy-mm-dd format");
+            throw new IllegalArgumentException(
+                "@Flaky reviewDate could not be parsed. Please provide a date in yyyy-mm-dd format"
+            );
         }
 
         // the annotation should only have an effect before the review date, to encourage review and resolution
-        if ( LocalDate.now().isBefore(reviewDate) ) {
+        if (LocalDate.now().isBefore(reviewDate)) {
             return new RetryingStatement(base, description, maxTries);
         } else {
             return base;
@@ -65,8 +66,11 @@ public class FlakyTestJUnit4RetryRule implements TestRule {
     }
 
     private static class RetryingStatement extends Statement {
+
         private final Statement base;
+
         private final Description description;
+
         private final int maxTries;
 
         RetryingStatement(Statement base, Description description, int maxTries) {
@@ -77,7 +81,6 @@ public class FlakyTestJUnit4RetryRule implements TestRule {
 
         @Override
         public void evaluate() {
-
             int attempts = 0;
             final List<Throwable> causes = new ArrayList<>();
 
@@ -93,7 +96,8 @@ public class FlakyTestJUnit4RetryRule implements TestRule {
 
             throw new IllegalStateException(
                 "@Flaky-annotated test failed despite retries.",
-                new MultipleFailureException(causes));
+                new MultipleFailureException(causes)
+            );
         }
     }
 }

@@ -1,12 +1,32 @@
 version: 2
+registries:
+  gradle-plugin-portal:
+    type: maven-repository
+    url: https://plugins.gradle.org/m2
+    username: dummy # Required by dependabot
+    password: dummy # Required by dependabot
 updates:
   - package-ecosystem: "gradle"
     directory: "/core"
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
+    directory: "/"
+    allow:
+      - dependency-name: "com.gradle*"
+    registries:
+      - gradle-plugin-portal
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
 
 # Explicit entry for each module
+  - package-ecosystem: "gradle"
+    directory: "/modules/azure"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/cassandra"
     schedule:
@@ -14,6 +34,16 @@ updates:
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/clickhouse"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
+    directory: "/modules/cockroachdb"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
+    directory: "/modules/consul"
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
@@ -28,12 +58,27 @@ updates:
       interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
+    directory: "/modules/db2"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
     directory: "/modules/dynalite"
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/elasticsearch"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
+    directory: "/modules/gcloud"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
+    directory: "/modules/hivemq"
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
@@ -58,6 +103,11 @@ updates:
       interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
+    directory: "/modules/k3s"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
     directory: "/modules/kafka"
     schedule:
       interval: "monthly"
@@ -74,6 +124,11 @@ updates:
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/mockserver"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
+    directory: "/modules/mongodb"
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
@@ -103,7 +158,17 @@ updates:
       interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
+    directory: "/modules/orientdb"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
     directory: "/modules/postgresql"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
+    directory: "/modules/presto"
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
@@ -113,7 +178,27 @@ updates:
       interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
+    directory: "/modules/r2dbc"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
+    directory: "/modules/rabbitmq"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
+    directory: "/modules/redpanda"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
     directory: "/modules/selenium"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
+    directory: "/modules/solr"
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
@@ -123,7 +208,17 @@ updates:
       interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
+    directory: "/modules/tidb"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
     directory: "/modules/toxiproxy"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
+    directory: "/modules/trino"
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10

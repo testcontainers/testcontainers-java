@@ -7,26 +7,24 @@ import org.spockframework.runtime.model.SpecInfo
 
 class TestcontainersExtension extends AbstractAnnotationDrivenExtension<Testcontainers> {
 
-    @Override
-    void visitSpecAnnotation(Testcontainers annotation, SpecInfo spec) {
-        def listener = new ErrorListener()
-        def interceptor = new TestcontainersMethodInterceptor(spec, listener)
-        spec.addSetupSpecInterceptor(interceptor)
-        spec.addCleanupSpecInterceptor(interceptor)
-        spec.addSetupInterceptor(interceptor)
-        spec.addCleanupInterceptor(interceptor)
+	@Override
+	void visitSpecAnnotation(Testcontainers annotation, SpecInfo spec) {
+		def listener = new ErrorListener()
+		def interceptor = new TestcontainersMethodInterceptor(spec, listener)
+		spec.addSetupSpecInterceptor(interceptor)
+		spec.addCleanupSpecInterceptor(interceptor)
+		spec.addSetupInterceptor(interceptor)
+		spec.addCleanupInterceptor(interceptor)
 
-        spec.addListener(listener)
+		spec.addListener(listener)
+	}
 
-    }
+	private class ErrorListener extends AbstractRunListener {
+		List<ErrorInfo> errors = []
 
-    private class ErrorListener extends AbstractRunListener {
-        List<ErrorInfo> errors = []
-
-        @Override
-        void error(ErrorInfo error) {
-            errors.add(error)
-        }
-    }
-
+		@Override
+		void error(ErrorInfo error) {
+			errors.add(error)
+		}
+	}
 }

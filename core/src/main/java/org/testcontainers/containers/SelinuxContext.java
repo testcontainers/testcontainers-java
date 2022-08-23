@@ -13,5 +13,4 @@ public enum SelinuxContext {
     NONE(SELContext.none);
 
     public final SELContext selContext;
-
 }

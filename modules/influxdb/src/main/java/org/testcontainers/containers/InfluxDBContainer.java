@@ -17,17 +17,22 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Gen
     public static final Integer INFLUXDB_PORT = 8086;
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("influxdb");
+
     private static final String DEFAULT_TAG = "1.4.3";
 
     @Deprecated
     public static final String VERSION = DEFAULT_TAG;
 
     private boolean authEnabled = true;
+
     private String admin = "admin";
+
     private String adminPassword = "password";
 
     private String database;
+
     private String username = "any";
+
     private String password = "any";
 
     /**
@@ -48,12 +53,12 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Gen
 
     public InfluxDBContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
-        waitStrategy = new WaitAllStrategy()
-            .withStrategy(Wait.forHttp("/ping").withBasicCredentials(username, password).forStatusCode(204))
-            .withStrategy(Wait.forListeningPort());
+        waitStrategy =
+            new WaitAllStrategy()
+                .withStrategy(Wait.forHttp("/ping").withBasicCredentials(username, password).forStatusCode(204))
+                .withStrategy(Wait.forListeningPort());
 
         addExposedPort(INFLUXDB_PORT);
     }
@@ -143,7 +148,6 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Gen
         this.password = password;
         return self();
     }
-
 
     /**
      * @return a url to influxDb

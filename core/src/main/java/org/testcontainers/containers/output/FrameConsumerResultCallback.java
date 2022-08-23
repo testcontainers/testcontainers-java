@@ -1,6 +1,5 @@
 package org.testcontainers.containers.output;
 
-
 import com.github.dockerjava.api.async.ResultCallbackTemplate;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.StreamType;
@@ -79,7 +78,7 @@ public class FrameConsumerResultCallback extends ResultCallbackTemplate<FrameCon
         // Sink any errors
         try {
             close();
-        } catch (IOException ignored) { }
+        } catch (IOException ignored) {}
     }
 
     @Override
@@ -168,7 +167,6 @@ public class FrameConsumerResultCallback extends ResultCallbackTemplate<FrameCon
         }
         return utf8String;
     }
-
 
     private byte[] merge(byte[] str1, byte[] str2) {
         byte[] mergedString = new byte[str1.length + str2.length];

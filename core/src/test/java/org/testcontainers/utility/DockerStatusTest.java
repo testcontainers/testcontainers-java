@@ -8,18 +8,18 @@ import org.mockito.Mockito;
 
 import java.time.Duration;
 import java.time.Instant;
-import 	java.time.ZoneId;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 /**
  *
  */
- @RunWith(Parameterized.class)
+@RunWith(Parameterized.class)
 public class DockerStatusTest {
+
     private final DateTimeFormatter dateTimeFormatter;
 
     private static final Instant now = Instant.now();
@@ -55,31 +55,31 @@ public class DockerStatusTest {
     @Parameterized.Parameters
     public static Object[][] parameters() {
         return new Object[][] {
-            { DateTimeFormatter.ISO_INSTANT},
-            { DateTimeFormatter.ISO_OFFSET_DATE_TIME.withZone(ZoneId.of("America/New_York")) }
+            { DateTimeFormatter.ISO_INSTANT },
+            { DateTimeFormatter.ISO_OFFSET_DATE_TIME.withZone(ZoneId.of("America/New_York")) },
         };
     }
 
     @Test
     public void testRunning() throws Exception {
-        assertTrue(DockerStatus.isContainerRunning(running, minimumDuration, now));
-        assertTrue(DockerStatus.isContainerRunning(runningVariant, minimumDuration, now));
-        assertFalse(DockerStatus.isContainerRunning(shortRunning, minimumDuration, now));
-        assertFalse(DockerStatus.isContainerRunning(created, minimumDuration, now));
-        assertFalse(DockerStatus.isContainerRunning(createdVariant, minimumDuration, now));
-        assertFalse(DockerStatus.isContainerRunning(exited, minimumDuration, now));
-        assertFalse(DockerStatus.isContainerRunning(paused, minimumDuration, now));
+        assertThat(DockerStatus.isContainerRunning(running, minimumDuration, now)).isTrue();
+        assertThat(DockerStatus.isContainerRunning(runningVariant, minimumDuration, now)).isTrue();
+        assertThat(DockerStatus.isContainerRunning(shortRunning, minimumDuration, now)).isFalse();
+        assertThat(DockerStatus.isContainerRunning(created, minimumDuration, now)).isFalse();
+        assertThat(DockerStatus.isContainerRunning(createdVariant, minimumDuration, now)).isFalse();
+        assertThat(DockerStatus.isContainerRunning(exited, minimumDuration, now)).isFalse();
+        assertThat(DockerStatus.isContainerRunning(paused, minimumDuration, now)).isFalse();
     }
 
     @Test
     public void testStopped() throws Exception {
-        assertFalse(DockerStatus.isContainerStopped(running));
-        assertFalse(DockerStatus.isContainerStopped(runningVariant));
-        assertFalse(DockerStatus.isContainerStopped(shortRunning));
-        assertFalse(DockerStatus.isContainerStopped(created));
-        assertFalse(DockerStatus.isContainerStopped(createdVariant));
-        assertTrue(DockerStatus.isContainerStopped(exited));
-        assertFalse(DockerStatus.isContainerStopped(paused));
+        assertThat(DockerStatus.isContainerStopped(running)).isFalse();
+        assertThat(DockerStatus.isContainerStopped(runningVariant)).isFalse();
+        assertThat(DockerStatus.isContainerStopped(shortRunning)).isFalse();
+        assertThat(DockerStatus.isContainerStopped(created)).isFalse();
+        assertThat(DockerStatus.isContainerStopped(createdVariant)).isFalse();
+        assertThat(DockerStatus.isContainerStopped(exited)).isTrue();
+        assertThat(DockerStatus.isContainerStopped(paused)).isFalse();
     }
 
     private String buildTimestamp(Instant instant) {
@@ -88,9 +88,12 @@ public class DockerStatusTest {
 
     // ContainerState is a non-static inner class, with private member variables, in a different package.
     // It's simpler to mock it that to try to create one.
-    private static InspectContainerResponse.ContainerState buildState(boolean running, boolean paused,
-                                                                      String startedAt, String finishedAt) {
-
+    private static InspectContainerResponse.ContainerState buildState(
+        boolean running,
+        boolean paused,
+        String startedAt,
+        String finishedAt
+    ) {
         InspectContainerResponse.ContainerState state = Mockito.mock(InspectContainerResponse.ContainerState.class);
         when(state.getRunning()).thenReturn(running);
         when(state.getPaused()).thenReturn(paused);

@@ -4,8 +4,8 @@ import com.sun.jna.Library;
 import com.sun.jna.Native;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.net.URI;
@@ -29,13 +29,15 @@ public final class RootlessDockerClientProviderStrategy extends DockerClientProv
     private final Path socketPath = resolveSocketPath();
 
     private Path resolveSocketPath() {
-        return tryEnv().orElseGet(() -> {
-            Path homePath = Paths.get(System.getProperty("user.home")).resolve(".docker").resolve("run");
-            return tryFolder(homePath).orElseGet(() -> {
-                Path implicitPath = Paths.get("/run/user/" + LibC.INSTANCE.getuid());
-                return tryFolder(implicitPath).orElse(null);
+        return tryEnv()
+            .orElseGet(() -> {
+                Path homePath = Paths.get(System.getProperty("user.home")).resolve(".docker").resolve("run");
+                return tryFolder(homePath)
+                    .orElseGet(() -> {
+                        Path implicitPath = Paths.get("/run/user/" + LibC.INSTANCE.getuid());
+                        return tryFolder(implicitPath).orElse(null);
+                    });
             });
-        });
     }
 
     private Optional<Path> tryEnv() {
@@ -72,9 +74,7 @@ public final class RootlessDockerClientProviderStrategy extends DockerClientProv
 
     @Override
     public TransportConfig getTransportConfig() throws InvalidConfigurationException {
-        return TransportConfig.builder()
-            .dockerHost(URI.create("unix://" + getSocketPath().toString()))
-            .build();
+        return TransportConfig.builder().dockerHost(URI.create("unix://" + getSocketPath().toString())).build();
     }
 
     @Override
@@ -93,10 +93,8 @@ public final class RootlessDockerClientProviderStrategy extends DockerClientProv
     }
 
     private interface LibC extends Library {
-
         LibC INSTANCE = Native.loadLibrary("c", LibC.class);
 
         int getuid();
     }
-
 }

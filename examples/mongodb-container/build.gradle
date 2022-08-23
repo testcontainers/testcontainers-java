@@ -3,11 +3,11 @@ plugins {
 }
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 dependencies {
     testImplementation 'org.testcontainers:testcontainers'
     testImplementation 'junit:junit:4.13.2'
-    testCompileClasspath 'org.jetbrains:annotations:22.0.0'
+    testCompileClasspath 'org.jetbrains:annotations:23.0.0'
 }

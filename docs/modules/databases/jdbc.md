@@ -41,11 +41,19 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 
 #### Using TimescaleDB
 
-`jdbc:tc:timescaldb:2.1.0-pg13:///databasename`
+`jdbc:tc:timescaledb:2.1.0-pg13:///databasename`
 
 #### Using Trino
 
 `jdbc:tc:trino:352://localhost/memory/default`
+
+#### Using CockroachDB
+
+`jdbc:tc:cockroach:v21.2.3:///databasename`
+
+#### Using TiDB
+
+`jdbc:tc:tidb:v6.1.0:///databasename`
 
 ### Using a classpath init script
 

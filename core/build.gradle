@@ -6,6 +6,8 @@ sourceSets {
     jarFileTest
 }
 
+test.maxParallelForks = 4
+
 idea.module.testSourceDirs += sourceSets.jarFileTest.allSource.srcDirs
 
 shadowJar {
@@ -38,9 +40,14 @@ tasks.japicmp {
         "org.testcontainers.shaded.*",
     ]
 
-    classExcludes = []
+    classExcludes = [
+        "org.testcontainers.utility.RyukResourceReaper",
+    ]
 
-    methodExcludes = []
+    methodExcludes = [
+        "org.testcontainers.containers.Container#getDockerClient()",
+        "org.testcontainers.containers.ContainerState#getDockerClient()",
+    ]
 
     fieldExcludes = []
 }
@@ -53,60 +60,50 @@ configurations.all {
 }
 
 dependencies {
-    baseline 'org.testcontainers:testcontainers:1.16.0', {
-        exclude group: "*", module: "*"
-    }
-
     api 'junit:junit:4.13.2'
-    api 'org.slf4j:slf4j-api:1.7.32'
-    compileOnly 'org.jetbrains:annotations:22.0.0'
-    testCompileClasspath 'org.jetbrains:annotations:21.0.1'
+    api 'org.slf4j:slf4j-api:1.7.36'
+    compileOnly 'org.jetbrains:annotations:23.0.0'
+    testCompileClasspath 'org.jetbrains:annotations:23.0.0'
     api 'org.apache.commons:commons-compress:1.21'
     api ('org.rnorth.duct-tape:duct-tape:1.0.8') {
         exclude(group: 'org.jetbrains', module: 'annotations')
     }
 
-    shaded 'org.awaitility:awaitility:4.1.0'
+    shaded 'org.awaitility:awaitility:4.2.0'
 
-    api platform('com.github.docker-java:docker-java-bom:3.2.12')
-    shaded platform('com.github.docker-java:docker-java-bom:3.2.12')
+    api platform('com.github.docker-java:docker-java-bom:3.2.13')
+    shaded platform('com.github.docker-java:docker-java-bom:3.2.13')
 
     api "com.github.docker-java:docker-java-api"
 
     shaded 'com.github.docker-java:docker-java-core'
 
-    shaded 'com.github.docker-java:docker-java-transport-okhttp', {
-        // TODO remove unused `net.java.dev.jna:jna-platform` from `docker-java-transport-okhttp`
-        exclude(group: 'net.java.dev.jna', module: 'jna-platform')
-    }
-
     api 'com.github.docker-java:docker-java-transport-zerodep'
 
-    shaded "org.yaml:snakeyaml:1.29"
+    shaded "org.yaml:snakeyaml:1.30"
 
     shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
 
     shaded 'org.zeroturnaround:zt-exec:1.12'
 
     testImplementation 'org.apache.httpcomponents:httpclient:4.5.9'
-    testImplementation 'redis.clients:jedis:3.7.0'
-    testImplementation 'com.rabbitmq:amqp-client:5.13.1'
-    testImplementation 'org.mongodb:mongo-java-driver:3.12.10'
+    testImplementation 'redis.clients:jedis:4.2.3'
+    testImplementation 'com.rabbitmq:amqp-client:5.15.0'
+    testImplementation 'org.mongodb:mongo-java-driver:3.12.11'
 
-    testImplementation ('org.mockito:mockito-core:3.12.4') {
+    testImplementation ('org.mockito:mockito-core:4.7.0') {
         exclude(module: 'hamcrest-core')
     }
     // Synthetic JAR used for MountableFileTest and DirectoryTarResourceTest
     testImplementation files('testlib/repo/fakejar/fakejar/0/fakejar-0.jar')
 
-    testImplementation 'org.rnorth.visible-assertions:visible-assertions:2.1.2'
-    testImplementation 'org.assertj:assertj-core:3.21.0'
+    testImplementation 'org.assertj:assertj-core:3.23.1'
     testImplementation project(':test-support')
 
     jarFileTestCompileOnly "org.projectlombok:lombok:${lombok.version}"
     jarFileTestAnnotationProcessor "org.projectlombok:lombok:${lombok.version}"
     jarFileTestImplementation 'junit:junit:4.13.2'
-    jarFileTestImplementation 'org.assertj:assertj-core:3.20.2'
+    jarFileTestImplementation 'org.assertj:assertj-core:3.22.0'
     jarFileTestImplementation 'org.ow2.asm:asm-debug-all:5.2'
 }
 
@@ -116,3 +113,9 @@ tasks.generatePomFileForMavenJavaPublication.finalizedBy(
         ]
     }
 )
+
+tasks.japicmp {
+    methodExcludes = [
+        "org.testcontainers.images.builder.Transferable#of(java.lang.String,int)"
+    ]
+}

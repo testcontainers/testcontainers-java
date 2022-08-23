@@ -2,16 +2,18 @@ package org.testcontainers.junit;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.SystemUtils;
+import org.junit.Assume;
 import org.junit.Test;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.testcontainers.containers.BrowserWebDriverContainer;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import static java.util.Collections.emptyList;
-import static java.util.stream.Collectors.toList;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class BrowserWebDriverContainerTest {
 
@@ -29,7 +31,7 @@ public class BrowserWebDriverContainerTest {
             chromeWithNoProxySet.start();
 
             Object noProxy = chromeWithNoProxySet.getEnvMap().get(NO_PROXY_KEY);
-            assertEquals("no_proxy should be preserved by the container rule", NO_PROXY_VALUE, noProxy);
+            assertThat(noProxy).as("no_proxy should be preserved by the container rule").isEqualTo(NO_PROXY_VALUE);
         }
     }
 
@@ -38,18 +40,17 @@ public class BrowserWebDriverContainerTest {
         try (
             BrowserWebDriverContainer chromeWithoutNoProxySet = new BrowserWebDriverContainer()
                 .withCapabilities(new ChromeOptions())
-
         ) {
             chromeWithoutNoProxySet.start();
 
             Object noProxy = chromeWithoutNoProxySet.getEnvMap().get(NO_PROXY_KEY);
-            assertEquals("no_proxy should be set to default if not already present", "localhost", noProxy);
+            assertThat(noProxy).as("no_proxy should be set to default if not already present").isEqualTo("localhost");
         }
     }
 
-
     @Test
     public void createContainerWithShmVolume() {
+        Assume.assumeFalse("SHM isn't mounted on Windows", SystemUtils.IS_OS_WINDOWS);
         try (
             BrowserWebDriverContainer webDriverContainer = new BrowserWebDriverContainer()
                 .withCapabilities(new FirefoxOptions())
@@ -58,9 +59,9 @@ public class BrowserWebDriverContainerTest {
 
             final List<InspectContainerResponse.Mount> shmVolumes = shmVolumes(webDriverContainer);
 
-            assertEquals("Only one shm mount present", 1, shmVolumes.size());
-            assertEquals("Shm mount source is correct", "/dev/shm", shmVolumes.get(0).getSource());
-            assertEquals("Shm mount mode is correct", "rw", shmVolumes.get(0).getMode());
+            assertThat(shmVolumes).as("Only one shm mount present").hasSize(1);
+            assertThat(shmVolumes.get(0).getSource()).as("Shm mount source is correct").isEqualTo("/dev/shm");
+            assertThat(shmVolumes.get(0).getMode()).as("Shm mount mode is correct").isEqualTo("rw");
         }
     }
 
@@ -73,19 +74,21 @@ public class BrowserWebDriverContainerTest {
         ) {
             webDriverContainer.start();
 
-            assertEquals("Shared memory size is configured",
-                512 * FileUtils.ONE_MB,
-                webDriverContainer.getShmSize());
+            assertThat(webDriverContainer.getShmSize())
+                .as("Shared memory size is configured")
+                .isEqualTo(512 * FileUtils.ONE_MB);
 
-            assertEquals("No shm mounts present", emptyList(), shmVolumes(webDriverContainer));
+            assertThat(shmVolumes(webDriverContainer)).as("No shm mounts present").isEqualTo(Collections.emptyList());
         }
     }
 
     private List<InspectContainerResponse.Mount> shmVolumes(final BrowserWebDriverContainer container) {
-        return container.getContainerInfo().getMounts()
+        return container
+            .getContainerInfo()
+            .getMounts()
             .stream()
             // destination path is always /dev/shm
             .filter(m -> m.getDestination().getPath().equals("/dev/shm"))
-            .collect(toList());
+            .collect(Collectors.toList());
     }
 }

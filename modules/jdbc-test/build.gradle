@@ -2,19 +2,16 @@ dependencies {
     api project(':jdbc')
     api project(':test-support')
 
-    api 'com.google.guava:guava:31.0.1-jre'
+    api 'com.google.guava:guava:31.1-jre'
     api 'org.apache.commons:commons-lang3:3.12.0'
     api 'com.zaxxer:HikariCP-java6:2.3.13'
     api 'commons-dbutils:commons-dbutils:1.7'
 
     api 'com.googlecode.junit-toolbox:junit-toolbox:2.4'
 
-    api('org.rnorth.visible-assertions:visible-assertions:2.1.2') {
-        // Excluded in favor of jna-platform
-        exclude(group: "net.java.dev.jna", module: "jna")
-    }
+    api 'org.assertj:assertj-core:3.23.1'
 
-    api 'org.apache.tomcat:tomcat-jdbc:10.0.12'
+    api 'org.apache.tomcat:tomcat-jdbc:10.0.23'
     api 'org.vibur:vibur-dbcp:25.0'
-    api 'mysql:mysql-connector-java:8.0.26'
+    api 'mysql:mysql-connector-java:8.0.30'
 }

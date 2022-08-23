@@ -1,6 +1,7 @@
 jobs:
 
-- job: azure_pipeline_tests
+- job: core_tests
+  timeoutInMinutes: 60
   steps:
 
   # Run all core tests when running the Windows CI tests
@@ -12,12 +13,15 @@ jobs:
       AWS_SECRET_ACCESS_KEY: $(aws.secretAccessKey)
     inputs:
         gradleWrapperFile: 'gradlew'
-        jdkVersionOption: '1.11'
+        jdkVersionOption: '1.8'
         options: '--no-daemon --continue'
         tasks: 'clean testcontainers:check'
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
 
+- job: other_tests
+  timeoutInMinutes: 120
+  steps:
   # Run all non-core tests when running the Windows CI tests
   - task: Gradle@2
     condition: eq(variables['Agent.OS'], 'Windows_NT')
@@ -27,7 +31,7 @@ jobs:
       AWS_SECRET_ACCESS_KEY: $(aws.secretAccessKey)
     inputs:
         gradleWrapperFile: 'gradlew'
-        jdkVersionOption: '1.11'
+        jdkVersionOption: '1.8'
         options: '--no-daemon --continue'
         tasks: 'clean check -x testcontainers:test'
         publishJUnitResults: true

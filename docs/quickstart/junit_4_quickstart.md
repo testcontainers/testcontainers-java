@@ -21,18 +21,19 @@ Let's start from here, and see how to improve the test with Testcontainers:
 
 First, add Testcontainers as a dependency as follows:
 
-```groovy tab='Gradle'
-testImplementation "org.testcontainers:testcontainers:{{latest_version}}"
-```
-
-```xml tab='Maven'
-<dependency>
-    <groupId>org.testcontainers</groupId>
-    <artifactId>testcontainers</artifactId>
-    <version>{{latest_version}}</version>
-    <scope>test</scope>
-</dependency>
-```
+=== "Gradle"
+    ```groovy
+    testImplementation "org.testcontainers:testcontainers:{{latest_version}}"
+    ```
+=== "Maven"
+    ```xml
+    <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>testcontainers</artifactId>
+        <version>{{latest_version}}</version>
+        <scope>test</scope>
+    </dependency>
+    ```
 
 ## 2. Get Testcontainers to run a Redis container during our tests
 

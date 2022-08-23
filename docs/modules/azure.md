@@ -49,16 +49,18 @@ Test against the Emulator:
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
-```groovy tab='Gradle'
-testImplementation "org.testcontainers:azure:{{latest_version}}"
-```
+=== "Gradle"
+    ```groovy
+    testImplementation "org.testcontainers:azure:{{latest_version}}"
+    ```
 
-```xml tab='Maven'
-<dependency>
-    <groupId>org.testcontainers</groupId>
-    <artifactId>azure</artifactId>
-    <version>{{latest_version}}</version>
-    <scope>test</scope>
-</dependency>
-```
+=== "Maven"
+    ```xml
+    <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>azure</artifactId>
+        <version>{{latest_version}}</version>
+        <scope>test</scope>
+    </dependency>
+    ```
 

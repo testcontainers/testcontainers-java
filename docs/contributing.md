@@ -8,6 +8,7 @@
     * follow the style, naming and structure conventions of the rest of the project.
     * make commits atomic and easy to merge.
     * when updating documentation, please see [our guidance for documentation contributions](contributing_docs.md).
+    * apply format running `./gradlew spotlessApply`
     * verify all tests are passing. Build the project with `./gradlew check` to do this.
     **N.B.** Gradle's Build Cache is enabled by default, but you can add `--no-build-cache` flag to disable it.
 
@@ -35,7 +36,7 @@ If the answers to the above are all yes, then a new module may be a good approac
 Otherwise, it is entirely possible for you to:
 
 * publish a code snippet
-* contribute an [example](../examples/README.md) to the Testcontainers repo
+* contribute an example to the Testcontainers repo
 * publish your own third party library
 
 In any case, please contact us to help validate your proposal!

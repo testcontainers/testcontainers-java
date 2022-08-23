@@ -3,7 +3,7 @@ package org.testcontainers.junit.jupiter.inheritance;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.junit.jupiter.Container;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class InheritedTests extends AbstractTestBase {
 
@@ -12,15 +12,15 @@ class InheritedTests extends AbstractTestBase {
 
     @Test
     void step1() {
-        assertEquals(1, redisPerClass.getJedis().incr("key").longValue());
-        assertEquals(1, redisPerTest.getJedis().incr("key").longValue());
-        assertEquals(1, myRedis.getJedis().incr("key").longValue());
+        assertThat(redisPerClass.getJedis().incr("key")).isEqualTo(1);
+        assertThat(redisPerTest.getJedis().incr("key")).isEqualTo(1);
+        assertThat(myRedis.getJedis().incr("key")).isEqualTo(1);
     }
 
     @Test
     void step2() {
-        assertEquals(2, redisPerClass.getJedis().incr("key").longValue());
-        assertEquals(1, redisPerTest.getJedis().incr("key").longValue());
-        assertEquals(1, myRedis.getJedis().incr("key").longValue());
+        assertThat(redisPerClass.getJedis().incr("key")).isEqualTo(2);
+        assertThat(redisPerTest.getJedis().incr("key")).isEqualTo(1);
+        assertThat(myRedis.getJedis().incr("key")).isEqualTo(1);
     }
 }

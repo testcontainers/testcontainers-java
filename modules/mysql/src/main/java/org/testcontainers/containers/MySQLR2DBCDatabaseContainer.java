@@ -13,7 +13,8 @@ public class MySQLR2DBCDatabaseContainer implements R2DBCDatabaseContainer {
     private final MySQLContainer<?> container;
 
     public static ConnectionFactoryOptions getOptions(MySQLContainer<?> container) {
-        ConnectionFactoryOptions options = ConnectionFactoryOptions.builder()
+        ConnectionFactoryOptions options = ConnectionFactoryOptions
+            .builder()
             .option(ConnectionFactoryOptions.DRIVER, MySQLR2DBCDatabaseContainerProvider.DRIVER)
             .build();
 
@@ -22,7 +23,8 @@ public class MySQLR2DBCDatabaseContainer implements R2DBCDatabaseContainer {
 
     @Override
     public ConnectionFactoryOptions configure(ConnectionFactoryOptions options) {
-        return options.mutate()
+        return options
+            .mutate()
             .option(ConnectionFactoryOptions.HOST, container.getHost())
             .option(ConnectionFactoryOptions.PORT, container.getMappedPort(MySQLContainer.MYSQL_PORT))
             .option(ConnectionFactoryOptions.DATABASE, container.getDatabaseName())
