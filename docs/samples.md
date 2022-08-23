@@ -1,4 +1,4 @@
-# Samples
+# Examples
 
 Examples provided by Testcontainers can be found below:
 
