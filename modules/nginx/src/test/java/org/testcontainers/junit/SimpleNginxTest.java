@@ -60,6 +60,12 @@ public class SimpleNginxTest {
         // }
     }
 
+    @Test
+    public void testExposedAndLivenessCheckPorts() throws Exception {
+        assertThat(nginx.getExposedPorts()).containsExactly(80);
+        assertThat(nginx.getLivenessCheckPortNumbers()).containsExactly(nginx.getMappedPort(80));
+    }
+
     private static String responseFromNginx(URL baseUrl) throws IOException {
         URLConnection urlConnection = baseUrl.openConnection();
         @Cleanup

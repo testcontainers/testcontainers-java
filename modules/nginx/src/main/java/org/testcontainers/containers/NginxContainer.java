@@ -6,7 +6,6 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -42,10 +41,14 @@ public class NginxContainer<SELF extends NginxContainer<SELF>>
         setCommand("nginx", "-g", "daemon off;");
     }
 
+    /**
+     * @deprecated use {@link #getLivenessCheckPortNumbers()} instead
+     */
     @NotNull
     @Override
+    @Deprecated
     protected Set<Integer> getLivenessCheckPorts() {
-        return Collections.singleton(getMappedPort(80));
+        return super.getLivenessCheckPorts();
     }
 
     public URL getBaseUrl(String scheme, int port) throws MalformedURLException {
