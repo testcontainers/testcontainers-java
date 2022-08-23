@@ -54,9 +54,14 @@ public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
         addExposedPort(DB2_PORT);
     }
 
+    /**
+     * @return the ports on which to check if the container is ready
+     * @deprecated use {@link #getLivenessCheckPortNumbers()} instead
+     */
     @Override
+    @Deprecated
     protected Set<Integer> getLivenessCheckPorts() {
-        return new HashSet<>(getMappedPort(DB2_PORT));
+        return super.getLivenessCheckPorts();
     }
 
     @Override
