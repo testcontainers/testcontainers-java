@@ -85,4 +85,5 @@
   - modules/trino/*
 "modules/vault":
   - modules/vault/*
-"type/docs": docs/**/*
+"type/docs":
+  - docs/**/*.md
