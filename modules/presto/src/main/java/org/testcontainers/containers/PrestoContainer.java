@@ -56,10 +56,15 @@ public class PrestoContainer<SELF extends PrestoContainer<SELF>> extends JdbcDat
         addExposedPort(PRESTO_PORT);
     }
 
+    /**
+     * @return the ports on which to check if the container is ready
+     * @deprecated use {@link #getLivenessCheckPortNumbers()} instead
+     */
     @NotNull
     @Override
+    @Deprecated
     protected Set<Integer> getLivenessCheckPorts() {
-        return new HashSet<>(getMappedPort(PRESTO_PORT));
+        return super.getLivenessCheckPorts();
     }
 
     @Override
