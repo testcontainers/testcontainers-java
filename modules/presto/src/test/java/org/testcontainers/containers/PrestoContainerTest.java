@@ -154,8 +154,7 @@ public class PrestoContainerTest {
     public void testExposedAndLivenessCheckPorts() {
         try (PrestoContainer<?> prestoSql = new PrestoContainer<>(PrestoTestImages.PRESTO_TEST_IMAGE)) {
             prestoSql.start();
-            assertThat(prestoSql.getExposedPorts())
-                .containsExactly(PrestoContainer.PRESTO_PORT);
+            assertThat(prestoSql.getExposedPorts()).containsExactly(PrestoContainer.PRESTO_PORT);
             assertThat(prestoSql.getLivenessCheckPortNumbers())
                 .containsExactly(prestoSql.getMappedPort(PrestoContainer.PRESTO_PORT));
         }

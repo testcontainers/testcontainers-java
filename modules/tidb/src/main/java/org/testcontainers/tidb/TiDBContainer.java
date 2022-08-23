@@ -6,7 +6,6 @@ import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
-import java.util.HashSet;
 import java.util.Set;
 
 /**

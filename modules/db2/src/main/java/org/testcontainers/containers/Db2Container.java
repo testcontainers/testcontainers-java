@@ -6,7 +6,6 @@ import org.testcontainers.utility.LicenseAcceptance;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-import java.util.HashSet;
 import java.util.Set;
 
 public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
