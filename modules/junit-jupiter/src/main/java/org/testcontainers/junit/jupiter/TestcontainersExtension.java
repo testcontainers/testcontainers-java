@@ -13,9 +13,9 @@ import org.junit.jupiter.api.extension.ExtensionContext.Namespace;
 import org.junit.jupiter.api.extension.ExtensionContext.Store;
 import org.junit.jupiter.api.extension.ExtensionContext.Store.CloseableResource;
 import org.junit.platform.commons.support.AnnotationSupport;
-import org.junit.platform.commons.util.AnnotationUtils;
-import org.junit.platform.commons.util.Preconditions;
-import org.junit.platform.commons.util.ReflectionUtils;
+import org.junit.platform.commons.support.HierarchyTraversalMode;
+import org.junit.platform.commons.support.ModifierSupport;
+import org.junit.platform.commons.support.ReflectionSupport;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.lifecycle.TestDescription;
@@ -131,7 +131,7 @@ public class TestcontainersExtension
     private Optional<Testcontainers> findTestcontainers(ExtensionContext context) {
         Optional<ExtensionContext> current = Optional.of(context);
         while (current.isPresent()) {
-            Optional<Testcontainers> testcontainers = AnnotationUtils.findAnnotation(
+            Optional<Testcontainers> testcontainers = AnnotationSupport.findAnnotation(
                 current.get().getRequiredTestClass(),
                 Testcontainers.class
             );
@@ -169,26 +169,26 @@ public class TestcontainersExtension
     }
 
     private List<StoreAdapter> findSharedContainers(Class<?> testClass) {
-        return ReflectionUtils
-            .findFields(testClass, isSharedContainer(), ReflectionUtils.HierarchyTraversalMode.TOP_DOWN)
+        return ReflectionSupport
+            .findFields(testClass, isSharedContainer(), HierarchyTraversalMode.TOP_DOWN)
             .stream()
             .map(f -> getContainerInstance(null, f))
             .collect(Collectors.toList());
     }
 
     private Predicate<Field> isSharedContainer() {
-        return isContainer().and(ReflectionUtils::isStatic);
+        return isContainer().and(ModifierSupport::isStatic);
     }
 
     private Stream<StoreAdapter> findRestartContainers(Object testInstance) {
-        return ReflectionUtils
-            .findFields(testInstance.getClass(), isRestartContainer(), ReflectionUtils.HierarchyTraversalMode.TOP_DOWN)
+        return ReflectionSupport
+            .findFields(testInstance.getClass(), isRestartContainer(), HierarchyTraversalMode.TOP_DOWN)
             .stream()
             .map(f -> getContainerInstance(testInstance, f));
     }
 
     private Predicate<Field> isRestartContainer() {
-        return isContainer().and(ReflectionUtils::isNotStatic);
+        return isContainer().and(ModifierSupport::isNotStatic);
     }
 
     private static Predicate<Field> isContainer() {
@@ -211,10 +211,10 @@ public class TestcontainersExtension
     private static StoreAdapter getContainerInstance(final Object testInstance, final Field field) {
         try {
             field.setAccessible(true);
-            Startable containerInstance = Preconditions.notNull(
-                (Startable) field.get(testInstance),
-                "Container " + field.getName() + " needs to be initialized"
-            );
+            Startable containerInstance = (Startable) field.get(testInstance);
+            if (containerInstance == null) {
+                throw new ExtensionConfigurationException("Container " + field.getName() + " needs to be initialized");
+            }
             return new StoreAdapter(field.getDeclaringClass(), field.getName(), containerInstance);
         } catch (IllegalAccessException e) {
             throw new ExtensionConfigurationException("Can not access container defined in field " + field.getName());
