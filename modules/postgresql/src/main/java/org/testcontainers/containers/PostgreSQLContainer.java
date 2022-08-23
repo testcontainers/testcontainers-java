@@ -71,7 +71,7 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
     @Override
     @Deprecated
     protected Set<Integer> getLivenessCheckPorts() {
-        return Collections.singleton(getMappedPort(POSTGRESQL_PORT));
+        return super.getLivenessCheckPorts();
     }
 
     @Override

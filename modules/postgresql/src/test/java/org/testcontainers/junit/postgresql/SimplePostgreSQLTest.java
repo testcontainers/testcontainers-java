@@ -86,4 +86,16 @@ public class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
             assertThat(jdbcUrl).contains("charSet=UNICODE");
         }
     }
+
+    @Test
+    public void testExposedAndLivenessCheckPorts() {
+        try (
+            PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(PostgreSQLTestImages.POSTGRES_TEST_IMAGE);
+        ) {
+            postgres.start();
+            assertThat(postgres.getExposedPorts()).containsExactly(PostgreSQLContainer.POSTGRESQL_PORT);
+            assertThat(postgres.getLivenessCheckPortNumbers())
+                .containsExactly(postgres.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT));
+        }
+    }
 }
