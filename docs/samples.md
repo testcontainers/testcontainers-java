@@ -1,6 +1,6 @@
 # Examples
 
-Examples provided by Testcontainers can be found below:
+Examples of different use cases provided by Testcontainers can be found below:
 
 - [Kafka Cluster with multiple brokers](https://github.com/testcontainers/testcontainers-java/tree/master/examples/kafka-cluster)
 - [Linked containers](https://github.com/testcontainers/testcontainers-java/tree/master/examples/linked-container)
