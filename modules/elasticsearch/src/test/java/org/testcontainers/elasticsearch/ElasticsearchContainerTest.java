@@ -19,6 +19,7 @@ import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.junit.After;
 import org.junit.Test;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.RemoteDockerImage;
@@ -375,6 +376,46 @@ public class ElasticsearchContainerTest {
         }
     }
 
+    @Test
+    public void testElasticsearchDefaultMaxHeapSize() throws Exception {
+        long defaultHeapSize = 2147483648L;
+
+        try (ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE)) {
+            container.start();
+            assertElasticsearchContainerHasHeapSize(container, defaultHeapSize);
+        }
+    }
+
+    @Test
+    public void testElasticsearchCustomMaxHeapSizeInEnvironmentVariable() throws Exception {
+        long customHeapSize = 1574961152;
+
+        try (
+            ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE)
+                .withEnv("ES_JAVA_OPTS", String.format("-Xms%d  -Xmx%d", customHeapSize, customHeapSize))
+        ) {
+            container.start();
+            assertElasticsearchContainerHasHeapSize(container, customHeapSize);
+        }
+    }
+
+    @Test
+    public void testElasticsearchCustomMaxHeapSizeInJvmOptionsFile() throws Exception {
+        long customHeapSize = 1574961152;
+
+        try (
+            ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE)
+                .withClasspathResourceMapping(
+                    "test-custom-memory-jvm.options",
+                    "/usr/share/elasticsearch/config/jvm.options.d/a-user-defined-jvm.options",
+                    BindMode.READ_ONLY
+                );
+        ) {
+            container.start();
+            assertElasticsearchContainerHasHeapSize(container, customHeapSize);
+        }
+    }
+
     private void tagImage(String sourceImage, String targetImage, String targetTag) throws InterruptedException {
         DockerClient dockerClient = DockerClientFactory.instance().client();
         dockerClient
@@ -437,5 +478,14 @@ public class ElasticsearchContainerTest {
         }
 
         return anonymousClient;
+    }
+
+    private void assertElasticsearchContainerHasHeapSize(ElasticsearchContainer container, long heapSizeInBytes)
+        throws Exception {
+        Response response = getClient(container).performRequest(new Request("GET", "/_nodes/_all/jvm"));
+        String responseBody = EntityUtils.toString(response.getEntity());
+        assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
+        assertThat(responseBody).contains("\"heap_init_in_bytes\":" + heapSizeInBytes);
+        assertThat(responseBody).contains("\"heap_max_in_bytes\":" + heapSizeInBytes);
     }
 }
