@@ -12,7 +12,7 @@ import static org.mockserver.model.HttpResponse.response;
 public class MockServerContainerRuleTest {
 
     public static final DockerImageName MOCKSERVER_IMAGE = DockerImageName.parse(
-        "jamesdbloom/mockserver:mockserver-5.5.4"
+        "jamesdbloom/mockserver:mockserver-5.13.2"
     );
 
     // creatingProxy {
