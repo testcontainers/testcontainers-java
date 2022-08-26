@@ -1,11 +1,5 @@
 description = "Testcontainers :: Couchbase"
 
-tasks.japicmp {
-    packageExcludes = [
-        "org.testcontainers.shaded.*",
-    ]
-}
-
 dependencies {
     api project(':testcontainers')
     // TODO use JDK's HTTP client and/or Apache HttpClient5

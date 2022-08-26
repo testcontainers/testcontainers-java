@@ -1,11 +1,5 @@
 description = "TestContainers :: HiveMQ"
 
-tasks.japicmp {
-    packageExcludes = [
-        "org.testcontainers.shaded.*",
-    ]
-}
-
 dependencies {
     api(project(":testcontainers"))
     api("org.jetbrains:annotations:23.0.0")
