@@ -98,4 +98,11 @@ public class MongoDBContainerTest {
             assertThat(mongoDBContainer.getReplicaSetUrl(databaseName)).endsWith(databaseName);
         }
     }
+
+    @Test
+    public void supportsMongoDB_6() {
+        try (final MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0.1")) {
+            mongoDBContainer.start();
+        }
+    }
 }
