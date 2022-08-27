@@ -1,9 +1,6 @@
 package org.testcontainers.junit;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.testcontainers.containers.ContainerState;
-import org.testcontainers.containers.DockerComposeContainer;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,7 +9,10 @@ import java.nio.file.Files;
 import java.util.Collections;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.Rule;
+import org.junit.Test;
+import org.testcontainers.containers.ContainerState;
+import org.testcontainers.containers.DockerComposeContainer;
 
 /**
  * Created by rnorth on 08/08/2015.
@@ -44,12 +44,26 @@ public class DockerComposeContainerTest extends BaseDockerComposeTest {
     public void shouldRetrieveContainerByServiceName() {
         String existingServiceName = "db_1";
         Optional<ContainerState> result = environment.getContainerByServiceName(existingServiceName);
+
         assertThat(result)
             .as(String.format("Container should be found by service name %s", existingServiceName))
             .isPresent();
         assertThat(Collections.singletonList(3306))
             .as("Mapped port for result container was wrong, probably wrong container found")
             .isEqualTo(result.get().getExposedPorts());
+    }
+
+    @Test
+    public void shouldRetrieveContainerByServiceNameWithoutNumberedSuffix() {
+        String existingServiceName = "db";
+        Optional<ContainerState> result = environment.getContainerByServiceName(existingServiceName);
+
+        assertThat(result)
+            .as(String.format("Container should be found by service name %s", existingServiceName))
+            .isPresent();
+        assertThat(result.get().getExposedPorts())
+            .as("Mapped port for result container was wrong, probably wrong container found")
+            .isEqualTo(Collections.singletonList(3306));
     }
 
     @Test
