@@ -1,6 +1,9 @@
 package org.testcontainers.junit;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.Rule;
+import org.junit.Test;
+import org.testcontainers.containers.ContainerState;
+import org.testcontainers.containers.DockerComposeContainer;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,10 +12,7 @@ import java.nio.file.Files;
 import java.util.Collections;
 import java.util.Optional;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.testcontainers.containers.ContainerState;
-import org.testcontainers.containers.DockerComposeContainer;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Created by rnorth on 08/08/2015.
