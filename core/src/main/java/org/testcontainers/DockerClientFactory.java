@@ -34,6 +34,7 @@ import org.testcontainers.utility.TestcontainersConfiguration;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -149,8 +150,15 @@ public class DockerClientFactory {
         }
 
         URI dockerHost = getTransportConfig().getDockerHost();
-        String path = "unix".equals(dockerHost.getScheme()) ? dockerHost.getRawPath() : "/var/run/docker.sock";
-        return SystemUtils.IS_OS_WINDOWS ? "/" + path : path;
+        log.info("using dockerHost: {}", dockerHost);
+        Collection<String> pathBasedDockerHosts = new ArrayList<String>() {{
+            add("unix");
+            add("npipe");
+        }};
+        String path = pathBasedDockerHosts.contains(dockerHost.getScheme()) ? dockerHost.getRawPath() : "/var/run/docker.sock";
+        log.info("using path: {}", path);
+        return path;
+//        return SystemUtils.IS_OS_WINDOWS ? "/" + path : path;
     }
 
     /**

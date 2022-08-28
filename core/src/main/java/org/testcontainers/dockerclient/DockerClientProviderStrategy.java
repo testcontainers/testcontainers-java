@@ -276,13 +276,16 @@ public abstract class DockerClientProviderStrategy {
                 strategy.getTransportConfig().getDockerHost()
             );
 
-            log.debug("Checking Docker OS type for {}", strategy.getDescription());
-            String osType = strategy.getInfo().getOsType();
-            if (StringUtils.isBlank(osType)) {
-                log.warn("Could not determine Docker OS type");
-            } else if (!osType.equals("linux")) {
-                log.warn("{} is currently not supported", osType);
-                throw new InvalidConfigurationException(osType + " containers are currently not supported");
+            boolean checksEnabled = !TestcontainersConfiguration.getInstance().isDisableChecks();
+            log.debug("Checking Docker OS type for {}: {}", strategy.getDescription(), checksEnabled);
+            if (checksEnabled) {
+                String osType = strategy.getInfo().getOsType();
+                if (StringUtils.isBlank(osType)) {
+                    log.warn("Could not determine Docker OS type");
+                } else if (!osType.equals("linux")) {
+                    log.warn("{} is currently not supported", osType);
+                    throw new InvalidConfigurationException(osType + " containers are currently not supported");
+                }
             }
 
             if (strategy.isPersistable()) {
