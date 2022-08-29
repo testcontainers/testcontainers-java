@@ -4,7 +4,6 @@ Examples of different use cases provided by Testcontainers can be found below:
 
 - [Kafka Cluster with multiple brokers](https://github.com/testcontainers/testcontainers-java/tree/master/examples/kafka-cluster)
 - [Linked containers](https://github.com/testcontainers/testcontainers-java/tree/master/examples/linked-container)
-- [MongoDB](https://github.com/testcontainers/testcontainers-java/tree/master/examples/mongodb-container)
 - [Neo4j](https://github.com/testcontainers/testcontainers-java/tree/master/examples/neo4j-container)
 - [Redis](https://github.com/testcontainers/testcontainers-java/tree/master/examples/redis-backed-cache)
 - [Selenium](https://github.com/testcontainers/testcontainers-java/tree/master/examples/cucumber)
