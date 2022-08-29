@@ -5,7 +5,6 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
@@ -30,8 +29,6 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
 
     private static final String MONGODB_DATABASE_NAME_DEFAULT = "test";
 
-    private final boolean isAtLeastVersion6;
-
     /**
      * @deprecated use {@link MongoDBContainer(DockerImageName)} instead
      */
@@ -47,8 +44,6 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
     public MongoDBContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
-
-        this.isAtLeastVersion6 = new ComparableVersion(dockerImageName.getVersionPart()).isGreaterThanOrEqualTo("6.0");
 
         withExposedPorts(MONGODB_INTERNAL_PORT);
         withCommand("--replSet", "docker-rs");
@@ -92,8 +87,11 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
     }
 
     private String[] buildMongoEvalCommand(final String command) {
-        String cmd = this.isAtLeastVersion6 ? "mongosh" : "mongo";
-        return new String[] { cmd, "--eval", command };
+        return new String[] {
+            "sh",
+            "-c",
+            "mongosh mongo --eval \"" + command + "\"  || mongo --eval \"" + command + "\"",
+        };
     }
 
     private void checkMongoNodeExitCode(final Container.ExecResult execResult) {
