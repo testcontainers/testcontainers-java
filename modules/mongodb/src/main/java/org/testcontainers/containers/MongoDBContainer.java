@@ -87,7 +87,11 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
     }
 
     private String[] buildMongoEvalCommand(final String command) {
-        return new String[] { "sh", "-c", "mongosh || mongo --eval \"" + command + "\"" };
+        return new String[] {
+            "sh",
+            "-c",
+            "mongosh mongo --eval \"" + command + "\"  || mongo --eval \"" + command + "\"",
+        };
     }
 
     private void checkMongoNodeExitCode(final Container.ExecResult execResult) {
