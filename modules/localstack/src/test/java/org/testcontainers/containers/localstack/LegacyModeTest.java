@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(Enclosed.class)
 public class LegacyModeTest {
 
-    private static DockerImageName LOCALSTACK_CUSTOM_TAG = LocalstackTestImages.LOCALSTACK_IMAGE.withTag("custom");
+    private static DockerImageName LOCALSTACK_CUSTOM_TAG = LocalstackTestImages.LOCALSTACK_0_12_IMAGE.withTag("custom");
 
     @RunWith(Parameterized.class)
     @AllArgsConstructor
