@@ -62,7 +62,7 @@ public class DockerComposeContainerTest extends BaseDockerComposeTest {
             .as(String.format("Container should be found by service name %s", existingServiceName))
             .isPresent();
         assertThat(result.get().getExposedPorts())
-            .as("Mapped port for result container was wrong, probably wrong container found")
+            .as("Mapped port for result container was wrong, perhaps wrong container was found")
             .isEqualTo(Collections.singletonList(3306));
     }
 
