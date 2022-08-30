@@ -26,7 +26,6 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
-import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
@@ -153,12 +152,7 @@ public class LocalstackContainerTest {
             String fooQueueUrl = queueResult.getQueueUrl();
             assertThat(fooQueueUrl)
                 .as("Created queue has external hostname URL")
-                .contains(
-                    "http://" +
-                    DockerClientFactory.instance().dockerHostIpAddress() +
-                    ":" +
-                    localstack.getMappedPort(LocalStackContainer.PORT)
-                );
+                .contains("http://" + localstack.getHost() + ":" + localstack.getMappedPort(LocalStackContainer.PORT));
 
             sqs.sendMessage(fooQueueUrl, "test");
             final long messageCount = sqs
