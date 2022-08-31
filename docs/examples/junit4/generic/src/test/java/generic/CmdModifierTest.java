@@ -12,7 +12,7 @@ import org.testcontainers.utility.DockerImageName;
 import java.io.IOException;
 import java.util.Objects;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class CmdModifierTest {
 
@@ -43,13 +43,13 @@ public class CmdModifierTest {
     @Test
     public void testHostnameModified() throws IOException, InterruptedException {
         final Container.ExecResult execResult = theCache.execInContainer("hostname");
-        assertEquals("the-cache", execResult.getStdout().trim());
+        assertThat(execResult.getStdout().trim()).isEqualTo("the-cache");
     }
 
     @Test
     public void testMemoryLimitModified() throws IOException, InterruptedException {
         final Container.ExecResult execResult = memoryLimitedRedis.execInContainer("cat", getMemoryLimitFilePath());
-        assertEquals(String.valueOf(memoryInBytes), execResult.getStdout().trim());
+        assertThat(execResult.getStdout().trim()).isEqualTo(String.valueOf(memoryInBytes));
     }
 
     private String getMemoryLimitFilePath() {

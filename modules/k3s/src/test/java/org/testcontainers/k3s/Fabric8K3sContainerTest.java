@@ -10,7 +10,7 @@ import io.fabric8.kubernetes.api.model.PodSpecBuilder;
 import io.fabric8.kubernetes.api.model.ProbeBuilder;
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
-import io.fabric8.kubernetes.client.dsl.Readiable;
+import io.fabric8.kubernetes.client.dsl.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
@@ -55,7 +55,7 @@ public class Fabric8K3sContainerTest {
             client.pods().inNamespace("default").withName("helloworld").waitUntilReady(30, TimeUnit.SECONDS);
 
             assertThat(client.pods().inNamespace("default").withName("helloworld"))
-                .extracting(Readiable::isReady)
+                .extracting(Resource::isReady)
                 .isEqualTo(true);
         }
     }
