@@ -64,7 +64,7 @@ Testcontainers will inform Localstack of the best hostname automatically, using 
 
 ## AWS Lambda and Networking
 
-When a test using Localstack triggers a [AWS Lambda function](https://aws.amazon.com/lambda/), Localstack [starts a new docker container](https://docs.localstack.cloud/localstack/lambda-executors/#docker) to run the Lambda code. This might cause problems if your Lambda function calls other AWS services in your Localstack rig. To fix this we have to make sure these Lambda containers are in the same network as the rest of our containers.
+When a test using Localstack triggers a [AWS Lambda function](https://aws.amazon.com/lambda/), Localstack [starts a new docker container](https://docs.localstack.cloud/localstack/lambda-executors/#docker) to run the Lambda code. This might cause problems if your Lambda function calls other AWS services in your Localstack setup. To fix this we have to make sure these Lambda containers are in the same network as the rest of our containers.
 
 ```java
 Network shared = Network.newNetwork()
