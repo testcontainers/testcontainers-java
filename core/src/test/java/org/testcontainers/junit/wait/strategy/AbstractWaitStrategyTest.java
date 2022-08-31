@@ -115,6 +115,39 @@ public abstract class AbstractWaitStrategyTest<W extends WaitStrategy> {
     }
 
     /**
+     * Expects that the WaitStrategy throws a {@link ContainerLaunchException} before the actual wait timeout, because of some connection error
+     * to the checked container with a listening port, e.g. TCP socket error, SSL/TLS handshake error, HTTP error, etc.
+     *
+     * @param container the container to start
+     * @param expectedTypeOfCause expected type of cause of the connection error, as part of the stack trace
+     */
+    protected void waitUntilReadyAndTimeout(
+        GenericContainer<?> container,
+        Class<? extends Throwable> expectedTypeOfCause
+    ) {
+        if (expectedTypeOfCause == null) {
+            throw new IllegalArgumentException("expectedTypeOfCause undefined");
+        }
+        // start() blocks until successful or timeout
+        assertThat(catchThrowable(container::start))
+            .as("check the causes of the container launch exception")
+            .isInstanceOf(ContainerLaunchException.class)
+            .satisfies(throwable -> checkOneOfCausesIsExpectedType(throwable, expectedTypeOfCause));
+    }
+
+    private static void checkOneOfCausesIsExpectedType(
+        Throwable throwable,
+        Class<? extends Throwable> expectedTypeOfCause
+    ) {
+        assertThat(throwable.getCause())
+            .isNotNull()
+            .satisfiesAnyOf(
+                cause -> assertThat(cause).isInstanceOf(expectedTypeOfCause),
+                cause -> checkOneOfCausesIsExpectedType(cause, expectedTypeOfCause)
+            );
+    }
+
+    /**
      * Expects that the WaitStrategy returns successfully after connection to a container with a listening port.
      *
      * @param container the container to start

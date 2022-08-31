@@ -5,11 +5,14 @@ import org.junit.Test;
 import org.rnorth.ducttape.RetryCountExceededException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.images.builder.ImageFromDockerfile;
 
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
+
+import javax.net.ssl.SSLHandshakeException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -200,7 +203,7 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
     }
 
     @Test
-    public void testWaitUntilReadyWithTimoutCausedByReadTimeout() {
+    public void testWaitUntilReadyWithTimeoutCausedByReadTimeout() {
         try (
             GenericContainer<?> container = startContainerWithCommand(
                 createShellCommand("0 Connection Refused", GOOD_RESPONSE_BODY, 9090),
@@ -209,6 +212,30 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
             )
         ) {
             waitUntilReadyAndTimeout(container);
+        }
+    }
+
+    /**
+	 * Test to validate fix from GitHub Pull Request <a href="https://github.com/testcontainers/testcontainers-java/pull/5778">#5778</a>, i.e. when the container startup fails (ContainerLaunchException) before timeout for some reason, we are able to see the root cause of the error in the stack trace, e.g. in this case, a TLS certificate validation error during the TLS handshake test, because we are using a NGINX docker image with self-signed certificate created with the image, that is obviously not trusted.
+	 * The exceptions we should see in the stacktrace ('/' means 'caused by'): ContainerLaunchException / TimeoutException / RuntimeException / SSLHandshakeException / ValidatorException (in sun.* package so not accessible) / SunCertPathBuilderException (in sun.* package so not accessible).
+	 */
+    @Test
+    public void testWaitUntilReadyWithTimeoutCausedBySslHandshakeError() {
+        try (
+            GenericContainer<?> container = new GenericContainer<>(
+                new ImageFromDockerfile()
+                    .withFileFromClasspath("Dockerfile", "https-wait-strategy-dockerfile/Dockerfile")
+                    .withFileFromClasspath("nginx-ssl.conf", "https-wait-strategy-dockerfile/nginx-ssl.conf")
+            )
+                .withExposedPorts(8443)
+                .waitingFor(
+                    createHttpWaitStrategy(ready)
+                        .forPort(8443)
+                        .usingTls()
+                        .withStartupTimeout(Duration.ofMillis(WAIT_TIMEOUT_MILLIS))
+                )
+        ) {
+            waitUntilReadyAndTimeout(container, SSLHandshakeException.class);
         }
     }
 
