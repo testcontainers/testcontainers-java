@@ -80,7 +80,7 @@ dependencies {
 
     api 'com.github.docker-java:docker-java-transport-zerodep'
 
-    shaded "org.yaml:snakeyaml:1.30"
+    shaded "org.yaml:snakeyaml:1.31"
 
     shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
 
