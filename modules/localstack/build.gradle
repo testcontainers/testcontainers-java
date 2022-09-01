@@ -3,7 +3,7 @@ description = "Testcontainers :: Localstack"
 dependencies {
     api project(':testcontainers')
 
-    compileOnly 'com.amazonaws:aws-java-sdk-s3:1.12.285'
+    compileOnly 'com.amazonaws:aws-java-sdk-s3:1.12.295'
     testImplementation 'com.amazonaws:aws-java-sdk-s3:1.12.285'
     testImplementation 'com.amazonaws:aws-java-sdk-sqs:1.12.285'
     testImplementation 'com.amazonaws:aws-java-sdk-logs:1.12.285'
