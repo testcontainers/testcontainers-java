@@ -7,14 +7,14 @@ dependencies {
     api project(':jdbc')
 
     compileOnly project(':r2dbc')
-    compileOnly 'io.r2dbc:r2dbc-postgresql:0.8.12.RELEASE'
+    compileOnly 'io.r2dbc:r2dbc-postgresql:0.8.13.RELEASE'
 
     testImplementation project(':jdbc-test')
     testImplementation project(':test-support')
     testImplementation 'org.postgresql:postgresql:42.4.2'
 
     testImplementation testFixtures(project(':r2dbc'))
-    testImplementation 'io.r2dbc:r2dbc-postgresql:0.8.11.RELEASE'
+    testImplementation 'io.r2dbc:r2dbc-postgresql:0.8.13.RELEASE'
 
     compileOnly 'org.jetbrains:annotations:23.0.0'
 }
