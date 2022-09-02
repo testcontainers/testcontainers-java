@@ -4,8 +4,13 @@ on:
   schedule:
     - cron: "0 0 * * *"
 
+permissions:
+  contents: read
+
 jobs:
   update-gradle-wrapper:
+    permissions:
+      pull-requests: write # for gradle-update/update-gradle-wrapper-action
     if: github.repository == 'testcontainers/testcontainers-java'
     runs-on: ubuntu-latest
 
