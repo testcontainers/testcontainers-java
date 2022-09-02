@@ -13,7 +13,7 @@ dependencies {
     implementation 'com.google.guava:guava:23.0'
     compileOnly 'org.slf4j:slf4j-api:2.0.0'
 
-    testImplementation 'ch.qos.logback:logback-classic:1.2.11'
+    testImplementation 'ch.qos.logback:logback-classic:1.4.0'
     testImplementation 'org.testcontainers:testcontainers'
     testImplementation 'org.assertj:assertj-core:3.23.1'
 }
