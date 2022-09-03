@@ -88,8 +88,7 @@ public class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
         }
     }
 
-    @Test
-    public void assertHasCorrectExposedAndLivenessCheckPorts(PostgreSQLContainer<?> postgres) {
+    private void assertHasCorrectExposedAndLivenessCheckPorts(PostgreSQLContainer<?> postgres) {
         assertThat(postgres.getExposedPorts()).containsExactly(PostgreSQLContainer.POSTGRESQL_PORT);
         assertThat(postgres.getLivenessCheckPortNumbers())
             .containsExactly(postgres.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT));

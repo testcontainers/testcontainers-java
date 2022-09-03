@@ -239,8 +239,7 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
         }
     }
 
-    @Test
-    public void assertHasCorrectExposedAndLivenessCheckPorts(MySQLContainer<?> mysql) {
+    private void assertHasCorrectExposedAndLivenessCheckPorts(MySQLContainer<?> mysql) {
         assertThat(mysql.getExposedPorts()).containsExactly(MySQLContainer.MYSQL_PORT);
         assertThat(mysql.getLivenessCheckPortNumbers()).containsExactly(mysql.getMappedPort(MySQLContainer.MYSQL_PORT));
     }

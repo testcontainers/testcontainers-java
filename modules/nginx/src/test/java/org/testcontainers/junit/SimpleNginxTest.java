@@ -61,8 +61,7 @@ public class SimpleNginxTest {
         assertHasCorrectExposedAndLivenessCheckPorts(nginx);
     }
 
-    @Test
-    public void assertHasCorrectExposedAndLivenessCheckPorts(NginxContainer<?> nginxContainer) throws Exception {
+    private void assertHasCorrectExposedAndLivenessCheckPorts(NginxContainer<?> nginxContainer) throws Exception {
         assertThat(nginxContainer.getExposedPorts()).containsExactly(80);
         assertThat(nginxContainer.getLivenessCheckPortNumbers()).containsExactly(nginxContainer.getMappedPort(80));
     }
