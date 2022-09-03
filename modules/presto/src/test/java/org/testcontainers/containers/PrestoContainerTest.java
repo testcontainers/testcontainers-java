@@ -32,6 +32,7 @@ public class PrestoContainerTest {
                 assertThat(resultSet.getString("node_version"))
                     .as("Presto version")
                     .isEqualTo(PrestoContainer.DEFAULT_TAG);
+                assertHasCorrectExposedAndLivenessCheckPorts(prestoSql);
             }
         }
     }
@@ -151,12 +152,9 @@ public class PrestoContainerTest {
     }
 
     @Test
-    public void testExposedAndLivenessCheckPorts() {
-        try (PrestoContainer<?> prestoSql = new PrestoContainer<>(PrestoTestImages.PRESTO_TEST_IMAGE)) {
-            prestoSql.start();
-            assertThat(prestoSql.getExposedPorts()).containsExactly(PrestoContainer.PRESTO_PORT);
-            assertThat(prestoSql.getLivenessCheckPortNumbers())
-                .containsExactly(prestoSql.getMappedPort(PrestoContainer.PRESTO_PORT));
-        }
+    public void assertHasCorrectExposedAndLivenessCheckPorts(PrestoContainer<?> prestoSql) {
+        assertThat(prestoSql.getExposedPorts()).containsExactly(PrestoContainer.PRESTO_PORT);
+        assertThat(prestoSql.getLivenessCheckPortNumbers())
+            .containsExactly(prestoSql.getMappedPort(PrestoContainer.PRESTO_PORT));
     }
 }
