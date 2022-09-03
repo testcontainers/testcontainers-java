@@ -25,6 +25,7 @@ public class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
 
             int resultSetInt = resultSet.getInt(1);
             assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+            assertHasCorrectExposedAndLivenessCheckPorts(mssqlServer);
         }
     }
 
@@ -66,13 +67,9 @@ public class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testExposedAndLivenessCheckPorts() throws Exception {
-        try (
-            MSSQLServerContainer<?> mssqlServer = new MSSQLServerContainer<>(MSSQLServerTestImages.MSSQL_SERVER_IMAGE)
-        ) {
-            mssqlServer.start();
-            assertThat(mssqlServer.getExposedPorts()).containsExactly(MSSQLServerContainer.MS_SQL_SERVER_PORT);
-            assertThat(mssqlServer.getLivenessCheckPortNumbers()).containsExactly(mssqlServer.getMappedPort(1433));
-        }
+    public void assertHasCorrectExposedAndLivenessCheckPorts(MSSQLServerContainer<?> mssqlServer) {
+        mssqlServer.start();
+        assertThat(mssqlServer.getExposedPorts()).containsExactly(MSSQLServerContainer.MS_SQL_SERVER_PORT);
+        assertThat(mssqlServer.getLivenessCheckPortNumbers()).containsExactly(mssqlServer.getMappedPort(1433));
     }
 }

@@ -21,6 +21,7 @@ public class SimpleDb2Test extends AbstractContainerDatabaseTest {
 
             int resultSetInt = resultSet.getInt(1);
             assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+            assertHasCorrectExposedAndLivenessCheckPorts(db2);
         }
     }
 
@@ -39,11 +40,8 @@ public class SimpleDb2Test extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testExposedAndLivenessCheckPorts() {
-        try (Db2Container db2 = new Db2Container(Db2TestImages.DB2_IMAGE).acceptLicense()) {
-            db2.start();
-            assertThat(db2.getExposedPorts()).containsExactly(50_000);
-            assertThat(db2.getLivenessCheckPortNumbers()).containsExactly(db2.getMappedPort(50_000));
-        }
+    public void assertHasCorrectExposedAndLivenessCheckPorts(Db2Container db2) {
+        assertThat(db2.getExposedPorts()).containsExactly(50_000);
+        assertThat(db2.getLivenessCheckPortNumbers()).containsExactly(db2.getMappedPort(50_000));
     }
 }

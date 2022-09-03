@@ -57,6 +57,7 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
             int resultSetInt = resultSet.getInt(1);
 
             assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+            assertHasCorrectExposedAndLivenessCheckPorts(mysql);
         }
     }
 
@@ -239,15 +240,9 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testExposedAndLivenessCheckPorts() {
-        try (
-            MySQLContainer<?> mysql = new MySQLContainer<>(MySQLTestImages.MYSQL_57_IMAGE)
-                .withLogConsumer(new Slf4jLogConsumer(logger));
-        ) {
-            mysql.start();
-            assertThat(mysql.getExposedPorts()).containsExactly(MySQLContainer.MYSQL_PORT);
-            assertThat(mysql.getLivenessCheckPortNumbers())
-                .containsExactly(mysql.getMappedPort(MySQLContainer.MYSQL_PORT));
-        }
+    public void assertHasCorrectExposedAndLivenessCheckPorts(MySQLContainer<?> mysql) {
+        assertThat(mysql.getExposedPorts()).containsExactly(MySQLContainer.MYSQL_PORT);
+        assertThat(mysql.getLivenessCheckPortNumbers())
+            .containsExactly(mysql.getMappedPort(MySQLContainer.MYSQL_PORT));
     }
 }
