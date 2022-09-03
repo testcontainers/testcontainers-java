@@ -41,7 +41,7 @@ public class SimpleDb2Test extends AbstractContainerDatabaseTest {
 
     @Test
     public void assertHasCorrectExposedAndLivenessCheckPorts(Db2Container db2) {
-        assertThat(db2.getExposedPorts()).containsExactly(50_000);
-        assertThat(db2.getLivenessCheckPortNumbers()).containsExactly(db2.getMappedPort(50_000));
+        assertThat(db2.getExposedPorts()).containsExactly(Db2Container.DB2_PORT);
+        assertThat(db2.getLivenessCheckPortNumbers()).containsExactly(db2.getMappedPort(Db2Container.DB2_PORT));
     }
 }

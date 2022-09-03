@@ -70,6 +70,7 @@ public class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
     public void assertHasCorrectExposedAndLivenessCheckPorts(MSSQLServerContainer<?> mssqlServer) {
         mssqlServer.start();
         assertThat(mssqlServer.getExposedPorts()).containsExactly(MSSQLServerContainer.MS_SQL_SERVER_PORT);
-        assertThat(mssqlServer.getLivenessCheckPortNumbers()).containsExactly(mssqlServer.getMappedPort(1433));
+        assertThat(mssqlServer.getLivenessCheckPortNumbers())
+            .containsExactly(mssqlServer.getMappedPort(MSSQLServerContainer.MS_SQL_SERVER_PORT));
     }
 }
