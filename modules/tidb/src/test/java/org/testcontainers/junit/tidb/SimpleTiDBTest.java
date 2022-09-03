@@ -10,7 +10,7 @@ import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class SimpleTiDBContainerTest extends AbstractContainerDatabaseTest {
+public class SimpleTiDBTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSimple() throws SQLException {
