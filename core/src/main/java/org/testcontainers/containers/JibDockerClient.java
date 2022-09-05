@@ -9,6 +9,8 @@ import com.google.cloud.tools.jib.image.ImageTarball;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.CharStreams;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.images.RemoteDockerImage;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -26,7 +28,7 @@ import java.util.function.Consumer;
 
 public class JibDockerClient implements DockerClient {
 
-    com.github.dockerjava.api.DockerClient dockerClient = DockerClientFactory.lazyClient();
+    private final com.github.dockerjava.api.DockerClient dockerClient = DockerClientFactory.lazyClient();
 
     @Override
     public boolean supported(Map<String, String> map) {
@@ -59,6 +61,8 @@ public class JibDockerClient implements DockerClient {
 
     @Override
     public ImageDetails inspect(ImageReference imageReference) {
+        new RemoteDockerImage(DockerImageName.parse(imageReference.toString())).get();
+
         InspectImageResponse response = this.dockerClient.inspectImageCmd(imageReference.toString()).exec();
         return new JibImageDetails(response.getSize(), response.getId(), response.getRootFS().getLayers());
     }
