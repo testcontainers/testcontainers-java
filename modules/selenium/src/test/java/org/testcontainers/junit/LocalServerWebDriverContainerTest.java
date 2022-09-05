@@ -1,8 +1,8 @@
 package org.testcontainers.junit;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.bio.SocketConnector;
 import org.mortbay.jetty.handler.ResourceHandler;
@@ -11,6 +11,8 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.testcontainers.Testcontainers;
 import org.testcontainers.containers.BrowserWebDriverContainer;
+import org.testcontainers.junit4.Container;
+import org.testcontainers.junit4.TestContainersRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -18,9 +20,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Test that a browser running in a container can access a web server hosted on the host machine (i.e. the one running
  * the tests)
  */
+@RunWith(TestContainersRunner.class)
 public class LocalServerWebDriverContainerTest {
 
-    @Rule
+    @Container
     public BrowserWebDriverContainer<?> chrome = new BrowserWebDriverContainer<>()
         .withAccessToHost(true)
         .withCapabilities(new ChromeOptions());

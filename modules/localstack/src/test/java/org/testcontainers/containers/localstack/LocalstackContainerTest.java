@@ -22,7 +22,6 @@ import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import com.amazonaws.services.sqs.model.CreateQueueResult;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
-import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -30,6 +29,8 @@ import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.localstack.LocalStackContainer.Service;
+import org.testcontainers.junit4.ClassContainer;
+import org.testcontainers.junit4.TestContainersRunner;
 import org.testcontainers.utility.DockerImageName;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -54,10 +55,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(Enclosed.class)
 public class LocalstackContainerTest {
 
+    @RunWith(TestContainersRunner.class)
     public static class WithoutNetwork {
 
         // without_network {
-        @ClassRule
+        @ClassContainer
         public static LocalStackContainer localstack = new LocalStackContainer(LocalstackTestImages.LOCALSTACK_IMAGE)
             .withServices(
                 Service.S3,
@@ -240,12 +242,13 @@ public class LocalstackContainerTest {
         }
     }
 
+    @RunWith(TestContainersRunner.class)
     public static class WithNetwork {
 
         // with_network {
         private static Network network = Network.newNetwork();
 
-        @ClassRule
+        @ClassContainer
         public static LocalStackContainer localstackInDockerNetwork = new LocalStackContainer(
             LocalstackTestImages.LOCALSTACK_IMAGE
         )
@@ -255,7 +258,7 @@ public class LocalstackContainerTest {
 
         // }
 
-        @ClassRule
+        @ClassContainer
         public static GenericContainer<?> awsCliInDockerNetwork = new GenericContainer<>(
             LocalstackTestImages.AWS_CLI_IMAGE
         )
@@ -330,12 +333,13 @@ public class LocalstackContainerTest {
         }
     }
 
+    @RunWith(TestContainersRunner.class)
     public static class WithRegion {
 
         // with_region {
         private static String region = "eu-west-1";
 
-        @ClassRule
+        @ClassContainer
         public static LocalStackContainer localstack = new LocalStackContainer(LocalstackTestImages.LOCALSTACK_IMAGE)
             .withEnv("DEFAULT_REGION", region)
             .withServices(Service.S3);
@@ -356,7 +360,7 @@ public class LocalstackContainerTest {
 
     public static class WithoutServices {
 
-        @ClassRule
+        @ClassContainer
         public static LocalStackContainer localstack = new LocalStackContainer(
             LocalstackTestImages.LOCALSTACK_0_13_IMAGE
         );
@@ -384,14 +388,14 @@ public class LocalstackContainerTest {
 
         private static Network network = Network.newNetwork();
 
-        @ClassRule
+        @ClassContainer
         public static LocalStackContainer localstack = new LocalStackContainer(
             DockerImageName.parse("localstack/localstack:2.0")
         )
             .withNetwork(network)
             .withNetworkAliases("localstack");
 
-        @ClassRule
+        @ClassContainer
         public static GenericContainer<?> awsCliInDockerNetwork = new GenericContainer<>(
             LocalstackTestImages.AWS_CLI_IMAGE
         )

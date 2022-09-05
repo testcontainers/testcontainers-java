@@ -48,7 +48,11 @@ public class DefaultRecordingFileFactoryTest {
             Test.class
         );
 
-        File recordingFile = factory.recordingFileForTest(vncRecordingDirectory, description, success);
+        File recordingFile = factory.recordingFileForTest(
+            vncRecordingDirectory,
+            description.getTestClass().getSimpleName() + "-" + description.getMethodName(),
+            success
+        );
 
         String expectedFilePrefix = String.format("%s-%s-%s", prefix, getClass().getSimpleName(), methodName);
 

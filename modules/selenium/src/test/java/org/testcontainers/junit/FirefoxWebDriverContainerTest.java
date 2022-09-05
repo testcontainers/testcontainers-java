@@ -1,10 +1,10 @@
 package org.testcontainers.junit;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.testcontainers.containers.BrowserWebDriverContainer;
+import org.testcontainers.junit4.Container;
 
 /**
  *
@@ -12,7 +12,7 @@ import org.testcontainers.containers.BrowserWebDriverContainer;
 public class FirefoxWebDriverContainerTest extends BaseWebDriverContainerTest {
 
     // junitRule {
-    @Rule
+    @Container
     public BrowserWebDriverContainer<?> firefox = new BrowserWebDriverContainer<>()
         .withCapabilities(new FirefoxOptions())
         // }

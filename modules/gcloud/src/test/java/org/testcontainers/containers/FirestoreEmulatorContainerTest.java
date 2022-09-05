@@ -8,8 +8,10 @@ import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.FirestoreOptions;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.google.cloud.firestore.WriteResult;
-import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.testcontainers.junit4.Container;
+import org.testcontainers.junit4.TestContainersRunner;
 import org.testcontainers.utility.DockerImageName;
 
 import java.util.HashMap;
@@ -18,9 +20,10 @@ import java.util.concurrent.ExecutionException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RunWith(TestContainersRunner.class)
 public class FirestoreEmulatorContainerTest {
 
-    @Rule
+    @Container
     // emulatorContainer {
     public FirestoreEmulatorContainer emulator = new FirestoreEmulatorContainer(
         DockerImageName.parse("gcr.io/google.com/cloudsdktool/google-cloud-cli:380.0.0-emulators")

@@ -1,18 +1,21 @@
 package generic;
 
-import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
+import org.testcontainers.junit4.Container;
+import org.testcontainers.junit4.TestContainersRunner;
 import org.testcontainers.utility.DockerImageName;
 
+@RunWith(TestContainersRunner.class)
 public class MultiplePortsExposedTest {
 
     private static final Logger log = LoggerFactory.getLogger(MultiplePortsExposedTest.class);
 
-    @Rule
+    @Container
     // rule {
     public GenericContainer<?> container = new GenericContainer<>(
         DockerImageName.parse("testcontainers/helloworld:1.1.0")

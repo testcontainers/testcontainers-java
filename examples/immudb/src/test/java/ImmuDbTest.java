@@ -4,16 +4,19 @@ import io.codenotary.immudb4j.exceptions.VerificationException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.junit4.ClassContainer;
+import org.testcontainers.junit4.TestContainersRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Test class for the ImmuDbClient.
  */
+@RunWith(TestContainersRunner.class)
 public class ImmuDbTest {
 
     // Default port for the ImmuDb server
@@ -29,7 +32,7 @@ public class ImmuDbTest {
     private final String IMMUDB_DATABASE = "defaultdb";
 
     // Test container for the ImmuDb database, with the latest version of the image and exposed port
-    @ClassRule
+    @ClassContainer
     public static final GenericContainer<?> immuDbContainer = new GenericContainer<>("codenotary/immudb:1.3")
         .withExposedPorts(IMMUDB_PORT)
         .waitingFor(Wait.forLogMessage(".*Web API server enabled.*", 1));

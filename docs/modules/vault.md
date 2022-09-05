@@ -4,7 +4,7 @@ Testcontainers module for [Vault](https://github.com/hashicorp/vault). Vault is 
 
 ## Usage example
 
-Start Vault container as a `@ClassRule`:
+Start Vault container as a `@Container`:
 
 <!--codeinclude-->
 [Starting a Vault container](../../modules/vault/src/test/java/org/testcontainers/vault/VaultContainerTest.java) inside_block:vaultContainer

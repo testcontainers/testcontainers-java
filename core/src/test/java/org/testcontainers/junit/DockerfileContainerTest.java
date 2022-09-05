@@ -4,7 +4,8 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.junit.Rule;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
@@ -18,7 +19,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class DockerfileContainerTest {
 
-    @Rule
     public GenericContainer dslContainer = new GenericContainer(
         new ImageFromDockerfile("tcdockerfile/nginx", false)
             .withDockerfileFromBuilder(builder -> {
@@ -30,6 +30,16 @@ public class DockerfileContainerTest {
             })
     )
         .withExposedPorts(80);
+
+    @Before
+    public void setUp() {
+        dslContainer.start();
+    }
+
+    @After
+    public void cleanUp() {
+        dslContainer.stop();
+    }
 
     @Test
     public void simpleDslTest() throws IOException {

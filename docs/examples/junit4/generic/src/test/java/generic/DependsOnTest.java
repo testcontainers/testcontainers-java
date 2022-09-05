@@ -1,18 +1,21 @@
 package generic;
 
-import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit4.Container;
+import org.testcontainers.junit4.TestContainersRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RunWith(TestContainersRunner.class)
 public class DependsOnTest {
 
-    @Rule
+    @Container
     // dependsOn {
     public GenericContainer<?> redis = new GenericContainer<>("redis:3.0.2").withExposedPorts(6379);
 
-    @Rule
+    @Container
     public GenericContainer<?> nginx = new GenericContainer<>("nginx:1.9.4").dependsOn(redis).withExposedPorts(80);
 
     // }

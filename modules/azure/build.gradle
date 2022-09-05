@@ -7,4 +7,5 @@ dependencies {
 
     testImplementation 'org.assertj:assertj-core:3.24.2'
     testImplementation 'com.azure:azure-cosmos:4.41.0'
+    testImplementation project(':testcontainers-junit4')
 }

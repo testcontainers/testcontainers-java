@@ -10,9 +10,10 @@ See [Database containers](./index.md) for documentation and usage that is common
 Running Trino as a stand-in for in a test:
 
 ```java
+@RunWith(TestContainersRunner.class)
 public class SomeTest {
 
-    @Rule
+    @Container
     public TrinoContainer trino = new TrinoContainer();
     
     @Test
@@ -34,8 +35,9 @@ Trino comes with several catalogs preconfigured. Most useful ones for testing ar
 Example test using the `tpch` and `memory` catalogs:
 
 ```java
+@RunWith(TestContainersRunner.class)
 public class SomeTest {
-    @Rule
+    @Container
     public TrinoContainer trino = new TrinoContainer();
 
     @Test

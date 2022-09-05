@@ -4,6 +4,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit4.ContainerRule;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -28,7 +29,9 @@ public class RedmineClientTest {
         .withEnv("POSTGRES_ENV_POSTGRES_PASSWORD", POSTGRES_PASSWORD);
 
     @Rule
-    public RuleChain chain = RuleChain.outerRule(postgreSQLContainer).around(redmineContainer);
+    public RuleChain chain = RuleChain
+        .outerRule(new ContainerRule<>(postgreSQLContainer))
+        .around(new ContainerRule<>(redmineContainer));
 
     @Test
     public void canGetIssueCount() throws Exception {

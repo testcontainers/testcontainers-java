@@ -10,7 +10,8 @@ Note that it's based on the [official Docker image](https://hub.docker.com/_/ori
 
 ## Usage example
 
-Declare your Testcontainers instance as a `@ClassRule` or `@Rule` in a JUnit 4 test or as static or member attribute of a JUnit 5 test annotated with `@Container` as you would with other Testcontainers.
+Declare your Testcontainers instance as a `@ClassContainer` or `@Container` in a JUnit 4 test or as static or member attribute of a JUnit 5 test annotated with `@Container` as you would with other Testcontainers.
+
 You can call `getDbUrl()` OrientDB container and build the `ODatabaseSession` by your own, but a more useful `getSession()` method is provided.
 On the JVM you would most likely use the [Java driver](https://github.com/).
 

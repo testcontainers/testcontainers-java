@@ -1,19 +1,23 @@
 package quickstart;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit4.Container;
+import org.testcontainers.junit4.TestContainersRunner;
 import org.testcontainers.utility.DockerImageName;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+// class {
+@RunWith(TestContainersRunner.class)
 public class RedisBackedCacheIntTest {
 
     private RedisBackedCache underTest;
 
     // rule {
-    @Rule
+    @Container
     public GenericContainer redis = new GenericContainer(DockerImageName.parse("redis:5.0.3-alpine"))
         .withExposedPorts(6379);
 
@@ -36,3 +40,4 @@ public class RedisBackedCacheIntTest {
         assertThat(retrieved).isEqualTo("example");
     }
 }
+// }

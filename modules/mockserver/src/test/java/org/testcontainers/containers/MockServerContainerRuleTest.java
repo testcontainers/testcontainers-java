@@ -1,14 +1,17 @@
 package org.testcontainers.containers;
 
-import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockserver.client.MockServerClient;
+import org.testcontainers.junit4.Container;
+import org.testcontainers.junit4.TestContainersRunner;
 import org.testcontainers.utility.DockerImageName;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
+@RunWith(TestContainersRunner.class)
 public class MockServerContainerRuleTest {
 
     // creatingProxy {
@@ -16,7 +19,7 @@ public class MockServerContainerRuleTest {
         .parse("mockserver/mockserver")
         .withTag("mockserver-" + MockServerClient.class.getPackage().getImplementationVersion());
 
-    @Rule
+    @Container
     public MockServerContainer mockServer = new MockServerContainer(MOCKSERVER_IMAGE);
 
     // }

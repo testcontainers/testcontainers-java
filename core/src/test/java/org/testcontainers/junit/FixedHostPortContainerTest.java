@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Test of {@link FixedHostPortGenericContainer}. Note that this is not an example of typical use (usually, a container
- * should be a field on the test class annotated with @Rule or @TestRule). Instead, here, the lifecycle of the container
+ * should be a field on the test class annotated with @Container or @ClassContainer). Instead, here, the lifecycle of the container
  * is managed completely within the test method to allow a free port to be found and assigned before the container
  * is started.
  */

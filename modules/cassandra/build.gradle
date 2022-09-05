@@ -12,4 +12,5 @@ dependencies {
 
     testImplementation 'com.datastax.oss:java-driver-core:4.15.0'
     testImplementation 'org.assertj:assertj-core:3.24.2'
+    testImplementation project(':testcontainers-junit4')
 }

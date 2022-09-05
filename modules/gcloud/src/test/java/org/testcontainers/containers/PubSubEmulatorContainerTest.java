@@ -22,19 +22,22 @@ import com.google.pubsub.v1.SubscriptionName;
 import com.google.pubsub.v1.TopicName;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.testcontainers.junit4.Container;
+import org.testcontainers.junit4.TestContainersRunner;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RunWith(TestContainersRunner.class)
 public class PubSubEmulatorContainerTest {
 
     public static final String PROJECT_ID = "my-project-id";
 
-    @Rule
+    @Container
     // emulatorContainer {
     public PubSubEmulatorContainer emulator = new PubSubEmulatorContainer(
         DockerImageName.parse("gcr.io/google.com/cloudsdktool/google-cloud-cli:380.0.0-emulators")

@@ -1,7 +1,8 @@
 package org.testcontainers.containers.wait.internal;
 
 import com.google.common.collect.ImmutableSet;
-import org.junit.Rule;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -29,8 +30,17 @@ public class InternalCommandPortListeningCheckTest {
         );
     }
 
-    @Rule
     public GenericContainer container;
+
+    @Before
+    public void setUp() {
+        container.start();
+    }
+
+    @After
+    public void cleanUp() {
+        container.stop();
+    }
 
     public InternalCommandPortListeningCheckTest(String dockerfile) {
         container =

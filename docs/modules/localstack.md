@@ -9,7 +9,7 @@ Running LocalStack as a stand-in for AWS S3 during a test:
 ```java
 DockerImageName localstackImage = DockerImageName.parse("localstack/localstack:0.11.3");
 
-@Rule
+@Container
 public LocalStackContainer localstack = new LocalStackContainer(localstackImage)
         .withServices(S3);
 ```

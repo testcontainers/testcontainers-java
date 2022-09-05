@@ -14,9 +14,9 @@ import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 import org.apache.commons.io.FileUtils;
 import org.bson.Document;
+import org.junit.AfterClass;
 import org.junit.Assume;
 import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.rnorth.ducttape.RetryCountExceededException;
@@ -75,26 +75,43 @@ public class GenericContainerRuleTest {
         File contentFolder = new File(System.getProperty("user.home") + "/.tmp-test-container");
         contentFolder.mkdir();
         writeStringToFile(contentFolder, "file", "Hello world!");
+        redis.start();
+        rabbitMq.start();
+        mongo.start();
+        alpineEnvVar.start();
+        alpineEnvVarFromMap.start();
+        alpineClasspathResource.start();
+        alpineClasspathResourceSelinux.start();
+        alpineExtrahost.start();
+    }
+
+    @AfterClass
+    public static void tearDownClass() {
+        redis.stop();
+        rabbitMq.stop();
+        mongo.stop();
+        alpineEnvVar.stop();
+        alpineEnvVarFromMap.stop();
+        alpineClasspathResource.stop();
+        alpineClasspathResourceSelinux.stop();
+        alpineExtrahost.stop();
     }
 
     /**
      * Redis
      */
-    @ClassRule
     public static GenericContainer<?> redis = new GenericContainer<>(TestImages.REDIS_IMAGE)
         .withExposedPorts(REDIS_PORT);
 
     /**
      * RabbitMQ
      */
-    @ClassRule
     public static GenericContainer<?> rabbitMq = new GenericContainer<>(TestImages.RABBITMQ_IMAGE)
         .withExposedPorts(RABBITMQ_PORT);
 
     /**
      * MongoDB
      */
-    @ClassRule
     public static GenericContainer<?> mongo = new GenericContainer<>(TestImages.MONGODB_IMAGE)
         .withExposedPorts(MONGO_PORT);
 
@@ -102,7 +119,6 @@ public class GenericContainerRuleTest {
      * Pass an environment variable to the container, then run a shell script that exposes the variable in a quick and
      * dirty way for testing.
      */
-    @ClassRule
     public static GenericContainer<?> alpineEnvVar = new GenericContainer<>(TestImages.ALPINE_IMAGE)
         .withExposedPorts(80)
         .withEnv("MAGIC_NUMBER", "4")
@@ -113,7 +129,6 @@ public class GenericContainerRuleTest {
      * Pass environment variables to the container, then run a shell script that exposes the variables in a quick and
      * dirty way for testing.
      */
-    @ClassRule
     public static GenericContainer<?> alpineEnvVarFromMap = new GenericContainer<>(TestImages.ALPINE_IMAGE)
         .withExposedPorts(80)
         .withEnv(ImmutableMap.of("FIRST", "42", "SECOND", "50"))
@@ -122,7 +137,6 @@ public class GenericContainerRuleTest {
     /**
      * Map a file on the classpath to a file in the container, and then expose the content for testing.
      */
-    @ClassRule
     public static GenericContainer<?> alpineClasspathResource = new GenericContainer<>(TestImages.ALPINE_IMAGE)
         .withExposedPorts(80)
         .withClasspathResourceMapping("mappable-resource/test-resource.txt", "/content.txt", BindMode.READ_ONLY)
@@ -131,7 +145,6 @@ public class GenericContainerRuleTest {
     /**
      * Map a file on the classpath to a file in the container, and then expose the content for testing.
      */
-    @ClassRule
     public static GenericContainer<?> alpineClasspathResourceSelinux = new GenericContainer<>(TestImages.ALPINE_IMAGE)
         .withExposedPorts(80)
         .withClasspathResourceMapping(
@@ -145,7 +158,6 @@ public class GenericContainerRuleTest {
     /**
      * Create a container with an extra host entry and expose the content of /etc/hosts for testing.
      */
-    @ClassRule
     public static GenericContainer<?> alpineExtrahost = new GenericContainer<>(TestImages.ALPINE_IMAGE)
         .withExposedPorts(80)
         .withExtraHost("somehost", "192.168.1.10")

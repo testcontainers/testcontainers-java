@@ -9,19 +9,22 @@ import com.amazonaws.services.dynamodbv2.model.KeyType;
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType;
 import com.amazonaws.services.dynamodbv2.model.TableDescription;
-import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.testcontainers.junit4.Container;
+import org.testcontainers.junit4.TestContainersRunner;
 import org.testcontainers.utility.DockerImageName;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RunWith(TestContainersRunner.class)
 public class DynaliteContainerTest {
 
     private static final DockerImageName DYNALITE_IMAGE = DockerImageName.parse(
         "quay.io/testcontainers/dynalite:v1.2.1-1"
     );
 
-    @Rule
+    @Container
     public DynaliteContainer dynamoDB = new DynaliteContainer(DYNALITE_IMAGE);
 
     @Test

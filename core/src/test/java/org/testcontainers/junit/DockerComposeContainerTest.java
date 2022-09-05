@@ -1,6 +1,7 @@
 package org.testcontainers.junit;
 
-import org.junit.Rule;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.testcontainers.containers.ContainerState;
 import org.testcontainers.containers.DockerComposeContainer;
@@ -19,12 +20,21 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class DockerComposeContainerTest extends BaseDockerComposeTest {
 
-    @Rule
     public DockerComposeContainer environment = new DockerComposeContainer(
         new File("src/test/resources/compose-test.yml")
     )
         .withExposedService("redis_1", REDIS_PORT)
         .withExposedService("db_1", 3306);
+
+    @Before
+    public void setUp() {
+        environment.start();
+    }
+
+    @After
+    public void cleanUp() {
+        environment.stop();
+    }
 
     @Override
     protected DockerComposeContainer getEnvironment() {

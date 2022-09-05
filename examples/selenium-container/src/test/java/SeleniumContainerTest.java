@@ -17,6 +17,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.testcontainers.Testcontainers;
 import org.testcontainers.containers.BrowserWebDriverContainer;
 import org.testcontainers.containers.BrowserWebDriverContainer.VncRecordingMode;
+import org.testcontainers.junit4.ContainerRule;
 
 import java.io.File;
 import java.time.Duration;
@@ -36,13 +37,15 @@ public class SeleniumContainerTest {
     private int port;
 
     @Rule
-    public BrowserWebDriverContainer chrome = new BrowserWebDriverContainer()
-        .withCapabilities(new ChromeOptions())
-        .withRecordingMode(VncRecordingMode.RECORD_ALL, new File("build"));
+    public ContainerRule<BrowserWebDriverContainer> chrome = new ContainerRule<>(
+        new BrowserWebDriverContainer()
+            .withCapabilities(new ChromeOptions())
+            .withRecordingMode(VncRecordingMode.RECORD_ALL, new File("build"))
+    );
 
     @Test
     public void simplePlainSeleniumTest() {
-        RemoteWebDriver driver = new RemoteWebDriver(chrome.getSeleniumAddress(), new ChromeOptions());
+        RemoteWebDriver driver = new RemoteWebDriver(chrome.get().getSeleniumAddress(), new ChromeOptions());
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(30));
 
         driver.get("http://host.testcontainers.internal:" + port + "/foo.html");

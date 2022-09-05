@@ -43,5 +43,5 @@ Further options may be specified:
 [Creating a container with more options (JUnit 4)](../examples/junit4/generic/src/test/java/generic/ContainerCreationTest.java) inside_block:withOptions
 <!--/codeinclude-->
 
-These containers, as `@ClassRule`s, will be started before any tests in the class run, and will be destroyed after all
+These containers, as `@ClassContainer`s, will be started before any tests in the class run, and will be destroyed after all
 tests have run.

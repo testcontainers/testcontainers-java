@@ -31,6 +31,7 @@
                       org.assertj.core.api.Assumptions.*,
                       org.awaitility.Awaitility.*,
                       org.junit.Assume.*,
+                      org.junit.jupiter.api.Assumptions.*,
                       org.mockito.Mockito.*,
                       org.mockito.ArgumentMatchers.*,
                       org.mockserver.model.HttpRequest.*,

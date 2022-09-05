@@ -1,6 +1,8 @@
 package org.testcontainers.junit;
 
 import lombok.extern.slf4j.Slf4j;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
@@ -22,7 +24,6 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 @Slf4j
 public class OutputStreamWithTTYTest {
 
-    @Rule
     public GenericContainer<?> container = new GenericContainer<>(TestImages.ALPINE_IMAGE)
         .withCommand("ls -1")
         .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
@@ -30,6 +31,16 @@ public class OutputStreamWithTTYTest {
 
     @Rule
     public Timeout globalTimeout = Timeout.seconds(10);
+
+    @Before
+    public void setUp() {
+        container.start();
+    }
+
+    @After
+    public void cleanUp() {
+        container.stop();
+    }
 
     @Test
     public void testFetchStdout() throws TimeoutException {

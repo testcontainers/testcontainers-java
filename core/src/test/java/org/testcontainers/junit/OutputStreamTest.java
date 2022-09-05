@@ -1,6 +1,7 @@
 package org.testcontainers.junit;
 
-import org.junit.Rule;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,9 +24,18 @@ import static org.assertj.core.api.Assertions.catchThrowable;
  */
 public class OutputStreamTest {
 
-    @Rule
     public GenericContainer container = new GenericContainer(TestImages.ALPINE_IMAGE)
         .withCommand("ping -c 5 127.0.0.1");
+
+    @Before
+    public void setUp() {
+        container.start();
+    }
+
+    @After
+    public void cleanUp() {
+        container.stop();
+    }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OutputStreamTest.class);
 

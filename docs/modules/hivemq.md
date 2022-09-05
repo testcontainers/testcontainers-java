@@ -5,8 +5,8 @@
 Automatic starting HiveMQ docker containers for JUnit4 and JUnit5 tests.
 This enables testing MQTT client applications and integration testing of custom HiveMQ extensions.
 
-- Community forum: https://community.hivemq.com/
-- HiveMQ website: https://www.hivemq.com/
+- Community forum: [https://community.hivemq.com/](https://community.hivemq.com/)
+- HiveMQ website: [https://www.hivemq.com/](https://www.hivemq.com/)
 - MQTT resources:
     - [MQTT Essentials](https://www.hivemq.com/mqtt-essentials/)
     - [MQTT 5 Essentials](https://www.hivemq.com/mqtt-5/)

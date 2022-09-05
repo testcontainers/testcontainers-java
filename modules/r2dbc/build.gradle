@@ -14,7 +14,9 @@ dependencies {
     testImplementation 'org.assertj:assertj-core:3.24.2'
     testImplementation 'io.r2dbc:r2dbc-postgresql:0.8.13.RELEASE'
     testImplementation project(':postgresql')
+    testImplementation "junit:junit:4.13.2"
 
     testFixturesImplementation 'io.projectreactor:reactor-core:3.5.3'
     testFixturesImplementation 'org.assertj:assertj-core:3.24.2'
+    testFixturesImplementation "junit:junit:4.13.2"
 }

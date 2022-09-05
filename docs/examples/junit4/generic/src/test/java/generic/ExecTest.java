@@ -1,18 +1,21 @@
 package generic;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.testcontainers.containers.Container;
+import org.junit.runner.RunWith;
+import org.testcontainers.containers.Container.ExecResult;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit4.Container;
+import org.testcontainers.junit4.TestContainersRunner;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RunWith(TestContainersRunner.class)
 public class ExecTest {
 
-    @Rule
+    @Container
     public GenericContainer<?> container = new GenericContainer<>(DockerImageName.parse("alpine:3.16"))
         .withCommand("top");
 
@@ -23,7 +26,7 @@ public class ExecTest {
         // }
 
         // execReadingStdout {
-        Container.ExecResult lsResult = container.execInContainer("ls", "-al", "/");
+        ExecResult lsResult = container.execInContainer("ls", "-al", "/");
         String stdout = lsResult.getStdout();
         int exitCode = lsResult.getExitCode();
         assertThat(stdout).contains("somefile.txt");

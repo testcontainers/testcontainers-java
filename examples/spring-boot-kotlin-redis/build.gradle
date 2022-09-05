@@ -18,6 +18,7 @@ dependencies {
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.testcontainers:testcontainers")
+    testImplementation 'junit:junit:4.13.2'
 }
 
 compileKotlin {

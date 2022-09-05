@@ -7,9 +7,10 @@ See [Database containers](./index.md) for documentation and usage that is common
 Running MS SQL Server as a stand-in for in a test:
 
 ```java
+@RunWith(TestContainersRunner.class)
 public class SomeTest {
 
-    @Rule
+    @Container
     public MSSQLServerContainer mssqlserver = new MSSQLServerContainer()
         .acceptLicense();
     

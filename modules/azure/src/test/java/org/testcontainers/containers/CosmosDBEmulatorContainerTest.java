@@ -9,6 +9,9 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.junit.runner.RunWith;
+import org.testcontainers.junit4.Container;
+import org.testcontainers.junit4.TestContainersRunner;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.FileOutputStream;
@@ -18,6 +21,7 @@ import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RunWith(TestContainersRunner.class)
 public class CosmosDBEmulatorContainerTest {
 
     private static Properties originalSystemProperties;
@@ -35,7 +39,7 @@ public class CosmosDBEmulatorContainerTest {
     @Rule
     public TemporaryFolder tempFolder = TemporaryFolder.builder().assureDeletion().build();
 
-    @Rule
+    @Container
     // emulatorContainer {
     public CosmosDBEmulatorContainer emulator = new CosmosDBEmulatorContainer(
         DockerImageName.parse("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:latest")

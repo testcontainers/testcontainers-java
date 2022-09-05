@@ -6,7 +6,8 @@ Note that it's based on the [official Docker image](https://hub.docker.com/_/neo
 
 ## Usage example
 
-Declare your Testcontainers as a `@ClassRule` or `@Rule` in a JUnit 4 test or as static or member attribute of a JUnit 5 test annotated with `@Container` as you would with other Testcontainers.
+Declare your Testcontainers as a `@ClassContainer` or `@Container` in a JUnit 4 test or as static or member attribute of a JUnit 5 test annotated with `@Container` as you would with other Testcontainers.
+
 You can either use call `getBoltUrl()` or `getHttpUrl()` on the Neo4j container.
 `getBoltUrl()` is meant to be used with one of the [official Bolt drivers](https://neo4j.com/developer/language-guides/) while `getHttpUrl()` gives you the HTTP-address of the transactional HTTP endpoint.
 On the JVM you would most likely use the [Java driver](https://github.com/neo4j/neo4j-java-driver).

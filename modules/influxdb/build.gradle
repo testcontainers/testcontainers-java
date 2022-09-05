@@ -8,4 +8,5 @@ dependencies {
     testImplementation 'org.assertj:assertj-core:3.24.2'
     testImplementation 'org.influxdb:influxdb-java:2.23'
     testImplementation "com.influxdb:influxdb-client-java:6.7.0"
+    testImplementation project(':testcontainers-junit4')
 }

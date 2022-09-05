@@ -23,13 +23,13 @@ First, add Testcontainers as a dependency as follows:
 
 === "Gradle"
     ```groovy
-    testImplementation "org.testcontainers:testcontainers:{{latest_version}}"
+    testImplementation "org.testcontainers:testcontainers-junit4:{{latest_version}}"
     ```
 === "Maven"
     ```xml
     <dependency>
         <groupId>org.testcontainers</groupId>
-        <artifactId>testcontainers</artifactId>
+        <artifactId>testcontainers-junit4</artifactId>
         <version>{{latest_version}}</version>
         <scope>test</scope>
     </dependency>
@@ -37,13 +37,13 @@ First, add Testcontainers as a dependency as follows:
 
 ## 2. Get Testcontainers to run a Redis container during our tests
 
-Simply add the following to the body of our test class:
+First, you'll need to annotate the test class with `@RunWith(TestContainersRunner.class)`. Furthermore, add the following to the body of our test class:
 
 <!--codeinclude-->
 [JUnit 4 Rule](../examples/junit4/redis/src/test/java/quickstart/RedisBackedCacheIntTest.java) inside_block:rule
 <!--/codeinclude-->
 
-The `@Rule` annotation tells JUnit to notify this field about various events in the test lifecycle.
+The `@Container` annotation tells JUnit to notify this field about various events in the test lifecycle.
 In this case, our rule object is a Testcontainers `GenericContainer`, configured to use a specific Redis image from Docker Hub, and configured to expose a port.
 
 If we run our test as-is, then regardless of the actual test outcome, we'll see logs showing us that Testcontainers:
@@ -78,6 +78,6 @@ That's it!
 Let's look at our complete test class to see how little we had to add to get up and running with Testcontainers:
 
 <!--codeinclude-->
-[RedisBackedCacheIntTest](../examples/junit4/redis/src/test/java/quickstart/RedisBackedCacheIntTest.java) block:RedisBackedCacheIntTest
+[RedisBackedCacheIntTest](../examples/junit4/redis/src/test/java/quickstart/RedisBackedCacheIntTest.java) inside_block:class
 <!--/codeinclude-->
 

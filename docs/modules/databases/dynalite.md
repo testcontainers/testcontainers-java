@@ -7,9 +7,10 @@ Testcontainers module for [Dynalite](https://github.com/mhart/dynalite). Dynalit
 Running Dynalite as a stand-in for DynamoDB in a test:
 
 ```java
+@RunWith(TestContainersRunner.class)
 public class SomeTest {
 
-    @Rule
+    @Container
     public DynaliteContainer dynamoDB = new DynaliteContainer();
     
     @Test

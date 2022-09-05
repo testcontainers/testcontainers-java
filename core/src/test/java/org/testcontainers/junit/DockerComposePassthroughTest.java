@@ -1,8 +1,9 @@
 package org.testcontainers.junit;
 
+import org.junit.After;
 import org.junit.Assume;
+import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.containers.ContainerState;
 import org.testcontainers.containers.DockerComposeContainer;
@@ -27,12 +28,21 @@ public class DockerComposePassthroughTest {
         Assume.assumeTrue(TestEnvironment.dockerApiAtLeast("1.22"));
     }
 
-    @Rule
     public DockerComposeContainer compose = new DockerComposeContainer(
         new File("src/test/resources/v2-compose-test-passthrough.yml")
     )
         .withEnv("foo", "bar")
         .withExposedService("alpine_1", 3000, waitStrategy);
+
+    @Before
+    public void setUp() {
+        compose.start();
+    }
+
+    @After
+    public void cleanUp() {
+        compose.stop();
+    }
 
     @Test
     public void testContainerInstanceProperties() {

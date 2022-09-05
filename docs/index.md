@@ -16,7 +16,7 @@
 
 ## About Testcontainers for Java
 
-*Testcontainers for Java* is a Java library that supports JUnit tests, providing lightweight, throwaway instances of common databases, Selenium web browsers, or anything else that can run in a Docker container.
+*Testcontainers for Java* is a Java library that supports JUnit and Spock tests, providing lightweight, throwaway instances of common databases, Selenium web browsers, or anything else that can run in a Docker container.
 
 Testcontainers make the following kinds of tests easier:
 
@@ -30,8 +30,8 @@ Testcontainers make the following kinds of tests easier:
 * Docker - please see [General Docker requirements](supported_docker_environment/index.md)
 * A supported JVM testing framework:
     * [JUnit 4](test_framework_integration/junit_4.md) - See the [JUnit 4 Quickstart Guide](quickstart/junit_4_quickstart.md)
-    * [Jupiter/JUnit 5](test_framework_integration/junit_5.md)
-    * [Spock](test_framework_integration/spock.md)
+    * [Jupiter/JUnit 5](test_framework_integration/junit_5.md) - See the [JUnit 5 Quickstart Guide](quickstart/junit_5_quickstart.md)
+    * [Spock](test_framework_integration/spock.md) - See the [Spock Quickstart Guide](quickstart/spock_quickstart.md)
     * *Or* manually add code to control the container/test lifecycle (See [hints for this approach](test_framework_integration/junit_4.md#manually-controlling-container-lifecycle))
 
 ## Maven dependencies
@@ -235,6 +235,6 @@ This project was initially inspired by a [gist](https://gist.github.com/mosheesh
 
 ## Copyright
 
-Copyright (c) 2015-2021 Richard North and other authors.
+Copyright (c) 2015-2022 Richard North and other authors.
 
 See [AUTHORS](https://raw.githubusercontent.com/testcontainers/testcontainers-java/main/AUTHORS) for contributors.

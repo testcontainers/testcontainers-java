@@ -17,8 +17,10 @@ import com.google.cloud.bigtable.data.v2.models.RowCell;
 import com.google.cloud.bigtable.data.v2.models.RowMutation;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.testcontainers.junit4.Container;
+import org.testcontainers.junit4.TestContainersRunner;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
@@ -27,13 +29,14 @@ import java.util.concurrent.ExecutionException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RunWith(TestContainersRunner.class)
 public class BigtableEmulatorContainerTest {
 
     public static final String PROJECT_ID = "test-project";
 
     public static final String INSTANCE_ID = "test-instance";
 
-    @Rule
+    @Container
     // emulatorContainer {
     public BigtableEmulatorContainer emulator = new BigtableEmulatorContainer(
         DockerImageName.parse("gcr.io/google.com/cloudsdktool/google-cloud-cli:380.0.0-emulators")

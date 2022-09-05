@@ -3,8 +3,10 @@ package org.testcontainers.containers;
 import eu.rekawek.toxiproxy.Proxy;
 import eu.rekawek.toxiproxy.ToxiproxyClient;
 import eu.rekawek.toxiproxy.model.ToxicDirection;
-import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.testcontainers.junit4.Container;
+import org.testcontainers.junit4.TestContainersRunner;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
@@ -14,6 +16,7 @@ import java.time.Duration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
+@RunWith(TestContainersRunner.class)
 public class ToxiproxyTest {
 
     private static final Duration JEDIS_TIMEOUT = Duration.ofSeconds(10);
@@ -21,18 +24,18 @@ public class ToxiproxyTest {
     // spotless:off
     // creatingProxy {
     // Create a common docker network so that containers can communicate
-    @Rule
+    @Container
     public Network network = Network.newNetwork();
 
     // The target container - this could be anything
-    @Rule
+    @Container
     public GenericContainer<?> redis = new GenericContainer<>("redis:5.0.4")
         .withExposedPorts(6379)
         .withNetwork(network)
         .withNetworkAliases("redis");
 
     // Toxiproxy container, which will be used as a TCP proxy
-    @Rule
+    @Container
     public ToxiproxyContainer toxiproxy = new ToxiproxyContainer("ghcr.io/shopify/toxiproxy:2.5.0")
         .withNetwork(network);
     // }

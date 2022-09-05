@@ -1,11 +1,13 @@
 package org.testcontainers.containers;
 
-import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.neo4j.driver.AuthTokens;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.GraphDatabase;
 import org.neo4j.driver.Session;
+import org.testcontainers.junit4.ClassContainer;
+import org.testcontainers.junit4.TestContainersRunner;
 
 import java.util.Collections;
 
@@ -13,11 +15,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 /**
- * Test for basic functionality when used as a <code>@ClassRule</code>.
+ * Test for basic functionality when used as a <code>@ClassContainer</code>.
  */
+@RunWith(TestContainersRunner.class)
 public class Neo4jContainerJUnitIntegrationTest {
 
-    @ClassRule
+    @ClassContainer
     public static Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4");
 
     @Test

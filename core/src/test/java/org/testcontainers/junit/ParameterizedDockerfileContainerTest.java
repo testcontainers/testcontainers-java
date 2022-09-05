@@ -1,6 +1,7 @@
 package org.testcontainers.junit;
 
-import org.junit.Rule;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -18,8 +19,17 @@ public class ParameterizedDockerfileContainerTest {
 
     private final String expectedVersion;
 
-    @Rule
     public GenericContainer container;
+
+    @Before
+    public void setUp() {
+        container.start();
+    }
+
+    @After
+    public void cleanUp() {
+        container.stop();
+    }
 
     public ParameterizedDockerfileContainerTest(String baseImage, String expectedVersion) {
         container =

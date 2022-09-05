@@ -9,4 +9,5 @@ dependencies {
     testImplementation 'com.google.cloud:google-cloud-spanner:6.36.1'
     testImplementation 'com.google.cloud:google-cloud-bigtable:2.19.2'
     testImplementation 'org.assertj:assertj-core:3.24.2'
+    testImplementation project(':testcontainers-junit4')
 }

@@ -13,10 +13,10 @@ it's not necessary to have it installed on all developer/test machines.
 
 ## Example
 
-A single class rule, pointing to a `docker-compose.yml` file, should be sufficient to launch any number of services
+A single class instance, pointing to a `docker-compose.yml` file, should be sufficient to launch any number of services
 required by your tests:
 ```java
-@ClassRule
+@ClassContainer
 public static DockerComposeContainer environment =
     new DockerComposeContainer(new File("src/test/resources/compose-test.yml"))
             .withExposedService("redis_1", REDIS_PORT)
@@ -40,7 +40,7 @@ container that runs socat as a TCP proxy.
 
 ## Accessing a container from tests
 
-The rule provides methods for discovering how your tests can interact with the containers:
+The `DockerComposeContainer` class provides methods for discovering how your tests can interact with the containers:
 
 * `getServiceHost(serviceName, servicePort)` returns the IP address where the container is listening (via an ambassador
     container)
@@ -65,7 +65,7 @@ There are overloaded `withExposedService` methods that take a `WaitStrategy` so 
 
 Waiting for exposed port to start listening:
 ```java
-@ClassRule
+@ClassContainer
 public static DockerComposeContainer environment =
     new DockerComposeContainer(new File("src/test/resources/compose-test.yml"))
             .withExposedService("redis_1", REDIS_PORT, 
@@ -74,7 +74,7 @@ public static DockerComposeContainer environment =
 
 Wait for arbitrary status codes on an HTTPS endpoint:
 ```java
-@ClassRule
+@ClassContainer
 public static DockerComposeContainer environment =
     new DockerComposeContainer(new File("src/test/resources/compose-test.yml"))
             .withExposedService("elasticsearch_1", ELASTICSEARCH_PORT, 
@@ -86,7 +86,7 @@ public static DockerComposeContainer environment =
 
 Separate wait strategies for each container:
 ```java
-@ClassRule
+@ClassContainer
 public static DockerComposeContainer environment =
     new DockerComposeContainer(new File("src/test/resources/compose-test.yml"))
             .withExposedService("redis_1", REDIS_PORT, Wait.forListeningPort())
@@ -101,7 +101,7 @@ Alternatively, you can use `waitingFor(serviceName, waitStrategy)`,
 for example if you need to wait on a log message from a service, but don't need to expose a port.
 
 ```java
-@ClassRule
+@ClassContainer
 public static DockerComposeContainer environment =
     new DockerComposeContainer(new File("src/test/resources/compose-test.yml"))
             .withExposedService("redis_1", REDIS_PORT, Wait.forListeningPort())

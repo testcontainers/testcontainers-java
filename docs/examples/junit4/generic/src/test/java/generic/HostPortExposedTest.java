@@ -3,18 +3,21 @@ package generic;
 import com.sun.net.httpserver.HttpServer;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.testcontainers.Testcontainers;
 import org.testcontainers.containers.BrowserWebDriverContainer;
+import org.testcontainers.junit4.Container;
+import org.testcontainers.junit4.TestContainersRunner;
 
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RunWith(TestContainersRunner.class)
 public class HostPortExposedTest {
 
     private static HttpServer server;
@@ -49,7 +52,7 @@ public class HostPortExposedTest {
         server.stop(0);
     }
 
-    @Rule
+    @Container
     public BrowserWebDriverContainer<?> browser = new BrowserWebDriverContainer<>()
         .withCapabilities(new ChromeOptions());
 

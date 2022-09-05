@@ -6,4 +6,5 @@ dependencies {
 
     testImplementation 'redis.clients:jedis:3.0.1'
     testImplementation 'org.assertj:assertj-core:3.24.2'
+    testImplementation project(':testcontainers-junit4')
 }

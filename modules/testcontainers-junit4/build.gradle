@@ -1,0 +1,9 @@
+description = "Testcontainers :: JUnit 4 Extension"
+
+dependencies {
+    api project(':testcontainers')
+    api 'junit:junit:4.13.2'
+
+    testImplementation 'org.apache.httpcomponents:httpclient:4.5.13'
+    testImplementation 'org.assertj:assertj-core:3.23.1'
+}

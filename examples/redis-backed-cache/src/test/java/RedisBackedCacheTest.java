@@ -1,9 +1,11 @@
 import com.mycompany.cache.Cache;
 import com.mycompany.cache.RedisBackedCache;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit4.Container;
+import org.testcontainers.junit4.TestContainersRunner;
 import org.testcontainers.utility.DockerImageName;
 import redis.clients.jedis.Jedis;
 
@@ -14,9 +16,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Integration test for Redis-backed cache implementation.
  */
+@RunWith(TestContainersRunner.class)
 public class RedisBackedCacheTest {
 
-    @Rule
+    @Container
     public GenericContainer<?> redis = new GenericContainer<>(DockerImageName.parse("redis:3.0.6"))
         .withExposedPorts(6379);
 

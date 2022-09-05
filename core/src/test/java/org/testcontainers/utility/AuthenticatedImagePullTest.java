@@ -4,7 +4,6 @@ import com.github.dockerjava.api.model.AuthConfig;
 import org.intellij.lang.annotations.Language;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.testcontainers.DockerRegistryContainer;
@@ -37,7 +36,6 @@ public class AuthenticatedImagePullTest {
     /**
      * Containerised docker image registry, with simple hardcoded credentials
      */
-    @ClassRule
     public static DockerRegistryContainer authenticatedRegistry = new DockerRegistryContainer(
         new ImageFromDockerfile()
             .withDockerfileFromBuilder(builder -> {
@@ -56,6 +54,7 @@ public class AuthenticatedImagePullTest {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
+        authenticatedRegistry.start();
         originalAuthLocatorSingleton = RegistryAuthLocator.instance();
 
         String testRegistryAddress = authenticatedRegistry.getEndpoint();
@@ -79,6 +78,7 @@ public class AuthenticatedImagePullTest {
 
     @AfterClass
     public static void tearDown() {
+        authenticatedRegistry.stop();
         RegistryAuthLocator.setInstance(originalAuthLocatorSingleton);
     }
 

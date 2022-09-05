@@ -11,4 +11,5 @@ dependencies {
     testImplementation 'io.fabric8:kubernetes-client:6.4.1'
     testImplementation 'io.kubernetes:client-java:17.0.1'
     testImplementation 'org.assertj:assertj-core:3.24.2'
+    testImplementation project(':testcontainers-junit4')
 }

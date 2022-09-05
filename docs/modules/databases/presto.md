@@ -10,9 +10,10 @@ See [Database containers](./index.md) for documentation and usage that is common
 Running Presto as a stand-in for in a test:
 
 ```java
+@RunWith(TestContainersRunner.class)
 public class SomeTest {
 
-    @Rule
+    @Container
     public PrestoContainer presto = new PrestoContainer();
     
     @Test
@@ -34,8 +35,9 @@ Presto comes with several catalogs preconfigured. Most useful ones for testing a
 Example test using the `tpch` and `memory` catalogs:
 
 ```java
+@RunWith(TestContainersRunner.class)
 public class SomeTest {
-    @Rule
+    @Container
     public PrestoContainer prestoSql = new PrestoContainer();
 
     @Test

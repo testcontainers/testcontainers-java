@@ -39,7 +39,7 @@ It takes a couple of seconds, but if you want to speed up your tests, you can di
 
 !!! note
     This approach is discouraged and deprecated, but is documented for completeness.
-    Overriding individual image names via configuration may be removed in 2021.
+    Overriding individual image names via configuration may be removed in 2022.
     See [Image Name Substitution](./image_name_substitution.md) for other strategies for substituting image names to pull from other registries.
 
 

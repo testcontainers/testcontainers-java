@@ -7,4 +7,5 @@ dependencies {
 
     testImplementation 'org.apache.solr:solr-solrj:8.11.2'
     testImplementation 'org.assertj:assertj-core:3.24.2'
+    testImplementation "junit:junit:4.13.2"
 }

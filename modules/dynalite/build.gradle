@@ -6,4 +6,5 @@ dependencies {
     compileOnly 'com.amazonaws:aws-java-sdk-dynamodb:1.12.418'
     testImplementation 'com.amazonaws:aws-java-sdk-dynamodb:1.12.418'
     testImplementation 'org.assertj:assertj-core:3.24.2'
+    testImplementation project(':testcontainers-junit4')
 }

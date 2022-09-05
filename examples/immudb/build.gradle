@@ -12,4 +12,5 @@ dependencies {
     testImplementation 'org.assertj:assertj-core:3.24.2'
     testImplementation 'com.google.guava:guava:23.0'
     testImplementation 'ch.qos.logback:logback-classic:1.3.5'
+    testImplementation 'org.testcontainers:testcontainers-junit4'
 }

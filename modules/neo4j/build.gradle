@@ -35,4 +35,5 @@ dependencies {
 
     testImplementation 'org.neo4j.driver:neo4j-java-driver:4.4.11'
     testImplementation 'org.assertj:assertj-core:3.24.2'
+    testImplementation project(':testcontainers-junit4')
 }

@@ -10,9 +10,10 @@ See [Database containers](./index.md) for documentation and usage that is common
 Running DB2 as a stand-in for in a test:
 
 ```java
+@RunWith(TestContainersRunner.class)
 public class SomeTest {
 
-    @ClassRule
+    @ClassContainer
     public Db2Container db2 = new Db2Container()
         .acceptLicense();
     

@@ -14,7 +14,7 @@ Testcontainers will `docker build` a temporary container image, and will use it 
 `ImageFromDockerfile` accepts arbitrary files, strings or classpath resources to be used as files in the build context.
 At least one of these needs to be a `Dockerfile`.
 ```java
-@Rule
+@Container
 public GenericContainer dslContainer = new GenericContainer(
     new ImageFromDockerfile()
             .withFileFromString("folder/someFile.txt", "hello")

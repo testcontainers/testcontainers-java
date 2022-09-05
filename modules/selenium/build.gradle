@@ -12,6 +12,7 @@ dependencies {
     testImplementation 'org.mortbay.jetty:jetty:6.1.26'
     testImplementation project(':nginx')
     testImplementation 'org.assertj:assertj-core:3.24.2'
+    testImplementation project(':testcontainers-junit4')
 
     compileOnly 'org.jetbrains:annotations:24.0.0'
 }

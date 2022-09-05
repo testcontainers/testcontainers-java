@@ -3,7 +3,7 @@
 You can obtain a temporary database in one of two ways:
 
  * **Using a specially modified JDBC URL**: after making a very simple modification to your system's JDBC URL string, Testcontainers will provide a disposable stand-in database that can be used without requiring modification to your application code.
- * **JUnit @Rule/@ClassRule**: this mode starts a database inside a container before your tests and tears it down afterwards.
+ * **Database container objects**: this mode starts a database inside a container before your tests and tears it down afterwards.
 
 ## Database containers launched via JDBC URL scheme
 
@@ -118,11 +118,12 @@ For more information about `tmpfs` mount, see [the official Docker documentation
 
 In case you can't use the URL support, or need to fine-tune the container, you can instantiate it yourself.
 
-Add a @Rule or @ClassRule to your test class, e.g.:
+Add a `@Container` or `@ClassContainer` to your test class, e.g.:
 
 ```java
+@RunWith(TestContainersRunner.class)
 public class SimpleMySQLTest {
-    @Rule
+    @Container
     public MySQLContainer mysql = new MySQLContainer();
 ```
 
@@ -132,7 +133,7 @@ Now, in your test code (or a suitable setup method), you can obtain details nece
  * `mysql.getUsername()` provides the username your code should pass to the driver
  * `mysql.getPassword()` provides the password your code should pass to the driver
 
-Note that if you use `@Rule`, you will be given an isolated container for each test method. If you use `@ClassRule`, you will get on isolated container for all the methods in the test class.
+Note that if you use `@Container`, you will be given an isolated container for each test method. If you use `@ClassContainer`, you will get on isolated container for all the methods in the test class.
 
 Examples/Tests:
 

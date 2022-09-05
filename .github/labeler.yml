@@ -37,6 +37,8 @@
   - modules/jdbc/**/*
 "modules/jupiter":
   - modules/junit-jupiter/**/*
+"modules/junit4":
+  - modules/testcontainers-junit4/**/*
 "modules/k3s":
   - modules/k3s/**/*
 "modules/kafka":

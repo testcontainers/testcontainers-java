@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(Enclosed.class)
-public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContainerTest {
+public class ChromeRecordingWebDriverContainerTest {
 
     /**
      * Guaranty a minimum video length for FFmpeg re-encoding.
@@ -36,7 +36,7 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
      */
     private static final int MINIMUM_VIDEO_DURATION_MILLISECONDS = 200;
 
-    public static class ChromeThatRecordsAllTests {
+    public static class ChromeThatRecordsAllTests extends BaseWebDriverContainerTest {
 
         @Rule
         public TemporaryFolder vncRecordingDirectory = new TemporaryFolder();
@@ -159,7 +159,7 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
         }
     }
 
-    public static class ChromeThatRecordsFailingTests {
+    public static class ChromeThatRecordsFailingTests extends BaseWebDriverContainerTest {
 
         @Rule
         public TemporaryFolder vncRecordingDirectory = new TemporaryFolder();

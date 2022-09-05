@@ -1,7 +1,6 @@
 # Jupiter / JUnit 5
 
-While Testcontainers is tightly coupled with the JUnit 4.x rule API, this module provides
-an API that is based on the [JUnit Jupiter](https://junit.org/junit5/) extension model.
+This module provides an API that is based on the [JUnit Jupiter](https://junit.org/junit5/) extension model.
 
 The extension supports two modes:
 
@@ -57,10 +56,6 @@ Note that the [singleton container pattern](manual_lifecycle_control.md#singleto
 using JUnit 5.
 
 ## Limitations
-
-Since this module has a dependency onto JUnit Jupiter and on Testcontainers core, which
-has a dependency onto JUnit 4.x, projects using this module will end up with both, JUnit Jupiter
-and JUnit 4.x in the test classpath.
 
 This extension has only be tested with sequential test execution. Using it with parallel test execution is unsupported and may have unintended side effects.
 

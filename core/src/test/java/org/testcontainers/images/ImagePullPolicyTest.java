@@ -1,7 +1,8 @@
 package org.testcontainers.images;
 
 import com.github.dockerjava.api.exception.NotFoundException;
-import org.junit.ClassRule;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.testcontainers.DockerClientFactory;
@@ -16,10 +17,19 @@ import static org.mockito.ArgumentMatchers.any;
 
 public class ImagePullPolicyTest {
 
-    @ClassRule
     public static DockerRegistryContainer registry = new DockerRegistryContainer();
 
     private final DockerImageName imageName = registry.createImage();
+
+    @BeforeClass
+    public static void setUp() {
+        registry.start();
+    }
+
+    @AfterClass
+    public static void cleanUp() {
+        registry.stop();
+    }
 
     @Test
     public void pullsByDefault() {

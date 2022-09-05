@@ -1,13 +1,14 @@
 package org.testcontainers.containers.startupcheck;
 
 import lombok.SneakyThrows;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.WaitingConsumer;
+import org.testcontainers.junit4.Container;
+import org.testcontainers.junit4.TestContainersRunner;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
@@ -35,9 +36,10 @@ public class StartupCheckStrategyTest {
         consumer.waitUntil(frame -> frame.getUtf8String().contains(HELLO_TESTCONTAINERS), 30, TimeUnit.SECONDS);
     }
 
+    @RunWith(TestContainersRunner.class)
     public static class OneShotStrategyTest {
 
-        @Rule
+        @Container
         // spotless:off
         // withOneShotStrategy {
         public GenericContainer<?> bboxWithOneShot = new GenericContainer<>(DockerImageName.parse("busybox:1.31.1"))
@@ -58,9 +60,10 @@ public class StartupCheckStrategyTest {
         }
     }
 
+    @RunWith(TestContainersRunner.class)
     public static class IndefiniteOneShotStrategyTest {
 
-        @Rule
+        @Container
         // spotless:off
         // withIndefiniteOneShotStrategy {
         public GenericContainer<?> bboxWithIndefiniteOneShot = new GenericContainer<>(
@@ -83,9 +86,10 @@ public class StartupCheckStrategyTest {
         }
     }
 
+    @RunWith(TestContainersRunner.class)
     public static class MinimumDurationStrategyTest {
 
-        @Rule
+        @Container
         // spotless:off
         // withMinimumDurationStrategy {
         public GenericContainer<?> bboxWithMinimumDuration = new GenericContainer<>(

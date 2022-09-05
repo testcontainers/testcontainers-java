@@ -1,15 +1,15 @@
 package org.testcontainers.junit;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.openqa.selenium.edge.EdgeOptions;
 import org.testcontainers.containers.BrowserWebDriverContainer;
+import org.testcontainers.junit4.Container;
 
 public class EdgeWebDriverContainerTest extends BaseWebDriverContainerTest {
 
     // junitRule {
-    @Rule
+    @Container
     public BrowserWebDriverContainer<?> edge = new BrowserWebDriverContainer<>()
         .withCapabilities(new EdgeOptions())
         // }

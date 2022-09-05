@@ -40,13 +40,13 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
      * at a time, inside the test methods themselves.
      */
     /*
-    @ClassRule
+    @ClassContainer
     public static MySQLContainer<?> mysql = new MySQLContainer<>(MYSQL_IMAGE);
 
-    @ClassRule
+    @ClassContainer
     public static MySQLContainer<?> mysqlOldVersion = new MySQLContainer<>(DockerImageName.parse("mysql:5.5");)
 
-    @ClassRule
+    @ClassContainer
     public static MySQLContainer<?> mysqlCustomConfig = new MySQLContainer<>(DockerImageName.parse("mysql:5.6"))
                                                             .withConfigurationOverride("somepath/mysql_conf_override");
     */

@@ -14,6 +14,7 @@ dependencies {
 
     testImplementation testFixtures(project(':r2dbc'))
     testImplementation 'io.r2dbc:r2dbc-postgresql:0.8.13.RELEASE'
+    testImplementation "junit:junit:4.13.2"
 
     compileOnly 'org.jetbrains:annotations:24.0.0'
 }
