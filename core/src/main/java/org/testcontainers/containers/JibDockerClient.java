@@ -28,11 +28,21 @@ import java.util.function.Consumer;
 
 public class JibDockerClient implements DockerClient {
 
+    private static JibDockerClient instance;
+
     private final com.github.dockerjava.api.DockerClient dockerClient = DockerClientFactory.lazyClient();
+
+    public static JibDockerClient instance() {
+        if (instance == null) {
+            instance = new JibDockerClient();
+        }
+
+        return instance;
+    }
 
     @Override
     public boolean supported(Map<String, String> map) {
-        return true;
+        return false;
     }
 
     @Override
