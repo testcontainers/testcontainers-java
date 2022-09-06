@@ -17,14 +17,16 @@ public class JibTest {
 
     @Test
     public void testJibFromWithString() throws Exception {
-        String image = "busybox:1.35";
-
+        // dockerClientInstance {
         DockerClient dockerClient = JibDockerClient.instance();
+        //}
 
+        // jibContainer1 {
         JibContainer jibContainer = Jib
-            .from(image)
+            .from("busybox:1.35")
             .setEntrypoint("echo", "Hello World")
             .containerize(Containerizer.to(dockerClient, DockerDaemonImage.named("jib-hello-world")));
+        //}
 
         try (
             GenericContainer<?> busybox = new GenericContainer<>(new JibImage(jibContainer))
@@ -38,14 +40,14 @@ public class JibTest {
 
     @Test
     public void testJibFromWithDockerDaemonImage() throws Exception {
-        String image = "busybox:1.35";
-
         DockerClient dockerClient = JibDockerClient.instance();
 
+        // jibContainer2 {
         JibContainer jibContainer = Jib
-            .from(dockerClient, DockerDaemonImage.named(image))
+            .from(dockerClient, DockerDaemonImage.named("busybox:1.35"))
             .setEntrypoint("echo", "Hello World")
             .containerize(Containerizer.to(DockerDaemonImage.named("jib-hello-world")));
+        //}
 
         try (
             GenericContainer<?> busybox = new GenericContainer<>(new JibImage(jibContainer))

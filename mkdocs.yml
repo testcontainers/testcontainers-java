@@ -39,6 +39,7 @@ nav:
           - features/startup_and_waits.md
           - features/container_logs.md
           - features/creating_images.md
+          - features/jib.md
           - features/configuration.md
           - features/image_name_substitution.md
           - features/advanced_options.md
