@@ -1,9 +1,5 @@
 package org.testcontainers.containers.localstack;
 
-import com.amazonaws.auth.AWSCredentialsProvider;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.client.builder.AwsClientBuilder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -165,38 +161,6 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
         return self();
     }
 
-    /**
-     * Provides an endpoint configuration that is preconfigured to communicate with a given simulated service.
-     * The provided endpoint configuration should be set in the AWS Java SDK when building a client, e.g.:
-     * <pre><code>AmazonS3 s3 = AmazonS3ClientBuilder
-            .standard()
-            .withEndpointConfiguration(localstack.getEndpointConfiguration(S3))
-            .withCredentials(localstack.getDefaultCredentialsProvider())
-            .build();
-     </code></pre>
-     * or for AWS SDK v2
-     * <pre><code>S3Client s3 = S3Client
-             .builder()
-             .endpointOverride(localstack.getEndpointOverride(LocalStackContainer.Service.S3))
-             .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(
-                localstack.getAccessKey(), localstack.getSecretKey()
-             )))
-             .region(Region.of(localstack.getRegion()))
-             .build()
-     </code></pre>
-     * <p><strong>Please note that this method is only intended to be used for configuring AWS SDK clients
-     * that are running on the test host. If other containers need to call this one, they should be configured
-     * specifically to do so using a Docker network and appropriate addressing.</strong></p>
-     *
-     * @param service the service that is to be accessed
-     * @return an {@link AwsClientBuilder.EndpointConfiguration}
-     * @deprecated {@link LocalStackContainer} will not depend on aws sdk.
-     */
-    @Deprecated
-    public AwsClientBuilder.EndpointConfiguration getEndpointConfiguration(Service service) {
-        return new AwsClientBuilder.EndpointConfiguration(getEndpointOverride(service).toString(), getRegion());
-    }
-
     public URI getEndpointOverride(Service service) {
         return getEndpointOverride((EnabledService) service);
     }
@@ -234,33 +198,6 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
 
     private int getServicePort(EnabledService service) {
         return legacyMode ? service.getPort() : PORT;
-    }
-
-    /**
-     * Provides a {@link AWSCredentialsProvider} that is preconfigured to communicate with a given simulated service.
-     * The credentials provider should be set in the AWS Java SDK when building a client, e.g.:
-     * <pre><code>AmazonS3 s3 = AmazonS3ClientBuilder
-            .standard()
-            .withEndpointConfiguration(localstack.getEndpointConfiguration(S3))
-            .withCredentials(localstack.getDefaultCredentialsProvider())
-            .build();
-     </code></pre>
-     * or for AWS SDK v2 you can use {@link #getAccessKey()}, {@link #getSecretKey()} directly:
-     * <pre><code>S3Client s3 = S3Client
-             .builder()
-             .endpointOverride(localstack.getEndpointOverride(LocalStackContainer.Service.S3))
-             .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(
-             localstack.getAccessKey(), localstack.getSecretKey()
-             )))
-             .region(Region.of(localstack.getRegion()))
-             .build()
-     </code></pre>
-     * @return an {@link AWSCredentialsProvider}
-     * @deprecated {@link LocalStackContainer} will not depend on aws sdk.
-     */
-    @Deprecated
-    public AWSCredentialsProvider getDefaultCredentialsProvider() {
-        return new AWSStaticCredentialsProvider(new BasicAWSCredentials(getAccessKey(), getSecretKey()));
     }
 
     /**
