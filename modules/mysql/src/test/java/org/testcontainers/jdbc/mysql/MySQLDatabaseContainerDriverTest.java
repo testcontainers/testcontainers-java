@@ -9,8 +9,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class MySQLDatabaseContainerDriverTest {
 
@@ -30,14 +29,14 @@ public class MySQLDatabaseContainerDriverTest {
                 // Check that maxRows is set
                 try (ResultSet resultSet = statement.executeQuery("SELECT * FROM arbitrary_table")) {
                     resultSet.next();
-                    assertTrue(resultSet.isFirst());
-                    assertTrue(resultSet.isLast());
+                    assertThat(resultSet.isFirst()).isTrue();
+                    assertThat(resultSet.isLast()).isTrue();
                 }
 
                 // Check that pad with chars is set
                 try (ResultSet resultSet = statement.executeQuery("SELECT * FROM arbitrary_table")) {
-                    assertTrue(resultSet.next());
-                    assertEquals("abc  ", resultSet.getString(1));
+                    assertThat(resultSet.next()).isTrue();
+                    assertThat(resultSet.getString(1)).isEqualTo("abc  ");
                 }
             }
         }
