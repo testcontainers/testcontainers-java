@@ -228,7 +228,8 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
      * @return a Connection
      * @throws SQLException if there is a repeated failure to create the connection
      */
-    public Connection createConnection(String queryString, Properties info) throws SQLException, NoDriverFoundException {
+    public Connection createConnection(String queryString, Properties info)
+        throws SQLException, NoDriverFoundException {
         Properties properties = new Properties(info);
         properties.put("user", this.getUsername());
         properties.put("password", this.getPassword());
