@@ -50,8 +50,9 @@ public class ContainerDatabaseDriverTest {
 
                 // Check that maxRows is set
                 try (ResultSet resultSet = statement.executeQuery("SELECT * FROM arbitrary_table")) {
-                    assertThat(resultSet.next()).isTrue();
-                    assertThat(resultSet.next()).isFalse();
+                    resultSet.next()
+                    assertThat(resultSet.isFirst()).isTrue();
+                    assertThat(resultSet.isLast()).isTrue();
                 }
 
                 // Check that pad with chars is set
