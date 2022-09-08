@@ -6,8 +6,6 @@ dependencies {
 
     compileOnly 'org.jetbrains:annotations:23.0.0'
     testImplementation 'commons-dbutils:commons-dbutils:1.7'
-    testImplementation 'org.testcontainers:mysql:1.17.3'
-    testImplementation 'mysql:mysql-connector-java:8.0.30'
     testImplementation 'org.vibur:vibur-dbcp:25.0'
     testImplementation 'org.apache.tomcat:tomcat-jdbc:10.0.23'
     testImplementation 'com.zaxxer:HikariCP-java6:2.3.13'
