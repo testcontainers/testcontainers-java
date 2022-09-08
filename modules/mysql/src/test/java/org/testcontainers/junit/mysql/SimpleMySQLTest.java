@@ -9,6 +9,7 @@ import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
+import org.testcontainers.jdbc.ContainerDatabaseDriver;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -18,7 +19,9 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Properties;
 
+import static junit.framework.TestCase.assertTrue;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assume.assumeFalse;

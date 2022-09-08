@@ -216,9 +216,22 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
      * @throws SQLException if there is a repeated failure to create the connection
      */
     public Connection createConnection(String queryString) throws SQLException, NoDriverFoundException {
-        final Properties info = new Properties();
-        info.put("user", this.getUsername());
-        info.put("password", this.getPassword());
+        return createConnection(queryString, new Properties());
+    }
+
+    /**
+     * Creates a connection to the underlying containerized database instance.
+     *
+     * @param queryString query string parameters that should be appended to the JDBC connection URL.
+     *                    The '?' character must be included
+     * @param info  additional properties to be passed to the JDBC driver
+     * @return a Connection
+     * @throws SQLException if there is a repeated failure to create the connection
+     */
+    public Connection createConnection(String queryString, Properties info) throws SQLException, NoDriverFoundException {
+        Properties properties = new Properties(info);
+        properties.put("user", this.getUsername());
+        properties.put("password", this.getPassword());
         final String url = constructUrlForConnection(queryString);
 
         final Driver jdbcDriverInstance = getJdbcDriverInstance();
@@ -234,10 +247,10 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
                             "Trying to create JDBC connection using {} to {} with properties: {}",
                             jdbcDriverInstance.getClass().getName(),
                             url,
-                            info
+                            properties
                         );
 
-                    return jdbcDriverInstance.connect(url, info);
+                    return jdbcDriverInstance.connect(url, properties);
                 } catch (SQLException e) {
                     lastException = e;
                     Thread.sleep(100L);
