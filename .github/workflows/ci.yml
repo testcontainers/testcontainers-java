@@ -23,7 +23,7 @@ jobs:
       - id: thundra_test_initializer
         uses: thundra-io/thundra-test-init-action@v1
   find_gradle_jobs:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
@@ -33,7 +33,7 @@ jobs:
           java-version: '8.0.302'
           distribution: temurin
       - name: Cache Gradle Home files
-        uses: actions/cache@v3.0.7
+        uses: actions/cache@v3.0.8
         with:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-home-testmatrix-${{ hashFiles('**/*.gradle') }}
@@ -51,7 +51,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.find_gradle_jobs.outputs.matrix) }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-java@v3
@@ -59,7 +59,7 @@ jobs:
           java-version: '8.0.302'
           distribution: temurin
       - name: Cache Gradle Home files
-        uses: actions/cache@v3.0.7
+        uses: actions/cache@v3.0.8
         continue-on-error: true
         with:
           path: ~/.gradle/caches
