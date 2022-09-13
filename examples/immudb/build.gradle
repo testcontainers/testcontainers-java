@@ -1,0 +1,15 @@
+plugins {
+    id 'java'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly 'org.slf4j:slf4j-api:2.0.0'
+    implementation 'io.codenotary:immudb4j:0.9.10.2'
+    testImplementation 'org.testcontainers:testcontainers'
+    testImplementation 'org.testng:testng:7.5'
+    testImplementation 'org.assertj:assertj-core:3.23.1'
+}
