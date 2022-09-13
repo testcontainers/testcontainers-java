@@ -8,6 +8,8 @@ This module helps running [OrientDB](https://orientdb.org/download) using Testco
 
 Note that it's based on the [official Docker image](https://hub.docker.com/_/orientdb/) provided by OrientDB.
 
+Since: 1.13.0
+
 ## Usage example
 
 Declare your Testcontainer as a `@ClassRule` or `@Rule` in a JUnit 4 test or as static or member attribute of a JUnit 5 test annotated with `@Container` as you would with other Testcontainers.

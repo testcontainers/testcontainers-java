@@ -5,6 +5,8 @@
 
 See [Database containers](./index.md) for documentation and usage that is common to all database container types.
 
+Since: 1.13.0
+
 ## Usage example
 
 Running Presto as a stand-in for in a test:

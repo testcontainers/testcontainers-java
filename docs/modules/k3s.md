@@ -6,6 +6,8 @@
 Testcontainers module for Rancher's [K3s](https://rancher.com/products/k3s/) lightweight Kubernetes.
 This module is intended to be used for testing components that interact with Kubernetes APIs - for example, operators.
 
+Since: 1.16.3
+
 ## Usage example
 
 Start a K3s server as follows:

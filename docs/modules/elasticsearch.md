@@ -5,6 +5,8 @@ Testcontainers.
 
 Note that it's based on the [official Docker image](https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html) provided by elastic.
 
+Since: 1.10.0
+
 ## Usage example
 
 You can start an elasticsearch container instance from any Java application by using:

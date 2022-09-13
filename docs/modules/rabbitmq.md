@@ -3,6 +3,8 @@
 !!! note
     This module is INCUBATING. While it is ready for use and operational in the current version of Testcontainers, it is possible that it may receive breaking changes in the future. See [our contributing guidelines](/contributing/#incubating-modules) for more information on our incubating modules policy.
 
+Since: 1.12.0
+
 ## Adding this module to your project dependencies
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:

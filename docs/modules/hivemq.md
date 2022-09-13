@@ -14,6 +14,8 @@ This enables testing MQTT client applications and integration testing of custom 
 Please make sure to check out the hivemq-docs for the [Community Edition](https://github.com/hivemq/hivemq-community-edition/wiki/) 
 and the [Enterprise Edition](https://www.hivemq.com/docs/hivemq/4.7/user-guide/).
 
+Since: 1.17.0
+
 ## Using HiveMQ CE/EE
 
 HiveMQ provides different editions of on [Docker Hub](https://hub.docker.com/u/hivemq):

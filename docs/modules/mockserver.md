@@ -2,6 +2,8 @@
 
 Mock Server can be used to mock HTTP services by matching requests against user-defined expectations.
 
+Since: 1.7.3
+
 ## Usage example
 
 The following example shows how to start Mockserver.

@@ -11,6 +11,8 @@ Class | Container Image
 -|-
 CosmosDBEmulatorContainer | [mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator](https://github.com/microsoft/containerregistry)
 
+Since: 1.16.1
+
 ## Usage example
 
 ### CosmosDB

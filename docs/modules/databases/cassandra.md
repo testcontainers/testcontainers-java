@@ -1,5 +1,7 @@
 # Cassandra Module
 
+Since: 1.8.1
+
 ## Usage example
 
 This example connects to the Cassandra Cluster, creates a keyspaces and asserts that is has been created.
