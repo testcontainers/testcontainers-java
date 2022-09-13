@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to fill out this bug report! Before submitting a `bug`, please make sure there is no an existing issue for the one you encountered.
+        Thanks for taking the time to fill out this bug report! Before submitting a `bug`, please make sure there is no existing issue for the one you encountered.
   - type: dropdown
     id: module
     attributes:
