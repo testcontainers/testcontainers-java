@@ -357,7 +357,8 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
         CLOUDWATCHLOGS("logs", 4586),
         STS("sts", 4592),
         IAM("iam", 4593),
-        KMS("kms", 4599);
+        KMS("kms", 4599),
+        CLOUDMAP("servicediscovery", 4587);
 
         String localStackName;
 

@@ -1,5 +1,12 @@
 package org.testcontainers.containers.localstack;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
@@ -22,6 +29,7 @@ import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import com.amazonaws.services.sqs.model.CreateQueueResult;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
+import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -35,11 +43,19 @@ import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
-
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Optional;
+import software.amazon.awssdk.services.servicediscovery.ServiceDiscoveryClient;
+import software.amazon.awssdk.services.servicediscovery.model.CreateHttpNamespaceRequest;
+import software.amazon.awssdk.services.servicediscovery.model.CreateHttpNamespaceResponse;
+import software.amazon.awssdk.services.servicediscovery.model.CreateServiceRequest;
+import software.amazon.awssdk.services.servicediscovery.model.CreateServiceResponse;
+import software.amazon.awssdk.services.servicediscovery.model.GetOperationRequest;
+import software.amazon.awssdk.services.servicediscovery.model.ListNamespacesRequest;
+import software.amazon.awssdk.services.servicediscovery.model.ListNamespacesResponse;
+import software.amazon.awssdk.services.servicediscovery.model.NamespaceSummary;
+import software.amazon.awssdk.services.servicediscovery.model.Operation;
+import software.amazon.awssdk.services.servicediscovery.model.RegisterInstanceRequest;
+import software.amazon.awssdk.services.servicediscovery.model.RegisterInstanceResponse;
+import software.amazon.awssdk.services.servicediscovery.model.ServiceDiscoveryException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -68,6 +84,78 @@ public class LocalstackContainerTest {
             );
 
         // }
+
+        // local stack pro-version with cloudmap enabled
+        @ClassRule
+        public static LocalStackContainer cloudMapStack = new LocalStackContainer(LocalstackTestImages.LOCALSTACK_1_1_0_IMAGE)
+            .withServices(Service.CLOUDMAP).withEnv("LOCALSTACK_API_KEY", "3yH9v7Wl4u");//withEnv("LOCALSTACK_API_KEY", "<<Local_stack_api_key>>");
+
+        /**
+         * Run CRUD operation tests on AWS CloudMap.
+         * Note: This feature is only enabled for pro users of localstack, so if we are run into 501 error, then
+         * we don't fail this testcase.
+         * @throws Exception ServiceDiscoveryException - Exceptions reported while performing cloudmap operations
+         */
+        @Test
+        public void cloudMapTestOverNetwork() throws Exception {
+            try {
+                ServiceDiscoveryClient serviceDiscoveryClient = ServiceDiscoveryClient
+                    .builder()
+                    .endpointOverride(cloudMapStack.getEndpointOverride(Service.CLOUDMAP))
+                    .credentialsProvider(
+                        StaticCredentialsProvider.create(
+                            AwsBasicCredentials.create(cloudMapStack.getAccessKey(), cloudMapStack.getSecretKey())
+                        )
+                    )
+                    .region(Region.of(cloudMapStack.getRegion()))
+                    .build();
+
+                // CRUD Operation for namespace, service and service instance
+                // Create Namespace
+                final String nameSpaceName = "http_namespace";
+                CreateHttpNamespaceResponse nameSpaceResponse = serviceDiscoveryClient
+                    .createHttpNamespace(CreateHttpNamespaceRequest.builder().name(nameSpaceName).build());
+                String operationId = nameSpaceResponse.operationId();
+                Assert.assertNotNull(operationId);
+
+                pollForCompletion(serviceDiscoveryClient, operationId);
+
+                ListNamespacesResponse listNamespacesResponse = serviceDiscoveryClient
+                    .listNamespaces(ListNamespacesRequest.builder().build());
+
+                // Verify namespace
+                List<NamespaceSummary> namespaceSummaries = listNamespacesResponse.namespaces();
+                String nameSpaceId = null;
+                if (namespaceSummaries != null) {
+                    Optional<String> namespaceId = namespaceSummaries.stream().filter(n -> n.name().equals(nameSpaceName))
+                        .map(NamespaceSummary::id).findFirst();
+                    if (namespaceId.isPresent()){
+                        nameSpaceId = namespaceId.get();
+                    }
+                }
+                Assert.assertNotNull(nameSpaceId);
+
+                // Create & verify service
+                CreateServiceResponse serviceResponse = serviceDiscoveryClient
+                    .createService(CreateServiceRequest.builder().namespaceId(nameSpaceId).build());
+                final software.amazon.awssdk.services.servicediscovery.model.Service service = serviceResponse.service();
+                Assert.assertNotNull(service);
+
+                // Create service instance and verify successful response
+                Map<String, String> attributes = new HashMap<>();
+                attributes.put("AWS_INSTANCE_IPV_4", "10.0.0.1");
+                attributes.put("REGION", "us-west-2");
+                RegisterInstanceResponse response = serviceDiscoveryClient.
+                    registerInstance(RegisterInstanceRequest.builder().serviceId(service.id())
+                        .attributes(attributes).build());
+                operationId = response.operationId();
+                Assert.assertNotNull(operationId);
+            } catch (ServiceDiscoveryException e){
+                final String exceptionMessage = e.getMessage();
+                if(!exceptionMessage.contains("501"))
+                    Assert.fail(String.format("Error while running tests on cloudmap services %s", exceptionMessage));
+            }
+        }
 
         @Test
         public void s3TestOverBridgeNetwork() throws IOException {
@@ -242,6 +330,26 @@ public class LocalstackContainerTest {
                     )
                         .getServiceEndpoint()
                 );
+        }
+
+        /**
+         * Method to poll the completion of CloudMap operations
+         * @param serviceDiscovery AWS ServiceDiscovery object
+         * @param operationId Current Operation ID
+         * @throws InterruptedException error thrown if Thread.sleep() fails
+         */
+        private void pollForCompletion(ServiceDiscoveryClient serviceDiscovery, String operationId)
+            throws InterruptedException {
+            Operation operation = serviceDiscovery
+                .getOperation(GetOperationRequest.builder().operationId(operationId).build()).operation();
+            int counter = 0;
+            while (("SUBMITTED".equalsIgnoreCase(operation.statusAsString())
+                || "PENDING".equalsIgnoreCase(operation.statusAsString())) && counter < 30) {
+                operation = serviceDiscovery.getOperation(GetOperationRequest.builder().operationId(operationId).build())
+                    .operation();
+                Thread.sleep(2000);
+                counter++;
+            }
         }
     }
 
