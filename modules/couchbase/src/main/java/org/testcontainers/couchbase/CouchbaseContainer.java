@@ -573,6 +573,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
                     .add("name", bucket.getName())
                     .add("ramQuotaMB", Integer.toString(bucket.getQuota()))
                     .add("flushEnabled", bucket.hasFlushEnabled() ? "1" : "0")
+                    .add("replicaNumber", Integer.toString(bucket.getNumReplicas()))
                     .build(),
                 true
             );
