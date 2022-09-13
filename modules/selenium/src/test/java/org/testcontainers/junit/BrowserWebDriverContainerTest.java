@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.testcontainers.containers.BrowserWebDriverContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import java.util.Collections;
 import java.util.List;
@@ -79,6 +80,25 @@ public class BrowserWebDriverContainerTest {
                 .isEqualTo(512 * FileUtils.ONE_MB);
 
             assertThat(shmVolumes(webDriverContainer)).as("No shm mounts present").isEqualTo(Collections.emptyList());
+        }
+    }
+
+    /**
+     * Test that getWebDriver has a sufficient default timeout on the latest images.
+     * If this test fails occasionally, this may indicate that the default timeout specified in getWebDriver is too low.
+     * This may occur on new versions of selenium which have been shown to be slower
+     */
+    @Test
+    public void getWebDriverShouldNotTimeout() {
+        try (
+            BrowserWebDriverContainer webDriverContainer = new BrowserWebDriverContainer<>(
+                DockerImageName.parse("selenium/standalone-firefox:latest")
+            )
+                .withCapabilities(new FirefoxOptions())
+        ) {
+            webDriverContainer.start();
+            // Should not throw a timeout exception
+            webDriverContainer.getWebDriver();
         }
     }
 

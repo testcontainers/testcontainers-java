@@ -310,10 +310,28 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
      * <p>
      * All containers and drivers will be automatically shut down after the test method finishes (if used as a @Rule) or the test
      * class (if used as a @ClassRule)
+     * <p>
+     * Note that {@link RemoteWebDriver} does not initialize immediately thus this method will wait until it is initialized.
+     * This method will time out in 20 seconds. If you need to increase this timeout see {@link #getWebDriver(int)}
      *
      * @return a new Remote Web Driver instance
      */
     public synchronized RemoteWebDriver getWebDriver() {
+        return getWebDriver(20);
+    }
+
+    /**
+     * Obtain a {@link RemoteWebDriver} instance that is bound to an instance of the browser running inside a new container.
+     * <p>
+     * All containers and drivers will be automatically shut down after the test method finishes (if used as a @Rule) or the test
+     * class (if used as a @ClassRule)
+     * <p>
+     * Note that {@link RemoteWebDriver} does not initialize immediately, so this method will accept a timeout in seconds to wait.
+     *
+     * @param timeoutInSeconds the timeout in seconds to wait for the initialization of the remote web driver
+     * @return a new Remote Web Driver instance
+     */
+    public synchronized RemoteWebDriver getWebDriver(int timeoutInSeconds) {
         if (driver == null) {
             if (capabilities == null) {
                 logger()
@@ -325,11 +343,11 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
             driver =
                 Unreliables.retryUntilSuccess(
-                    30,
+                    timeoutInSeconds * 2,
                     TimeUnit.SECONDS,
                     () -> {
                         return Timeouts.getWithTimeout(
-                            10,
+                            timeoutInSeconds,
                             TimeUnit.SECONDS,
                             () -> {
                                 return new RemoteWebDriver(getSeleniumAddress(), capabilities);
