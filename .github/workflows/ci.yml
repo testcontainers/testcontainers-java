@@ -2,7 +2,7 @@ name: CI
 
 on:
   pull_request: {}
-  push: { branches: [ master ] }
+  push: { branches: [ maing ] }
 
 permissions:
   contents: read
@@ -67,7 +67,7 @@ jobs:
       - name: Clear existing docker image cache
         run: docker image prune -af
       - name: Thundra Gradle Test Instrumentation
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         uses: thundra-io/thundra-gradle-test-action@v1
         with:
           apikey: ${{ secrets.THUNDRA_API_KEY }}
