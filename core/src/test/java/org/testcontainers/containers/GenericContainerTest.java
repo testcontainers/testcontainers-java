@@ -186,6 +186,16 @@ public class GenericContainerTest {
         }
     }
 
+    @Test
+    public void hostNetworkModeOnMacOsOrWindowsShouldThrowIllegalArgumentException() {
+        if (SystemUtils.IS_OS_MAC || SystemUtils.IS_OS_WINDOWS) {
+            assertThatThrownBy(() -> {
+                new GenericContainer<>(TestImages.REDIS_IMAGE)
+                    .withNetworkMode("host");
+            }).isInstanceOf(IllegalArgumentException.class);
+        }
+    }
+
     static class NoopStartupCheckStrategy extends StartupCheckStrategy {
 
         @Override
