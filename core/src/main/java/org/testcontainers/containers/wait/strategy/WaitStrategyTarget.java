@@ -1,5 +1,6 @@
 package org.testcontainers.containers.wait.strategy;
 
+import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.testcontainers.containers.ContainerState;
 
 import java.util.HashSet;
@@ -11,7 +12,11 @@ public interface WaitStrategyTarget extends ContainerState {
      * @return the ports on which to check if the container is ready
      */
     default Set<Integer> getLivenessCheckPortNumbers() {
-        if (getContainerInfo().getHostConfig().getNetworkMode().equals("host")) {
+        InspectContainerResponse containerInfo = getContainerInfo();
+        if (containerInfo == null) {
+            containerInfo = getCurrentContainerInfo();
+        }
+        if (containerInfo.getHostConfig().getNetworkMode().equals("host")) {
             // On network mode "host", the container is directly connected to the host network stack.
             // Thus, there are no mapped ports or bound ports, and we should use the exposed ports.
             return new HashSet<>(getExposedPorts());
