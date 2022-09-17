@@ -141,6 +141,8 @@ public interface ContainerState {
     /**
      * Get the actual mapped port for a given port exposed by the container.
      * Should be used in conjunction with {@link #getHost()}.
+     * <p>
+     * If network mode "host" is enabled, the original port is returned.
      *
      * @param originalPort the original TCP port that is exposed
      * @return the port that the exposed port is mapped to, or null if it is not exposed
@@ -154,6 +156,9 @@ public interface ContainerState {
         Ports.Binding[] binding = new Ports.Binding[0];
         final InspectContainerResponse containerInfo = this.getContainerInfo();
         if (containerInfo != null) {
+            if (containerInfo.getHostConfig().getNetworkMode().equals("host")) {
+                return originalPort;
+            }
             binding = containerInfo.getNetworkSettings().getPorts().getBindings().get(new ExposedPort(originalPort));
         }
 
