@@ -11,6 +11,7 @@ import lombok.SneakyThrows;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.assertj.core.api.Assumptions;
 import org.junit.Test;
 import org.rnorth.ducttape.unreliables.Unreliables;
@@ -29,7 +30,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static org.apache.commons.lang3.SystemUtils.IS_OS_LINUX;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -172,7 +172,7 @@ public class GenericContainerTest {
 
     @Test
     public void shouldThrowIllegalArgumentExceptionIfGetMappedPortIsCalledOnHostNetworkMode() {
-        if (!IS_OS_LINUX) {
+        if (!SystemUtils.IS_OS_LINUX) {
             // Host networking mode is only supported in Linux, thus skip test on other platforms
             return;
         }
