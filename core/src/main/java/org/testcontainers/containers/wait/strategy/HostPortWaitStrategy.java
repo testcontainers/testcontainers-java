@@ -1,5 +1,6 @@
 package org.testcontainers.containers.wait.strategy;
 
+import jdk.vm.ci.code.site.Call;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.awaitility.Awaitility;
@@ -9,6 +10,7 @@ import org.testcontainers.containers.wait.internal.InternalCommandPortListeningC
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -44,51 +46,50 @@ public class HostPortWaitStrategy extends AbstractWaitStrategy {
 
         List<Integer> exposedPorts = waitStrategyTarget.getExposedPorts();
 
-        final Set<Integer> internalPorts = getInternalPorts(externalLivenessCheckPorts, exposedPorts);
-
-        Callable<Boolean> internalCheck = new InternalCommandPortListeningCheck(waitStrategyTarget, internalPorts);
+        ArrayList<Callable<Boolean>> portChecks = new ArrayList<>();
+        if (!waitStrategyTarget.getContainerInfo().getHostConfig().getNetworkMode().equals("host")) {
+            final Set<Integer> internalPorts = getInternalPorts(externalLivenessCheckPorts, exposedPorts);
+            Callable<Boolean> internalCheck = new InternalCommandPortListeningCheck(waitStrategyTarget, internalPorts);
+            // Blocking
+            portChecks.add(() -> {
+                Instant now = Instant.now();
+                Boolean result = internalCheck.call();
+                log.debug(
+                    "Internal port check {} for {} in {}",
+                    Boolean.TRUE.equals(result) ? "passed" : "failed",
+                    internalPorts,
+                    Duration.between(now, Instant.now())
+                );
+                return result;
+            });
+        }
 
         Callable<Boolean> externalCheck = new ExternalPortListeningCheck(
             waitStrategyTarget,
             externalLivenessCheckPorts
         );
+        portChecks.add(() -> {
+            Instant now = Instant.now();
+            Awaitility
+                .await()
+                .pollInSameThread()
+                .pollInterval(Duration.ofMillis(100))
+                .pollDelay(Duration.ZERO)
+                .ignoreExceptions()
+                .forever()
+                .until(externalCheck);
+
+            log.debug(
+                "External port check passed for ports {} in {}",
+                externalLivenessCheckPorts,
+                Duration.between(now, Instant.now())
+            );
+            return true;
+        });
 
         try {
             List<Future<Boolean>> futures = EXECUTOR.invokeAll(
-                Arrays.asList(
-                    // Blocking
-                    () -> {
-                        Instant now = Instant.now();
-                        Boolean result = internalCheck.call();
-                        log.debug(
-                            "Internal port check {} for {} in {}",
-                            Boolean.TRUE.equals(result) ? "passed" : "failed",
-                            internalPorts,
-                            Duration.between(now, Instant.now())
-                        );
-                        return result;
-                    },
-                    // Polling
-                    () -> {
-                        Instant now = Instant.now();
-                        Awaitility
-                            .await()
-                            .pollInSameThread()
-                            .pollInterval(Duration.ofMillis(100))
-                            .pollDelay(Duration.ZERO)
-                            .ignoreExceptions()
-                            .forever()
-                            .until(externalCheck);
-
-                        log.debug(
-                            "External port check passed for {} mapped as {} in {}",
-                            internalPorts,
-                            externalLivenessCheckPorts,
-                            Duration.between(now, Instant.now())
-                        );
-                        return true;
-                    }
-                ),
+                portChecks,
                 startupTimeout.getSeconds(),
                 TimeUnit.SECONDS
             );

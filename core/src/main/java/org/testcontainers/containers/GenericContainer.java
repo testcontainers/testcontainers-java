@@ -132,7 +132,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @NonNull
     private List<String> extraHosts = new ArrayList<>();
 
-    @NonNull
+    @Nullable
     private String networkMode;
 
     @Nullable
@@ -446,29 +446,35 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             // For all registered output consumers, start following as close to container startup as possible
             this.logConsumers.forEach(this::followOutput);
 
-            // Wait until inspect container returns the mapped ports
-            containerInfo =
-                await()
-                    .atMost(5, TimeUnit.SECONDS)
-                    .pollInterval(DynamicPollInterval.ofMillis(50))
-                    .pollInSameThread()
-                    .until(
-                        () -> dockerClient.inspectContainerCmd(containerId).exec(),
-                        inspectContainerResponse -> {
-                            Set<Integer> exposedAndMappedPorts = inspectContainerResponse
-                                .getNetworkSettings()
-                                .getPorts()
-                                .getBindings()
-                                .entrySet()
-                                .stream()
-                                .filter(it -> Objects.nonNull(it.getValue())) // filter out exposed but not yet mapped
-                                .map(Entry::getKey)
-                                .map(ExposedPort::getPort)
-                                .collect(Collectors.toSet());
+            if (networkMode == null || !networkMode.equals("host")) {
+                // Wait until inspect container returns the mapped ports
+                containerInfo =
+                    await()
+                        .atMost(5, TimeUnit.SECONDS)
+                        .pollInterval(DynamicPollInterval.ofMillis(50))
+                        .pollInSameThread()
+                        .until(
+                            () -> dockerClient.inspectContainerCmd(containerId).exec(),
+                            inspectContainerResponse -> {
+                                Set<Integer> exposedAndMappedPorts = inspectContainerResponse
+                                    .getNetworkSettings()
+                                    .getPorts()
+                                    .getBindings()
+                                    .entrySet()
+                                    .stream()
+                                    .filter(it -> Objects.nonNull(it.getValue())) // filter out exposed but not yet mapped
+                                    .map(Entry::getKey)
+                                    .map(ExposedPort::getPort)
+                                    .collect(Collectors.toSet());
 
-                            return exposedAndMappedPorts.containsAll(exposedPorts);
-                        }
-                    );
+                                return exposedAndMappedPorts.containsAll(exposedPorts);
+                            }
+                        );
+            } else {
+                // On host network mode, inspect container does not return any mapped ports.
+                // As ports are directly exposed on the hosts' network.
+                containerInfo = dockerClient.inspectContainerCmd(containerId).exec();
+            }
 
             // Tell subclasses that we're starting
             containerIsStarting(containerInfo, reused);
@@ -726,7 +732,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         // legacy implementation for backwards compatibility
         Iterator<Integer> exposedPortsIterator = exposedPorts.iterator();
         if (exposedPortsIterator.hasNext()) {
-            return getMappedPort(exposedPortsIterator.next());
+            if (networkMode != null && networkMode.equals("host")) {
+                return exposedPortsIterator.next();
+            } else {
+                return getMappedPort(exposedPortsIterator.next());
+            }
         } else if (portBindings.size() > 0) {
             return Integer.valueOf(PortBinding.parse(portBindings.get(0)).getBinding().getHostPortSpec());
         } else {
@@ -1222,6 +1232,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @Override
     public SELF withNetworkMode(String networkMode) {
+        if (networkMode.equals("host") && !SystemUtils.IS_OS_LINUX) {
+            throw new IllegalArgumentException("You are using the 'host' network mode, which is not supported on non-Linux platforms. " +
+                "This may result in undefined behaviour.");
+        }
         this.networkMode = networkMode;
         return self();
     }

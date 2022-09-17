@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static org.apache.commons.lang3.SystemUtils.IS_OS_LINUX;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -166,6 +167,23 @@ public class GenericContainerTest {
 
             assertThat(container.getExposedPorts()).as("Only withExposedPort should be exposed").hasSize(1);
             assertThat(container.getExposedPorts()).as("withExposedPort should be exposed").contains(8080);
+        }
+    }
+
+    @Test
+    public void shouldThrowIllegalArgumentExceptionIfGetMappedPortIsCalledOnHostNetworkMode() {
+        if (!IS_OS_LINUX) {
+            // Host networking mode is only supported in Linux, thus skip test on other platforms
+            return;
+        }
+        try (
+            GenericContainer<?> container = new GenericContainer<>(TestImages.REDIS_IMAGE)
+                .withNetworkMode("host")
+                .withExposedPorts(6379)
+        ) {
+            container.start();
+            assertThatThrownBy(() -> container.getMappedPort(6379))
+                .isInstanceOf(IllegalArgumentException.class);
         }
     }
 
