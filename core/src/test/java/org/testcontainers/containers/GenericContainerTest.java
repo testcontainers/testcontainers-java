@@ -171,7 +171,22 @@ public class GenericContainerTest {
     }
 
     @Test
-    public void shouldThrowIllegalArgumentExceptionIfGetMappedPortIsCalledOnHostNetworkMode() {
+    public void hostNetworkModeOnLinuxShouldStart() {
+        if (!SystemUtils.IS_OS_LINUX) {
+            // Host networking mode is only supported in Linux, thus skip test on other platforms
+            return;
+        }
+        try (
+            GenericContainer<?> container = new GenericContainer<>(TestImages.REDIS_IMAGE)
+                .withNetworkMode("host")
+                .withExposedPorts(6379)
+        ) {
+            container.start();
+        }
+    }
+
+    @Test
+    public void getMappedPortShouldThrowIllegalArgumentExceptionIfNetworkModeIsHost() {
         if (!SystemUtils.IS_OS_LINUX) {
             // Host networking mode is only supported in Linux, thus skip test on other platforms
             return;
@@ -183,6 +198,16 @@ public class GenericContainerTest {
         ) {
             container.start();
             assertThatThrownBy(() -> container.getMappedPort(6379)).isInstanceOf(IllegalArgumentException.class);
+        }
+    }
+
+    @Test
+    public void hostNetworkModeOnMacOsOrWindowsShouldThrowIllegalArgumentException() {
+        if (SystemUtils.IS_OS_MAC || SystemUtils.IS_OS_WINDOWS) {
+            assertThatThrownBy(() -> {
+                new GenericContainer<>(TestImages.REDIS_IMAGE)
+                    .withNetworkMode("host");
+            }).isInstanceOf(IllegalArgumentException.class);
         }
     }
 
