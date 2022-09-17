@@ -262,6 +262,7 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      *
      * @param networkMode network mode, e.g. including 'host', 'bridge', 'none' or the name of an existing named network.
      * @return this
+     * @throws IllegalArgumentException if network mode is host and platform is not linux. Docker does not support host mode on non-linux platforms.
      */
     SELF withNetworkMode(String networkMode);
 
