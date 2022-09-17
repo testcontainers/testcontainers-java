@@ -170,65 +170,6 @@ public class GenericContainerTest {
         }
     }
 
-    @Test
-    public void hostNetworkModeOnLinuxShouldStart() {
-        if (!SystemUtils.IS_OS_LINUX) {
-            // Host networking mode is only supported in Linux, thus skip test on other platforms
-            return;
-        }
-        try (
-            GenericContainer<?> container = new GenericContainer<>(TestImages.REDIS_IMAGE)
-                .withNetworkMode("host")
-                .withExposedPorts(6379)
-        ) {
-            container.start();
-        }
-    }
-
-    @Test
-    public void getMappedPortShouldThrowIllegalArgumentExceptionIfNetworkModeIsHost() {
-        if (!SystemUtils.IS_OS_LINUX) {
-            // Host networking mode is only supported in Linux, thus skip test on other platforms
-            return;
-        }
-        try (
-            GenericContainer<?> container = new GenericContainer<>(TestImages.REDIS_IMAGE)
-                .withNetworkMode("host")
-                .withExposedPorts(6379)
-        ) {
-            container.start();
-            assertThatThrownBy(() -> container.getMappedPort(6379)).isInstanceOf(IllegalArgumentException.class);
-        }
-    }
-
-    @Test
-    public void hostNetworkModeOnMacOsOrWindowsShouldThrowIllegalArgumentException() {
-        if (SystemUtils.IS_OS_MAC || SystemUtils.IS_OS_WINDOWS) {
-            assertThatThrownBy(() -> {
-                new GenericContainer<>(TestImages.REDIS_IMAGE)
-                    .withNetworkMode("host");
-            }).isInstanceOf(IllegalArgumentException.class);
-        }
-    }
-
-    @Test
-    public void getLivenessCheckPortsShouldReturnExposedPortsWhenHostNetworkMode() {
-        if (!SystemUtils.IS_OS_LINUX) {
-            // Host networking mode is only supported in Linux, thus skip test on other platforms
-            return;
-        }
-        try (
-            GenericContainer<?> container = new GenericContainer<>(TestImages.REDIS_IMAGE)
-                .withNetworkMode("host")
-                .withExposedPorts(6379)
-        ) {
-            container.start();
-            assertThat(container.getLivenessCheckPortNumbers()).containsExactly(6379);
-            assertThat(container.getLivenessCheckPort()).isEqualTo(6379);
-            assertThat(container.getLivenessCheckPorts()).containsExactly(6379);
-        }
-    }
-
     static class NoopStartupCheckStrategy extends StartupCheckStrategy {
 
         @Override
