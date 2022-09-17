@@ -47,15 +47,12 @@ public class HostNetworkModeTest {
     @Test
     public void getLivenessCheckPortsShouldReturnExposedPortsWhenHostNetworkMode() {
         assumeThat(SystemUtils.IS_OS_LINUX).isTrue();
-        try (
-            GenericContainer<?> container = new GenericContainer<>(TestImages.REDIS_IMAGE)
-                .withNetworkMode("host")
-                .withExposedPorts(6379)
-        ) {
-            container.start();
-            assertThat(container.getLivenessCheckPortNumbers()).containsExactly(6379);
-            assertThat(container.getLivenessCheckPort()).isEqualTo(6379);
-            assertThat(container.getLivenessCheckPorts()).containsExactly(6379);
-        }
+        GenericContainer<?> container = new GenericContainer<>(TestImages.REDIS_IMAGE)
+            .withNetworkMode("host")
+            .withExposedPorts(6379);
+        container.start();
+        assertThat(container.getLivenessCheckPortNumbers()).containsExactly(6379);
+        assertThat(container.getLivenessCheckPort()).isEqualTo(6379);
+        assertThat(container.getLivenessCheckPorts()).containsExactly(6379);
     }
 }
