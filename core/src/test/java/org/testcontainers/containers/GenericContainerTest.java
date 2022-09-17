@@ -182,8 +182,7 @@ public class GenericContainerTest {
                 .withExposedPorts(6379)
         ) {
             container.start();
-            assertThatThrownBy(() -> container.getMappedPort(6379))
-                .isInstanceOf(IllegalArgumentException.class);
+            assertThatThrownBy(() -> container.getMappedPort(6379)).isInstanceOf(IllegalArgumentException.class);
         }
     }
 

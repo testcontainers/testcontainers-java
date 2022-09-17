@@ -1,6 +1,5 @@
 package org.testcontainers.containers.wait.strategy;
 
-import jdk.vm.ci.code.site.Call;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.awaitility.Awaitility;
@@ -11,7 +10,6 @@ import org.testcontainers.containers.wait.internal.InternalCommandPortListeningC
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
