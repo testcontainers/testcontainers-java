@@ -5,11 +5,11 @@ import org.junit.Test;
 import org.testcontainers.TestImages;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
 public class HostNetworkModeTest {
+
     private static final String NGINX_IMAGE = "nginx:1.17.10-alpine";
 
     @Test
@@ -23,15 +23,6 @@ public class HostNetworkModeTest {
             container.start();
         }
     }
-//
-//    @Test
-//    public void givenMacOsOrWindowsShouldThrowIllegalArgumentException() {
-//        assumeThat(SystemUtils.IS_OS_MAC || SystemUtils.IS_OS_WINDOWS).isTrue();
-//        assertThatThrownBy(() -> {
-//            new GenericContainer<>(TestImages.REDIS_IMAGE)
-//                .withNetworkMode("host");
-//        }).isInstanceOf(IllegalArgumentException.class);
-//    }
 
     @Test
     public void getMappedPortShouldReturnOriginalPort() {
