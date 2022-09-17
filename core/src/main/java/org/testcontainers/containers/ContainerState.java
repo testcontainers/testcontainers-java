@@ -144,6 +144,8 @@ public interface ContainerState {
      *
      * @param originalPort the original TCP port that is exposed
      * @return the port that the exposed port is mapped to, or null if it is not exposed
+     * @throws IllegalStateException if there are no exposed ports, or if the network mode is "host" (host network mode
+     * no mapped ports. The original port is the port exposed to the host.).
      */
     default Integer getMappedPort(int originalPort) {
         Preconditions.checkState(
@@ -154,6 +156,9 @@ public interface ContainerState {
         Ports.Binding[] binding = new Ports.Binding[0];
         final InspectContainerResponse containerInfo = this.getContainerInfo();
         if (containerInfo != null) {
+            if (containerInfo.getHostConfig().getNetworkMode().equals("host")) {
+                throw new IllegalArgumentException("Network mode is set to host, so no mapped ports are available. The original port is the port exposed to the host.");
+            }
             binding = containerInfo.getNetworkSettings().getPorts().getBindings().get(new ExposedPort(originalPort));
         }
 
