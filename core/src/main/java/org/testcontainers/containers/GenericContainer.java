@@ -1234,8 +1234,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     public SELF withNetworkMode(String networkMode) {
         if (networkMode.equals("host") && !SystemUtils.IS_OS_LINUX) {
             throw new IllegalArgumentException(
-                "You are using the 'host' network mode, which is not supported on non-Linux platforms. " +
-                "This may result in undefined behaviour."
+                "You are using the 'host' network mode, which is not supported on non-Linux platforms."
             );
         }
         this.networkMode = networkMode;

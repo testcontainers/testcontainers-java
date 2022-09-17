@@ -211,6 +211,24 @@ public class GenericContainerTest {
         }
     }
 
+    @Test
+    public void getLivenessCheckPortsShouldReturnExposedPortsWhenHostNetworkMode() {
+        if (!SystemUtils.IS_OS_LINUX) {
+            // Host networking mode is only supported in Linux, thus skip test on other platforms
+            return;
+        }
+        try (
+            GenericContainer<?> container = new GenericContainer<>(TestImages.REDIS_IMAGE)
+                .withNetworkMode("host")
+                .withExposedPorts(6379)
+        ) {
+            container.start();
+            assertThat(container.getLivenessCheckPortNumbers()).containsExactly(6379);
+            assertThat(container.getLivenessCheckPort()).isEqualTo(6379);
+            assertThat(container.getLivenessCheckPorts()).containsExactly(6379);
+        }
+    }
+
     static class NoopStartupCheckStrategy extends StartupCheckStrategy {
 
         @Override
