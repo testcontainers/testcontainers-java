@@ -82,11 +82,10 @@ public class WaitingConsumer extends BaseConsumer<WaitingConsumer> {
         int numberOfMatches = 0;
         while (System.currentTimeMillis() < expiry) {
             try {
-                OutputFrame frame = frames.pollLast(100, TimeUnit.MILLISECONDS);
+                final OutputFrame frame = frames.pollLast(100, TimeUnit.MILLISECONDS);
 
                 if (frame != null) {
-                    final String trimmedFrameText = frame.getUtf8String().replaceFirst("\n$", "");
-                    LOGGER.debug("{}: {}", frame.getType(), trimmedFrameText);
+                    LOGGER.debug("{}: {}", frame.getType(), frame.getUtf8String());
 
                     if (predicate.test(frame)) {
                         numberOfMatches++;
