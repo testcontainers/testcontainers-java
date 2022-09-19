@@ -97,7 +97,7 @@ public class FrameConsumerResultCallback extends ResultCallbackTemplate<FrameCon
             int i = 0;
             while (i < b.length) {
                 switch (b[i]) {
-                    case '\n': {
+                    case '\n':
                         if (!lastCR) {
                             buffer.write(b, start, i - start);
                             consume();
@@ -105,17 +105,14 @@ public class FrameConsumerResultCallback extends ResultCallbackTemplate<FrameCon
                         start = i + 1;
                         lastCR = false;
                         break;
-                    }
-                    case '\r': {
+                    case '\r':
                         buffer.write(b, start, i - start);
                         consume();
                         start = i + 1;
                         lastCR = true;
                         break;
-                    }
-                    default: {
+                    default:
                         lastCR = false;
-                    }
                 }
                 i++;
             }
