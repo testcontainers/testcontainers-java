@@ -64,9 +64,8 @@ public class FrameConsumerResultCallback extends ResultCallbackTemplate<FrameCon
             return;
         }
 
-        for (final LineConsumer consumer : consumers.values()) {
-            consumer.close();
-        }
+        consumers.values().forEach(LineConsumer::processBuffer);
+        consumers.values().forEach(LineConsumer::end);
         super.close();
 
         completionLatch.countDown();
@@ -123,10 +122,13 @@ public class FrameConsumerResultCallback extends ResultCallbackTemplate<FrameCon
             buffer.write(b, start, b.length - start);
         }
 
-        void close() {
+        void processBuffer() {
             if (buffer.size() > 0) {
                 consume();
             }
+        }
+
+        void end() {
             consumer.accept(OutputFrame.END);
         }
 
