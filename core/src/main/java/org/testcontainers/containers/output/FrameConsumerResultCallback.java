@@ -80,9 +80,11 @@ public class FrameConsumerResultCallback extends ResultCallbackTemplate<FrameCon
         private static final Pattern ANSI_COLOR_PATTERN = Pattern.compile("\u001B\\[[0-9;]+m");
 
         private final OutputFrame.OutputType type;
+
         private final Consumer<OutputFrame> consumer;
 
         private final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
         private boolean lastCR = false;
 
         LineConsumer(final OutputFrame.OutputType type, final Consumer<OutputFrame> consumer) {
