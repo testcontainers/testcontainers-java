@@ -1,5 +1,6 @@
 package org.testcontainers.containers.output;
 
+import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.StreamType;
 import com.google.common.base.Charsets;
 
@@ -51,5 +52,13 @@ public class OutputFrame {
                     return null;
             }
         }
+    }
+
+    public static OutputFrame forFrame(Frame frame) {
+        final OutputType outputType = OutputType.forStreamType(frame.getStreamType());
+        if (outputType == null) {
+            return null;
+        }
+        return new OutputFrame(outputType, frame.getPayload());
     }
 }
