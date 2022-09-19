@@ -13,5 +13,4 @@ dependencies {
     testImplementation 'org.assertj:assertj-core:3.23.1'
 
     compileOnly 'org.jetbrains:annotations:23.0.0'
-    testCompileClasspath 'org.jetbrains:annotations:23.0.0'
 }
