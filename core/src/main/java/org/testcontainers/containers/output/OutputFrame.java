@@ -4,7 +4,7 @@ import com.github.dockerjava.api.model.StreamType;
 import com.google.common.base.Charsets;
 
 /**
- * Holds a frame of container output (usually one line, possibly more)
+ * Holds exactly one complete line of container output without any newline characters.
  */
 public class OutputFrame {
 
