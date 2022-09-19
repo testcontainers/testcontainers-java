@@ -60,6 +60,10 @@ public class FrameConsumerResultCallback extends ResultCallbackTemplate<FrameCon
 
     @Override
     public void close() throws IOException {
+        if (completionLatch.getCount() == 0) {
+            return;
+        }
+
         for (final LineConsumer consumer : consumers.values()) {
             consumer.close();
         }
