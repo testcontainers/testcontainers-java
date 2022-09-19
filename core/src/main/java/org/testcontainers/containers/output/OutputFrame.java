@@ -15,9 +15,16 @@ public class OutputFrame {
 
     private final byte[] bytes;
 
-    public OutputFrame(OutputType type, byte[] bytes) {
+    final boolean newLine;
+
+    public OutputFrame(final OutputType type, final byte[] bytes) {
+        this(type, bytes, true);
+    }
+
+    OutputFrame(final OutputType type, final byte[] bytes, final boolean newLine) {
         this.type = type;
         this.bytes = bytes;
+        this.newLine = newLine;
     }
 
     public OutputType getType() {

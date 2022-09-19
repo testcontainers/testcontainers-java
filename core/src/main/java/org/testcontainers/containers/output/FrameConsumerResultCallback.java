@@ -103,14 +103,14 @@ public class FrameConsumerResultCallback extends ResultCallbackTemplate<FrameCon
                     case '\n':
                         if (!lastCR) {
                             buffer.write(b, start, i - start);
-                            consume();
+                            consume(true);
                         }
                         start = i + 1;
                         lastCR = false;
                         break;
                     case '\r':
                         buffer.write(b, start, i - start);
-                        consume();
+                        consume(true);
                         start = i + 1;
                         lastCR = true;
                         break;
@@ -124,7 +124,7 @@ public class FrameConsumerResultCallback extends ResultCallbackTemplate<FrameCon
 
         void processBuffer() {
             if (buffer.size() > 0) {
-                consume();
+                consume(false);
             }
         }
 
@@ -132,10 +132,10 @@ public class FrameConsumerResultCallback extends ResultCallbackTemplate<FrameCon
             consumer.accept(OutputFrame.END);
         }
 
-        private void consume() {
+        private void consume(final boolean newLine) {
             final String string = new String(buffer.toByteArray(), StandardCharsets.UTF_8);
             final byte[] bytes = processAnsiColorCodes(string).getBytes(StandardCharsets.UTF_8);
-            consumer.accept(new OutputFrame(type, bytes));
+            consumer.accept(new OutputFrame(type, bytes, newLine));
             buffer.reset();
         }
 
