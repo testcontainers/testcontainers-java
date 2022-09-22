@@ -89,6 +89,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -959,7 +960,66 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public void setCommand(@NonNull String command) {
-        this.commandParts = command.split(" ");
+        if (command.isEmpty()) {
+            this.commandParts = new String[0];
+            return;
+        }
+
+        // A simple finite state machine
+        final int NORMAL = 0;
+        final int IN_DOUBLE_QUOTE = 1;
+        final int IN_SINGLE_QUOTE = 2;
+        int currentState = NORMAL;
+        StringTokenizer tokenizer = new StringTokenizer(command, "\"' ", true);
+        StringBuilder currentCommandToken = new StringBuilder();
+        ArrayList<String> commandTokenArray = new ArrayList<>();
+        while (tokenizer.hasMoreTokens()) {
+            String token = tokenizer.nextToken();
+            switch (currentState) {
+                case IN_DOUBLE_QUOTE:
+                    if (token.equals("\"")) {
+                        currentState = NORMAL;
+                    } else {
+                        currentCommandToken.append(token);
+                    }
+                    break;
+                case IN_SINGLE_QUOTE:
+                    if (token.equals("'")) {
+                        currentState = NORMAL;
+                    } else {
+                        currentCommandToken.append(token);
+                    }
+                    break;
+                case NORMAL:
+                    if (token.equals(" ")) {
+                        if (currentCommandToken.length() > 0) {
+                            commandTokenArray.add(currentCommandToken.toString());
+                            currentCommandToken = new StringBuilder();
+                        }
+                    } else if (token.equals("\"")) {
+                        currentState = IN_DOUBLE_QUOTE;
+                    } else if (token.equals("'")) {
+                        currentState = IN_SINGLE_QUOTE;
+                    } else {
+                        currentCommandToken.append(token);
+                    }
+                    break;
+            }
+        }
+
+        if (currentState == IN_DOUBLE_QUOTE) {
+            throw new IllegalArgumentException("The command [" + command + "] contains unmatched double quote (\")");
+        }
+
+        if (currentState == IN_SINGLE_QUOTE) {
+            throw new IllegalArgumentException("The command [" + command + "] contains an unmatched single quote");
+        }
+
+        if (currentCommandToken.length() > 0) {
+            commandTokenArray.add(currentCommandToken.toString());
+        }
+
+        this.commandParts = commandTokenArray.toArray(new String[commandTokenArray.size()]);
     }
 
     /**

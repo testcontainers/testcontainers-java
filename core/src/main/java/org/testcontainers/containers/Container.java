@@ -46,10 +46,19 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     }
 
     /**
-     * Set the command that should be run in the container. Consider using {@link #withCommand(String)}
-     * for building a container in a fluent style.
+     * Set the command that should be run in the container.
+     * Command string is split on single quotes, double quotes and spaces but does not support escaping.
+     * For example:
+     * <pre>echo 'hello world' "hello 'world'"</pre>
+     * is split into
+     * <pre>["echo", "hello world", "hello 'world"]</pre>
+     * And the following is unsupported
+     * <pre>echo "hello \"world"</pre>
+     * If you need to support escaping, you may need to split the command string yourself and consider using {@link #setCommand(String...)} instead.
+     * <p>
+     * Additionally, consider using {@link #withCommand(String)} for building a container in a fluent style.
      *
-     * @param command a command in single string format (will automatically be split on spaces)
+     * @param command a command in single string format
      */
     void setCommand(@NonNull String command);
 
@@ -233,15 +242,23 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     SELF withLabels(Map<String, String> labels);
 
     /**
-     * Set the command that should be run in the container
+     * Set the command that should be run in the container.
+     * Command string is split on single quotes, double quotes and spaces but does not support escaping.
+     * For example:
+     * <pre>echo 'hello world' "hello 'world'"</pre>
+     * is split into
+     * <pre>["echo", "hello world", "hello 'world"]</pre>
+     * And the following is unsupported
+     * <pre>echo "hello \"world"</pre>
+     * If you need to support escaping, you may need to split the command string yourself and consider using {@link #setCommand(String...)} instead.
      *
-     * @param cmd a command in single string format (will automatically be split on spaces)
+     * @param cmd a command in single string format
      * @return this
      */
     SELF withCommand(String cmd);
 
     /**
-     * Set the command that should be run in the container
+     * Set the command that should be run in the container.
      *
      * @param commandParts a command as an array of string parts
      * @return this
