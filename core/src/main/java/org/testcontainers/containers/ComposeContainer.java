@@ -120,7 +120,7 @@ public class ComposeContainer<SELF extends ComposeContainer<SELF>>
      */
     private Map<String, String> env = new HashMap<>();
 
-    private ComposeConfiguration.RemoveImages removeImages;
+    private RemoveImages removeImages;
 
     public ComposeContainer(File... composeFiles) {
         this(Arrays.asList(composeFiles));
@@ -619,7 +619,7 @@ public class ComposeContainer<SELF extends ComposeContainer<SELF>>
      *
      * @return this instance, for chaining
      */
-    public SELF withRemoveImages(ComposeConfiguration.RemoveImages removeImages) {
+    public SELF withRemoveImages(RemoveImages removeImages) {
         this.removeImages = removeImages;
         return self();
     }
@@ -648,5 +648,27 @@ public class ComposeContainer<SELF extends ComposeContainer<SELF>>
 
     private String randomProjectId() {
         return identifier + Base58.randomString(6).toLowerCase();
+    }
+
+    public enum RemoveImages {
+        /**
+         * Remove all images used by any service.
+         */
+        ALL("all"),
+
+        /**
+         * Remove only images that don't have a custom tag set by the `image` field.
+         */
+        LOCAL("local");
+
+        private final String dockerRemoveImagesType;
+
+        RemoveImages(final String dockerRemoveImagesType) {
+            this.dockerRemoveImagesType = dockerRemoveImagesType;
+        }
+
+        public String dockerRemoveImagesType() {
+            return dockerRemoveImagesType;
+        }
     }
 }

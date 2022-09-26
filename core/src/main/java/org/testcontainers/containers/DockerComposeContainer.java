@@ -3,45 +3,32 @@ package org.testcontainers.containers;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Container;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
-import com.google.common.collect.Sets;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.output.OutputFrame;
-import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
-import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.DockerImageName;
-import org.testcontainers.utility.ImageNameSubstitutor;
 import org.testcontainers.utility.LogUtils;
-import org.testcontainers.utility.ResourceReaper;
 
 import java.io.File;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Container which launches Docker Compose, for the purposes of launching a defined set of containers.
@@ -50,15 +37,6 @@ import java.util.stream.Stream;
 public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
     extends FailureDetectingExternalResource
     implements Startable {
-
-    /**
-     * Random identifier which will become part of spawned containers names, so we can shut them down
-     */
-    private final String identifier;
-
-    private final List<File> composeFiles;
-
-    private DockerComposeFiles dockerComposeFiles;
 
     private final Map<String, Integer> scalingPreferences = new HashMap<>();
 
@@ -74,22 +52,6 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
 
     private boolean tailChildContainers;
 
-    private String project;
-
-    private final AtomicInteger nextAmbassadorPort = new AtomicInteger(2000);
-
-    private final Map<String, Map<Integer, Integer>> ambassadorPortMappings = new ConcurrentHashMap<>();
-
-    private final Map<String, ComposeServiceWaitStrategyTarget> serviceInstanceMap = new ConcurrentHashMap<>();
-
-    private final Map<String, WaitAllStrategy> waitStrategyMap = new ConcurrentHashMap<>();
-
-    private Duration startupTimeout = Duration.ofMinutes(30);
-
-    private final SocatContainer ambassadorContainer = new SocatContainer();
-
-    private final Map<String, List<Consumer<OutputFrame>>> logConsumers = new ConcurrentHashMap<>();
-
     private static final Object MUTEX = new Object();
 
     private List<String> services = new ArrayList<>();
@@ -100,13 +62,15 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
      */
     private Map<String, String> env = new HashMap<>();
 
-    private ComposeConfiguration.RemoveImages removeImages;
+    private RemoveImages removeImages;
 
-    private static final String DOCKER_COMPOSE_EXECUTABLE = SystemUtils.IS_OS_WINDOWS
-        ? "docker-compose.exe"
-        : "docker-compose";
+    public static final String COMPOSE_EXECUTABLE = SystemUtils.IS_OS_WINDOWS ? "docker-compose.exe" : "docker-compose";
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("docker/compose:1.29.2");
+
+    private ComposeConfiguration<SELF> composeConfiguration;
+
+    private String project;
 
     @Deprecated
     public DockerComposeContainer(File composeFile, String identifier) {
@@ -126,14 +90,10 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
     }
 
     public DockerComposeContainer(String identifier, List<File> composeFiles) {
-        this.composeFiles = composeFiles;
-        this.dockerComposeFiles = new DockerComposeFiles(composeFiles);
-
-        // Use a unique identifier so that containers created for this compose environment can be identified
-        this.identifier = identifier;
-        this.project = randomProjectId();
-
         this.dockerClient = DockerClientFactory.lazyClient();
+        this.composeConfiguration =
+            new ComposeConfiguration<>(composeFiles, identifier, COMPOSE_EXECUTABLE, DEFAULT_IMAGE_NAME);
+        this.project = this.composeConfiguration.getProject();
     }
 
     @Override
@@ -165,169 +125,25 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
     @Override
     public void start() {
         synchronized (MUTEX) {
-            registerContainersForShutdown();
+            this.composeConfiguration.registerContainersForShutdown();
             if (pull) {
                 try {
-                    pullImages();
+                    this.composeConfiguration.pullImages();
                 } catch (ContainerLaunchException e) {
                     log.warn("Exception while pulling images, using local images if available", e);
                 }
             }
-            createServices();
-            startAmbassadorContainers();
-            waitUntilServiceStarted();
+            this.composeConfiguration.createServices(
+                    this.localCompose,
+                    this.build,
+                    this.options,
+                    this.services,
+                    this.scalingPreferences,
+                    this.env
+                );
+            this.composeConfiguration.startAmbassadorContainer();
+            this.composeConfiguration.waitUntilServiceStarted(this.tailChildContainers);
         }
-    }
-
-    private void pullImages() {
-        // Pull images using our docker client rather than compose itself,
-        // (a) as a workaround for https://github.com/docker/compose/issues/5854, which prevents authenticated image pulls being possible when credential helpers are in use
-        // (b) so that credential helper-based auth still works when compose is running from within a container
-        dockerComposeFiles
-            .getDependencyImages()
-            .forEach(imageName -> {
-                try {
-                    log.info(
-                        "Preemptively checking local images for '{}', referenced via a compose file or transitive Dockerfile. If not available, it will be pulled.",
-                        imageName
-                    );
-                    new RemoteDockerImage(DockerImageName.parse(imageName))
-                        .withImageNameSubstitutor(ImageNameSubstitutor.noop())
-                        .get();
-                } catch (Exception e) {
-                    log.warn(
-                        "Unable to pre-fetch an image ({}) depended upon by Docker Compose build - startup will continue but may fail. Exception message was: {}",
-                        imageName,
-                        e.getMessage()
-                    );
-                }
-            });
-    }
-
-    public SELF withServices(@NonNull String... services) {
-        this.services = Arrays.asList(services);
-        return self();
-    }
-
-    private void createServices() {
-        // services that have been explicitly requested to be started. If empty, all services should be started.
-        final String serviceNameArgs = Stream
-            .concat(
-                services.stream(), // services that have been specified with `withServices`
-                scalingPreferences.keySet().stream() // services that are implicitly needed via `withScaledService`
-            )
-            .distinct()
-            .collect(Collectors.joining(" "));
-
-        // Apply scaling for the services specified using `withScaledService`
-        final String scalingOptions = scalingPreferences
-            .entrySet()
-            .stream()
-            .map(entry -> "--scale " + entry.getKey() + "=" + entry.getValue())
-            .distinct()
-            .collect(Collectors.joining(" "));
-
-        String command = optionsAsString() + "up -d";
-
-        if (build) {
-            command += " --build";
-        }
-
-        if (!Strings.isNullOrEmpty(scalingOptions)) {
-            command += " " + scalingOptions;
-        }
-
-        if (!Strings.isNullOrEmpty(serviceNameArgs)) {
-            command += " " + serviceNameArgs;
-        }
-
-        // Run the docker-compose container, which starts up the services
-        runWithCompose(command);
-    }
-
-    private String optionsAsString() {
-        String optionsString = options.stream().collect(Collectors.joining(" "));
-        if (optionsString.length() != 0) {
-            // ensures that there is a space between the options and 'up' if options are passed.
-            return optionsString + " ";
-        } else {
-            // otherwise two spaces would appear between 'docker-compose' and 'up'
-            return StringUtils.EMPTY;
-        }
-    }
-
-    private void waitUntilServiceStarted() {
-        listChildContainers().forEach(this::createServiceInstance);
-
-        Set<String> servicesToWaitFor = waitStrategyMap.keySet();
-        Set<String> instantiatedServices = serviceInstanceMap.keySet();
-        Sets.SetView<String> missingServiceInstances = Sets.difference(servicesToWaitFor, instantiatedServices);
-
-        if (!missingServiceInstances.isEmpty()) {
-            throw new IllegalStateException(
-                "Services named " +
-                missingServiceInstances +
-                " " +
-                "do not exist, but wait conditions have been defined " +
-                "for them. This might mean that you misspelled " +
-                "the service name when defining the wait condition."
-            );
-        }
-
-        serviceInstanceMap.forEach(this::waitUntilServiceStarted);
-    }
-
-    private void createServiceInstance(Container container) {
-        String serviceName = getServiceNameFromContainer(container);
-        final ComposeServiceWaitStrategyTarget containerInstance = new ComposeServiceWaitStrategyTarget(
-            dockerClient,
-            container,
-            ambassadorContainer,
-            ambassadorPortMappings.getOrDefault(serviceName, new HashMap<>())
-        );
-
-        String containerId = containerInstance.getContainerId();
-        if (tailChildContainers) {
-            followLogs(containerId, new Slf4jLogConsumer(log).withPrefix(container.getNames()[0]));
-        }
-        //follow logs using registered consumers for this service
-        logConsumers
-            .getOrDefault(serviceName, Collections.emptyList())
-            .forEach(consumer -> followLogs(containerId, consumer));
-        serviceInstanceMap.putIfAbsent(serviceName, containerInstance);
-    }
-
-    private void waitUntilServiceStarted(String serviceName, ComposeServiceWaitStrategyTarget serviceInstance) {
-        final WaitAllStrategy waitAllStrategy = waitStrategyMap.get(serviceName);
-        if (waitAllStrategy != null) {
-            waitAllStrategy.waitUntilReady(serviceInstance);
-        }
-    }
-
-    private String getServiceNameFromContainer(Container container) {
-        final String containerName = container.getLabels().get("com.docker.compose.service");
-        final String containerNumber = container.getLabels().get("com.docker.compose.container-number");
-        return String.format("%s_%s", containerName, containerNumber);
-    }
-
-    private void runWithCompose(String cmd) {
-        Preconditions.checkNotNull(composeFiles);
-        Preconditions.checkArgument(!composeFiles.isEmpty(), "No docker compose file have been provided");
-
-        final DockerCompose dockerCompose;
-        if (localCompose) {
-            dockerCompose = new LocalDockerCompose(DOCKER_COMPOSE_EXECUTABLE, composeFiles, project);
-        } else {
-            dockerCompose = new ContainerisedDockerCompose(DEFAULT_IMAGE_NAME, composeFiles, project);
-        }
-
-        dockerCompose.withCommand(cmd).withEnv(env).invoke();
-    }
-
-    private void registerContainersForShutdown() {
-        ResourceReaper
-            .instance()
-            .registerLabelsFilterForCleanup(Collections.singletonMap("com.docker.compose.project", project));
     }
 
     @VisibleForTesting
@@ -341,33 +157,31 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
             .collect(Collectors.toList());
     }
 
-    private void startAmbassadorContainers() {
-        if (!ambassadorPortMappings.isEmpty()) {
-            ambassadorContainer.start();
-        }
+    public SELF withServices(@NonNull String... services) {
+        this.services = Arrays.asList(services);
+        return self();
     }
 
     @Override
     public void stop() {
         synchronized (MUTEX) {
             try {
-                // shut down the ambassador container
-                ambassadorContainer.stop();
+                this.composeConfiguration.getAmbassadorContainer().stop();
 
                 // Kill the services using docker-compose
                 String cmd = "down -v";
                 if (removeImages != null) {
                     cmd += " --rmi " + removeImages.dockerRemoveImagesType();
                 }
-                runWithCompose(cmd);
+                this.composeConfiguration.runWithCompose(this.localCompose, cmd);
             } finally {
-                project = randomProjectId();
+                this.project = this.composeConfiguration.randomProjectId();
             }
         }
     }
 
     public SELF withExposedService(String serviceName, int servicePort) {
-        return withExposedService(serviceName, servicePort, Wait.defaultWaitStrategy());
+        return this.composeConfiguration.withExposedService(serviceName, servicePort, Wait.defaultWaitStrategy());
     }
 
     public DockerComposeContainer withExposedService(String serviceName, int instance, int servicePort) {
@@ -380,59 +194,12 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
         int servicePort,
         WaitStrategy waitStrategy
     ) {
-        return withExposedService(serviceName + "_" + instance, servicePort, waitStrategy);
+        return this.composeConfiguration.withExposedService(serviceName + "_" + instance, servicePort, waitStrategy);
     }
 
     public SELF withExposedService(String serviceName, int servicePort, @NonNull WaitStrategy waitStrategy) {
-        String serviceInstanceName = getServiceInstanceName(serviceName);
-
-        /*
-         * For every service/port pair that needs to be exposed, we register a target on an 'ambassador container'.
-         *
-         * The ambassador container's role is to link (within the Docker network) to one of the
-         * compose services, and proxy TCP network I/O out to a port that the ambassador container
-         * exposes.
-         *
-         * This avoids the need for the docker compose file to explicitly expose ports on all the
-         * services.
-         *
-         * {@link GenericContainer} should ensure that the ambassador container is on the same network
-         * as the rest of the compose environment.
-         */
-
-        // Ambassador container will be started together after docker compose has started
-        int ambassadorPort = nextAmbassadorPort.getAndIncrement();
-        ambassadorPortMappings
-            .computeIfAbsent(serviceInstanceName, __ -> new ConcurrentHashMap<>())
-            .put(servicePort, ambassadorPort);
-        ambassadorContainer.withTarget(ambassadorPort, serviceInstanceName, servicePort);
-        ambassadorContainer.addLink(new FutureContainer(this.project + "_" + serviceInstanceName), serviceInstanceName);
-        addWaitStrategy(serviceInstanceName, waitStrategy);
+        this.composeConfiguration.withExposedService(serviceName, servicePort, waitStrategy);
         return self();
-    }
-
-    private String getServiceInstanceName(String serviceName) {
-        String serviceInstanceName = serviceName;
-        if (!serviceInstanceName.matches(".*_[0-9]+")) {
-            serviceInstanceName += "_1"; // implicit first instance of this service
-        }
-        return serviceInstanceName;
-    }
-
-    /*
-     * can have multiple wait strategies for a single container, e.g. if waiting on several ports
-     * if no wait strategy is defined, the WaitAllStrategy will return immediately.
-     * The WaitAllStrategy uses the startup timeout for everything as a global maximum, but we expect timeouts to be handled by the inner strategies.
-     */
-    private void addWaitStrategy(String serviceInstanceName, @NonNull WaitStrategy waitStrategy) {
-        final WaitAllStrategy waitAllStrategy = waitStrategyMap.computeIfAbsent(
-            serviceInstanceName,
-            __ -> {
-                return new WaitAllStrategy(WaitAllStrategy.Mode.WITH_MAXIMUM_OUTER_TIMEOUT)
-                    .withStartupTimeout(startupTimeout);
-            }
-        );
-        waitAllStrategy.withStrategy(waitStrategy);
     }
 
     /**
@@ -444,8 +211,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
      * @see org.testcontainers.containers.wait.strategy.Wait#defaultWaitStrategy()
      */
     public SELF waitingFor(String serviceName, @NonNull WaitStrategy waitStrategy) {
-        String serviceInstanceName = getServiceInstanceName(serviceName);
-        addWaitStrategy(serviceInstanceName, waitStrategy);
+        String serviceInstanceName = this.composeConfiguration.getServiceInstanceName(serviceName);
+        this.composeConfiguration.addWaitStrategy(serviceInstanceName, waitStrategy);
         return self();
     }
 
@@ -460,7 +227,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
      * @return a host IP address or hostname that can be used for accessing the service container.
      */
     public String getServiceHost(String serviceName, Integer servicePort) {
-        return ambassadorContainer.getHost();
+        return this.composeConfiguration.getServiceHost();
     }
 
     /**
@@ -474,28 +241,11 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
      * @return a port that can be used for accessing the service container.
      */
     public Integer getServicePort(String serviceName, Integer servicePort) {
-        Map<Integer, Integer> portMap = ambassadorPortMappings.get(getServiceInstanceName(serviceName));
-
-        if (portMap == null) {
-            throw new IllegalArgumentException(
-                "Could not get a port for '" +
-                serviceName +
-                "'. " +
-                "Testcontainers does not have an exposed port configured for '" +
-                serviceName +
-                "'. " +
-                "To fix, please ensure that the service '" +
-                serviceName +
-                "' has ports exposed using .withExposedService(...)"
-            );
-        } else {
-            return ambassadorContainer.getMappedPort(portMap.get(servicePort));
-        }
+        return this.composeConfiguration.getServicePort(serviceName, servicePort);
     }
 
     public SELF withScaledService(String serviceBaseName, int numInstances) {
         scalingPreferences.put(serviceBaseName, numInstances);
-
         return self();
     }
 
@@ -549,12 +299,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
      * @return this instance, for chaining
      */
     public SELF withLogConsumer(String serviceName, Consumer<OutputFrame> consumer) {
-        String serviceInstanceName = getServiceInstanceName(serviceName);
-        final List<Consumer<OutputFrame>> consumers =
-            this.logConsumers.getOrDefault(serviceInstanceName, new ArrayList<>());
-        consumers.add(consumer);
-        this.logConsumers.putIfAbsent(serviceInstanceName, consumers);
-        return self();
+        return this.composeConfiguration.withLogConsumer(serviceName, consumer);
     }
 
     /**
@@ -582,7 +327,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
      *
      * @return this instance, for chaining
      */
-    public SELF withRemoveImages(ComposeConfiguration.RemoveImages removeImages) {
+    public SELF withRemoveImages(RemoveImages removeImages) {
         this.removeImages = removeImages;
         return self();
     }
@@ -593,24 +338,41 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
      * @return this instance. for chaining
      */
     public SELF withStartupTimeout(Duration startupTimeout) {
-        this.startupTimeout = startupTimeout;
+        this.composeConfiguration.setStartupTimeout(startupTimeout);
         return self();
     }
 
     public Optional<ContainerState> getContainerByServiceName(String serviceName) {
-        String serviceInstantName = getServiceInstanceName(serviceName);
-        return Optional.ofNullable(serviceInstanceMap.get(serviceInstantName));
+        return this.composeConfiguration.getContainerByServiceName(serviceName);
     }
 
     private void followLogs(String containerId, Consumer<OutputFrame> consumer) {
-        LogUtils.followOutput(dockerClient, containerId, consumer);
+        LogUtils.followOutput(this.dockerClient, containerId, consumer);
     }
 
     private SELF self() {
         return (SELF) this;
     }
 
-    private String randomProjectId() {
-        return identifier + Base58.randomString(6).toLowerCase();
+    public enum RemoveImages {
+        /**
+         * Remove all images used by any service.
+         */
+        ALL("all"),
+
+        /**
+         * Remove only images that don't have a custom tag set by the `image` field.
+         */
+        LOCAL("local");
+
+        private final String dockerRemoveImagesType;
+
+        RemoveImages(final String dockerRemoveImagesType) {
+            this.dockerRemoveImagesType = dockerRemoveImagesType;
+        }
+
+        public String dockerRemoveImagesType() {
+            return dockerRemoveImagesType;
+        }
     }
 }
