@@ -1,6 +1,5 @@
 package org.testcontainers.junit;
 
-import org.jetbrains.annotations.NotNull;
 import org.junit.ClassRule;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -51,7 +50,6 @@ public class BaseWebDriverContainerTest {
         assertThat(actual).as(String.format("actual browser name is %s", actual)).isEqualTo(expectedName);
     }
 
-    @NotNull
     private static RemoteWebDriver setupDriverFromRule(BrowserWebDriverContainer<?> rule) {
         RemoteWebDriver driver = rule.getWebDriver();
         driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);

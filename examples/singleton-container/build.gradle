@@ -11,7 +11,7 @@ dependencies {
     implementation 'redis.clients:jedis:4.2.3'
     implementation 'com.google.code.gson:gson:2.9.1'
     implementation 'com.google.guava:guava:23.0'
-    compileOnly 'org.slf4j:slf4j-api:1.7.36'
+    compileOnly 'org.slf4j:slf4j-api:2.0.0'
 
     testImplementation 'ch.qos.logback:logback-classic:1.2.11'
     testImplementation 'org.testcontainers:testcontainers'

@@ -68,7 +68,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("docker/compose:1.29.2");
 
-    private ComposeConfiguration<SELF> composeConfiguration;
+    private ComposeConfiguration composeConfiguration;
 
     private String project;
 
@@ -92,7 +92,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
     public DockerComposeContainer(String identifier, List<File> composeFiles) {
         this.dockerClient = DockerClientFactory.lazyClient();
         this.composeConfiguration =
-            new ComposeConfiguration<>(composeFiles, identifier, COMPOSE_EXECUTABLE, DEFAULT_IMAGE_NAME);
+            new ComposeConfiguration(composeFiles, identifier, COMPOSE_EXECUTABLE, DEFAULT_IMAGE_NAME);
         this.project = this.composeConfiguration.getProject();
     }
 
@@ -181,7 +181,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
     }
 
     public SELF withExposedService(String serviceName, int servicePort) {
-        return this.composeConfiguration.withExposedService(serviceName, servicePort, Wait.defaultWaitStrategy());
+        this.composeConfiguration.withExposedService(serviceName, servicePort, Wait.defaultWaitStrategy());
+        return self();
     }
 
     public DockerComposeContainer withExposedService(String serviceName, int instance, int servicePort) {
@@ -194,7 +195,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
         int servicePort,
         WaitStrategy waitStrategy
     ) {
-        return this.composeConfiguration.withExposedService(serviceName + "_" + instance, servicePort, waitStrategy);
+        this.composeConfiguration.withExposedService(serviceName + "_" + instance, servicePort, waitStrategy);
+        return self();
     }
 
     public SELF withExposedService(String serviceName, int servicePort, @NonNull WaitStrategy waitStrategy) {
@@ -299,7 +301,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
      * @return this instance, for chaining
      */
     public SELF withLogConsumer(String serviceName, Consumer<OutputFrame> consumer) {
-        return this.composeConfiguration.withLogConsumer(serviceName, consumer);
+        this.composeConfiguration.withLogConsumer(serviceName, consumer);
+        return self();
     }
 
     /**

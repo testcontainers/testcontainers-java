@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Slf4j
-class ComposeConfiguration<SELF> {
+class ComposeConfiguration {
 
     private final DockerClient dockerClient;
 
@@ -262,19 +262,19 @@ class ComposeConfiguration<SELF> {
         }
     }
 
-    public SELF withExposedService(String serviceName, int servicePort) {
-        return withExposedService(serviceName, servicePort, Wait.defaultWaitStrategy());
+    public void withExposedService(String serviceName, int servicePort) {
+        withExposedService(serviceName, servicePort, Wait.defaultWaitStrategy());
     }
 
-    public SELF withExposedService(String serviceName, int instance, int servicePort) {
-        return withExposedService(serviceName + "_" + instance, servicePort);
+    public void withExposedService(String serviceName, int instance, int servicePort) {
+        withExposedService(serviceName + "_" + instance, servicePort);
     }
 
-    public SELF withExposedService(String serviceName, int instance, int servicePort, WaitStrategy waitStrategy) {
-        return withExposedService(serviceName + "_" + instance, servicePort, waitStrategy);
+    public void withExposedService(String serviceName, int instance, int servicePort, WaitStrategy waitStrategy) {
+        withExposedService(serviceName + "_" + instance, servicePort, waitStrategy);
     }
 
-    public SELF withExposedService(String serviceName, int servicePort, @NonNull WaitStrategy waitStrategy) {
+    public void withExposedService(String serviceName, int servicePort, @NonNull WaitStrategy waitStrategy) {
         String serviceInstanceName = getServiceInstanceName(serviceName);
 
         /*
@@ -299,7 +299,6 @@ class ComposeConfiguration<SELF> {
         ambassadorContainer.withTarget(ambassadorPort, serviceInstanceName, servicePort);
         ambassadorContainer.addLink(new FutureContainer(this.project + "_" + serviceInstanceName), serviceInstanceName);
         addWaitStrategy(serviceInstanceName, waitStrategy);
-        return (SELF) this;
     }
 
     String getServiceInstanceName(String serviceName) {
@@ -369,13 +368,12 @@ class ComposeConfiguration<SELF> {
         return this.identifier + Base58.randomString(6).toLowerCase();
     }
 
-    SELF withLogConsumer(String serviceName, Consumer<OutputFrame> consumer) {
+    void withLogConsumer(String serviceName, Consumer<OutputFrame> consumer) {
         String serviceInstanceName = getServiceInstanceName(serviceName);
         final List<Consumer<OutputFrame>> consumers =
             this.logConsumers.getOrDefault(serviceInstanceName, new ArrayList<>());
         consumers.add(consumer);
         this.logConsumers.putIfAbsent(serviceInstanceName, consumers);
-        return (SELF) this;
     }
 
     String getServiceHost() {

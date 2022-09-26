@@ -61,9 +61,9 @@ configurations.all {
 
 dependencies {
     api 'junit:junit:4.13.2'
-    api 'org.slf4j:slf4j-api:1.7.36'
+    api 'org.slf4j:slf4j-api:2.0.0'
     compileOnly 'org.jetbrains:annotations:23.0.0'
-    testCompileClasspath 'org.jetbrains:annotations:23.0.0'
+    testCompileOnly 'org.jetbrains:annotations:23.0.0'
     api 'org.apache.commons:commons-compress:1.21'
     api ('org.rnorth.duct-tape:duct-tape:1.0.8') {
         exclude(group: 'org.jetbrains', module: 'annotations')
@@ -80,7 +80,7 @@ dependencies {
 
     api 'com.github.docker-java:docker-java-transport-zerodep'
 
-    shaded "org.yaml:snakeyaml:1.30"
+    shaded "org.yaml:snakeyaml:1.31"
 
     shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
 
