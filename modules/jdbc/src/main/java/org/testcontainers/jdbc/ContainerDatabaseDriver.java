@@ -127,7 +127,7 @@ public class ContainerDatabaseDriver implements Driver {
             /*
               Create a connection using the delegated driver. The container must be ready to accept connections.
              */
-            Connection connection = container.createConnection(queryString);
+            Connection connection = container.createConnection(queryString, info);
 
             /*
               If this container has not been initialized, AND
