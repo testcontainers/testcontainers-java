@@ -30,6 +30,7 @@ include 'solr-container'
 include 'spring-boot'
 include 'cucumber'
 include 'spring-boot-kotlin-redis'
+include 'spring-boot-mysql'
 
 ext.isCI = System.getenv("CI") != null
 
