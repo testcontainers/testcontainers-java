@@ -58,6 +58,12 @@ public class SimpleNginxTest {
             .as("An HTTP GET from the Nginx server returns the index.html from the custom content directory")
             .contains("Hello World!");
         // }
+        assertHasCorrectExposedAndLivenessCheckPorts(nginx);
+    }
+
+    private void assertHasCorrectExposedAndLivenessCheckPorts(NginxContainer<?> nginxContainer) throws Exception {
+        assertThat(nginxContainer.getExposedPorts()).containsExactly(80);
+        assertThat(nginxContainer.getLivenessCheckPortNumbers()).containsExactly(nginxContainer.getMappedPort(80));
     }
 
     private static String responseFromNginx(URL baseUrl) throws IOException {
