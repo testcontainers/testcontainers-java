@@ -13,3 +13,4 @@ Examples of different use cases provided by Testcontainers can be found below:
 - [Spring Boot](https://github.com/testcontainers/testcontainers-java/tree/master/examples/spring-boot)
 - [Spring Boot with Kotlin](https://github.com/testcontainers/testcontainers-java/tree/master/examples/spring-boot-kotlin-redis)
 - [TestNG](https://github.com/testcontainers/testcontainers-java/tree/master/examples/redis-backed-cache-testng)
+- [Spring Boot MySQL](https://github.com/testcontainers/testcontainers-java/tree/master/examples/spring-boot-mysql)
