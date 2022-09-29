@@ -2,7 +2,7 @@ description = "TestContainers :: Cassandra"
 
 configurations.all {
     resolutionStrategy {
-        force 'io.dropwizard.metrics:metrics-core:3.2.4'
+        force 'io.dropwizard.metrics:metrics-core:4.2.12'
     }
 }
 
