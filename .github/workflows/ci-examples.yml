@@ -2,7 +2,7 @@ name: CI-Examples
 
 on:
   pull_request: {}
-  push: { branches: [ master ] }
+  push: { branches: [ main ] }
 
 env:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
