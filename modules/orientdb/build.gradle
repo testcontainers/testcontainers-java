@@ -7,5 +7,5 @@ dependencies {
 
     testImplementation 'org.assertj:assertj-core:3.23.1'
     testImplementation 'org.apache.tinkerpop:gremlin-driver:3.3.4'
-    testImplementation "com.orientechnologies:orientdb-gremlin:3.0.18"
+    testImplementation "com.orientechnologies:orientdb-gremlin:3.2.10"
 }
