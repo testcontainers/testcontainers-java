@@ -21,6 +21,7 @@ public class SimpleDb2Test extends AbstractContainerDatabaseTest {
 
             int resultSetInt = resultSet.getInt(1);
             assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+            assertHasCorrectExposedAndLivenessCheckPorts(db2);
         }
     }
 
@@ -36,5 +37,10 @@ public class SimpleDb2Test extends AbstractContainerDatabaseTest {
             String jdbcUrl = db2.getJdbcUrl();
             assertThat(jdbcUrl).contains(":sslConnection=false;");
         }
+    }
+
+    private void assertHasCorrectExposedAndLivenessCheckPorts(Db2Container db2) {
+        assertThat(db2.getExposedPorts()).containsExactly(Db2Container.DB2_PORT);
+        assertThat(db2.getLivenessCheckPortNumbers()).containsExactly(db2.getMappedPort(Db2Container.DB2_PORT));
     }
 }

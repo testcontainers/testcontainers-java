@@ -3,7 +3,6 @@ package org.testcontainers.containers;
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.utility.DockerImageName;
 
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -56,10 +55,15 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
         addExposedPort(MYSQL_PORT);
     }
 
+    /**
+     * @return the ports on which to check if the container is ready
+     * @deprecated use {@link #getLivenessCheckPortNumbers()} instead
+     */
     @NotNull
     @Override
+    @Deprecated
     protected Set<Integer> getLivenessCheckPorts() {
-        return new HashSet<>(getMappedPort(MYSQL_PORT));
+        return super.getLivenessCheckPorts();
     }
 
     @Override
