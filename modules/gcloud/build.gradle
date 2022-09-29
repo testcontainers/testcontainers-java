@@ -3,7 +3,7 @@ description = "Testcontainers :: GCloud"
 dependencies {
     api project(':testcontainers')
 
-    testImplementation 'com.google.cloud:google-cloud-datastore:2.11.0'
+    testImplementation 'com.google.cloud:google-cloud-datastore:2.11.4'
     testImplementation 'com.google.cloud:google-cloud-firestore:3.4.2'
     testImplementation 'com.google.cloud:google-cloud-pubsub:1.120.13'
     testImplementation 'com.google.cloud:google-cloud-spanner:6.29.0'
