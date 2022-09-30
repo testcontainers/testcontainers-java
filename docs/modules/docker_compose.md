@@ -123,7 +123,7 @@ public static DockerComposeContainer environment =
 ## Compose V2
 
 [Compose V2 is GA](https://www.docker.com/blog/announcing-compose-v2-general-availability/) and it relies on the `docker` command itself instead of `docker-compose`.
-Testcontainers provides `ComposeContainer`.
+Testcontainers provides `ComposeContainer` if you want to use Compose V2.
 
 ```java
 public static ComposeContainer environment =
