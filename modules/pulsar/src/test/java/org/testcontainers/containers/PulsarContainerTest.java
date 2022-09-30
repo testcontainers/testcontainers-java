@@ -12,6 +12,7 @@ import org.apache.pulsar.client.api.transaction.Transaction;
 import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
 
+import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -141,6 +142,14 @@ public class PulsarContainerTest {
             try (PulsarAdmin pulsarAdmin = PulsarAdmin.builder().serviceHttpUrl(pulsar.getHttpServiceUrl()).build()) {
                 assertThat(pulsarAdmin.clusters().getClusters()).hasSize(1).contains("standalone");
             }
+        }
+    }
+
+    @Test
+    public void testStartupTimeoutIsHonored() {
+        try (PulsarContainer pulsar = new PulsarContainer(PULSAR_IMAGE).withStartupTimeout(Duration.ZERO)) {
+            assertThatThrownBy(pulsar::start)
+                .hasRootCauseMessage("Precondition failed: timeout must be greater than zero");
         }
     }
 
