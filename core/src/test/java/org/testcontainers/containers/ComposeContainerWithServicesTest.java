@@ -25,7 +25,7 @@ public class ComposeContainerWithServicesTest {
 
     @Test
     public void testDesiredSubsetOfServicesAreStarted() {
-        try (ComposeContainer<?> compose = new ComposeContainer<>(SIMPLE_COMPOSE_FILE).withServices("redis")) {
+        try (ComposeContainer compose = new ComposeContainer(SIMPLE_COMPOSE_FILE).withServices("redis")) {
             compose.start();
 
             verifyStartedContainers(compose, "redis-1");
@@ -34,7 +34,7 @@ public class ComposeContainerWithServicesTest {
 
     @Test
     public void testDesiredSubsetOfScaledServicesAreStarted() {
-        try (ComposeContainer<?> compose = new ComposeContainer<>(SIMPLE_COMPOSE_FILE).withScaledService("redis", 2)) {
+        try (ComposeContainer compose = new ComposeContainer(SIMPLE_COMPOSE_FILE).withScaledService("redis", 2)) {
             compose.start();
 
             verifyStartedContainers(compose, "redis-1", "redis-2");
@@ -44,7 +44,7 @@ public class ComposeContainerWithServicesTest {
     @Test
     public void testDesiredSubsetOfSpecifiedAndScaledServicesAreStarted() {
         try (
-            ComposeContainer<?> compose = new ComposeContainer<>(SIMPLE_COMPOSE_FILE)
+            ComposeContainer compose = new ComposeContainer(SIMPLE_COMPOSE_FILE)
                 .withServices("redis")
                 .withScaledService("redis", 2)
         ) {
@@ -57,7 +57,7 @@ public class ComposeContainerWithServicesTest {
     @Test
     public void testDesiredSubsetOfSpecifiedOrScaledServicesAreStarted() {
         try (
-            ComposeContainer<?> compose = new ComposeContainer<>(SIMPLE_COMPOSE_FILE)
+            ComposeContainer compose = new ComposeContainer(SIMPLE_COMPOSE_FILE)
                 .withServices("other")
                 .withScaledService("redis", 2)
         ) {
@@ -69,7 +69,7 @@ public class ComposeContainerWithServicesTest {
 
     @Test
     public void testAllServicesAreStartedIfNotSpecified() {
-        try (ComposeContainer<?> compose = new ComposeContainer<>(SIMPLE_COMPOSE_FILE)) {
+        try (ComposeContainer compose = new ComposeContainer(SIMPLE_COMPOSE_FILE)) {
             compose.start();
 
             verifyStartedContainers(compose, "redis-1", "other-1");
@@ -78,7 +78,7 @@ public class ComposeContainerWithServicesTest {
 
     @Test
     public void testScaleInComposeFileIsRespected() {
-        try (ComposeContainer<?> compose = new ComposeContainer<>(COMPOSE_FILE_WITH_INLINE_SCALE)) {
+        try (ComposeContainer compose = new ComposeContainer(COMPOSE_FILE_WITH_INLINE_SCALE)) {
             compose.start();
 
             // the compose file includes `scale: 3` for the redis container
@@ -91,7 +91,7 @@ public class ComposeContainerWithServicesTest {
         assertThat(
             catchThrowable(() -> {
                 try (
-                    ComposeContainer<?> compose = new ComposeContainer<>(SIMPLE_COMPOSE_FILE)
+                    ComposeContainer compose = new ComposeContainer(SIMPLE_COMPOSE_FILE)
                         .withServices("redis")
                         .withStartupTimeout(Duration.ofMillis(1))
                         .withExposedService(
@@ -108,7 +108,7 @@ public class ComposeContainerWithServicesTest {
             .isInstanceOf(TimeoutException.class);
     }
 
-    private void verifyStartedContainers(final ComposeContainer<?> compose, final String... names) {
+    private void verifyStartedContainers(final ComposeContainer compose, final String... names) {
         final List<String> containerNames = compose
             .listChildContainers()
             .stream()

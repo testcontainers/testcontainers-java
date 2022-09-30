@@ -20,11 +20,11 @@ public class ComposeWaitStrategyTest {
 
     private static final int REDIS_PORT = 6379;
 
-    private ComposeContainer<?> environment;
+    private ComposeContainer environment;
 
     @Before
     public final void setUp() {
-        environment = new ComposeContainer<>(new File("src/test/resources/composev2/compose-test.yml"));
+        environment = new ComposeContainer(new File("src/test/resources/composev2/compose-test.yml"));
     }
 
     @After

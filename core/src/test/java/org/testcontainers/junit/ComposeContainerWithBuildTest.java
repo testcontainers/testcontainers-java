@@ -50,7 +50,7 @@ public class ComposeContainerWithBuildTest {
         final AtomicReference<String> builtImageName = new AtomicReference<>("");
         final AtomicReference<String> pulledImageName = new AtomicReference<>("");
         try (
-            ComposeContainer environment = new ComposeContainer<>(composeFile)
+            ComposeContainer environment = new ComposeContainer(composeFile)
                 .withExposedService("customredis", 6379)
                 .withBuild(true)
                 .withRemoveImages(removeMode)

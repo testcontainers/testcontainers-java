@@ -76,7 +76,7 @@ public class ComposeContainerWithOptionsTest {
     @Test
     public void performTest() {
         try (
-            ComposeContainer<?> environment = new ComposeContainer<>(composeFile)
+            ComposeContainer environment = new ComposeContainer(composeFile)
                 .withOptions(options.stream().toArray(String[]::new))
                 .withLocalCompose(local)
         ) {
