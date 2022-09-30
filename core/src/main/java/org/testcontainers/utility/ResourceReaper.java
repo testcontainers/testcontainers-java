@@ -86,7 +86,7 @@ public class ResourceReaper {
                     "Ryuk has been disabled. This can cause unexpected behavior in your environment." +
                     "\n" +
                     "********************************************************************************";
-                LOGGER.info(ryukDisabledMessage);
+                LOGGER.warn(ryukDisabledMessage);
 
                 instance = new JVMHookResourceReaper();
             }
