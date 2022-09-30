@@ -6,7 +6,6 @@ import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -51,10 +50,15 @@ public class TiDBContainer extends JdbcDatabaseContainer<TiDBContainer> {
         );
     }
 
+    /**
+     * @return the ports on which to check if the container is ready
+     * @deprecated use {@link #getLivenessCheckPortNumbers()} instead
+     */
     @NotNull
     @Override
+    @Deprecated
     protected Set<Integer> getLivenessCheckPorts() {
-        return new HashSet<>(getMappedPort(TIDB_PORT));
+        return super.getLivenessCheckPorts();
     }
 
     @Override

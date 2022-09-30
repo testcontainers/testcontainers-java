@@ -6,7 +6,6 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -62,10 +61,15 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
         addExposedPort(POSTGRESQL_PORT);
     }
 
+    /**
+     * @return the ports on which to check if the container is ready
+     * @deprecated use {@link #getLivenessCheckPortNumbers()} instead
+     */
     @NotNull
     @Override
+    @Deprecated
     protected Set<Integer> getLivenessCheckPorts() {
-        return Collections.singleton(getMappedPort(POSTGRESQL_PORT));
+        return super.getLivenessCheckPorts();
     }
 
     @Override

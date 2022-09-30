@@ -101,7 +101,7 @@ For this, we are using the [gh-combine-prs](https://github.com/rnorth/gh-combine
 The whole process is as follow:
 
 1. Check that all open Dependabot PRs did succeed their build. If they did not succeed, trigger a rerun if the cause were external factors or else document the reason if obvious.
-2. Run the extension from an up-to-date local `master` branch: `gh combine-prs --query "author:app/dependabot"`
+2. Run the extension from an up-to-date local `main` branch: `gh combine-prs --query "author:app/dependabot"`
 3. Merge conflicts might appear. Just ignore them, we will get those PRs in a future run.
 4. Once the build of the combined PR did succeed, temporarily enable merge commits and merge the PR using a merge commit through the GitHub UI.
 5. After the merge, disable merge commits again.
