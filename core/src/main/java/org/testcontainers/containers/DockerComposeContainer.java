@@ -1,6 +1,5 @@
 package org.testcontainers.containers;
 
-import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Container;
 import com.google.common.annotations.VisibleForTesting;
 import lombok.NonNull;
@@ -8,14 +7,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.SystemUtils;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
-import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.DockerImageName;
-import org.testcontainers.utility.LogUtils;
 
 import java.io.File;
 import java.time.Duration;
@@ -28,7 +25,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 /**
  * Container which launches Docker Compose, for the purposes of launching a defined set of containers.
@@ -39,8 +35,6 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
     implements Startable {
 
     private final Map<String, Integer> scalingPreferences = new HashMap<>();
-
-    private DockerClient dockerClient;
 
     private boolean localCompose;
 
@@ -90,7 +84,6 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
     }
 
     public DockerComposeContainer(String identifier, List<File> composeFiles) {
-        this.dockerClient = DockerClientFactory.lazyClient();
         this.composeDelegate =
             new ComposeDelegate(
                 ComposeDelegate.ComposeVersion.V1,
@@ -154,13 +147,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
 
     @VisibleForTesting
     List<Container> listChildContainers() {
-        return dockerClient
-            .listContainersCmd()
-            .withShowAll(true)
-            .exec()
-            .stream()
-            .filter(container -> Arrays.stream(container.getNames()).anyMatch(name -> name.startsWith("/" + project)))
-            .collect(Collectors.toList());
+        return this.composeDelegate.listChildContainers();
     }
 
     public SELF withServices(@NonNull String... services) {
@@ -356,7 +343,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
     }
 
     private void followLogs(String containerId, Consumer<OutputFrame> consumer) {
-        LogUtils.followOutput(this.dockerClient, containerId, consumer);
+        this.followLogs(containerId, consumer);
     }
 
     private SELF self() {

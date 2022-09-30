@@ -43,7 +43,7 @@ import java.util.stream.Stream;
 @Slf4j
 class ComposeDelegate {
 
-    private String composeSeparator;
+    private final String composeSeparator;
 
     private final DockerClient dockerClient;
 
@@ -54,7 +54,7 @@ class ComposeDelegate {
     private final String identifier;
 
     @Getter
-    private String project;
+    private final String project;
 
     private final String executable;
 
@@ -393,7 +393,7 @@ class ComposeDelegate {
 
         V2("-");
 
-        private String separator;
+        private final String separator;
 
         ComposeVersion(String separator) {
             this.separator = separator;
