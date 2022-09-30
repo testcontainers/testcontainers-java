@@ -33,9 +33,6 @@ public class ImmuDbTest {
     // ImmuClient used to interact with the DB
     private ImmuClient immuClient;
 
-    /**
-     * Set up the test, by creating the ImmuDbClient and connecting to the DB.
-     */
     @Before
     public void setUp() {
         this.immuClient = ImmuClient.newBuilder()
