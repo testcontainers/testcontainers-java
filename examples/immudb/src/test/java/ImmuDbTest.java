@@ -26,7 +26,7 @@ public class ImmuDbTest {
 
     // Test container for the ImmuDb database, with the latest version of the image and exposed port
     @ClassRule
-    public static final GenericContainer<?> immuDbContainer = new GenericContainer<>("codenotary/immudb:latest")
+    public static final GenericContainer<?> immuDbContainer = new GenericContainer<>("codenotary/immudb:1.3")
         .withExposedPorts(IMMUDB_PORT).waitingFor(
             Wait.forLogMessage(".*Web API server enabled.*", 1)
         );
