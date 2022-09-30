@@ -41,7 +41,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Slf4j
-class ComposeConfiguration {
+class ComposeDelegate {
+
+    private String composeSeparator;
 
     private final DockerClient dockerClient;
 
@@ -74,12 +76,14 @@ class ComposeConfiguration {
     @Setter
     private Duration startupTimeout = Duration.ofMinutes(30);
 
-    ComposeConfiguration(
+    ComposeDelegate(
+        ComposeVersion composeVersion,
         List<File> composeFiles,
         String identifier,
         String executable,
         DockerImageName defaultImageName
     ) {
+        this.composeSeparator = composeVersion.getSeparator();
         this.dockerClient = DockerClientFactory.lazyClient();
         this.composeFiles = composeFiles;
         this.dockerComposeFiles = new DockerComposeFiles(this.composeFiles);
@@ -218,7 +222,7 @@ class ComposeConfiguration {
     private String getServiceNameFromContainer(com.github.dockerjava.api.model.Container container) {
         final String containerName = container.getLabels().get("com.docker.compose.service");
         final String containerNumber = container.getLabels().get("com.docker.compose.container-number");
-        return String.format("%s_%s", containerName, containerNumber);
+        return String.format("%s%s%s", containerName, this.composeSeparator, containerNumber);
     }
 
     public void runWithCompose(boolean localCompose, String cmd) {
@@ -267,11 +271,11 @@ class ComposeConfiguration {
     }
 
     public void withExposedService(String serviceName, int instance, int servicePort) {
-        withExposedService(serviceName + "_" + instance, servicePort);
+        withExposedService(serviceName + this.composeSeparator + instance, servicePort);
     }
 
     public void withExposedService(String serviceName, int instance, int servicePort, WaitStrategy waitStrategy) {
-        withExposedService(serviceName + "_" + instance, servicePort, waitStrategy);
+        withExposedService(serviceName + this.composeSeparator + instance, servicePort, waitStrategy);
     }
 
     public void withExposedService(String serviceName, int servicePort, @NonNull WaitStrategy waitStrategy) {
@@ -297,14 +301,18 @@ class ComposeConfiguration {
             .computeIfAbsent(serviceInstanceName, __ -> new ConcurrentHashMap<>())
             .put(servicePort, ambassadorPort);
         ambassadorContainer.withTarget(ambassadorPort, serviceInstanceName, servicePort);
-        ambassadorContainer.addLink(new FutureContainer(this.project + "_" + serviceInstanceName), serviceInstanceName);
+        ambassadorContainer.addLink(
+            new FutureContainer(this.project + this.composeSeparator + serviceInstanceName),
+            serviceInstanceName
+        );
         addWaitStrategy(serviceInstanceName, waitStrategy);
     }
 
     String getServiceInstanceName(String serviceName) {
         String serviceInstanceName = serviceName;
-        if (!serviceInstanceName.matches(".*_[0-9]+")) {
-            serviceInstanceName += "_1"; // implicit first instance of this service
+        String regex = String.format(".*%s[0-9]+", this.composeSeparator);
+        if (!serviceInstanceName.matches(regex)) {
+            serviceInstanceName += String.format("%s1", this.composeSeparator); // implicit first instance of this service
         }
         return serviceInstanceName;
     }
@@ -378,5 +386,21 @@ class ComposeConfiguration {
 
     String getServiceHost() {
         return this.ambassadorContainer.getHost();
+    }
+
+    enum ComposeVersion {
+        V1("_"),
+
+        V2("-");
+
+        private String separator;
+
+        ComposeVersion(String separator) {
+            this.separator = separator;
+        }
+
+        public String getSeparator() {
+            return this.separator;
+        }
     }
 }
