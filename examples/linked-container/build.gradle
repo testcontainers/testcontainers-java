@@ -8,7 +8,7 @@ repositories {
 dependencies {
     compileOnly 'org.slf4j:slf4j-api:2.0.0'
     implementation 'com.squareup.okhttp3:okhttp:4.10.0'
-    implementation 'org.json:json:20220320'
+    implementation 'org.json:json:20220924'
     testImplementation 'org.postgresql:postgresql:42.5.0'
     testImplementation 'ch.qos.logback:logback-classic:1.2.11'
     testImplementation 'org.testcontainers:postgresql'
