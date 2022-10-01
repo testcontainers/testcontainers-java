@@ -25,7 +25,7 @@ jobs:
           java-version: '8.0.302'
           distribution: temurin
       - name: Cache Gradle Home files
-        uses: actions/cache@v3.0.8
+        uses: actions/cache@v3.0.9
         with:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-home-testmatrix-${{ hashFiles('**/*.gradle') }}
@@ -51,7 +51,7 @@ jobs:
           java-version: '8.0.302'
           distribution: temurin
       - name: Cache Gradle Home files
-        uses: actions/cache@v3.0.8
+        uses: actions/cache@v3.0.9
         continue-on-error: true
         with:
           path: ~/.gradle/caches
