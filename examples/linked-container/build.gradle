@@ -6,7 +6,7 @@ repositories {
     mavenCentral()
 }
 dependencies {
-    compileOnly 'org.slf4j:slf4j-api:2.0.0'
+    compileOnly 'org.slf4j:slf4j-api:2.0.3'
     implementation 'com.squareup.okhttp3:okhttp:4.10.0'
     implementation 'org.json:json:20220924'
     testImplementation 'org.postgresql:postgresql:42.5.0'
