@@ -7,7 +7,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'org.slf4j:slf4j-api:2.0.0'
+    compileOnly 'org.slf4j:slf4j-api:2.0.3'
     implementation 'redis.clients:jedis:4.2.3'
     implementation 'com.google.code.gson:gson:2.9.1'
     implementation 'com.google.guava:guava:23.0'
