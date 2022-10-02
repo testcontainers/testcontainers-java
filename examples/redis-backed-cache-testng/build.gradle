@@ -12,7 +12,7 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.9.1'
     implementation 'com.google.guava:guava:23.0'
     testImplementation 'org.testcontainers:testcontainers'
-    testImplementation 'ch.qos.logback:logback-classic:1.2.11'
+    testImplementation 'ch.qos.logback:logback-classic:1.4.1'
     testImplementation 'org.testng:testng:7.5'
     testImplementation 'org.assertj:assertj-core:3.23.1'
 }
