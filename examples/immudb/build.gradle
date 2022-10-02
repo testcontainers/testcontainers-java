@@ -7,7 +7,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'org.slf4j:slf4j-api:2.0.0'
+    compileOnly 'org.slf4j:slf4j-api:2.0.3'
     implementation 'io.codenotary:immudb4j:0.9.10.2'
     testImplementation 'org.testcontainers:testcontainers'
     testImplementation 'org.assertj:assertj-core:3.23.1'
