@@ -175,7 +175,7 @@ class ComposeDelegate {
         String optionsString = options.stream().collect(Collectors.joining(" "));
         if (optionsString.length() != 0) {
             // ensures that there is a space between the options and 'up' if options are passed.
-            return optionsString + " ";
+            return optionsString;
         } else {
             // otherwise two spaces would appear between 'docker-compose' and 'up'
             return StringUtils.EMPTY;
