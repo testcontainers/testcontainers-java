@@ -256,6 +256,8 @@ updates:
       interval: "monthly"
     open-pull-requests-limit: 10
     ignore:
+      - dependency-name: "ch.qos.logback:logback-classic"
+        update-type: [ "update:semver-minor" ]
       - dependency-name: "org.apache.solr:solr-solrj"
         update-type: [ "version-update:semver-major" ]
       - dependency-name: "org.neo4j.driver:neo4j-java-driver"
