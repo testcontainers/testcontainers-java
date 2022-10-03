@@ -45,6 +45,8 @@ class ComposeDelegate {
 
     private final String composeSeparator;
 
+    private final String startCmd;
+
     private final DockerClient dockerClient;
 
     private final List<File> composeFiles;
@@ -84,6 +86,7 @@ class ComposeDelegate {
         DockerImageName defaultImageName
     ) {
         this.composeSeparator = composeVersion.getSeparator();
+        this.startCmd = composeVersion.getStartCmd();
         this.dockerClient = DockerClientFactory.lazyClient();
         this.composeFiles = composeFiles;
         this.dockerComposeFiles = new DockerComposeFiles(this.composeFiles);
@@ -142,7 +145,7 @@ class ComposeDelegate {
             .distinct()
             .collect(Collectors.joining(" "));
 
-        String command = optionsAsString(options) + "up -d";
+        String command = optionsAsString(options) + this.startCmd;
 
         if (build) {
             command += " --build";
@@ -156,7 +159,7 @@ class ComposeDelegate {
             command += " " + serviceNameArgs;
         }
 
-        // Run the docker-compose container, which starts up the services
+        // Run the docker compose container, which starts up the services
         runWithCompose(localCompose, command, env);
     }
 
@@ -389,18 +392,25 @@ class ComposeDelegate {
     }
 
     enum ComposeVersion {
-        V1("_"),
+        V1("_", "up -d"),
 
-        V2("-");
+        V2("-", "compose up -d");
 
         private final String separator;
 
-        ComposeVersion(String separator) {
+        private final String startCmd;
+
+        ComposeVersion(String separator, String startCmd) {
             this.separator = separator;
+            this.startCmd = startCmd;
         }
 
         public String getSeparator() {
             return this.separator;
+        }
+
+        public String getStartCmd() {
+            return this.startCmd;
         }
     }
 }

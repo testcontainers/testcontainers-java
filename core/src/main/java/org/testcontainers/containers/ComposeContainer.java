@@ -156,7 +156,7 @@ public class ComposeContainer extends FailureDetectingExternalResource implement
                 this.composeDelegate.getAmbassadorContainer().stop();
 
                 // Kill the services using docker
-                String cmd = "down -v";
+                String cmd = "compose down -v";
                 if (removeImages != null) {
                     cmd += " --rmi " + removeImages.dockerRemoveImagesType();
                 }
