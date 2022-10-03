@@ -13,3 +13,4 @@ Examples of different use cases provided by Testcontainers can be found below:
 - [Spring Boot](https://github.com/testcontainers/testcontainers-java/tree/main/examples/spring-boot)
 - [Spring Boot with Kotlin](https://github.com/testcontainers/testcontainers-java/tree/main/examples/spring-boot-kotlin-redis)
 - [TestNG](https://github.com/testcontainers/testcontainers-java/tree/main/examples/redis-backed-cache-testng)
+- [ImmuDb](https://github.com/testcontainers/testcontainers-java/tree/main/examples/immudb)

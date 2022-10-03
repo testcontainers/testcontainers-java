@@ -79,6 +79,15 @@ public class ResourceReaper {
                 //noinspection deprecation
                 instance = new RyukResourceReaper();
             } else {
+                String ryukDisabledMessage =
+                    "\n" +
+                    "********************************************************************************" +
+                    "\n" +
+                    "Ryuk has been disabled. This can cause unexpected behavior in your environment." +
+                    "\n" +
+                    "********************************************************************************";
+                LOGGER.warn(ryukDisabledMessage);
+
                 instance = new JVMHookResourceReaper();
             }
         }
