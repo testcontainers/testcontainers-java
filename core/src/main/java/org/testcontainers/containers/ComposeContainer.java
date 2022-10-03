@@ -61,7 +61,7 @@ public class ComposeContainer extends FailureDetectingExternalResource implement
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("docker:20.10.17");
 
-    private ComposeDelegate composeDelegate;
+    private final ComposeDelegate composeDelegate;
 
     private String project;
 

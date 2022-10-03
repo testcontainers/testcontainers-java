@@ -43,9 +43,9 @@ import java.util.stream.Stream;
 @Slf4j
 class ComposeDelegate {
 
-    private final String composeSeparator;
+    private final ComposeVersion composeVersion;
 
-    private final String startCmd;
+    private final String composeSeparator;
 
     private final DockerClient dockerClient;
 
@@ -85,8 +85,8 @@ class ComposeDelegate {
         String executable,
         DockerImageName defaultImageName
     ) {
+        this.composeVersion = composeVersion;
         this.composeSeparator = composeVersion.getSeparator();
-        this.startCmd = composeVersion.getStartCmd();
         this.dockerClient = DockerClientFactory.lazyClient();
         this.composeFiles = composeFiles;
         this.dockerComposeFiles = new DockerComposeFiles(this.composeFiles);
@@ -145,7 +145,7 @@ class ComposeDelegate {
             .distinct()
             .collect(Collectors.joining(" "));
 
-        String command = optionsAsString(options) + this.startCmd;
+        String command = getUpCommand(optionsAsString(options));
 
         if (build) {
             command += " --build";
@@ -161,6 +161,14 @@ class ComposeDelegate {
 
         // Run the docker compose container, which starts up the services
         runWithCompose(localCompose, command, env);
+    }
+
+    private String getUpCommand(String options) {
+        if (options == null || options.equals("")) {
+            return this.composeVersion == ComposeVersion.V1 ? "up -d" : "compose up -d";
+        }
+        String cmd = this.composeVersion == ComposeVersion.V1 ? "%s up -d" : "compose %s up -d";
+        return String.format(cmd, options);
     }
 
     private String optionsAsString(final Set<String> options) {
@@ -392,25 +400,18 @@ class ComposeDelegate {
     }
 
     enum ComposeVersion {
-        V1("_", "up -d"),
+        V1("_"),
 
-        V2("-", "compose up -d");
+        V2("-");
 
         private final String separator;
 
-        private final String startCmd;
-
-        ComposeVersion(String separator, String startCmd) {
+        ComposeVersion(String separator) {
             this.separator = separator;
-            this.startCmd = startCmd;
         }
 
         public String getSeparator() {
             return this.separator;
-        }
-
-        public String getStartCmd() {
-            return this.startCmd;
         }
     }
 }
