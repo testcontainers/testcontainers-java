@@ -21,3 +21,11 @@ should be included in your classpath to show a reasonable level of log output:
     <logger name="org.apache.hc.client5.http.wire" level="OFF"/>
 </configuration>
 ```
+
+In order to troubleshoot issues with Testcontainers, increase the logging level of `org.testcontainers` to `DEBUG`:
+
+```xml
+<logger name="org.testcontainers" level="DEBUG"/>
+```
+
+Avoid changing the root logger's level to `DEBUG`, because this turns on debug logging for every package whose level isn't explicitly configured here, resulting in a large amount of log data.
