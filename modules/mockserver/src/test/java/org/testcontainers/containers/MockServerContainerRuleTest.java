@@ -18,8 +18,8 @@ public class MockServerContainerRuleTest {
     // creatingProxy {
     @Rule
     public MockServerContainer mockServer = new MockServerContainer(
-        MOCKSERVER_IMAGE.withTag("mockserver-" +
-            MockServerClient.class.getPackage().getImplementationVersion()));
+        MOCKSERVER_IMAGE.withTag("mockserver-" + MockServerClient.class.getPackage().getImplementationVersion())
+    );
 
     // }
 
