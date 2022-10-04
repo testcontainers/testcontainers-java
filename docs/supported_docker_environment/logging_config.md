@@ -18,5 +18,6 @@ should be included in your classpath to show a reasonable level of log output:
 
     <logger name="org.testcontainers" level="INFO"/>
     <logger name="com.github.dockerjava" level="WARN"/>
+    <logger name="org.apache.hc.client5.http.wire" level="OFF"/>
 </configuration>
 ```
