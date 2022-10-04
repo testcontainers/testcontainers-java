@@ -2,7 +2,14 @@ package org.testcontainers.containers;
 
 import com.orientechnologies.orient.core.db.ODatabaseSession;
 import org.junit.Test;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -11,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class OrientDBContainerTest {
 
-    private static final DockerImageName ORIENTDB_IMAGE = DockerImageName.parse("orientdb:3.0.24-tp3");
+    private static final DockerImageName ORIENTDB_IMAGE = DockerImageName.parse("orientdb:3.2.0-tp3");
 
     @Test
     public void shouldReturnTheSameSession() {
@@ -41,8 +48,20 @@ public class OrientDBContainerTest {
     }
 
     @Test
-    public void shouldQueryWithGremlin() {
-        try (OrientDBContainer container = new OrientDBContainer(ORIENTDB_IMAGE)) {
+    public void shouldQueryWithGremlin() throws URISyntaxException, IOException {
+        String orientdbServerConfig = new String(
+            Files.readAllBytes(
+                Paths.get(getClass().getClassLoader().getResource("orientdb-server-config.xml").toURI())
+            ),
+            StandardCharsets.UTF_8
+        );
+        try (
+            OrientDBContainer container = new OrientDBContainer(ORIENTDB_IMAGE)
+                .withCopyToContainer(
+                    Transferable.of(orientdbServerConfig),
+                    "/orientdb/config/orientdb-server-config.xml"
+                )
+        ) {
             container.start();
 
             final ODatabaseSession session = container.getSession("admin", "admin");
