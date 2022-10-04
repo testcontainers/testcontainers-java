@@ -1,6 +1,5 @@
 package org.testcontainers.junit.mysql;
 
-import org.apache.commons.lang3.SystemUtils;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +20,6 @@ import java.time.temporal.ChronoUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
-import static org.junit.Assume.assumeFalse;
 
 public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
 
@@ -80,8 +78,6 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testMySQLWithCustomIniFile() throws SQLException {
-        assumeFalse(SystemUtils.IS_OS_WINDOWS);
-
         try (
             MySQLContainer<?> mysqlCustomConfig = new MySQLContainer<>(MySQLTestImages.MYSQL_56_IMAGE)
                 .withConfigurationOverride("somepath/mysql_conf_override")
