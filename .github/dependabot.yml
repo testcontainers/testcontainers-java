@@ -37,7 +37,7 @@ updates:
     open-pull-requests-limit: 10
     ignore:
       - dependency-name: "io.dropwizard.metrics:metrics-core"
-        update-types: ["version-update:semver-major"]
+        update-types: [ "version-update:semver-major" ]
   - package-ecosystem: "gradle"
     directory: "/modules/clickhouse"
     schedule:
@@ -260,13 +260,13 @@ updates:
     open-pull-requests-limit: 10
     ignore:
       - dependency-name: "ch.qos.logback:logback-classic"
-        update-types: [ "update:semver-minor" ]
+        update-types: [ "version-update:semver-minor" ]
       - dependency-name: "org.apache.solr:solr-solrj"
         update-types: [ "version-update:semver-major" ]
       - dependency-name: "org.neo4j.driver:neo4j-java-driver"
         update-types: [ "version-update:semver-major" ]
       - dependency-name: "org.testng:testng"
-        update-types: [ "update:semver-minor" ]
+        update-types: [ "version-update:semver-minor" ]
       - dependency-name: "org.slf4j:slf4j-api"
         update-types: [ "version-update:semver-major" ]
 
