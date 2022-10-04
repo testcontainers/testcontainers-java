@@ -13,7 +13,7 @@ updates:
     open-pull-requests-limit: 10
     ignore:
       - dependency-name: "org.slf4j:slf4j-api"
-        update-type: [ "version-update:semver-major" ]
+        update-types: [ "version-update:semver-major" ]
   - package-ecosystem: "gradle"
     directory: "/"
     allow:
@@ -37,7 +37,7 @@ updates:
     open-pull-requests-limit: 10
     ignore:
       - dependency-name: "io.dropwizard.metrics:metrics-core"
-        update-type: ["version-update:semver-major"]
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: "gradle"
     directory: "/modules/clickhouse"
     schedule:
@@ -105,7 +105,7 @@ updates:
     open-pull-requests-limit: 10
     ignore:
       - dependency-name: "org.apache.tomcat:tomcat-jdbc"
-        update-type: [ "version-update:semver-minor" ]
+        update-types: [ "version-update:semver-minor" ]
   - package-ecosystem: "gradle"
     directory: "/modules/junit-jupiter"
     schedule:
@@ -118,7 +118,7 @@ updates:
     open-pull-requests-limit: 10
     ignore:
       - dependency-name: "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml"
-        update-type: [ "version-update:semver-minor" ]
+        update-types: [ "version-update:semver-minor" ]
   - package-ecosystem: "gradle"
     directory: "/modules/kafka"
     schedule:
@@ -136,7 +136,7 @@ updates:
     open-pull-requests-limit: 10
     ignore:
       - dependency-name: "org.mariadb:r2dbc-mariadb"
-        update-type: [ "version-update:semver-minor" ]
+        update-types: [ "version-update:semver-minor" ]
   - package-ecosystem: "gradle"
     directory: "/modules/mockserver"
     schedule:
@@ -164,7 +164,7 @@ updates:
     open-pull-requests-limit: 10
     ignore:
       - dependency-name: "org.neo4j.driver:neo4j-java-driver"
-        update-type: [ "version-update:semver-major" ]
+        update-types: [ "version-update:semver-major" ]
   - package-ecosystem: "gradle"
     directory: "/modules/nginx"
     schedule:
@@ -225,7 +225,7 @@ updates:
     open-pull-requests-limit: 10
     ignore:
       - dependency-name: "org.apache.solr:solr-solrj"
-        update-type: [ "version-update:semver-major" ]
+        update-types: [ "version-update:semver-major" ]
   - package-ecosystem: "gradle"
     directory: "/modules/spock"
     schedule:
@@ -260,15 +260,15 @@ updates:
     open-pull-requests-limit: 10
     ignore:
       - dependency-name: "ch.qos.logback:logback-classic"
-        update-type: [ "update:semver-minor" ]
+        update-types: [ "update:semver-minor" ]
       - dependency-name: "org.apache.solr:solr-solrj"
-        update-type: [ "version-update:semver-major" ]
+        update-types: [ "version-update:semver-major" ]
       - dependency-name: "org.neo4j.driver:neo4j-java-driver"
-        update-type: [ "version-update:semver-major" ]
+        update-types: [ "version-update:semver-major" ]
       - dependency-name: "org.testng:testng"
-        update-type: [ "update:semver-minor" ]
+        update-types: [ "update:semver-minor" ]
       - dependency-name: "org.slf4j:slf4j-api"
-        update-type: [ "version-update:semver-major" ]
+        update-types: [ "version-update:semver-major" ]
 
 # GitHub Actions
   - package-ecosystem: "github-actions"
