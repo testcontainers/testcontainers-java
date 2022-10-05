@@ -12,8 +12,7 @@ import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.rnorth.visibleassertions.VisibleAssertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author richardnorth
@@ -55,12 +54,16 @@ public class SimpleNginxTest {
         // getFromNginxServer {
         URL baseUrl = nginx.getBaseUrl("http", 80);
 
-        assertThat(
-            "An HTTP GET from the Nginx server returns the index.html from the custom content directory",
-            responseFromNginx(baseUrl),
-            containsString("Hello World!")
-        );
+        assertThat(responseFromNginx(baseUrl))
+            .as("An HTTP GET from the Nginx server returns the index.html from the custom content directory")
+            .contains("Hello World!");
         // }
+        assertHasCorrectExposedAndLivenessCheckPorts(nginx);
+    }
+
+    private void assertHasCorrectExposedAndLivenessCheckPorts(NginxContainer<?> nginxContainer) throws Exception {
+        assertThat(nginxContainer.getExposedPorts()).containsExactly(80);
+        assertThat(nginxContainer.getLivenessCheckPortNumbers()).containsExactly(nginxContainer.getMappedPort(80));
     }
 
     private static String responseFromNginx(URL baseUrl) throws IOException {

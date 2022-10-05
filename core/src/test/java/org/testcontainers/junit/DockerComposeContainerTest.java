@@ -12,10 +12,7 @@ import java.nio.file.Files;
 import java.util.Collections;
 import java.util.Optional;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertFalse;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertNotNull;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Created by rnorth on 08/08/2015.
@@ -37,35 +34,45 @@ public class DockerComposeContainerTest extends BaseDockerComposeTest {
     @Test
     public void testGetServicePort() {
         int serviceWithInstancePort = environment.getServicePort("redis_1", REDIS_PORT);
-        assertNotNull("Port is set for service with instance number", serviceWithInstancePort);
+        assertThat(serviceWithInstancePort).as("Port is set for service with instance number").isNotNull();
         int serviceWithoutInstancePort = environment.getServicePort("redis", REDIS_PORT);
-        assertNotNull("Port is set for service with instance number", serviceWithoutInstancePort);
-        assertEquals("Service ports are the same", serviceWithInstancePort, serviceWithoutInstancePort);
+        assertThat(serviceWithoutInstancePort).as("Port is set for service with instance number").isNotNull();
+        assertThat(serviceWithoutInstancePort).as("Service ports are the same").isEqualTo(serviceWithInstancePort);
     }
 
     @Test
     public void shouldRetrieveContainerByServiceName() {
         String existingServiceName = "db_1";
         Optional<ContainerState> result = environment.getContainerByServiceName(existingServiceName);
-        assertTrue(
-            String.format("Container should be found by service name %s", existingServiceName),
-            result.isPresent()
-        );
-        assertEquals(
-            "Mapped port for result container was wrong, probably wrong container found",
-            result.get().getExposedPorts(),
-            Collections.singletonList(3306)
-        );
+
+        assertThat(result)
+            .as(String.format("Container should be found by service name %s", existingServiceName))
+            .isPresent();
+        assertThat(Collections.singletonList(3306))
+            .as("Mapped port for result container was wrong, probably wrong container found")
+            .isEqualTo(result.get().getExposedPorts());
+    }
+
+    @Test
+    public void shouldRetrieveContainerByServiceNameWithoutNumberedSuffix() {
+        String existingServiceName = "db";
+        Optional<ContainerState> result = environment.getContainerByServiceName(existingServiceName);
+
+        assertThat(result)
+            .as(String.format("Container should be found by service name %s", existingServiceName))
+            .isPresent();
+        assertThat(result.get().getExposedPorts())
+            .as("Mapped port for result container was wrong, perhaps wrong container was found")
+            .isEqualTo(Collections.singletonList(3306));
     }
 
     @Test
     public void shouldReturnEmptyResultOnNoneExistingService() {
         String notExistingServiceName = "db_256";
         Optional<ContainerState> result = environment.getContainerByServiceName(notExistingServiceName);
-        assertFalse(
-            String.format("No container should be found under service name %s", notExistingServiceName),
-            result.isPresent()
-        );
+        assertThat(result)
+            .as(String.format("No container should be found under service name %s", notExistingServiceName))
+            .isNotPresent();
     }
 
     @Test
@@ -87,6 +94,6 @@ public class DockerComposeContainerTest extends BaseDockerComposeTest {
         final DockerComposeContainer<?> dockerComposeContainer = new DockerComposeContainer<>(
             filePathNotStartWithDotSlash
         );
-        assertNotNull("Container could not be created using docker compose file", dockerComposeContainer);
+        assertThat(dockerComposeContainer).as("Container could not be created using docker compose file").isNotNull();
     }
 }

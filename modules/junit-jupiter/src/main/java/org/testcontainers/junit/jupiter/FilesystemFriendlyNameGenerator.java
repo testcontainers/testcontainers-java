@@ -1,7 +1,6 @@
 package org.testcontainers.junit.jupiter;
 
 import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.platform.commons.util.StringUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -14,7 +13,7 @@ class FilesystemFriendlyNameGenerator {
     static String filesystemFriendlyNameOf(ExtensionContext context) {
         String contextId = context.getUniqueId();
         try {
-            return (StringUtils.isBlank(contextId))
+            return (contextId == null || contextId.trim().isEmpty())
                 ? UNKNOWN_NAME
                 : URLEncoder.encode(contextId, StandardCharsets.UTF_8.toString());
         } catch (UnsupportedEncodingException e) {

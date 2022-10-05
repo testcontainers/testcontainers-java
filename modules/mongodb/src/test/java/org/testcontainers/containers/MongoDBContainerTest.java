@@ -13,10 +13,7 @@ import org.bson.Document;
 import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
 
-import static org.hamcrest.Matchers.endsWith;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class MongoDBContainerTest {
 
@@ -33,56 +30,59 @@ public class MongoDBContainerTest {
             // startingMongoDBContainer {
             mongoDBContainer.start();
             // }
+            executeTx(mongoDBContainer);
+        }
+    }
 
-            final String mongoRsUrl = mongoDBContainer.getReplicaSetUrl();
-            assertNotNull(mongoRsUrl);
-            final String connectionString = mongoDBContainer.getConnectionString();
-            final MongoClient mongoSyncClientBase = MongoClients.create(connectionString);
-            final MongoClient mongoSyncClient = MongoClients.create(mongoRsUrl);
-            mongoSyncClient
-                .getDatabase("mydb1")
-                .getCollection("foo")
-                .withWriteConcern(WriteConcern.MAJORITY)
-                .insertOne(new Document("abc", 0));
-            mongoSyncClient
-                .getDatabase("mydb2")
-                .getCollection("bar")
-                .withWriteConcern(WriteConcern.MAJORITY)
-                .insertOne(new Document("xyz", 0));
-            mongoSyncClientBase
-                .getDatabase("mydb3")
-                .getCollection("baz")
-                .withWriteConcern(WriteConcern.MAJORITY)
-                .insertOne(new Document("def", 0));
+    private void executeTx(MongoDBContainer mongoDBContainer) {
+        final String mongoRsUrl = mongoDBContainer.getReplicaSetUrl();
+        assertThat(mongoRsUrl).isNotNull();
+        final String connectionString = mongoDBContainer.getConnectionString();
+        final MongoClient mongoSyncClientBase = MongoClients.create(connectionString);
+        final MongoClient mongoSyncClient = MongoClients.create(mongoRsUrl);
+        mongoSyncClient
+            .getDatabase("mydb1")
+            .getCollection("foo")
+            .withWriteConcern(WriteConcern.MAJORITY)
+            .insertOne(new Document("abc", 0));
+        mongoSyncClient
+            .getDatabase("mydb2")
+            .getCollection("bar")
+            .withWriteConcern(WriteConcern.MAJORITY)
+            .insertOne(new Document("xyz", 0));
+        mongoSyncClientBase
+            .getDatabase("mydb3")
+            .getCollection("baz")
+            .withWriteConcern(WriteConcern.MAJORITY)
+            .insertOne(new Document("def", 0));
 
-            final ClientSession clientSession = mongoSyncClient.startSession();
-            final TransactionOptions txnOptions = TransactionOptions
-                .builder()
-                .readPreference(ReadPreference.primary())
-                .readConcern(ReadConcern.LOCAL)
-                .writeConcern(WriteConcern.MAJORITY)
-                .build();
+        final ClientSession clientSession = mongoSyncClient.startSession();
+        final TransactionOptions txnOptions = TransactionOptions
+            .builder()
+            .readPreference(ReadPreference.primary())
+            .readConcern(ReadConcern.LOCAL)
+            .writeConcern(WriteConcern.MAJORITY)
+            .build();
 
-            final String trxResult = "Inserted into collections in different databases";
+        final String trxResult = "Inserted into collections in different databases";
 
-            TransactionBody<String> txnBody = () -> {
-                final MongoCollection<Document> coll1 = mongoSyncClient.getDatabase("mydb1").getCollection("foo");
-                final MongoCollection<Document> coll2 = mongoSyncClient.getDatabase("mydb2").getCollection("bar");
+        TransactionBody<String> txnBody = () -> {
+            final MongoCollection<Document> coll1 = mongoSyncClient.getDatabase("mydb1").getCollection("foo");
+            final MongoCollection<Document> coll2 = mongoSyncClient.getDatabase("mydb2").getCollection("bar");
 
-                coll1.insertOne(clientSession, new Document("abc", 1));
-                coll2.insertOne(clientSession, new Document("xyz", 999));
-                return trxResult;
-            };
+            coll1.insertOne(clientSession, new Document("abc", 1));
+            coll2.insertOne(clientSession, new Document("xyz", 999));
+            return trxResult;
+        };
 
-            try {
-                final String trxResultActual = clientSession.withTransaction(txnBody, txnOptions);
-                assertEquals(trxResult, trxResultActual);
-            } catch (RuntimeException re) {
-                throw new IllegalStateException(re.getMessage(), re);
-            } finally {
-                clientSession.close();
-                mongoSyncClient.close();
-            }
+        try {
+            final String trxResultActual = clientSession.withTransaction(txnBody, txnOptions);
+            assertThat(trxResultActual).isEqualTo(trxResult);
+        } catch (RuntimeException re) {
+            throw new IllegalStateException(re.getMessage(), re);
+        } finally {
+            clientSession.close();
+            mongoSyncClient.close();
         }
     }
 
@@ -98,7 +98,15 @@ public class MongoDBContainerTest {
         try (final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.0.10"))) {
             mongoDBContainer.start();
             final String databaseName = "my-db";
-            assertThat(mongoDBContainer.getReplicaSetUrl(databaseName), endsWith(databaseName));
+            assertThat(mongoDBContainer.getReplicaSetUrl(databaseName)).endsWith(databaseName);
+        }
+    }
+
+    @Test
+    public void supportsMongoDB_6() {
+        try (final MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0.1")) {
+            mongoDBContainer.start();
+            executeTx(mongoDBContainer);
         }
     }
 }

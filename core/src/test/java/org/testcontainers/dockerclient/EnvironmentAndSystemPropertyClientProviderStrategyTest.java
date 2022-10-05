@@ -2,7 +2,6 @@ package org.testcontainers.dockerclient;
 
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.transport.SSLConfig;
-import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -18,9 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -69,8 +66,8 @@ public class EnvironmentAndSystemPropertyClientProviderStrategyTest {
         EnvironmentAndSystemPropertyClientProviderStrategy strategy = new EnvironmentAndSystemPropertyClientProviderStrategy();
 
         TransportConfig transportConfig = strategy.getTransportConfig();
-        assertEquals(defaultDockerHost, transportConfig.getDockerHost());
-        assertEquals(defaultSSLConfig, transportConfig.getSslConfig());
+        assertThat(transportConfig.getDockerHost()).isEqualTo(defaultDockerHost);
+        assertThat(transportConfig.getSslConfig()).isEqualTo(defaultSSLConfig);
     }
 
     @Test
@@ -95,8 +92,8 @@ public class EnvironmentAndSystemPropertyClientProviderStrategyTest {
         EnvironmentAndSystemPropertyClientProviderStrategy strategy = new EnvironmentAndSystemPropertyClientProviderStrategy();
 
         TransportConfig transportConfig = strategy.getTransportConfig();
-        assertEquals("tcp://1.2.3.4:2375", transportConfig.getDockerHost().toString());
-        assertEquals(defaultSSLConfig, transportConfig.getSslConfig());
+        assertThat(transportConfig.getDockerHost().toString()).isEqualTo("tcp://1.2.3.4:2375");
+        assertThat(transportConfig.getSslConfig()).isEqualTo(defaultSSLConfig);
     }
 
     @Test
@@ -124,10 +121,10 @@ public class EnvironmentAndSystemPropertyClientProviderStrategyTest {
         EnvironmentAndSystemPropertyClientProviderStrategy strategy = new EnvironmentAndSystemPropertyClientProviderStrategy();
 
         TransportConfig transportConfig = strategy.getTransportConfig();
-        assertEquals("tcp://1.2.3.4:2375", transportConfig.getDockerHost().toString());
+        assertThat(transportConfig.getDockerHost().toString()).isEqualTo("tcp://1.2.3.4:2375");
 
         SSLConfig sslConfig = transportConfig.getSslConfig();
-        Assertions.assertThat(sslConfig).extracting("dockerCertPath").isEqualTo(tempDirPath);
+        assertThat(sslConfig).extracting("dockerCertPath").isEqualTo(tempDirPath);
     }
 
     @Test
@@ -142,7 +139,7 @@ public class EnvironmentAndSystemPropertyClientProviderStrategyTest {
             System.setProperty("DOCKER_HOST", "tcp://1.2.3.4:2375");
             EnvironmentAndSystemPropertyClientProviderStrategy strategy = new EnvironmentAndSystemPropertyClientProviderStrategy();
 
-            assertTrue(strategy.isApplicable());
+            assertThat(strategy.isApplicable()).isTrue();
         } finally {
             System.setProperties(oldProperties);
         }
@@ -157,6 +154,6 @@ public class EnvironmentAndSystemPropertyClientProviderStrategyTest {
 
         EnvironmentAndSystemPropertyClientProviderStrategy strategy = new EnvironmentAndSystemPropertyClientProviderStrategy();
 
-        assertFalse(strategy.isApplicable());
+        assertThat(strategy.isApplicable()).isFalse();
     }
 }

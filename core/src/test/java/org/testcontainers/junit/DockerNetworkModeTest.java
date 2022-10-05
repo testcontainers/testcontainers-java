@@ -7,8 +7,7 @@ import org.testcontainers.TestImages;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Simple tests of named network modes - more may be possible, but may not be reproducible
@@ -28,8 +27,8 @@ public class DockerNetworkModeTest {
             container.start();
             NetworkSettings networkSettings = container.getContainerInfo().getNetworkSettings();
 
-            assertEquals("only one network is set", 1, networkSettings.getNetworks().size());
-            assertTrue("network is 'none'", networkSettings.getNetworks().containsKey("none"));
+            assertThat(networkSettings.getNetworks()).as("only one network is set").hasSize(1);
+            assertThat(networkSettings.getNetworks()).as("network is 'none'").containsKey("none");
         }
     }
 
@@ -44,8 +43,8 @@ public class DockerNetworkModeTest {
             container.start();
             NetworkSettings networkSettings = container.getContainerInfo().getNetworkSettings();
 
-            assertEquals("only one network is set", 1, networkSettings.getNetworks().size());
-            assertTrue("network is 'host'", networkSettings.getNetworks().containsKey("host"));
+            assertThat(networkSettings.getNetworks()).as("only one network is set").hasSize(1);
+            assertThat(networkSettings.getNetworks()).as("network is 'host'").containsKey("host");
         }
     }
 }

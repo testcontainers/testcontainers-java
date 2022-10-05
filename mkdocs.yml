@@ -64,8 +64,10 @@ nav:
                 - modules/databases/orientdb.md
                 - modules/databases/postgres.md
                 - modules/databases/presto.md
+                - modules/databases/tidb.md
                 - modules/databases/trino.md
           - modules/azure.md
+          - modules/consul.md
           - modules/docker_compose.md
           - modules/elasticsearch.md
           - modules/gcloud.md
@@ -77,6 +79,7 @@ nav:
           - modules/nginx.md
           - modules/pulsar.md
           - modules/rabbitmq.md
+          - modules/redpanda.md
           - modules/solr.md
           - modules/toxiproxy.md
           - modules/vault.md
@@ -86,6 +89,7 @@ nav:
           - test_framework_integration/junit_5.md
           - test_framework_integration/spock.md
           - test_framework_integration/manual_lifecycle_control.md
+    - Examples: examples.md
     - System Requirements:
           - supported_docker_environment/index.md
           - Continuous Integration:
@@ -105,4 +109,4 @@ nav:
           - contributing_docs.md
           - bounty.md
 extra:
-    latest_version: 1.17.3
+    latest_version: 1.17.5

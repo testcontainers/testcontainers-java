@@ -2,12 +2,13 @@ import com.example.DemoApplication;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.context.WebServerInitializedEvent;
-import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -19,7 +20,7 @@ import org.testcontainers.containers.BrowserWebDriverContainer;
 import java.io.File;
 import java.util.List;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.testcontainers.containers.BrowserWebDriverContainer.VncRecordingMode.RECORD_ALL;
 
 /**
@@ -43,9 +44,9 @@ public class SeleniumContainerTest {
         RemoteWebDriver driver = chrome.getWebDriver();
 
         driver.get("http://host.testcontainers.internal:" + port + "/foo.html");
-        List<WebElement> hElement = driver.findElementsByTagName("h");
+        List<WebElement> hElement = driver.findElements(By.tagName("h"));
 
-        assertTrue("The h element is found", hElement != null && hElement.size() > 0);
+        assertThat(hElement).as("The h element is found").isNotEmpty();
     }
 
     public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {

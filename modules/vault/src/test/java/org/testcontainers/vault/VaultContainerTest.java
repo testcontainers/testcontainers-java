@@ -1,5 +1,6 @@
 package org.testcontainers.vault;
 
+import io.restassured.response.Response;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;
@@ -7,8 +8,7 @@ import org.testcontainers.containers.GenericContainer;
 import java.io.IOException;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * This test shows the pattern to use the VaultContainer @ClassRule for a junit test. It also has tests that ensure
@@ -42,7 +42,7 @@ public class VaultContainerTest {
             "secret/testing1"
         );
         final String output = result.getStdout().replaceAll("\\r?\\n", "");
-        assertThat(output, containsString("password123"));
+        assertThat(output).contains("password123");
     }
 
     @Test
@@ -56,49 +56,45 @@ public class VaultContainerTest {
         );
         final String output = result.getStdout().replaceAll("\\r?\\n", "");
         System.out.println("output = " + output);
-        assertThat(output, containsString("password1"));
-        assertThat(output, containsString("password2"));
-        assertThat(output, containsString("password3"));
-        assertThat(output, containsString("password4"));
+        assertThat(output).contains("password1");
+        assertThat(output).contains("password2");
+        assertThat(output).contains("password3");
+        assertThat(output).contains("password4");
     }
 
     @Test
     public void readFirstSecretPathOverHttpApi() throws InterruptedException {
-        given()
+        Response response = given()
             .header("X-Vault-Token", VAULT_TOKEN)
             .when()
             .get("http://" + getHostAndPort() + "/v1/secret/data/testing1")
-            .then()
-            .assertThat()
-            .body("data.data.top_secret", equalTo("password123"));
+            .thenReturn();
+        assertThat(response.body().jsonPath().getString("data.data.top_secret")).isEqualTo("password123");
     }
 
     @Test
     public void readSecondSecretPathOverHttpApi() throws InterruptedException {
-        given()
+        Response response = given()
             .header("X-Vault-Token", VAULT_TOKEN)
             .when()
             .get("http://" + getHostAndPort() + "/v1/secret/data/testing2")
-            .then()
-            .assertThat()
-            .body("data.data.secret_one", containsString("password1"))
-            .assertThat()
-            .body("data.data.secret_two", containsString("password2"))
-            .assertThat()
-            .body("data.data.secret_three", hasItem("password3"))
-            .assertThat()
-            .body("data.data.secret_four", containsString("password4"));
+            .andReturn();
+
+        assertThat(response.body().jsonPath().getString("data.data.secret_one")).contains("password1");
+        assertThat(response.body().jsonPath().getString("data.data.secret_two")).contains("password2");
+        assertThat(response.body().jsonPath().getList("data.data.secret_three")).contains("password3");
+        assertThat(response.body().jsonPath().getString("data.data.secret_four")).contains("password4");
     }
 
     @Test
     public void readTransitKeyOverHttpApi() throws InterruptedException {
-        given()
+        Response response = given()
             .header("X-Vault-Token", VAULT_TOKEN)
             .when()
             .get("http://" + getHostAndPort() + "/v1/transit/keys/my-key")
-            .then()
-            .assertThat()
-            .body("data.name", equalTo("my-key"));
+            .thenReturn();
+
+        assertThat(response.body().jsonPath().getString("data.name")).isEqualTo("my-key");
     }
 
     private String getHostAndPort() {

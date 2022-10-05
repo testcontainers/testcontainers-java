@@ -4,14 +4,14 @@ import com.google.common.collect.ImmutableSet;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.rnorth.visibleassertions.VisibleAssertions;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 
 import java.net.ServerSocket;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
 
 public class ExternalPortListeningCheckTest {
 
@@ -44,7 +44,7 @@ public class ExternalPortListeningCheckTest {
 
         final Boolean result = check.call();
 
-        VisibleAssertions.assertTrue("ExternalPortListeningCheck identifies a single listening port", result);
+        assertThat(result).as("ExternalPortListeningCheck identifies a single listening port").isTrue();
     }
 
     @Test
@@ -56,7 +56,7 @@ public class ExternalPortListeningCheckTest {
 
         final Boolean result = check.call();
 
-        VisibleAssertions.assertTrue("ExternalPortListeningCheck identifies multiple listening port", result);
+        assertThat(result).as("ExternalPortListeningCheck identifies multiple listening port").isTrue();
     }
 
     @Test
@@ -66,11 +66,9 @@ public class ExternalPortListeningCheckTest {
             ImmutableSet.of(listeningSocket1.getLocalPort(), nonListeningSocket.getLocalPort())
         );
 
-        assertThrows(
-            "ExternalPortListeningCheck detects a non-listening port among many",
-            IllegalStateException.class,
-            (Runnable) check::call
-        );
+        assertThat(catchThrowable(check::call))
+            .as("ExternalPortListeningCheck detects a non-listening port among many")
+            .isInstanceOf(IllegalStateException.class);
     }
 
     @After

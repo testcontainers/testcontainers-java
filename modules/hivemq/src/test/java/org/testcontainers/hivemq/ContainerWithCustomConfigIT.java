@@ -11,7 +11,7 @@ import org.testcontainers.utility.MountableFile;
 
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 public class ContainerWithCustomConfigIT {
 
@@ -33,13 +33,11 @@ public class ContainerWithCustomConfigIT {
 
             publisher.connect();
 
-            assertThrows(
-                MqttSessionExpiredException.class,
-                () -> {
+            assertThatExceptionOfType(MqttSessionExpiredException.class)
+                .isThrownBy(() -> {
                     // this should fail since only QoS 0 is allowed by the configuration
                     publisher.publishWith().topic("test/topic").qos(MqttQos.EXACTLY_ONCE).send();
-                }
-            );
+                });
         }
     }
 }

@@ -3,7 +3,7 @@ configurations {
 }
 
 dependencies {
-    baseline "org.testcontainers:${project.name}:1.17.3", {
+    baseline "org.testcontainers:${project.name}:1.17.5", {
         exclude group: "*", module: "*"
     }
 }
@@ -25,6 +25,9 @@ tasks.japicmp {
 
     onlyBinaryIncompatibleModified = true
     htmlOutputFile = file("$buildDir/reports/japi.html")
+    packageExcludes = [
+        "org.testcontainers.shaded.*",
+    ]
 }
 // do not run on Windows by default
 // TODO investigate zip issue on Windows

@@ -6,8 +6,7 @@ import org.testcontainers.TestImages;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ContainerLogsTest {
 
@@ -18,7 +17,7 @@ public class ContainerLogsTest {
             container.start();
 
             final String logs = container.getLogs();
-            assertEquals("stdout and stderr are reflected in the returned logs", "stdout\nstderr", logs);
+            assertThat(logs).as("stdout and stderr are reflected in the returned logs").isEqualTo("stdout\nstderr");
         }
     }
 
@@ -30,8 +29,8 @@ public class ContainerLogsTest {
             // docsGetAllLogs {
             final String logs = container.getLogs();
             // }
-            assertTrue("stdout is reflected in the returned logs", logs.contains("stdout"));
-            assertTrue("stderr is reflected in the returned logs", logs.contains("stderr"));
+            assertThat(logs).as("stdout is reflected in the returned logs").contains("stdout");
+            assertThat(logs).as("stderr is reflected in the returned logs").contains("stderr");
         }
     }
 
@@ -43,7 +42,7 @@ public class ContainerLogsTest {
             // docsGetStdOut {
             final String logs = container.getLogs(OutputFrame.OutputType.STDOUT);
             // }
-            assertTrue("stdout is reflected in the returned logs", logs.contains("stdout"));
+            assertThat(logs).as("stdout is reflected in the returned logs").contains("stdout");
         }
     }
 
@@ -55,7 +54,7 @@ public class ContainerLogsTest {
             // docsGetStdErr {
             final String logs = container.getLogs(OutputFrame.OutputType.STDERR);
             // }
-            assertTrue("stderr is reflected in the returned logs", logs.contains("stderr"));
+            assertThat(logs).as("stderr is reflected in the returned logs").contains("stderr");
         }
     }
 
@@ -67,7 +66,7 @@ public class ContainerLogsTest {
             Thread.sleep(1000L);
 
             final String logs = container.getLogs(OutputFrame.OutputType.STDOUT);
-            assertTrue("stdout is reflected in the returned logs for a running container", logs.contains("seq=0"));
+            assertThat(logs).as("stdout is reflected in the returned logs for a running container").contains("seq=0");
         }
     }
 

@@ -6,7 +6,6 @@ import com.github.dockerjava.api.command.InspectContainerResponse.ContainerState
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Info;
 import com.github.dockerjava.api.model.Ports;
-import com.google.common.primitives.Ints;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.experimental.FieldDefaults;
@@ -30,10 +29,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 public class GenericContainerTest {
 
@@ -87,6 +85,19 @@ public class GenericContainerTest {
     }
 
     @Test
+    public void shouldCopyTransferableAsFileWithFileMode() {
+        try (
+            GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
+                .withStartupCheckStrategy(new NoopStartupCheckStrategy())
+                .withCopyToContainer(Transferable.of("test", 0777), "/tmp/test")
+                .waitingFor(new WaitForExitedState(state -> state.getExitCodeLong() > 0))
+                .withCommand("sh", "-c", "ls -ll /tmp | grep '\\-rwxrwxrwx\\|test' && exit 100")
+        ) {
+            assertThatThrownBy(container::start).hasStackTraceContaining("Container exited with code 100");
+        }
+    }
+
+    @Test
     public void shouldCopyTransferableAfterMountableFile() {
         try (
             GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
@@ -119,28 +130,20 @@ public class GenericContainerTest {
                 .map(ExposedPort::getPort)
                 .collect(Collectors.toList());
 
-            assertEquals(
-                "the exposed ports are all of those EXPOSEd by the image",
-                Ints.asList(8080, 8081),
-                exposedPorts
-            );
+            assertThat(exposedPorts).as("the exposed ports are all of those EXPOSEd by the image").contains(8080, 8081);
 
             Map<ExposedPort, Ports.Binding[]> hostBindings = inspectedContainer
                 .getHostConfig()
                 .getPortBindings()
                 .getBindings();
-            assertEquals("only 1 port is bound on the host (published)", 1, hostBindings.size());
+            assertThat(hostBindings).as("only 1 port is bound on the host (published)").hasSize(1);
 
             Integer mappedPort = container.getMappedPort(8080);
-            assertTrue("port 8080 is bound to a different port on the host", mappedPort != 8080);
+            assertThat(mappedPort != 8080).as("port 8080 is bound to a different port on the host").isTrue();
 
-            assertThrows(
-                "trying to get a non-bound port mapping fails",
-                IllegalArgumentException.class,
-                () -> {
-                    container.getMappedPort(8081);
-                }
-            );
+            assertThat(catchThrowable(() -> container.getMappedPort(8081)))
+                .as("trying to get a non-bound port mapping fails")
+                .isInstanceOf(IllegalArgumentException.class);
         }
     }
 
@@ -161,8 +164,8 @@ public class GenericContainerTest {
         ) {
             container.start();
 
-            assertEquals("Only withExposedPort should be exposed", 1, container.getExposedPorts().size());
-            assertTrue("withExposedPort should be exposed", container.getExposedPorts().contains(8080));
+            assertThat(container.getExposedPorts()).as("Only withExposedPort should be exposed").hasSize(1);
+            assertThat(container.getExposedPorts()).as("withExposedPort should be exposed").contains(8080);
         }
     }
 

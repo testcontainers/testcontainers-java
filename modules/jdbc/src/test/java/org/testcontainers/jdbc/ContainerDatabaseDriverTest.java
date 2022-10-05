@@ -1,7 +1,6 @@
 package org.testcontainers.jdbc;
 
 import org.hamcrest.CoreMatchers;
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -10,6 +9,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ContainerDatabaseDriverTest {
 
@@ -22,7 +23,7 @@ public class ContainerDatabaseDriverTest {
     public void shouldNotTryToConnectToNonMatchingJdbcUrlDirectly() throws SQLException {
         ContainerDatabaseDriver driver = new ContainerDatabaseDriver();
         Connection connection = driver.connect(PLAIN_POSTGRESQL_JDBC_URL, new Properties());
-        Assert.assertNull(connection);
+        assertThat(connection).isNull();
     }
 
     @Test
