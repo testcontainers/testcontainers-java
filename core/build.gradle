@@ -73,14 +73,16 @@ dependencies {
 
     shaded 'org.awaitility:awaitility:4.2.0'
 
-    api platform('com.github.docker-java:docker-java-bom:3.2.13')
-    shaded platform('com.github.docker-java:docker-java-bom:3.2.13')
+    api platform('com.github.docker-java.docker-java:docker-java-bom:load_async-SNAPSHOT')
+    shaded platform('com.github.docker-java.docker-java:docker-java-bom:load_async-SNAPSHOT')
+//    api platform('com.github.docker-java:docker-java-bom:3.2.13')
+//    shaded platform('com.github.docker-java:docker-java-bom:3.2.13')
 
-    api "com.github.docker-java:docker-java-api"
+    api "com.github.docker-java.docker-java:docker-java-api"
 
-    shaded 'com.github.docker-java:docker-java-core'
+    shaded 'com.github.docker-java.docker-java:docker-java-core'
 
-    api 'com.github.docker-java:docker-java-transport-zerodep'
+    api 'com.github.docker-java.docker-java:docker-java-transport-zerodep'
 
     shaded "org.yaml:snakeyaml:1.33"
 

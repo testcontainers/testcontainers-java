@@ -1,26 +1,25 @@
 package org.testcontainers.containers;
 
 import com.github.dockerjava.api.command.InspectImageResponse;
+import com.github.dockerjava.api.command.LoadImageCallback;
 import com.google.cloud.tools.jib.api.DockerClient;
 import com.google.cloud.tools.jib.api.ImageDetails;
 import com.google.cloud.tools.jib.api.ImageReference;
 import com.google.cloud.tools.jib.http.NotifyingOutputStream;
 import com.google.cloud.tools.jib.image.ImageTarball;
 import com.google.common.io.ByteStreams;
-import com.google.common.io.CharStreams;
+import lombok.Cleanup;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
@@ -47,13 +46,17 @@ public class JibDockerClient implements DockerClient {
 
     @Override
     public String load(ImageTarball imageTarball, Consumer<Long> writtenByteCountListener) throws IOException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        imageTarball.writeTo(out);
-        ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-        this.dockerClient.loadImageCmd(in).exec();
-        try (InputStreamReader stdout = new InputStreamReader(in, StandardCharsets.UTF_8)) {
-            return CharStreams.toString(stdout);
+        @Cleanup
+        PipedInputStream in = new PipedInputStream();
+        @Cleanup
+        PipedOutputStream out = new PipedOutputStream(in);
+        LoadImageCallback loadImage = this.dockerClient.loadImageAsyncCmd(in).exec(new LoadImageCallback());
+
+        try (NotifyingOutputStream stdin = new NotifyingOutputStream(out, writtenByteCountListener)) {
+            imageTarball.writeTo(stdin);
         }
+
+        return loadImage.awaitMessage();
     }
 
     @Override

@@ -46,7 +46,7 @@ public class JibTest {
         JibContainer jibContainer = Jib
             .from(dockerClient, DockerDaemonImage.named("busybox:1.35"))
             .setEntrypoint("echo", "Hello World")
-            .containerize(Containerizer.to(DockerDaemonImage.named("jib-hello-world")));
+            .containerize(Containerizer.to(dockerClient, DockerDaemonImage.named("jib-hello-world")));
         //}
 
         try (
