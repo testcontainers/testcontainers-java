@@ -6,3 +6,4 @@ Please note that not all features that are available in *Testcontainers for Java
 * [Go](https://golang.testcontainers.org/)
 * [.Net](https://github.com/testcontainers/testcontainers-dotnet)
 * [Python](https://testcontainers-python.readthedocs.io/)
+* [JavaScript/NodeJS](https://github.com/testcontainers/testcontainers-node)
