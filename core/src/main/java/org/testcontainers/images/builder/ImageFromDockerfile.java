@@ -166,7 +166,6 @@ public class ImageFromDockerfile
 
     protected void configure(BuildImageCmd buildImageCmd) {
         buildImageCmd.withTag(this.getDockerImageName());
-        this.target.ifPresent(buildImageCmd::withTarget);
         this.dockerFilePath.ifPresent(buildImageCmd::withDockerfilePath);
         this.dockerfile.ifPresent(p -> {
                 buildImageCmd.withDockerfile(p.toFile());
@@ -180,6 +179,7 @@ public class ImageFromDockerfile
             });
 
         this.buildArgs.forEach(buildImageCmd::withBuildArg);
+        this.target.ifPresent(buildImageCmd::withTarget);
     }
 
     private void prePullDependencyImages(Set<String> imagesToPull) {
