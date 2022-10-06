@@ -2,14 +2,8 @@ package org.testcontainers.containers;
 
 import com.orientechnologies.orient.core.db.ODatabaseSession;
 import org.junit.Test;
-import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import org.testcontainers.utility.MountableFile;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -48,17 +42,11 @@ public class OrientDBContainerTest {
     }
 
     @Test
-    public void shouldQueryWithGremlin() throws URISyntaxException, IOException {
-        String orientdbServerConfig = new String(
-            Files.readAllBytes(
-                Paths.get(getClass().getClassLoader().getResource("orientdb-server-config.xml").toURI())
-            ),
-            StandardCharsets.UTF_8
-        );
+    public void shouldQueryWithGremlin() {
         try (
             OrientDBContainer container = new OrientDBContainer(ORIENTDB_IMAGE)
-                .withCopyToContainer(
-                    Transferable.of(orientdbServerConfig),
+                .withCopyFileToContainer(
+                    MountableFile.forClasspathResource("orientdb-server-config.xml"),
                     "/orientdb/config/orientdb-server-config.xml"
                 )
         ) {
