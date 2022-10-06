@@ -102,6 +102,7 @@ nav:
           - supported_docker_environment/windows.md
           - supported_docker_environment/logging_config.md
           - supported_docker_environment/image_registry_rate_limiting.md
+    - Other Supported Languages: supported_languages.md
     - Getting help: getting_help.md
     - Contributing:
           - contributing.md
