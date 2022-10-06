@@ -1,4 +1,4 @@
-# Supported Languages
+# Other Supported Languages
 
 You can find Testcontainers implemented in other languages:
 
