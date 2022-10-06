@@ -138,8 +138,10 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
         if (StringUtils.isEmpty(username)) {
             throw new IllegalArgumentException("Username cannot be null or empty");
         }
-        if (ORACLE_SYSTEM_USERS.contains(username.toLowerCase())) {
-            throw new IllegalArgumentException("Username cannot be one of " + ORACLE_SYSTEM_USERS);
+        if (OracleMaintainedUsernamesAndRoles.containsEnumValue(username)) {
+            throw new IllegalArgumentException(
+                "Username cannot be one of " + Arrays.toString(OracleMaintainedUsernamesAndRoles.values())
+            );
         }
         this.username = username;
         return self();

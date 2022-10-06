@@ -2,11 +2,13 @@ package org.testcontainers.junit.oracle;
 
 import org.junit.Test;
 import org.testcontainers.containers.OracleContainer;
+import org.testcontainers.containers.OracleMaintainedUsernamesAndRoles;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 import org.testcontainers.utility.DockerImageName;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -133,6 +135,16 @@ public class SimpleOracleTest extends AbstractContainerDatabaseTest {
             } catch (IllegalArgumentException e) {
                 //expected
             }
+
+            Arrays
+                .stream(OracleMaintainedUsernamesAndRoles.values())
+                .forEach(oracleMaintainedUsernamesAndRoles -> {
+                    try {
+                        oracle.withUsername(oracleMaintainedUsernamesAndRoles.toString());
+                    } catch (IllegalArgumentException e) {
+                        //expected
+                    }
+                });
 
             try {
                 oracle.withPassword("");
