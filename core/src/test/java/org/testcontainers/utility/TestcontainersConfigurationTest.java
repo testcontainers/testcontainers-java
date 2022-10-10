@@ -127,6 +127,14 @@ public class TestcontainersConfigurationTest {
     }
 
     @Test
+    public void shouldNotReadSettingIfCorrespondingEnvironmentVarIsEmptyString() {
+        environment.put("DOCKER_FOO", "");
+        assertThat(newConfig().getEnvVarOrUserProperty("docker.foo", "default"))
+            .as("reads unprefixed env vars for docker. settings")
+            .isEqualTo("default");
+    }
+
+    @Test
     public void shouldNotReadDockerClientStrategyFromClasspathProperties() {
         String currentValue = newConfig().getDockerClientStrategyClassName();
 
