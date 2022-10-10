@@ -57,11 +57,11 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 ## License
 
-See [LICENSE](https://raw.githubusercontent.com/testcontainers/testcontainers-java/master/modules/vault/LICENSE).
+See [LICENSE](https://raw.githubusercontent.com/testcontainers/testcontainers-java/main/modules/vault/LICENSE).
 
 ## Copyright
 
 Copyright (c) 2017 Capital One Services, LLC and other authors.
 
-See [AUTHORS](https://raw.githubusercontent.com/testcontainers/testcontainers-java/master/modules/vault/AUTHORS) for contributors.
+See [AUTHORS](https://raw.githubusercontent.com/testcontainers/testcontainers-java/main/modules/vault/AUTHORS) for contributors.
 

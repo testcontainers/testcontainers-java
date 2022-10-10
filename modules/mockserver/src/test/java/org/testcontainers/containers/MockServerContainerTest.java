@@ -11,7 +11,7 @@ import static org.mockserver.model.HttpResponse.response;
 public class MockServerContainerTest {
 
     public static final DockerImageName MOCKSERVER_IMAGE = DockerImageName.parse(
-        "jamesdbloom/mockserver:mockserver-5.5.4"
+        "mockserver/mockserver:mockserver-5.14.0"
     );
 
     @Test
@@ -40,7 +40,7 @@ public class MockServerContainerTest {
 
     @Test
     public void newVersionStartsWithDefaultWaitStrategy() {
-        DockerImageName dockerImageName = DockerImageName.parse("mockserver/mockserver:mockserver-5.11.2");
+        DockerImageName dockerImageName = DockerImageName.parse("mockserver/mockserver:mockserver-5.14.0");
         try (MockServerContainer mockServer = new MockServerContainer(dockerImageName)) {
             mockServer.start();
         }
