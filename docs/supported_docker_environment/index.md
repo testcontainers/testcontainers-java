@@ -11,7 +11,6 @@ However, these are not actively tested in the main development workflow, so not 
 If you have further questions about configuration details for your setup or whether it supports running Testcontainers-based tests, 
 please contact the Testcontainers team and other users from the Testcontainers community on [Slack](https://slack.testcontainers.org/).
 
-
 | Host Operating System / Environment | Minimum recommended docker versions | Known issues / tips                                                                                                                                                                                 |
 |-------------------------------------|-----------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Linux - general                     | Docker v17.09              | After docker installation, follow [post-installation steps](https://docs.docker.com/engine/install/linux-postinstall/).                                                                             |
