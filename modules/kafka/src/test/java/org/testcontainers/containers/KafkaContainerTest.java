@@ -29,10 +29,10 @@ import static org.assertj.core.api.Assertions.tuple;
 
 public class KafkaContainerTest {
 
-    private static final DockerImageName KAFKA_TEST_IMAGE = DockerImageName.parse("confluentinc/cp-kafka:6.2.1");
+    private static final DockerImageName KAFKA_TEST_IMAGE = DockerImageName.parse("confluentinc/cp-kafka:7.2.2");
 
     private static final DockerImageName ZOOKEEPER_TEST_IMAGE = DockerImageName.parse(
-        "confluentinc/cp-zookeeper:4.0.0"
+        "confluentinc/cp-zookeeper:7.2.2"
     );
 
     @Test
@@ -47,7 +47,7 @@ public class KafkaContainerTest {
     public void testUsageWithSpecificImage() throws Exception {
         try (
             // constructorWithVersion {
-            KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:6.2.1"))
+            KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.2.2"))
             // }
         ) {
             kafka.start();
@@ -61,7 +61,7 @@ public class KafkaContainerTest {
 
     @Test
     public void testUsageWithVersion() throws Exception {
-        try (KafkaContainer kafka = new KafkaContainer("6.2.1")) {
+        try (KafkaContainer kafka = new KafkaContainer("7.2.2")) {
             kafka.start();
             testKafkaFunctionality(kafka.getBootstrapServers());
         }
