@@ -68,13 +68,6 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
 
         addExposedPort(CQL_PORT);
         this.enableJmxReporting = false;
-
-        withEnv("CASSANDRA_SNITCH", "GossipingPropertyFileSnitch");
-        withEnv("JVM_OPTS", "-Dcassandra.skip_wait_for_gossip_to_settle=0 -Dcassandra.initial_token=0");
-        withEnv("HEAP_NEWSIZE", "128M");
-        withEnv("MAX_HEAP_SIZE", "1024M");
-        withEnv("CASSANDRA_ENDPOINT_SNITCH", "GossipingPropertyFileSnitch");
-        withEnv("CASSANDRA_DC", DEFAULT_LOCAL_DATACENTER);
     }
 
     @Override
@@ -129,6 +122,19 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
             .ofNullable(resourceLocation)
             .map(MountableFile::forClasspathResource)
             .ifPresent(mountableFile -> withCopyFileToContainer(mountableFile, pathNameInContainer));
+    }
+
+    /**
+     * Set up environment variables to allow Cassandra to start up. You may choose to override this method for example
+     * if you want to set your own variables to run multi-node clusters.
+     */
+    protected void initEnv() {
+        withEnv("CASSANDRA_SNITCH", "GossipingPropertyFileSnitch");
+        withEnv("JVM_OPTS", "-Dcassandra.skip_wait_for_gossip_to_settle=0 -Dcassandra.initial_token=0");
+        withEnv("HEAP_NEWSIZE", "128M");
+        withEnv("MAX_HEAP_SIZE", "1024M");
+        withEnv("CASSANDRA_ENDPOINT_SNITCH", "GossipingPropertyFileSnitch");
+        withEnv("CASSANDRA_DC", getLocalDatacenter());
     }
 
     /**
