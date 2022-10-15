@@ -88,6 +88,7 @@ nav:
           - test_framework_integration/junit_5.md
           - test_framework_integration/spock.md
           - test_framework_integration/manual_lifecycle_control.md
+    - Examples: examples.md
     - System Requirements:
           - supported_docker_environment/index.md
           - Continuous Integration:
@@ -101,10 +102,11 @@ nav:
           - supported_docker_environment/windows.md
           - supported_docker_environment/logging_config.md
           - supported_docker_environment/image_registry_rate_limiting.md
+    - Other Supported Languages: supported_languages.md
     - Getting help: getting_help.md
     - Contributing:
           - contributing.md
           - contributing_docs.md
           - bounty.md
 extra:
-    latest_version: 1.17.3
+    latest_version: 1.17.5

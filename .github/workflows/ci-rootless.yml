@@ -2,14 +2,14 @@ name: CI-Docker-Rootless
 
 on:
   pull_request: {}
-  push: { branches: [ master ] }
+  push: { branches: [ main ] }
 
 permissions:
   contents: read
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     strategy:
       fail-fast: false
       matrix:

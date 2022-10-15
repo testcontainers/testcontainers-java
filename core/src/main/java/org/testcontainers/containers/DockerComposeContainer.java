@@ -611,7 +611,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
     }
 
     public Optional<ContainerState> getContainerByServiceName(String serviceName) {
-        return Optional.ofNullable(serviceInstanceMap.get(serviceName));
+        String serviceInstantName = getServiceInstanceName(serviceName);
+        return Optional.ofNullable(serviceInstanceMap.get(serviceInstantName));
     }
 
     private void followLogs(String containerId, Consumer<OutputFrame> consumer) {
