@@ -230,7 +230,10 @@ public class TestcontainersConfiguration {
         }
 
         if (environment.containsKey(envVarName)) {
-            return environment.get(envVarName);
+            String value = environment.get(envVarName);
+            if (!value.isEmpty()) {
+                return value;
+            }
         }
 
         for (final Properties properties : propertiesSources) {
