@@ -13,7 +13,7 @@ import org.testcontainers.utility.DockerImageName;
 /**
  * Testcontainers implementation for InfluxDB.
  */
-public class InfluxDBContainer extends GenericContainer<InfluxDBContainer> {
+public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends GenericContainer<SELF> {
 
     public static final Integer INFLUXDB_PORT = 8086;
 
@@ -149,7 +149,7 @@ public class InfluxDBContainer extends GenericContainer<InfluxDBContainer> {
      * @param username The username to set for the system's initial super-user
      * @return a reference to this container instance
      */
-    public InfluxDBContainer withUsername(final String username) {
+    public InfluxDBContainer<SELF> withUsername(final String username) {
         this.username = username;
         return this;
     }
@@ -160,7 +160,7 @@ public class InfluxDBContainer extends GenericContainer<InfluxDBContainer> {
      * @param password The password to set for the system's initial super-user
      * @return a reference to this container instance
      */
-    public InfluxDBContainer withPassword(final String password) {
+    public InfluxDBContainer<SELF> withPassword(final String password) {
         this.password = password;
         return this;
     }
@@ -171,7 +171,7 @@ public class InfluxDBContainer extends GenericContainer<InfluxDBContainer> {
      * @param authEnabled Enables authentication.
      * @return a reference to this container instance
      */
-    public InfluxDBContainer withAuthEnabled(final boolean authEnabled) {
+    public InfluxDBContainer<SELF> withAuthEnabled(final boolean authEnabled) {
         this.authEnabled = authEnabled;
         return this.self();
     }
@@ -182,7 +182,7 @@ public class InfluxDBContainer extends GenericContainer<InfluxDBContainer> {
      * @param admin The name of the admin user to be created. If this is unset, no admin user is created.
      * @return a reference to this container instance
      */
-    public InfluxDBContainer withAdmin(final String admin) {
+    public InfluxDBContainer<SELF> withAdmin(final String admin) {
         this.admin = admin;
         return this.self();
     }
@@ -194,7 +194,7 @@ public class InfluxDBContainer extends GenericContainer<InfluxDBContainer> {
      * printed to standard out.
      * @return a reference to this container instance
      */
-    public InfluxDBContainer withAdminPassword(final String adminPassword) {
+    public InfluxDBContainer<SELF> withAdminPassword(final String adminPassword) {
         this.adminPassword = adminPassword;
         return this.self();
     }
@@ -205,7 +205,7 @@ public class InfluxDBContainer extends GenericContainer<InfluxDBContainer> {
      * @param database name of the database.
      * @return a reference to this container instance
      */
-    public InfluxDBContainer withDatabase(final String database) {
+    public InfluxDBContainer<SELF> withDatabase(final String database) {
         this.database = database;
         return this.self();
     }
@@ -216,7 +216,7 @@ public class InfluxDBContainer extends GenericContainer<InfluxDBContainer> {
      * @param organization The organization for the initial setup of influxDB.
      * @return a reference to this container instance
      */
-    public InfluxDBContainer withOrganization(final String organization) {
+    public InfluxDBContainer<SELF> withOrganization(final String organization) {
         this.organization = organization;
         return this;
     }
@@ -227,7 +227,7 @@ public class InfluxDBContainer extends GenericContainer<InfluxDBContainer> {
      * @param bucket name of the bucket.
      * @return a reference to this container instance
      */
-    public InfluxDBContainer withBucket(final String bucket) {
+    public InfluxDBContainer<SELF> withBucket(final String bucket) {
         this.bucket = bucket;
         return this;
     }
@@ -238,7 +238,7 @@ public class InfluxDBContainer extends GenericContainer<InfluxDBContainer> {
      * @param retention days bucket will retain data (0 is infinite, default is 0).
      * @return a reference to this container instance
      */
-    public InfluxDBContainer withRetention(final String retention) {
+    public InfluxDBContainer<SELF> withRetention(final String retention) {
         this.retention = Optional.of(retention);
         return this;
     }
@@ -249,7 +249,7 @@ public class InfluxDBContainer extends GenericContainer<InfluxDBContainer> {
      * @param adminToken Authentication token to associate with the admin user.
      * @return a reference to this container instance
      */
-    public InfluxDBContainer withAdminToken(final String adminToken) {
+    public InfluxDBContainer<SELF> withAdminToken(final String adminToken) {
         this.adminToken = Optional.of(adminToken);
         return this;
     }
@@ -258,7 +258,7 @@ public class InfluxDBContainer extends GenericContainer<InfluxDBContainer> {
      * @return a url to InfluxDB
      */
     public String getUrl() {
-        return "http://" + this.getHost() + ":" + this.getMappedPort(INFLUXDB_PORT);
+        return "http://" + getHost() + ":" + getMappedPort(INFLUXDB_PORT);
     }
 
     /**
@@ -267,7 +267,7 @@ public class InfluxDBContainer extends GenericContainer<InfluxDBContainer> {
      */
     @Deprecated
     public InfluxDB getNewInfluxDB() {
-        final InfluxDB influxDB = InfluxDBFactory.connect(this.getUrl(), this.username, this.password);
+        final InfluxDB influxDB = InfluxDBFactory.connect(getUrl(), this.username, this.password);
         influxDB.setDatabase(this.database);
         return influxDB;
     }

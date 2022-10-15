@@ -15,7 +15,7 @@ public final class InfluxDBTestUtils {
 
     private InfluxDBTestUtils() {}
 
-    public static InfluxDBClient createInfluxDBClient(final InfluxDBContainer influxDBContainer) {
+    public static InfluxDBClient createInfluxDBClient(final InfluxDBContainer<?> influxDBContainer) {
         final InfluxDBClientOptions influxDBClientOptions = InfluxDBClientOptions
             .builder()
             .url(influxDBContainer.getUrl())

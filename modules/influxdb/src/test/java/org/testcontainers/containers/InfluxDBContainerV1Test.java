@@ -23,7 +23,10 @@ public class InfluxDBContainerV1Test {
     @Test
     public void createInfluxDBOnlyWithUrlAndCorrectVersion() {
         try (
-            final InfluxDBContainer influxDBContainer = new InfluxDBContainer(InfluxDBTestUtils.INFLUXDB_V1_TEST_IMAGE)
+            // constructorWithDefaultVariables {
+            final InfluxDBContainer<?> influxDBContainer = new InfluxDBContainer<>(
+                InfluxDBTestUtils.INFLUXDB_V1_TEST_IMAGE)
+            // }
         ) {
             // Start the container. This step might take some time...
             influxDBContainer.start();
@@ -41,7 +44,8 @@ public class InfluxDBContainerV1Test {
     @Test
     public void getNewInfluxDBWithCorrectVersion() {
         try (
-            final InfluxDBContainer influxDBContainer = new InfluxDBContainer(InfluxDBTestUtils.INFLUXDB_V1_TEST_IMAGE)
+            final InfluxDBContainer<?> influxDBContainer = new InfluxDBContainer<>(
+                InfluxDBTestUtils.INFLUXDB_V1_TEST_IMAGE)
         ) {
             // Start the container. This step might take some time...
             influxDBContainer.start();
@@ -57,10 +61,14 @@ public class InfluxDBContainerV1Test {
     @Test
     public void describeDatabases() {
         try (
-            final InfluxDBContainer influxDBContainer = new InfluxDBContainer(InfluxDBTestUtils.INFLUXDB_V1_TEST_IMAGE)
+            // constructorWithUserPassword {
+            final InfluxDBContainer<?> influxDBContainer = new InfluxDBContainer<>(
+                InfluxDBTestUtils.INFLUXDB_V1_TEST_IMAGE)
+                .withDatabase(DATABASE)
+                .withUsername(USER)
+                .withPassword(PASSWORD)
+            // }
         ) {
-            influxDBContainer.withDatabase(DATABASE).withUsername(USER).withPassword(PASSWORD);
-
             // Start the container. This step might take some time...
             influxDBContainer.start();
 
@@ -73,10 +81,12 @@ public class InfluxDBContainerV1Test {
     @Test
     public void queryForWriteAndRead() {
         try (
-            final InfluxDBContainer influxDBContainer = new InfluxDBContainer(InfluxDBTestUtils.INFLUXDB_V1_TEST_IMAGE)
+            final InfluxDBContainer<?> influxDBContainer = new InfluxDBContainer<>(
+                InfluxDBTestUtils.INFLUXDB_V1_TEST_IMAGE)
+                .withDatabase(DATABASE)
+                .withUsername(USER)
+                .withPassword(PASSWORD)
         ) {
-            influxDBContainer.withDatabase(DATABASE).withUsername(USER).withPassword(PASSWORD);
-
             // Start the container. This step might take some time...
             influxDBContainer.start();
 

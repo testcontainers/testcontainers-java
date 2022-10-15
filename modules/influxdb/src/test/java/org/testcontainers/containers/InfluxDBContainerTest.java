@@ -13,6 +13,7 @@ import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import org.junit.Test;
 
 public class InfluxDBContainerTest {
@@ -33,7 +34,10 @@ public class InfluxDBContainerTest {
     @Test
     public void getInfluxDBClient() {
         try (
-            final InfluxDBContainer influxDBContainer = new InfluxDBContainer(InfluxDBTestUtils.INFLUXDB_V2_TEST_IMAGE)
+            // constructorWithDefaultVariables {
+            final InfluxDBContainer<?> influxDBContainer = new InfluxDBContainer<>(
+                InfluxDBTestUtils.INFLUXDB_V2_TEST_IMAGE)
+            // }
         ) {
             influxDBContainer.start();
 
@@ -47,13 +51,17 @@ public class InfluxDBContainerTest {
     @Test
     public void getInfluxDBClientWithAdminToken() {
         try (
-            final InfluxDBContainer influxDBContainer = new InfluxDBContainer(InfluxDBTestUtils.INFLUXDB_V2_TEST_IMAGE)
+            // constructorWithAdminToken {
+            final InfluxDBContainer<?> influxDBContainer = new InfluxDBContainer<>(
+                InfluxDBTestUtils.INFLUXDB_V2_TEST_IMAGE).withAdminToken(ADMIN_TOKEN)
+            // }
         ) {
-            influxDBContainer.withAdminToken(ADMIN_TOKEN).start();
-            assertThat(influxDBContainer.getAdminToken()).isNotEmpty();
+            influxDBContainer.start();
+            final Optional<String> adminToken = influxDBContainer.getAdminToken();
+            assertThat(adminToken).isNotEmpty();
 
             try (final InfluxDBClient influxDBClient = InfluxDBTestUtils.createInfluxDBClientWithToken(
-                influxDBContainer.getUrl(), influxDBContainer.getAdminToken().get())) {
+                influxDBContainer.getUrl(), adminToken.get())) {
                 assertThat(influxDBClient).isNotNull();
                 assertThat(influxDBClient.ping()).isTrue();
             }
@@ -63,14 +71,16 @@ public class InfluxDBContainerTest {
     @Test
     public void getBucket() {
         try (
-            final InfluxDBContainer influxDBContainer = new InfluxDBContainer(InfluxDBTestUtils.INFLUXDB_V2_TEST_IMAGE)
-        ) {
-            influxDBContainer
+            // constructorWithCustomVariables {
+            final InfluxDBContainer<?> influxDBContainer = new InfluxDBContainer<>(
+                InfluxDBTestUtils.INFLUXDB_V2_TEST_IMAGE)
                 .withUsername(USERNAME)
                 .withPassword(PASSWORD)
                 .withOrganization(ORG)
                 .withBucket(BUCKET)
                 .withRetention(RETENTION);
+            // }
+        ) {
 
             influxDBContainer.start();
 
@@ -91,7 +101,8 @@ public class InfluxDBContainerTest {
     @Test
     public void queryForWriteAndRead() {
         try (
-            final InfluxDBContainer influxDBContainer = new InfluxDBContainer(InfluxDBTestUtils.INFLUXDB_V2_TEST_IMAGE)
+            final InfluxDBContainer<?> influxDBContainer = new InfluxDBContainer<>(
+                InfluxDBTestUtils.INFLUXDB_V2_TEST_IMAGE)
                 .withUsername(USERNAME)
                 .withPassword(PASSWORD)
                 .withOrganization(ORG)

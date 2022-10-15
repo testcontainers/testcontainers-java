@@ -30,10 +30,19 @@ The InfluxDB instance will be setup with the following data:<br/>
 
 For more details about the InfluxDB setup, please visit the official [InfluxDB documentation](https://docs.influxdata.com/influxdb/v2.0/upgrade/v1-to-v2/docker/#influxdb-2x-initialization-credentials).
 
-In the following example you will find a snippet to create an InfluxDB client using the official Java client:
-
+In the following example you will find a snippet to create an InfluxDB client using the official Java client with default values:
 <!--codeinclude-->
-[InfluxDBTestUtils.getInfluxDBClient()](../../../modules/influxdb/src/test/java/org/testcontainers/containers/InfluxDBTestUtils.java)
+[InfluxDBTestUtils.getInfluxDBClient()](../../../modules/influxdb/src/test/java/org/testcontainers/containers/InfluxDBTestUtils.java) inside_block:constructorWithDefaultVariables
+<!--/codeinclude-->
+
+Creating an instance with InfluxDB admin token;
+<!--codeinclude-->
+[InfluxDBTestUtils.getInfluxDBClient()](../../../modules/influxdb/src/test/java/org/testcontainers/containers/InfluxDBTestUtils.java) inside_block:constructorWithAdminToken
+<!--/codeinclude-->
+
+Or creating an instance with custom username, password, bucket, organization, and retention time:
+<!--codeinclude-->
+[InfluxDBTestUtils.getInfluxDBClient()](../../../modules/influxdb/src/test/java/org/testcontainers/containers/InfluxDBTestUtils.java) inside_block:constructorWithCustomVariables
 <!--/codeinclude-->
 
 !!! hint
@@ -41,10 +50,16 @@ In the following example you will find a snippet to create an InfluxDB client us
 
 ## InfluxDB 1.x usage example
 
-Running a `InfluxDBContainer` as a stand-in for InfluxDB in a test:
+Running a `InfluxDBContainer` as a stand-in for InfluxDB in a test with default env variables:
 
 <!--codeinclude-->
-[InfluxDBContainerV1Test](../../../modules/influxdb/src/test/java/org/testcontainers/containers/InfluxDBContainerV1Test.java)
+[InfluxDBContainerV1Test](../../../modules/influxdb/src/test/java/org/testcontainers/containers/InfluxDBContainerV1Test.java) inside_block:constructorWithDefaultVariables
+<!--/codeinclude-->
+
+or run it with a custom username, password, and database name:
+
+<!--codeinclude-->
+[InfluxDBContainerV1Test](../../../modules/influxdb/src/test/java/org/testcontainers/containers/InfluxDBContainerV1Test.java) inside_block:constructorWithUserPassword
 <!--/codeinclude-->
 
 The InfluxDB instance will be setup with the following data:<br/>
