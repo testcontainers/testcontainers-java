@@ -40,6 +40,20 @@ public class DatastoreEmulatorContainerTest {
 
         assertThat(datastore.get(key).getString("description")).isEqualTo("my description");
     }
+
     // }
 
+    @Test
+    public void testWithFlags() {
+        try (
+            DatastoreEmulatorContainer emulator = new DatastoreEmulatorContainer(
+                "gcr.io/google.com/cloudsdktool/cloud-sdk:367.0.0-emulators"
+            )
+                .withAdditionalFlags("--consistency 1.0")
+        ) {
+            emulator.start();
+
+            assertThat(emulator.getContainerInfo().getConfig().getCmd()).anyMatch(e -> e.contains("--consistency 1.0"));
+        }
+    }
 }

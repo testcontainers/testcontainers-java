@@ -21,13 +21,32 @@ public class DatastoreEmulatorContainer extends GenericContainer<DatastoreEmulat
 
     private static final int HTTP_PORT = 8081;
 
+    private String additionalFlags;
+
+    public DatastoreEmulatorContainer(final String image) {
+        this(DockerImageName.parse(image));
+    }
+
     public DatastoreEmulatorContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         withExposedPorts(HTTP_PORT);
         setWaitStrategy(Wait.forHttp("/").forStatusCode(200));
-        withCommand("/bin/sh", "-c", CMD);
+    }
+
+    @Override
+    protected void configure() {
+        String command = CMD;
+        if (this.additionalFlags != null && !this.additionalFlags.isEmpty()) {
+            command += " " + this.additionalFlags;
+        }
+        withCommand("/bin/sh", "-c", command);
+    }
+
+    public DatastoreEmulatorContainer withAdditionalFlags(String flags) {
+        this.additionalFlags = flags;
+        return this;
     }
 
     /**
@@ -36,6 +55,6 @@ public class DatastoreEmulatorContainer extends GenericContainer<DatastoreEmulat
      * com.google.cloud.ServiceOptions.Builder#setHost(java.lang.String) method.
      */
     public String getEmulatorEndpoint() {
-        return getHost() + ":" + getMappedPort(8081);
+        return getHost() + ":" + getMappedPort(HTTP_PORT);
     }
 }
