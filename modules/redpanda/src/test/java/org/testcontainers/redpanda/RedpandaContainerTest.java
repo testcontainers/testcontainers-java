@@ -1,6 +1,7 @@
 package org.testcontainers.redpanda;
 
 import com.google.common.collect.ImmutableMap;
+import io.restassured.RestAssured;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -62,6 +63,21 @@ public class RedpandaContainerTest {
         assertThatThrownBy(() -> new RedpandaContainer("docker.redpanda.com/vectorized/redpanda:v21.11.19"))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("Redpanda version must be >= v22.2.1");
+    }
+
+    @Test
+    public void testSchemaRegistry() {
+        try (RedpandaContainer container = new RedpandaContainer(REDPANDA_DOCKER_IMAGE)) {
+            container.start();
+
+            io.restassured.response.Response response = RestAssured
+                .given()
+                .when()
+                .get(container.getSchemaRegistryAddress() + "/subjects")
+                .andReturn();
+
+            assertThat(response.getStatusCode()).isEqualTo(200);
+        }
     }
 
     private void testKafkaFunctionality(String bootstrapServers) throws Exception {
