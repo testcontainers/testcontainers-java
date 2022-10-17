@@ -6,7 +6,7 @@ import com.google.cloud.tools.jib.api.DockerDaemonImage;
 import com.google.cloud.tools.jib.api.Jib;
 import com.google.cloud.tools.jib.api.JibContainer;
 import org.junit.Test;
-import org.testcontainers.containers.output.OutputFrame;
+import org.testcontainers.containers.output.OutputFrame.OutputType;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 
 import java.time.Duration;
@@ -33,7 +33,7 @@ public class JibTest {
                 .withStartupCheckStrategy(new OneShotStartupCheckStrategy().withTimeout(Duration.ofSeconds(3)))
         ) {
             busybox.start();
-            String logs = busybox.getLogs(OutputFrame.OutputType.STDOUT);
+            String logs = busybox.getLogs(OutputType.STDOUT);
             assertThat(logs).contains("Hello World");
         }
     }
@@ -54,7 +54,7 @@ public class JibTest {
                 .withStartupCheckStrategy(new OneShotStartupCheckStrategy().withTimeout(Duration.ofSeconds(3)))
         ) {
             busybox.start();
-            String logs = busybox.getLogs(OutputFrame.OutputType.STDOUT);
+            String logs = busybox.getLogs(OutputType.STDOUT);
             assertThat(logs).contains("Hello World");
         }
     }
