@@ -49,7 +49,7 @@ public class DatastoreEmulatorContainerTest {
             DatastoreEmulatorContainer emulator = new DatastoreEmulatorContainer(
                 "gcr.io/google.com/cloudsdktool/cloud-sdk:367.0.0-emulators"
             )
-                .withAdditionalFlags("--consistency 1.0")
+                .withFlags("--consistency 1.0")
         ) {
             emulator.start();
 

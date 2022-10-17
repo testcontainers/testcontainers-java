@@ -21,7 +21,7 @@ public class DatastoreEmulatorContainer extends GenericContainer<DatastoreEmulat
 
     private static final int HTTP_PORT = 8081;
 
-    private String additionalFlags;
+    private String flags;
 
     public DatastoreEmulatorContainer(final String image) {
         this(DockerImageName.parse(image));
@@ -38,14 +38,14 @@ public class DatastoreEmulatorContainer extends GenericContainer<DatastoreEmulat
     @Override
     protected void configure() {
         String command = CMD;
-        if (this.additionalFlags != null && !this.additionalFlags.isEmpty()) {
-            command += " " + this.additionalFlags;
+        if (this.flags != null && !this.flags.isEmpty()) {
+            command += " " + this.flags;
         }
         withCommand("/bin/sh", "-c", command);
     }
 
-    public DatastoreEmulatorContainer withAdditionalFlags(String flags) {
-        this.additionalFlags = flags;
+    public DatastoreEmulatorContainer withFlags(String flags) {
+        this.flags = flags;
         return this;
     }
 
