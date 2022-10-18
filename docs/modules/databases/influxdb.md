@@ -57,12 +57,6 @@ Running a `InfluxDBContainer` as a stand-in for InfluxDB in a test with default 
 [Create an InfluxDB container](../../../modules/influxdb/src/test/java/org/testcontainers/containers/InfluxDBContainerV1Test.java) inside_block:constructorWithDefaultVariables
 <!--/codeinclude-->
 
-or run it with a custom username, password, and database name:
-
-<!--codeinclude-->
-[Create an InfluxDB container with custom settings](../../../modules/influxdb/src/test/java/org/testcontainers/containers/InfluxDBContainerV1Test.java) inside_block:constructorWithUserPassword
-<!--/codeinclude-->
-
 The InfluxDB instance will be setup with the following data:<br/>
 
 | Property      | Default Value | 
@@ -73,6 +67,12 @@ The InfluxDB instance will be setup with the following data:<br/>
 | admin         |     admin     |
 | adminPassword |   password    |
 | database      |       -       |
+
+It is possible to overwrite the default values. 
+For instance, creating an InfluxDB container with a custom username, password, and database name:
+<!--codeinclude-->
+[Create an InfluxDB container with custom settings](../../../modules/influxdb/src/test/java/org/testcontainers/containers/InfluxDBContainerV1Test.java) inside_block:constructorWithUserPassword
+<!--/codeinclude-->
 
 In the following example you will find a snippet to create an InfluxDB client using the official Java client:
 
