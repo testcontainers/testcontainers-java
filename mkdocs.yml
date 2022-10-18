@@ -63,6 +63,7 @@ nav:
                 - modules/databases/orientdb.md
                 - modules/databases/postgres.md
                 - modules/databases/presto.md
+                - modules/databases/questdb.md
                 - modules/databases/tidb.md
                 - modules/databases/trino.md
           - modules/azure.md
