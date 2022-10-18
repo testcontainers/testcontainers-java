@@ -39,6 +39,7 @@ body:
         - Oracle-XE
         - OrientDB
         - PostgreSQL
+        - QuestDB
         - Presto
         - Pulsar
         - RabbitMQ

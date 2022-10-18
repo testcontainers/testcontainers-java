@@ -41,6 +41,7 @@ body:
         - PostgreSQL
         - Presto
         - Pulsar
+        - QuestDB
         - RabbitMQ
         - Redpanda
         - Selenium
