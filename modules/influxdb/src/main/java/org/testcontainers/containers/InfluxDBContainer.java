@@ -266,9 +266,11 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Gen
      * @deprecated Use the new <a href="https://github.com/influxdata/influxdb-client-java">InfluxDB client library.</a>
      */
     @Deprecated
+    // createInfluxDBClient {
     public InfluxDB getNewInfluxDB() {
         final InfluxDB influxDB = InfluxDBFactory.connect(getUrl(), this.username, this.password);
         influxDB.setDatabase(this.database);
         return influxDB;
     }
+    // }
 }

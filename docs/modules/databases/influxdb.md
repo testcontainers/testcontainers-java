@@ -13,7 +13,7 @@ You can find more information about the official InfluxDB image on [Docker Hub](
 Running a `InfluxDBContainer` as a stand-in for InfluxDB in a test:
 
 <!--codeinclude-->
-[InfluxDBContainerTest](../../../modules/influxdb/src/test/java/org/testcontainers/containers/InfluxDBContainerTest.java)
+[Create an InfluxDB container](../../../modules/influxdb/src/test/java/org/testcontainers/containers/InfluxDBContainerTest.java) inside_block:constructorWithDefaultVariables
 <!--/codeinclude-->
 
 
@@ -30,19 +30,20 @@ The InfluxDB instance will be setup with the following data:<br/>
 
 For more details about the InfluxDB setup, please visit the official [InfluxDB documentation](https://docs.influxdata.com/influxdb/v2.0/upgrade/v1-to-v2/docker/#influxdb-2x-initialization-credentials).
 
-In the following example you will find a snippet to create an InfluxDB client using the official Java client with default values:
+It is possible to overwrite the default property values. Create a container with InfluxDB admin token:
 <!--codeinclude-->
-[InfluxDBTestUtils.getInfluxDBClient()](../../../modules/influxdb/src/test/java/org/testcontainers/containers/InfluxDBTestUtils.java) inside_block:constructorWithDefaultVariables
+[Create an InfluxDB container with admin token](../../../modules/influxdb/src/test/java/org/testcontainers/containers/InfluxDBContainerTest.java) inside_block:constructorWithAdminToken
 <!--/codeinclude-->
 
-Creating an instance with InfluxDB admin token;
+Or create a container with custom username, password, bucket, organization, and retention time:
 <!--codeinclude-->
-[InfluxDBTestUtils.getInfluxDBClient()](../../../modules/influxdb/src/test/java/org/testcontainers/containers/InfluxDBTestUtils.java) inside_block:constructorWithAdminToken
+[Create an InfluxDB container with custom settings](../../../modules/influxdb/src/test/java/org/testcontainers/containers/InfluxDBContainerTest.java) inside_block:constructorWithCustomVariables
 <!--/codeinclude-->
 
-Or creating an instance with custom username, password, bucket, organization, and retention time:
+The following code snippet shows how you can create an InfluxDB Java client:
+
 <!--codeinclude-->
-[InfluxDBTestUtils.getInfluxDBClient()](../../../modules/influxdb/src/test/java/org/testcontainers/containers/InfluxDBTestUtils.java) inside_block:constructorWithCustomVariables
+[Create an InfluxDB Java client](../../../modules/influxdb/src/test/java/org/testcontainers/containers/InfluxDBTestUtils.java) inside_block:createInfluxDB2Client
 <!--/codeinclude-->
 
 !!! hint
@@ -53,13 +54,13 @@ Or creating an instance with custom username, password, bucket, organization, an
 Running a `InfluxDBContainer` as a stand-in for InfluxDB in a test with default env variables:
 
 <!--codeinclude-->
-[InfluxDBContainerV1Test](../../../modules/influxdb/src/test/java/org/testcontainers/containers/InfluxDBContainerV1Test.java) inside_block:constructorWithDefaultVariables
+[Create an InfluxDB container](../../../modules/influxdb/src/test/java/org/testcontainers/containers/InfluxDBContainerV1Test.java) inside_block:constructorWithDefaultVariables
 <!--/codeinclude-->
 
 or run it with a custom username, password, and database name:
 
 <!--codeinclude-->
-[InfluxDBContainerV1Test](../../../modules/influxdb/src/test/java/org/testcontainers/containers/InfluxDBContainerV1Test.java) inside_block:constructorWithUserPassword
+[Create an InfluxDB container with custom settings](../../../modules/influxdb/src/test/java/org/testcontainers/containers/InfluxDBContainerV1Test.java) inside_block:constructorWithUserPassword
 <!--/codeinclude-->
 
 The InfluxDB instance will be setup with the following data:<br/>
@@ -76,7 +77,7 @@ The InfluxDB instance will be setup with the following data:<br/>
 In the following example you will find a snippet to create an InfluxDB client using the official Java client:
 
 <!--codeinclude-->
-[InfluxDBContainer.getNewInfluxDB()](../../../modules/influxdb/src/main/java/org/testcontainers/containers/InfluxDBContainer.java)
+[Create an InfluxDB Java client](../../../modules/influxdb/src/main/java/org/testcontainers/containers/InfluxDBContainer.java) inside_block:createInfluxDBClient
 <!--/codeinclude-->
 
 !!! hint

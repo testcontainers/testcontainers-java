@@ -15,6 +15,7 @@ public final class InfluxDBTestUtils {
 
     private InfluxDBTestUtils() {}
 
+    // createInfluxDB2Client {
     public static InfluxDBClient createInfluxDBClient(final InfluxDBContainer<?> influxDBContainer) {
         final InfluxDBClientOptions influxDBClientOptions = InfluxDBClientOptions
             .builder()
@@ -25,6 +26,7 @@ public final class InfluxDBTestUtils {
             .build();
         return InfluxDBClientFactory.create(influxDBClientOptions);
     }
+    // }
 
     public static InfluxDBClient createInfluxDBClientWithToken(final String url, final String token) {
         return InfluxDBClientFactory.create(url, token.toCharArray());
