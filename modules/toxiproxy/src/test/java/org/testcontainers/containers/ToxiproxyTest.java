@@ -35,7 +35,7 @@ public class ToxiproxyTest {
         .withExposedPorts(6379)
         .withNetwork(network);
 
-    private static final DockerImageName TOXIPROXY_IMAGE = DockerImageName.parse("shopify/toxiproxy:2.1.0");
+    private static final DockerImageName TOXIPROXY_IMAGE = DockerImageName.parse("ghcr.io/shopify/toxiproxy:2.5.0");
 
     // Toxiproxy container, which will be used as a TCP proxy
     @Rule
