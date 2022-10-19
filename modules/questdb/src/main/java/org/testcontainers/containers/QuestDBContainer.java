@@ -12,6 +12,8 @@ public class QuestDBContainer extends JdbcDatabaseContainer<QuestDBContainer> {
 
     private static final String DEFAULT_DATABASE_NAME = "qdb";
 
+    private static final int DEFAULT_COMMIT_LAG_MS = 1000;
+
     private static final String DEFAULT_USERNAME = "admin";
 
     private static final String DEFAULT_PASSWORD = "quest";
@@ -42,7 +44,13 @@ public class QuestDBContainer extends JdbcDatabaseContainer<QuestDBContainer> {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
         withExposedPorts(POSTGRES_PORT, REST_PORT, ILP_PORT);
+        withCommitLag(DEFAULT_COMMIT_LAG_MS);
         waitingFor(Wait.forLogMessage("(?i).*A server-main enjoy.*", 1));
+    }
+
+    public QuestDBContainer withCommitLag(int commitLagMillis) {
+        addEnv("QDB_CAIRO_COMMIT_LAG", String.valueOf(commitLagMillis));
+        return this;
     }
 
     @Override
