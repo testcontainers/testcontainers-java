@@ -6,6 +6,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
+import org.junit.Assert;
 import org.junit.Test;
 import org.testcontainers.QuestDBTestImages;
 import org.testcontainers.containers.QuestDBContainer;
@@ -19,11 +20,8 @@ import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class SimpleQuestDBTest extends AbstractContainerDatabaseTest {
-
 
     private static final String TABLE_NAME = "mytable";
 
@@ -50,9 +48,9 @@ public class SimpleQuestDBTest extends AbstractContainerDatabaseTest {
                 await()
                     .untilAsserted(() -> {
                         try (CloseableHttpResponse response = client.execute(httpGet)) {
-                            assertEquals(200, response.getStatusLine().getStatusCode());
+                            Assert.assertEquals(200, response.getStatusLine().getStatusCode());
                             String json = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-                            assertTrue(
+                            Assert.assertTrue(
                                 "questdb response '" + json + "' does not contain expected count 1000",
                                 json.contains("\"count\":1000")
                             );
