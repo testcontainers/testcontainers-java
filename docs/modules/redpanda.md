@@ -19,6 +19,12 @@ Now your tests or any other process running on your machine can get access to ru
 [Bootstrap Servers](../../modules/redpanda/src/test/java/org/testcontainers/redpanda/RedpandaContainerTest.java) inside_block:getBootstrapServers
 <!--/codeinclude-->
 
+Redpanda also provides a schema registry implementation. Like the Redpanda broker, you can access by using the following schema registry location:
+
+<!--codeinclude-->
+[Schema Registry](../../modules/redpanda/src/test/java/org/testcontainers/redpanda/RedpandaContainerTest.java) inside_block:getSchemaRegistryAddress
+<!--/codeinclude-->
+
 ## Adding this module to your project dependencies
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:

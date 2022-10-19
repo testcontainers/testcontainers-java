@@ -70,13 +70,16 @@ public class RedpandaContainerTest {
         try (RedpandaContainer container = new RedpandaContainer(REDPANDA_DOCKER_IMAGE)) {
             container.start();
 
-            io.restassured.response.Response response = RestAssured
-                .given()
-                .when()
-                .get(container.getSchemaRegistryAddress() + "/subjects")
-                .andReturn();
+            String subjectsEndpoint = String.format(
+                "%s/subjects",
+                // getSchemaRegistryAddress {
+                container.getSchemaRegistryAddress()
+                // }
+            );
 
-            assertThat(response.getStatusCode()).isEqualTo(200);
+            io.restassured.response.Response subjects = RestAssured.given().when().get(subjectsEndpoint).andReturn();
+
+            assertThat(subjects.getStatusCode()).isEqualTo(200);
         }
     }
 
