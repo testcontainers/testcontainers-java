@@ -41,8 +41,8 @@ public class QuestDBContainer extends JdbcDatabaseContainer<QuestDBContainer> {
     public QuestDBContainer(DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
-        this.withExposedPorts(POSTGRES_PORT, REST_PORT, ILP_PORT);
-        this.waitingFor(Wait.forLogMessage("(?i).*A server-main enjoy.*", 1));
+        withExposedPorts(POSTGRES_PORT, REST_PORT, ILP_PORT);
+        waitingFor(Wait.forLogMessage("(?i).*A server-main enjoy.*", 1));
     }
 
     @Override
@@ -52,7 +52,7 @@ public class QuestDBContainer extends JdbcDatabaseContainer<QuestDBContainer> {
 
     @Override
     public String getJdbcUrl() {
-        return this.getPostgresUrl(DEFAULT_DATABASE_NAME);
+        return String.format("jdbc:postgresql://%s:%d/", getHost(), getMappedPort(8812));
     }
 
     @Override
@@ -70,19 +70,11 @@ public class QuestDBContainer extends JdbcDatabaseContainer<QuestDBContainer> {
         return TEST_QUERY;
     }
 
-    public Integer getIlpPort() {
-        return getMappedPort(ILP_PORT);
+    public String getIlpUrl() {
+        return getHost() + ":" + getMappedPort(ILP_PORT);
     }
 
-    public String getPostgresUrl(String databaseName) {
-        if (!this.isRunning()) {
-            throw new IllegalStateException("QuestDBContainer should be started first");
-        } else {
-            return this.getPostgresConnectionString() + "/" + databaseName;
-        }
-    }
-
-    public String getPostgresConnectionString() {
-        return String.format("jdbc:postgresql://%s:%d", this.getHost(), this.getMappedPort(8812));
+    public String getHttpUrl() {
+        return "http://" + getHost() + ":" + getMappedPort(REST_PORT);
     }
 }
