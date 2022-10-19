@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.hamcrest.Matchers.hasItems;
 
 public class RedpandaContainerTest {
 
@@ -77,9 +78,21 @@ public class RedpandaContainerTest {
                 // }
             );
 
-            io.restassured.response.Response subjects = RestAssured.given().when().get(subjectsEndpoint).andReturn();
+            String subjectName = String.format("test-%s-value", UUID.randomUUID());
 
-            assertThat(subjects.getStatusCode()).isEqualTo(200);
+            // register the new subject
+            RestAssured
+                .given()
+                .contentType("application/vnd.schemaregistry.v1+json")
+                .pathParam("subject", subjectName)
+                .body("{\"schema\": \"{\\\"type\\\": \\\"string\\\"}\"}")
+                .when()
+                .post(subjectsEndpoint + "/{subject}/versions")
+                .then()
+                .statusCode(200);
+
+            // list all the registered subjects
+            RestAssured.given().when().get(subjectsEndpoint).then().statusCode(200).body("$", hasItems(subjectName));
         }
     }
 
