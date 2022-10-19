@@ -1,4 +1,4 @@
-# Dynalite Module
+# QuestDB Module
 
 Testcontainers module for [QuestDB](https://github.com/questdb/questdb). QuestDB is a high-performance, open-source SQL database for applications in financial services, IoT, machine learning, DevOps and observability.
 
