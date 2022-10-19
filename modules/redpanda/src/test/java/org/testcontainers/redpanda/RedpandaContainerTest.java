@@ -80,7 +80,6 @@ public class RedpandaContainerTest {
 
             String subjectName = String.format("test-%s-value", UUID.randomUUID());
 
-            // register the new subject
             RestAssured
                 .given()
                 .contentType("application/vnd.schemaregistry.v1+json")
@@ -91,7 +90,6 @@ public class RedpandaContainerTest {
                 .then()
                 .statusCode(200);
 
-            // list all the registered subjects
             RestAssured.given().when().get(subjectsEndpoint).then().statusCode(200).body("$", hasItems(subjectName));
         }
     }
