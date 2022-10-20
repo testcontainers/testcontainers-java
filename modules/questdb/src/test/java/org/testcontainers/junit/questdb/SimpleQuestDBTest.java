@@ -6,7 +6,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import org.junit.Assert;
 import org.junit.Test;
 import org.testcontainers.QuestDBTestImages;
 import org.testcontainers.containers.QuestDBContainer;
@@ -48,12 +47,11 @@ public class SimpleQuestDBTest extends AbstractContainerDatabaseTest {
                 await()
                     .untilAsserted(() -> {
                         try (CloseableHttpResponse response = client.execute(httpGet)) {
-                            Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+                            assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
                             String json = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-                            Assert.assertTrue(
-                                "questdb response '" + json + "' does not contain expected count 1000",
+                            assertThat(
                                 json.contains("\"count\":1000")
-                            );
+                            ).isTrue();
                         }
                     });
             }
