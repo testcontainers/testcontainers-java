@@ -1,9 +1,7 @@
 package org.testcontainers.containers;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.testcontainers.containers.InfluxDBTestUtils.createInfluxDBWithUrl;
-
 import java.util.concurrent.TimeUnit;
+import org.assertj.core.api.Assertions;
 import org.influxdb.InfluxDB;
 import org.influxdb.dto.Point;
 import org.influxdb.dto.Query;
@@ -34,10 +32,10 @@ public class InfluxDBContainerV1Test {
 
             final String actual = influxDBContainer.getUrl();
 
-            try (final InfluxDB influxDBClient = createInfluxDBWithUrl(actual)) {
-                assertThat(influxDBClient).isNotNull();
-                assertThat(influxDBClient.ping().isGood()).isTrue();
-                assertThat(influxDBClient.version()).isEqualTo(TEST_VERSION);
+            try (final InfluxDB influxDBClient = InfluxDBTestUtils.createInfluxDBWithUrl(actual)) {
+                Assertions.assertThat(influxDBClient).isNotNull();
+                Assertions.assertThat(influxDBClient.ping().isGood()).isTrue();
+                Assertions.assertThat(influxDBClient.version()).isEqualTo(TEST_VERSION);
             }
         }
     }
@@ -52,9 +50,9 @@ public class InfluxDBContainerV1Test {
             influxDBContainer.start();
 
             try (final InfluxDB influxDBClient = influxDBContainer.getNewInfluxDB()) {
-                assertThat(influxDBClient).isNotNull();
-                assertThat(influxDBClient.ping().isGood()).isTrue();
-                assertThat(influxDBClient.version()).isEqualTo(TEST_VERSION);
+                Assertions.assertThat(influxDBClient).isNotNull();
+                Assertions.assertThat(influxDBClient.ping().isGood()).isTrue();
+                Assertions.assertThat(influxDBClient.version()).isEqualTo(TEST_VERSION);
             }
         }
     }
@@ -74,7 +72,7 @@ public class InfluxDBContainerV1Test {
             influxDBContainer.start();
 
             try (final InfluxDB influxDBClient = influxDBContainer.getNewInfluxDB()) {
-                assertThat(influxDBClient.describeDatabases()).contains(DATABASE);
+                Assertions.assertThat(influxDBClient.describeDatabases()).contains(DATABASE);
             }
         }
     }
@@ -104,10 +102,10 @@ public class InfluxDBContainerV1Test {
                 final Query query = new Query("SELECT idle FROM cpu", DATABASE);
                 final QueryResult actual = influxDBClient.query(query);
 
-                assertThat(actual).isNotNull();
-                assertThat(actual.getError()).isNull();
-                assertThat(actual.getResults()).isNotNull();
-                assertThat(actual.getResults()).hasSize(1);
+                Assertions.assertThat(actual).isNotNull();
+                Assertions.assertThat(actual.getError()).isNull();
+                Assertions.assertThat(actual.getResults()).isNotNull();
+                Assertions.assertThat(actual.getResults()).hasSize(1);
             }
         }
     }
