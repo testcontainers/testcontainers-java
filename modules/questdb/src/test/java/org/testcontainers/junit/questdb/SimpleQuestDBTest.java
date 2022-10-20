@@ -29,7 +29,7 @@ public class SimpleQuestDBTest extends AbstractContainerDatabaseTest {
         try (QuestDBContainer questDB = new QuestDBContainer(QuestDBTestImages.QUESTDB_IMAGE)) {
             questDB.start();
 
-            ResultSet resultSet = performQuery(questDB, QuestDBContainer.TEST_QUERY);
+            ResultSet resultSet = performQuery(questDB, questDB.getTestQueryString());
 
             int resultSetInt = resultSet.getInt(1);
             assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
@@ -49,9 +49,7 @@ public class SimpleQuestDBTest extends AbstractContainerDatabaseTest {
                         try (CloseableHttpResponse response = client.execute(httpGet)) {
                             assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
                             String json = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-                            assertThat(
-                                json.contains("\"count\":1000")
-                            ).isTrue();
+                            assertThat(json.contains("\"count\":1000")).isTrue();
                         }
                     });
             }

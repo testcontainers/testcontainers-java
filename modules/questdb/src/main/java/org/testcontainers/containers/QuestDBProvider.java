@@ -1,7 +1,5 @@
 package org.testcontainers.containers;
 
-import org.testcontainers.utility.DockerImageName;
-
 public class QuestDBProvider extends JdbcDatabaseContainerProvider {
 
     @Override
@@ -11,6 +9,6 @@ public class QuestDBProvider extends JdbcDatabaseContainerProvider {
 
     @Override
     public JdbcDatabaseContainer newInstance(String tag) {
-        return new QuestDBContainer(DockerImageName.parse(QuestDBContainer.IMAGE).withTag(tag));
+        return new QuestDBContainer(QuestDBContainer.DEFAULT_IMAGE_NAME.withTag(tag));
     }
 }
