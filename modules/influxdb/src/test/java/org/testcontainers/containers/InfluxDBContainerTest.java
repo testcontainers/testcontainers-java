@@ -15,6 +15,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import org.junit.Test;
+import org.testcontainers.utility.DockerImageName;
 
 public class InfluxDBContainerTest {
 
@@ -29,6 +30,7 @@ public class InfluxDBContainerTest {
     private static final String RETENTION = "1w";
 
     private static final String ADMIN_TOKEN = "super-secret-token";
+
     private static final int SECONDS_IN_WEEK = 604800;
 
     @Test
@@ -36,7 +38,7 @@ public class InfluxDBContainerTest {
         try (
             // constructorWithDefaultVariables {
             final InfluxDBContainer<?> influxDBContainer = new InfluxDBContainer<>(
-                InfluxDBTestUtils.INFLUXDB_V2_TEST_IMAGE)
+                DockerImageName.parse("influxdb:2.0.7"))
             // }
         ) {
             influxDBContainer.start();
@@ -53,7 +55,7 @@ public class InfluxDBContainerTest {
         try (
             // constructorWithAdminToken {
             final InfluxDBContainer<?> influxDBContainer = new InfluxDBContainer<>(
-                InfluxDBTestUtils.INFLUXDB_V2_TEST_IMAGE).withAdminToken(ADMIN_TOKEN)
+                DockerImageName.parse("influxdb:2.0.7")).withAdminToken(ADMIN_TOKEN)
             // }
         ) {
             influxDBContainer.start();
@@ -73,7 +75,7 @@ public class InfluxDBContainerTest {
         try (
             // constructorWithCustomVariables {
             final InfluxDBContainer<?> influxDBContainer = new InfluxDBContainer<>(
-                InfluxDBTestUtils.INFLUXDB_V2_TEST_IMAGE)
+                DockerImageName.parse("influxdb:2.0.7"))
                 .withUsername(USERNAME)
                 .withPassword(PASSWORD)
                 .withOrganization(ORG)

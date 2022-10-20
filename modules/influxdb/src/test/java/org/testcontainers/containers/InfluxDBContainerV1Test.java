@@ -9,6 +9,7 @@ import org.influxdb.dto.Point;
 import org.influxdb.dto.Query;
 import org.influxdb.dto.QueryResult;
 import org.junit.Test;
+import org.testcontainers.utility.DockerImageName;
 
 public class InfluxDBContainerV1Test {
 
@@ -25,7 +26,7 @@ public class InfluxDBContainerV1Test {
         try (
             // constructorWithDefaultVariables {
             final InfluxDBContainer<?> influxDBContainer = new InfluxDBContainer<>(
-                InfluxDBTestUtils.INFLUXDB_V1_TEST_IMAGE)
+                DockerImageName.parse("influxdb:1.4.3"))
             // }
         ) {
             // Start the container. This step might take some time...
@@ -63,7 +64,7 @@ public class InfluxDBContainerV1Test {
         try (
             // constructorWithUserPassword {
             final InfluxDBContainer<?> influxDBContainer = new InfluxDBContainer<>(
-                InfluxDBTestUtils.INFLUXDB_V1_TEST_IMAGE)
+                DockerImageName.parse("influxdb:1.4.3"))
                 .withDatabase(DATABASE)
                 .withUsername(USER)
                 .withPassword(PASSWORD)
