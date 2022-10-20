@@ -37,13 +37,8 @@ public class QuestDBContainer extends JdbcDatabaseContainer<QuestDBContainer> {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
         withExposedPorts(POSTGRES_PORT, REST_PORT, ILP_PORT);
-        withCommitLag(DEFAULT_COMMIT_LAG_MS);
+        addEnv("QDB_CAIRO_COMMIT_LAG", String.valueOf(DEFAULT_COMMIT_LAG_MS));
         waitingFor(Wait.forLogMessage("(?i).*A server-main enjoy.*", 1));
-    }
-
-    public QuestDBContainer withCommitLag(int commitLagMillis) {
-        addEnv("QDB_CAIRO_COMMIT_LAG", String.valueOf(commitLagMillis));
-        return this;
     }
 
     @Override
