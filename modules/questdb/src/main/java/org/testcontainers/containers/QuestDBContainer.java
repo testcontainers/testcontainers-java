@@ -66,6 +66,11 @@ public class QuestDBContainer extends JdbcDatabaseContainer<QuestDBContainer> {
         return TEST_QUERY;
     }
 
+    @Override
+    protected void waitUntilContainerStarted() {
+        getWaitStrategy().waitUntilReady(this);
+    }
+
     public String getDefaultDatabaseName() {
         return DEFAULT_DATABASE_NAME;
     }
