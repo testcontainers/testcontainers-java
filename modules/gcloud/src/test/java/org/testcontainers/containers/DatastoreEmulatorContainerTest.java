@@ -10,6 +10,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
 
+import java.io.IOException;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class DatastoreEmulatorContainerTest {
@@ -44,7 +46,7 @@ public class DatastoreEmulatorContainerTest {
     // }
 
     @Test
-    public void testWithFlags() {
+    public void testWithFlags() throws IOException, InterruptedException {
         try (
             DatastoreEmulatorContainer emulator = new DatastoreEmulatorContainer(
                 "gcr.io/google.com/cloudsdktool/cloud-sdk:367.0.0-emulators"
@@ -54,6 +56,22 @@ public class DatastoreEmulatorContainerTest {
             emulator.start();
 
             assertThat(emulator.getContainerInfo().getConfig().getCmd()).anyMatch(e -> e.contains("--consistency 1.0"));
+            assertThat(emulator.execInContainer("ls", "/root/.config/").getStdout()).contains("gcloud");
+        }
+    }
+
+    @Test
+    public void testWithMultipleFlags() throws IOException, InterruptedException {
+        try (
+            DatastoreEmulatorContainer emulator = new DatastoreEmulatorContainer(
+                "gcr.io/google.com/cloudsdktool/cloud-sdk:367.0.0-emulators"
+            )
+                .withFlags("--consistency 1.0 --data-dir /root/.config/test-gcloud")
+        ) {
+            emulator.start();
+
+            assertThat(emulator.getContainerInfo().getConfig().getCmd()).anyMatch(e -> e.contains("--consistency 1.0"));
+            assertThat(emulator.execInContainer("ls", "/root/.config/").getStdout()).contains("test-gcloud");
         }
     }
 }
