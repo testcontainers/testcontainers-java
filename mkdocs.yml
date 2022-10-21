@@ -109,5 +109,6 @@ nav:
           - contributing.md
           - contributing_docs.md
           - bounty.md
+edit_uri: edit/main/docs/
 extra:
     latest_version: 1.17.5
