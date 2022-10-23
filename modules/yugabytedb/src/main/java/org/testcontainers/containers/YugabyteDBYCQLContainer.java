@@ -27,7 +27,7 @@ public class YugabyteDBYCQLContainer extends GenericContainer<YugabyteDBYCQLCont
 
 	private static final Integer TSERVER_DASHBOARD_PORT = 9000;
 
-	private static final String ENTRYPOINT = "bin/yugabyted start --daemon=false";
+	private static final String ENTRYPOINT = "bin/yugabyted start --background=false";
 
 	private static final String LOCAL_DC = "datacenter1";
 

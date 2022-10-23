@@ -12,7 +12,7 @@ public class YugabyteDBYSQLContainerProvider extends JdbcDatabaseContainerProvid
 
 	private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("yugabytedb/yugabyte");
 
-	private static final String DEFAULT_TAG = "2.14.0.0-b94";
+	private static final String DEFAULT_TAG = "2.14.3.1-b1";
 
 	private static final String NAME = "yugabyte";
 

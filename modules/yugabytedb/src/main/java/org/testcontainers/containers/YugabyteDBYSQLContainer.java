@@ -29,7 +29,7 @@ public class YugabyteDBYSQLContainer extends JdbcDatabaseContainer<YugabyteDBYSQ
 
 	private static final String JDBC_CONNECT_PREFIX = "jdbc:yugabytedb";
 
-	private static final String ENTRYPOINT = "bin/yugabyted start --daemon=false";
+	private static final String ENTRYPOINT = "bin/yugabyted start --background=false";
 
 	private String database = "yugabyte";
 

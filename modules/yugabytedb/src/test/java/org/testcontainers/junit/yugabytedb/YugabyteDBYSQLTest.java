@@ -2,13 +2,12 @@ package org.testcontainers.junit.yugabytedb;
 
 import java.sql.SQLException;
 
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
-import org.junit.Assert;
 import org.junit.Test;
 import org.testcontainers.containers.YugabyteDBYSQLContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 import org.testcontainers.utility.DockerImageName;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * YugabyteDB YSQL API unit test class
@@ -17,7 +16,7 @@ import org.testcontainers.utility.DockerImageName;
  */
 public class YugabyteDBYSQLTest extends AbstractContainerDatabaseTest {
 
-	private static final String IMAGE_NAME = "yugabytedb/yugabyte:2.14.0.0-b94";
+	private static final String IMAGE_NAME = "yugabytedb/yugabyte:2.14.3.1-b1";
 
 	private static final DockerImageName YBDB_TEST_IMAGE = DockerImageName.parse(IMAGE_NAME);
 
@@ -31,7 +30,8 @@ public class YugabyteDBYSQLTest extends AbstractContainerDatabaseTest {
 			// startingYSQLContainer {
 			ysqlContainer.start();
 			// }
-			Assert.assertEquals("Query execution fails!", 1, performQuery(ysqlContainer, "SELECT 1").getInt(1));
+			assertThat(performQuery(ysqlContainer, "SELECT 1").getInt(1)).as("A sample test query succeeds")
+					.isEqualTo(1);
 		}
 	}
 
@@ -41,18 +41,18 @@ public class YugabyteDBYSQLTest extends AbstractContainerDatabaseTest {
 		try (final YugabyteDBYSQLContainer ysqlContainer = new YugabyteDBYSQLContainer(YBDB_TEST_IMAGE)
 				.withDatabaseName(key)) {
 			ysqlContainer.start();
-			Assert.assertEquals("Query execution on a custom database fails!", 1,
-					performQuery(ysqlContainer, "SELECT 1").getInt(1));
+			assertThat(performQuery(ysqlContainer, "SELECT 1").getInt(1))
+					.as("A test query on a custom database succeeds").isEqualTo(1);
 		}
 	}
 
 	@Test
-	public void testExplicitInitScript() throws SQLException {
+	public void testInitScript() throws SQLException {
 		try (final YugabyteDBYSQLContainer ysqlContainer = new YugabyteDBYSQLContainer(YBDB_TEST_IMAGE)
 				.withInitScript("init/init_yql.sql")) {
 			ysqlContainer.start();
-			Assert.assertEquals("Value from the init script does not match the real value", "hello world",
-					performQuery(ysqlContainer, "SELECT foo FROM bar").getString(1));
+			assertThat(performQuery(ysqlContainer, "SELECT greet FROM dsql").getString(1))
+					.as("A record match succeeds").isEqualTo("Hello DSQL");
 		}
 	}
 
@@ -62,10 +62,9 @@ public class YugabyteDBYSQLTest extends AbstractContainerDatabaseTest {
 				.withUrlParam("sslmode", "disable").withUrlParam("application_name", "yugabyte")) {
 			ysqlContainer.start();
 			String jdbcUrl = ysqlContainer.getJdbcUrl();
-			MatcherAssert.assertThat(jdbcUrl, CoreMatchers.containsString("?"));
-			MatcherAssert.assertThat(jdbcUrl, CoreMatchers.containsString("&"));
-			MatcherAssert.assertThat(jdbcUrl, CoreMatchers.containsString("sslmode=disable"));
-			MatcherAssert.assertThat(jdbcUrl, CoreMatchers.containsString("application_name=yugabyte"));
+			assertThat(jdbcUrl).contains("?").contains("&").contains("sslmode=disable")
+					.contains("application_name=yugabyte")
+					.as("A JDBC connection string with additional parameter validation succeeds");
 		}
 	}
 
@@ -74,8 +73,8 @@ public class YugabyteDBYSQLTest extends AbstractContainerDatabaseTest {
 		try (final YugabyteDBYSQLContainer ysqlContainer = new YugabyteDBYSQLContainer(YBDB_TEST_IMAGE)
 				.withDatabaseName("yugabyte").withPassword("yugabyte").withUsername("yugabyte")) {
 			ysqlContainer.start();
-			Assert.assertEquals("Query execution with a custom role fails!", 1,
-					performQuery(ysqlContainer, "SELECT 1").getInt(1));
+			assertThat(performQuery(ysqlContainer, "SELECT 1").getInt(1))
+					.as("A sample test query with a custom role succeeds").isEqualTo(1);
 		}
 	}
 

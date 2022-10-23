@@ -1,5 +1,5 @@
-CREATE TABLE bar(
-    foo text primary key
+CREATE TABLE dsql(
+    greet text primary key
 );
 
-INSERT INTO bar (foo) VALUES ('hello world');
+INSERT INTO dsql (greet) VALUES ('Hello DSQL');
