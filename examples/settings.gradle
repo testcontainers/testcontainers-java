@@ -31,6 +31,7 @@ include 'spring-boot'
 include 'cucumber'
 include 'spring-boot-kotlin-redis'
 include 'immudb'
+include 'zookeeper'
 
 ext.isCI = System.getenv("CI") != null
 
