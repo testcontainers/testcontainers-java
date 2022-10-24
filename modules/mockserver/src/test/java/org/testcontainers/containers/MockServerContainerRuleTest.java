@@ -11,9 +11,9 @@ import static org.mockserver.model.HttpResponse.response;
 
 public class MockServerContainerRuleTest {
 
-
     // creatingProxy {
-    public static final DockerImageName MOCKSERVER_IMAGE = DockerImageName.parse("mockserver/mockserver")
+    public static final DockerImageName MOCKSERVER_IMAGE = DockerImageName
+        .parse("mockserver/mockserver")
         .withTag("mockserver-" + MockServerClient.class.getPackage().getImplementationVersion());
 
     @Rule

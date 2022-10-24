@@ -10,7 +10,8 @@ import static org.mockserver.model.HttpResponse.response;
 
 public class MockServerContainerTest {
 
-    public static final DockerImageName MOCKSERVER_IMAGE = DockerImageName.parse("mockserver/mockserver")
+    public static final DockerImageName MOCKSERVER_IMAGE = DockerImageName
+        .parse("mockserver/mockserver")
         .withTag("mockserver-" + MockServerClient.class.getPackage().getImplementationVersion());
 
     @Test
@@ -20,7 +21,7 @@ public class MockServerContainerTest {
 
             String expectedBody = "Hello World!";
 
-            try(MockServerClient client = new MockServerClient(mockServer.getHost(), mockServer.getServerPort())) {
+            try (MockServerClient client = new MockServerClient(mockServer.getHost(), mockServer.getServerPort())) {
                 assertThat(client.hasStarted()).as("Mockserver running").isTrue();
 
                 client.when(request().withPath("/hello")).respond(response().withBody(expectedBody));
