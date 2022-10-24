@@ -53,7 +53,7 @@ This is because nested test classes have to be defined non-static and can't ther
 
 ## Singleton containers
 
-Note that the [singleton container pattern](manual_lifecycle_control.md#singleton-containers) is also an option when
+Note that the [singleton container pattern](./manual_lifecycle_control.md#singleton-containers) is also an option when
 using JUnit 5.
 
 ## Limitations
