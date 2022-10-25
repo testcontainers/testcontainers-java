@@ -1,0 +1,23 @@
+apply plugin: 'com.diffplug.spotless'
+
+spotless {
+    java {
+        toggleOffOn()
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+
+        prettier(['prettier': '2.5.1', 'prettier-plugin-java': '1.6.1'])
+            .config([
+                'parser'    : 'java',
+                'tabWidth'  : 4,
+                'printWidth': 120
+            ])
+
+        importOrder('', 'java', 'javax', '\\#')
+    }
+    groovyGradle {
+        target '**/*.groovy'
+        greclipse('4.19.0')
+    }
+}
