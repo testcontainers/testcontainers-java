@@ -15,7 +15,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.example.SolrSearchEngine.COLLECTION_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class SolrQueryTest {
@@ -23,31 +22,44 @@ public class SolrQueryTest {
     private static final DockerImageName SOLR_IMAGE = DockerImageName.parse("solr:8.3.0");
 
     public static final SolrContainer solrContainer = new SolrContainer(SOLR_IMAGE)
-        .withCollection(COLLECTION_NAME);
+        .withCollection(SolrSearchEngine.COLLECTION_NAME);
 
     private static SolrClient solrClient;
 
     @BeforeClass
     public static void setUp() throws IOException, SolrServerException {
         solrContainer.start();
-        solrClient = new Http2SolrClient.Builder("http://" + solrContainer.getHost() + ":" + solrContainer.getSolrPort() + "/solr").build();
+        solrClient =
+            new Http2SolrClient.Builder(
+                "http://" + solrContainer.getHost() + ":" + solrContainer.getSolrPort() + "/solr"
+            )
+                .build();
 
         // Add Sample Data
-        solrClient.add(COLLECTION_NAME, Collections.singletonList(
-            new SolrInputDocument(createMap(
-                "id", createInputField("id", "1"),
-                "title", createInputField("title", "old skool - trainers - shoes")
-            ))
-        ));
+        solrClient.add(
+            SolrSearchEngine.COLLECTION_NAME,
+            Collections.singletonList(
+                new SolrInputDocument(
+                    createMap(
+                        "id",
+                        createInputField("id", "1"),
+                        "title",
+                        createInputField("title", "old skool - trainers - shoes")
+                    )
+                )
+            )
+        );
 
-        solrClient.add(COLLECTION_NAME, Collections.singletonList(
-            new SolrInputDocument(createMap(
-                "id", createInputField("id", "2"),
-                "title", createInputField("title", "print t-shirt")
-            ))
-        ));
+        solrClient.add(
+            SolrSearchEngine.COLLECTION_NAME,
+            Collections.singletonList(
+                new SolrInputDocument(
+                    createMap("id", createInputField("id", "2"), "title", createInputField("title", "print t-shirt"))
+                )
+            )
+        );
 
-        solrClient.commit(COLLECTION_NAME);
+        solrClient.commit(SolrSearchEngine.COLLECTION_NAME);
     }
 
     @Test
