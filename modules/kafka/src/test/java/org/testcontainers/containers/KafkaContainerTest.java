@@ -97,6 +97,14 @@ public class KafkaContainerTest {
     }
 
     @Test
+    public void testConfluentPlatformVersion7() throws Exception {
+        try (KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.2.2"))) {
+            kafka.start();
+            testKafkaFunctionality(kafka.getBootstrapServers());
+        }
+    }
+
+    @Test
     public void testConfluentPlatformVersion5() throws Exception {
         try (KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:5.4.3"))) {
             kafka.start();
