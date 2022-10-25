@@ -9,15 +9,19 @@ import org.testcontainers.delegate.DatabaseDelegate;
  */
 public abstract class AbstractYCQLDelegate implements DatabaseDelegate {
 
-	@Override
-	public void execute(String statement, String scriptPath, int lineNumber, boolean continueOnError,
-			boolean ignoreFailedDrops) {
-		// do nothing
-	}
+    @Override
+    public void execute(
+        String statement,
+        String scriptPath,
+        int lineNumber,
+        boolean continueOnError,
+        boolean ignoreFailedDrops
+    ) {
+        // do nothing
+    }
 
-	@Override
-	public void close() {
-		// do nothing
-	}
-
+    @Override
+    public void close() {
+        // do nothing
+    }
 }

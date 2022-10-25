@@ -1,14 +1,14 @@
 package org.testcontainers.containers.strategy;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.concurrent.TimeUnit;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.containers.YugabyteDBYSQLContainer;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.concurrent.TimeUnit;
 
 import static org.rnorth.ducttape.unreliables.Unreliables.retryUntilSuccess;
 
@@ -29,29 +29,32 @@ import static org.rnorth.ducttape.unreliables.Unreliables.retryUntilSuccess;
 @Slf4j
 public final class YugabyteDBYSQLWaitStrategy extends AbstractWaitStrategy {
 
-	private static final String YSQL_TEST_QUERY = "SELECT 1";
+    private static final String YSQL_TEST_QUERY = "SELECT 1";
 
-	private final WaitStrategyTarget target;
+    private final WaitStrategyTarget target;
 
-	@Override
-	public void waitUntilReady(WaitStrategyTarget target) {
-		YugabyteDBYSQLContainer container = (YugabyteDBYSQLContainer) target;
-		retryUntilSuccess((int) startupTimeout.getSeconds(), TimeUnit.SECONDS, () -> {
-			getRateLimiter().doWhenReady(() -> {
-				try (Connection con = container.createConnection(container.getJdbcUrl())) {
-					con.createStatement().execute(YSQL_TEST_QUERY);
-				}
-				catch (SQLException ex) {
-					log.error("Error connecting to the database", ex);
-				}
-			});
-			return true;
-		});
-	}
+    @Override
+    public void waitUntilReady(WaitStrategyTarget target) {
+        YugabyteDBYSQLContainer container = (YugabyteDBYSQLContainer) target;
+        retryUntilSuccess(
+            (int) startupTimeout.getSeconds(),
+            TimeUnit.SECONDS,
+            () -> {
+                getRateLimiter()
+                    .doWhenReady(() -> {
+                        try (Connection con = container.createConnection(container.getJdbcUrl())) {
+                            con.createStatement().execute(YSQL_TEST_QUERY);
+                        } catch (SQLException ex) {
+                            log.error("Error connecting to the database", ex);
+                        }
+                    });
+                return true;
+            }
+        );
+    }
 
-	@Override
-	public void waitUntilReady() {
-		waitUntilReady(target);
-	}
-
+    @Override
+    public void waitUntilReady() {
+        waitUntilReady(target);
+    }
 }
