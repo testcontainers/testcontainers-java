@@ -39,7 +39,7 @@ jobs:
         run: |
           TASKS=$(./gradlew --no-daemon --parallel -q testMatrix)
           echo $TASKS
-          echo "::set-output name=matrix::{\"gradle_args\":$TASKS}"
+          echo "matrix={\"gradle_args\":$TASKS}" >> $GITHUB_OUTPUT
   check:
     needs: find_gradle_jobs
     strategy:
