@@ -2,6 +2,8 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import lombok.SneakyThrows;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 
 /**
@@ -19,6 +21,8 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     public static final int ZOOKEEPER_PORT = 2181;
 
     private static final String DEFAULT_INTERNAL_TOPIC_RF = "1";
+
+    private static final String STARTER_SCRIPT = "/testcontainers_start.sh";
 
     protected String externalZookeeperConnect = null;
 
@@ -44,19 +48,11 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
         withExposedPorts(KAFKA_PORT);
 
-        // Use two listeners with different names, it will force Kafka to communicate with itself via internal
-        // listener when KAFKA_INTER_BROKER_LISTENER_NAME is set, otherwise Kafka will try to use the advertised listener
-        withEnv("KAFKA_LISTENERS", "PLAINTEXT://0.0.0.0:" + KAFKA_PORT + ",BROKER://0.0.0.0:9092");
-        withEnv("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", "BROKER:PLAINTEXT,PLAINTEXT:PLAINTEXT");
-        withEnv("KAFKA_INTER_BROKER_LISTENER_NAME", "BROKER");
-
-        withEnv("KAFKA_BROKER_ID", "1");
-        withEnv("KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", DEFAULT_INTERNAL_TOPIC_RF);
-        withEnv("KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS", DEFAULT_INTERNAL_TOPIC_RF);
-        withEnv("KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR", DEFAULT_INTERNAL_TOPIC_RF);
-        withEnv("KAFKA_TRANSACTION_STATE_LOG_MIN_ISR", DEFAULT_INTERNAL_TOPIC_RF);
-        withEnv("KAFKA_LOG_FLUSH_INTERVAL_MESSAGES", Long.MAX_VALUE + "");
-        withEnv("KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS", "0");
+        withCreateContainerCmdModifier(cmd -> {
+            cmd.withEntrypoint("sh");
+        });
+//        waitingFor(Wait.forLogMessage(".*Started Kafka API server.*", 1));
+        withCommand("-c", "while [ ! -f " + STARTER_SCRIPT + " ]; do sleep 0.1; done; " + STARTER_SCRIPT);
     }
 
     public KafkaContainer withEmbeddedZookeeper() {
@@ -75,49 +71,50 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     @Override
     protected void configure() {
+        // Use two listeners with different names, it will force Kafka to communicate with itself via internal
+        // listener when KAFKA_INTER_BROKER_LISTENER_NAME is set, otherwise Kafka will try to use the advertised listener
+        withEnv("KAFKA_LISTENERS", "PLAINTEXT://0.0.0.0:" + KAFKA_PORT + ",BROKER://0.0.0.0:9092");
+        withEnv("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", "BROKER:PLAINTEXT,PLAINTEXT:PLAINTEXT");
+        withEnv("KAFKA_INTER_BROKER_LISTENER_NAME", "BROKER");
+
+        withEnv("KAFKA_BROKER_ID", "1");
+        withEnv("KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", DEFAULT_INTERNAL_TOPIC_RF);
+        withEnv("KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS", DEFAULT_INTERNAL_TOPIC_RF);
+        withEnv("KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR", DEFAULT_INTERNAL_TOPIC_RF);
+        withEnv("KAFKA_TRANSACTION_STATE_LOG_MIN_ISR", DEFAULT_INTERNAL_TOPIC_RF);
+        withEnv("KAFKA_LOG_FLUSH_INTERVAL_MESSAGES", Long.MAX_VALUE + "");
+        withEnv("KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS", "0");
         withEnv(
             "KAFKA_ADVERTISED_LISTENERS",
             String.format("BROKER://%s:9092", getNetwork() != null ? getNetworkAliases().get(0) : "localhost")
         );
 
-        String command = "#!/bin/bash\n";
         if (externalZookeeperConnect != null) {
             withEnv("KAFKA_ZOOKEEPER_CONNECT", externalZookeeperConnect);
         } else {
             addExposedPort(ZOOKEEPER_PORT);
             withEnv("KAFKA_ZOOKEEPER_CONNECT", "localhost:" + ZOOKEEPER_PORT);
-            command += "echo 'clientPort=" + ZOOKEEPER_PORT + "' > zookeeper.properties\n";
-            command += "echo 'dataDir=/var/lib/zookeeper/data' >> zookeeper.properties\n";
-            command += "echo 'dataLogDir=/var/lib/zookeeper/log' >> zookeeper.properties\n";
-            command += "zookeeper-server-start zookeeper.properties &\n";
         }
-
-        // Optimization: skip the checks
-        command += "echo '' > /etc/confluent/docker/ensure \n";
-        // Run the original command
-        command += "/etc/confluent/docker/run \n";
-        withCommand("sh", "-c", command);
     }
 
     @Override
-    @SneakyThrows
-    protected void containerIsStarted(InspectContainerResponse containerInfo) {
-        String brokerAdvertisedListener = brokerAdvertisedListener(containerInfo);
-        ExecResult result = execInContainer(
-            "kafka-configs",
-            "--alter",
-            "--bootstrap-server",
-            brokerAdvertisedListener,
-            "--entity-type",
-            "brokers",
-            "--entity-name",
-            getEnvMap().get("KAFKA_BROKER_ID"),
-            "--add-config",
-            "advertised.listeners=[" + String.join(",", getBootstrapServers(), brokerAdvertisedListener) + "]"
-        );
-        if (result.getExitCode() != 0) {
-            throw new IllegalStateException(result.toString());
-        }
+    protected void containerIsStarting(InspectContainerResponse containerInfo) {
+        super.containerIsStarting(containerInfo);
+
+        String command = "#!/bin/bash\n";
+        command += "export KAFKA_ADVERTISED_LISTENERS=" + getBootstrapServers() + "," +brokerAdvertisedListener(containerInfo) +"\n";
+        command += "echo 'clientPort=" + ZOOKEEPER_PORT + "' > zookeeper.properties\n";
+        command += "echo 'dataDir=/var/lib/zookeeper/data' >> zookeeper.properties\n";
+        command += "echo 'dataLogDir=/var/lib/zookeeper/log' >> zookeeper.properties\n";
+        command += "zookeeper-server-start zookeeper.properties &\n";
+
+        command += "env\n";
+        // Optimization: skip the checks
+//        command += "  sed -i '/dub ensure KAFKA_ADVERTISED_LISTENERS/d' /etc/confluent/docker/configure\n";
+        command += "echo '' > /etc/confluent/docker/ensure \n";
+        // Run the original command
+        command += "/etc/confluent/docker/run \n";
+        copyFileToContainer(Transferable.of(command, 0777), STARTER_SCRIPT);
     }
 
     protected String brokerAdvertisedListener(InspectContainerResponse containerInfo) {
