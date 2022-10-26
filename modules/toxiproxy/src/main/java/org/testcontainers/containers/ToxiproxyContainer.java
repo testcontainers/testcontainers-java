@@ -86,6 +86,7 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
      * @param port port number on the target service that should be proxied
      * @return a {@link ContainerProxy} instance
      */
+    @Deprecated
     public ContainerProxy getProxy(GenericContainer<?> container, int port) {
         return this.getProxy(container.getNetworkAliases().get(0), port);
     }
@@ -103,6 +104,7 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
      * @param port port number on the target server that should be proxied
      * @return a {@link ContainerProxy} instance
      */
+    @Deprecated
     public ContainerProxy getProxy(String hostname, int port) {
         String upstream = hostname + ":" + port;
 
@@ -126,6 +128,7 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
     }
 
     @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
+    @Deprecated
     public static class ContainerProxy {
 
         private static final String CUT_CONNECTION_DOWNSTREAM = "CUT_CONNECTION_DOWNSTREAM";
