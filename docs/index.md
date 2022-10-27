@@ -3,23 +3,19 @@
 <!-- allow aspect ratio computation to reduce layout shift. CSS enforces max-width: 100% -->
 <img src="logo.png" alt="Testcontainers logo" width="1024" height="512"/>
 
-## Test dependencies as code for your entire stack
-Get lightweight and throwaway containers during your tests that let you test against any container image (database, broker, browser, etc..) using one of the several supported languages.
-
-
-<p align=center><strong>Select your language</strong></p>
+<p align=center><strong>Not using Java? Here are other supported languages!</strong></p>
 <div class="card-grid">
     <a class="card-grid-item"><img src="language-logos/java.svg"/>Java</a>
     <a href="https://golang.testcontainers.org/" class="card-grid-item"><img src="language-logos/go.svg"/>Go</a>
     <a href="https://dotnet.testcontainers.org/" class="card-grid-item"><img src="language-logos/dotnet.svg"/>.NET</a>
     <a href="https://testcontainers-python.readthedocs.io/en/latest/" class="card-grid-item"><img src="language-logos/python.svg"/>Python</a>
-    <a href="https://github.com/testcontainers/testcontainers-node" class="card-grid-item"><img src="language-logos/javascript.svg"/>JavaScript<wbr>/Node.js</a>
+    <a href="https://github.com/testcontainers/testcontainers-node" class="card-grid-item"><img src="language-logos/javascript.svg"/><span>JavaScript<wbr>/Node.js</span></a>
     <a href="https://docs.rs/testcontainers/latest/testcontainers/" class="card-grid-item"><img src="language-logos/rust.svg"/>Rust</a>
 </div>
 
-## About
+## About Testcontainers for Java
 
-Testcontainers is a Java library that supports JUnit tests, providing lightweight, throwaway instances of common databases, Selenium web browsers, or anything else that can run in a Docker container.
+*Testcontainers for Java* is a Java library that supports JUnit tests, providing lightweight, throwaway instances of common databases, Selenium web browsers, or anything else that can run in a Docker container.
 
 Testcontainers make the following kinds of tests easier:
 
