@@ -17,9 +17,9 @@ Get lightweight and throwaway containers during your tests that let you test aga
     <a href="https://docs.rs/testcontainers/latest/testcontainers/" class="card-grid-item"><img src="language-logos/rust.svg"/>Rust</a>
 </div>
 
-## About
+## About Testcontainers for Java
 
-Testcontainers is a Java library that supports JUnit tests, providing lightweight, throwaway instances of common databases, Selenium web browsers, or anything else that can run in a Docker container.
+*Testcontainers for Java* is a Java library that supports the usage in JUnit tests and other popular test frameworks.
 
 Testcontainers make the following kinds of tests easier:
 
