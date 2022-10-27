@@ -1,6 +1,8 @@
 package org.testcontainers.redpanda;
 
 import com.google.common.collect.ImmutableMap;
+import io.restassured.RestAssured;
+import io.restassured.response.Response;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -62,6 +64,36 @@ public class RedpandaContainerTest {
         assertThatThrownBy(() -> new RedpandaContainer("docker.redpanda.com/vectorized/redpanda:v21.11.19"))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("Redpanda version must be >= v22.2.1");
+    }
+
+    @Test
+    public void testSchemaRegistry() {
+        try (RedpandaContainer container = new RedpandaContainer(REDPANDA_DOCKER_IMAGE)) {
+            container.start();
+
+            String subjectsEndpoint = String.format(
+                "%s/subjects",
+                // getSchemaRegistryAddress {
+                container.getSchemaRegistryAddress()
+                // }
+            );
+
+            String subjectName = String.format("test-%s-value", UUID.randomUUID());
+
+            Response createSubject = RestAssured
+                .given()
+                .contentType("application/vnd.schemaregistry.v1+json")
+                .pathParam("subject", subjectName)
+                .body("{\"schema\": \"{\\\"type\\\": \\\"string\\\"}\"}")
+                .when()
+                .post(subjectsEndpoint + "/{subject}/versions")
+                .thenReturn();
+            assertThat(createSubject.getStatusCode()).isEqualTo(200);
+
+            Response allSubjects = RestAssured.given().when().get(subjectsEndpoint).thenReturn();
+            assertThat(allSubjects.getStatusCode()).isEqualTo(200);
+            assertThat(allSubjects.jsonPath().getList("$")).contains(subjectName);
+        }
     }
 
     private void testKafkaFunctionality(String bootstrapServers) throws Exception {
