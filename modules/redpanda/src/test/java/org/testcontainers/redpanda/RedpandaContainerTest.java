@@ -2,6 +2,7 @@ package org.testcontainers.redpanda;
 
 import com.google.common.collect.ImmutableMap;
 import io.restassured.RestAssured;
+import io.restassured.response.Response;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -27,7 +28,6 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
-import static org.hamcrest.Matchers.hasItems;
 
 public class RedpandaContainerTest {
 
@@ -80,17 +80,19 @@ public class RedpandaContainerTest {
 
             String subjectName = String.format("test-%s-value", UUID.randomUUID());
 
-            RestAssured
+            Response createSubject = RestAssured
                 .given()
                 .contentType("application/vnd.schemaregistry.v1+json")
                 .pathParam("subject", subjectName)
                 .body("{\"schema\": \"{\\\"type\\\": \\\"string\\\"}\"}")
                 .when()
                 .post(subjectsEndpoint + "/{subject}/versions")
-                .then()
-                .statusCode(200);
+                .thenReturn();
+            assertThat(createSubject.getStatusCode()).isEqualTo(200);
 
-            RestAssured.given().when().get(subjectsEndpoint).then().statusCode(200).body("$", hasItems(subjectName));
+            Response allSubjects = RestAssured.given().when().get(subjectsEndpoint).thenReturn();
+            assertThat(allSubjects.getStatusCode()).isEqualTo(200);
+            assertThat(allSubjects.jsonPath().getList("$")).contains(subjectName);
         }
     }
 
