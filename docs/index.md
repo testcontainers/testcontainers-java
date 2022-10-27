@@ -3,7 +3,7 @@
 <!-- allow aspect ratio computation to reduce layout shift. CSS enforces max-width: 100% -->
 <img src="logo.png" alt="Testcontainers logo" width="1024" height="512"/>
 
-## Test dependencies as code for your entire stack</h2>
+## Test dependencies as code for your entire stack
 Get lightweight and throwaway containers during your tests that let you test against any container image (database, broker, browser, etc..) using one of the several supported languages.
 
 
