@@ -11,10 +11,10 @@ Get lightweight and throwaway containers during your tests that let you test aga
 <div class="card-grid">
     <a class="card-grid-item"><img src="language-logos/java.svg"/>Java</a>
     <a href="https://golang.testcontainers.org/" class="card-grid-item"><img src="language-logos/go.svg"/>Go</a>
-    <a href="https://github.com/testcontainers/testcontainers-dotnet" class="card-grid-item"><img src="language-logos/dotnet.svg"/>.NET</a>
+    <a href="https://dotnet.testcontainers.org/" class="card-grid-item"><img src="language-logos/dotnet.svg"/>.NET</a>
     <a href="https://testcontainers-python.readthedocs.io/en/latest/" class="card-grid-item"><img src="language-logos/python.svg"/>Python</a>
     <a href="https://github.com/testcontainers/testcontainers-node" class="card-grid-item"><img src="language-logos/javascript.svg"/>JavaScript<wbr>/Node.js</a>
-    <a href="#" class="card-grid-item"><img src="language-logos/rust.svg"/>Rust</a>
+    <a href="https://docs.rs/testcontainers/latest/testcontainers/" class="card-grid-item"><img src="language-logos/rust.svg"/>Rust</a>
 </div>
 
 ## About
