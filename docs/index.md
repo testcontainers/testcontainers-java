@@ -9,7 +9,7 @@
     <a href="https://golang.testcontainers.org/" class="card-grid-item"><img src="language-logos/go.svg"/>Go</a>
     <a href="https://dotnet.testcontainers.org/" class="card-grid-item"><img src="language-logos/dotnet.svg"/>.NET</a>
     <a href="https://testcontainers-python.readthedocs.io/en/latest/" class="card-grid-item"><img src="language-logos/python.svg"/>Python</a>
-    <a href="https://github.com/testcontainers/testcontainers-node" class="card-grid-item"><img src="language-logos/javascript.svg"/><span>JavaScript<wbr>/Node.js</span></a>
+    <a href="https://github.com/testcontainers/testcontainers-node" class="card-grid-item"><img src="language-logos/node.svg"/>Node.js</a>
     <a href="https://docs.rs/testcontainers/latest/testcontainers/" class="card-grid-item"><img src="language-logos/rust.svg"/>Rust</a>
 </div>
 
