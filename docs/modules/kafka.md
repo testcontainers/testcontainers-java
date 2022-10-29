@@ -46,6 +46,9 @@ Or just give your Kafka container a network alias of your liking.
 
 You will need to explicitly create a network and set it on the Kafka container as well as on your other containers that need to communicate with Kafka.
 
+## Usage with client on `localhost`
+If you have some kafka clients that are running on the host network and not in the docker network, then these clients have to use the port that is mapped to the exposed port `9093`. 
+
 ## Adding this module to your project dependencies
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
