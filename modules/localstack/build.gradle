@@ -7,6 +7,6 @@ dependencies {
     testImplementation 'com.amazonaws:aws-java-sdk-s3:1.12.313'
     testImplementation 'com.amazonaws:aws-java-sdk-sqs:1.12.314'
     testImplementation 'com.amazonaws:aws-java-sdk-logs:1.12.314'
-    testImplementation 'software.amazon.awssdk:s3:2.17.285'
+    testImplementation 'software.amazon.awssdk:s3:2.18.7'
     testImplementation 'org.assertj:assertj-core:3.23.1'
 }
