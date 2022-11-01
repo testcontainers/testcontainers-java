@@ -1,7 +1,8 @@
 description = "Testcontainers :: MockServer"
 
 dependencies {
-    compile project(':testcontainers')
+    api project(':testcontainers')
 
-    testCompile 'org.mock-server:mockserver-client-java:5.5.4'
+    testImplementation 'org.mock-server:mockserver-client-java:5.14.0'
+    testImplementation 'org.assertj:assertj-core:3.23.1'
 }

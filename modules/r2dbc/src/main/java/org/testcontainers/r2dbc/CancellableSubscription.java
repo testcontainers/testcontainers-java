@@ -9,8 +9,7 @@ class CancellableSubscription implements Subscription {
     private final AtomicBoolean cancelled = new AtomicBoolean();
 
     @Override
-    public void request(long n) {
-    }
+    public void request(long n) {}
 
     @Override
     public void cancel() {

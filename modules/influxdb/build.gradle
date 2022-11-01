@@ -1,8 +1,9 @@
 description = "Testcontainers :: InfluxDB"
 
 dependencies {
-    compile project(':testcontainers')
+    api project(':testcontainers')
 
-    compileOnly 'org.influxdb:influxdb-java:2.21'
-    testCompile 'org.influxdb:influxdb-java:2.21'
+    compileOnly 'org.influxdb:influxdb-java:2.23'
+    testImplementation 'org.influxdb:influxdb-java:2.23'
+    testImplementation 'org.assertj:assertj-core:3.23.1'
 }

@@ -1,10 +1,50 @@
-@import url('https://fonts.googleapis.com/css?family=Inconsolata|Lato|Merriweather+Sans|Open+Sans|Source+Sans+Pro');
-body {
-    font-family: 'Lato', sans-serif;
+@import url('https://fonts.googleapis.com/css?family=Rubik');
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Rubik', sans-serif;
 
 }
 
-.md-typeset pre {
-    font-family: 'Inconsolata', monospace;
-    font-size: 100%;
+[data-md-color-scheme="testcontainers"] {
+    --md-primary-fg-color:       #291A3F;
+    --md-accent-fg-color:        #291A3F;
+    --md-typeset-a-color:        #0C94AA;
+}
+
+.card-grid {
+    display: grid;
+    gap: 10px;
+}
+
+@media (min-width: 680px) {
+    .card-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+body .card-grid-item {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    border: 1px solid #C3BEDE;
+    border-radius: 6px;
+    padding: 16px;
+    font-weight: 600;
+    color: #9991B5;
+    background: #F2F4FE;
+}
+
+body .card-grid-item:hover,
+body .card-grid-item:focus {
+    color: #9991B5;
+}
+
+.card-grid-item[href] {
+    color: var(--md-primary-fg-color);
+    background: transparent;
+}
+
+.card-grid-item[href]:hover,
+.card-grid-item[href]:focus {
+    background: #F2F4FE;
+    color: var(--md-primary-fg-color);
 }

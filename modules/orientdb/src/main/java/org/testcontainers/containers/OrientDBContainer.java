@@ -9,43 +9,45 @@ import lombok.NonNull;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
-import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
-import org.testcontainers.containers.wait.strategy.WaitStrategy;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.util.Optional;
-
-import static java.net.HttpURLConnection.HTTP_OK;
 
 /**
  * @author robfrank
  */
 public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(OrientDBContainer.class);
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("orientdb");
+
     private static final String DEFAULT_TAG = "3.0.24-tp3";
 
     private static final String DEFAULT_USERNAME = "admin";
+
     private static final String DEFAULT_PASSWORD = "admin";
+
     private static final String DEFAULT_SERVER_PASSWORD = "root";
 
     private static final String DEFAULT_DATABASE_NAME = "testcontainers";
 
     private static final int DEFAULT_BINARY_PORT = 2424;
+
     private static final int DEFAULT_HTTP_PORT = 2480;
 
     private String databaseName;
+
     private String serverPassword;
+
     private Optional<String> scriptPath = Optional.empty();
 
     private OrientDB orientDB;
+
     private ODatabaseSession session;
 
     /**
@@ -62,20 +64,12 @@ public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
 
     public OrientDBContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         serverPassword = DEFAULT_SERVER_PASSWORD;
         databaseName = DEFAULT_DATABASE_NAME;
 
-        WaitStrategy waitForHttp = new HttpWaitStrategy()
-            .forPort(DEFAULT_HTTP_PORT)
-            .forStatusCodeMatching(response -> response == HTTP_OK);
-
-        waitStrategy = new WaitAllStrategy()
-            .withStrategy(Wait.forListeningPort())
-            .withStrategy(waitForHttp)
-            .withStartupTimeout(Duration.ofMinutes(2));
+        waitStrategy = new LogMessageWaitStrategy().withRegEx(".*Gremlin started correctly.*");
 
         addExposedPorts(DEFAULT_BINARY_PORT, DEFAULT_HTTP_PORT);
     }
@@ -146,7 +140,9 @@ public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
 
             if (resource == null) {
                 LOGGER.warn("Could not load classpath init script: {}", scriptPath);
-                throw new RuntimeException("Could not load classpath init script: " + scriptPath + ". Resource not found.");
+                throw new RuntimeException(
+                    "Could not load classpath init script: " + scriptPath + ". Resource not found."
+                );
             }
 
             String script = IOUtils.toString(resource, StandardCharsets.UTF_8);
@@ -160,5 +156,4 @@ public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
             throw new RuntimeException("Error while executing init script: " + scriptPath, e);
         }
     }
-
 }

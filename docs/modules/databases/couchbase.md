@@ -18,29 +18,25 @@ Running Couchbase as a stand-in in a test:
     [Container definition](../../../modules/couchbase/src/test/java/org/testcontainers/couchbase/CouchbaseContainerTest.java) inside_block:container_definition
     <!--/codeinclude-->
 
-3. create an environment & cluster:
+3. create an cluster:
     <!--codeinclude-->
     [Cluster creation](../../../modules/couchbase/src/test/java/org/testcontainers/couchbase/CouchbaseContainerTest.java) inside_block:cluster_creation
-    <!--/codeinclude-->
-
-4. authenticate:
-    <!--codeinclude-->
-    [Authentication](../../../modules/couchbase/src/test/java/org/testcontainers/couchbase/CouchbaseContainerTest.java) inside_block:auth
     <!--/codeinclude-->
 
 ## Adding this module to your project dependencies
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
-```groovy tab='Gradle'
-testCompile "org.testcontainers:couchbase:{{latest_version}}"
-```
-
-```xml tab='Maven'
-<dependency>
-    <groupId>org.testcontainers</groupId>
-    <artifactId>couchbase</artifactId>
-    <version>{{latest_version}}</version>
-    <scope>test</scope>
-</dependency>
-```
+=== "Gradle"
+    ```groovy
+    testImplementation "org.testcontainers:couchbase:{{latest_version}}"
+    ```
+=== "Maven"
+    ```xml
+    <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>couchbase</artifactId>
+        <version>{{latest_version}}</version>
+        <scope>test</scope>
+    </dependency>
+    ```

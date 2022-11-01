@@ -22,22 +22,59 @@ package org.testcontainers.couchbase;
 public class BucketDefinition {
 
     private final String name;
+
+    private boolean flushEnabled = false;
+
     private boolean queryPrimaryIndex = true;
+
     private int quota = 100;
+
+    private int numReplicas = 0;
 
     public BucketDefinition(final String name) {
         this.name = name;
     }
 
     /**
-     * Sets a custom bucket quota (100MB by default).
+     * Allows to configure the number of replicas on a bucket (defaults to 0).
+     * <p>
+     * By default the bucket is initialized with 0 replicas since only a single container is launched. Modifying
+     * this value can still be useful in some test scenarios (i.e. to test failures with the wrong number of replicas
+     * and durability requirements on operations).
+     * <p>
+     * Couchbase buckets can have a maximum of three replicas configured.
      *
-     * @param quota the quota to set for the bucket.
+     * @param numReplicas the number of replicas to configure.
+     * @return this {@link BucketDefinition} for chaining purposes.
+     */
+    public BucketDefinition withReplicas(final int numReplicas) {
+        if (numReplicas < 0 || numReplicas > 3) {
+            throw new IllegalArgumentException("The number of replicas must be between 0 and 3 (inclusive)");
+        }
+        this.numReplicas = numReplicas;
+        return this;
+    }
+
+    /**
+     * Enables flush for this bucket (disabled by default).
+     *
+     * @param flushEnabled if true, the bucket can be flushed.
+     * @return this {@link BucketDefinition} for chaining purposes.
+     */
+    public BucketDefinition withFlushEnabled(final boolean flushEnabled) {
+        this.flushEnabled = flushEnabled;
+        return this;
+    }
+
+    /**
+     * Sets a custom bucket quota (100MiB by default).
+     *
+     * @param quota the quota to set for the bucket in mebibytes.
      * @return this {@link BucketDefinition} for chaining purposes.
      */
     public BucketDefinition withQuota(final int quota) {
         if (quota < 100) {
-          throw new IllegalArgumentException("Bucket quota cannot be less than 100MB!");
+            throw new IllegalArgumentException("Bucket quota cannot be less than 100MB!");
         }
         this.quota = quota;
         return this;
@@ -58,6 +95,10 @@ public class BucketDefinition {
         return name;
     }
 
+    public boolean hasFlushEnabled() {
+        return flushEnabled;
+    }
+
     public boolean hasPrimaryIndex() {
         return queryPrimaryIndex;
     }
@@ -66,4 +107,7 @@ public class BucketDefinition {
         return quota;
     }
 
+    public int getNumReplicas() {
+        return numReplicas;
+    }
 }

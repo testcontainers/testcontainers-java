@@ -11,9 +11,11 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = DemoApplication.class, webEnvironment = WebEnvironment.RANDOM_PORT, properties = {
-    "spring.datasource.url=jdbc:tc:postgresql:11-alpine:///databasename",
-})
+@SpringBootTest(
+    classes = DemoApplication.class,
+    webEnvironment = WebEnvironment.RANDOM_PORT,
+    properties = { "spring.datasource.url=jdbc:tc:postgresql:11-alpine:///databasename" }
+)
 @ActiveProfiles("test")
 public abstract class AbstractIntegrationTest {
 
@@ -23,7 +25,7 @@ public abstract class AbstractIntegrationTest {
     @DynamicPropertySource
     static void redisProperties(DynamicPropertyRegistry registry) {
         redis.start();
-        registry.add("spring.redis.host", redis::getContainerIpAddress);
+        registry.add("spring.redis.host", redis::getHost);
         registry.add("spring.redis.port", redis::getFirstMappedPort);
     }
 }

@@ -3,6 +3,7 @@ package org.testcontainers.containers;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.LicenseAcceptance;
 
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -12,6 +13,7 @@ import java.util.stream.Stream;
 public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("mcr.microsoft.com/mssql/server");
+
     @Deprecated
     public static final String DEFAULT_TAG = "2017-CU12";
 
@@ -28,13 +30,14 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
     private String password = DEFAULT_PASSWORD;
 
     private static final int DEFAULT_STARTUP_TIMEOUT_SECONDS = 240;
+
     private static final int DEFAULT_CONNECT_TIMEOUT_SECONDS = 240;
 
-    private static final Pattern[] PASSWORD_CATEGORY_VALIDATION_PATTERNS = new Pattern[]{
+    private static final Pattern[] PASSWORD_CATEGORY_VALIDATION_PATTERNS = new Pattern[] {
         Pattern.compile("[A-Z]+"),
         Pattern.compile("[a-z]+"),
         Pattern.compile("[0-9]+"),
-        Pattern.compile("[^a-zA-Z0-9]+", Pattern.CASE_INSENSITIVE)
+        Pattern.compile("[^a-zA-Z0-9]+", Pattern.CASE_INSENSITIVE),
     };
 
     /**
@@ -51,7 +54,6 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
 
     public MSSQLServerContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         withStartupTimeoutSeconds(DEFAULT_STARTUP_TIMEOUT_SECONDS);
@@ -60,8 +62,8 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
     }
 
     @Override
-    protected Integer getLivenessCheckPort() {
-        return getMappedPort(MS_SQL_SERVER_PORT);
+    public Set<Integer> getLivenessCheckPortNumbers() {
+        return super.getLivenessCheckPortNumbers();
     }
 
     @Override
@@ -87,6 +89,17 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
     @Override
     public String getDriverClassName() {
         return "com.microsoft.sqlserver.jdbc.SQLServerDriver";
+    }
+
+    @Override
+    protected String constructUrlForConnection(String queryString) {
+        // The JDBC driver of MS SQL Server enables encryption by default for versions > 10.1.0.
+        // We need to disable it by default to be able to use the container without having to pass extra params.
+        // See https://github.com/microsoft/mssql-jdbc/releases/tag/v10.1.0
+        if (urlParameters.keySet().stream().map(String::toLowerCase).noneMatch("encrypt"::equals)) {
+            urlParameters.put("encrypt", "false");
+        }
+        return super.constructUrlForConnection(queryString);
     }
 
     @Override
@@ -118,7 +131,6 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
     }
 
     private void checkPasswordStrength(String password) {
-
         if (password == null) {
             throw new IllegalArgumentException("Null password is not allowed");
         }
@@ -131,18 +143,19 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
             throw new IllegalArgumentException("Password can be up to 128 characters long");
         }
 
-        long satisfiedCategories = Stream.of(PASSWORD_CATEGORY_VALIDATION_PATTERNS)
+        long satisfiedCategories = Stream
+            .of(PASSWORD_CATEGORY_VALIDATION_PATTERNS)
             .filter(p -> p.matcher(password).find())
             .count();
 
         if (satisfiedCategories < 3) {
             throw new IllegalArgumentException(
                 "Password must contain characters from three of the following four categories:\n" +
-                    " - Latin uppercase letters (A through Z)\n" +
-                    " - Latin lowercase letters (a through z)\n" +
-                    " - Base 10 digits (0 through 9)\n" +
-                    " - Non-alphanumeric characters such as: exclamation point (!), dollar sign ($), number sign (#), " +
-                    "or percent (%)."
+                " - Latin uppercase letters (A through Z)\n" +
+                " - Latin lowercase letters (a through z)\n" +
+                " - Base 10 digits (0 through 9)\n" +
+                " - Non-alphanumeric characters such as: exclamation point (!), dollar sign ($), number sign (#), " +
+                "or percent (%)."
             );
         }
     }

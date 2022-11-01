@@ -5,16 +5,37 @@
 
 Testcontainers module for the Google Cloud Platform's [Cloud SDK](https://cloud.google.com/sdk/).
 
-Currently, the module supports `Datastore`, `Firestore`, `Spanner`, and `Pub/Sub` emulators. In order to use it, you should use the following classes:
+Currently, the module supports `Bigtable`, `Datastore`, `Firestore`, `Spanner`, and `Pub/Sub` emulators. In order to use it, you should use the following classes:
 
 Class | Container Image
 -|-
+BigtableEmulatorContainer | [gcr.io/google.com/cloudsdktool/cloud-sdk:emulators](https://gcr.io/google.com/cloudsdktool/cloud-sdk)
 DatastoreEmulatorContainer | [gcr.io/google.com/cloudsdktool/cloud-sdk:emulators](https://gcr.io/google.com/cloudsdktool/cloud-sdk)
 FirestoreEmulatorContainer | [gcr.io/google.com/cloudsdktool/cloud-sdk:emulators](https://gcr.io/google.com/cloudsdktool/cloud-sdk)
 SpannerEmulatorContainer | [gcr.io/cloud-spanner-emulator/emulator](https://gcr.io/cloud-spanner-emulator/emulator)
 PubSubEmulatorContainer | [gcr.io/google.com/cloudsdktool/cloud-sdk:emulators](https://gcr.io/google.com/cloudsdktool/cloud-sdk)
 
 ## Usage example
+
+### Bigtable
+
+Start Bigtable Emulator during a test:
+
+<!--codeinclude-->
+[Starting a Bigtable Emulator container](../../modules/gcloud/src/test/java/org/testcontainers/containers/BigtableEmulatorContainerTest.java) inside_block:emulatorContainer
+<!--/codeinclude-->
+
+Create a test Bigtable table in the Emulator:
+
+<!--codeinclude-->
+[Create a test table](../../modules/gcloud/src/test/java/org/testcontainers/containers/BigtableEmulatorContainerTest.java) inside_block:createTable
+<!--/codeinclude-->
+
+Test against the Emulator:
+
+<!--codeinclude-->
+[Testing with a Bigtable Emulator container](../../modules/gcloud/src/test/java/org/testcontainers/containers/BigtableEmulatorContainerTest.java) inside_block:testWithEmulatorContainer
+<!--/codeinclude-->
 
 ### Datastore
 
@@ -32,7 +53,7 @@ And test against the Emulator:
 
 See more examples:
 
- * [Full sample code](https://github.com/testcontainers/testcontainers-java/tree/master/modules/gcloud/src/test/java/org/testcontainers/containers/DatastoreEmulatorContainerTest.java)
+ * [Full sample code](https://github.com/testcontainers/testcontainers-java/tree/main/modules/gcloud/src/test/java/org/testcontainers/containers/DatastoreEmulatorContainerTest.java)
  * [With Spring Boot](https://github.com/saturnism/testcontainers-gcloud-examples/tree/main/springboot/datastore-example/src/test/java/com/example/springboot/datastore) 
 
 ### Firestore 
@@ -51,7 +72,7 @@ And test against the Emulator:
 
 See more examples:
 
- * [Full sample code](https://github.com/testcontainers/testcontainers-java/tree/master/modules/gcloud/src/test/java/org/testcontainers/containers/FirestoreEmulatorContainerTest.java)
+ * [Full sample code](https://github.com/testcontainers/testcontainers-java/tree/main/modules/gcloud/src/test/java/org/testcontainers/containers/FirestoreEmulatorContainerTest.java)
  * [With Spring Boot](https://github.com/saturnism/testcontainers-gcloud-examples/tree/main/springboot/firestore-example/src/test/java/com/example/springboot/firestore/FirestoreIntegrationTests.java)
 
 ### Spanner 
@@ -82,7 +103,7 @@ And test against the Emulator:
 
 See more examples:
 
- * [Full sample code](https://github.com/testcontainers/testcontainers-java/tree/master/modules/gcloud/src/test/java/org/testcontainers/containers/SpannerEmulatorContainerTest.java)
+ * [Full sample code](https://github.com/testcontainers/testcontainers-java/tree/main/modules/gcloud/src/test/java/org/testcontainers/containers/SpannerEmulatorContainerTest.java)
  * [With Spring Boot](https://github.com/saturnism/testcontainers-gcloud-examples/tree/main/springboot/spanner-example/src/test/java/com/example/springboot/spanner/SpannerIntegrationTests.java)
 
 ### Pub/Sub 
@@ -93,7 +114,7 @@ Start Pub/Sub Emulator during a test:
 [Starting a Pub/Sub Emulator container](../../modules/gcloud/src/test/java/org/testcontainers/containers/PubSubEmulatorContainerTest.java) inside_block:emulatorContainer
 <!--/codeinclude-->
 
-Create a test Pub/Sub topic the Emulator:
+Create a test Pub/Sub topic in the Emulator:
 
 <!--codeinclude-->
 [Create a test topic](../../modules/gcloud/src/test/java/org/testcontainers/containers/PubSubEmulatorContainerTest.java) inside_block:createTopic
@@ -113,22 +134,23 @@ And test against the Emulator:
 
 See more examples:
 
- * [Full sample code](https://github.com/testcontainers/testcontainers-java/tree/master/modules/gcloud/src/test/java/org/testcontainers/containers/PubSubEmulatorContainerTest.java)
+ * [Full sample code](https://github.com/testcontainers/testcontainers-java/tree/main/modules/gcloud/src/test/java/org/testcontainers/containers/PubSubEmulatorContainerTest.java)
  * [With Spring Boot](https://github.com/saturnism/testcontainers-gcloud-examples/tree/main/springboot/pubsub-example/src/test/java/com/example/springboot/pubsub/PubSubIntegrationTests.java)
 
 ## Adding this module to your project dependencies
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
-```groovy tab='Gradle'
-testCompile "org.testcontainers:gcloud:{{latest_version}}"
-```
-
-```xml tab='Maven'
-<dependency>
-    <groupId>org.testcontainers</groupId>
-    <artifactId>gcloud</artifactId>
-    <version>{{latest_version}}</version>
-    <scope>test</scope>
-</dependency>
-```
+=== "Gradle"
+    ```groovy
+    testImplementation "org.testcontainers:gcloud:{{latest_version}}"
+    ```
+=== "Maven"
+    ```xml
+    <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>gcloud</artifactId>
+        <version>{{latest_version}}</version>
+        <scope>test</scope>
+    </dependency>
+    ```

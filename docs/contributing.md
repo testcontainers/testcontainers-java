@@ -1,13 +1,14 @@
 # Contributing
 
 * Star the project on [Github](https://github.com/testcontainers/testcontainers-java) and help spread the word :)
-* Join our [Slack group](http://slack.testcontainers.org)
-* [Post an issue](https://github.com/testcontainers/testcontainers-java/issues) if you find any bugs
+* Join our [Slack workspace](http://slack.testcontainers.org)
+* [Start a discussion](https://github.com/testcontainers/testcontainers-java/discussions) if you have an idea, find a possible bug or have a general question.
 * Contribute improvements or fixes using a [Pull Request](https://github.com/testcontainers/testcontainers-java/pulls). If you're going to contribute, thank you! Please just be sure to:
-    * discuss with the authors on an issue ticket prior to doing anything big.
+    * discuss with the authors prior to doing anything big.
     * follow the style, naming and structure conventions of the rest of the project.
     * make commits atomic and easy to merge.
     * when updating documentation, please see [our guidance for documentation contributions](contributing_docs.md).
+    * apply format running `./gradlew spotlessApply`
     * verify all tests are passing. Build the project with `./gradlew check` to do this.
     **N.B.** Gradle's Build Cache is enabled by default, but you can add `--no-build-cache` flag to disable it.
 
@@ -35,7 +36,7 @@ If the answers to the above are all yes, then a new module may be a good approac
 Otherwise, it is entirely possible for you to:
 
 * publish a code snippet
-* contribute an [example](../examples/README.md) to the Testcontainers repo
+* contribute an example to the Testcontainers repo
 * publish your own third party library
 
 In any case, please contact us to help validate your proposal!
@@ -55,18 +56,17 @@ Every item on this list will require judgement by the Testcontainers core mainta
 
 #### Module dependencies
 
-- [ ] The module should use as few dependencies as possible, 
+- [ ] The module should use as few dependencies as possible,
 - [ ] Regarding libraries, either:
-    - they should be `compileOnly` if they are likely to already be on the classpath for users' tests (e.g. client libraries or drivers) 
+    - they should be `compileOnly` if they are likely to already be on the classpath for users' tests (e.g. client libraries or drivers)
     - they can be `implementation` (and thus transitive dependencies) if they are very unlikely to conflict with users' dependencies.
 - [ ] If client libraries are used to test or use the module, these MUST be legal for Testcontainers developers and Testcontainers users to download and use.
 
 #### API (e.g. `MyModuleContainer` class)
 
 - [ ] Favour doing the right thing, and least surprising thing, by default
-- [ ] Ensure that method and parameter names are easy to understand. Many users will ignore documentation, so IDE-based substitutes (autocompletion and Javadocs) should be intuitive. 
+- [ ] Ensure that method and parameter names are easy to understand. Many users will ignore documentation, so IDE-based substitutes (autocompletion and Javadocs) should be intuitive.
 - [ ] The module's public API should only handle standard JDK data types and MUST not expose data types that come from `compileOnly` dependencies. This is to reduce the risk of compatibility problems with future versions of third party libraries.
- 
 #### Documentation
 
 - [ ] Every module MUST have a dedicated documentation page containing:
@@ -90,3 +90,17 @@ New modules should have the following warning at the top of their documentation 
     This module is INCUBATING. While it is ready for use and operational in the current version of Testcontainers, it is possible that it may receive breaking changes in the future. See [our contributing guidelines](/contributing/#incubating-modules) for more information on our incubating modules policy.
 
 We will evaluate incubating modules periodically, and remove the label when appropriate.
+
+
+## Combining Dependabot PRs
+
+Since we generally get a lot of Dependabot PRs, we regularly combine them into single commits.
+For this, we are using the [gh-combine-prs](https://github.com/rnorth/gh-combine-prs) extension for [GitHub CLI](https://cli.github.com/).
+
+The whole process is as follow:
+
+1. Check that all open Dependabot PRs did succeed their build. If they did not succeed, trigger a rerun if the cause were external factors or else document the reason if obvious.
+2. Run the extension from an up-to-date local `main` branch: `gh combine-prs --query "author:app/dependabot"`
+3. Merge conflicts might appear. Just ignore them, we will get those PRs in a future run.
+4. Once the build of the combined PR did succeed, temporarily enable merge commits and merge the PR using a merge commit through the GitHub UI.
+5. After the merge, disable merge commits again.

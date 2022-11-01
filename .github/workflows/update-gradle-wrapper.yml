@@ -4,17 +4,23 @@ on:
   schedule:
     - cron: "0 0 * * *"
 
+permissions:
+  contents: read
+
 jobs:
   update-gradle-wrapper:
+    permissions:
+      pull-requests: write # for gradle-update/update-gradle-wrapper-action
+    if: github.repository == 'testcontainers/testcontainers-java'
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Update Gradle Wrapper
-        uses: gradle-update/update-gradle-wrapper-action@74a035ce333f39c84811ce1167669bfa6c65f440
+        uses: gradle-update/update-gradle-wrapper-action@981c551b17dbcf1940b1b4435afdb79babb7c13a # v1.0.13
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           labels: dependencies
 
-      - uses: gradle/wrapper-validation-action@e2c57acffb2c9aa5a8dc6eda2bbae0b6e495bd4c
+      - uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b # v1.0.3

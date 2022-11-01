@@ -1,9 +1,9 @@
 description = "Testcontainers :: Pulsar"
 
 dependencies {
-    compile project(':testcontainers')
+    api project(':testcontainers')
 
-    testCompile group: 'org.apache.pulsar', name: 'pulsar-client', version: '2.7.0'
-    testCompile group: 'org.assertj', name: 'assertj-core', version: '3.18.1'
-    testCompile group: 'org.apache.pulsar', name: 'pulsar-client-admin', version: '2.7.0'
+    testImplementation group: 'org.apache.pulsar', name: 'pulsar-client', version: '2.10.1'
+    testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.23.1'
+    testImplementation group: 'org.apache.pulsar', name: 'pulsar-client-admin', version: '2.10.1'
 }

@@ -5,24 +5,31 @@ plugins {
 description = "Testcontainers :: Spock-Extension"
 
 dependencies {
-    compile project(':testcontainers')
-    compile 'org.spockframework:spock-core:1.3-groovy-2.5'
+    api project(':testcontainers')
+    api 'org.spockframework:spock-core:2.1-groovy-3.0'
 
-    testCompile project(':selenium')
-    testCompile project(':mysql')
-    testCompile project(':postgresql')
+    testImplementation project(':selenium')
+    testImplementation project(':mysql')
+    testImplementation project(':postgresql')
 
-    testCompile 'com.zaxxer:HikariCP:3.4.5'
-    testCompile 'org.apache.httpcomponents:httpclient:4.5.13'
+    testImplementation 'com.zaxxer:HikariCP:4.0.3'
+    testImplementation 'org.apache.httpcomponents:httpclient:4.5.13'
 
-    testRuntime 'org.postgresql:postgresql:42.2.18'
-    testRuntime 'mysql:mysql-connector-java:8.0.22'
+    testRuntimeOnly 'org.postgresql:postgresql:42.5.0'
+    testRuntimeOnly 'mysql:mysql-connector-java:8.0.30'
 
-    testCompileClasspath 'org.jetbrains:annotations:20.1.0'
+    testCompileOnly 'org.jetbrains:annotations:23.0.0'
 }
 
 sourceJar {
     /* allJava is default (see gradle/publishing.gradle:sourceJar)
        allSource contains both .java and .groovy files */
     from sourceSets.main.allSource
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
 }

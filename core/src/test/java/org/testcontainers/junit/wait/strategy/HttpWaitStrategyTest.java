@@ -3,11 +3,15 @@ package org.testcontainers.junit.wait.strategy;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 import org.rnorth.ducttape.RetryCountExceededException;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Tests for {@link HttpWaitStrategy}.
@@ -15,6 +19,7 @@ import java.util.function.Predicate;
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrategy> {
+
     /**
      * newline sequence indicating end of the HTTP header.
      */
@@ -31,15 +36,59 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
     }
 
     /**
+     * Ensures that HTTP requests made with the HttpWaitStrategy can be enriched with user defined headers,
+     * although the test web server does not depend on the header to response with a 200, by checking the
+     * logs we can ensure the HTTP request was correctly sent.
+     */
+    @Test
+    public void testWaitUntilReadyWithSuccessWithCustomHeaders() {
+        HashMap<String, String> headers = new HashMap<>();
+        headers.put("baz", "boo");
+        try (
+            GenericContainer<?> container = startContainerWithCommand(
+                createShellCommand("200 OK", GOOD_RESPONSE_BODY),
+                createHttpWaitStrategy(ready).withHeader("foo", "bar").withHeaders(headers)
+            )
+        ) {
+            waitUntilReadyAndSucceed(container);
+
+            String logs = container.getLogs();
+
+            assertThat(logs).contains("foo: bar");
+            assertThat(logs).contains("baz: boo");
+        }
+    }
+
+    /**
+     * Ensures that HTTPS requests made with the HttpWaitStrategy can skip the
+     * certificate validation chains (to support self-signed certificates for example).
+     */
+    @Test
+    public void testWaitUntilReadyWithTlsAndAllowUnsecure() {
+        try (
+            GenericContainer<?> container = startContainerWithCommand(
+                createHttpsShellCommand("200 OK", GOOD_RESPONSE_BODY, 8080),
+                createHttpWaitStrategy(ready).usingTls().allowInsecure()
+            )
+        ) {
+            waitUntilReadyAndSucceed(container);
+        }
+    }
+
+    /**
      * Expects that the WaitStrategy returns successfully after receiving an HTTP 401 response from the container.
      * This 401 response is checked with a lambda using {@link HttpWaitStrategy#forStatusCodeMatching(Predicate)}
      */
     @Test
     public void testWaitUntilReadyWithUnauthorizedWithLambda() {
-        waitUntilReadyAndSucceed(startContainerWithCommand(createShellCommand("401 UNAUTHORIZED", GOOD_RESPONSE_BODY),
-            createHttpWaitStrategy(ready)
-                .forStatusCodeMatching(it -> it >= 200 && it < 300 || it == 401)
-        ));
+        try (
+            GenericContainer<?> container = startContainerWithCommand(
+                createShellCommand("401 UNAUTHORIZED", GOOD_RESPONSE_BODY),
+                createHttpWaitStrategy(ready).forStatusCodeMatching(it -> it >= 200 && it < 300 || it == 401)
+            )
+        ) {
+            waitUntilReadyAndSucceed(container);
+        }
     }
 
     /**
@@ -48,12 +97,14 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
      */
     @Test
     public void testWaitUntilReadyWithManyStatusCodes() {
-        waitUntilReadyAndSucceed(startContainerWithCommand(createShellCommand("401 UNAUTHORIZED", GOOD_RESPONSE_BODY),
-            createHttpWaitStrategy(ready)
-                .forStatusCode(300)
-                .forStatusCode(401)
-                .forStatusCode(500)
-        ));
+        try (
+            GenericContainer<?> container = startContainerWithCommand(
+                createShellCommand("401 UNAUTHORIZED", GOOD_RESPONSE_BODY),
+                createHttpWaitStrategy(ready).forStatusCode(300).forStatusCode(401).forStatusCode(500)
+            )
+        ) {
+            waitUntilReadyAndSucceed(container);
+        }
     }
 
     /**
@@ -63,12 +114,17 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
      */
     @Test
     public void testWaitUntilReadyWithManyStatusCodesAndLambda() {
-        waitUntilReadyAndSucceed(startContainerWithCommand(createShellCommand("401 UNAUTHORIZED", GOOD_RESPONSE_BODY),
-            createHttpWaitStrategy(ready)
-                .forStatusCode(300)
-                .forStatusCode(500)
-                .forStatusCodeMatching(it -> it == 401)
-        ));
+        try (
+            GenericContainer<?> container = startContainerWithCommand(
+                createShellCommand("401 UNAUTHORIZED", GOOD_RESPONSE_BODY),
+                createHttpWaitStrategy(ready)
+                    .forStatusCode(300)
+                    .forStatusCode(500)
+                    .forStatusCodeMatching(it -> it == 401)
+            )
+        ) {
+            waitUntilReadyAndSucceed(container);
+        }
     }
 
     /**
@@ -78,11 +134,14 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
      */
     @Test
     public void testWaitUntilReadyWithTimeoutAndWithManyStatusCodesAndLambda() {
-        waitUntilReadyAndTimeout(startContainerWithCommand(createShellCommand("401 UNAUTHORIZED", GOOD_RESPONSE_BODY),
-            createHttpWaitStrategy(ready)
-                .forStatusCode(300)
-                .forStatusCodeMatching(it -> it == 500)
-        ));
+        try (
+            GenericContainer<?> container = startContainerWithCommand(
+                createShellCommand("401 UNAUTHORIZED", GOOD_RESPONSE_BODY),
+                createHttpWaitStrategy(ready).forStatusCode(300).forStatusCodeMatching(it -> it == 500)
+            )
+        ) {
+            waitUntilReadyAndTimeout(container);
+        }
     }
 
     /**
@@ -94,10 +153,14 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
      */
     @Test
     public void testWaitUntilReadyWithTimeoutAndWithLambdaShouldNotMatchOk() {
-        waitUntilReadyAndTimeout(startContainerWithCommand(createShellCommand("200 OK", GOOD_RESPONSE_BODY),
-            createHttpWaitStrategy(ready)
-                .forStatusCodeMatching(it -> it >= 300)
-        ));
+        try (
+            GenericContainer<?> container = startContainerWithCommand(
+                createShellCommand("200 OK", GOOD_RESPONSE_BODY),
+                createHttpWaitStrategy(ready).forStatusCodeMatching(it -> it >= 300)
+            )
+        ) {
+            waitUntilReadyAndTimeout(container);
+        }
     }
 
     /**
@@ -118,27 +181,35 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
         waitUntilReadyAndTimeout(createShellCommand("200 OK", "Bad Response"));
     }
 
-
     /**
      * Expects the WaitStrategy probing the right port.
      */
     @Test
     public void testWaitUntilReadyWithSpecificPort() {
-        waitUntilReadyAndSucceed(startContainerWithCommand(
-            createShellCommand("200 OK", GOOD_RESPONSE_BODY, 9090),
-            createHttpWaitStrategy(ready)
-                .forPort(9090),
-            7070, 8080, 9090
-        ));
+        try (
+            GenericContainer<?> container = startContainerWithCommand(
+                createShellCommand("200 OK", GOOD_RESPONSE_BODY, 9090),
+                createHttpWaitStrategy(ready).forPort(9090),
+                7070,
+                8080,
+                9090
+            )
+        ) {
+            waitUntilReadyAndSucceed(container);
+        }
     }
 
     @Test
     public void testWaitUntilReadyWithTimoutCausedByReadTimeout() {
-        waitUntilReadyAndTimeout(
-            startContainerWithCommand(createShellCommand("0 Connection Refused", GOOD_RESPONSE_BODY, 9090),
+        try (
+            GenericContainer<?> container = startContainerWithCommand(
+                createShellCommand("0 Connection Refused", GOOD_RESPONSE_BODY, 9090),
                 createHttpWaitStrategy(ready).forPort(9090).withReadTimeout(Duration.ofMillis(1)),
                 9090
-            ));
+            )
+        ) {
+            waitUntilReadyAndTimeout(container);
+        }
     }
 
     /**
@@ -147,8 +218,7 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
      */
     @NotNull
     protected HttpWaitStrategy buildWaitStrategy(final AtomicBoolean ready) {
-        return createHttpWaitStrategy(ready)
-            .forResponsePredicate(s -> s.equals(GOOD_RESPONSE_BODY));
+        return createHttpWaitStrategy(ready).forResponsePredicate(s -> s.equals(GOOD_RESPONSE_BODY));
     }
 
     /**
@@ -174,9 +244,41 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
 
     private String createShellCommand(String header, String responseBody, int port) {
         int length = responseBody.getBytes().length;
-        return "while true; do { echo -e \"HTTP/1.1 " + header + NEWLINE +
-            "Content-Type: text/html" + NEWLINE +
-            "Content-Length: " + length + NEWLINE + "\";"
-            + " echo \"" + responseBody + "\";} | nc -lp " + port + "; done";
+        return (
+            "while true; do { echo -e \"HTTP/1.1 " +
+            header +
+            NEWLINE +
+            "Content-Type: text/html" +
+            NEWLINE +
+            "Content-Length: " +
+            length +
+            NEWLINE +
+            "\";" +
+            " echo \"" +
+            responseBody +
+            "\";} | nc -lp " +
+            port +
+            "; done"
+        );
+    }
+
+    private String createHttpsShellCommand(String header, String responseBody, int port) {
+        int length = responseBody.getBytes().length;
+        return (
+            "apk add nmap-ncat; while true; do { echo -e \"HTTP/1.1 " +
+            header +
+            NEWLINE +
+            "Content-Type: text/html" +
+            NEWLINE +
+            "Content-Length: " +
+            length +
+            NEWLINE +
+            "\";" +
+            " echo \"" +
+            responseBody +
+            "\";} | ncat -lp " +
+            port +
+            " --ssl; done"
+        );
     }
 }

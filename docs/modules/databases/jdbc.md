@@ -20,7 +20,7 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 
 !!! note
     We will use `///` (host-less URIs) from now on to emphasis the unimportance of the `host:port` pair.  
-    From Testcontainers' perspective, `jdbc:mysql:5.7.22://localhost:3306/databasename` and `jdbc:mysql:5.7.22:///databasename` is the same URI.
+    From Testcontainers' perspective, `jdbc:mysql:5.7.34://localhost:3306/databasename` and `jdbc:mysql:5.7.34:///databasename` is the same URI.
 
 !!! warning
     If you're using the JDBC URL support, there is no need to instantiate an instance of the container - Testcontainers will do it automagically.
@@ -29,7 +29,7 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 
 #### Using Testcontainers with a fixed version
 
-`jdbc:tc:mysql:5.6.23:///databasename`
+`jdbc:tc:mysql:5.7.34:///databasename`
 
 #### Using PostgreSQL
 
@@ -37,17 +37,29 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 
 #### Using PostGIS
 
-`jdbc:tc:postgis:9.6:///databasename`
+`jdbc:tc:postgis:9.6-2.5:///databasename`
 
-#### Using Presto
+#### Using TimescaleDB
 
-`jdbc:tc:presto:344://localhost/memory/default`
+`jdbc:tc:timescaledb:2.1.0-pg13:///databasename`
+
+#### Using Trino
+
+`jdbc:tc:trino:352://localhost/memory/default`
+
+#### Using CockroachDB
+
+`jdbc:tc:cockroach:v21.2.3:///databasename`
+
+#### Using TiDB
+
+`jdbc:tc:tidb:v6.1.0:///databasename`
 
 ### Using a classpath init script
 
 Testcontainers can run an init script after the database container is started, but before your code is given a connection to it. The script must be on the classpath, and is referenced as follows:
 
-`jdbc:tc:mysql:5.7.22:///databasename?TC_INITSCRIPT=somepath/init_mysql.sql`
+`jdbc:tc:mysql:5.7.34:///databasename?TC_INITSCRIPT=somepath/init_mysql.sql`
 
 This is useful if you have a fixed script for setting up database schema, etc.
 
@@ -55,13 +67,13 @@ This is useful if you have a fixed script for setting up database schema, etc.
 
 If the init script path is prefixed `file:`, it will be loaded from a file (relative to the working directory, which will usually be the project root).
 
-`jdbc:tc:mysql:5.7.22:///databasename?TC_INITSCRIPT=file:src/main/resources/init_mysql.sql`
+`jdbc:tc:mysql:5.7.34:///databasename?TC_INITSCRIPT=file:src/main/resources/init_mysql.sql`
 
 ### Using an init function
 
 Instead of running a fixed script for DB setup, it may be useful to call a Java function that you define. This is intended to allow you to trigger database schema migration tools. To do this, add TC_INITFUNCTION to the URL as follows, passing a full path to the class name and method:
 
- `jdbc:tc:mysql:5.7.22:///databasename?TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction`
+ `jdbc:tc:mysql:5.7.34:///databasename?TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction`
 
 The init function must be a public static method which takes a `java.sql.Connection` as its only parameter, e.g.
 ```java
@@ -76,7 +88,7 @@ public class JDBCDriverTest {
 
 By default database container is being stopped as soon as last connection is closed. There are cases when you might need to start container and keep it running till you stop it explicitly or JVM is shutdown. To do this, add `TC_DAEMON` parameter to the URL as follows:
 
- `jdbc:tc:mysql:5.7.22:///databasename?TC_DAEMON=true`
+ `jdbc:tc:mysql:5.7.34:///databasename?TC_DAEMON=true`
 
 With this parameter database container will keep running even when there're no open connections.
 
@@ -115,5 +127,5 @@ Note that if you use `@Rule`, you will be given an isolated container for each t
 
 Examples/Tests:
 
- * [MySQL](https://github.com/testcontainers/testcontainers-java/blob/master/modules/mysql/src/test/java/org/testcontainers/junit/mysql/SimpleMySQLTest.java)
- * [PostgreSQL](https://github.com/testcontainers/testcontainers-java/blob/master/modules/postgresql/src/test/java/org/testcontainers/junit/postgresql/SimplePostgreSQLTest.java)
+ * [MySQL](https://github.com/testcontainers/testcontainers-java/blob/main/modules/mysql/src/test/java/org/testcontainers/junit/mysql/SimpleMySQLTest.java)
+ * [PostgreSQL](https://github.com/testcontainers/testcontainers-java/blob/main/modules/postgresql/src/test/java/org/testcontainers/junit/postgresql/SimplePostgreSQLTest.java)

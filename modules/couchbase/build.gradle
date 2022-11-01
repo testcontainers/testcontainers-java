@@ -1,7 +1,11 @@
 description = "Testcontainers :: Couchbase"
 
 dependencies {
-    compile project(':testcontainers')
+    api project(':testcontainers')
+    // TODO use JDK's HTTP client and/or Apache HttpClient5
+    shaded 'com.squareup.okhttp3:okhttp:4.10.0'
 
-    testCompile 'com.couchbase.client:java-client:2.7.15'
+    testImplementation 'com.couchbase.client:java-client:3.3.4'
+    testImplementation 'org.awaitility:awaitility:4.2.0'
+    testImplementation 'org.assertj:assertj-core:3.23.1'
 }

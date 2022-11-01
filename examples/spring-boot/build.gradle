@@ -1,11 +1,11 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '2.4.1'
+    id 'org.springframework.boot' version '2.7.4'
 }
 apply plugin: 'io.spring.dependency-management'
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 dependencies {

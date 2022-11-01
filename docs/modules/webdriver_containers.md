@@ -5,7 +5,7 @@ from SeleniumHQ's [docker-selenium](https://github.com/SeleniumHQ/docker-seleniu
 
 ## Benefits
 
-* Fully compatible with Selenium 2/Webdriver tests, by providing a `RemoteWebDriver` instance
+* Fully compatible with Selenium 3 & 4 tests, by providing a `RemoteWebDriver` instance
 * No need to have specific web browsers, or even a desktop environment, installed on test servers. The only dependency
   is a working Docker installation and your Java JUnit test suite.
 * Browsers are always launched from a fixed, clean image. This means no configuration drift from user changes or
@@ -36,8 +36,7 @@ test methods:
 You can then use this driver instance like a regular WebDriver.
 
 Note that, if you want to test a **web application running on the host machine** (the machine the JUnit tests are
-running on - which is quite likely), you'll need to replace any references to `localhost` with an IP address that the
-Docker container can reach. Use the `getTestHostIpAddress()` method, e.g.:
+running on - which is quite likely), you'll need to use [the host exposing](../features/networking.md#exposing-host-ports-to-the-container) feature of Testcontainers, e.g.:
 <!--codeinclude-->
 [Open Web Page](../../modules/selenium/src/test/java/org/testcontainers/junit/LocalServerWebDriverContainerTest.java) inside_block:getPage
 <!--/codeinclude-->
@@ -63,7 +62,14 @@ just for failing tests.
 [Record failing Tests](../../modules/selenium/src/test/java/org/testcontainers/junit/ChromeRecordingWebDriverContainerTest.java) inside_block:recordFailing
 <!--/codeinclude-->
 
-Note that the seconds parameter to `withRecordingMode` should be a directory where recordings can be saved.
+Note that the second parameter of `withRecordingMode` should be a directory where recordings can be saved.
+
+By default, the video will be recorded in [FLV](https://en.wikipedia.org/wiki/Flash_Video) format, but you can specify it explicitly or change it to [MP4](https://en.wikipedia.org/wiki/MPEG-4_Part_14) using `withRecordingMode` method with `VncRecordingFormat` option:
+
+<!--codeinclude-->
+[Video Format in MP4](../../modules/selenium/src/test/java/org/testcontainers/junit/ChromeRecordingWebDriverContainerTest.java) inside_block:recordMp4
+[Video Format in FLV](../../modules/selenium/src/test/java/org/testcontainers/junit/ChromeRecordingWebDriverContainerTest.java) inside_block:recordFlv
+<!--/codeinclude-->
 
 If you would like to customise the file name of the recording, or provide a different directory at runtime based on the description of the test and/or its success or failure, you may provide a custom recording file factory as follows:
 <!--codeinclude-->
@@ -75,38 +81,41 @@ Note the factory must implement `org.testcontainers.containers.RecordingFileFact
 
 ## More examples
 
-A few different examples are shown in [ChromeWebDriverContainerTest.java](https://github.com/testcontainers/testcontainers-java/blob/master/modules/selenium/src/test/java/org/testcontainers/junit/ChromeWebDriverContainerTest.java).
+A few different examples are shown in [ChromeWebDriverContainerTest.java](https://github.com/testcontainers/testcontainers-java/blob/main/modules/selenium/src/test/java/org/testcontainers/junit/ChromeWebDriverContainerTest.java).
 
 ## Adding this module to your project dependencies
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
-```groovy tab='Gradle'
-testCompile "org.testcontainers:selenium:{{latest_version}}"
-```
-
-```xml tab='Maven'
-<dependency>
-    <groupId>org.testcontainers</groupId>
-    <artifactId>selenium</artifactId>
-    <version>{{latest_version}}</version>
-    <scope>test</scope>
-</dependency>
-```
+=== "Gradle"
+    ```groovy
+    testImplementation "org.testcontainers:selenium:{{latest_version}}"
+    ```
+=== "Maven"
+    ```xml
+    <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>selenium</artifactId>
+        <version>{{latest_version}}</version>
+        <scope>test</scope>
+    </dependency>
+    ```
 
 !!! hint
     Adding this Testcontainers library JAR will not automatically add a Selenium Webdriver JAR to your project. You should ensure that your project also has suitable Selenium dependencies in place, for example:
 
-    ```groovy tab='Gradle'
-    compile "org.seleniumhq.selenium:selenium-remote-driver:3.141.59"
-    ```
+    === "Gradle"
+        ```groovy
+        compile "org.seleniumhq.selenium:selenium-remote-driver:3.141.59"
+        ```
     
-    ```xml tab='Maven'
-    <dependency>
-        <groupId>org.seleniumhq.selenium</groupId>
-        <artifactId>selenium-remote-driver</artifactId>
-        <version>3.141.59</version>
-    </dependency>
-    ```
+    === "Maven"
+        ```xml
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-remote-driver</artifactId>
+            <version>3.141.59</version>
+        </dependency>
+        ```
     
     Testcontainers will try and match the version of the Dockerized browser to whichever version of Selenium is found on the classpath

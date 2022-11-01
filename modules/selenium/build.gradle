@@ -1,16 +1,16 @@
 description = "Testcontainers :: Selenium"
 
 dependencies {
-    compile project(':testcontainers')
+    api project(':testcontainers')
 
     provided 'org.seleniumhq.selenium:selenium-remote-driver:3.141.59'
     provided 'org.seleniumhq.selenium:selenium-chrome-driver:3.141.59'
-    testCompile 'org.seleniumhq.selenium:selenium-firefox-driver:3.141.59'
-    testCompile 'org.seleniumhq.selenium:selenium-support:3.141.59'
+    testImplementation 'org.seleniumhq.selenium:selenium-firefox-driver:3.141.59'
+    testImplementation 'org.seleniumhq.selenium:selenium-support:3.141.59'
 
-    testCompile 'org.mortbay.jetty:jetty:6.1.26'
-    testCompile project(':nginx')
+    testImplementation 'org.mortbay.jetty:jetty:6.1.26'
+    testImplementation project(':nginx')
+    testImplementation 'org.assertj:assertj-core:3.23.1'
 
-    compileOnly 'org.jetbrains:annotations:20.1.0'
-    testCompileClasspath 'org.jetbrains:annotations:20.0.0'
+    compileOnly 'org.jetbrains:annotations:23.0.0'
 }

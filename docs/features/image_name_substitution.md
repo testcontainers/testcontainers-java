@@ -53,7 +53,7 @@ Consider this if:
 
 * Developers and CI machines need to use different image names. For example, developers are able to pull images from Docker Hub, but CI machines need to pull from a private registry
 * Your private registry has copies of images from Docker Hub where the names are predictable, and just adding a prefix is enough. 
-  For example, `registry.mycompany.com/mirror/mysql:8.0.22` can be derived from the original Docker Hub image name (`mysql:8.0.22`) with a consistent prefix string: `registry.mycompany.com/mirror/`
+  For example, `registry.mycompany.com/mirror/mysql:8.0.24` can be derived from the original Docker Hub image name (`mysql:8.0.24`) with a consistent prefix string: `registry.mycompany.com/mirror/`
 
 In this case, image name references in code are **unchanged**.
 i.e. you would leave as-is:
@@ -112,9 +112,10 @@ To do this, create or modify a file on the classpath named `testcontainers.prope
 
 For example:
 
-```text tab="src/test/resources/testcontainers.properties"
-image.substitutor=com.mycompany.testcontainers.ExampleImageNameSubstitutor
-``` 
+=== "`src/test/resources/testcontainers.properties`"
+    ```text
+    image.substitutor=com.mycompany.testcontainers.ExampleImageNameSubstitutor
+    ``` 
 
 Note that it is also possible to provide this same configuration property:
 
@@ -130,7 +131,7 @@ Please see [the documentation on configuration mechanisms](./configuration.md) f
 !!! note
     This approach is discouraged and deprecated, but is documented for completeness.
     Please consider one of the other approaches outlined in this page instead.
-    Overriding individual image names via configuration may be removed in 2021. 
+    Overriding individual image names via configuration may be removed in the future. 
 
 Consider this if:
 

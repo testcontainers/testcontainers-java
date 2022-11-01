@@ -1,7 +1,8 @@
 description = "TestContainers :: elasticsearch"
 
 dependencies {
-    compile project(':testcontainers')
-    testCompile "org.elasticsearch.client:elasticsearch-rest-client:7.10.1"
-    testCompile "org.elasticsearch.client:transport:7.10.1"
+    api project(':testcontainers')
+    testImplementation "org.elasticsearch.client:elasticsearch-rest-client:8.4.2"
+    testImplementation "org.elasticsearch.client:transport:7.17.6"
+    testImplementation 'org.assertj:assertj-core:3.23.1'
 }

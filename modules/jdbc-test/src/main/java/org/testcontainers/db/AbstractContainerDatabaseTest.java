@@ -4,10 +4,11 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 
-import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+
+import javax.sql.DataSource;
 
 public abstract class AbstractContainerDatabaseTest {
 
@@ -27,7 +28,6 @@ public abstract class AbstractContainerDatabaseTest {
         hikariConfig.setUsername(container.getUsername());
         hikariConfig.setPassword(container.getPassword());
         hikariConfig.setDriverClassName(container.getDriverClassName());
-
         return new HikariDataSource(hikariConfig);
     }
 }

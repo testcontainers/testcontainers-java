@@ -1,9 +1,9 @@
 description = "Testcontainers :: Kafka"
 
 dependencies {
-    compile project(':testcontainers')
+    api project(':testcontainers')
 
-    testCompile 'org.apache.kafka:kafka-clients:2.6.0'
-    testCompile 'org.assertj:assertj-core:3.18.1'
-    testCompile 'com.google.guava:guava:23.0'
+    testImplementation 'org.apache.kafka:kafka-clients:3.3.0'
+    testImplementation 'org.assertj:assertj-core:3.23.1'
+    testImplementation 'com.google.guava:guava:23.0'
 }

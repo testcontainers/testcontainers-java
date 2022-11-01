@@ -21,7 +21,10 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ParsedDockerfile {
 
-    private static final Pattern FROM_LINE_PATTERN = Pattern.compile("FROM (?<arg>--[^\\s]+\\s)*(?<image>[^\\s]+).*", Pattern.CASE_INSENSITIVE);
+    private static final Pattern FROM_LINE_PATTERN = Pattern.compile(
+        "FROM (?<arg>--[^\\s]+\\s)*(?<image>[^\\s]+).*",
+        Pattern.CASE_INSENSITIVE
+    );
 
     private final Path dockerFilePath;
 
@@ -54,11 +57,13 @@ public class ParsedDockerfile {
     }
 
     private void parse(List<String> lines) {
-        dependencyImageNames = lines.stream()
-            .map(FROM_LINE_PATTERN::matcher)
-            .filter(Matcher::matches)
-            .map(matcher -> matcher.group("image"))
-            .collect(Collectors.toSet());
+        dependencyImageNames =
+            lines
+                .stream()
+                .map(FROM_LINE_PATTERN::matcher)
+                .filter(Matcher::matches)
+                .map(matcher -> matcher.group("image"))
+                .collect(Collectors.toSet());
 
         if (!dependencyImageNames.isEmpty()) {
             log.debug("Found dependency images in Dockerfile {}: {}", dockerFilePath, dependencyImageNames);

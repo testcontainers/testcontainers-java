@@ -40,11 +40,7 @@ class ClasspathScanner {
      * context classloader. Results are currently alphabetically sorted.
      */
     static Stream<URL> scanFor(final String name) {
-        return scanFor(
-            name,
-            ClasspathScanner.class.getClassLoader(),
-            Thread.currentThread().getContextClassLoader()
-        );
+        return scanFor(name, ClasspathScanner.class.getClassLoader(), Thread.currentThread().getContextClassLoader());
     }
 
     @Nullable
