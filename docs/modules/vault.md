@@ -7,19 +7,19 @@ Testcontainers module for [Vault](https://github.com/hashicorp/vault). Vault is 
 Start Vault container as a `@ClassRule`:
 
 <!--codeinclude-->
-[Starting a Vault container as a @ClassRule](../../modules/vault/src/test/java/org/testcontainers/vault/VaultContainerTest.java) inside_block:vaultContainer
+[Starting a Vault container](../../modules/vault/src/test/java/org/testcontainers/vault/VaultContainerTest.java) inside_block:vaultContainer
 <!--/codeinclude-->
 
 Use CLI to read data from Vault container:
 
 <!--codeinclude-->
-[Use CLI to read data](../../modules/vault/src/test/java/org/testcontainers/vault/VaultContainerTest.java) inside_block:readWithCli
+[Use CLI to read data](../../modules/vault/src/test/java/org/testcontainers/vault/VaultContainerTest.java) inside_block:readFirstSecretPathWithCli
 <!--/codeinclude-->
 
 Use Http API to read data from Vault container:
 
 <!--codeinclude-->
-[Use Http API to read data](../../modules/vault/src/test/java/org/testcontainers/vault/VaultContainerTest.java) inside_block:readWithHttpApi
+[Use Http API to read data](../../modules/vault/src/test/java/org/testcontainers/vault/VaultContainerTest.java) inside_block:readFirstSecretPathOverHttpApi
 <!--/codeinclude-->
 
 Use client library to read data from Vault container:
