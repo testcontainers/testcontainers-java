@@ -50,7 +50,7 @@ public class ImageFromDockerfile
 
     private final String dockerImageName;
 
-    private boolean deleteOnExit = true;
+    private final boolean deleteOnExit;
 
     private final Map<String, Transferable> transferables = new HashMap<>();
 
@@ -92,6 +92,7 @@ public class ImageFromDockerfile
     protected final String resolve() {
         Logger logger = DockerLoggerFactory.getLogger(dockerImageName);
 
+        //noinspection resource
         DockerClient dockerClient = DockerClientFactory.instance().client();
 
         try {
@@ -103,12 +104,12 @@ public class ImageFromDockerfile
                     if (item.isErrorIndicated()) {
                         logger.error(item.getErrorDetail().getMessage());
                     } else {
-                        logger.debug(StringUtils.chomp(item.getStream(), "\n"));
+                        logger.debug(StringUtils.removeEnd(item.getStream(), "\n"));
                     }
                 }
             };
 
-            // We have to use pipes to avoid high memory consumption since users might want to build really big images
+            // We have to use pipes to avoid high memory consumption since users might want to build huge images
             @Cleanup
             PipedInputStream in = new PipedInputStream();
             @Cleanup
@@ -165,7 +166,7 @@ public class ImageFromDockerfile
     }
 
     protected void configure(BuildImageCmd buildImageCmd) {
-        buildImageCmd.withTag(this.getDockerImageName());
+        buildImageCmd.withTags(Collections.singleton(getDockerImageName()));
         this.dockerFilePath.ifPresent(buildImageCmd::withDockerfilePath);
         this.dockerfile.ifPresent(p -> {
                 buildImageCmd.withDockerfile(p.toFile());
@@ -183,8 +184,6 @@ public class ImageFromDockerfile
     }
 
     private void prePullDependencyImages(Set<String> imagesToPull) {
-        final DockerClient dockerClient = DockerClientFactory.instance().client();
-
         imagesToPull.forEach(imageName -> {
             try {
                 log.info(
