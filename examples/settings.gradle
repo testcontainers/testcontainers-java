@@ -32,6 +32,7 @@ include 'cucumber'
 include 'spring-boot-kotlin-redis'
 include 'immudb'
 include 'zookeeper'
+include 'hazelcast'
 
 ext.isCI = System.getenv("CI") != null
 
