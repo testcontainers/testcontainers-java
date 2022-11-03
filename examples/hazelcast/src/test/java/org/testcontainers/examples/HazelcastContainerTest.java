@@ -3,7 +3,7 @@ package org.testcontainers.examples;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.core.HazelcastInstance;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
@@ -37,8 +37,8 @@ public class HazelcastContainerTest {
 
     private static final String TEST_VALUE = "Hello!";
 
-    @AfterClass
-    public static void cleanUp() {
+    @After
+    public void cleanUp() {
         HazelcastClient.shutdownAll();
     }
 
