@@ -52,6 +52,8 @@ jobs:
         run: docker image prune -af
       - name: Setup Gradle Build Action
         uses: gradle/gradle-build-action@v2
+        with:
+          gradle-home-cache-cleanup: true
       - name: Build and test Examples with Gradle (${{matrix.gradle_args}})
         working-directory: ./examples/
         run: |
