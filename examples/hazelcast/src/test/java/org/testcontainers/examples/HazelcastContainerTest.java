@@ -43,7 +43,7 @@ public class HazelcastContainerTest {
     }
 
     @Test
-    public void singleHazelcastContainer() throws InterruptedException {
+    public void singleHazelcastContainer() {
         try (
             GenericContainer<?> container = new GenericContainer<>(DockerImageName.parse(HZ_IMAGE_NAME))
                 .withExposedPorts(DEFAULT_EXPOSED_PORT)
@@ -60,11 +60,14 @@ public class HazelcastContainerTest {
             BlockingQueue<String> queue = client.getQueue(TEST_QUEUE_NAME);
             queue.put(TEST_VALUE);
             assertThat(queue.take()).isEqualTo(TEST_VALUE);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Interrupted during singleHazelcastContainer test", e);
         }
     }
 
     @Test
-    public void hazelcastCluster() throws InterruptedException {
+    public void hazelcastCluster() {
         Network network = Network.newNetwork();
         try (
             GenericContainer<?> container1 = new GenericContainer<>(DockerImageName.parse(HZ_IMAGE_NAME))
@@ -100,6 +103,9 @@ public class HazelcastContainerTest {
             queue.put(TEST_VALUE);
 
             assertThat(queue.take()).isEqualTo(TEST_VALUE);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Interrupted during hazelcastCluster test", e);
         }
     }
 }
