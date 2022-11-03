@@ -27,7 +27,7 @@ public class HazelcastContainerTest {
 
     private static final int DEFAULT_EXPOSED_PORT = 5701;
 
-    private static final String CLUSTER_STARTUP_LOG_MESSAGE_REGEX = ".*Members \\{size:2.*";
+    private static final String CLUSTER_STARTUP_LOG_MESSAGE_REGEX = ".*Members \\{size:%d.*";
 
     // Test values
     private static final String HOST_PORT_SEPARATOR = ":";
@@ -71,15 +71,16 @@ public class HazelcastContainerTest {
             GenericContainer<?> container1 = new GenericContainer<>(DockerImageName.parse(HZ_IMAGE_NAME))
                 .withExposedPorts(DEFAULT_EXPOSED_PORT)
                 .withEnv(HZ_CLUSTERNAME_ENV_NAME, TEST_CLUSTER_NAME)
-                .waitingFor(Wait.forLogMessage(CLUSTER_STARTUP_LOG_MESSAGE_REGEX, 1))
+                .waitingFor(Wait.forLogMessage(String.format(CLUSTER_STARTUP_LOG_MESSAGE_REGEX, 1), 1))
                 .withNetwork(network);
             GenericContainer<?> container2 = new GenericContainer<>(DockerImageName.parse(HZ_IMAGE_NAME))
                 .withExposedPorts(DEFAULT_EXPOSED_PORT)
                 .withEnv(HZ_CLUSTERNAME_ENV_NAME, TEST_CLUSTER_NAME)
-                .waitingFor(Wait.forLogMessage(CLUSTER_STARTUP_LOG_MESSAGE_REGEX, 1))
+                .waitingFor(Wait.forLogMessage(String.format(CLUSTER_STARTUP_LOG_MESSAGE_REGEX, 2), 1))
                 .withNetwork(network)
         ) {
-            Startables.deepStart(container1, container2).join();
+            container1.start();
+            container2.start();
             assertThat(container1.isRunning()).isTrue();
             assertThat(container2.isRunning()).isTrue();
 
