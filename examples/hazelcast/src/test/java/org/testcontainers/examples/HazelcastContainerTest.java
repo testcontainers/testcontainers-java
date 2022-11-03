@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Examples with Hazelcast using both a single container and a cluster with two containers.
  */
-public class HazelcastContainerTests {
+public class HazelcastContainerTest {
 
     // Hazelcast values
     private static final String HZ_IMAGE_NAME = "hazelcast/hazelcast:5.2.0";
@@ -92,5 +92,4 @@ public class HazelcastContainerTests {
             assertThat(queue.take()).isEqualTo(TEST_VALUE);
         }
     }
-
 }
