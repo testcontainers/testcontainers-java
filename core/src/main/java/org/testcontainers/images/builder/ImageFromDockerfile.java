@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.zip.GZIPOutputStream;
 
 @Slf4j
@@ -185,22 +186,37 @@ public class ImageFromDockerfile
 
     private void prePullDependencyImages(Set<String> imagesToPull) {
         imagesToPull.forEach(imageName -> {
+            String resolvedImageName = applyBuildArgsToImageName(imageName);
             try {
                 log.info(
                     "Pre-emptively checking local images for '{}', referenced via a Dockerfile. If not available, it will be pulled.",
-                    imageName
+                    resolvedImageName
                 );
-                new RemoteDockerImage(DockerImageName.parse(imageName))
+                new RemoteDockerImage(DockerImageName.parse(resolvedImageName))
                     .withImageNameSubstitutor(ImageNameSubstitutor.noop())
                     .get();
             } catch (Exception e) {
                 log.warn(
                     "Unable to pre-fetch an image ({}) depended upon by Dockerfile - image build will continue but may fail. Exception message was: {}",
-                    imageName,
+                    resolvedImageName,
                     e.getMessage()
                 );
             }
         });
+    }
+
+    /**
+     * See {@code filterForEnvironmentVars()} in {@link com.github.dockerjava.core.dockerfile.DockerfileStatement}.
+     */
+    private String applyBuildArgsToImageName(String imageName) {
+        for (Map.Entry<String, String> entry : buildArgs.entrySet()) {
+            String value = Matcher.quoteReplacement(entry.getValue());
+            // handle: $VARIABLE case
+            imageName = imageName.replace("$" + entry.getKey(), value);
+            // handle ${VARIABLE} case
+            imageName = imageName.replace("${" + entry.getKey() + "}", value);
+        }
+        return imageName;
     }
 
     public ImageFromDockerfile withBuildArg(final String key, final String value) {
