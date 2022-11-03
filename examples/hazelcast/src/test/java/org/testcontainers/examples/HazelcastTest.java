@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Examples with Hazelcast using both a single container and a cluster with two containers.
  */
-public class HazelcastContainerTest {
+public class HazelcastTest {
 
     // Hazelcast values
     private static final String HZ_IMAGE_NAME = "hazelcast/hazelcast:5.2.0";
