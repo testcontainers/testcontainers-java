@@ -27,7 +27,7 @@ public class HazelcastContainerTest {
 
     private static final int DEFAULT_EXPOSED_PORT = 5701;
 
-    private static final String CLUSTER_STARTUP_LOG_MESSAGE_REGEX = ".*Members \\{size:2, ver:2\\}.*";
+    private static final String CLUSTER_STARTUP_LOG_MESSAGE_REGEX = ".*Members \\{size:2.*";
 
     // Test values
     private static final String HOST_PORT_SEPARATOR = ":";
@@ -87,9 +87,14 @@ public class HazelcastContainerTest {
             clientConfig
                 .setClusterName(TEST_CLUSTER_NAME)
                 .getNetworkConfig()
-                .addAddress(container1.getHost() + HOST_PORT_SEPARATOR + container1.getFirstMappedPort());
+                // Uncomment the next line to remove the "WARNING: ...Could not connect to member..." message
+                //.setSmartRouting(false)
+                .addAddress(container1.getHost() + HOST_PORT_SEPARATOR + container1.getFirstMappedPort())
+                .addAddress(container2.getHost() + HOST_PORT_SEPARATOR + container2.getFirstMappedPort());
 
             HazelcastInstance client = HazelcastClient.newHazelcastClient(clientConfig);
+
+            assertThat(client.getCluster().getMembers()).hasSize(2);
 
             BlockingQueue<String> queue = client.getQueue(TEST_QUEUE_NAME);
             queue.put(TEST_VALUE);
