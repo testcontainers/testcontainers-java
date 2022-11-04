@@ -28,10 +28,12 @@ public class HazelcastTest {
 
     private static final String HZ_NETWORK_JOIN_AZURE_ENABLED_ENV_NAME = "HZ_NETWORK_JOIN_AZURE_ENABLED";
 
+    private static final String HZ_NETWORK_JOIN_MULTICAST_ENABLED_ENV_NAME = "HZ_NETWORK_JOIN_MULTICAST_ENABLED";
+
     private static final int DEFAULT_EXPOSED_PORT = 5701;
 
     // Test values
-    private static final int STARTUP_TIMEOUT_SECONDS = 240;
+    private static final int STARTUP_TIMEOUT_SECONDS = 120;
 
     private static final Duration STARTUP_TIMEOUT_DURATION = Duration.ofSeconds(STARTUP_TIMEOUT_SECONDS);
 
@@ -46,6 +48,8 @@ public class HazelcastTest {
     private static final String TEST_VALUE = "Hello!";
 
     private static final String FALSE_VALUE = "false";
+
+    private static final String TRUE_VALUE = "true";
 
     @After
     public void cleanUp() {
@@ -84,6 +88,7 @@ public class HazelcastTest {
                 .withExposedPorts(DEFAULT_EXPOSED_PORT)
                 .withEnv(HZ_CLUSTERNAME_ENV_NAME, TEST_CLUSTER_NAME)
                 .withEnv(HZ_NETWORK_JOIN_AZURE_ENABLED_ENV_NAME, FALSE_VALUE)
+                .withEnv(HZ_NETWORK_JOIN_MULTICAST_ENABLED_ENV_NAME, TRUE_VALUE)
                 .waitingFor(Wait.forLogMessage(CLUSTER_STARTUP_LOG_MESSAGE_REGEX, 1))
                 .withStartupTimeout(STARTUP_TIMEOUT_DURATION)
                 .withNetwork(network);
@@ -91,6 +96,7 @@ public class HazelcastTest {
                 .withExposedPorts(DEFAULT_EXPOSED_PORT)
                 .withEnv(HZ_CLUSTERNAME_ENV_NAME, TEST_CLUSTER_NAME)
                 .withEnv(HZ_NETWORK_JOIN_AZURE_ENABLED_ENV_NAME, FALSE_VALUE)
+                .withEnv(HZ_NETWORK_JOIN_MULTICAST_ENABLED_ENV_NAME, TRUE_VALUE)
                 .waitingFor(
                     Wait
                         .forLogMessage(CLUSTER_STARTUP_LOG_MESSAGE_REGEX, 1)
