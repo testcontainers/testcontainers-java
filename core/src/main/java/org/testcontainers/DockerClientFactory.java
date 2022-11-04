@@ -56,6 +56,10 @@ public class DockerClientFactory {
 
     public static final String TESTCONTAINERS_SESSION_ID_LABEL = TESTCONTAINERS_LABEL + ".sessionId";
 
+    public static final String TESTCONTAINERS_LANG_LABEL = TESTCONTAINERS_LABEL + ".lang";
+
+    public static final String TESTCONTAINERS_VERSION_LABEL = TESTCONTAINERS_LABEL + ".version";
+
     public static final String SESSION_ID = UUID.randomUUID().toString();
 
     public static final Map<String, String> DEFAULT_LABELS = ImmutableMap.of(TESTCONTAINERS_LABEL, "true");
