@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.testcontainers.containers.NginxContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 
 import java.io.*;
 import java.net.URL;
@@ -26,7 +27,7 @@ public class SimpleNginxTest {
     // creatingContainer {
     @Rule
     public NginxContainer<?> nginx = new NginxContainer<>(NGINX_IMAGE)
-        .withCustomContent(tmpDirectory)
+        .withCopyFileToContainer(MountableFile.forHostPath(tmpDirectory), "/usr/share/nginx/html")
         .waitingFor(new HttpWaitStrategy());
 
     // }

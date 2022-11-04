@@ -17,13 +17,14 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class RedisBackedCacheTest {
 
-    private static GenericContainer<?> redis = new GenericContainer<>(DockerImageName.parse("redis:3.0.6")).withExposedPorts(6379);
+    private static GenericContainer<?> redis = new GenericContainer<>(DockerImageName.parse("redis:3.0.6"))
+        .withExposedPorts(6379);
 
     private Cache cache;
 
     @BeforeClass
     public static void startContainer() {
-         redis.start();
+        redis.start();
     }
 
     @AfterClass
@@ -44,13 +45,17 @@ public class RedisBackedCacheTest {
         Optional<String> foundObject = cache.get("foo", String.class);
 
         assertThat(foundObject).as("When an object in the cache is retrieved, it can be found").isPresent();
-        assertThat(foundObject).as("When we put a String in to the cache and retrieve it, the value is the same").contains("FOO");
+        assertThat(foundObject)
+            .as("When we put a String in to the cache and retrieve it, the value is the same")
+            .contains("FOO");
     }
 
     @Test
     public void testNotFindingAValueThatWasNotInserted() {
         Optional<String> foundObject = cache.get("bar", String.class);
 
-        assertThat(foundObject).as("When an object that's not in the cache is retrieved, nothing is found").isNotPresent();
+        assertThat(foundObject)
+            .as("When an object that's not in the cache is retrieved, nothing is found")
+            .isNotPresent();
     }
 }

@@ -16,7 +16,7 @@ dependencies {
     testImplementation 'org.apache.httpcomponents:httpclient:4.5.13'
 
     testRuntimeOnly 'org.postgresql:postgresql:42.5.0'
-    testRuntimeOnly 'mysql:mysql-connector-java:8.0.30'
+    testRuntimeOnly 'mysql:mysql-connector-java:8.0.31'
 
     testCompileOnly 'org.jetbrains:annotations:23.0.0'
 }

@@ -2,6 +2,7 @@
 
 Examples of different use cases provided by Testcontainers can be found below:
 
+- [Hazelcast](https://github.com/testcontainers/testcontainers-java/tree/main/examples/hazelcast)
 - [Kafka Cluster with multiple brokers](https://github.com/testcontainers/testcontainers-java/tree/main/examples/kafka-cluster)
 - [Linked containers](https://github.com/testcontainers/testcontainers-java/tree/main/examples/linked-container)
 - [Neo4j](https://github.com/testcontainers/testcontainers-java/tree/main/examples/neo4j-container)
@@ -14,3 +15,4 @@ Examples of different use cases provided by Testcontainers can be found below:
 - [Spring Boot with Kotlin](https://github.com/testcontainers/testcontainers-java/tree/main/examples/spring-boot-kotlin-redis)
 - [TestNG](https://github.com/testcontainers/testcontainers-java/tree/main/examples/redis-backed-cache-testng)
 - [ImmuDb](https://github.com/testcontainers/testcontainers-java/tree/main/examples/immudb)
+- [Zookeeper](https://github.com/testcontainers/testcontainers-java/tree/main/examples/zookeeper)

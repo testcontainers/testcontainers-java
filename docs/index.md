@@ -1,11 +1,21 @@
 # Testcontainers
 
 <!-- allow aspect ratio computation to reduce layout shift. CSS enforces max-width: 100% -->
-<img src="logo.png" alt="Testcontainers logo" width="1024" height="512"/> 
+<img src="logo.png" alt="Testcontainers logo" width="1024" height="512"/>
 
-## About
+<p align=center><strong>Not using Java? Here are other supported languages!</strong></p>
+<div class="card-grid">
+    <a class="card-grid-item"><img src="language-logos/java.svg"/>Java</a>
+    <a href="https://golang.testcontainers.org/" class="card-grid-item"><img src="language-logos/go.svg"/>Go</a>
+    <a href="https://dotnet.testcontainers.org/" class="card-grid-item"><img src="language-logos/dotnet.svg"/>.NET</a>
+    <a href="https://testcontainers-python.readthedocs.io/en/latest/" class="card-grid-item"><img src="language-logos/python.svg"/>Python</a>
+    <a href="https://github.com/testcontainers/testcontainers-node" class="card-grid-item"><img src="language-logos/nodejs.svg"/>Node.js</a>
+    <a href="https://docs.rs/testcontainers/latest/testcontainers/" class="card-grid-item"><img src="language-logos/rust.svg"/>Rust</a>
+</div>
 
-Testcontainers is a Java library that supports JUnit tests, providing lightweight, throwaway instances of common databases, Selenium web browsers, or anything else that can run in a Docker container.
+## About Testcontainers for Java
+
+*Testcontainers for Java* is a Java library that supports JUnit tests, providing lightweight, throwaway instances of common databases, Selenium web browsers, or anything else that can run in a Docker container.
 
 Testcontainers make the following kinds of tests easier:
 
