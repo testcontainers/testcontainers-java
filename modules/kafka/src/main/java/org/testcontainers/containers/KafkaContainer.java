@@ -51,7 +51,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         withCreateContainerCmdModifier(cmd -> {
             cmd.withEntrypoint("sh");
         });
-//        waitingFor(Wait.forLogMessage(".*Started Kafka API server.*", 1));
+        waitingFor(Wait.forLogMessage(".*\\[KafkaServer id=\\d+\\] started.*", 1));
         withCommand("-c", "while [ ! -f " + STARTER_SCRIPT + " ]; do sleep 0.1; done; " + STARTER_SCRIPT);
     }
 
@@ -84,10 +84,6 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         withEnv("KAFKA_TRANSACTION_STATE_LOG_MIN_ISR", DEFAULT_INTERNAL_TOPIC_RF);
         withEnv("KAFKA_LOG_FLUSH_INTERVAL_MESSAGES", Long.MAX_VALUE + "");
         withEnv("KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS", "0");
-        withEnv(
-            "KAFKA_ADVERTISED_LISTENERS",
-            String.format("BROKER://%s:9092", getNetwork() != null ? getNetworkAliases().get(0) : "localhost")
-        );
 
         if (externalZookeeperConnect != null) {
             withEnv("KAFKA_ZOOKEEPER_CONNECT", externalZookeeperConnect);
@@ -102,15 +98,15 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         super.containerIsStarting(containerInfo);
 
         String command = "#!/bin/bash\n";
-        command += "export KAFKA_ADVERTISED_LISTENERS=" + getBootstrapServers() + "," +brokerAdvertisedListener(containerInfo) +"\n";
         command += "echo 'clientPort=" + ZOOKEEPER_PORT + "' > zookeeper.properties\n";
         command += "echo 'dataDir=/var/lib/zookeeper/data' >> zookeeper.properties\n";
         command += "echo 'dataLogDir=/var/lib/zookeeper/log' >> zookeeper.properties\n";
         command += "zookeeper-server-start zookeeper.properties &\n";
 
-        command += "env\n";
+        // exporting KAFKA_ADVERTISED_LISTENERS with the container hostname
+        command += String.format("export KAFKA_ADVERTISED_LISTENERS=%s,%s\n",  getBootstrapServers(), brokerAdvertisedListener(containerInfo));
+
         // Optimization: skip the checks
-//        command += "  sed -i '/dub ensure KAFKA_ADVERTISED_LISTENERS/d' /etc/confluent/docker/configure\n";
         command += "echo '' > /etc/confluent/docker/ensure \n";
         // Run the original command
         command += "/etc/confluent/docker/run \n";
