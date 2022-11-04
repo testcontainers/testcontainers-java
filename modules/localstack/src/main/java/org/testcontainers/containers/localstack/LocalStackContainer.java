@@ -21,6 +21,7 @@ import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -298,7 +299,16 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
     public String getSecretKey() {
         return "secretkey";
     }
-
+    
+    /**
+     * Services enabled in this container
+     *
+     * @return An unmodifiable list of the services enabled in this container
+     */
+    public List<EnabledService> getEnabledServices() {
+        return Collections.unmodifiableList(this.services);
+    }
+    
     /**
      * Provides a default region that is preconfigured to communicate with a given simulated service.
      * The region can be used to construct AWS SDK v2 clients:
