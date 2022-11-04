@@ -23,6 +23,9 @@ jobs:
       - name: Clear existing docker image cache
         run: docker image prune -af
 
+      - name: Setup Gradle Build Action
+        uses: gradle/gradle-build-action@v2
+
       - name: Run Gradle Build
         run: ./gradlew build --scan --no-daemon -i -x test
 
