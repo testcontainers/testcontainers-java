@@ -85,14 +85,17 @@ public class HazelcastTest {
                 .withEnv(HZ_CLUSTERNAME_ENV_NAME, TEST_CLUSTER_NAME)
                 .withEnv(HZ_NETWORK_JOIN_AZURE_ENABLED_ENV_NAME, FALSE_VALUE)
                 .waitingFor(Wait.forLogMessage(CLUSTER_STARTUP_LOG_MESSAGE_REGEX, 1))
-                    .withStartupTimeout(STARTUP_TIMEOUT_DURATION)
+                .withStartupTimeout(STARTUP_TIMEOUT_DURATION)
                 .withNetwork(network);
             GenericContainer<?> container2 = new GenericContainer<>(DockerImageName.parse(HZ_IMAGE_NAME))
                 .withExposedPorts(DEFAULT_EXPOSED_PORT)
                 .withEnv(HZ_CLUSTERNAME_ENV_NAME, TEST_CLUSTER_NAME)
                 .withEnv(HZ_NETWORK_JOIN_AZURE_ENABLED_ENV_NAME, FALSE_VALUE)
-                .waitingFor(Wait.forLogMessage(CLUSTER_STARTUP_LOG_MESSAGE_REGEX, 1)
-                        .withStartupTimeout(STARTUP_TIMEOUT_DURATION))
+                .waitingFor(
+                    Wait
+                        .forLogMessage(CLUSTER_STARTUP_LOG_MESSAGE_REGEX, 1)
+                        .withStartupTimeout(STARTUP_TIMEOUT_DURATION)
+                )
                 .withNetwork(network)
         ) {
             Startables.deepStart(container1, container2).join();
