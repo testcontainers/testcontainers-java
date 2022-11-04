@@ -11,7 +11,6 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.lifecycle.Startables;
 import org.testcontainers.utility.DockerImageName;
 
-import java.time.Duration;
 import java.util.concurrent.BlockingQueue;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,10 +32,6 @@ public class HazelcastTest {
     private static final int DEFAULT_EXPOSED_PORT = 5701;
 
     // Test values
-    private static final int STARTUP_TIMEOUT_SECONDS = 120;
-
-    private static final Duration STARTUP_TIMEOUT_DURATION = Duration.ofSeconds(STARTUP_TIMEOUT_SECONDS);
-
     private static final String CLUSTER_STARTUP_LOG_MESSAGE_REGEX = ".*Members \\{size:2.*";
 
     private static final String HOST_PORT_SEPARATOR = ":";
@@ -87,21 +82,18 @@ public class HazelcastTest {
             GenericContainer<?> container1 = new GenericContainer<>(DockerImageName.parse(HZ_IMAGE_NAME))
                 .withExposedPorts(DEFAULT_EXPOSED_PORT)
                 .withEnv(HZ_CLUSTERNAME_ENV_NAME, TEST_CLUSTER_NAME)
+                // Flags necessary to run on Github Actions which runs on an Azure VM
                 .withEnv(HZ_NETWORK_JOIN_AZURE_ENABLED_ENV_NAME, FALSE_VALUE)
                 .withEnv(HZ_NETWORK_JOIN_MULTICAST_ENABLED_ENV_NAME, TRUE_VALUE)
                 .waitingFor(Wait.forLogMessage(CLUSTER_STARTUP_LOG_MESSAGE_REGEX, 1))
-                .withStartupTimeout(STARTUP_TIMEOUT_DURATION)
                 .withNetwork(network);
             GenericContainer<?> container2 = new GenericContainer<>(DockerImageName.parse(HZ_IMAGE_NAME))
                 .withExposedPorts(DEFAULT_EXPOSED_PORT)
                 .withEnv(HZ_CLUSTERNAME_ENV_NAME, TEST_CLUSTER_NAME)
+                // Flags necessary to run on Github Actions which runs on an Azure VM
                 .withEnv(HZ_NETWORK_JOIN_AZURE_ENABLED_ENV_NAME, FALSE_VALUE)
                 .withEnv(HZ_NETWORK_JOIN_MULTICAST_ENABLED_ENV_NAME, TRUE_VALUE)
-                .waitingFor(
-                    Wait
-                        .forLogMessage(CLUSTER_STARTUP_LOG_MESSAGE_REGEX, 1)
-                        .withStartupTimeout(STARTUP_TIMEOUT_DURATION)
-                )
+                .waitingFor(Wait.forLogMessage(CLUSTER_STARTUP_LOG_MESSAGE_REGEX, 1))
                 .withNetwork(network)
         ) {
             Startables.deepStart(container1, container2).join();
