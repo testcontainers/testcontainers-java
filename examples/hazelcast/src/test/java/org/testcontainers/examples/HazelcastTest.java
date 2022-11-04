@@ -26,11 +26,17 @@ public class HazelcastTest {
 
     private static final String HZ_CLUSTERNAME_ENV_NAME = "HZ_CLUSTERNAME";
 
+    private static final String HZ_NETWORK_JOIN_AZURE_ENABLED_ENV_NAME = "HZ_NETWORK_JOIN_AZURE_ENABLED";
+
     private static final int DEFAULT_EXPOSED_PORT = 5701;
+
+    // Test values
+    private static final int STARTUP_TIMEOUT_SECONDS = 240;
+
+    private static final Duration STARTUP_TIMEOUT_DURATION = Duration.ofSeconds(STARTUP_TIMEOUT_SECONDS);
 
     private static final String CLUSTER_STARTUP_LOG_MESSAGE_REGEX = ".*Members \\{size:2.*";
 
-    // Test values
     private static final String HOST_PORT_SEPARATOR = ":";
 
     private static final String TEST_QUEUE_NAME = "test-queue";
@@ -38,6 +44,8 @@ public class HazelcastTest {
     private static final String TEST_CLUSTER_NAME = "test-cluster";
 
     private static final String TEST_VALUE = "Hello!";
+
+    private static final String FALSE_VALUE = "false";
 
     @After
     public void cleanUp() {
@@ -75,15 +83,16 @@ public class HazelcastTest {
             GenericContainer<?> container1 = new GenericContainer<>(DockerImageName.parse(HZ_IMAGE_NAME))
                 .withExposedPorts(DEFAULT_EXPOSED_PORT)
                 .withEnv(HZ_CLUSTERNAME_ENV_NAME, TEST_CLUSTER_NAME)
+                .withEnv(HZ_NETWORK_JOIN_AZURE_ENABLED_ENV_NAME, FALSE_VALUE)
                 .waitingFor(Wait.forLogMessage(CLUSTER_STARTUP_LOG_MESSAGE_REGEX, 1))
-                .withStartupTimeout(Duration.ofSeconds(240))
+                    .withStartupTimeout(STARTUP_TIMEOUT_DURATION)
                 .withNetwork(network);
             GenericContainer<?> container2 = new GenericContainer<>(DockerImageName.parse(HZ_IMAGE_NAME))
                 .withExposedPorts(DEFAULT_EXPOSED_PORT)
                 .withEnv(HZ_CLUSTERNAME_ENV_NAME, TEST_CLUSTER_NAME)
-                .waitingFor(
-                    Wait.forLogMessage(CLUSTER_STARTUP_LOG_MESSAGE_REGEX, 1).withStartupTimeout(Duration.ofSeconds(240))
-                )
+                .withEnv(HZ_NETWORK_JOIN_AZURE_ENABLED_ENV_NAME, FALSE_VALUE)
+                .waitingFor(Wait.forLogMessage(CLUSTER_STARTUP_LOG_MESSAGE_REGEX, 1)
+                        .withStartupTimeout(STARTUP_TIMEOUT_DURATION))
                 .withNetwork(network)
         ) {
             Startables.deepStart(container1, container2).join();
