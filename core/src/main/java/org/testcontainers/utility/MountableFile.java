@@ -17,6 +17,7 @@ import org.testcontainers.UnstableAPI;
 import org.testcontainers.images.builder.Transferable;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
@@ -352,6 +353,9 @@ public class MountableFile implements Transferable {
                 tarEntryFilename = entryFilename + "/" + relativePathToSourceFile; // entry filename e.g. /xyz/bar/baz => /foo/bar/baz
             }
 
+            if (!sourceFile.exists()) {
+                throw new UncheckedIOException(new FileNotFoundException("File not found: " + sourceFile));
+            }
             final TarArchiveEntry tarEntry = new TarArchiveEntry(sourceFile, tarEntryFilename.replaceAll("^/", ""));
 
             // TarArchiveEntry automatically sets the mode for file/directory, but we can update to ensure that the mode is set exactly (inc executable bits)

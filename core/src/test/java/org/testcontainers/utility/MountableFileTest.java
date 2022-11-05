@@ -10,12 +10,14 @@ import org.junit.Test;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatRuntimeException;
 
 public class MountableFileTest {
 
@@ -85,6 +87,16 @@ public class MountableFileTest {
         assertThat(mountableFile.getResolvedPath())
             .as("The resolved path does not contain an escaped space")
             .doesNotContain(" ");
+    }
+
+    @Test
+    public void forHostPathWithNonexistentFile() throws Exception {
+        final MountableFile mountableFile = MountableFile.forHostPath("does-not-exist.txt");
+
+        assertThatRuntimeException()
+            .isThrownBy(() -> intoTarArchive(taos -> mountableFile.transferTo(taos, "path.txt")))
+            .withRootCauseInstanceOf(FileNotFoundException.class)
+            .withMessageContaining("does-not-exist.txt");
     }
 
     @Test
