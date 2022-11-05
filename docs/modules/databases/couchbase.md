@@ -4,6 +4,8 @@
 
 Testcontainers module for Couchbase. [Couchbase](https://www.couchbase.com/) is a document oriented NoSQL database.
 
+Since: 1.8.0
+
 ## Usage example
 
 Running Couchbase as a stand-in in a test:

@@ -15,6 +15,8 @@ FirestoreEmulatorContainer | [gcr.io/google.com/cloudsdktool/cloud-sdk:emulators
 SpannerEmulatorContainer | [gcr.io/cloud-spanner-emulator/emulator](https://gcr.io/cloud-spanner-emulator/emulator)
 PubSubEmulatorContainer | [gcr.io/google.com/cloudsdktool/cloud-sdk:emulators](https://gcr.io/google.com/cloudsdktool/cloud-sdk)
 
+Since: 1.15.0
+
 ## Usage example
 
 ### Bigtable

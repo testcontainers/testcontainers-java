@@ -4,6 +4,8 @@ This module helps running [Neo4j](https://neo4j.com/download/) using Testcontain
 
 Note that it's based on the [official Docker image](https://hub.docker.com/_/neo4j/) provided by Neo4j, Inc.
 
+Since: 1.10.3
+
 ## Usage example
 
 Declare your Testcontainers as a `@ClassRule` or `@Rule` in a JUnit 4 test or as static or member attribute of a JUnit 5 test annotated with `@Container` as you would with other Testcontainers.

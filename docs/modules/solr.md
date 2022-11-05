@@ -8,6 +8,8 @@ This module helps running [solr](https://lucene.apache.org/solr/) using Testcont
 
 Note that it's based on the [official Docker image](https://hub.docker.com/_/solr/).
 
+Since: 1.14.2
+
 ## Usage example
 
 You can start a solr container instance from any Java application by using:

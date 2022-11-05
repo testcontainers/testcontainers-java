@@ -2,6 +2,8 @@
 
 See [Database containers](./index.md) for documentation and usage that is common to all relational database container types.
 
+Since: 1.12.3
+
 ## Adding this module to your project dependencies
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:

@@ -3,6 +3,8 @@
 Testcontainers can be used to automatically instantiate and manage [Apache Kafka](https://kafka.apache.org) containers.
 More precisely Testcontainers uses the official Docker images for [Confluent OSS Platform](https://hub.docker.com/r/confluentinc/cp-kafka/)
 
+Since: 1.6.0
+
 ## Benefits
 
 * Running a single node Kafka installation with just one line of code

@@ -11,6 +11,8 @@ You can simulate network failures:
 
 Testcontainers Toxiproxy support allows resilience features to be easily verified as part of isolated dev/CI testing. This allows earlier testing of resilience features, and broader sets of failure conditions to be covered.
  
+Since: 1.11.0
+
 ## Usage example
 
 A Toxiproxy container can be placed in between test code and a container, or in between containers.

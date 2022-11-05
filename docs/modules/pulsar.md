@@ -4,6 +4,8 @@ Testcontainers can be used to automatically create [Apache Pulsar](https://pulsa
 
 It's based on the official Apache Pulsar docker image, it is recommended to read the [official guide](https://pulsar.apache.org/docs/next/getting-started-docker/).
 
+Since: 1.8.0
+
 ## Example
 
 Create a `PulsarContainer` to use it in your tests:

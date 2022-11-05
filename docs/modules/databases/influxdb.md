@@ -2,6 +2,8 @@
 
 Testcontainers module for InfluxData [InfluxDB](https://github.com/influxdata/influxdb).
 
+Since: 1.7.3
+
 ## Usage example
 
 Running influxDbContainer as a stand-in for InfluxDB in a test:

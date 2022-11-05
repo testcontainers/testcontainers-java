@@ -5,6 +5,8 @@
 
 See [Database containers](./index.md) for documentation and usage that is common to all relational database container types.
 
+Since: 1.12.0
+
 ## Usage example
 
 Running DB2 as a stand-in for in a test:
