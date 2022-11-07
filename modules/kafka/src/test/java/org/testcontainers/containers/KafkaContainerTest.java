@@ -142,26 +142,33 @@ public class KafkaContainerTest {
 
     @Test
     public void testNotSupportedKraftVersion() {
-        try (KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:6.2.1")).withKraft()) {
-        } catch (IllegalArgumentException e) {
-            assertThat(e.getMessage()).isEqualTo("Provided Confluent Platform's version 6.2.1 is not supported in Kraft mode (must be 7.0.0 or above)");
+        try (
+            KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:6.2.1")).withKraft()
+        ) {} catch (IllegalArgumentException e) {
+            assertThat(e.getMessage())
+                .isEqualTo(
+                    "Provided Confluent Platform's version 6.2.1 is not supported in Kraft mode (must be 7.0.0 or above)"
+                );
         }
     }
 
     @Test
     public void testKraftZookeeperMutualExclusion() {
-        try (KafkaContainer kafka = new KafkaContainer(KAFKA_KRAFT_TEST_IMAGE).withKraft().withExternalZookeeper("")) {
-        } catch (IllegalStateException e) {
+        try (
+            KafkaContainer kafka = new KafkaContainer(KAFKA_KRAFT_TEST_IMAGE).withKraft().withExternalZookeeper("")
+        ) {} catch (IllegalStateException e) {
             assertThat(e.getMessage()).isEqualTo("Cannot configure Zookeeper when using Kraft mode");
         }
 
-        try (KafkaContainer kafka = new KafkaContainer(KAFKA_KRAFT_TEST_IMAGE).withExternalZookeeper("").withKraft()) {
-        } catch (IllegalStateException e) {
+        try (
+            KafkaContainer kafka = new KafkaContainer(KAFKA_KRAFT_TEST_IMAGE).withExternalZookeeper("").withKraft()
+        ) {} catch (IllegalStateException e) {
             assertThat(e.getMessage()).isEqualTo("Cannot configure Kraft mode when Zookeeper configured");
         }
 
-        try (KafkaContainer kafka = new KafkaContainer(KAFKA_KRAFT_TEST_IMAGE).withKraft().withEmbeddedZookeeper()) {
-        } catch (IllegalStateException e) {
+        try (
+            KafkaContainer kafka = new KafkaContainer(KAFKA_KRAFT_TEST_IMAGE).withKraft().withEmbeddedZookeeper()
+        ) {} catch (IllegalStateException e) {
             assertThat(e.getMessage()).isEqualTo("Cannot configure Zookeeper when using Kraft mode");
         }
     }
