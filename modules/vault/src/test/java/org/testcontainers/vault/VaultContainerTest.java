@@ -74,7 +74,7 @@ public class VaultContainerTest {
         Response response = given()
             .header("X-Vault-Token", VAULT_TOKEN)
             .when()
-            .get(vaultContainer.getVaultAddress() + "/v1/secret/data/testing1")
+            .get(vaultContainer.getHttpHostAddress() + "/v1/secret/data/testing1")
             .thenReturn();
         assertThat(response.body().jsonPath().getString("data.data.top_secret")).isEqualTo("password123");
     }
@@ -84,7 +84,7 @@ public class VaultContainerTest {
         Response response = given()
             .header("X-Vault-Token", VAULT_TOKEN)
             .when()
-            .get(vaultContainer.getVaultAddress() + "/v1/secret/data/testing2")
+            .get(vaultContainer.getHttpHostAddress() + "/v1/secret/data/testing2")
             .andReturn();
 
         assertThat(response.body().jsonPath().getString("data.data.secret_one")).contains("password1");
@@ -98,7 +98,7 @@ public class VaultContainerTest {
         Response response = given()
             .header("X-Vault-Token", VAULT_TOKEN)
             .when()
-            .get(vaultContainer.getVaultAddress() + "/v1/transit/keys/my-key")
+            .get(vaultContainer.getHttpHostAddress() + "/v1/transit/keys/my-key")
             .thenReturn();
 
         assertThat(response.body().jsonPath().getString("data.name")).isEqualTo("my-key");
@@ -108,7 +108,7 @@ public class VaultContainerTest {
     // readWithLibrary {
     public void readFirstSecretPathOverClientLibrary() throws Exception {
         final VaultConfig config = new VaultConfig()
-            .address(vaultContainer.getVaultAddress())
+            .address(vaultContainer.getHttpHostAddress())
             .token(VAULT_TOKEN)
             .build();
 
@@ -124,7 +124,7 @@ public class VaultContainerTest {
     @Test
     public void readSecondSecretPathOverClientLibrary() throws Exception {
         final VaultConfig config = new VaultConfig()
-            .address(vaultContainer.getVaultAddress())
+            .address(vaultContainer.getHttpHostAddress())
             .token(VAULT_TOKEN)
             .build();
 
@@ -141,7 +141,7 @@ public class VaultContainerTest {
     @Test
     public void writeSecretOverClientLibrary() throws Exception {
         final VaultConfig config = new VaultConfig()
-            .address(vaultContainer.getVaultAddress())
+            .address(vaultContainer.getHttpHostAddress())
             .token(VAULT_TOKEN)
             .build();
 

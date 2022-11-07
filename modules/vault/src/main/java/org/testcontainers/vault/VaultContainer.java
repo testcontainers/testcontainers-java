@@ -60,7 +60,7 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
         withExposedPorts(port);
     }
 
-    public String getVaultAddress() {
+    public String getHttpHostAddress() {
         return String.format("http://%s:%s", getHost(), getMappedPort(port));
     }
 
