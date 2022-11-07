@@ -65,7 +65,7 @@ public class DockerClientFactory {
     public static final Map<String, String> DEFAULT_LABELS = markerLabels();
 
     static Map<String, String> markerLabels() {
-        String implementationVersion = ResourceReaper.class.getPackage().getImplementationVersion();
+        String implementationVersion = DockerClientFactory.class.getPackage().getImplementationVersion();
         String testcontainersVersion = implementationVersion == null ? "unspecified" : implementationVersion;
 
         Map<String, String> labels = new HashMap<>();
