@@ -70,8 +70,8 @@ public class DockerClientFactory {
 
         Map<String, String> labels = new HashMap<>();
         labels.put(TESTCONTAINERS_LABEL, "true");
-        labels.put(DockerClientFactory.TESTCONTAINERS_LANG_LABEL, "java");
-        labels.put(DockerClientFactory.TESTCONTAINERS_VERSION_LABEL, testcontainersVersion);
+        labels.put(TESTCONTAINERS_LANG_LABEL, "java");
+        labels.put(TESTCONTAINERS_VERSION_LABEL, testcontainersVersion);
         return Collections.unmodifiableMap(labels);
     }
 
