@@ -3,6 +3,7 @@ package org.testcontainers.containers;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.builder.Transferable;
+import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 
 /**
@@ -22,6 +23,9 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     private static final String DEFAULT_INTERNAL_TOPIC_RF = "1";
 
     private static final String STARTER_SCRIPT = "/testcontainers_start.sh";
+
+    // https://docs.confluent.io/platform/7.0.0/release-notes/index.html#ak-raft-kraft
+    private static final String MIN_KRAFT_TAG = "7.0.0";
 
     protected String externalZookeeperConnect = null;
 
@@ -56,16 +60,34 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     }
 
     public KafkaContainer withEmbeddedZookeeper() {
+        if (this.kraftEnabled) {
+            throw new IllegalStateException("Cannot configure Zookeeper when using Kraft mode");
+        }
         externalZookeeperConnect = null;
         return self();
     }
 
     public KafkaContainer withExternalZookeeper(String connectString) {
+        if (this.kraftEnabled) {
+            throw new IllegalStateException("Cannot configure Zookeeper when using Kraft mode");
+        }
         externalZookeeperConnect = connectString;
         return self();
     }
 
     public KafkaContainer withKraft() {
+        if (this.externalZookeeperConnect != null) {
+            throw new IllegalStateException("Cannot configure Kraft mode when Zookeeper configured");
+        }
+        String actualVersion = DockerImageName.parse(getDockerImageName()).getVersionPart();
+        if (new ComparableVersion(actualVersion).isLessThan(MIN_KRAFT_TAG)) {
+            throw new IllegalArgumentException(
+                String.format("Provided Confluent Platform's version %s is not supported in Kraft mode (must be %s or above)",
+                    actualVersion,
+                    MIN_KRAFT_TAG
+                    )
+            );
+        }
         kraftEnabled = true;
         return self();
     }
