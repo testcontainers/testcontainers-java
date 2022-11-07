@@ -1,7 +1,6 @@
 package org.testcontainers.containers;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import lombok.SneakyThrows;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
@@ -25,6 +24,8 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     private static final String STARTER_SCRIPT = "/testcontainers_start.sh";
 
     protected String externalZookeeperConnect = null;
+
+    protected boolean kraftEnabled = false;
 
     /**
      * @deprecated use {@link KafkaContainer(DockerImageName)} instead
@@ -51,7 +52,6 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         withCreateContainerCmdModifier(cmd -> {
             cmd.withEntrypoint("sh");
         });
-        waitingFor(Wait.forLogMessage(".*\\[KafkaServer id=\\d+\\] started.*", 1));
         withCommand("-c", "while [ ! -f " + STARTER_SCRIPT + " ]; do sleep 0.1; done; " + STARTER_SCRIPT);
     }
 
@@ -65,12 +65,22 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         return self();
     }
 
+    public KafkaContainer withKraft() {
+        kraftEnabled = true;
+        return self();
+    }
+
     public String getBootstrapServers() {
         return String.format("PLAINTEXT://%s:%s", getHost(), getMappedPort(KAFKA_PORT));
     }
 
     @Override
     protected void configure() {
+        if (kraftEnabled) {
+            waitingFor(Wait.forLogMessage(".*Transitioning from RECOVERY to RUNNING.*", 1));
+        } else {
+            waitingFor(Wait.forLogMessage(".*\\[KafkaServer id=\\d+\\] started.*", 1));
+        }
         // Use two listeners with different names, it will force Kafka to communicate with itself via internal
         // listener when KAFKA_INTER_BROKER_LISTENER_NAME is set, otherwise Kafka will try to use the advertised listener
         withEnv("KAFKA_LISTENERS", "PLAINTEXT://0.0.0.0:" + KAFKA_PORT + ",BROKER://0.0.0.0:9092");
@@ -85,7 +95,25 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         withEnv("KAFKA_LOG_FLUSH_INTERVAL_MESSAGES", Long.MAX_VALUE + "");
         withEnv("KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS", "0");
 
-        if (externalZookeeperConnect != null) {
+        if (kraftEnabled) {
+            withEnv("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP",
+                String.format("%s,CONTROLLER:PLAINTEXT",
+                    getEnvMap().get("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP")
+                )
+            );
+            withEnv("KAFKA_LISTENERS",
+                String.format("%s,CONTROLLER://0.0.0.0:9094",
+                    getEnvMap().get("KAFKA_LISTENERS")
+                )
+            );
+
+            withEnv("KAFKA_NODE_ID", "1");
+            withEnv("KAFKA_PROCESS_ROLES", "broker,controller");
+            withEnv("KAFKA_CONTROLLER_QUORUM_VOTERS",
+                String.format("1@%s:9094", getNetwork() != null ? getNetworkAliases().get(0) : "localhost")
+            );
+            withEnv("KAFKA_CONTROLLER_LISTENER_NAMES", "CONTROLLER");
+        } else if (externalZookeeperConnect != null) {
             withEnv("KAFKA_ZOOKEEPER_CONNECT", externalZookeeperConnect);
         } else {
             addExposedPort(ZOOKEEPER_PORT);
@@ -98,13 +126,20 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         super.containerIsStarting(containerInfo);
 
         String command = "#!/bin/bash\n";
-        command += "echo 'clientPort=" + ZOOKEEPER_PORT + "' > zookeeper.properties\n";
-        command += "echo 'dataDir=/var/lib/zookeeper/data' >> zookeeper.properties\n";
-        command += "echo 'dataLogDir=/var/lib/zookeeper/log' >> zookeeper.properties\n";
-        command += "zookeeper-server-start zookeeper.properties &\n";
-
         // exporting KAFKA_ADVERTISED_LISTENERS with the container hostname
-        command += String.format("export KAFKA_ADVERTISED_LISTENERS=%s,%s\n",  getBootstrapServers(), brokerAdvertisedListener(containerInfo));
+        command += String.format("export KAFKA_ADVERTISED_LISTENERS=%s,%s\n", getBootstrapServers(), brokerAdvertisedListener(containerInfo));
+        logger().info(String.format(">KAFKA_ADVERTISED_LISTENERS=%s,%s\n", getBootstrapServers(), brokerAdvertisedListener(containerInfo)));
+        if (kraftEnabled) {
+            command += "sed -i '/KAFKA_ZOOKEEPER_CONNECT/d' /etc/confluent/docker/configure\n";
+            command += "echo 'kafka-storage format --ignore-formatted -t \"$(kafka-storage random-uuid)\" -c /etc/kafka/kafka.properties' >> /etc/confluent/docker/configure\n";
+        } else {
+            command += "echo 'clientPort=" + ZOOKEEPER_PORT + "' > zookeeper.properties\n";
+            command += "echo 'dataDir=/var/lib/zookeeper/data' >> zookeeper.properties\n";
+            command += "echo 'dataLogDir=/var/lib/zookeeper/log' >> zookeeper.properties\n";
+            command += "zookeeper-server-start zookeeper.properties &\n";
+        }
+
+        getEnv().forEach(it -> logger().info(">" + it));
 
         // Optimization: skip the checks
         command += "echo '' > /etc/confluent/docker/ensure \n";

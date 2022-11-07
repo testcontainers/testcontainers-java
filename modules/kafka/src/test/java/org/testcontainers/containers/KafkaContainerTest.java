@@ -130,6 +130,14 @@ public class KafkaContainerTest {
         }
     }
 
+    @Test
+    public void testUsageKraft() throws Exception {
+        try (KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.2.1")).withKraft()) {
+            kafka.start();
+            testKafkaFunctionality(kafka.getBootstrapServers());
+        }
+    }
+
     protected void testKafkaFunctionality(String bootstrapServers) throws Exception {
         testKafkaFunctionality(bootstrapServers, 1, 1);
     }
