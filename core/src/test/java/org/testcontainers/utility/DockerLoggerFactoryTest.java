@@ -4,7 +4,6 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
-import org.assertj.core.api.Condition;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,14 +23,12 @@ public class DockerLoggerFactoryTest {
         LOGGER.debug("some text");
 
         // Assert
-        assertThat(listAppender.list)
-            .withFailMessage("Log message has been swallowed")
-            .hasSize(1);
+        assertThat(listAppender.list).withFailMessage("Log message has been swallowed").hasSize(1);
 
         ILoggingEvent event = listAppender.list.get(0);
 
         assertThat(event.getFormattedMessage()).isEqualTo("some text");
         assertThat(event.getLevel()).isEqualTo(Level.DEBUG);
-        assertThat(event.getLoggerName()).startsWith("docker");
+        assertThat(event.getLoggerName()).startsWith("org.testcontainers.docker");
     }
 }
