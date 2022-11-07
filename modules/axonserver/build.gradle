@@ -1,0 +1,5 @@
+description = "Testcontainers :: AxonServer"
+
+dependencies {
+    api project(':testcontainers')
+}
