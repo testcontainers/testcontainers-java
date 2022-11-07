@@ -25,7 +25,6 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -42,18 +41,10 @@ public class ResourceReaper {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ResourceReaper.class);
 
-    private static final Map<String, String> MARKER_LABELS = markerLabels();
-
-    static Map<String, String> markerLabels() {
-        Map<String, String> labels = new HashMap<>();
-        labels.put(DockerClientFactory.TESTCONTAINERS_SESSION_ID_LABEL, DockerClientFactory.SESSION_ID);
-        labels.put(DockerClientFactory.TESTCONTAINERS_LANG_LABEL, "java");
-        labels.put(
-            DockerClientFactory.TESTCONTAINERS_VERSION_LABEL,
-            ResourceReaper.class.getPackage().getImplementationVersion()
-        );
-        return Collections.unmodifiableMap(labels);
-    }
+    private static final Map<String, String> MARKER_LABELS = Collections.singletonMap(
+        DockerClientFactory.TESTCONTAINERS_SESSION_ID_LABEL,
+        DockerClientFactory.SESSION_ID
+    );
 
     static final List<List<Map.Entry<String, String>>> DEATH_NOTE = new ArrayList<>(
         Arrays.asList(
