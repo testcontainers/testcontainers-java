@@ -65,13 +65,13 @@ public class DockerClientFactory {
     public static final Map<String, String> DEFAULT_LABELS = markerLabels();
 
     static Map<String, String> markerLabels() {
+        String implementationVersion = ResourceReaper.class.getPackage().getImplementationVersion();
+        String testcontainersVersion = implementationVersion == null ? "unspecified" : implementationVersion;
+
         Map<String, String> labels = new HashMap<>();
         labels.put(TESTCONTAINERS_LABEL, "true");
         labels.put(DockerClientFactory.TESTCONTAINERS_LANG_LABEL, "java");
-        labels.put(
-            DockerClientFactory.TESTCONTAINERS_VERSION_LABEL,
-            ResourceReaper.class.getPackage().getImplementationVersion()
-        );
+        labels.put(DockerClientFactory.TESTCONTAINERS_VERSION_LABEL, testcontainersVersion);
         return Collections.unmodifiableMap(labels);
     }
 
