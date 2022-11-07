@@ -67,7 +67,6 @@ public class DockerClientFactory {
     static Map<String, String> markerLabels() {
         Map<String, String> labels = new HashMap<>();
         labels.put(TESTCONTAINERS_LABEL, "true");
-        labels.put(DockerClientFactory.TESTCONTAINERS_SESSION_ID_LABEL, DockerClientFactory.SESSION_ID);
         labels.put(DockerClientFactory.TESTCONTAINERS_LANG_LABEL, "java");
         labels.put(
             DockerClientFactory.TESTCONTAINERS_VERSION_LABEL,
