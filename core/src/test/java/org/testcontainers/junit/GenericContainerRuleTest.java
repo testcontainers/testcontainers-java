@@ -269,6 +269,13 @@ public class GenericContainerRuleTest {
 
             Map<String, String> labels = alpineCustomLabel.getCurrentContainerInfo().getConfig().getLabels();
             assertThat(labels).as("org.testcontainers label is present").containsKey("org.testcontainers");
+            assertThat(labels).as("org.testcontainers.lang label is present").containsKey("org.testcontainers.lang");
+            assertThat(labels)
+                .as("org.testcontainers.lang label is present")
+                .containsEntry("org.testcontainers.lang", "java");
+            assertThat(labels)
+                .as("org.testcontainers.version label is present")
+                .containsKey("org.testcontainers.version");
             assertThat(labels).as("our.custom label is present").containsKey("our.custom");
             assertThat(labels).as("our.custom label value is label").containsEntry("our.custom", "label");
         }
