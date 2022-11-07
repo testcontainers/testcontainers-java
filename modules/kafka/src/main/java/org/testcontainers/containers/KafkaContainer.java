@@ -82,10 +82,11 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         String actualVersion = DockerImageName.parse(getDockerImageName()).getVersionPart();
         if (new ComparableVersion(actualVersion).isLessThan(MIN_KRAFT_TAG)) {
             throw new IllegalArgumentException(
-                String.format("Provided Confluent Platform's version %s is not supported in Kraft mode (must be %s or above)",
+                String.format(
+                    "Provided Confluent Platform's version %s is not supported in Kraft mode (must be %s or above)",
                     actualVersion,
                     MIN_KRAFT_TAG
-                    )
+                )
             );
         }
         kraftEnabled = true;
@@ -118,20 +119,19 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         withEnv("KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS", "0");
 
         if (kraftEnabled) {
-            withEnv("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP",
-                String.format("%s,CONTROLLER:PLAINTEXT",
-                    getEnvMap().get("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP")
-                )
+            withEnv(
+                "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP",
+                String.format("%s,CONTROLLER:PLAINTEXT", getEnvMap().get("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP"))
             );
-            withEnv("KAFKA_LISTENERS",
-                String.format("%s,CONTROLLER://0.0.0.0:9094",
-                    getEnvMap().get("KAFKA_LISTENERS")
-                )
+            withEnv(
+                "KAFKA_LISTENERS",
+                String.format("%s,CONTROLLER://0.0.0.0:9094", getEnvMap().get("KAFKA_LISTENERS"))
             );
 
             withEnv("KAFKA_NODE_ID", "1");
             withEnv("KAFKA_PROCESS_ROLES", "broker,controller");
-            withEnv("KAFKA_CONTROLLER_QUORUM_VOTERS",
+            withEnv(
+                "KAFKA_CONTROLLER_QUORUM_VOTERS",
                 String.format("1@%s:9094", getNetwork() != null ? getNetworkAliases().get(0) : "localhost")
             );
             withEnv("KAFKA_CONTROLLER_LISTENER_NAMES", "CONTROLLER");
@@ -149,11 +149,24 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
         String command = "#!/bin/bash\n";
         // exporting KAFKA_ADVERTISED_LISTENERS with the container hostname
-        command += String.format("export KAFKA_ADVERTISED_LISTENERS=%s,%s\n", getBootstrapServers(), brokerAdvertisedListener(containerInfo));
-        logger().info(String.format(">KAFKA_ADVERTISED_LISTENERS=%s,%s\n", getBootstrapServers(), brokerAdvertisedListener(containerInfo)));
+        command +=
+            String.format(
+                "export KAFKA_ADVERTISED_LISTENERS=%s,%s\n",
+                getBootstrapServers(),
+                brokerAdvertisedListener(containerInfo)
+            );
+        logger()
+            .info(
+                String.format(
+                    ">KAFKA_ADVERTISED_LISTENERS=%s,%s\n",
+                    getBootstrapServers(),
+                    brokerAdvertisedListener(containerInfo)
+                )
+            );
         if (kraftEnabled) {
             command += "sed -i '/KAFKA_ZOOKEEPER_CONNECT/d' /etc/confluent/docker/configure\n";
-            command += "echo 'kafka-storage format --ignore-formatted -t \"$(kafka-storage random-uuid)\" -c /etc/kafka/kafka.properties' >> /etc/confluent/docker/configure\n";
+            command +=
+                "echo 'kafka-storage format --ignore-formatted -t \"$(kafka-storage random-uuid)\" -c /etc/kafka/kafka.properties' >> /etc/confluent/docker/configure\n";
         } else {
             command += "echo 'clientPort=" + ZOOKEEPER_PORT + "' > zookeeper.properties\n";
             command += "echo 'dataDir=/var/lib/zookeeper/data' >> zookeeper.properties\n";
