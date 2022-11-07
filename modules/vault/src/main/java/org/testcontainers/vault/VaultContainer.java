@@ -60,6 +60,10 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
         withExposedPorts(port);
     }
 
+    public String getHttpHostAddress() {
+        return String.format("http://%s:%s", getHost(), getMappedPort(port));
+    }
+
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
         addSecrets();
@@ -182,8 +186,8 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
 
     /**
      * Run initialization commands using the vault cli.
-     *
-     * Useful for enableing more secret engines like:
+     * <p>
+     * Useful for enabling more secret engines like:
      * <pre>
      *     .withInitCommand("secrets enable pki")
      *     .withInitCommand("secrets enable transit")
