@@ -95,19 +95,6 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
 
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
-        WaitStrategy waitForBolt = new LogMessageWaitStrategy()
-            .withRegEx(String.format(".*Bolt enabled on .*:%d\\.\n", DEFAULT_BOLT_PORT));
-        WaitStrategy waitForHttp = new HttpWaitStrategy()
-            .forPort(DEFAULT_HTTP_PORT)
-            .forStatusCodeMatching(response -> response == HttpURLConnection.HTTP_OK);
-
-        this.waitStrategy =
-            new WaitAllStrategy()
-                .withStrategy(waitForBolt)
-                .withStrategy(waitForHttp)
-                .withStartupTimeout(Duration.ofMinutes(2));
-
-        addExposedPorts(DEFAULT_BOLT_PORT, DEFAULT_HTTP_PORT, DEFAULT_HTTPS_PORT);
     }
 
     @Override
@@ -120,15 +107,72 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
 
     @Override
     protected void configure() {
-        boolean emptyAdminPassword = this.adminPassword == null || this.adminPassword.isEmpty();
-        String neo4jAuth = emptyAdminPassword ? "none" : String.format(AUTH_FORMAT, this.adminPassword);
-        addEnv("NEO4J_AUTH", neo4jAuth);
 
-        if (!this.labsPlugins.isEmpty()) {
+        configureAuth();
+        configureLabsPlugins();
+        configureExposedPorts();
+        configureWaitStrategy();
+    }
+
+    private void configureAuth() {
+        String neo4jAuthEnvKey = "NEO4J_AUTH";
+        if (!getEnvMap().containsKey(neo4jAuthEnvKey) || !DEFAULT_ADMIN_PASSWORD.equals(this.adminPassword)) {
+            boolean emptyAdminPassword = this.adminPassword == null || this.adminPassword.isEmpty();
+            String neo4jAuth = emptyAdminPassword ? "none" : String.format(AUTH_FORMAT, this.adminPassword);
+            addEnv(neo4jAuthEnvKey, neo4jAuth);
+        }
+    }
+
+    private void configureLabsPlugins() {
+        String neo4jLabsPluginsEnvKey = "NEO4JLABS_PLUGINS";
+        if (!getEnv().contains(neo4jLabsPluginsEnvKey) && !this.labsPlugins.isEmpty()) {
             String enabledPlugins =
                 this.labsPlugins.stream().map(pluginName -> "\"" + pluginName + "\"").collect(Collectors.joining(","));
 
-            addEnv("NEO4JLABS_PLUGINS", "[" + enabledPlugins + "]");
+            addEnv(neo4jLabsPluginsEnvKey, "[" + enabledPlugins + "]");
+        }
+    }
+
+    private void configureExposedPorts() {
+        List<Integer> exposedPorts = getExposedPorts();
+        boolean boltExposed = exposedPorts.contains(DEFAULT_BOLT_PORT);
+        boolean httpExposed = exposedPorts.contains(DEFAULT_HTTP_PORT);
+        boolean httpsExposed = exposedPorts.contains(DEFAULT_HTTPS_PORT);
+
+        boolean customExposedPorts = boltExposed || httpExposed || httpsExposed;
+
+        if (!customExposedPorts) {
+            addExposedPorts(DEFAULT_BOLT_PORT, DEFAULT_HTTP_PORT, DEFAULT_HTTPS_PORT);
+        }
+    }
+
+    private void configureWaitStrategy() {
+        List<Integer> exposedPorts = getExposedPorts();
+        boolean boltExposed = exposedPorts.contains(DEFAULT_BOLT_PORT);
+        boolean httpExposed = exposedPorts.contains(DEFAULT_HTTP_PORT);
+
+        WaitStrategy waitForBolt = new LogMessageWaitStrategy()
+            .withRegEx(String.format(".*Bolt enabled on .*:%d\\.\n", DEFAULT_BOLT_PORT));
+
+        WaitStrategy waitForHttp = new HttpWaitStrategy()
+            .forPort(DEFAULT_HTTP_PORT)
+            .forStatusCodeMatching(response -> response == HttpURLConnection.HTTP_OK);
+
+        // because we already checked if nothing was manually exposed in the configureExposedPorts method,
+        // we can be sure that either both or one of those ports are exposed.
+        if (boltExposed && httpExposed) {
+            this.waitStrategy = new WaitAllStrategy()
+                .withStrategy(waitForBolt)
+                .withStrategy(waitForHttp)
+                .withStartupTimeout(Duration.ofMinutes(2));
+        } else if (boltExposed) {
+            this.waitStrategy = new WaitAllStrategy()
+                .withStrategy(waitForBolt)
+                .withStartupTimeout(Duration.ofMinutes(2));
+        } else if (httpExposed) {
+            this.waitStrategy = new WaitAllStrategy()
+                .withStrategy(waitForHttp)
+                .withStartupTimeout(Duration.ofMinutes(2));
         }
     }
 
