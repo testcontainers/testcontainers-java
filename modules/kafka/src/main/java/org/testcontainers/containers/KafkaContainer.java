@@ -51,6 +51,20 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
+        // Use two listeners with different names, it will force Kafka to communicate with itself via internal
+        // listener when KAFKA_INTER_BROKER_LISTENER_NAME is set, otherwise Kafka will try to use the advertised listener
+        withEnv("KAFKA_LISTENERS", "PLAINTEXT://0.0.0.0:" + KAFKA_PORT + ",BROKER://0.0.0.0:9092");
+        withEnv("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", "BROKER:PLAINTEXT,PLAINTEXT:PLAINTEXT");
+        withEnv("KAFKA_INTER_BROKER_LISTENER_NAME", "BROKER");
+
+        withEnv("KAFKA_BROKER_ID", "1");
+        withEnv("KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", DEFAULT_INTERNAL_TOPIC_RF);
+        withEnv("KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS", DEFAULT_INTERNAL_TOPIC_RF);
+        withEnv("KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR", DEFAULT_INTERNAL_TOPIC_RF);
+        withEnv("KAFKA_TRANSACTION_STATE_LOG_MIN_ISR", DEFAULT_INTERNAL_TOPIC_RF);
+        withEnv("KAFKA_LOG_FLUSH_INTERVAL_MESSAGES", Long.MAX_VALUE + "");
+        withEnv("KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS", "0");
+
         withExposedPorts(KAFKA_PORT);
 
         withCreateContainerCmdModifier(cmd -> {
@@ -104,19 +118,6 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         } else {
             waitingFor(Wait.forLogMessage(".*\\[KafkaServer id=\\d+\\] started.*", 1));
         }
-        // Use two listeners with different names, it will force Kafka to communicate with itself via internal
-        // listener when KAFKA_INTER_BROKER_LISTENER_NAME is set, otherwise Kafka will try to use the advertised listener
-        withEnv("KAFKA_LISTENERS", "PLAINTEXT://0.0.0.0:" + KAFKA_PORT + ",BROKER://0.0.0.0:9092");
-        withEnv("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", "BROKER:PLAINTEXT,PLAINTEXT:PLAINTEXT");
-        withEnv("KAFKA_INTER_BROKER_LISTENER_NAME", "BROKER");
-
-        withEnv("KAFKA_BROKER_ID", "1");
-        withEnv("KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", DEFAULT_INTERNAL_TOPIC_RF);
-        withEnv("KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS", DEFAULT_INTERNAL_TOPIC_RF);
-        withEnv("KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR", DEFAULT_INTERNAL_TOPIC_RF);
-        withEnv("KAFKA_TRANSACTION_STATE_LOG_MIN_ISR", DEFAULT_INTERNAL_TOPIC_RF);
-        withEnv("KAFKA_LOG_FLUSH_INTERVAL_MESSAGES", Long.MAX_VALUE + "");
-        withEnv("KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS", "0");
 
         if (kraftEnabled) {
             withEnv(
@@ -155,14 +156,6 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
                 getBootstrapServers(),
                 brokerAdvertisedListener(containerInfo)
             );
-        logger()
-            .info(
-                String.format(
-                    ">KAFKA_ADVERTISED_LISTENERS=%s,%s\n",
-                    getBootstrapServers(),
-                    brokerAdvertisedListener(containerInfo)
-                )
-            );
         if (kraftEnabled) {
             command += "sed -i '/KAFKA_ZOOKEEPER_CONNECT/d' /etc/confluent/docker/configure\n";
             command +=
@@ -173,8 +166,6 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
             command += "echo 'dataLogDir=/var/lib/zookeeper/log' >> zookeeper.properties\n";
             command += "zookeeper-server-start zookeeper.properties &\n";
         }
-
-        getEnv().forEach(it -> logger().info(">" + it));
 
         // Optimization: skip the checks
         command += "echo '' > /etc/confluent/docker/ensure \n";
