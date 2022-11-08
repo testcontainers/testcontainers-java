@@ -215,9 +215,7 @@ public class ImageFromDockerfile
     }
 
     /**
-     * Sets the target build stage as described in Docker's documentation:
-     * "When you build your image, you don’t necessarily need to build the entire Dockerfile including every stage.
-     * You can specify a target build stage."
+     * Sets the target build stage to use.
      *
      * @param target the target build stage
      */
