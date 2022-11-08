@@ -209,7 +209,7 @@ public class Neo4jContainerTest {
 
         neo4jContainer.configure();
 
-        assertThat(neo4jContainer.getExposedPorts()).containsExactlyInAnyOrder(7687);
+        assertThat(neo4jContainer.getExposedPorts()).containsExactly(7687);
     }
 
     @Test
@@ -218,7 +218,7 @@ public class Neo4jContainerTest {
 
         neo4jContainer.configure();
 
-        assertThat(neo4jContainer.getExposedPorts()).containsExactlyInAnyOrder(7474);
+        assertThat(neo4jContainer.getExposedPorts()).containsExactly(7474);
     }
 
     @Test
