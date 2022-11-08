@@ -17,6 +17,10 @@ public class TestEnvironment {
         return current.compareTo(min) >= 0;
     }
 
+    public static boolean clientSupportsCompose() {
+        return DockerClientFactory.instance().supportsCompose();
+    }
+
     public static boolean dockerExecutionDriverSupportsExec() {
         String executionDriver = DockerClientFactory.instance().getActiveExecutionDriver();
 

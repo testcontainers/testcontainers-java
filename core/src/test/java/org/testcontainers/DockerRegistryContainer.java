@@ -37,7 +37,7 @@ public class DockerRegistryContainer extends GenericContainer<DockerRegistryCont
     @Override
     protected void configure() {
         super.configure();
-        withEnv("REGISTRY_HTTP_ADDR", "127.0.0.1:0");
+        withEnv("REGISTRY_HTTP_ADDR", "127.0.0.1:50001");
         withCreateContainerCmdModifier(cmd -> {
             cmd.getHostConfig().withNetworkMode("host");
         });
@@ -77,7 +77,7 @@ public class DockerRegistryContainer extends GenericContainer<DockerRegistryCont
             );
         }
 
-        endpoint = getHost() + ":" + port.get();
+        endpoint = "http://" + getHost() + ":" + port.get();
     }
 
     public DockerImageName createImage() {
@@ -96,7 +96,7 @@ public class DockerRegistryContainer extends GenericContainer<DockerRegistryCont
         String dummyImageId = client.inspectImageCmd(originalImage).exec().getId();
 
         DockerImageName imageName = DockerImageName
-            .parse(getEndpoint() + "/" + Base58.randomString(6).toLowerCase())
+            .parse(getEndpoint().replaceFirst("http://", "") + "/" + Base58.randomString(6).toLowerCase())
             .withTag(tag);
 
         // push the image to the registry

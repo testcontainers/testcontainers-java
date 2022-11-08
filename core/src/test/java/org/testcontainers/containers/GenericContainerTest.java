@@ -27,6 +27,7 @@ import org.testcontainers.utility.MountableFile;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -43,6 +44,8 @@ public class GenericContainerTest {
         Info info = DockerClientFactory.instance().client().infoCmd().exec();
         // Poor man's rootless Docker detection :D
         Assumptions.assumeThat(info.getSecurityOptions()).doesNotContain("rootless");
+        // setting swappiness is not allowed for cgroups v2
+        Assumptions.assumeThat(info.getRawValues().get("CgroupVersion")).isNotEqualTo("2");
         try (
             GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
                 .withStartupCheckStrategy(new NoopStartupCheckStrategy())
@@ -154,7 +157,13 @@ public class GenericContainerTest {
                 .getHostConfig()
                 .getPortBindings()
                 .getBindings();
-            assertThat(hostBindings).as("only 1 port is bound on the host (published)").hasSize(1);
+            // podman also returns unbound ports, but sets the binding value to null
+            List<Ports.Binding[]> boundPorts = hostBindings
+                .values()
+                .stream()
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+            assertThat(boundPorts).as("only 1 port is bound on the host (published)").hasSize(1);
 
             Integer mappedPort = container.getMappedPort(8080);
             assertThat(mappedPort != 8080).as("port 8080 is bound to a different port on the host").isTrue();

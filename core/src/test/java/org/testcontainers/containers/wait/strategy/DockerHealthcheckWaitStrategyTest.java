@@ -27,7 +27,7 @@ public class DockerHealthcheckWaitStrategyTest {
                     )
                     .withFileFromClasspath("Dockerfile", "health-wait-strategy-dockerfile/Dockerfile")
             )
-                .waitingFor(Wait.forHealthcheck().withStartupTimeout(Duration.ofSeconds(3)));
+                .waitingFor(Wait.forHealthcheck().withStartupTimeout(Duration.ofSeconds(5)));
     }
 
     @Test

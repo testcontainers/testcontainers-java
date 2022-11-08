@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.testcontainers.dockerclient.DockerClientProviderStrategy;
 import org.testcontainers.dockerclient.DockerMachineClientProviderStrategy;
+import org.testcontainers.dockerclient.RootlessPodmanClientProviderStrategy;
 import org.testcontainers.dockerclient.TransportConfig;
 import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.images.TimeLimitedLoggedPullImageResultCallback;
@@ -388,5 +389,10 @@ public class DockerClientFactory {
     @UnstableAPI
     public Info getInfo() {
         return getOrInitializeStrategy().getInfo();
+    }
+
+    public boolean supportsCompose() {
+        // podman does not support compose
+        return !(getOrInitializeStrategy() instanceof RootlessPodmanClientProviderStrategy);
     }
 }

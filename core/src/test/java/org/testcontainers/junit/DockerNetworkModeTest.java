@@ -27,8 +27,11 @@ public class DockerNetworkModeTest {
             container.start();
             NetworkSettings networkSettings = container.getContainerInfo().getNetworkSettings();
 
-            assertThat(networkSettings.getNetworks()).as("only one network is set").hasSize(1);
-            assertThat(networkSettings.getNetworks()).as("network is 'none'").containsKey("none");
+            assertThat(networkSettings.getNetworks())
+                .as("only one network is set")
+                .allSatisfy((name, containerNetwork) -> {
+                    assertThat(name).as("network is 'none'").isEqualTo("none");
+                });
         }
     }
 
@@ -43,8 +46,11 @@ public class DockerNetworkModeTest {
             container.start();
             NetworkSettings networkSettings = container.getContainerInfo().getNetworkSettings();
 
-            assertThat(networkSettings.getNetworks()).as("only one network is set").hasSize(1);
-            assertThat(networkSettings.getNetworks()).as("network is 'host'").containsKey("host");
+            assertThat(networkSettings.getNetworks())
+                .as("only one network is set")
+                .allSatisfy((name, containerNetwork) -> {
+                    assertThat(networkSettings.getNetworks()).as("network is 'host'").containsKey("host");
+                });
         }
     }
 }

@@ -1,5 +1,6 @@
 package org.testcontainers.containers;
 
+import com.github.dockerjava.api.model.Network.Ipam;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -65,7 +66,19 @@ public class NetworkTest {
 
         @Test
         public void testBuilder() {
-            try (Network network = Network.builder().driver("macvlan").build()) {
+            try (
+                Network network = Network
+                    .builder()
+                    .driver("macvlan")
+                    .createNetworkCmdModifier(cmd -> {
+                        cmd.withIpam(
+                            // mcvlan needs a subnet or podman will refuse to create the network
+                            // https://docs.podman.io/en/latest/markdown/podman-network-create.1.html#driver-d
+                            new Ipam().withConfig(new Ipam.Config().withSubnet("192.168.100.1/25"))
+                        );
+                    })
+                    .build()
+            ) {
                 String id = network.getId();
                 assertThat(
                     DockerClientFactory.instance().client().inspectNetworkCmd().withNetworkId(id).exec().getDriver()
@@ -78,7 +91,19 @@ public class NetworkTest {
         @Test
         public void testModifiers() {
             try (
-                Network network = Network.builder().createNetworkCmdModifier(cmd -> cmd.withDriver("macvlan")).build()
+                Network network = Network
+                    .builder()
+                    .createNetworkCmdModifier(cmd -> {
+                        cmd
+                            .withDriver("macvlan")
+                            .withIpam(
+                                new Ipam()
+                                    // mcvlan needs a subnet or podman will refuse to create the network
+                                    // https://docs.podman.io/en/latest/markdown/podman-network-create.1.html#driver-d
+                                    .withConfig(new Ipam.Config().withSubnet("192.168.100.1/25"))
+                            );
+                    })
+                    .build()
             ) {
                 String id = network.getId();
                 assertThat(

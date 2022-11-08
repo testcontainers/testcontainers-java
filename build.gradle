@@ -94,6 +94,11 @@ subprojects {
                 failOnPassedAfterRetry = false
             }
         }
+
+        // podman does not support compose
+        if (System.properties['test.profile'] == 'podman') {
+            exclude '**/*DockerCompose*'
+        }
     }
 
     tasks.withType(Test).all {
