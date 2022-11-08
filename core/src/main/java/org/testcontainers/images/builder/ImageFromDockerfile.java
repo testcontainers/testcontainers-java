@@ -60,6 +60,8 @@ public class ImageFromDockerfile
 
     private Optional<Path> dockerfile = Optional.empty();
 
+    private Optional<String> target = Optional.empty();
+
     private Set<String> dependencyImageNames = Collections.emptySet();
 
     public ImageFromDockerfile() {
@@ -177,6 +179,7 @@ public class ImageFromDockerfile
             });
 
         this.buildArgs.forEach(buildImageCmd::withBuildArg);
+        this.target.ifPresent(buildImageCmd::withTarget);
     }
 
     private void prePullDependencyImages(Set<String> imagesToPull) {
@@ -208,6 +211,16 @@ public class ImageFromDockerfile
 
     public ImageFromDockerfile withBuildArgs(final Map<String, String> args) {
         this.buildArgs.putAll(args);
+        return this;
+    }
+
+    /**
+     * Sets the target build stage to use.
+     *
+     * @param target the target build stage
+     */
+    public ImageFromDockerfile withTarget(String target) {
+        this.target = Optional.of(target);
         return this;
     }
 
