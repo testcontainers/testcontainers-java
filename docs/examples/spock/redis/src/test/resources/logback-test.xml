@@ -13,5 +13,4 @@
     </root>
 
     <logger name="org.testcontainers" level="DEBUG"/>
-    <logger name="docker" level="DEBUG"/>
 </configuration>
