@@ -9,6 +9,7 @@ import com.github.dockerjava.api.model.Frame;
  */
 @Deprecated
 public class LogToStringContainerCallback extends ResultCallback.Adapter<Frame> {
+
     private final StringBuffer log = new StringBuffer();
 
     @Override

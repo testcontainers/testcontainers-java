@@ -23,21 +23,23 @@ public class PathUtils {
      */
     public static void recursiveDeleteDir(final @NonNull Path directory) {
         try {
-            Files.walkFileTree(directory, new SimpleFileVisitor<Path>() {
-                @Override
-                public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                    Files.delete(dir);
-                    return FileVisitResult.CONTINUE;
-                }
+            Files.walkFileTree(
+                directory,
+                new SimpleFileVisitor<Path>() {
+                    @Override
+                    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                        Files.delete(dir);
+                        return FileVisitResult.CONTINUE;
+                    }
 
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                    Files.delete(file);
-                    return FileVisitResult.CONTINUE;
+                    @Override
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                        Files.delete(file);
+                        return FileVisitResult.CONTINUE;
+                    }
                 }
-            });
-        } catch (IOException ignored) {
-        }
+            );
+        } catch (IOException ignored) {}
     }
 
     /**
@@ -66,8 +68,10 @@ public class PathUtils {
         }
 
         // drive-letter must be lower case
-        mingwPath = "//" + Character.toLowerCase(mingwPath.charAt(driveLetterIndex)) +
-                mingwPath.substring(driveLetterIndex + 1);
+        mingwPath =
+            "//" +
+            Character.toLowerCase(mingwPath.charAt(driveLetterIndex)) +
+            mingwPath.substring(driveLetterIndex + 1);
         mingwPath = mingwPath.replace(":", "");
         return mingwPath;
     }

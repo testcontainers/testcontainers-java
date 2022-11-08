@@ -4,7 +4,6 @@ import org.testcontainers.images.builder.dockerfile.statement.SingleArgumentStat
 import org.testcontainers.utility.DockerImageName;
 
 public interface FromStatementTrait<SELF extends FromStatementTrait<SELF> & DockerfileBuilderTrait<SELF>> {
-
     default SELF from(String dockerImageName) {
         DockerImageName.parse(dockerImageName).assertValid();
 

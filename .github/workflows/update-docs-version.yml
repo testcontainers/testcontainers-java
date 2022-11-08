@@ -4,20 +4,26 @@ on:
   release:
     types: [ published ]
 
+permissions:
+  contents: read
+
 jobs:
   build:
+    permissions:
+      contents: write  # for peter-evans/create-pull-request to create branch
+      pull-requests: write  # for peter-evans/create-pull-request to create a PR
     if: github.repository == 'testcontainers/testcontainers-java'
     runs-on: ubuntu-18.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
-          ref: master
+          ref: main
       - name: Update latest_version property in mkdocs.yml
         run: |
           sed -i "s/latest_version: .*/latest_version: ${GITHUB_REF##*/}/g" mkdocs.yml
           git diff
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@67df31e08a133c6a77008b89689677067fef169e # v3.10.1
+        uses: peter-evans/create-pull-request@b4d51739f96fca8047ad065eccef63442d8e99f7 # v3.10.1
         with:
           title: Update docs version to ${GITHUB_REF##*/}
           body: |

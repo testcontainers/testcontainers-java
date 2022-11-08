@@ -10,6 +10,7 @@ import java.nio.charset.Charset;
  * Created by rnorth on 26/03/2016.
  */
 public class ToStringConsumer extends BaseConsumer<ToStringConsumer> {
+
     private ByteArrayOutputStream stringBuffer = new ByteArrayOutputStream();
 
     @Override

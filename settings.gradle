@@ -5,8 +5,8 @@ buildscript {
         }
     }
     dependencies {
-        classpath "com.gradle.enterprise:com.gradle.enterprise.gradle.plugin:3.7.2"
-        classpath "com.gradle:common-custom-user-data-gradle-plugin:1.6.1"
+        classpath "com.gradle.enterprise:com.gradle.enterprise.gradle.plugin:3.11.3"
+        classpath "com.gradle:common-custom-user-data-gradle-plugin:1.8.2"
     }
 }
 
@@ -32,20 +32,16 @@ include ':docs:examples:spock:redis'
 
 include 'test-support'
 
-ext.isMasterBuild = false ||
-    (System.getenv("GITHUB_REF") == "refs/heads/master") ||
-    (System.getenv("BUILD_SOURCEBRANCHNAME") == "master")
-
 ext.isCI = System.getenv("CI") != null
 
 buildCache {
     local {
         enabled = !isCI
     }
-    remote(HttpBuildCache) { 
-        push = isCI
+    remote(HttpBuildCache) {
+        push = isCI && !System.getenv("READ_ONLY_REMOTE_GRADLE_CACHE")
         enabled = true
-        url = 'https://ge.testcontainers.org/cache/' 
+        url = 'https://ge.testcontainers.org/cache/'
         credentials {
             username = 'ci'
             password = System.getenv("GRADLE_ENTERPRISE_CACHE_PASSWORD")

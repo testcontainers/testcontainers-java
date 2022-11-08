@@ -2,12 +2,13 @@ import com.example.DemoApplication;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.boot.web.context.WebServerInitializedEvent;
-import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -15,12 +16,12 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.testcontainers.Testcontainers;
 import org.testcontainers.containers.BrowserWebDriverContainer;
+import org.testcontainers.containers.BrowserWebDriverContainer.VncRecordingMode;
 
 import java.io.File;
 import java.util.List;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
-import static org.testcontainers.containers.BrowserWebDriverContainer.VncRecordingMode.RECORD_ALL;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Simple example of plain Selenium usage.
@@ -35,26 +36,28 @@ public class SeleniumContainerTest {
 
     @Rule
     public BrowserWebDriverContainer chrome = new BrowserWebDriverContainer()
-                                                    .withCapabilities(new ChromeOptions())
-                                                    .withRecordingMode(RECORD_ALL, new File("build"));
+        .withCapabilities(new ChromeOptions())
+        .withRecordingMode(VncRecordingMode.RECORD_ALL, new File("build"));
 
     @Test
     public void simplePlainSeleniumTest() {
         RemoteWebDriver driver = chrome.getWebDriver();
 
         driver.get("http://host.testcontainers.internal:" + port + "/foo.html");
-        List<WebElement> hElement = driver.findElementsByTagName("h");
+        List<WebElement> hElement = driver.findElements(By.tagName("h"));
 
-        assertTrue("The h element is found", hElement != null && hElement.size() > 0);
+        assertThat(hElement).as("The h element is found").isNotEmpty();
     }
 
     public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+
         @Override
         public void initialize(ConfigurableApplicationContext applicationContext) {
-            applicationContext.addApplicationListener((ApplicationListener<WebServerInitializedEvent>) event -> {
-                Testcontainers.exposeHostPorts(event.getWebServer().getPort());
-            });
+            applicationContext.addApplicationListener(
+                (ApplicationListener<WebServerInitializedEvent>) event -> {
+                    Testcontainers.exposeHostPorts(event.getWebServer().getPort());
+                }
+            );
         }
     }
-
 }

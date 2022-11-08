@@ -1,10 +1,21 @@
 # Testcontainers
 
-![Testcontainers logo](./logo.png)
+<!-- allow aspect ratio computation to reduce layout shift. CSS enforces max-width: 100% -->
+<img src="logo.png" alt="Testcontainers logo" width="1024" height="512"/>
 
-## About
+<p align=center><strong>Not using Java? Here are other supported languages!</strong></p>
+<div class="card-grid">
+    <a class="card-grid-item"><img src="language-logos/java.svg"/>Java</a>
+    <a href="https://golang.testcontainers.org/" class="card-grid-item"><img src="language-logos/go.svg"/>Go</a>
+    <a href="https://dotnet.testcontainers.org/" class="card-grid-item"><img src="language-logos/dotnet.svg"/>.NET</a>
+    <a href="https://testcontainers-python.readthedocs.io/en/latest/" class="card-grid-item"><img src="language-logos/python.svg"/>Python</a>
+    <a href="https://github.com/testcontainers/testcontainers-node" class="card-grid-item"><img src="language-logos/nodejs.svg"/>Node.js</a>
+    <a href="https://docs.rs/testcontainers/latest/testcontainers/" class="card-grid-item"><img src="language-logos/rust.svg"/>Rust</a>
+</div>
 
-Testcontainers is a Java library that supports JUnit tests, providing lightweight, throwaway instances of common databases, Selenium web browsers, or anything else that can run in a Docker container.
+## About Testcontainers for Java
+
+*Testcontainers for Java* is a Java library that supports JUnit tests, providing lightweight, throwaway instances of common databases, Selenium web browsers, or anything else that can run in a Docker container.
 
 Testcontainers make the following kinds of tests easier:
 
@@ -31,18 +42,19 @@ Testcontainers is distributed as separate JARs with a common version number:
 
 For the core library, the latest Maven/Gradle dependency is as follows: 
 
-```groovy tab='Gradle'
-testImplementation "org.testcontainers:testcontainers:{{latest_version}}"
-```
-
-```xml tab='Maven'
-<dependency>
-    <groupId>org.testcontainers</groupId>
-    <artifactId>testcontainers</artifactId>
-    <version>{{latest_version}}</version>
-    <scope>test</scope>
-</dependency>
-```
+=== "Gradle"
+    ```groovy
+    testImplementation "org.testcontainers:testcontainers:{{latest_version}}"
+    ```
+=== "Maven"
+    ```xml
+    <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>testcontainers</artifactId>
+        <version>{{latest_version}}</version>
+        <scope>test</scope>
+    </dependency>
+    ```
 
 You can also [check the latest version available on Maven Central](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.testcontainers%22).
 
@@ -51,8 +63,8 @@ You can also [check the latest version available on Maven Central](https://searc
 To avoid specifying the version of each dependency, you can use a `BOM` or `Bill Of Materials`.
 
 Using Maven you can add the following to `dependencyManagement` section in your `pom.xml`:
-
-```xml tab='Maven'
+=== "Maven"
+```xml
 <dependencyManagement>
     <dependencies>
         <dependency>
@@ -67,21 +79,22 @@ Using Maven you can add the following to `dependencyManagement` section in your 
 ```
 
 and then use dependencies without specifying a version:
-
-```xml tab='Maven'
-<dependency>
-    <groupId>org.testcontainers</groupId>
-    <artifactId>mysql</artifactId>
-    <scope>test</scope>
-</dependency>
-```
+=== "Maven"
+    ```xml
+    <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>mysql</artifactId>
+        <scope>test</scope>
+    </dependency>
+    ```
 
 Using Gradle 5.0 or higher, you can add the following to the `dependencies` section in your `build.gradle`:
 
-```groovy tab='Gradle'
-implementation platform('org.testcontainers:testcontainers-bom:{{latest_version}}') //import bom
-testImplementation('org.testcontainers:mysql') //no version specified
-```
+=== "Gradle"
+    ```groovy
+    implementation platform('org.testcontainers:testcontainers-bom:{{latest_version}}') //import bom
+    testImplementation('org.testcontainers:mysql') //no version specified
+    ```
 
 
 [JitPack](jitpack_dependencies.md) builds are available for pre-release versions.
@@ -89,8 +102,8 @@ testImplementation('org.testcontainers:mysql') //no version specified
 !!! warning "Shaded dependencies"
     Testcontainers depends on other libraries (like docker-java) for it to work.  
     Some of them (JUnit, docker-java-{api,transport} and its transitive dependencies, JNA, visible-assertions and others) are part of our public API.  
-    But there are also "private", implementation detail dependencies (e.g. docker-java-core, Guava, OkHttp, etc etc) that are not exposed to public API but prone to conflicts with test code/application under test code. 
-    As such, **these libraries are 'shaded' into the core testcontainers JAR** and relocated under `org.testcontainers.shaded` to prevent class conflicts.
+    But there are also "private", implementation detail dependencies (e.g., docker-java-core, Guava, OkHttp, etc.) that are not exposed to public API but prone to conflicts with test code/application under test code. 
+    As such, **these libraries are 'shaded' into the core Testcontainers JAR** and relocated under `org.testcontainers.shaded` to prevent class conflicts.
 
 ## Sponsors
 
@@ -173,7 +186,8 @@ A huge thank you to our sponsors:
 * [Instana](https://www.instana.com) - Testing agents and stream processing backends
 * [eBay Marketing](https://www.ebay.com) - Testing for MySQL, Cassandra, Redis, Couchbase, Kafka, etc.
 * [Skyscanner](https://www.skyscanner.net/) - Integration testing against HTTP service mocks and various data stores
-* [Neo4j-OGM](https://neo4j.com/developer/neo4j-ogm/) - Testing new, reactive client implementations
+* [Neo4j-OGM](https://neo4j.com/developer/neo4j-ogm/) - Testing with Neo4j
+* [Spring Data Neo4j](https://github.com/spring-projects/spring-data-neo4j/) - Testing imperative and reactive implementations with Neo4j
 * [Lightbend](https://www.lightbend.com/) - Testing [Alpakka Kafka](https://doc.akka.io/docs/alpakka-kafka/current/) and support in [Alpakka Kafka Testkit](https://doc.akka.io/docs/alpakka-kafka/current/testing.html#testing-with-kafka-in-docker)
 * [Zalando SE](https://corporate.zalando.com/en) - Testing core business services
 * [Europace AG](https://tech.europace.de/) - Integration testing for databases and micro services
@@ -195,11 +209,14 @@ A huge thank you to our sponsors:
 * [Elastic](https://www.elastic.co) - Integration testing of the Java APM agent
 * [Alkira](https://www.alkira.com/) - Testing of multiple micro-services using Kafka, PostgreSQL, Apache Zookeeper, Etcd and so on.
 * [Togglz](https://www.togglz.org/) - Feature Flags for the Java platform
-
+* [Byzer](https://www.byzer.org/home) - Integration tests for Data and AI platforms are based on multiple versions of Byzer, Ray and Apache Spark.
+* [Apache SeaTunnel](https://github.com/apache/incubator-seatunnel) - Integration testing with different datasource.
+* [Bucket4j](https://github.com/bucket4j/bucket4j) - Java rate-limiting library based on the token-bucket algorithm.
+* [Spark ClickHouse Connector](https://github.com/housepower/spark-clickhouse-connector) - Integration tests for Apache Spark with both single node ClickHouse instance and multi-node ClickHouse cluster.
 
 ## License
 
-See [LICENSE](https://raw.githubusercontent.com/testcontainers/testcontainers-java/master/LICENSE).
+See [LICENSE](https://raw.githubusercontent.com/testcontainers/testcontainers-java/main/LICENSE).
 
 ## Attributions
 
@@ -211,4 +228,4 @@ This project was initially inspired by a [gist](https://gist.github.com/mosheesh
 
 Copyright (c) 2015-2021 Richard North and other authors.
 
-See [AUTHORS](https://raw.githubusercontent.com/testcontainers/testcontainers-java/master/AUTHORS) for contributors.
+See [AUTHORS](https://raw.githubusercontent.com/testcontainers/testcontainers-java/main/AUTHORS) for contributors.

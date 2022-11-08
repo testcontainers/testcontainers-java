@@ -9,7 +9,8 @@ dependency-reduced-pom.xml
 *.iml
 
 ## Directory-based project format:
-.idea/
+.idea/*
+!.idea/icon.png
 # if you remove the above rule, at least ignore the following:
 
 # User-specific stuff:
@@ -67,3 +68,6 @@ src/pip-delete-this-directory.txt
 
 # Codespaces / VSCode
 /.vscode/
+
+# Python virtual environment
+/.venv/

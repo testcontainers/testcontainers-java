@@ -4,7 +4,7 @@ Testcontainers' release process is semi-automated through GitHub Actions. This d
 
 ## Steps
 
-1. Ensure that the master branch is building and that tests are passing.
+1. Ensure that the `main` branch is building and that tests are passing.
 1. Create a new release on GitHub. **The tag name is used as the version**, so please keep the tag name plain (e.g. 1.2.3).
 1. The release triggers a GitHub Action workflow.
 1. Log in to [Sonatype](https://oss.sonatype.org/) to check the staging repository.
@@ -16,7 +16,8 @@ Testcontainers' release process is semi-automated through GitHub Actions. This d
 7. Close the release in Sonatype. This will evaluate the release based on given Sonatype rules.
 8. After successful closing, the release button needs to be clicked and afterwards it is automatically synced to Maven Central.
 9. Handcraft and polish some of the release notes (e.g. substitute combinded dependency PRs and highlight certain features).
-10. When available through Maven Central, poke [Richard North](https://github.com/rnorth) to announce the release on Twitter!
+10. Rename existing milestone corresponding to new release and close it. Then create a new `next` milstestone.
+11. When available through Maven Central, poke [Richard North](https://github.com/rnorth) to announce the release on Twitter!
 
 ## Internal details
 

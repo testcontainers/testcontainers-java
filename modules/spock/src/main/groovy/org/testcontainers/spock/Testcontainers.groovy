@@ -13,5 +13,4 @@ import java.lang.annotation.Target
 @Target([ElementType.TYPE, ElementType.METHOD])
 @ExtensionAnnotation(TestcontainersExtension)
 @interface Testcontainers {
-
 }

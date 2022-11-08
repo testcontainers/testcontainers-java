@@ -14,8 +14,8 @@ public class FirefoxWebDriverContainerTest extends BaseWebDriverContainerTest {
     // junitRule {
     @Rule
     public BrowserWebDriverContainer<?> firefox = new BrowserWebDriverContainer<>()
-            .withCapabilities(new FirefoxOptions())
-    // }
+        .withCapabilities(new FirefoxOptions())
+        // }
         .withNetwork(NETWORK);
 
     @Before

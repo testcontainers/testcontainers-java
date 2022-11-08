@@ -3,17 +3,17 @@ plugins {
 }
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 dependencies {
 
-    implementation 'redis.clients:jedis:3.7.0'
-    implementation 'com.google.code.gson:gson:2.8.9'
+    implementation 'redis.clients:jedis:4.3.1'
+    implementation 'com.google.code.gson:gson:2.10'
     implementation 'com.google.guava:guava:23.0'
-    compileOnly 'org.slf4j:slf4j-api:1.7.32'
+    compileOnly 'org.slf4j:slf4j-api:1.7.36'
 
-    testImplementation 'ch.qos.logback:logback-classic:1.2.7'
+    testImplementation 'ch.qos.logback:logback-classic:1.3.4'
     testImplementation 'org.testcontainers:testcontainers'
-    testImplementation 'org.rnorth.visible-assertions:visible-assertions:2.1.2'
+    testImplementation 'org.assertj:assertj-core:3.23.1'
 }
