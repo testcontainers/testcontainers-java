@@ -174,13 +174,11 @@ public class Neo4jContainerTest {
 
     @Test
     public void shouldRespectEnvironmentAuth() {
-        Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4")
-            .withEnv("NEO4J_AUTH", "neo4j/secret");
+        Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4").withEnv("NEO4J_AUTH", "neo4j/secret");
 
         neo4jContainer.configure();
 
-        assertThat(neo4jContainer.getEnvMap())
-            .containsEntry("NEO4J_AUTH", "neo4j/secret");
+        assertThat(neo4jContainer.getEnvMap()).containsEntry("NEO4J_AUTH", "neo4j/secret");
     }
 
     @Test
@@ -191,8 +189,7 @@ public class Neo4jContainerTest {
 
         neo4jContainer.configure();
 
-        assertThat(neo4jContainer.getEnvMap())
-            .containsEntry("NEO4J_AUTH", "neo4j/anotherSecret");
+        assertThat(neo4jContainer.getEnvMap()).containsEntry("NEO4J_AUTH", "neo4j/anotherSecret");
     }
 
     @Test
@@ -203,14 +200,12 @@ public class Neo4jContainerTest {
 
         neo4jContainer.configure();
 
-        assertThat(neo4jContainer.getEnvMap())
-            .containsEntry("NEO4J_AUTH", "none");
+        assertThat(neo4jContainer.getEnvMap()).containsEntry("NEO4J_AUTH", "none");
     }
 
     @Test
     public void shouldRespectAlreadyDefinedPortMappingsBolt() {
-        Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4")
-            .withExposedPorts(7687);
+        Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4").withExposedPorts(7687);
 
         neo4jContainer.configure();
 
@@ -219,8 +214,7 @@ public class Neo4jContainerTest {
 
     @Test
     public void shouldRespectAlreadyDefinedPortMappingsHttp() {
-        Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4")
-            .withExposedPorts(7474);
+        Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4").withExposedPorts(7474);
 
         neo4jContainer.configure();
 
@@ -229,8 +223,7 @@ public class Neo4jContainerTest {
 
     @Test
     public void shouldRespectAlreadyDefinedPortMappingsWithoutHttps() {
-        Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4")
-            .withExposedPorts(7687, 7474);
+        Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4").withExposedPorts(7687, 7474);
 
         neo4jContainer.configure();
 

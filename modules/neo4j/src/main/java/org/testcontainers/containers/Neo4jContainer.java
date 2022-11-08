@@ -94,7 +94,6 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
         this.standardImage = dockerImageName.getUnversionedPart().equals(DEFAULT_IMAGE_NAME.getUnversionedPart());
 
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
-
     }
 
     @Override
@@ -107,7 +106,6 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
 
     @Override
     protected void configure() {
-
         configureAuth();
         configureLabsPlugins();
         configureExposedPorts();
@@ -161,18 +159,17 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
         // because we already checked if nothing was manually exposed in the configureExposedPorts method,
         // we can be sure that either both or one of those ports are exposed.
         if (boltExposed && httpExposed) {
-            this.waitStrategy = new WaitAllStrategy()
-                .withStrategy(waitForBolt)
-                .withStrategy(waitForHttp)
-                .withStartupTimeout(Duration.ofMinutes(2));
+            this.waitStrategy =
+                new WaitAllStrategy()
+                    .withStrategy(waitForBolt)
+                    .withStrategy(waitForHttp)
+                    .withStartupTimeout(Duration.ofMinutes(2));
         } else if (boltExposed) {
-            this.waitStrategy = new WaitAllStrategy()
-                .withStrategy(waitForBolt)
-                .withStartupTimeout(Duration.ofMinutes(2));
+            this.waitStrategy =
+                new WaitAllStrategy().withStrategy(waitForBolt).withStartupTimeout(Duration.ofMinutes(2));
         } else if (httpExposed) {
-            this.waitStrategy = new WaitAllStrategy()
-                .withStrategy(waitForHttp)
-                .withStartupTimeout(Duration.ofMinutes(2));
+            this.waitStrategy =
+                new WaitAllStrategy().withStrategy(waitForHttp).withStartupTimeout(Duration.ofMinutes(2));
         }
     }
 
