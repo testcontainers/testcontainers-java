@@ -10,22 +10,23 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.testcontainers.containers.BrowserWebDriverContainer;
+import org.testcontainers.containers.BrowserWebDriverContainer.VncRecordingMode;
 import org.testcontainers.lifecycle.TestDescription;
 
 import java.io.File;
 import java.util.List;
 import java.util.Optional;
 
-import static junit.framework.TestCase.assertEquals;
-import static org.testcontainers.containers.BrowserWebDriverContainer.VncRecordingMode.RECORD_ALL;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class Stepdefs {
 
     private BrowserWebDriverContainer container = new BrowserWebDriverContainer()
-            .withCapabilities(new ChromeOptions())
-            .withRecordingMode(RECORD_ALL, new File("build"));
+        .withCapabilities(new ChromeOptions())
+        .withRecordingMode(VncRecordingMode.RECORD_ALL, new File("build"));
 
     private String location;
+
     private String answer;
 
     @Before
@@ -35,17 +36,20 @@ public class Stepdefs {
 
     @After
     public void afterScenario(Scenario scenario) {
-        container.afterTest(new TestDescription() {
-            @Override
-            public String getTestId() {
-                return scenario.getId();
-            }
+        container.afterTest(
+            new TestDescription() {
+                @Override
+                public String getTestId() {
+                    return scenario.getId();
+                }
 
-            @Override
-            public String getFilesystemFriendlyName() {
-                return scenario.getName();
-            }
-        }, Optional.of(scenario).filter(Scenario::isFailed).map(__ -> new RuntimeException()));
+                @Override
+                public String getFilesystemFriendlyName() {
+                    return scenario.getName();
+                }
+            },
+            Optional.of(scenario).filter(Scenario::isFailed).map(__ -> new RuntimeException())
+        );
     }
 
     @Given("^location is \"([^\"]*)\"$")
@@ -63,8 +67,6 @@ public class Stepdefs {
 
     @Then("^I should be told \"([^\"]*)\"$")
     public void iShouldBeTold(String expected) throws Exception {
-        assertEquals(expected, answer);
+        assertThat(answer).isEqualTo(expected);
     }
-
-
 }

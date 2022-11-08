@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 public class DemoController {
 
     private final StringRedisTemplate stringRedisTemplate;
+
     private final DemoService demoService;
 
     public DemoController(StringRedisTemplate stringRedisTemplate, DemoService demoService) {

@@ -65,6 +65,8 @@
   - modules/presto/*
 "modules/pulsar":
   - modules/pulsar/*
+"modules/questdb":
+  - modules/questdb/*
 "modules/r2dbc":
   - modules/r2dbc/*
 "modules/rabbitmq":

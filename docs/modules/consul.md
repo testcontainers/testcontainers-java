@@ -32,5 +32,5 @@ testImplementation "org.testcontainers:consul:{{latest_version}}"
 </dependency>
 ```
 
-See [AUTHORS](https://raw.githubusercontent.com/testcontainers/testcontainers-java/master/modules/consul/AUTHORS) for contributors.
+See [AUTHORS](https://raw.githubusercontent.com/testcontainers/testcontainers-java/main/modules/consul/AUTHORS) for contributors.
 

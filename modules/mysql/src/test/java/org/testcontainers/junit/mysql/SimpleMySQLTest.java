@@ -1,6 +1,5 @@
 package org.testcontainers.junit.mysql;
 
-import org.apache.commons.lang3.SystemUtils;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +20,6 @@ import java.time.temporal.ChronoUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
-import static org.junit.Assume.assumeFalse;
 
 public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
 
@@ -48,7 +46,6 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
     public void testSimple() throws SQLException {
         try (
             MySQLContainer<?> mysql = new MySQLContainer<>(MySQLTestImages.MYSQL_57_IMAGE)
-                .withConfigurationOverride("somepath/mysql_conf_override")
                 .withLogConsumer(new Slf4jLogConsumer(logger))
         ) {
             mysql.start();
@@ -57,6 +54,7 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
             int resultSetInt = resultSet.getInt(1);
 
             assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+            assertHasCorrectExposedAndLivenessCheckPorts(mysql);
         }
     }
 
@@ -80,8 +78,6 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testMySQLWithCustomIniFile() throws SQLException {
-        assumeFalse(SystemUtils.IS_OS_WINDOWS);
-
         try (
             MySQLContainer<?> mysqlCustomConfig = new MySQLContainer<>(MySQLTestImages.MYSQL_56_IMAGE)
                 .withConfigurationOverride("somepath/mysql_conf_override")
@@ -236,5 +232,10 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
         } finally {
             mysql.stop();
         }
+    }
+
+    private void assertHasCorrectExposedAndLivenessCheckPorts(MySQLContainer<?> mysql) {
+        assertThat(mysql.getExposedPorts()).containsExactly(MySQLContainer.MYSQL_PORT);
+        assertThat(mysql.getLivenessCheckPortNumbers()).containsExactly(mysql.getMappedPort(MySQLContainer.MYSQL_PORT));
     }
 }

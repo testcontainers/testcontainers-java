@@ -26,6 +26,7 @@ public class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
             ResultSet resultSet = performQuery(postgres, "SELECT 1");
             int resultSetInt = resultSet.getInt(1);
             assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+            assertHasCorrectExposedAndLivenessCheckPorts(postgres);
         }
     }
 
@@ -85,5 +86,11 @@ public class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
             assertThat(jdbcUrl).contains("&");
             assertThat(jdbcUrl).contains("charSet=UNICODE");
         }
+    }
+
+    private void assertHasCorrectExposedAndLivenessCheckPorts(PostgreSQLContainer<?> postgres) {
+        assertThat(postgres.getExposedPorts()).containsExactly(PostgreSQLContainer.POSTGRESQL_PORT);
+        assertThat(postgres.getLivenessCheckPortNumbers())
+            .containsExactly(postgres.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT));
     }
 }

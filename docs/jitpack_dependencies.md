@@ -5,14 +5,14 @@ Use the following dependency description instead:
 
 === "Gradle"
     ```groovy
-    testImplementation "com.github.testcontainers.testcontainers-java:--artifact name--:master-SNAPSHOT"
+    testImplementation "com.github.testcontainers.testcontainers-java:--artifact name--:main-SNAPSHOT"
     ```
 === "Maven"
     ```xml
     <dependency>
         <groupId>com.github.testcontainers.testcontainers-java</groupId>
         <artifactId>--artifact name--</artifactId>
-        <version>master-SNAPSHOT</version>
+        <version>main-SNAPSHOT</version>
     </dependency>
     ```
 

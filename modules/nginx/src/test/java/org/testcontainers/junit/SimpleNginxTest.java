@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.testcontainers.containers.NginxContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 
 import java.io.*;
 import java.net.URL;
@@ -26,7 +27,7 @@ public class SimpleNginxTest {
     // creatingContainer {
     @Rule
     public NginxContainer<?> nginx = new NginxContainer<>(NGINX_IMAGE)
-        .withCustomContent(tmpDirectory)
+        .withCopyFileToContainer(MountableFile.forHostPath(tmpDirectory), "/usr/share/nginx/html")
         .waitingFor(new HttpWaitStrategy());
 
     // }
@@ -58,6 +59,12 @@ public class SimpleNginxTest {
             .as("An HTTP GET from the Nginx server returns the index.html from the custom content directory")
             .contains("Hello World!");
         // }
+        assertHasCorrectExposedAndLivenessCheckPorts(nginx);
+    }
+
+    private void assertHasCorrectExposedAndLivenessCheckPorts(NginxContainer<?> nginxContainer) throws Exception {
+        assertThat(nginxContainer.getExposedPorts()).containsExactly(80);
+        assertThat(nginxContainer.getLivenessCheckPortNumbers()).containsExactly(nginxContainer.getMappedPort(80));
     }
 
     private static String responseFromNginx(URL baseUrl) throws IOException {

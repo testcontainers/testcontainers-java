@@ -2,7 +2,7 @@ name: CI-Docker-Rootless
 
 on:
   pull_request: {}
-  push: { branches: [ master ] }
+  push: { branches: [ main ] }
 
 permissions:
   contents: read
@@ -33,5 +33,7 @@ jobs:
           PATH=$HOME/bin:$PATH dockerd-rootless.sh --experimental --storage-driver vfs &
           sleep 1
           DOCKER_HOST=unix://$XDG_RUNTIME_DIR/docker.sock docker info || ls -la $XDG_RUNTIME_DIR
+      - name: Setup Gradle Build Action
+        uses: gradle/gradle-build-action@v2
       - name: Build with Gradle
         run: ./gradlew --no-daemon --scan testcontainers:test --tests '*GenericContainerRuleTest'
