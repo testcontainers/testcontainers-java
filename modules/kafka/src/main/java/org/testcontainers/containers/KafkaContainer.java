@@ -6,6 +6,10 @@ import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 
+import java.nio.ByteBuffer;
+import java.util.Base64;
+import java.util.UUID;
+
 /**
  * This container wraps Confluent Kafka and Zookeeper (optionally)
  *
@@ -30,6 +34,8 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     protected String externalZookeeperConnect = null;
 
     protected boolean kraftEnabled = false;
+
+    protected String clusterId = generateClusterId();
 
     /**
      * @deprecated use {@link KafkaContainer(DockerImageName)} instead
@@ -58,6 +64,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         withEnv("KAFKA_INTER_BROKER_LISTENER_NAME", "BROKER");
 
         withEnv("KAFKA_BROKER_ID", "1");
+        withEnv("KAFKA_NODE_ID", "1");
         withEnv("KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", DEFAULT_INTERNAL_TOPIC_RF);
         withEnv("KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS", DEFAULT_INTERNAL_TOPIC_RF);
         withEnv("KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR", DEFAULT_INTERNAL_TOPIC_RF);
@@ -107,8 +114,32 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         return self();
     }
 
+    public KafkaContainer withClusterId(String clusterId) {
+        this.clusterId = clusterId;
+        return self();
+    }
+
     public String getBootstrapServers() {
         return String.format("PLAINTEXT://%s:%s", getHost(), getMappedPort(KAFKA_PORT));
+    }
+
+    public static String generateClusterId() {
+        UUID metadataTopicUuid = new UUID(0, 1L);
+        UUID ZeroUuid = new UUID(0, 0L);
+
+        UUID candidate = UUID.randomUUID();
+        while(candidate.equals(metadataTopicUuid) || candidate.equals(ZeroUuid)) {
+            candidate = UUID.randomUUID();
+        }
+
+        //From Java UUID to Kafka Uuid representation
+        ByteBuffer uuidBytes = ByteBuffer.wrap(new byte[16]);
+        uuidBytes.putLong(candidate.getMostSignificantBits());
+        uuidBytes.putLong(candidate.getLeastSignificantBits());
+        final byte[] uuidBytesArray = uuidBytes.array();
+
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(uuidBytesArray);
+
     }
 
     @Override
@@ -129,12 +160,16 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
                 String.format("%s,CONTROLLER://0.0.0.0:9094", getEnvMap().get("KAFKA_LISTENERS"))
             );
 
-            withEnv("KAFKA_NODE_ID", "1");
             withEnv("KAFKA_PROCESS_ROLES", "broker,controller");
-            withEnv(
-                "KAFKA_CONTROLLER_QUORUM_VOTERS",
-                String.format("1@%s:9094", getNetwork() != null ? getNetworkAliases().get(0) : "localhost")
-            );
+            if(!getEnvMap().containsKey("KAFKA_CONTROLLER_QUORUM_VOTERS")) {
+                withEnv(
+                    "KAFKA_CONTROLLER_QUORUM_VOTERS",
+                    String.format("%d@%s:9094",
+                        getEnvMap().get("KAFKA_NODE_ID"),
+                        getNetwork() != null ? getNetworkAliases().get(0) : "localhost"
+                    )
+                );
+            }
             withEnv("KAFKA_CONTROLLER_LISTENER_NAMES", "CONTROLLER");
         } else if (externalZookeeperConnect != null) {
             withEnv("KAFKA_ZOOKEEPER_CONNECT", externalZookeeperConnect);
@@ -159,7 +194,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         if (kraftEnabled) {
             command += "sed -i '/KAFKA_ZOOKEEPER_CONNECT/d' /etc/confluent/docker/configure\n";
             command +=
-                "echo 'kafka-storage format --ignore-formatted -t \"$(kafka-storage random-uuid)\" -c /etc/kafka/kafka.properties' >> /etc/confluent/docker/configure\n";
+                "echo 'kafka-storage format --ignore-formatted -t \""+ clusterId +"\" -c /etc/kafka/kafka.properties' >> /etc/confluent/docker/configure\n";
         } else {
             command += "echo 'clientPort=" + ZOOKEEPER_PORT + "' > zookeeper.properties\n";
             command += "echo 'dataDir=/var/lib/zookeeper/data' >> zookeeper.properties\n";
