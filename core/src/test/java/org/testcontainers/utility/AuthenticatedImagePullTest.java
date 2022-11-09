@@ -3,7 +3,6 @@ package org.testcontainers.utility;
 import com.github.dockerjava.api.model.AuthConfig;
 import org.intellij.lang.annotations.Language;
 import org.junit.AfterClass;
-import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -64,14 +63,14 @@ public class AuthenticatedImagePullTest {
         final AuthConfig authConfig = new AuthConfig()
             .withUsername("testuser")
             .withPassword("notasecret")
-            .withRegistryAddress(testRegistryAddress);
+            .withRegistryAddress("http://" + testRegistryAddress);
 
         // Replace the RegistryAuthLocator singleton with our mock, for the duration of this test
         final RegistryAuthLocator mockAuthLocator = Mockito.mock(RegistryAuthLocator.class);
         RegistryAuthLocator.setInstance(mockAuthLocator);
         when(
             mockAuthLocator.lookupAuthConfig(
-                argThat(argument -> testRegistryAddress.replaceFirst("http://", "").equals(argument.getRegistry())),
+                argThat(argument -> testRegistryAddress.equals(argument.getRegistry())),
                 any()
             )
         )
@@ -118,7 +117,6 @@ public class AuthenticatedImagePullTest {
 
     @Test
     public void testThatAuthLocatorIsUsedForDockerComposePull() throws IOException {
-        Assume.assumeTrue(TestEnvironment.clientSupportsCompose());
         // Prepare a simple temporary Docker Compose manifest which requires our custom private image
         Path tempFile = getLocalTempFile(".docker-compose.yml");
         @Language("yaml")

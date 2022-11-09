@@ -17,15 +17,11 @@ jobs:
       - name: Set XDG_RUNTIME_DIR
         run: echo "XDG_RUNTIME_DIR=/run/user/$UID" >> $GITHUB_ENV
       - name: Create registries.conf
-        # allow pulling images without a registry specified and allow pulling from insecure local registry
+        # allow pulling images without a registry specified
         run: |
           mkdir -p $HOME/.config/containers
           echo 'unqualified-search-registries = ["docker.io"]' > $HOME/.config/containers/registries.conf
-          echo ''                                             >> $HOME/.config/containers/registries.conf
-          echo '[[registry]]'                                 >> $HOME/.config/containers/registries.conf
-          echo 'location = "localhost:50001"'                 >> $HOME/.config/containers/registries.conf
-          echo 'insecure = true'                              >> $HOME/.config/containers/registries.conf
-      - name: Istall latest podman release
+      - name: Install latest podman release
         # see https://podman.io/getting-started/installation#ubuntu
         run: |
           sudo mkdir -p /etc/apt/keyrings

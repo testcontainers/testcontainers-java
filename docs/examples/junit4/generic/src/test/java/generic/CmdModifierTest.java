@@ -2,7 +2,6 @@ package generic;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Info;
-import org.assertj.core.api.Assumptions;
 import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.DockerClientFactory;
@@ -49,9 +48,6 @@ public class CmdModifierTest {
 
     @Test
     public void testMemoryLimitModified() throws IOException, InterruptedException {
-        Info info = DockerClientFactory.instance().client().infoCmd().exec();
-        // setting swap is not allowed for cgroups v2
-        Assumptions.assumeThat(info.getRawValues().get("CgroupVersion")).isNotEqualTo("2");
         final Container.ExecResult execResult = memoryLimitedRedis.execInContainer("cat", getMemoryLimitFilePath());
         assertThat(execResult.getStdout().trim()).isEqualTo(String.valueOf(memoryInBytes));
     }
