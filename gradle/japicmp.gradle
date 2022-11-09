@@ -15,8 +15,8 @@ tasks.japicmp {
     // have an existing published version.
     enabled = ! configurations.baseline.copy().resolvedConfiguration.lenientConfiguration.getFiles().empty
 
-    oldClasspath = configurations.baseline
-    newClasspath = shadowJar.outputs.files
+    oldClasspath.from(configurations.baseline)
+    newClasspath.from(shadowJar.outputs.files)
     ignoreMissingClasses = true
 
     accessModifier = "protected"
