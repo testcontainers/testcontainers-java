@@ -164,7 +164,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
                 withEnv(
                     "KAFKA_CONTROLLER_QUORUM_VOTERS",
                     String.format(
-                        "%d@%s:9094",
+                        "%s@%s:9094",
                         getEnvMap().get("KAFKA_NODE_ID"),
                         getNetwork() != null ? getNetworkAliases().get(0) : "localhost"
                     )

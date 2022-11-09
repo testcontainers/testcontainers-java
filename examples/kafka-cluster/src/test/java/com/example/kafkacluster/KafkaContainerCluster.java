@@ -60,6 +60,7 @@ public class KafkaContainerCluster implements Startable {
                         .dependsOn(this.zookeeper)
                         .withExternalZookeeper("zookeeper:" + KafkaContainer.ZOOKEEPER_PORT)
                         .withEnv("KAFKA_BROKER_ID", brokerNum + "")
+                        .withEnv("KAFKA_NODE_ID", brokerNum + "")
                         .withEnv("KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", internalTopicsRf + "")
                         .withEnv("KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS", internalTopicsRf + "")
                         .withEnv("KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR", internalTopicsRf + "")
