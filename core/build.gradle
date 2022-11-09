@@ -80,7 +80,7 @@ dependencies {
     api platform('com.github.docker-java:docker-java-bom:3.2.13')
     shaded platform('com.github.docker-java:docker-java-bom:3.2.13')
 
-    api "com.github.docker-java:docker-java-api"
+    shaded "com.github.docker-java:docker-java-api"
 
     shaded 'com.github.docker-java:docker-java-core'
 
