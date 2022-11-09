@@ -9,6 +9,7 @@ import org.neo4j.driver.Record;
 import org.neo4j.driver.Result;
 import org.neo4j.driver.Session;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
 import org.testcontainers.utility.MountableFile;
 
 import java.util.Collections;
@@ -240,6 +241,15 @@ public class Neo4jContainerTest {
     }
 
     @Test
+    public void shouldRespectCustomWaitStrategy() {
+        Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4").waitingFor(new CustomDummyWaitStrategy());
+
+        neo4jContainer.configure();
+
+        assertThat(neo4jContainer.getWaitStrategy()).isInstanceOf(CustomDummyWaitStrategy.class);
+    }
+
+    @Test
     public void shouldConfigureSingleLabsPlugin() {
         try (
             Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4").withLabsPlugins(Neo4jLabsPlugin.APOC)
@@ -287,6 +297,14 @@ public class Neo4jContainerTest {
 
             assertThat(neo4jContainer.getEnvMap().get("NEO4JLABS_PLUGINS"))
                 .containsAnyOf("[\"myApoc\",\"myBloom\"]", "[\"myBloom\",\"myApoc\"]");
+        }
+    }
+
+    private static class CustomDummyWaitStrategy extends AbstractWaitStrategy {
+
+        @Override
+        protected void waitUntilReady() {
+            // ehm...ready
         }
     }
 

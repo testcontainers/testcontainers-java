@@ -67,6 +67,16 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
     private final Set<String> labsPlugins = new HashSet<>();
 
     /**
+     * Default wait strategies
+     */
+    public static final WaitStrategy WAIT_FOR_BOLT = new LogMessageWaitStrategy()
+        .withRegEx(String.format(".*Bolt enabled on .*:%d\\.\n", DEFAULT_BOLT_PORT));
+
+    private static final WaitStrategy WAIT_FOR_HTTP = new HttpWaitStrategy()
+        .forPort(DEFAULT_HTTP_PORT)
+        .forStatusCodeMatching(response -> response == HttpURLConnection.HTTP_OK);
+
+    /**
      * Creates a Neo4jContainer using the official Neo4j docker image.
      * @deprecated use {@link Neo4jContainer(DockerImageName)} instead
      */
@@ -94,6 +104,14 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
         this.standardImage = dockerImageName.getUnversionedPart().equals(DEFAULT_IMAGE_NAME.getUnversionedPart());
 
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+
+        this.waitStrategy =
+            new WaitAllStrategy()
+                .withStrategy(WAIT_FOR_BOLT)
+                .withStrategy(WAIT_FOR_HTTP)
+                .withStartupTimeout(Duration.ofMinutes(2));
+
+        addExposedPorts(DEFAULT_BOLT_PORT, DEFAULT_HTTP_PORT, DEFAULT_HTTPS_PORT);
     }
 
     @Override
@@ -108,10 +126,14 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
     protected void configure() {
         configureAuth();
         configureLabsPlugins();
-        configureExposedPorts();
         configureWaitStrategy();
     }
 
+    /**
+     * Configured via {@link Neo4jContainer#withAdminPassword(String)} or {@link Neo4jContainer#withoutAuthentication()}
+     * It is only possible to set the correct auth in the configuration call.
+     * Also, the custom methods overrule the set env parameter.
+     */
     private void configureAuth() {
         String neo4jAuthEnvKey = "NEO4J_AUTH";
         if (!getEnvMap().containsKey(neo4jAuthEnvKey) || !DEFAULT_ADMIN_PASSWORD.equals(this.adminPassword)) {
@@ -121,6 +143,10 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
         }
     }
 
+    /**
+     * Configured via {@link Neo4jContainer#withLabsPlugins}.
+     * Configuration can only happen in the configuration call because there is no default.
+     */
     private void configureLabsPlugins() {
         String neo4jLabsPluginsEnvKey = "NEO4JLABS_PLUGINS";
         if (!getEnv().contains(neo4jLabsPluginsEnvKey) && !this.labsPlugins.isEmpty()) {
@@ -131,45 +157,23 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
         }
     }
 
-    private void configureExposedPorts() {
-        List<Integer> exposedPorts = getExposedPorts();
-        boolean boltExposed = exposedPorts.contains(DEFAULT_BOLT_PORT);
-        boolean httpExposed = exposedPorts.contains(DEFAULT_HTTP_PORT);
-        boolean httpsExposed = exposedPorts.contains(DEFAULT_HTTPS_PORT);
-
-        boolean customExposedPorts = boltExposed || httpExposed || httpsExposed;
-
-        if (!customExposedPorts) {
-            addExposedPorts(DEFAULT_BOLT_PORT, DEFAULT_HTTP_PORT, DEFAULT_HTTPS_PORT);
-        }
-    }
-
+    /**
+     * Update the default Neo4jContainer wait strategy based on the exposed ports.
+     * Still possible to override the startup timeout later via {@link WaitStrategy#withStartupTimeout(Duration)}.
+     */
     private void configureWaitStrategy() {
         List<Integer> exposedPorts = getExposedPorts();
         boolean boltExposed = exposedPorts.contains(DEFAULT_BOLT_PORT);
         boolean httpExposed = exposedPorts.contains(DEFAULT_HTTP_PORT);
+        boolean onlyBoltExposed = boltExposed && !httpExposed;
+        boolean onlyHttpExposed = !boltExposed && httpExposed;
 
-        WaitStrategy waitForBolt = new LogMessageWaitStrategy()
-            .withRegEx(String.format(".*Bolt enabled on .*:%d\\.\n", DEFAULT_BOLT_PORT));
-
-        WaitStrategy waitForHttp = new HttpWaitStrategy()
-            .forPort(DEFAULT_HTTP_PORT)
-            .forStatusCodeMatching(response -> response == HttpURLConnection.HTTP_OK);
-
-        // because we already checked if nothing was manually exposed in the configureExposedPorts method,
-        // we can be sure that either both or one of those ports are exposed.
-        if (boltExposed && httpExposed) {
+        if (onlyBoltExposed) {
             this.waitStrategy =
-                new WaitAllStrategy()
-                    .withStrategy(waitForBolt)
-                    .withStrategy(waitForHttp)
-                    .withStartupTimeout(Duration.ofMinutes(2));
-        } else if (boltExposed) {
+                new WaitAllStrategy().withStrategy(WAIT_FOR_BOLT).withStartupTimeout(Duration.ofMinutes(2));
+        } else if (onlyHttpExposed) {
             this.waitStrategy =
-                new WaitAllStrategy().withStrategy(waitForBolt).withStartupTimeout(Duration.ofMinutes(2));
-        } else if (httpExposed) {
-            this.waitStrategy =
-                new WaitAllStrategy().withStrategy(waitForHttp).withStartupTimeout(Duration.ofMinutes(2));
+                new WaitAllStrategy().withStrategy(WAIT_FOR_HTTP).withStartupTimeout(Duration.ofMinutes(2));
         }
     }
 
