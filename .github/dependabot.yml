@@ -165,6 +165,8 @@ updates:
     ignore:
       - dependency-name: "org.neo4j.driver:neo4j-java-driver"
         update-types: [ "version-update:semver-major" ]
+      - dependency-name: "org.neo4j:neo4j"
+        update-types: [ "version-update:semver-major" ]
   - package-ecosystem: "gradle"
     directory: "/modules/nginx"
     schedule:
