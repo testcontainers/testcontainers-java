@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class YugabyteDBYCQLTest {
 
-    private static final String IMAGE_NAME = "yugabytedb/yugabyte:2.14.3.1-b1";
+    private static final String IMAGE_NAME = "yugabytedb/yugabyte:2.14.4.0-b26";
 
     private static final DockerImageName YBDB_TEST_IMAGE = DockerImageName.parse(IMAGE_NAME);
 
