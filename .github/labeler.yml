@@ -88,6 +88,6 @@
 "modules/vault":
   - modules/vault/**/*
 "modules/yugabytedb":
-  - modules/yugabytedb/*
+  - modules/yugabytedb/**/*
 "type/docs":
   - docs/**/*.md
