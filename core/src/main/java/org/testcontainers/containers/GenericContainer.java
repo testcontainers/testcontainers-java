@@ -493,25 +493,31 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 }
 
                 if (inspectContainerResponse == null) {
-                    throw new IllegalStateException("Container is removed");
+                    throw new IllegalStateException("Wait strategy failed. Container is removed", e);
                 }
 
                 InspectContainerResponse.ContainerState state = inspectContainerResponse.getState();
                 if (Boolean.TRUE.equals(state.getDead())) {
-                    throw new IllegalStateException("Container is dead");
+                    throw new IllegalStateException("Wait strategy failed. Container is dead", e);
                 }
 
                 if (Boolean.TRUE.equals(state.getOOMKilled())) {
-                    throw new IllegalStateException("Container crashed with out-of-memory (OOMKilled)");
+                    throw new IllegalStateException(
+                        "Wait strategy failed. Container crashed with out-of-memory (OOMKilled)",
+                        e
+                    );
                 }
 
                 String error = state.getError();
                 if (!StringUtils.isBlank(error)) {
-                    throw new IllegalStateException("Container crashed: " + error);
+                    throw new IllegalStateException("Wait strategy failed. Container crashed: " + error, e);
                 }
 
                 if (!Boolean.TRUE.equals(state.getRunning())) {
-                    throw new IllegalStateException("Container exited with code " + state.getExitCode());
+                    throw new IllegalStateException(
+                        "Wait strategy failed. Container exited with code " + state.getExitCode(),
+                        e
+                    );
                 }
 
                 throw e;
