@@ -64,7 +64,6 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         withEnv("KAFKA_INTER_BROKER_LISTENER_NAME", "BROKER");
 
         withEnv("KAFKA_BROKER_ID", "1");
-        withEnv("KAFKA_NODE_ID", "1");
         withEnv("KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", DEFAULT_INTERNAL_TOPIC_RF);
         withEnv("KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS", DEFAULT_INTERNAL_TOPIC_RF);
         withEnv("KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR", DEFAULT_INTERNAL_TOPIC_RF);
@@ -100,6 +99,12 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         if (this.externalZookeeperConnect != null) {
             throw new IllegalStateException("Cannot configure Kraft mode when Zookeeper configured");
         }
+        verifyMinKraftVersion();
+        kraftEnabled = true;
+        return self();
+    }
+
+    private void verifyMinKraftVersion() {
         String actualVersion = DockerImageName.parse(getDockerImageName()).getVersionPart();
         if (new ComparableVersion(actualVersion).isLessThan(MIN_KRAFT_TAG)) {
             throw new IllegalArgumentException(
@@ -110,8 +115,6 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
                 )
             );
         }
-        kraftEnabled = true;
-        return self();
     }
 
     public KafkaContainer withClusterId(String clusterId) {
@@ -145,40 +148,49 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     protected void configure() {
         if (kraftEnabled) {
             waitingFor(Wait.forLogMessage(".*Transitioning from RECOVERY to RUNNING.*", 1));
+            configureKraft();
         } else {
             waitingFor(Wait.forLogMessage(".*\\[KafkaServer id=\\d+\\] started.*", 1));
+            configureZookeeper();
         }
+    }
 
-        if (kraftEnabled) {
-            withEnv(
-                "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP",
-                String.format("%s,CONTROLLER:PLAINTEXT", getEnvMap().get("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP"))
-            );
-            withEnv(
-                "KAFKA_LISTENERS",
-                String.format("%s,CONTROLLER://0.0.0.0:9094", getEnvMap().get("KAFKA_LISTENERS"))
-            );
+    protected void configureKraft() {
+        if(!getEnvMap().containsKey("KAFKA_NODE_ID")) {
+            withEnv("KAFKA_NODE_ID", getEnvMap().get("KAFKA_BROKER_ID"));
+        }
+        withEnv(
+            "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP",
+            String.format("%s,CONTROLLER:PLAINTEXT", getEnvMap().get("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP"))
+        );
+        withEnv(
+            "KAFKA_LISTENERS",
+            String.format("%s,CONTROLLER://0.0.0.0:9094", getEnvMap().get("KAFKA_LISTENERS"))
+        );
 
-            withEnv("KAFKA_PROCESS_ROLES", "broker,controller");
-            if (!getEnvMap().containsKey("KAFKA_CONTROLLER_QUORUM_VOTERS")) {
-                withEnv(
-                    "KAFKA_CONTROLLER_QUORUM_VOTERS",
-                    String.format(
-                        "%s@%s:9094",
-                        getEnvMap().get("KAFKA_NODE_ID"),
-                        getNetwork() != null ? getNetworkAliases().get(0) : "localhost"
-                    )
-                );
-            }
-            withEnv("KAFKA_CONTROLLER_LISTENER_NAMES", "CONTROLLER");
-        } else if (externalZookeeperConnect != null) {
+        withEnv("KAFKA_PROCESS_ROLES", "broker,controller");
+        if (!getEnvMap().containsKey("KAFKA_CONTROLLER_QUORUM_VOTERS")) {
+            withEnv(
+                "KAFKA_CONTROLLER_QUORUM_VOTERS",
+                String.format(
+                    "%s@%s:9094",
+                    getEnvMap().get("KAFKA_NODE_ID"),
+                    getNetwork() != null ? getNetworkAliases().get(0) : "localhost"
+                )
+            );
+        }
+        withEnv("KAFKA_CONTROLLER_LISTENER_NAMES", "CONTROLLER");
+
+    }
+
+    protected void configureZookeeper() {
+        if (externalZookeeperConnect != null) {
             withEnv("KAFKA_ZOOKEEPER_CONNECT", externalZookeeperConnect);
         } else {
             addExposedPort(ZOOKEEPER_PORT);
             withEnv("KAFKA_ZOOKEEPER_CONNECT", "localhost:" + ZOOKEEPER_PORT);
         }
     }
-
     @Override
     protected void containerIsStarting(InspectContainerResponse containerInfo) {
         super.containerIsStarting(containerInfo);
@@ -191,24 +203,31 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
                 getBootstrapServers(),
                 brokerAdvertisedListener(containerInfo)
             );
-        if (kraftEnabled) {
-            command += "sed -i '/KAFKA_ZOOKEEPER_CONNECT/d' /etc/confluent/docker/configure\n";
-            command +=
-                "echo 'kafka-storage format --ignore-formatted -t \"" +
-                clusterId +
-                "\" -c /etc/kafka/kafka.properties' >> /etc/confluent/docker/configure\n";
-        } else {
-            command += "echo 'clientPort=" + ZOOKEEPER_PORT + "' > zookeeper.properties\n";
-            command += "echo 'dataDir=/var/lib/zookeeper/data' >> zookeeper.properties\n";
-            command += "echo 'dataLogDir=/var/lib/zookeeper/log' >> zookeeper.properties\n";
-            command += "zookeeper-server-start zookeeper.properties &\n";
-        }
+
+        command += (kraftEnabled) ? commandKraft() : commandZookeeper();
 
         // Optimization: skip the checks
         command += "echo '' > /etc/confluent/docker/ensure \n";
         // Run the original command
         command += "/etc/confluent/docker/run \n";
         copyFileToContainer(Transferable.of(command, 0777), STARTER_SCRIPT);
+    }
+
+    protected String commandKraft() {
+        String command = "sed -i '/KAFKA_ZOOKEEPER_CONNECT/d' /etc/confluent/docker/configure\n";
+        command +=
+            "echo 'kafka-storage format --ignore-formatted -t \"" +
+                clusterId +
+                "\" -c /etc/kafka/kafka.properties' >> /etc/confluent/docker/configure\n";
+        return command;
+    }
+
+    protected String commandZookeeper() {
+        String command = "echo 'clientPort=" + ZOOKEEPER_PORT + "' > zookeeper.properties\n";
+        command += "echo 'dataDir=/var/lib/zookeeper/data' >> zookeeper.properties\n";
+        command += "echo 'dataLogDir=/var/lib/zookeeper/log' >> zookeeper.properties\n";
+        command += "zookeeper-server-start zookeeper.properties &\n";
+        return command;
     }
 
     protected String brokerAdvertisedListener(InspectContainerResponse containerInfo) {
