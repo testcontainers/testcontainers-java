@@ -24,7 +24,7 @@ public class PostgreSQLContainerProvider extends JdbcDatabaseContainerProvider {
 
     @Override
     public JdbcDatabaseContainer newInstance(String tag) {
-        return new PostgreSQLContainer(DockerImageName.parse(PostgreSQLContainer.IMAGE).withTag(tag));
+        return new PostgreSQLContainer(DockerImageName.parse("library/postgres").withTag(tag));
     }
 
     @Override
