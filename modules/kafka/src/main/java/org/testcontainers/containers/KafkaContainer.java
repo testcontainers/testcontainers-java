@@ -156,17 +156,14 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     }
 
     protected void configureKraft() {
-        if(!getEnvMap().containsKey("KAFKA_NODE_ID")) {
+        if (!getEnvMap().containsKey("KAFKA_NODE_ID")) {
             withEnv("KAFKA_NODE_ID", getEnvMap().get("KAFKA_BROKER_ID"));
         }
         withEnv(
             "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP",
             String.format("%s,CONTROLLER:PLAINTEXT", getEnvMap().get("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP"))
         );
-        withEnv(
-            "KAFKA_LISTENERS",
-            String.format("%s,CONTROLLER://0.0.0.0:9094", getEnvMap().get("KAFKA_LISTENERS"))
-        );
+        withEnv("KAFKA_LISTENERS", String.format("%s,CONTROLLER://0.0.0.0:9094", getEnvMap().get("KAFKA_LISTENERS")));
 
         withEnv("KAFKA_PROCESS_ROLES", "broker,controller");
         if (!getEnvMap().containsKey("KAFKA_CONTROLLER_QUORUM_VOTERS")) {
@@ -180,7 +177,6 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
             );
         }
         withEnv("KAFKA_CONTROLLER_LISTENER_NAMES", "CONTROLLER");
-
     }
 
     protected void configureZookeeper() {
@@ -191,6 +187,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
             withEnv("KAFKA_ZOOKEEPER_CONNECT", "localhost:" + ZOOKEEPER_PORT);
         }
     }
+
     @Override
     protected void containerIsStarting(InspectContainerResponse containerInfo) {
         super.containerIsStarting(containerInfo);
@@ -217,8 +214,8 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         String command = "sed -i '/KAFKA_ZOOKEEPER_CONNECT/d' /etc/confluent/docker/configure\n";
         command +=
             "echo 'kafka-storage format --ignore-formatted -t \"" +
-                clusterId +
-                "\" -c /etc/kafka/kafka.properties' >> /etc/confluent/docker/configure\n";
+            clusterId +
+            "\" -c /etc/kafka/kafka.properties' >> /etc/confluent/docker/configure\n";
         return command;
     }
 

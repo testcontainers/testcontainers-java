@@ -94,12 +94,12 @@ public class KafkaContainerCluster implements Startable {
             () -> {
                 Container.ExecResult result =
                     this.zookeeper.execInContainer(
-                            "sh",
-                            "-c",
-                            "zookeeper-shell zookeeper:" +
+                        "sh",
+                        "-c",
+                        "zookeeper-shell zookeeper:" +
                             KafkaContainer.ZOOKEEPER_PORT +
                             " ls /brokers/ids | tail -n 1"
-                        );
+                    );
                 String brokers = result.getStdout();
 
                 return brokers != null && brokers.split(",").length == this.brokersNum;
