@@ -19,6 +19,8 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("solr");
 
+    private static final DockerImageName LIBRARY_IMAGE_NAME = DockerImageName.parse("library/solr");
+
     @Deprecated
     public static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
 
@@ -48,7 +50,7 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
 
     public SolrContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, LIBRARY_IMAGE_NAME);
 
         this.waitStrategy =
             new LogMessageWaitStrategy()

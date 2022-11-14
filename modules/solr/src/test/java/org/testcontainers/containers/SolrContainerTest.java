@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class SolrContainerTest {
 
-    private static final DockerImageName SOLR_IMAGE = DockerImageName.parse("solr:8.3.0");
+    private static final DockerImageName SOLR_IMAGE = DockerImageName.parse("library/solr:8.3.0");
 
     private SolrClient client = null;
 

@@ -28,6 +28,8 @@ public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("orientdb");
 
+    private static final DockerImageName LIBRARY_IMAGE_NAME = DockerImageName.parse("library/orientdb");
+
     private static final String DEFAULT_TAG = "3.0.24-tp3";
 
     private static final String DEFAULT_USERNAME = "admin";
@@ -66,7 +68,7 @@ public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
 
     public OrientDBContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, LIBRARY_IMAGE_NAME);
 
         serverPassword = DEFAULT_SERVER_PASSWORD;
         databaseName = DEFAULT_DATABASE_NAME;

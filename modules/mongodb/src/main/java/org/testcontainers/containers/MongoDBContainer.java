@@ -19,6 +19,8 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("mongo");
 
+    private static final DockerImageName LIBRARY_IMAGE_NAME = DockerImageName.parse("library/mongo");
+
     private static final String DEFAULT_TAG = "4.0.10";
 
     private static final int CONTAINER_EXIT_CODE_OK = 0;
@@ -43,7 +45,7 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
 
     public MongoDBContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, LIBRARY_IMAGE_NAME);
 
         withExposedPorts(MONGODB_INTERNAL_PORT);
         withCommand("--replSet", "docker-rs");

@@ -31,6 +31,8 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
      */
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("neo4j");
 
+    private static final DockerImageName LIBRARY_IMAGE_NAME = DockerImageName.parse("library/neo4j");
+
     /**
      * The default tag (version) to use.
      */
@@ -91,9 +93,11 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
      */
     public Neo4jContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-        this.standardImage = dockerImageName.getUnversionedPart().equals(DEFAULT_IMAGE_NAME.getUnversionedPart());
+        this.standardImage =
+            dockerImageName.getUnversionedPart().equals(DEFAULT_IMAGE_NAME.getUnversionedPart()) ||
+            dockerImageName.getUnversionedPart().equals(LIBRARY_IMAGE_NAME.getUnversionedPart());
 
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, LIBRARY_IMAGE_NAME);
 
         WaitStrategy waitForBolt = new LogMessageWaitStrategy()
             .withRegEx(String.format(".*Bolt enabled on .*:%d\\.\n", DEFAULT_BOLT_PORT));

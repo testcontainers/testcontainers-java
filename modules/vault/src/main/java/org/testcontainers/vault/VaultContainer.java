@@ -26,6 +26,8 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("vault");
 
+    private static final DockerImageName LIBRARY_IMAGE_NAME = DockerImageName.parse("library/vault");
+
     private static final String DEFAULT_TAG = "1.1.3";
 
     private static final int VAULT_PORT = 8200;
@@ -50,7 +52,7 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
 
     public VaultContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, LIBRARY_IMAGE_NAME);
 
         // Use the vault healthcheck endpoint to check for readiness, per https://www.vaultproject.io/api/system/health.html
         setWaitStrategy(Wait.forHttp("/v1/sys/health").forStatusCode(200));

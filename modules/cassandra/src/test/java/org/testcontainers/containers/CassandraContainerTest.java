@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Slf4j
 public class CassandraContainerTest {
 
-    private static final DockerImageName CASSANDRA_IMAGE = DockerImageName.parse("cassandra:3.11.2");
+    private static final DockerImageName CASSANDRA_IMAGE = DockerImageName.parse("library/cassandra:3.11.2");
 
     private static final String TEST_CLUSTER_NAME_IN_CONF = "Test Cluster Integration Test";
 
@@ -88,7 +88,7 @@ public class CassandraContainerTest {
     public void testInitScriptWithLegacyCassandra() {
         try (
             CassandraContainer<?> cassandraContainer = new CassandraContainer<>(
-                DockerImageName.parse("cassandra:2.2.11")
+                DockerImageName.parse("library/cassandra:2.2.11")
             )
                 .withInitScript("initial.cql")
         ) {
