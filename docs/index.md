@@ -156,6 +156,13 @@ A huge thank you to our sponsors:
     </a>
 </div>
 
+<div style="text-align:center; max-width: 128px; display: inline-block; margin: 5px;">
+    <a href="https://www.spotify.com">
+        <img src="sponsor_logos/spotify.png" style="width: 100%"/>
+        <p>Spotify</p>
+    </a>
+</div>
+
 ### Backers
 
 * [Philip Riecks (@rieckpil)](https://github.com/rieckpil)
