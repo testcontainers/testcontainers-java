@@ -33,9 +33,9 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     protected String externalZookeeperConnect = null;
 
-    protected boolean kraftEnabled = false;
+    private boolean kraftEnabled = false;
 
-    protected String clusterId = generateClusterId();
+    private String clusterId = generateClusterId();
 
     /**
      * @deprecated use {@link KafkaContainer(DockerImageName)} instead
@@ -156,9 +156,10 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     }
 
     protected void configureKraft() {
-        if (!getEnvMap().containsKey("KAFKA_NODE_ID")) {
-            withEnv("KAFKA_NODE_ID", getEnvMap().get("KAFKA_BROKER_ID"));
-        }
+        withEnv(
+            "KAFKA_NODE_ID",
+            getEnvMap().computeIfAbsent("KAFKA_NODE_ID", key -> getEnvMap().get("KAFKA_BROKER_ID"))
+        );
         withEnv(
             "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP",
             String.format("%s,CONTROLLER:PLAINTEXT", getEnvMap().get("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP"))
@@ -166,16 +167,19 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         withEnv("KAFKA_LISTENERS", String.format("%s,CONTROLLER://0.0.0.0:9094", getEnvMap().get("KAFKA_LISTENERS")));
 
         withEnv("KAFKA_PROCESS_ROLES", "broker,controller");
-        if (!getEnvMap().containsKey("KAFKA_CONTROLLER_QUORUM_VOTERS")) {
-            withEnv(
-                "KAFKA_CONTROLLER_QUORUM_VOTERS",
-                String.format(
-                    "%s@%s:9094",
-                    getEnvMap().get("KAFKA_NODE_ID"),
-                    getNetwork() != null ? getNetworkAliases().get(0) : "localhost"
+        withEnv(
+            "KAFKA_CONTROLLER_QUORUM_VOTERS",
+            getEnvMap()
+                .computeIfAbsent(
+                    "KAFKA_CONTROLLER_QUORUM_VOTERS",
+                    key ->
+                        String.format(
+                            "%s@%s:9094",
+                            getEnvMap().get("KAFKA_NODE_ID"),
+                            getNetwork() != null ? getNetworkAliases().get(0) : "localhost"
+                        )
                 )
-            );
-        }
+        );
         withEnv("KAFKA_CONTROLLER_LISTENER_NAMES", "CONTROLLER");
     }
 
