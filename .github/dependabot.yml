@@ -258,6 +258,11 @@ updates:
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
+    directory: "/modules/yugabytedb"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
 
 # Examples
   - package-ecosystem: "gradle"
