@@ -26,7 +26,6 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
-import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
@@ -153,12 +152,7 @@ public class LocalstackContainerTest {
             String fooQueueUrl = queueResult.getQueueUrl();
             assertThat(fooQueueUrl)
                 .as("Created queue has external hostname URL")
-                .contains(
-                    "http://" +
-                    DockerClientFactory.instance().dockerHostIpAddress() +
-                    ":" +
-                    localstack.getMappedPort(LocalStackContainer.PORT)
-                );
+                .contains("http://" + localstack.getHost() + ":" + localstack.getMappedPort(LocalStackContainer.PORT));
 
             sqs.sendMessage(fooQueueUrl, "test");
             final long messageCount = sqs
@@ -265,14 +259,17 @@ public class LocalstackContainerTest {
             LocalstackTestImages.AWS_CLI_IMAGE
         )
             .withNetwork(network)
-            .withCreateContainerCmdModifier(cmd -> cmd.withEntrypoint("top"))
+            .withCreateContainerCmdModifier(cmd -> cmd.withEntrypoint("tail"))
+            .withCommand(" -f /dev/null")
             .withEnv("AWS_ACCESS_KEY_ID", "accesskey")
             .withEnv("AWS_SECRET_ACCESS_KEY", "secretkey")
             .withEnv("AWS_REGION", "eu-west-1");
 
         @Test
         public void s3TestOverDockerNetwork() throws Exception {
-            runAwsCliAgainstDockerNetworkContainer("s3api create-bucket --bucket foo");
+            runAwsCliAgainstDockerNetworkContainer(
+                "s3api create-bucket --bucket foo --create-bucket-configuration LocationConstraint=eu-west-1"
+            );
             runAwsCliAgainstDockerNetworkContainer("s3api list-buckets");
             runAwsCliAgainstDockerNetworkContainer("s3 ls s3://foo");
         }
@@ -313,7 +310,7 @@ public class LocalstackContainerTest {
         private String runAwsCliAgainstDockerNetworkContainer(String command) throws Exception {
             final String[] commandParts = String
                 .format(
-                    "/usr/bin/aws --region eu-west-1 %s --endpoint-url http://localstack:%d --no-verify-ssl",
+                    "/usr/local/bin/aws --region eu-west-1 %s --endpoint-url http://localstack:%d --no-verify-ssl",
                     command,
                     LocalStackContainer.PORT
                 )

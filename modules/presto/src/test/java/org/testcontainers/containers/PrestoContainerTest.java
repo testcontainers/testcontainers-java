@@ -32,6 +32,7 @@ public class PrestoContainerTest {
                 assertThat(resultSet.getString("node_version"))
                     .as("Presto version")
                     .isEqualTo(PrestoContainer.DEFAULT_TAG);
+                assertHasCorrectExposedAndLivenessCheckPorts(prestoSql);
             }
         }
     }
@@ -148,5 +149,11 @@ public class PrestoContainerTest {
                 .as("Transaction isolation should be retained")
                 .isEqualTo(Connection.TRANSACTION_READ_UNCOMMITTED);
         }
+    }
+
+    private void assertHasCorrectExposedAndLivenessCheckPorts(PrestoContainer<?> prestoSql) {
+        assertThat(prestoSql.getExposedPorts()).containsExactly(PrestoContainer.PRESTO_PORT);
+        assertThat(prestoSql.getLivenessCheckPortNumbers())
+            .containsExactly(prestoSql.getMappedPort(PrestoContainer.PRESTO_PORT));
     }
 }

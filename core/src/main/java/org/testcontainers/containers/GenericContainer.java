@@ -360,7 +360,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                     logger().warn("{} can't be reused because it overrides {}", getClass(), method.getName());
                     return false;
                 }
-            } catch (NoSuchMethodException e) {
+            } catch (NoSuchMethodException | NoClassDefFoundError e) {
                 // ignore
             }
         }
