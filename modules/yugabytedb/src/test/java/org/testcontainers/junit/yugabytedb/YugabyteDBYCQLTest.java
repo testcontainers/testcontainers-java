@@ -6,8 +6,6 @@ import org.junit.Test;
 import org.testcontainers.containers.YugabyteDBYCQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import java.net.InetSocketAddress;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -20,10 +18,6 @@ public class YugabyteDBYCQLTest {
     private static final String IMAGE_NAME = "yugabytedb/yugabyte:2.14.4.0-b26";
 
     private static final DockerImageName YBDB_TEST_IMAGE = DockerImageName.parse(IMAGE_NAME);
-
-    private static final String LOCAL_DC = "datacenter1";
-
-    private static final int YCQL_PORT = 9042;
 
     @Test
     public void testSmoke() {
@@ -42,7 +36,7 @@ public class YugabyteDBYCQLTest {
     }
 
     @Test
-    public void testCustomKeyspace() throws InterruptedException {
+    public void testCustomKeyspace() {
         String key = "random";
         try (
             final YugabyteDBYCQLContainer ycqlContainer = new YugabyteDBYCQLContainer(YBDB_TEST_IMAGE)
@@ -63,7 +57,7 @@ public class YugabyteDBYCQLTest {
     }
 
     @Test
-    public void testAuthenticationEnabled() throws InterruptedException {
+    public void testAuthenticationEnabled() {
         String role = "random";
         try (
             final YugabyteDBYCQLContainer ycqlContainer = new YugabyteDBYCQLContainer(YBDB_TEST_IMAGE)
@@ -96,7 +90,7 @@ public class YugabyteDBYCQLTest {
     }
 
     @Test
-    public void testInitScript() throws InterruptedException {
+    public void testInitScript() {
         String key = "random";
         try (
             final YugabyteDBYCQLContainer ycqlContainer = new YugabyteDBYCQLContainer(YBDB_TEST_IMAGE)
@@ -118,8 +112,8 @@ public class YugabyteDBYCQLTest {
                 .builder()
                 .withKeyspace(ycqlContainer.getKeyspace())
                 .withAuthCredentials(ycqlContainer.getUsername(), ycqlContainer.getPassword())
-                .withLocalDatacenter(LOCAL_DC)
-                .addContactPoint(new InetSocketAddress(ycqlContainer.getHost(), ycqlContainer.getMappedPort(YCQL_PORT)))
+                .withLocalDatacenter(ycqlContainer.getLocalDc())
+                .addContactPoint(ycqlContainer.getContactPoint())
                 .build()
         ) {
             return session.execute(cql);

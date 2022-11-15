@@ -120,7 +120,7 @@ public class YugabyteDBYCQLContainer extends GenericContainer<YugabyteDBYCQLCont
      */
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
-        if (initScript != null) {
+        if (this.initScript != null) {
             ScriptUtils.runInitScript(new YugabyteDBYCQLDelegate(this), initScript);
         }
     }
@@ -146,7 +146,7 @@ public class YugabyteDBYCQLContainer extends GenericContainer<YugabyteDBYCQLCont
      * @return username
      */
     public String getUsername() {
-        return username;
+        return this.username;
     }
 
     /**
@@ -154,7 +154,7 @@ public class YugabyteDBYCQLContainer extends GenericContainer<YugabyteDBYCQLCont
      * @return password
      */
     public String getPassword() {
-        return password;
+        return this.password;
     }
 
     /**
@@ -162,6 +162,6 @@ public class YugabyteDBYCQLContainer extends GenericContainer<YugabyteDBYCQLCont
      * @return keyspace
      */
     public String getKeyspace() {
-        return keyspace;
+        return this.keyspace;
     }
 }
