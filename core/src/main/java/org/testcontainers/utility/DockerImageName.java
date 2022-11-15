@@ -11,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
 import org.testcontainers.utility.Versioning.Sha256Versioning;
 import org.testcontainers.utility.Versioning.TagVersioning;
 
+import java.util.Arrays;
 import java.util.regex.Pattern;
 
 @EqualsAndHashCode(exclude = { "rawName", "compatibleSubstituteFor" })
@@ -25,6 +26,8 @@ public final class DockerImageName {
     private static final String REPO_NAME_PART = ALPHA_NUMERIC + "(" + SEPARATOR + ALPHA_NUMERIC + ")*";
 
     private static final Pattern REPO_NAME = Pattern.compile(REPO_NAME_PART + "(/" + REPO_NAME_PART + ")*");
+
+    private static final String LIBRARY_PREFIX = "library/";
 
     private final String rawName;
 
@@ -258,13 +261,18 @@ public final class DockerImageName {
             throw new IllegalArgumentException("anyOthers parameter must be non-empty");
         }
 
-        for (DockerImageName anyOther : anyOthers) {
+        String imageWithoutLibraryPrefix = this.repository.replace(LIBRARY_PREFIX, "");
+        DockerImageName[] dockerImageNames = Arrays.copyOf(anyOthers, anyOthers.length + 1);
+        dockerImageNames[dockerImageNames.length - 1] =
+            DockerImageName.parse(LIBRARY_PREFIX + imageWithoutLibraryPrefix);
+
+        for (DockerImageName anyOther : dockerImageNames) {
             if (this.isCompatibleWith(anyOther)) {
                 return;
             }
         }
 
-        final DockerImageName exampleOther = anyOthers[0];
+        final DockerImageName exampleOther = dockerImageNames[0];
 
         throw new IllegalStateException(
             String.format(
