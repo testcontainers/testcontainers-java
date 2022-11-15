@@ -43,7 +43,7 @@ Or create a container with custom username, password, bucket, organization, and 
 The following code snippet shows how you can create an InfluxDB Java client:
 
 <!--codeinclude-->
-[Create an InfluxDB Java client](../../../modules/influxdb/src/test/java/org/testcontainers/containers/InfluxDBTestUtils.java) inside_block:createInfluxDB2Client
+[Create an InfluxDB Java client](../../../modules/influxdb/src/test/java/org/testcontainers/containers/InfluxDBContainerTest.java) inside_block:createInfluxDBClient
 <!--/codeinclude-->
 
 !!! hint
@@ -77,7 +77,7 @@ For instance, creating an InfluxDB container with a custom username, password, a
 In the following example you will find a snippet to create an InfluxDB client using the official Java client:
 
 <!--codeinclude-->
-[Create an InfluxDB Java client](../../../modules/influxdb/src/main/java/org/testcontainers/containers/InfluxDBContainer.java) inside_block:createInfluxDBClient
+[Create an InfluxDB Java client](../../../modules/influxdb/src/test/java/org/testcontainers/containers/InfluxDBContainerV1Test.java) inside_block:createInfluxDBClient
 <!--/codeinclude-->
 
 !!! hint

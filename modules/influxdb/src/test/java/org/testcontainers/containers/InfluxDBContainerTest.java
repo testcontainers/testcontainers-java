@@ -1,7 +1,8 @@
 package org.testcontainers.containers;
 
-
 import com.influxdb.client.InfluxDBClient;
+import com.influxdb.client.InfluxDBClientFactory;
+import com.influxdb.client.InfluxDBClientOptions;
 import com.influxdb.client.QueryApi;
 import com.influxdb.client.WriteApi;
 import com.influxdb.client.domain.Bucket;
@@ -10,12 +11,13 @@ import com.influxdb.client.domain.WritePrecision;
 import com.influxdb.client.write.Point;
 import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
-import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
 
 public class InfluxDBContainerTest {
 
@@ -38,12 +40,13 @@ public class InfluxDBContainerTest {
         try (
             // constructorWithDefaultVariables {
             final InfluxDBContainer<?> influxDBContainer = new InfluxDBContainer<>(
-                DockerImageName.parse("influxdb:2.0.7"))
+                DockerImageName.parse("influxdb:2.0.7")
+            )
             // }
         ) {
             influxDBContainer.start();
 
-            try (final InfluxDBClient influxDBClient = InfluxDBTestUtils.createInfluxDBClient(influxDBContainer)) {
+            try (final InfluxDBClient influxDBClient = createClient(influxDBContainer)) {
                 Assertions.assertThat(influxDBClient).isNotNull();
                 Assertions.assertThat(influxDBClient.ping()).isTrue();
             }
@@ -55,15 +58,21 @@ public class InfluxDBContainerTest {
         try (
             // constructorWithAdminToken {
             final InfluxDBContainer<?> influxDBContainer = new InfluxDBContainer<>(
-                DockerImageName.parse("influxdb:2.0.7")).withAdminToken(ADMIN_TOKEN)
+                DockerImageName.parse("influxdb:2.0.7")
+            )
+                .withAdminToken(ADMIN_TOKEN)
             // }
         ) {
             influxDBContainer.start();
             final Optional<String> adminToken = influxDBContainer.getAdminToken();
             Assertions.assertThat(adminToken).isNotEmpty();
 
-            try (final InfluxDBClient influxDBClient = InfluxDBTestUtils.createInfluxDBClientWithToken(
-                influxDBContainer.getUrl(), adminToken.get())) {
+            try (
+                final InfluxDBClient influxDBClient = createClientWithToken(
+                    influxDBContainer.getUrl(),
+                    adminToken.get()
+                )
+            ) {
                 Assertions.assertThat(influxDBClient).isNotNull();
                 Assertions.assertThat(influxDBClient.ping()).isTrue();
             }
@@ -75,7 +84,8 @@ public class InfluxDBContainerTest {
         try (
             // constructorWithCustomVariables {
             final InfluxDBContainer<?> influxDBContainer = new InfluxDBContainer<>(
-                DockerImageName.parse("influxdb:2.0.7"))
+                DockerImageName.parse("influxdb:2.0.7")
+            )
                 .withUsername(USERNAME)
                 .withPassword(PASSWORD)
                 .withOrganization(ORG)
@@ -83,16 +93,16 @@ public class InfluxDBContainerTest {
                 .withRetention(RETENTION);
             // }
         ) {
-
             influxDBContainer.start();
 
-            try (final InfluxDBClient influxDBClient = InfluxDBTestUtils.createInfluxDBClient(influxDBContainer)) {
+            try (final InfluxDBClient influxDBClient = createClient(influxDBContainer)) {
                 final Bucket bucket = influxDBClient.getBucketsApi().findBucketByName(BUCKET);
                 Assertions.assertThat(bucket).isNotNull();
 
                 Assertions.assertThat(bucket.getName()).isEqualTo(BUCKET);
-                Assertions.assertThat(bucket.getRetentionRules()).
-                    hasSize(1)
+                Assertions
+                    .assertThat(bucket.getRetentionRules())
+                    .hasSize(1)
                     .first()
                     .extracting(BucketRetentionRules::getEverySeconds)
                     .isEqualTo(SECONDS_IN_WEEK);
@@ -104,7 +114,8 @@ public class InfluxDBContainerTest {
     public void queryForWriteAndRead() {
         try (
             final InfluxDBContainer<?> influxDBContainer = new InfluxDBContainer<>(
-                InfluxDBTestUtils.INFLUXDB_V2_TEST_IMAGE)
+                InfluxDBTestUtils.INFLUXDB_V2_TEST_IMAGE
+            )
                 .withUsername(USERNAME)
                 .withPassword(PASSWORD)
                 .withOrganization(ORG)
@@ -113,7 +124,7 @@ public class InfluxDBContainerTest {
         ) {
             influxDBContainer.start();
 
-            try (final InfluxDBClient influxDBClient = InfluxDBTestUtils.createInfluxDBClient(influxDBContainer)) {
+            try (final InfluxDBClient influxDBClient = createClient(influxDBContainer)) {
                 try (final WriteApi writeApi = influxDBClient.makeWriteApi()) {
                     final Point point = Point
                         .measurement("temperature")
@@ -133,5 +144,23 @@ public class InfluxDBContainerTest {
                 Assertions.assertThat(records).hasSize(1);
             }
         }
+    }
+
+    // createInfluxDBClient {
+    public static InfluxDBClient createClient(final InfluxDBContainer<?> influxDBContainer) {
+        final InfluxDBClientOptions influxDBClientOptions = InfluxDBClientOptions
+            .builder()
+            .url(influxDBContainer.getUrl())
+            .authenticate(influxDBContainer.getUsername(), influxDBContainer.getPassword().toCharArray())
+            .bucket(influxDBContainer.getBucket())
+            .org(influxDBContainer.getOrganization())
+            .build();
+        return InfluxDBClientFactory.create(influxDBClientOptions);
+    }
+
+    // }
+
+    public static InfluxDBClient createClientWithToken(final String url, final String token) {
+        return InfluxDBClientFactory.create(url, token.toCharArray());
     }
 }

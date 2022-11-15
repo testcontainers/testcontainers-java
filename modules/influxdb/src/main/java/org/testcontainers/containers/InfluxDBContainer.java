@@ -1,14 +1,15 @@
 package org.testcontainers.containers;
 
-import java.util.Collections;
-import java.util.Optional;
-import java.util.Set;
 import lombok.Getter;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
+
+import java.util.Collections;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Testcontainers implementation for InfluxDB.
@@ -41,6 +42,7 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Gen
 
     private String adminPassword = "password";
 
+    @Getter
     private String database;
 
     /**
@@ -80,16 +82,15 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Gen
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
-        this.logger().info("Starting an InfluxDB container using [{}]", dockerImageName);
-
-        this.waitStrategy = new HttpWaitStrategy()
-            .forPath("/ping")
-            .withBasicCredentials(this.username, this.password)
-            .forStatusCode(NO_CONTENT_STATUS_CODE);
+        this.waitStrategy =
+            new HttpWaitStrategy()
+                .forPath("/ping")
+                .withBasicCredentials(this.username, this.password)
+                .forStatusCode(NO_CONTENT_STATUS_CODE);
 
         this.isAtLeastMajorVersion2 =
             new ComparableVersion(dockerImageName.getVersionPart()).isGreaterThanOrEqualTo("2.0.0");
-        this.addExposedPort(INFLUXDB_PORT);
+        addExposedPort(INFLUXDB_PORT);
     }
 
     /**
@@ -98,9 +99,9 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Gen
     @Override
     protected void configure() {
         if (this.isAtLeastMajorVersion2) {
-            this.setInfluxDBV2Envs();
+            configureInfluxDBV2();
         } else {
-            this.setInfluxDBV1Envs();
+            configureInfluxDBV1();
         }
     }
 
@@ -110,37 +111,37 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Gen
      * @see <a href="https://hub.docker.com/_/influxdb"> InfluxDB Dockerhub </a> for full documentation on InfluxDB's
      * envrinoment variables</a>
      */
-    private void setInfluxDBV2Envs() {
-        this.addEnv("DOCKER_INFLUXDB_INIT_MODE", "setup");
+    private void configureInfluxDBV2() {
+        addEnv("DOCKER_INFLUXDB_INIT_MODE", "setup");
 
-        this.addEnv("DOCKER_INFLUXDB_INIT_USERNAME", this.username);
-        this.addEnv("DOCKER_INFLUXDB_INIT_PASSWORD", this.password);
+        addEnv("DOCKER_INFLUXDB_INIT_USERNAME", this.username);
+        addEnv("DOCKER_INFLUXDB_INIT_PASSWORD", this.password);
 
-        this.addEnv("DOCKER_INFLUXDB_INIT_ORG", this.organization);
-        this.addEnv("DOCKER_INFLUXDB_INIT_BUCKET", this.bucket);
+        addEnv("DOCKER_INFLUXDB_INIT_ORG", this.organization);
+        addEnv("DOCKER_INFLUXDB_INIT_BUCKET", this.bucket);
 
-        this.retention.ifPresent(ret -> this.addEnv("DOCKER_INFLUXDB_INIT_RETENTION", ret));
-        this.adminToken.ifPresent(token -> this.addEnv("DOCKER_INFLUXDB_INIT_ADMIN_TOKEN", token));
+        this.retention.ifPresent(ret -> addEnv("DOCKER_INFLUXDB_INIT_RETENTION", ret));
+        this.adminToken.ifPresent(token -> addEnv("DOCKER_INFLUXDB_INIT_ADMIN_TOKEN", token));
     }
 
     /**
      * Sets the InfluxDB 1.x environment variables
      */
-    private void setInfluxDBV1Envs() {
-        this.addEnv("INFLUXDB_USER", this.username);
-        this.addEnv("INFLUXDB_USER_PASSWORD", this.password);
+    private void configureInfluxDBV1() {
+        addEnv("INFLUXDB_USER", this.username);
+        addEnv("INFLUXDB_USER_PASSWORD", this.password);
 
-        this.addEnv("INFLUXDB_HTTP_AUTH_ENABLED", String.valueOf(this.authEnabled));
+        addEnv("INFLUXDB_HTTP_AUTH_ENABLED", String.valueOf(this.authEnabled));
 
-        this.addEnv("INFLUXDB_ADMIN_USER", this.admin);
-        this.addEnv("INFLUXDB_ADMIN_PASSWORD", this.adminPassword);
+        addEnv("INFLUXDB_ADMIN_USER", this.admin);
+        addEnv("INFLUXDB_ADMIN_PASSWORD", this.adminPassword);
 
-        this.addEnv("INFLUXDB_DB", this.database);
+        addEnv("INFLUXDB_DB", this.database);
     }
 
     @Override
     public Set<Integer> getLivenessCheckPortNumbers() {
-        return Collections.singleton(this.getMappedPort(INFLUXDB_PORT));
+        return Collections.singleton(getMappedPort(INFLUXDB_PORT));
     }
 
     /**
@@ -266,11 +267,9 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Gen
      * @deprecated Use the new <a href="https://github.com/influxdata/influxdb-client-java">InfluxDB client library.</a>
      */
     @Deprecated
-    // createInfluxDBClient {
     public InfluxDB getNewInfluxDB() {
         final InfluxDB influxDB = InfluxDBFactory.connect(getUrl(), this.username, this.password);
         influxDB.setDatabase(this.database);
         return influxDB;
     }
-    // }
 }
