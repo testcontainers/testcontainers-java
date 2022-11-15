@@ -50,6 +50,7 @@ body:
         - ToxiProxy
         - Trino
         - Vault
+        - YugabyteDB
     validations:
       required: true
   - type: textarea
