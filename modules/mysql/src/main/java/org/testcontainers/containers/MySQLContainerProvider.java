@@ -25,7 +25,7 @@ public class MySQLContainerProvider extends JdbcDatabaseContainerProvider {
     @Override
     public JdbcDatabaseContainer newInstance(String tag) {
         if (tag != null) {
-            return new MySQLContainer(DockerImageName.parse("library/mysql").withTag(tag));
+            return new MySQLContainer(DockerImageName.parse(MySQLContainer.IMAGE).withTag(tag));
         } else {
             return newInstance();
         }
