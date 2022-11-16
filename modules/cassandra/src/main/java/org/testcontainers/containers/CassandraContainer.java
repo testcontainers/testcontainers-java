@@ -29,8 +29,6 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("cassandra");
 
-    private static final DockerImageName LIBRARY_IMAGE_NAME = DockerImageName.parse("library/cassandra");
-
     private static final String DEFAULT_TAG = "3.11.2";
 
     @Deprecated
@@ -66,7 +64,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
 
     public CassandraContainer(DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, LIBRARY_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         addExposedPort(CQL_PORT);
         this.enableJmxReporting = false;

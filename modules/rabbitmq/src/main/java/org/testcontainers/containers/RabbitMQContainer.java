@@ -28,8 +28,6 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
      */
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("rabbitmq");
 
-    private static final DockerImageName LIBRARY_IMAGE_NAME = DockerImageName.parse("library/rabbitmq");
-
     private static final String DEFAULT_TAG = "3.7.25-management-alpine";
 
     private static final int DEFAULT_AMQP_PORT = 5672;
@@ -66,7 +64,7 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
 
     public RabbitMQContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, LIBRARY_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         addExposedPorts(DEFAULT_AMQP_PORT, DEFAULT_AMQPS_PORT, DEFAULT_HTTP_PORT, DEFAULT_HTTPS_PORT);
 

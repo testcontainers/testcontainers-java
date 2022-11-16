@@ -24,9 +24,7 @@ public class MongoDBContainerTest {
     public void shouldExecuteTransactions() {
         try (
             // creatingMongoDBContainer {
-            final MongoDBContainer mongoDBContainer = new MongoDBContainer(
-                DockerImageName.parse("library/mongo:4.0.10")
-            )
+            final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.0.10"))
             // }
         ) {
             // startingMongoDBContainer {
@@ -90,20 +88,14 @@ public class MongoDBContainerTest {
 
     @Test
     public void supportsMongoDB_4_4() {
-        try (
-            final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("library/mongo:4.4"))
-        ) {
+        try (final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.4"))) {
             mongoDBContainer.start();
         }
     }
 
     @Test
     public void shouldTestDatabaseName() {
-        try (
-            final MongoDBContainer mongoDBContainer = new MongoDBContainer(
-                DockerImageName.parse("library/mongo:4.0.10")
-            )
-        ) {
+        try (final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.0.10"))) {
             mongoDBContainer.start();
             final String databaseName = "my-db";
             assertThat(mongoDBContainer.getReplicaSetUrl(databaseName)).endsWith(databaseName);
@@ -112,7 +104,7 @@ public class MongoDBContainerTest {
 
     @Test
     public void supportsMongoDB_6() {
-        try (final MongoDBContainer mongoDBContainer = new MongoDBContainer("library/mongo:6.0.1")) {
+        try (final MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0.1")) {
             mongoDBContainer.start();
             executeTx(mongoDBContainer);
         }

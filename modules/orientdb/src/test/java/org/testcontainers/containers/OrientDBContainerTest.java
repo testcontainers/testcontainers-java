@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class OrientDBContainerTest {
 
-    private static final DockerImageName ORIENTDB_IMAGE = DockerImageName.parse("library/orientdb:3.2.0-tp3");
+    private static final DockerImageName ORIENTDB_IMAGE = DockerImageName.parse("orientdb:3.2.0-tp3");
 
     @Test
     public void shouldReturnTheSameSession() {

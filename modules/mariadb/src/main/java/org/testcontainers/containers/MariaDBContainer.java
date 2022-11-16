@@ -14,8 +14,6 @@ public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcD
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("mariadb");
 
-    private static final DockerImageName LIBRARY_IMAGE_NAME = DockerImageName.parse("library/mariadb");
-
     @Deprecated
     public static final String DEFAULT_TAG = "10.3.6";
 
@@ -54,7 +52,7 @@ public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcD
 
     public MariaDBContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, LIBRARY_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         addExposedPort(MARIADB_PORT);
     }

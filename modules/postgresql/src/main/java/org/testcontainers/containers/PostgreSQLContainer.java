@@ -21,8 +21,6 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("postgres");
 
-    private static final DockerImageName LIBRARY_IMAGE_NAME = DockerImageName.parse("library/postgres");
-
     public static final Integer POSTGRESQL_PORT = 5432;
 
     static final String DEFAULT_USER = "test";
@@ -51,7 +49,7 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
 
     public PostgreSQLContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, LIBRARY_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         this.waitStrategy =
             new LogMessageWaitStrategy()

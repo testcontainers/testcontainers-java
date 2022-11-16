@@ -18,8 +18,6 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Gen
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("influxdb");
 
-    private static final DockerImageName LIBRARY_IMAGE_NAME = DockerImageName.parse("library/influxdb");
-
     private static final String DEFAULT_TAG = "1.4.3";
 
     @Deprecated
@@ -55,7 +53,7 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Gen
 
     public InfluxDBContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, LIBRARY_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         waitStrategy =
             new WaitAllStrategy()

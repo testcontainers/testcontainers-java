@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class CassandraDriver4Test {
 
     @Rule
-    public CassandraContainer<?> cassandra = new CassandraContainer<>("library/cassandra:3.11.2");
+    public CassandraContainer<?> cassandra = new CassandraContainer<>("cassandra:3.11.2");
 
     @Test
     public void testCassandraGetContactPoint() {

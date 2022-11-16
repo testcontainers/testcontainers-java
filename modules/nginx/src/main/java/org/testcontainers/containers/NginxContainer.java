@@ -19,8 +19,6 @@ public class NginxContainer<SELF extends NginxContainer<SELF>>
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("nginx");
 
-    private static final DockerImageName LIBRARY_IMAGE_NAME = DockerImageName.parse("library/nginx");
-
     private static final String DEFAULT_TAG = "1.9.4";
 
     /**
@@ -37,7 +35,7 @@ public class NginxContainer<SELF extends NginxContainer<SELF>>
 
     public NginxContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, LIBRARY_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         addExposedPort(NGINX_DEFAULT_PORT);
         setCommand("nginx", "-g", "daemon off;");
