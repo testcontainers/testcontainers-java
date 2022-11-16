@@ -440,6 +440,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     private static class BrowserType {
 
         private static final String CHROME = "chrome";
+
         private static final String FIREFOX = "firefox";
     }
 }
