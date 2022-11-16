@@ -19,6 +19,6 @@ public class SpecificImageNameWebDriverContainerTest extends BaseWebDriverContai
 
     @Test
     public void simpleExploreTest() {
-        doSimpleExplore(firefox);
+        doSimpleExplore(firefox, new FirefoxOptions());
     }
 }

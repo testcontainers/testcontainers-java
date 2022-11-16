@@ -25,6 +25,6 @@ public class ChromeWebDriverContainerTest extends BaseWebDriverContainerTest {
 
     @Test
     public void simpleExploreTest() {
-        doSimpleExplore(chrome);
+        doSimpleExplore(chrome, new ChromeOptions());
     }
 }
