@@ -66,6 +66,7 @@ nav:
                 - modules/databases/questdb.md
                 - modules/databases/tidb.md
                 - modules/databases/trino.md
+                - modules/databases/yugabytedb.md
           - modules/azure.md
           - modules/consul.md
           - modules/docker_compose.md
