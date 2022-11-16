@@ -64,7 +64,7 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
             container.start();
 
             TimeUnit.MILLISECONDS.sleep(MINIMUM_VIDEO_DURATION_MILLISECONDS);
-            doSimpleExplore(container);
+            doSimpleExplore(container, new ChromeOptions());
             container.afterTest(
                 new TestDescription() {
                     @Override
@@ -178,7 +178,7 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
             ) {
                 chrome.start();
 
-                doSimpleExplore(chrome);
+                doSimpleExplore(chrome, new ChromeOptions());
             }
         }
 
@@ -198,7 +198,7 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
                 chrome.start();
 
                 TimeUnit.MILLISECONDS.sleep(MINIMUM_VIDEO_DURATION_MILLISECONDS);
-                doSimpleExplore(chrome);
+                doSimpleExplore(chrome, new ChromeOptions());
                 chrome.afterTest(
                     new TestDescription() {
                         @Override

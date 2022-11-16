@@ -42,7 +42,7 @@ public class LocalServerWebDriverContainerTest {
     @Test
     public void testConnection() {
         // getWebDriver {
-        RemoteWebDriver driver = chrome.getWebDriver();
+        RemoteWebDriver driver = new RemoteWebDriver(chrome.getSeleniumAddress(), new ChromeOptions());
         // }
 
         // Construct a URL that the browser container can access

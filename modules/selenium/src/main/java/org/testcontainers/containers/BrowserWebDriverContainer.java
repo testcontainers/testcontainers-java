@@ -312,6 +312,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
      *
      * @return a new Remote Web Driver instance
      */
+    @Deprecated
     public synchronized RemoteWebDriver getWebDriver() {
         if (driver == null) {
             if (capabilities == null) {

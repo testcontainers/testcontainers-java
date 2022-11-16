@@ -60,7 +60,7 @@ public class Stepdefs {
 
     @When("^I ask is it possible to search here$")
     public void iAskIsItPossibleToSearchHere() throws Exception {
-        RemoteWebDriver driver = container.getWebDriver();
+        RemoteWebDriver driver = new RemoteWebDriver(container.getSeleniumAddress(), new ChromeOptions());
         driver.get(location);
         List<WebElement> searchInputs = driver.findElements(By.tagName("input"));
         answer = searchInputs != null && searchInputs.size() > 0 ? "YES" : "NOPE";
