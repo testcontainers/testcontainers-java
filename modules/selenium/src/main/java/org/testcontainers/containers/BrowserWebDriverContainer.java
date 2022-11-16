@@ -311,6 +311,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
      * class (if used as a @ClassRule)
      *
      * @return a new Remote Web Driver instance
+     * @deprecated use {@link #getSeleniumAddress()} instead
      */
     @Deprecated
     public synchronized RemoteWebDriver getWebDriver() {
