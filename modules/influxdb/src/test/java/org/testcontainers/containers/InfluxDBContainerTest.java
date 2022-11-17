@@ -11,13 +11,14 @@ import com.influxdb.client.domain.WritePrecision;
 import com.influxdb.client.write.Point;
 import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
-import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class InfluxDBContainerTest {
 
@@ -47,8 +48,8 @@ public class InfluxDBContainerTest {
             influxDBContainer.start();
 
             try (final InfluxDBClient influxDBClient = createClient(influxDBContainer)) {
-                Assertions.assertThat(influxDBClient).isNotNull();
-                Assertions.assertThat(influxDBClient.ping()).isTrue();
+                assertThat(influxDBClient).isNotNull();
+                assertThat(influxDBClient.ping()).isTrue();
             }
         }
     }
@@ -65,7 +66,7 @@ public class InfluxDBContainerTest {
         ) {
             influxDBContainer.start();
             final Optional<String> adminToken = influxDBContainer.getAdminToken();
-            Assertions.assertThat(adminToken).isNotEmpty();
+            assertThat(adminToken).isNotEmpty();
 
             try (
                 final InfluxDBClient influxDBClient = createClientWithToken(
@@ -73,8 +74,8 @@ public class InfluxDBContainerTest {
                     adminToken.get()
                 )
             ) {
-                Assertions.assertThat(influxDBClient).isNotNull();
-                Assertions.assertThat(influxDBClient.ping()).isTrue();
+                assertThat(influxDBClient).isNotNull();
+                assertThat(influxDBClient.ping()).isTrue();
             }
         }
     }
@@ -97,11 +98,10 @@ public class InfluxDBContainerTest {
 
             try (final InfluxDBClient influxDBClient = createClient(influxDBContainer)) {
                 final Bucket bucket = influxDBClient.getBucketsApi().findBucketByName(BUCKET);
-                Assertions.assertThat(bucket).isNotNull();
+                assertThat(bucket).isNotNull();
 
-                Assertions.assertThat(bucket.getName()).isEqualTo(BUCKET);
-                Assertions
-                    .assertThat(bucket.getRetentionRules())
+                assertThat(bucket.getName()).isEqualTo(BUCKET);
+                assertThat(bucket.getRetentionRules())
                     .hasSize(1)
                     .first()
                     .extracting(BucketRetentionRules::getEverySeconds)
@@ -141,7 +141,7 @@ public class InfluxDBContainerTest {
 
                 final FluxTable fluxTable = queryApi.query(flux).get(0);
                 final List<FluxRecord> records = fluxTable.getRecords();
-                Assertions.assertThat(records).hasSize(1);
+                assertThat(records).hasSize(1);
             }
         }
     }
