@@ -24,6 +24,6 @@ GenericContainer container = new GenericContainer("redis:6-alpine")
     .withReuse(true)
 ```
 
-* If using Testcontainers JDBC URL support *should* pass `TC_REUSABLE=true`  parameter
+* If using Testcontainers JDBC URL support *should* pass `TC_REUSABLE=true`  parameter. E.g `jdbc:tc:mysql:5.7.34:///databasename?TC_REUSABLE=true`
 * Opt-in to reuse in `~/.testcontainers.properties`, adding `testcontainers.reuse.enable=true`
 * Containers should be started manually using `container.start()`. See [docs](https://www.testcontainers.org/test_framework_integration/manual_lifecycle_control/)
