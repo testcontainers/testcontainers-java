@@ -10,9 +10,9 @@ and should be enabled by environment. In order to reuse a container, the
 configuration *must not change*.
 
 !!! note
-    Reusable containers doesn't suit for CI usage and as an experimental feature
-    not all Testcontainers features are working such as resources cleanup
-    or networking.
+    Reusable containers are not suited for CI usage and as an experimental feature
+    not all Testcontainers features are fully working (e.g., resource cleanup
+    or networking).
 
 ## How to use it
 
