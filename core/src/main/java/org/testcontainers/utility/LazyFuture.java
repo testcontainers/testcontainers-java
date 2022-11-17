@@ -4,7 +4,9 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import org.rnorth.ducttape.timeouts.Timeouts;
 
-import java.util.concurrent.*;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
