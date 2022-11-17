@@ -1,7 +1,7 @@
 # Reusable Containers (Experimental)
 
 !!! warning 
-    Reusable containers is still an experimental feature and the behavior can change.
+    Reusable Containers is still an experimental feature and the behavior can change.
     Those containers won't stop after all tests are finished.
 
 The *Reusable Containers* feature keeps the containers running between test sessions. In order
