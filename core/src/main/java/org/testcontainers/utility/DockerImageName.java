@@ -261,10 +261,13 @@ public final class DockerImageName {
             throw new IllegalArgumentException("anyOthers parameter must be non-empty");
         }
 
-        String imageWithoutLibraryPrefix = this.repository.replace(LIBRARY_PREFIX, "");
         DockerImageName[] dockerImageNames = Arrays.copyOf(anyOthers, anyOthers.length + 1);
-        dockerImageNames[dockerImageNames.length - 1] =
-            DockerImageName.parse(LIBRARY_PREFIX + imageWithoutLibraryPrefix);
+        if (this.repository.startsWith(LIBRARY_PREFIX)) {
+            dockerImageNames[dockerImageNames.length - 1] = DockerImageName.parse(this.repository);
+        } else {
+            String imageWithLibraryPrefix = LIBRARY_PREFIX + this.repository;
+            dockerImageNames[dockerImageNames.length - 1] = DockerImageName.parse(imageWithLibraryPrefix);
+        }
 
         for (DockerImageName anyOther : dockerImageNames) {
             if (this.isCompatibleWith(anyOther)) {
