@@ -4,7 +4,7 @@
     Reusable containers is still an experimental feature and the behavior can change.
     Those containers won't stop after all tests are finished.
 
-Reusable containers enables to keep containers running. In order
+Reusable containers feature keeps the containers running between the test sessions. In order
 to achieve it, manual initialization should be used by calling `start()`
 and should be enabled by environment. In order to reuse a container, the
 configuration *must not change*.
