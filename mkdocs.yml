@@ -42,6 +42,7 @@ nav:
           - features/configuration.md
           - features/image_name_substitution.md
           - features/advanced_options.md
+          - features/reuse.md
     - Modules:
           - Databases:
                 - modules/databases/index.md
