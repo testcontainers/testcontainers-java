@@ -159,7 +159,7 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
 
     /**
      * Update the default Neo4jContainer wait strategy based on the exposed ports.
-     * Still possible to override the startup timeout later via {@link WaitStrategy#withStartupTimeout(Duration)}.
+     * Still possible to override the startup timeout before starting the container via {@link WaitStrategy#withStartupTimeout(Duration)}.
      */
     private void configureWaitStrategy() {
         List<Integer> exposedPorts = getExposedPorts();
