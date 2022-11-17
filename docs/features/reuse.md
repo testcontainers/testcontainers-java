@@ -16,7 +16,7 @@ configuration of the container *must not change*.
 
 ## How to use it
 
-* Define container with `withReuse(true)`
+* Define a container with `withReuse(true)`
 
 ```java
 GenericContainer container = new GenericContainer("redis:6-alpine")
