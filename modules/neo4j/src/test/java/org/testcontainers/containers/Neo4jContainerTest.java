@@ -8,6 +8,8 @@ import org.neo4j.driver.GraphDatabase;
 import org.neo4j.driver.Record;
 import org.neo4j.driver.Result;
 import org.neo4j.driver.Session;
+import org.testcontainers.DockerClientFactory;
+import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
 import org.testcontainers.utility.MountableFile;
 
 import java.util.Collections;
@@ -45,6 +47,8 @@ public class Neo4jContainerTest {
 
     @Test
     public void shouldCopyDatabase() {
+        // no aarch64 image available for Neo4j 3.5
+        assumeThat(DockerClientFactory.instance().getInfo().getArchitecture()).isNotEqualTo("aarch64");
         try (
             // copyDatabase {
             Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:3.5.30")
@@ -170,6 +174,82 @@ public class Neo4jContainerTest {
     }
 
     @Test
+    public void shouldRespectEnvironmentAuth() {
+        Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4").withEnv("NEO4J_AUTH", "neo4j/secret");
+
+        neo4jContainer.configure();
+
+        assertThat(neo4jContainer.getEnvMap()).containsEntry("NEO4J_AUTH", "neo4j/secret");
+    }
+
+    @Test
+    public void containerAdminPasswordOverrulesEnvironmentAuth() {
+        Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4")
+            .withEnv("NEO4J_AUTH", "neo4j/secret")
+            .withAdminPassword("anotherSecret");
+
+        neo4jContainer.configure();
+
+        assertThat(neo4jContainer.getEnvMap()).containsEntry("NEO4J_AUTH", "neo4j/anotherSecret");
+    }
+
+    @Test
+    public void containerWithoutAuthenticationOverrulesEnvironmentAuth() {
+        Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4")
+            .withEnv("NEO4J_AUTH", "neo4j/secret")
+            .withoutAuthentication();
+
+        neo4jContainer.configure();
+
+        assertThat(neo4jContainer.getEnvMap()).containsEntry("NEO4J_AUTH", "none");
+    }
+
+    @Test
+    public void shouldRespectAlreadyDefinedPortMappingsBolt() {
+        Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4").withExposedPorts(7687);
+
+        neo4jContainer.configure();
+
+        assertThat(neo4jContainer.getExposedPorts()).containsExactly(7687);
+    }
+
+    @Test
+    public void shouldRespectAlreadyDefinedPortMappingsHttp() {
+        Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4").withExposedPorts(7474);
+
+        neo4jContainer.configure();
+
+        assertThat(neo4jContainer.getExposedPorts()).containsExactly(7474);
+    }
+
+    @Test
+    public void shouldRespectAlreadyDefinedPortMappingsWithoutHttps() {
+        Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4").withExposedPorts(7687, 7474);
+
+        neo4jContainer.configure();
+
+        assertThat(neo4jContainer.getExposedPorts()).containsExactlyInAnyOrder(7474, 7687);
+    }
+
+    @Test
+    public void shouldDefaultExportBoltHttpAndHttps() {
+        Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4");
+
+        neo4jContainer.configure();
+
+        assertThat(neo4jContainer.getExposedPorts()).containsExactlyInAnyOrder(7473, 7474, 7687);
+    }
+
+    @Test
+    public void shouldRespectCustomWaitStrategy() {
+        Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4").waitingFor(new CustomDummyWaitStrategy());
+
+        neo4jContainer.configure();
+
+        assertThat(neo4jContainer.getWaitStrategy()).isInstanceOf(CustomDummyWaitStrategy.class);
+    }
+
+    @Test
     public void shouldConfigureSingleLabsPlugin() {
         try (
             Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4").withLabsPlugins(Neo4jLabsPlugin.APOC)
@@ -217,6 +297,14 @@ public class Neo4jContainerTest {
 
             assertThat(neo4jContainer.getEnvMap().get("NEO4JLABS_PLUGINS"))
                 .containsAnyOf("[\"myApoc\",\"myBloom\"]", "[\"myBloom\",\"myApoc\"]");
+        }
+    }
+
+    private static class CustomDummyWaitStrategy extends AbstractWaitStrategy {
+
+        @Override
+        protected void waitUntilReady() {
+            // ehm...ready
         }
     }
 
