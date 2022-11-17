@@ -19,7 +19,7 @@ configuration *must not change*.
 * Define container with `withReuse(true)`
 
 ```java
-GenericContainer container = new GenericContainer("redis:2.6.17")
+GenericContainer container = new GenericContainer("redis:6-alpine")
     .withExposedPorts(6379)
     .withReuse(true)
 ```
