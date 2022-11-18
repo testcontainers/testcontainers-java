@@ -13,7 +13,7 @@ import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -36,7 +36,7 @@ public class BaseWebDriverContainerTest {
 
     protected static void doSimpleExplore(BrowserWebDriverContainer<?> rule, Capabilities capabilities) {
         RemoteWebDriver driver = new RemoteWebDriver(rule.getSeleniumAddress(), capabilities);
-        driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(30));
         System.out.println("Selenium remote URL is: " + rule.getSeleniumAddress());
         System.out.println("VNC URL is: " + rule.getVncAddress());
 
@@ -52,7 +52,7 @@ public class BaseWebDriverContainerTest {
     protected void assertBrowserNameIs(BrowserWebDriverContainer<?> rule, String expectedName) {
         Capabilities capabilities = ("chrome".equals(expectedName)) ? new ChromeOptions() : new FirefoxOptions();
         RemoteWebDriver driver = new RemoteWebDriver(rule.getSeleniumAddress(), capabilities);
-        driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(30));
         String actual = driver.getCapabilities().getBrowserName();
         assertThat(actual).as(String.format("actual browser name is %s", actual)).isEqualTo(expectedName);
         driver.quit();

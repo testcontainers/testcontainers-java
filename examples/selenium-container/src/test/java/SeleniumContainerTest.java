@@ -19,6 +19,7 @@ import org.testcontainers.containers.BrowserWebDriverContainer;
 import org.testcontainers.containers.BrowserWebDriverContainer.VncRecordingMode;
 
 import java.io.File;
+import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -43,7 +44,7 @@ public class SeleniumContainerTest {
     @Test
     public void simplePlainSeleniumTest() {
         RemoteWebDriver driver = new RemoteWebDriver(chrome.getSeleniumAddress(), new ChromeOptions());
-        driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(30));
 
         driver.get("http://host.testcontainers.internal:" + port + "/foo.html");
         List<WebElement> hElement = driver.findElements(By.tagName("h"));
