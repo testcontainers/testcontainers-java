@@ -3,7 +3,7 @@ configurations {
 }
 
 dependencies {
-    baseline "org.testcontainers:${project.name}:1.17.5", {
+    baseline "org.testcontainers:${project.name}:1.17.6", {
         exclude group: "*", module: "*"
     }
 }
