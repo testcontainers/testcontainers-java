@@ -23,7 +23,9 @@ public class YugabyteDBYCQLTest {
     public void testSmoke() {
         try (
             // creatingYCQLContainer {
-            final YugabyteDBYCQLContainer ycqlContainer = new YugabyteDBYCQLContainer(IMAGE_NAME)
+            final YugabyteDBYCQLContainer ycqlContainer = new YugabyteDBYCQLContainer(
+                "yugabytedb/yugabyte:2.14.4.0-b26"
+            )
             // }
         ) {
             // startingYCQLContainer {

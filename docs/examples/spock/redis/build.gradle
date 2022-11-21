@@ -9,3 +9,7 @@ dependencies {
     testImplementation project(":spock")
     testImplementation 'ch.qos.logback:logback-classic:1.3.4'
 }
+
+test {
+    useJUnitPlatform()
+}

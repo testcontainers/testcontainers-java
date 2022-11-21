@@ -24,7 +24,9 @@ public class YugabyteDBYSQLTest extends AbstractContainerDatabaseTest {
     public void testSmoke() throws SQLException {
         try (
             // creatingYSQLContainer {
-            final YugabyteDBYSQLContainer ysqlContainer = new YugabyteDBYSQLContainer(IMAGE_NAME)
+            final YugabyteDBYSQLContainer ysqlContainer = new YugabyteDBYSQLContainer(
+                "yugabytedb/yugabyte:2.14.4.0-b26"
+            )
             // }
         ) {
             // startingYSQLContainer {
