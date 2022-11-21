@@ -124,6 +124,24 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         return String.format("PLAINTEXT://%s:%s", getHost(), getMappedPort(KAFKA_PORT));
     }
 
+    public static String generateClusterId() {
+        UUID metadataTopicUuid = new UUID(0, 1L);
+        UUID ZeroUuid = new UUID(0, 0L);
+
+        UUID candidate = UUID.randomUUID();
+        while (candidate.equals(metadataTopicUuid) || candidate.equals(ZeroUuid)) {
+            candidate = UUID.randomUUID();
+        }
+
+        //From Java UUID to Kafka Uuid representation
+        ByteBuffer uuidBytes = ByteBuffer.wrap(new byte[16]);
+        uuidBytes.putLong(candidate.getMostSignificantBits());
+        uuidBytes.putLong(candidate.getLeastSignificantBits());
+        final byte[] uuidBytesArray = uuidBytes.array();
+
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(uuidBytesArray);
+    }
+
     @Override
     protected void configure() {
         if (kraftEnabled) {
