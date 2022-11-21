@@ -1,5 +1,6 @@
 package com.example.kafkacluster;
 
+import org.apache.kafka.common.Uuid;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
@@ -40,7 +41,7 @@ public class KafkaContainerKraftCluster implements Startable {
             .mapToObj(brokerNum -> String.format("%d@broker-%d:9094", brokerNum, brokerNum))
             .collect(Collectors.joining(","));
 
-        String clusterId = KafkaContainer.generateClusterId();
+        String clusterId = Uuid.randomUuid().toString();
 
         this.brokers =
             IntStream
