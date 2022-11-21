@@ -1,6 +1,6 @@
 package com.example.kafkacluster;
 
-import lombok.SneakyThrows;
+import org.apache.kafka.common.Uuid;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
@@ -14,22 +14,16 @@ import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
-/**
- * Provides an easy way to launch a Kafka cluster with multiple brokers.
- */
-public class KafkaContainerCluster implements Startable {
+public class KafkaContainerKraftCluster implements Startable {
 
     private final int brokersNum;
 
     private final Network network;
 
-    private final GenericContainer<?> zookeeper;
-
     private final Collection<KafkaContainer> brokers;
 
-    public KafkaContainerCluster(String confluentPlatformVersion, int brokersNum, int internalTopicsRf) {
+    public KafkaContainerKraftCluster(String confluentPlatformVersion, int brokersNum, int internalTopicsRf) {
         if (brokersNum < 0) {
             throw new IllegalArgumentException("brokersNum '" + brokersNum + "' must be greater than 0");
         }
@@ -42,25 +36,27 @@ public class KafkaContainerCluster implements Startable {
         this.brokersNum = brokersNum;
         this.network = Network.newNetwork();
 
-        this.zookeeper =
-            new GenericContainer<>(DockerImageName.parse("confluentinc/cp-zookeeper").withTag(confluentPlatformVersion))
-                .withNetwork(network)
-                .withNetworkAliases("zookeeper")
-                .withEnv("ZOOKEEPER_CLIENT_PORT", String.valueOf(KafkaContainer.ZOOKEEPER_PORT));
+        String controllerQuorumVoters = IntStream
+            .range(0, brokersNum)
+            .mapToObj(brokerNum -> String.format("%d@broker-%d:9094", brokerNum, brokerNum))
+            .collect(Collectors.joining(","));
+
+        String clusterId = Uuid.randomUuid().toString();
 
         this.brokers =
             IntStream
-                .range(0, this.brokersNum)
+                .range(0, brokersNum)
                 .mapToObj(brokerNum -> {
                     return new KafkaContainer(
                         DockerImageName.parse("confluentinc/cp-kafka").withTag(confluentPlatformVersion)
                     )
                         .withNetwork(this.network)
                         .withNetworkAliases("broker-" + brokerNum)
-                        .dependsOn(this.zookeeper)
-                        .withExternalZookeeper("zookeeper:" + KafkaContainer.ZOOKEEPER_PORT)
+                        .withKraft()
+                        .withClusterId(clusterId)
                         .withEnv("KAFKA_BROKER_ID", brokerNum + "")
                         .withEnv("KAFKA_NODE_ID", brokerNum + "")
+                        .withEnv("KAFKA_CONTROLLER_QUORUM_VOTERS", controllerQuorumVoters)
                         .withEnv("KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", internalTopicsRf + "")
                         .withEnv("KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS", internalTopicsRf + "")
                         .withEnv("KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR", internalTopicsRf + "")
@@ -78,37 +74,33 @@ public class KafkaContainerCluster implements Startable {
         return brokers.stream().map(KafkaContainer::getBootstrapServers).collect(Collectors.joining(","));
     }
 
-    private Stream<GenericContainer<?>> allContainers() {
-        return Stream.concat(this.brokers.stream(), Stream.of(this.zookeeper));
-    }
-
     @Override
-    @SneakyThrows
     public void start() {
-        // sequential start to avoid resource contention on CI systems with weaker hardware
-        brokers.forEach(GenericContainer::start);
+        // Needs to start all the brokers at once
+        brokers.parallelStream().forEach(GenericContainer::start);
 
         Unreliables.retryUntilTrue(
             30,
             TimeUnit.SECONDS,
             () -> {
                 Container.ExecResult result =
-                    this.zookeeper.execInContainer(
-                        "sh",
-                        "-c",
-                        "zookeeper-shell zookeeper:" +
-                            KafkaContainer.ZOOKEEPER_PORT +
-                            " ls /brokers/ids | tail -n 1"
-                    );
-                String brokers = result.getStdout();
+                    this.brokers.stream()
+                        .findFirst()
+                        .get()
+                        .execInContainer(
+                            "sh",
+                            "-c",
+                            "kafka-metadata-shell --snapshot /var/lib/kafka/data/__cluster_metadata-0/00000000000000000000.log ls /brokers | wc -l"
+                        );
+                String brokers = result.getStdout().replace("\n", "");
 
-                return brokers != null && brokers.split(",").length == this.brokersNum;
+                return brokers != null && Integer.valueOf(brokers) == this.brokersNum;
             }
         );
     }
 
     @Override
     public void stop() {
-        allContainers().parallel().forEach(GenericContainer::stop);
+        this.brokers.stream().parallel().forEach(GenericContainer::stop);
     }
 }

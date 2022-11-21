@@ -6,9 +6,7 @@ import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 
-import java.nio.ByteBuffer;
-import java.util.Base64;
-import java.util.UUID;
+import java.io.IOException;
 
 /**
  * This container wraps Confluent Kafka and Zookeeper (optionally)
@@ -35,7 +33,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     private boolean kraftEnabled = false;
 
-    private String clusterId = generateClusterId();
+    private String clusterId;
 
     /**
      * @deprecated use {@link KafkaContainer(DockerImageName)} instead
@@ -126,24 +124,6 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         return String.format("PLAINTEXT://%s:%s", getHost(), getMappedPort(KAFKA_PORT));
     }
 
-    public static String generateClusterId() {
-        UUID metadataTopicUuid = new UUID(0, 1L);
-        UUID ZeroUuid = new UUID(0, 0L);
-
-        UUID candidate = UUID.randomUUID();
-        while (candidate.equals(metadataTopicUuid) || candidate.equals(ZeroUuid)) {
-            candidate = UUID.randomUUID();
-        }
-
-        //From Java UUID to Kafka Uuid representation
-        ByteBuffer uuidBytes = ByteBuffer.wrap(new byte[16]);
-        uuidBytes.putLong(candidate.getMostSignificantBits());
-        uuidBytes.putLong(candidate.getLeastSignificantBits());
-        final byte[] uuidBytesArray = uuidBytes.array();
-
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(uuidBytesArray);
-    }
-
     @Override
     protected void configure() {
         if (kraftEnabled) {
@@ -216,6 +196,13 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     protected String commandKraft() {
         String command = "sed -i '/KAFKA_ZOOKEEPER_CONNECT/d' /etc/confluent/docker/configure\n";
+        try {
+            if (clusterId == null) {
+                clusterId = execInContainer("kafka-storage", "random-uuid").getStdout().trim();
+            }
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         command +=
             "echo 'kafka-storage format --ignore-formatted -t \"" +
             clusterId +
