@@ -55,7 +55,7 @@ Some companies disallow the usage of Docker Hub, but you can override `*.image` 
 > **sshd.container.image = testcontainers/sshd:1.1.0**  
 > Required if [exposing host ports to containers](./networking.md#exposing-host-ports-to-the-container)
 
-> **vncrecorder.container.image = testcontainers/vnc-recorder:1.1.0**
+> **vncrecorder.container.image = testcontainers/vnc-recorder:1.3.0**
 > Used by VNC recorder in Testcontainers' Selenium integration
 
 > **socat.container.image = alpine/socat**  
