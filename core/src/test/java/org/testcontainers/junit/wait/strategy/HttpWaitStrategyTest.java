@@ -235,7 +235,8 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
                         .withStartupTimeout(Duration.ofMillis(WAIT_TIMEOUT_MILLIS))
                 )
         ) {
-            waitUntilReadyAndTimeout(container, SSLHandshakeException.class);
+            Throwable throwable = Assertions.catchThrowable(container::start);
+            assertThat(throwable).hasStackTraceContaining("javax.net.ssl.SSLHandshakeException");
         }
     }
 
