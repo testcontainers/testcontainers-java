@@ -11,7 +11,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.remote.BrowserType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.rnorth.ducttape.timeouts.Timeouts;
@@ -312,7 +311,9 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
      * class (if used as a @ClassRule)
      *
      * @return a new Remote Web Driver instance
+     * @deprecated use {@link #getSeleniumAddress()} instead
      */
+    @Deprecated
     public synchronized RemoteWebDriver getWebDriver() {
         if (driver == null) {
             if (capabilities == null) {
@@ -436,5 +437,12 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         SKIP,
         RECORD_ALL,
         RECORD_FAILING,
+    }
+
+    private static class BrowserType {
+
+        private static final String CHROME = "chrome";
+
+        private static final String FIREFOX = "firefox";
     }
 }

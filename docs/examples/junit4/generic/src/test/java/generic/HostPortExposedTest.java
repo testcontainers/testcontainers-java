@@ -50,14 +50,15 @@ public class HostPortExposedTest {
     }
 
     @Rule
-    public BrowserWebDriverContainer browser = new BrowserWebDriverContainer().withCapabilities(new ChromeOptions());
+    public BrowserWebDriverContainer<?> browser = new BrowserWebDriverContainer<>()
+        .withCapabilities(new ChromeOptions());
 
     @Test
     public void testContainerRunningAgainstExposedHostPort() {
         // useHostExposedPort {
         final String rootUrl = String.format("http://host.testcontainers.internal:%d/", localServerPort);
 
-        final RemoteWebDriver webDriver = browser.getWebDriver();
+        final RemoteWebDriver webDriver = new RemoteWebDriver(this.browser.getSeleniumAddress(), new ChromeOptions());
         webDriver.get(rootUrl);
         // }
 

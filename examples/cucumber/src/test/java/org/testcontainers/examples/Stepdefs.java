@@ -6,6 +6,7 @@ import io.cucumber.java.Scenario;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
@@ -59,9 +60,9 @@ public class Stepdefs {
 
     @When("^I ask is it possible to search here$")
     public void iAskIsItPossibleToSearchHere() throws Exception {
-        RemoteWebDriver driver = container.getWebDriver();
+        RemoteWebDriver driver = new RemoteWebDriver(container.getSeleniumAddress(), new ChromeOptions());
         driver.get(location);
-        List<WebElement> searchInputs = driver.findElementsByTagName("input");
+        List<WebElement> searchInputs = driver.findElements(By.tagName("input"));
         answer = searchInputs != null && searchInputs.size() > 0 ? "YES" : "NOPE";
     }
 

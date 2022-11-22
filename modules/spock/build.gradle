@@ -6,7 +6,7 @@ description = "Testcontainers :: Spock-Extension"
 
 dependencies {
     api project(':testcontainers')
-    api 'org.spockframework:spock-core:2.1-groovy-3.0'
+    api 'org.spockframework:spock-core:2.3-groovy-4.0'
 
     testImplementation project(':selenium')
     testImplementation project(':mysql')
@@ -17,6 +17,8 @@ dependencies {
 
     testRuntimeOnly 'org.postgresql:postgresql:42.5.0'
     testRuntimeOnly 'mysql:mysql-connector-java:8.0.31'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.9.1'
+    testRuntimeOnly 'org.junit.platform:junit-platform-testkit:1.9.1'
 
     testCompileOnly 'org.jetbrains:annotations:23.0.0'
 }

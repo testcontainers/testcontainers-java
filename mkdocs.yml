@@ -42,6 +42,7 @@ nav:
           - features/configuration.md
           - features/image_name_substitution.md
           - features/advanced_options.md
+          - features/reuse.md
     - Modules:
           - Databases:
                 - modules/databases/index.md
@@ -66,6 +67,7 @@ nav:
                 - modules/databases/questdb.md
                 - modules/databases/tidb.md
                 - modules/databases/trino.md
+                - modules/databases/yugabytedb.md
           - modules/azure.md
           - modules/consul.md
           - modules/docker_compose.md
@@ -111,4 +113,4 @@ nav:
           - bounty.md
 edit_uri: edit/main/docs/
 extra:
-    latest_version: 1.17.5
+    latest_version: 1.17.6
