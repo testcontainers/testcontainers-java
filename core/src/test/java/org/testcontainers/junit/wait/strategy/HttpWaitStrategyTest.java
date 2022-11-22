@@ -1,18 +1,17 @@
 package org.testcontainers.junit.wait.strategy;
 
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Predicate;
+
+import org.assertj.core.api.Assertions;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 import org.rnorth.ducttape.RetryCountExceededException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.images.builder.ImageFromDockerfile;
-
-import java.time.Duration;
-import java.util.HashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Predicate;
-
-import javax.net.ssl.SSLHandshakeException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
