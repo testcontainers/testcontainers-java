@@ -33,6 +33,7 @@ include 'spring-boot-kotlin-redis'
 include 'immudb'
 include 'zookeeper'
 include 'hazelcast'
+include 'nats'
 
 ext.isCI = System.getenv("CI") != null
 
