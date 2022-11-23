@@ -118,7 +118,7 @@ updates:
     open-pull-requests-limit: 10
     ignore:
       - dependency-name: "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml"
-        update-types: [ "version-update:semver-minor" ]
+        update-types: [ "version-update:semver-minor", "version-update:semver-patch" ]
   - package-ecosystem: "gradle"
     directory: "/modules/kafka"
     schedule:
@@ -165,6 +165,8 @@ updates:
     ignore:
       - dependency-name: "org.neo4j.driver:neo4j-java-driver"
         update-types: [ "version-update:semver-major" ]
+      - dependency-name: "org.neo4j:neo4j"
+        update-types: [ "version-update:semver-major" ]
   - package-ecosystem: "gradle"
     directory: "/modules/nginx"
     schedule:
@@ -196,13 +198,18 @@ updates:
       interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
+    directory: "/modules/questdb"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
     directory: "/modules/r2dbc"
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
     ignore:
       - dependency-name: "io.r2dbc:r2dbc-spi"
-        versions: ["0.8.x"]
+        update-types: [ "version-update:semver-major", "version-update:semver-minor" ]
   - package-ecosystem: "gradle"
     directory: "/modules/rabbitmq"
     schedule:
@@ -248,6 +255,11 @@ updates:
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/vault"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
+    directory: "/modules/yugabytedb"
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10

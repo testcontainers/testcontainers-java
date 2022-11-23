@@ -56,10 +56,12 @@ public class NginxContainer<SELF extends NginxContainer<SELF>>
         return new URL(scheme + "://" + getHost() + ":" + getMappedPort(port));
     }
 
+    @Deprecated
     public void setCustomContent(String htmlContentPath) {
         addFileSystemBind(htmlContentPath, "/usr/share/nginx/html", BindMode.READ_ONLY);
     }
 
+    @Deprecated
     public SELF withCustomContent(String htmlContentPath) {
         this.setCustomContent(htmlContentPath);
         return self();

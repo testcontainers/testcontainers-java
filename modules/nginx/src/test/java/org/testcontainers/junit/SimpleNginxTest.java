@@ -7,8 +7,14 @@ import org.junit.Test;
 import org.testcontainers.containers.NginxContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.net.URL;
 import java.net.URLConnection;
 
@@ -26,7 +32,7 @@ public class SimpleNginxTest {
     // creatingContainer {
     @Rule
     public NginxContainer<?> nginx = new NginxContainer<>(NGINX_IMAGE)
-        .withCustomContent(tmpDirectory)
+        .withCopyFileToContainer(MountableFile.forHostPath(tmpDirectory), "/usr/share/nginx/html")
         .waitingFor(new HttpWaitStrategy());
 
     // }

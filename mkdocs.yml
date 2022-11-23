@@ -1,4 +1,4 @@
-site_name: Testcontainers
+site_name: Testcontainers for Java
 plugins:
     - search
     - codeinclude
@@ -43,6 +43,7 @@ nav:
           - features/configuration.md
           - features/image_name_substitution.md
           - features/advanced_options.md
+          - features/reuse.md
     - Modules:
           - Databases:
                 - modules/databases/index.md
@@ -64,8 +65,10 @@ nav:
                 - modules/databases/orientdb.md
                 - modules/databases/postgres.md
                 - modules/databases/presto.md
+                - modules/databases/questdb.md
                 - modules/databases/tidb.md
                 - modules/databases/trino.md
+                - modules/databases/yugabytedb.md
           - modules/azure.md
           - modules/consul.md
           - modules/docker_compose.md
@@ -100,14 +103,15 @@ nav:
                 - supported_docker_environment/continuous_integration/gitlab_ci.md
                 - supported_docker_environment/continuous_integration/bitbucket_pipelines.md
                 - supported_docker_environment/continuous_integration/tekton.md
+                - supported_docker_environment/continuous_integration/travis.md
           - supported_docker_environment/windows.md
           - supported_docker_environment/logging_config.md
           - supported_docker_environment/image_registry_rate_limiting.md
-    - Other Supported Languages: supported_languages.md
     - Getting help: getting_help.md
     - Contributing:
           - contributing.md
           - contributing_docs.md
           - bounty.md
+edit_uri: edit/main/docs/
 extra:
-    latest_version: 1.17.5
+    latest_version: 1.17.6

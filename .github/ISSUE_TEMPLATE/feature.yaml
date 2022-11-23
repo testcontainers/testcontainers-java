@@ -39,6 +39,7 @@ body:
         - Oracle-XE
         - OrientDB
         - PostgreSQL
+        - QuestDB
         - Presto
         - Pulsar
         - RabbitMQ
@@ -49,6 +50,7 @@ body:
         - ToxiProxy
         - Trino
         - Vault
+        - YugabyteDB
         - New Module
   - type: textarea
     id: problem
