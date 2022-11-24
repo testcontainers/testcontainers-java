@@ -82,8 +82,16 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
     }
 
     @Override
-    protected void containerIsStarted(InspectContainerResponse containerInfo) {
-        initReplicaSet();
+    protected void containerIsStarted(InspectContainerResponse containerInfo, boolean reused) {
+        if(reused) {
+            if (isReplicationSetAlreadyInitialized()) {
+                log.debug("Replica set already initialized.");
+            } else {
+                initReplicaSet();
+            }
+        } else {
+            initReplicaSet();
+        }
     }
 
     private String[] buildMongoEvalCommand(final String command) {
@@ -150,5 +158,11 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
         ReplicaSetInitializationException(final String errorMessage) {
             super(errorMessage);
         }
+    }
+
+    private boolean isReplicationSetAlreadyInitialized() {
+        // since we are creating a replica set with one node, this node must be primary (state = 1)
+        final ExecResult execCheckRsInit = execInContainer(buildMongoEvalCommand("if(db.adminCommand({replSetGetStatus: 1})['myState'] != 1) quit(900)"));
+        return execCheckRsInit.getExitCode() == CONTAINER_EXIT_CODE_OK;
     }
 }
