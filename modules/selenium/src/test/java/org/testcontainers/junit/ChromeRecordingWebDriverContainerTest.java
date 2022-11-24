@@ -135,7 +135,7 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
 
             try (
                 GenericContainer<?> container = new GenericContainer<>(
-                    DockerImageName.parse("testcontainers/vnc-recorder:1.2.0")
+                    DockerImageName.parse("testcontainers/vnc-recorder:1.3.0")
                 )
             ) {
                 String recordFileContainerPath = "/tmp/chromeTestRecord.flv";
