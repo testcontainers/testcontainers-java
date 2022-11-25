@@ -152,12 +152,13 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
             getEnvMap()
                 .computeIfAbsent(
                     "KAFKA_CONTROLLER_QUORUM_VOTERS",
-                    key ->
-                        String.format(
+                    key -> {
+                        return String.format(
                             "%s@%s:9094",
                             getEnvMap().get("KAFKA_NODE_ID"),
                             getNetwork() != null ? getNetworkAliases().get(0) : "localhost"
-                        )
+                        );
+                    }
                 )
         );
         withEnv("KAFKA_CONTROLLER_LISTENER_NAMES", "CONTROLLER");
