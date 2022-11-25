@@ -45,3 +45,12 @@ Testcontainers will try to connect to a Docker daemon using the following strate
 	* `DOCKER_CERT_PATH=~/.docker`
 * If Docker Machine is installed, the docker machine environment for the *first* machine found. Docker Machine needs to be on the PATH for this to succeed.
 * If you're going to run your tests inside a container, please read [Patterns for running tests inside a docker container](continuous_integration/dind_patterns.md) first.
+
+## Docker registry authentication
+
+Testcontainers will try to authenticate with registries using the following strategies in order:
+
+* Docker config
+	* At location specified in `DOCKER_CONFIG` or at `{HOME}/.docker/config.json`
+* Environment variables:
+	* `DOCKER_AUTH_CONFIG`
