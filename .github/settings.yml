@@ -300,9 +300,9 @@ labels:
 
 # Collaborators: give specific users access to this repository.
 # See https://docs.github.com/en/rest/reference/repos#add-a-repository-collaborator for available options
-# collaborators:
-#   - username:
-#     permission: maintain
+collaborators:
+  - username: testcontainersbot
+    permission: write
 
   # Note: `permission` is only valid on organization-owned repositories.
   # The permission to grant the collaborator. Can be one of:

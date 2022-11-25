@@ -50,7 +50,6 @@ body:
         - ToxiProxy
         - Trino
         - Vault
-        - YugabyteDB
         - New Module
   - type: textarea
     id: problem

@@ -1,4 +1,4 @@
-name: Bug Report
+name: Bug report
 description: File a bug report
 title: "[Bug]: "
 labels: ["type/bug"]
@@ -50,7 +50,6 @@ body:
         - ToxiProxy
         - Trino
         - Vault
-        - YugabyteDB
     validations:
       required: true
   - type: input
@@ -82,7 +81,7 @@ body:
   - type: input
     id: host-arch
     attributes:
-      label: Host Arch
+      label: Host arch
       description: Which architecture are you using?
       placeholder: e.g. x86, ARM
     validations:
@@ -111,7 +110,7 @@ body:
   - type: textarea
     id: additional-information
     attributes:
-      label: Additional Information
+      label: Additional information
       description: |
         Any links or references to have more context about the issue.
 
