@@ -206,8 +206,8 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         }
         command +=
             "echo 'kafka-storage format --ignore-formatted -t \"" +
-                clusterId +
-                "\" -c /etc/kafka/kafka.properties' >> /etc/confluent/docker/configure\n";
+            clusterId +
+            "\" -c /etc/kafka/kafka.properties' >> /etc/confluent/docker/configure\n";
         return command;
     }
 
