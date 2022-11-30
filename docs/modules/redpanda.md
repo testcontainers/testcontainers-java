@@ -6,7 +6,7 @@ More precisely Testcontainers uses the official Docker images for [Redpanda](htt
 !!! note
     This module uses features provided in `docker.redpanda.com/vectorized/redpanda`.
 
-Since: Not released yet
+Since: 1.17.4
 
 ## Example
 
