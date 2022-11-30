@@ -48,7 +48,7 @@ Testcontainers will try to connect to a Docker daemon using the following strate
 
 ## Docker registry authentication
 
-Testcontainers will try to authenticate with registries using the following strategies in order:
+Testcontainers will try to authenticate to registries with supplied config using the following strategies in order:
 
 * Docker config
 	* At location specified in `DOCKER_CONFIG` or at `{HOME}/.docker/config.json`

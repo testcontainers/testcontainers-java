@@ -225,7 +225,7 @@ public class RegistryAuthLocatorTest {
 
     @Test
     public void lookupAuthConfigRespectsCheckOrderPreference() throws URISyntaxException, IOException {
-        final RegistryAuthLocator authLocator = createTestAuthLocator("config-basic-auth.json", "config-empty.json" );
+        final RegistryAuthLocator authLocator = createTestAuthLocator("config-basic-auth.json", "config-empty.json");
 
         final AuthConfig authConfig = authLocator.lookupAuthConfig(
             DockerImageName.parse("registry.example.com/org/repo"),
@@ -287,13 +287,11 @@ public class RegistryAuthLocatorTest {
             configFile = new File(Resources.getResource("auth-config/" + configName).toURI());
 
             commandPathPrefix = configFile.getParentFile().getAbsolutePath() + "/";
-        }
-        else {
+        } else {
             configFile = new File(new URI("file:///not-exists.json"));
         }
 
         if (envConfigName != null) {
-
             final File envConfigFile = new File(Resources.getResource("auth-config/" + envConfigName).toURI());
             configEnv = FileUtils.readFileToString(envConfigFile, StandardCharsets.UTF_8);
 

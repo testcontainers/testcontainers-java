@@ -191,7 +191,13 @@ public class RegistryAuthLocator {
             return OBJECT_MAPPER.readTree(configEnv);
         }
 
-        throw new NotFoundException("No config supplied. Checked in order: " + configFile + " (file not found), " + DOCKER_AUTH_VAR +" (not set)");
+        throw new NotFoundException(
+            "No config supplied. Checked in order: " +
+            configFile +
+            " (file not found), " +
+            DOCKER_AUTH_VAR +
+            " (not set)"
+        );
     }
 
     private AuthConfig findExistingAuthConfig(final JsonNode config, final String reposName) throws Exception {
