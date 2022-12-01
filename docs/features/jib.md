@@ -8,7 +8,7 @@ In order to use it along with Testcontainers, a DockerClient is needed.
 [DockerClient](../../core/src/test/java/org/testcontainers/containers/JibTest.java) inside_block:dockerClientInstance
 <!--/codeinclude-->
 
-The DockerClient should be used as follows
+The `JibDockerClient` should be used as follows
 
 <!--codeinclude-->
 [Jib#from(String)](../../core/src/test/java/org/testcontainers/containers/JibTest.java) inside_block:jibContainer1
