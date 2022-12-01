@@ -10,6 +10,7 @@ import com.google.cloud.tools.jib.image.ImageTarball;
 import com.google.common.io.ByteStreams;
 import lombok.Cleanup;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.UnstableAPI;
 import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.utility.DockerImageName;
 
@@ -25,6 +26,7 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.function.Consumer;
 
+@UnstableAPI
 public class JibDockerClient implements DockerClient {
 
     private static JibDockerClient instance;

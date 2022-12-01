@@ -29,8 +29,10 @@ public class JibTest {
         //}
 
         try (
+            // jibContainerUsage {
             GenericContainer<?> busybox = new GenericContainer<>(new JibImage(jibContainer))
                 .withStartupCheckStrategy(new OneShotStartupCheckStrategy().withTimeout(Duration.ofSeconds(3)))
+            // }
         ) {
             busybox.start();
             String logs = busybox.getLogs(OutputType.STDOUT);
