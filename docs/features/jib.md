@@ -1,6 +1,7 @@
 # Using Jib
 
 [Jib](https://github.com/GoogleContainerTools/jib/tree/master/jib-core) is a library for building Docker images.
+You can use it as an alternative to Testcontainers default `DockerfileBuilder`.
 
 In order to use it along with Testcontainers, a `JibDockerClient` is needed.
 
