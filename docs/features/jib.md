@@ -2,7 +2,7 @@
 
 [Jib](https://github.com/GoogleContainerTools/jib/tree/master/jib-core) is a library for building Docker images.
 
-In order to use it along with Testcontainers, a DockerClient is needed.
+In order to use it along with Testcontainers, a `JibDockerClient` is needed.
 
 <!--codeinclude-->
 [DockerClient](../../core/src/test/java/org/testcontainers/containers/JibTest.java) inside_block:dockerClientInstance
