@@ -10,6 +10,7 @@ permissions:
 jobs:
   update-gradle-wrapper:
     permissions:
+      contents: write # for gradle-update/update-gradle-wrapper-action
       pull-requests: write # for gradle-update/update-gradle-wrapper-action
     if: github.repository == 'testcontainers/testcontainers-java'
     runs-on: ubuntu-latest
