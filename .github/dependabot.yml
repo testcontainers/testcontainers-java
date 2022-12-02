@@ -282,7 +282,7 @@ updates:
       - dependency-name: "org.slf4j:slf4j-api"
         update-types: [ "version-update:semver-major" ]
       - dependency-name: "org.springframework.boot:*"
-        update-types: [ "version-update:semver-major" ]
+        versions: [ "[3,)" ]
 
 # GitHub Actions
   - package-ecosystem: "github-actions"
