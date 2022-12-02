@@ -281,7 +281,7 @@ updates:
         update-types: [ "version-update:semver-minor" ]
       - dependency-name: "org.slf4j:slf4j-api"
         update-types: [ "version-update:semver-major" ]
-      - dependency-name: "org.springframework.boot:spring-boot-gradle-plugin"
+      - dependency-name: "org.springframework.boot:*"
         update-types: [ "version-update:semver-major" ]
 
 # GitHub Actions
