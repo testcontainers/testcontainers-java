@@ -6,3 +6,9 @@ dependencies {
     testImplementation("org.mongodb:mongodb-driver-sync:4.8.0")
     testImplementation 'org.assertj:assertj-core:3.23.1'
 }
+
+tasks.japicmp {
+    methodExcludes = [
+        "org.testcontainers.containers.MongoDBContainer#containerIsStarted(com.github.dockerjava.api.command.InspectContainerResponse)"
+    ]
+}
