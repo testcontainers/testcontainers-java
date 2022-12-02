@@ -1,6 +1,6 @@
 package org.testcontainers.spock
 
-import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.postgresql.PostgreSQLContainer
 import spock.lang.Shared
 
 /**

@@ -32,7 +32,7 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
 
     public static final int DEFAULT_VNC_PORT = 5900;
 
-    static final VncRecordingFormat DEFAULT_RECORDING_FORMAT = VncRecordingFormat.FLV;
+    public static final VncRecordingFormat DEFAULT_RECORDING_FORMAT = VncRecordingFormat.FLV;//TODO changed
 
     private final String targetNetworkAlias;
 

@@ -1,6 +1,6 @@
 package org.testcontainers.spock
 
-import org.testcontainers.containers.MySQLContainer
+import org.testcontainers.mysql.MySQLContainer
 import spock.lang.Shared
 import spock.lang.Specification
 

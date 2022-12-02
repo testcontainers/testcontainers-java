@@ -2,7 +2,7 @@ package org.testcontainers.jdbc;
 
 import com.google.common.base.Throwables;
 import org.junit.Test;
-import org.testcontainers.containers.JdbcDatabaseContainer;
+import org.testcontainers.jdbc.containers.JdbcDatabaseContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import java.sql.Connection;

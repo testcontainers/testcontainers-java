@@ -2,7 +2,7 @@ package generic;
 
 import generic.support.TestSpecificImageNameSubstitutor;
 import org.junit.Test;
-import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.mysql.MySQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
 public class ImageNameSubstitutionTest {

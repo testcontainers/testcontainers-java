@@ -1,0 +1,3 @@
+org.testcontainers.postgresql.PostgreSQLContainerProvider
+org.testcontainers.postgresql.PostgisContainerProvider
+org.testcontainers.postgresql.TimescaleDBContainerProvider
