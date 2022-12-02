@@ -258,6 +258,11 @@ updates:
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
+    directory: "/modules/yugabytedb"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
 
 # Examples
   - package-ecosystem: "gradle"
@@ -276,6 +281,8 @@ updates:
         update-types: [ "version-update:semver-minor" ]
       - dependency-name: "org.slf4j:slf4j-api"
         update-types: [ "version-update:semver-major" ]
+      - dependency-name: "org.springframework.boot:*"
+        versions: [ "[3,)" ]
 
 # GitHub Actions
   - package-ecosystem: "github-actions"

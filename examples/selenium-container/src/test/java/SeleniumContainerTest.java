@@ -19,6 +19,7 @@ import org.testcontainers.containers.BrowserWebDriverContainer;
 import org.testcontainers.containers.BrowserWebDriverContainer.VncRecordingMode;
 
 import java.io.File;
+import java.time.Duration;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -41,7 +42,8 @@ public class SeleniumContainerTest {
 
     @Test
     public void simplePlainSeleniumTest() {
-        RemoteWebDriver driver = chrome.getWebDriver();
+        RemoteWebDriver driver = new RemoteWebDriver(chrome.getSeleniumAddress(), new ChromeOptions());
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(30));
 
         driver.get("http://host.testcontainers.internal:" + port + "/foo.html");
         List<WebElement> hElement = driver.findElements(By.tagName("h"));

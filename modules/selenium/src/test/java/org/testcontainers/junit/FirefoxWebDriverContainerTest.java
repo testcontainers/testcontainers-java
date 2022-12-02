@@ -25,6 +25,6 @@ public class FirefoxWebDriverContainerTest extends BaseWebDriverContainerTest {
 
     @Test
     public void simpleExploreTest() {
-        doSimpleExplore(firefox);
+        doSimpleExplore(firefox, new FirefoxOptions());
     }
 }
