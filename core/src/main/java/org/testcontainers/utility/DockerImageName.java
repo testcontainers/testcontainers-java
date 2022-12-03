@@ -11,7 +11,6 @@ import org.jetbrains.annotations.Nullable;
 import org.testcontainers.utility.Versioning.Sha256Versioning;
 import org.testcontainers.utility.Versioning.TagVersioning;
 
-import java.util.Arrays;
 import java.util.regex.Pattern;
 
 @EqualsAndHashCode(exclude = { "rawName", "compatibleSubstituteFor" })
@@ -235,7 +234,14 @@ public final class DockerImageName {
      */
     public boolean isCompatibleWith(DockerImageName other) {
         // is this image already the same or equivalent?
-        if (other.equals(this)) {
+        String finalImageName;
+        if (this.repository.startsWith(LIBRARY_PREFIX)) {
+            finalImageName = this.repository;
+        } else {
+            finalImageName = LIBRARY_PREFIX + this.repository;
+        }
+        DockerImageName imageWithLibraryPrefix = DockerImageName.parse(finalImageName);
+        if (other.equals(this) || imageWithLibraryPrefix.equals(this)) {
             return true;
         }
 
@@ -261,21 +267,13 @@ public final class DockerImageName {
             throw new IllegalArgumentException("anyOthers parameter must be non-empty");
         }
 
-        DockerImageName[] dockerImageNames = Arrays.copyOf(anyOthers, anyOthers.length + 1);
-        if (this.repository.startsWith(LIBRARY_PREFIX)) {
-            dockerImageNames[dockerImageNames.length - 1] = DockerImageName.parse(this.repository);
-        } else {
-            String imageWithLibraryPrefix = LIBRARY_PREFIX + this.repository;
-            dockerImageNames[dockerImageNames.length - 1] = DockerImageName.parse(imageWithLibraryPrefix);
-        }
-
-        for (DockerImageName anyOther : dockerImageNames) {
+        for (DockerImageName anyOther : anyOthers) {
             if (this.isCompatibleWith(anyOther)) {
                 return;
             }
         }
 
-        final DockerImageName exampleOther = dockerImageNames[0];
+        final DockerImageName exampleOther = anyOthers[0];
 
         throw new IllegalStateException(
             String.format(
