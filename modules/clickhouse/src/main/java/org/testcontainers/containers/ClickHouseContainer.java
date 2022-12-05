@@ -2,6 +2,7 @@ package org.testcontainers.containers;
 
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.ComparableVersion;
 
 import java.time.Duration;
 import java.util.HashSet;
@@ -26,6 +27,7 @@ public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContain
     public static final Integer NATIVE_PORT = 9000;
 
     private static final String LEGACY_DRIVER_CLASS_NAME = "ru.yandex.clickhouse.ClickHouseDriver";
+
     private static final String DRIVER_CLASS_NAME = "com.clickhouse.jdbc.ClickHouseDriver";
 
     private static final String JDBC_URL_PREFIX = "jdbc:" + NAME + "://";
@@ -54,7 +56,6 @@ public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContain
 
     public ClickHouseContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, CLICKHOUSE_IMAGE_NAME);
         supportsNewDriver = isNewDriverSupported(dockerImageName);
 
@@ -87,31 +88,7 @@ public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContain
 
     private static boolean isNewDriverSupported(DockerImageName dockerImageName) {
         // New driver supports versions 20.7+. Check the version part of the tag
-        String[] versionParts = dockerImageName.getVersionPart().split(".");
-        // if no version part found (unknown version), return false for compatibility
-        if (versionParts.length == 0) {
-            return false;
-        }
-        try {
-            int major = Integer.parseInt(versionParts[0]);
-            // v21+ support the new driver
-            if (major >= 21) return true;
-            if (major == 20) {
-                if (versionParts.length == 1) {
-                    // tag "20" points to the latest 20.x tag
-                    return true;
-                }
-                int minor = Integer.parseInt(versionParts[1]);
-                // versions 20.7 and beyond support the latest driver
-                return minor >= 7;
-            }
-            // 19.x and older versions do not support
-            return false;
-        }
-        catch (NumberFormatException e) {
-            // non-numbered tags are "head-*", which point to the latest available version
-            return true;
-        }
+        return new ComparableVersion(dockerImageName.getVersionPart()).isGreaterThanOrEqualTo("20.7");
     }
 
     @Override
