@@ -1253,7 +1253,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         final String containerPath,
         final BindMode mode
     ) {
-        return withClasspathResourceMapping(resourcePath, containerPath, mode, SelinuxContext.NONE);
+        return withClasspathResourceMapping(resourcePath, containerPath, mode, SelinuxContext.SHARED);
     }
 
     /**
