@@ -34,7 +34,7 @@ Where:
 
 
 !!! note
-    If you are using Docker Dekstop, you need to mount the Docker socket that bypasses the API proxy (see [this comment](https://github.com/docker/for-mac/issues/5588#issuecomment-934600089) for more details):
+    If you are using Docker Desktop, you need to mount the Docker socket that bypasses the API proxy (see [this comment](https://github.com/docker/for-mac/issues/5588#issuecomment-934600089) for more details):
     `-v /var/run/docker.sock.raw:/var/run/docker.sock`
 
 ### Docker Compose example
