@@ -16,11 +16,15 @@ jobs:
         run: sudo apt-get -q -y --purge remove podman moby-engine moby-buildx && sudo rm -rf /var/run/docker.sock
       - name: Set XDG_RUNTIME_DIR
         run: echo "XDG_RUNTIME_DIR=/run/user/$UID" >> $GITHUB_ENV
-      - name: Create registries.conf
-        # allow pulling images without a registry specified
+      - name: Configure podman
         run: |
           mkdir -p $HOME/.config/containers
           echo 'unqualified-search-registries = ["docker.io"]' > $HOME/.config/containers/registries.conf
+          echo ''                                             >> $HOME/.config/containers/registries.conf
+          echo '[[registry]]'                                 >> $HOME/.config/containers/registries.conf
+          echo 'prefix = "localhost"'                         >> $HOME/.config/containers/registries.conf
+          echo 'location = "localhost"'                       >> $HOME/.config/containers/registries.conf
+          echo 'insecure = true'                              >> $HOME/.config/containers/registries.conf
       - name: Install latest podman release
         # see https://podman.io/getting-started/installation#ubuntu
         run: |
