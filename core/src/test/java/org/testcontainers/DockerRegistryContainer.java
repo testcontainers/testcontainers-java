@@ -100,7 +100,7 @@ public class DockerRegistryContainer extends GenericContainer<DockerRegistryCont
             .withTag(tag);
 
         // push the image to the registry
-        client.tagImageCmd(dummyImageId, imageName.asCanonicalNameString(), tag).exec();
+        client.tagImageCmd(dummyImageId, imageName.getUnversionedPart(), tag).exec();
 
         client
             .pushImageCmd(imageName.asCanonicalNameString())
