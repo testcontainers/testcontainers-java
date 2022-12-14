@@ -6,7 +6,6 @@ import com.github.dockerjava.api.command.InspectContainerResponse.ContainerState
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Info;
 import com.github.dockerjava.api.model.Ports;
-
 import lombok.Cleanup;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -27,7 +26,6 @@ import org.testcontainers.utility.MountableFile;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URL;
 import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.List;
@@ -184,22 +182,22 @@ public class GenericContainerTest {
                 .withNetwork(network)
                 .withNetworkAliases("foo")
                 .withExposedPorts(8080)
-                .withCommand(
-                    "/bin/sh",
-                    "-c",
-                    "while true ; do printf 'HTTP/1.1 200 OK\\n\\nyay' | nc -l -p 8080; done"
-                )
+                .withCommand("/bin/sh", "-c", "while true ; do printf 'HTTP/1.1 200 OK\\n\\nyay' | nc -l -p 8080; done")
         ) {
             container.start();
             assertYayHttpResponseFrom(container.getHost(), container.getMappedPort(8080));
 
             // disconnect container from the network
-            container.getDockerClient().disconnectFromNetworkCmd()
+            container
+                .getDockerClient()
+                .disconnectFromNetworkCmd()
                 .withContainerId(container.getContainerId())
                 .withNetworkId(network.getId())
                 .exec();
             // reconnect container to the network
-            container.getDockerClient().connectToNetworkCmd()
+            container
+                .getDockerClient()
+                .connectToNetworkCmd()
                 .withContainerId(container.getContainerId())
                 .withNetworkId(network.getId())
                 .exec();
