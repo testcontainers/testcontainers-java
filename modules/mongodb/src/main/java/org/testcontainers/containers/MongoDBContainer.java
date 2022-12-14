@@ -1,8 +1,6 @@
 package org.testcontainers.containers;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -144,21 +142,19 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
     }
 
     @Override
-    protected void containerIsStarted(InspectContainerResponse containerInfo) {
-        initReplicaSet();
+    protected void containerIsStarted(InspectContainerResponse containerInfo, boolean reused) {
+        if (reused && isReplicationSetAlreadyInitialized()) {
+            log.debug("Replica set already initialized.");
+        } else {
+            initReplicaSet();
+        }
     }
 
     private String[] buildMongoEvalCommand(final String command) {
         return new String[] {
-            "mongo",
-            "-u",
-            username,
-            "-p",
-            password,
-            "--authenticationDatabase",
-            DEFAULT_AUTHENTICATION_DATABASE_NAME,
-            "--eval",
-            command,
+            "sh",
+            "-c",
+            "mongosh mongo -u "+username+" -p "+password+" --authenticationDatabase "+DEFAULT_AUTHENTICATION_DATABASE_NAME+" --eval \"" + command + "\"  || mongo --eval \"" + command + "\"",
         };
     }
 
@@ -230,6 +226,15 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
         ReplicaSetInitializationException(final String errorMessage) {
             super(errorMessage);
         }
+    }
+
+    @SneakyThrows
+    private boolean isReplicationSetAlreadyInitialized() {
+        // since we are creating a replica set with one node, this node must be primary (state = 1)
+        final ExecResult execCheckRsInit = execInContainer(
+            buildMongoEvalCommand("if(db.adminCommand({replSetGetStatus: 1})['myState'] != 1) quit(900)")
+        );
+        return execCheckRsInit.getExitCode() == CONTAINER_EXIT_CODE_OK;
     }
 
     @Builder

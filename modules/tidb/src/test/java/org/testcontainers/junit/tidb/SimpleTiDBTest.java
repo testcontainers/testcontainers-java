@@ -21,6 +21,7 @@ public class SimpleTiDBTest extends AbstractContainerDatabaseTest {
 
             int resultSetInt = resultSet.getInt(1);
             assertThat(resultSetInt).isEqualTo(1);
+            assertHasCorrectExposedAndLivenessCheckPorts(tidb);
         }
     }
 
@@ -50,5 +51,14 @@ public class SimpleTiDBTest extends AbstractContainerDatabaseTest {
         } finally {
             tidb.stop();
         }
+    }
+
+    private void assertHasCorrectExposedAndLivenessCheckPorts(TiDBContainer tidb) {
+        Integer tidbPort = 4000;
+        Integer restApiPort = 10080;
+
+        assertThat(tidb.getExposedPorts()).containsExactlyInAnyOrder(tidbPort, restApiPort);
+        assertThat(tidb.getLivenessCheckPortNumbers())
+            .containsExactlyInAnyOrder(tidb.getMappedPort(tidbPort), tidb.getMappedPort(restApiPort));
     }
 }

@@ -33,5 +33,4 @@ public class DemoControllerTest extends AbstractIntegrationTest {
 
         assertThat(result.getValue()).as("value is set").isEqualTo("Some value");
     }
-
 }

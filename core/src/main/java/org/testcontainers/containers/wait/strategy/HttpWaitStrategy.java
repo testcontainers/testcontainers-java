@@ -319,7 +319,8 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
                     "Timed out waiting for URL to be accessible (%s should return HTTP %s)",
                     uri,
                     statusCodes.isEmpty() ? HttpURLConnection.HTTP_OK : statusCodes
-                )
+                ),
+                e
             );
         }
     }
