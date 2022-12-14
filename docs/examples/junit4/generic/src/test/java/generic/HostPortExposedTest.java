@@ -13,7 +13,7 @@ import org.testcontainers.containers.BrowserWebDriverContainer;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class HostPortExposedTest {
 
@@ -50,18 +50,19 @@ public class HostPortExposedTest {
     }
 
     @Rule
-    public BrowserWebDriverContainer browser = new BrowserWebDriverContainer().withCapabilities(new ChromeOptions());
+    public BrowserWebDriverContainer<?> browser = new BrowserWebDriverContainer<>()
+        .withCapabilities(new ChromeOptions());
 
     @Test
     public void testContainerRunningAgainstExposedHostPort() {
         // useHostExposedPort {
         final String rootUrl = String.format("http://host.testcontainers.internal:%d/", localServerPort);
 
-        final RemoteWebDriver webDriver = browser.getWebDriver();
+        final RemoteWebDriver webDriver = new RemoteWebDriver(this.browser.getSeleniumAddress(), new ChromeOptions());
         webDriver.get(rootUrl);
         // }
 
         final String pageSource = webDriver.getPageSource();
-        assertTrue(pageSource.contains("Hello World!"));
+        assertThat(pageSource).contains("Hello World!");
     }
 }

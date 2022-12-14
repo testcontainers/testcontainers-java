@@ -7,13 +7,18 @@ import org.junit.Test;
 import org.testcontainers.containers.NginxContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.net.URL;
 import java.net.URLConnection;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.rnorth.visibleassertions.VisibleAssertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author richardnorth
@@ -27,7 +32,7 @@ public class SimpleNginxTest {
     // creatingContainer {
     @Rule
     public NginxContainer<?> nginx = new NginxContainer<>(NGINX_IMAGE)
-        .withCustomContent(tmpDirectory)
+        .withCopyFileToContainer(MountableFile.forHostPath(tmpDirectory), "/usr/share/nginx/html")
         .waitingFor(new HttpWaitStrategy());
 
     // }
@@ -55,12 +60,16 @@ public class SimpleNginxTest {
         // getFromNginxServer {
         URL baseUrl = nginx.getBaseUrl("http", 80);
 
-        assertThat(
-            "An HTTP GET from the Nginx server returns the index.html from the custom content directory",
-            responseFromNginx(baseUrl),
-            containsString("Hello World!")
-        );
+        assertThat(responseFromNginx(baseUrl))
+            .as("An HTTP GET from the Nginx server returns the index.html from the custom content directory")
+            .contains("Hello World!");
         // }
+        assertHasCorrectExposedAndLivenessCheckPorts(nginx);
+    }
+
+    private void assertHasCorrectExposedAndLivenessCheckPorts(NginxContainer<?> nginxContainer) throws Exception {
+        assertThat(nginxContainer.getExposedPorts()).containsExactly(80);
+        assertThat(nginxContainer.getLivenessCheckPortNumbers()).containsExactly(nginxContainer.getMappedPort(80));
     }
 
     private static String responseFromNginx(URL baseUrl) throws IOException {

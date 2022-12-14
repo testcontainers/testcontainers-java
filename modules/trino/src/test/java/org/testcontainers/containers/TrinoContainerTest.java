@@ -7,9 +7,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TrinoContainerTest {
 
@@ -22,8 +20,11 @@ public class TrinoContainerTest {
                 Statement statement = connection.createStatement();
                 ResultSet resultSet = statement.executeQuery("SELECT DISTINCT node_version FROM system.runtime.nodes")
             ) {
-                assertTrue("No result", resultSet.next());
-                assertEquals("Trino version", TrinoContainer.DEFAULT_TAG, resultSet.getString("node_version"));
+                assertThat(resultSet.next()).as("results").isTrue();
+                assertThat(resultSet.getString("node_version"))
+                    .as("Trino version")
+                    .isEqualTo(TrinoContainer.DEFAULT_TAG);
+                assertContainerHasCorrectExposedAndLivenessCheckPorts(trino);
             }
         }
     }
@@ -37,12 +38,10 @@ public class TrinoContainerTest {
                 Statement statement = connection.createStatement();
                 ResultSet resultSet = statement.executeQuery("SELECT DISTINCT node_version FROM system.runtime.nodes")
             ) {
-                assertTrue("No result", resultSet.next());
-                assertEquals(
-                    "Trino version",
-                    TrinoTestImages.TRINO_PREVIOUS_VERSION_TEST_IMAGE.getVersionPart(),
-                    resultSet.getString("node_version")
-                );
+                assertThat(resultSet.next()).as("results").isTrue();
+                assertThat(resultSet.getString("node_version"))
+                    .as("Trino version")
+                    .isEqualTo(TrinoTestImages.TRINO_PREVIOUS_VERSION_TEST_IMAGE.getVersionPart());
             }
         }
     }
@@ -57,10 +56,15 @@ public class TrinoContainerTest {
                 Statement statement = connection.createStatement();
                 ResultSet resultSet = statement.executeQuery("SELECT a FROM memory.default.test_table")
             ) {
-                assertTrue("No result", resultSet.next());
-                assertEquals("Value", 12345678909324L, resultSet.getObject("a"));
-                assertFalse("Too many result", resultSet.next());
+                assertThat(resultSet.next()).as("results").isTrue();
+                assertThat(resultSet.getObject("a")).as("Value").isEqualTo(12345678909324L);
+                assertThat(resultSet.next()).as("results").isFalse();
             }
         }
+    }
+
+    private void assertContainerHasCorrectExposedAndLivenessCheckPorts(TrinoContainer trino) {
+        assertThat(trino.getExposedPorts()).containsExactly(8080);
+        assertThat(trino.getLivenessCheckPortNumbers()).containsExactly(trino.getMappedPort(8080));
     }
 }

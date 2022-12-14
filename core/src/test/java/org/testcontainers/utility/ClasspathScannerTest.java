@@ -10,10 +10,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 
 public class ClasspathScannerTest {
 
@@ -41,7 +41,7 @@ public class ClasspathScannerTest {
         // look for a resource that we know exists only once
         final List<URL> foundURLs = ClasspathScanner.scanFor("expectedClasspathFile.txt").collect(Collectors.toList());
 
-        assertEquals("Exactly one resource was found", 1, foundURLs.size());
+        assertThat(foundURLs).as("Exactly one resource was found").hasSize(1);
     }
 
     @Test
@@ -53,7 +53,7 @@ public class ClasspathScannerTest {
         final List<URL> foundURLs = ClasspathScanner
             .scanFor("someName", firstMockClassLoader)
             .collect(Collectors.toList());
-        assertEquals("The expected URLs are found", Arrays.asList(FILE_A, FILE_B), foundURLs);
+        assertThat(foundURLs).as("The expected URLs are found").containsExactly(FILE_A, FILE_B);
     }
 
     @Test
@@ -65,11 +65,9 @@ public class ClasspathScannerTest {
         final List<URL> foundURLs = ClasspathScanner
             .scanFor("someName", firstMockClassLoader)
             .collect(Collectors.toList());
-        assertEquals(
-            "The expected URLs are found in the expected order",
-            Arrays.asList(FILE_A, FILE_B, JAR_A, JAR_B),
-            foundURLs
-        );
+        assertThat(foundURLs)
+            .as("The expected URLs are found in the expected order")
+            .containsExactly(FILE_A, FILE_B, JAR_A, JAR_B);
     }
 
     @Test
@@ -92,6 +90,6 @@ public class ClasspathScannerTest {
             .scanFor("someName", firstMockClassLoader, secondMockClassLoader)
             .collect(Collectors.toList());
 
-        assertEquals("The expected URLs are found", Arrays.asList(FILE_A, FILE_B, FILE_C), foundURLs);
+        assertThat(foundURLs).as("The expected URLs are found").containsExactly(FILE_A, FILE_B, FILE_C);
     }
 }

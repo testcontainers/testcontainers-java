@@ -8,7 +8,8 @@ import org.testcontainers.images.builder.ImageFromDockerfile;
 
 import java.time.Duration;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 public class DockerHealthcheckWaitStrategyTest {
 
@@ -37,6 +38,8 @@ public class DockerHealthcheckWaitStrategyTest {
     @Test
     public void containerStartFailsIfContainerIsUnhealthy() {
         container.withCommand("tail", "-f", "/dev/null");
-        assertThrows("Container launch fails when unhealthy", ContainerLaunchException.class, container::start);
+        assertThat(catchThrowable(container::start))
+            .as("Container launch fails when unhealthy")
+            .isInstanceOf(ContainerLaunchException.class);
     }
 }

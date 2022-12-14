@@ -22,6 +22,7 @@
             />
             <property name="allowSingleLineStatement" value="true"/>
         </module>
+        <module name="AvoidStarImport"/>
         <module name="AvoidStaticImport">
             <property name="excludes"
                       value="
@@ -29,19 +30,28 @@
                       org.assertj.core.api.Assertions.*,
                       org.assertj.core.api.Assumptions.*,
                       org.awaitility.Awaitility.*,
-                      org.hamcrest.Matchers.*,
-                      org.hamcrest.MatcherAssert.*,
-                      org.junit.Assert.*,
                       org.junit.Assume.*,
-                      org.junit.jupiter.api.Assertions.*,
                       org.mockito.Mockito.*,
                       org.mockito.ArgumentMatchers.*,
                       org.mockserver.model.HttpRequest.*,
                       org.mockserver.model.HttpResponse.*,
                       org.rnorth.ducttape.unreliables.Unreliables.*,
-                      org.rnorth.visibleassertions.VisibleAssertions.*,
                       "
             />
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="maximum" value="0"/>
+            <property name="format" value="org\.junit\.Assert\.assert" />
+            <property name="message"
+                      value="Please use AssertJ imports." />
+            <property name="ignoreComments" value="true" />
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="maximum" value="0"/>
+            <property name="format" value="org\.junit\.jupiter\.api\.Assertions\.assert" />
+            <property name="message"
+                      value="Please use AssertJ imports." />
+            <property name="ignoreComments" value="true" />
         </module>
         <module name="EmptyLineSeparator">
             <property name="allowNoEmptyLineBetweenFields" value="false" />

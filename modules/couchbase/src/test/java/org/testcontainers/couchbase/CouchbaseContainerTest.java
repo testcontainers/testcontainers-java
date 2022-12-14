@@ -27,10 +27,9 @@ import org.testcontainers.utility.DockerImageName;
 import java.time.Duration;
 import java.util.function.Consumer;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
 
 public class CouchbaseContainerTest {
 
@@ -66,7 +65,7 @@ public class CouchbaseContainerTest {
 
                     JsonObject fooObject = collection.get("foo").contentAsObject();
 
-                    assertEquals("value", fooObject.getString("key"));
+                    assertThat(fooObject.getString("key")).isEqualTo("value");
                 }
             );
         }
@@ -92,7 +91,7 @@ public class CouchbaseContainerTest {
 
                     JsonObject fooObject = collection.get("foo").contentAsObject();
 
-                    assertEquals("value", fooObject.getString("key"));
+                    assertThat(fooObject.getString("key")).isEqualTo("value");
                 }
             );
         }
@@ -118,7 +117,7 @@ public class CouchbaseContainerTest {
 
                     cluster.buckets().flushBucket(bucketDefinition.getName());
 
-                    await().untilAsserted(() -> assertFalse(collection.exists("foo").exists()));
+                    await().untilAsserted(() -> assertThat(collection.exists("foo").exists()).isFalse());
                 }
             );
         }
@@ -134,12 +133,10 @@ public class CouchbaseContainerTest {
             CouchbaseContainer container = new CouchbaseContainer(COUCHBASE_IMAGE_COMMUNITY)
                 .withEnabledServices(CouchbaseService.KV, CouchbaseService.ANALYTICS)
         ) {
-            assertThrows(
-                ContainerLaunchException.class,
-                () -> {
+            assertThatThrownBy(() -> {
                     setUpClient(container, cluster -> {});
-                }
-            );
+                })
+                .isInstanceOf(ContainerLaunchException.class);
         }
     }
 
@@ -153,12 +150,10 @@ public class CouchbaseContainerTest {
             CouchbaseContainer container = new CouchbaseContainer(COUCHBASE_IMAGE_COMMUNITY)
                 .withEnabledServices(CouchbaseService.KV, CouchbaseService.EVENTING)
         ) {
-            assertThrows(
-                ContainerLaunchException.class,
-                () -> {
+            assertThatThrownBy(() -> {
                     setUpClient(container, cluster -> {});
-                }
-            );
+                })
+                .isInstanceOf(ContainerLaunchException.class);
         }
     }
 

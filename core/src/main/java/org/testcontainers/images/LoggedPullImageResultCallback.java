@@ -8,7 +8,11 @@ import org.slf4j.Logger;
 import java.io.Closeable;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * {@link PullImageResultCallback} with improved logging of pull progress.

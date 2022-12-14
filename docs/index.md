@@ -1,11 +1,21 @@
 # Testcontainers
 
 <!-- allow aspect ratio computation to reduce layout shift. CSS enforces max-width: 100% -->
-<img src="logo.png" alt="Testcontainers logo" width="1024" height="512"/> 
+<img src="logo.png" alt="Testcontainers logo" width="1024" height="512"/>
 
-## About
+<p align=center><strong>Not using Java? Here are other supported languages!</strong></p>
+<div class="card-grid">
+    <a class="card-grid-item"><img src="language-logos/java.svg"/>Java</a>
+    <a href="https://golang.testcontainers.org/" class="card-grid-item"><img src="language-logos/go.svg"/>Go</a>
+    <a href="https://dotnet.testcontainers.org/" class="card-grid-item"><img src="language-logos/dotnet.svg"/>.NET</a>
+    <a href="https://testcontainers-python.readthedocs.io/en/latest/" class="card-grid-item"><img src="language-logos/python.svg"/>Python</a>
+    <a href="https://github.com/testcontainers/testcontainers-node" class="card-grid-item"><img src="language-logos/nodejs.svg"/>Node.js</a>
+    <a href="https://docs.rs/testcontainers/latest/testcontainers/" class="card-grid-item"><img src="language-logos/rust.svg"/>Rust</a>
+</div>
 
-Testcontainers is a Java library that supports JUnit tests, providing lightweight, throwaway instances of common databases, Selenium web browsers, or anything else that can run in a Docker container.
+## About Testcontainers for Java
+
+*Testcontainers for Java* is a Java library that supports JUnit tests, providing lightweight, throwaway instances of common databases, Selenium web browsers, or anything else that can run in a Docker container.
 
 Testcontainers make the following kinds of tests easier:
 
@@ -92,8 +102,8 @@ Using Gradle 5.0 or higher, you can add the following to the `dependencies` sect
 !!! warning "Shaded dependencies"
     Testcontainers depends on other libraries (like docker-java) for it to work.  
     Some of them (JUnit, docker-java-{api,transport} and its transitive dependencies, JNA, visible-assertions and others) are part of our public API.  
-    But there are also "private", implementation detail dependencies (e.g. docker-java-core, Guava, OkHttp, etc etc) that are not exposed to public API but prone to conflicts with test code/application under test code. 
-    As such, **these libraries are 'shaded' into the core testcontainers JAR** and relocated under `org.testcontainers.shaded` to prevent class conflicts.
+    But there are also "private", implementation detail dependencies (e.g., docker-java-core, Guava, OkHttp, etc.) that are not exposed to public API but prone to conflicts with test code/application under test code. 
+    As such, **these libraries are 'shaded' into the core Testcontainers JAR** and relocated under `org.testcontainers.shaded` to prevent class conflicts.
 
 ## Sponsors
 
@@ -143,6 +153,13 @@ A huge thank you to our sponsors:
     <a href="https://www.redhat.com">
         <img src="sponsor_logos/red_hat.png" style="width: 100%"/>
         <p>Red Hat</p>
+    </a>
+</div>
+
+<div style="text-align:center; max-width: 128px; display: inline-block; margin: 5px;">
+    <a href="https://www.spotify.com">
+        <img src="sponsor_logos/spotify.png" style="width: 100%"/>
+        <p>Spotify</p>
     </a>
 </div>
 
@@ -206,7 +223,7 @@ A huge thank you to our sponsors:
 
 ## License
 
-See [LICENSE](https://raw.githubusercontent.com/testcontainers/testcontainers-java/master/LICENSE).
+See [LICENSE](https://raw.githubusercontent.com/testcontainers/testcontainers-java/main/LICENSE).
 
 ## Attributions
 
@@ -218,4 +235,4 @@ This project was initially inspired by a [gist](https://gist.github.com/mosheesh
 
 Copyright (c) 2015-2021 Richard North and other authors.
 
-See [AUTHORS](https://raw.githubusercontent.com/testcontainers/testcontainers-java/master/AUTHORS) for contributors.
+See [AUTHORS](https://raw.githubusercontent.com/testcontainers/testcontainers-java/main/AUTHORS) for contributors.
