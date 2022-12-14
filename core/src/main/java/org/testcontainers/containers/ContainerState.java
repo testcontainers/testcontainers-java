@@ -152,7 +152,7 @@ public interface ContainerState {
         );
 
         Ports.Binding[] binding = new Ports.Binding[0];
-        final InspectContainerResponse containerInfo = this.getContainerInfo();
+        final InspectContainerResponse containerInfo = this.getCurrentContainerInfo();
         if (containerInfo != null) {
             binding = containerInfo.getNetworkSettings().getPorts().getBindings().get(new ExposedPort(originalPort));
         }

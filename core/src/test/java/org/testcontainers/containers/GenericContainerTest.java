@@ -6,6 +6,8 @@ import com.github.dockerjava.api.command.InspectContainerResponse.ContainerState
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Info;
 import com.github.dockerjava.api.model.Ports;
+
+import lombok.Cleanup;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.experimental.FieldDefaults;
@@ -22,6 +24,11 @@ import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.MountableFile;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -167,6 +174,45 @@ public class GenericContainerTest {
             assertThat(container.getExposedPorts()).as("Only withExposedPort should be exposed").hasSize(1);
             assertThat(container.getExposedPorts()).as("withExposedPort should be exposed").contains(8080);
         }
+    }
+
+    @Test
+    public void mappedPortShouldWorkAfterReconnect() throws IOException {
+        try (
+            Network network = Network.newNetwork();
+            GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
+                .withNetwork(network)
+                .withNetworkAliases("foo")
+                .withExposedPorts(8080)
+                .withCommand(
+                    "/bin/sh",
+                    "-c",
+                    "while true ; do printf 'HTTP/1.1 200 OK\\n\\nyay' | nc -l -p 8080; done"
+                )
+        ) {
+            container.start();
+            assertYayHttpResponseFrom(container.getHost(), container.getMappedPort(8080));
+
+            // disconnect container from the network
+            container.getDockerClient().disconnectFromNetworkCmd()
+                .withContainerId(container.getContainerId())
+                .withNetworkId(network.getId())
+                .exec();
+            // reconnect container to the network
+            container.getDockerClient().connectToNetworkCmd()
+                .withContainerId(container.getContainerId())
+                .withNetworkId(network.getId())
+                .exec();
+            assertYayHttpResponseFrom(container.getHost(), container.getMappedPort(8080));
+        }
+    }
+
+    private static void assertYayHttpResponseFrom(String host, Integer port) throws IOException {
+        URLConnection urlConnection = new java.net.URL("http", host, port, "/").openConnection();
+        @Cleanup
+        BufferedReader reader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+        String response = reader.readLine();
+        assertThat(response).as("received response").isEqualTo("yay");
     }
 
     static class NoopStartupCheckStrategy extends StartupCheckStrategy {
