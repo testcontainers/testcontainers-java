@@ -16,6 +16,10 @@ public interface Transferable {
         return of(string.getBytes(StandardCharsets.UTF_8));
     }
 
+    static Transferable of(String string, int fileMode) {
+        return of(string.getBytes(StandardCharsets.UTF_8), fileMode);
+    }
+
     static Transferable of(byte[] bytes) {
         return of(bytes, DEFAULT_FILE_MODE);
     }

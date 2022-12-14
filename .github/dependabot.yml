@@ -11,6 +11,9 @@ updates:
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "org.slf4j:slf4j-api"
+        update-types: [ "version-update:semver-major" ]
   - package-ecosystem: "gradle"
     directory: "/"
     allow:
@@ -32,6 +35,9 @@ updates:
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "io.dropwizard.metrics:metrics-core"
+        update-types: [ "version-update:semver-major" ]
   - package-ecosystem: "gradle"
     directory: "/modules/clickhouse"
     schedule:
@@ -97,6 +103,9 @@ updates:
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "org.apache.tomcat:tomcat-jdbc"
+        update-types: [ "version-update:semver-minor" ]
   - package-ecosystem: "gradle"
     directory: "/modules/junit-jupiter"
     schedule:
@@ -107,6 +116,9 @@ updates:
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml"
+        update-types: [ "version-update:semver-minor", "version-update:semver-patch" ]
   - package-ecosystem: "gradle"
     directory: "/modules/kafka"
     schedule:
@@ -122,6 +134,9 @@ updates:
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "org.mariadb:r2dbc-mariadb"
+        update-types: [ "version-update:semver-minor" ]
   - package-ecosystem: "gradle"
     directory: "/modules/mockserver"
     schedule:
@@ -147,6 +162,11 @@ updates:
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "org.neo4j.driver:neo4j-java-driver"
+        update-types: [ "version-update:semver-major" ]
+      - dependency-name: "org.neo4j:neo4j"
+        update-types: [ "version-update:semver-major" ]
   - package-ecosystem: "gradle"
     directory: "/modules/nginx"
     schedule:
@@ -178,12 +198,25 @@ updates:
       interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
-    directory: "/modules/r2dbc"
+    directory: "/modules/questdb"
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
+    directory: "/modules/r2dbc"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "io.r2dbc:r2dbc-spi"
+        update-types: [ "version-update:semver-major", "version-update:semver-minor" ]
+  - package-ecosystem: "gradle"
     directory: "/modules/rabbitmq"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
+    directory: "/modules/redpanda"
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
@@ -197,6 +230,9 @@ updates:
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "org.apache.solr:solr-solrj"
+        update-types: [ "version-update:semver-major" ]
   - package-ecosystem: "gradle"
     directory: "/modules/spock"
     schedule:
@@ -222,6 +258,11 @@ updates:
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
+    directory: "/modules/yugabytedb"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
 
 # Examples
   - package-ecosystem: "gradle"
@@ -229,6 +270,19 @@ updates:
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "ch.qos.logback:logback-classic"
+        update-types: [ "version-update:semver-minor" ]
+      - dependency-name: "org.apache.solr:solr-solrj"
+        update-types: [ "version-update:semver-major" ]
+      - dependency-name: "org.neo4j.driver:neo4j-java-driver"
+        update-types: [ "version-update:semver-major" ]
+      - dependency-name: "org.testng:testng"
+        update-types: [ "version-update:semver-minor" ]
+      - dependency-name: "org.slf4j:slf4j-api"
+        update-types: [ "version-update:semver-major" ]
+      - dependency-name: "org.springframework.boot:*"
+        versions: [ "[3,)" ]
 
 # GitHub Actions
   - package-ecosystem: "github-actions"

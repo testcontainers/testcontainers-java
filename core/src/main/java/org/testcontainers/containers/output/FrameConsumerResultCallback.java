@@ -30,7 +30,9 @@ public class FrameConsumerResultCallback extends ResultCallbackTemplate<FrameCon
 
     private static final String LINE_BREAK_REGEX = "((\\r?\\n)|(\\r))";
 
-    static final String LINE_BREAK_AT_END_REGEX = LINE_BREAK_REGEX + "$";
+    private static final Pattern LINE_BREAK_PATTERN = Pattern.compile(LINE_BREAK_REGEX);
+
+    static final Pattern LINE_BREAK_AT_END_PATTERN = Pattern.compile(LINE_BREAK_REGEX + "$");
 
     private Map<OutputFrame.OutputType, Consumer<OutputFrame>> consumers;
 
@@ -139,7 +141,7 @@ public class FrameConsumerResultCallback extends ResultCallbackTemplate<FrameCon
 
     private void normalizeLogLines(String utf8String, Consumer<OutputFrame> consumer) {
         // Reformat strings to normalize new lines.
-        List<String> lines = new ArrayList<>(Arrays.asList(utf8String.split(LINE_BREAK_REGEX)));
+        List<String> lines = new ArrayList<>(Arrays.asList(LINE_BREAK_PATTERN.split(utf8String)));
         if (lines.isEmpty()) {
             consumer.accept(new OutputFrame(OutputFrame.OutputType.STDOUT, EMPTY_LINE));
             return;

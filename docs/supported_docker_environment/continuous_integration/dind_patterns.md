@@ -32,6 +32,11 @@ Where:
 * `-w $PWD` will set the current directory to this volume
 * `-v /var/run/docker.sock:/var/run/docker.sock` will map the Docker socket
 
+
+!!! note
+    If you are using Docker Desktop, you need to mount the Docker socket that bypasses the API proxy (see [this comment](https://github.com/docker/for-mac/issues/5588#issuecomment-934600089) for more details):
+    `-v /var/run/docker.sock.raw:/var/run/docker.sock`
+
 ### Docker Compose example
 The same can be achieved with Docker Compose:
 ```yaml
