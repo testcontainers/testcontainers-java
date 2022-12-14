@@ -1,6 +1,8 @@
 package org.testcontainers.containers;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -151,10 +153,20 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
     }
 
     private String[] buildMongoEvalCommand(final String command) {
+        final String authOptions =
+            " -u " + username + " -p " + password + " --authenticationDatabase " + DEFAULT_AUTHENTICATION_DATABASE_NAME;
         return new String[] {
             "sh",
             "-c",
-            "mongosh mongo -u "+username+" -p "+password+" --authenticationDatabase "+DEFAULT_AUTHENTICATION_DATABASE_NAME+" --eval \"" + command + "\"  || mongo --eval \"" + command + "\"",
+            "mongosh mongo" +
+            authOptions +
+            " --eval \"" +
+            command +
+            "\"  || mongo " +
+            authOptions +
+            " --eval \"" +
+            command +
+            "\"",
         };
     }
 
