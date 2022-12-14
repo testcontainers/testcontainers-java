@@ -34,7 +34,7 @@ public class RegistryAuthLocator {
 
     private static final String DEFAULT_REGISTRY_NAME = "https://index.docker.io/v1/";
 
-    private static final String DOCKER_AUTH_VAR = "DOCKER_AUTH_CONFIG";
+    private static final String DOCKER_AUTH_ENV_VAR = "DOCKER_AUTH_CONFIG";
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
@@ -79,7 +79,7 @@ public class RegistryAuthLocator {
             .getenv()
             .getOrDefault("DOCKER_CONFIG", System.getProperty("user.home") + "/.docker");
         this.configFile = new File(dockerConfigLocation + "/config.json");
-        this.configEnv = System.getenv(DOCKER_AUTH_VAR);
+        this.configEnv = System.getenv(DOCKER_AUTH_ENV_VAR);
         this.commandPathPrefix = "";
         this.commandExtension = "";
 
@@ -166,7 +166,7 @@ public class RegistryAuthLocator {
                 "Failure when attempting to lookup auth config. Please ignore if you don't have images in an authenticated registry. Details: (dockerImageName: {}, configFile: {}, configEnv: {}). Falling back to docker-java default behaviour. Exception message: {}",
                 dockerImageName,
                 configFile,
-                DOCKER_AUTH_VAR,
+                DOCKER_AUTH_ENV_VAR,
                 e.getMessage()
             );
         }
@@ -178,7 +178,7 @@ public class RegistryAuthLocator {
             "RegistryAuthLocator has configFile: {} ({}) configEnv: {} ({}) and commandPathPrefix: {}",
             configFile,
             configFile.exists() ? "exists" : "does not exist",
-            DOCKER_AUTH_VAR,
+            DOCKER_AUTH_ENV_VAR,
             configEnv != null ? "exists" : "does not exist",
             commandPathPrefix
         );
@@ -187,7 +187,7 @@ public class RegistryAuthLocator {
             log.debug("RegistryAuthLocator reading from configFile: {}", configFile);
             return OBJECT_MAPPER.readTree(configFile);
         } else if (configEnv != null) {
-            log.debug("RegistryAuthLocator reading from environment variable: {}", DOCKER_AUTH_VAR);
+            log.debug("RegistryAuthLocator reading from environment variable: {}", DOCKER_AUTH_ENV_VAR);
             return OBJECT_MAPPER.readTree(configEnv);
         }
 
@@ -195,7 +195,7 @@ public class RegistryAuthLocator {
             "No config supplied. Checked in order: " +
             configFile +
             " (file not found), " +
-            DOCKER_AUTH_VAR +
+            DOCKER_AUTH_ENV_VAR +
             " (not set)"
         );
     }
