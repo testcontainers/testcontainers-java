@@ -92,6 +92,12 @@ public class DockerImageNameCompatibilityTest {
     }
 
     @Test
+    public void testAssertMethodAcceptsCompatibleLibraryPrefix() {
+        DockerImageName subject = DockerImageName.parse("library/foo");
+        subject.assertCompatibleWith(DockerImageName.parse("foo"));
+    }
+
+    @Test
     public void testAssertMethodRejectsIncompatible() {
         DockerImageName subject = DockerImageName.parse("foo");
         assertThatThrownBy(() -> subject.assertCompatibleWith(DockerImageName.parse("bar")))
