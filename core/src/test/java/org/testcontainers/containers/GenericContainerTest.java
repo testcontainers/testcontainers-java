@@ -175,10 +175,15 @@ public class GenericContainerTest {
     }
 
     @Test
-    public void mappedPortShouldWorkAfterReconnect() throws IOException {
+    public void mappedPortCanBeUpdatedAfterReconnect() throws IOException {
         try (
             Network network = Network.newNetwork();
-            GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
+            GenericContainer<?> container = new GenericContainer(TestImages.TINY_IMAGE) {
+                @Override
+                public InspectContainerResponse getContainerInfo() {
+                    return getCurrentContainerInfo();
+                }
+            }
                 .withNetwork(network)
                 .withNetworkAliases("foo")
                 .withExposedPorts(8080)
