@@ -112,6 +112,50 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
         );
     }
 
+    public void stopRecording() {
+        if (isRunning()) {
+            /*
+             * The container doesn't have pkill, killall, or even kill, and doesn't have ps, so we get
+             * a little interesting here. We look in /proc to find the processes, sed/grep/etc. our
+             * way to success to get what we want, and then kill with the shell built-in.
+             */
+            String command =
+                "kill -STOP " +
+                "$(" +
+                "grep -l -F flvrec.py /proc/*/cmdline" +
+                " | sed 's,^/proc/,,;s,/.*,,'" +
+                " | grep '^[0-9]*$'" +
+                " | grep -v '^1$'" +
+                " | sort -n" +
+                " | head -1" +
+                ")";
+            final ExecResult results;
+            try {
+                results = execInContainer("sh", "-c", command);
+            } catch (IOException e) {
+                throw new RuntimeException("While trying to send SIGSTOP to the VNC recorder process", e);
+            } catch (InterruptedException e) {
+                throw new RuntimeException("While trying to send SIGSTOP to the VNC recorder process", e);
+            }
+            if (results.getExitCode() != 0) {
+                throw new RuntimeException(
+                    "Got non-zero exit code " +
+                    results.getExitCode() +
+                    " when attempting to " +
+                    "send a SIGSTOP to the VNC recorder process in the container.\n" +
+                    "Command: " +
+                    command +
+                    "\n" +
+                    "Stdout: " +
+                    results.getStdout() +
+                    "\n" +
+                    "Stderr: " +
+                    results.getStderr()
+                );
+            }
+        }
+    }
+
     @SneakyThrows
     public InputStream streamRecording() {
         String newRecordingFileName = videoFormat.reencodeRecording(this, ORIGINAL_RECORDING_FILE_NAME);
