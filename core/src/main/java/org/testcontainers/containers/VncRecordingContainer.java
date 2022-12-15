@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.ToString;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.lang3.StringUtils;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
@@ -180,36 +181,71 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
             @Override
             String reencodeRecording(@NonNull VncRecordingContainer container, @NonNull String source)
                 throws IOException, InterruptedException {
-                String newFileOutput = "/newScreen.flv";
-                container.execInContainer("ffmpeg", "-i", source, "-vcodec", "libx264", newFileOutput);
-                return newFileOutput;
+                return execReencoder(
+                    container,
+                    new String[] { "ffmpeg", "-i", source, "-vcodec", "libx264", NEW_FILE_OUTPUT }
+                );
             }
         },
         MP4("mp4") {
             @Override
             String reencodeRecording(@NonNull VncRecordingContainer container, @NonNull String source)
                 throws IOException, InterruptedException {
-                String newFileOutput = "/newScreen.mp4";
-                container.execInContainer(
-                    "ffmpeg",
-                    "-i",
-                    source,
-                    "-vcodec",
-                    "libx264",
-                    "-movflags",
-                    "faststart",
-                    "-pix_fmt",
-                    "yuv420p",
-                    newFileOutput
+                return execReencoder(
+                    container,
+                    new String[] {
+                        "ffmpeg",
+                        "-i",
+                        source,
+                        "-vcodec",
+                        "libx264",
+                        "-movflags",
+                        "faststart",
+                        "-pix_fmt",
+                        "yuv420p",
+                        NEW_FILE_OUTPUT,
+                    }
                 );
-                return newFileOutput;
             }
         };
+
+        public static final String NEW_FILE_OUTPUT = "/newScreen.mp4";
 
         abstract String reencodeRecording(VncRecordingContainer container, String source)
             throws IOException, InterruptedException;
 
         @Getter
         private final String filenameExtension;
+
+        String execReencoder(@NonNull VncRecordingContainer container, @NonNull String[] command)
+            throws IOException, InterruptedException {
+            if (!container.isRunning()) {
+                throw new IOException(
+                    "VncRecordingContainer is not running when reencodeRecording was called: " +
+                    container.getCurrentContainerInfo().getState() +
+                    ": " +
+                    container.getLogs()
+                );
+            }
+
+            ExecResult results = container.execInContainer(command);
+            if (results.getExitCode() != 0) {
+                throw new RuntimeException(
+                    "Got non-zero exit code " +
+                    results.getExitCode() +
+                    " when attempting to " +
+                    "invoke ffmpeg in container to re-encode screen recording.\n" +
+                    "Command: " +
+                    StringUtils.join(command, ' ') +
+                    "\n" +
+                    "Stdout: " +
+                    results.getStdout() +
+                    "\n" +
+                    "Stderr: " +
+                    results.getStderr()
+                );
+            }
+            return NEW_FILE_OUTPUT;
+        }
     }
 }
