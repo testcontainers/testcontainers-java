@@ -72,8 +72,8 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
 
     @Override
     protected void configure() {
-        addEnv("MONGO_INITDB_ROOT_USERNAME", username);
-        addEnv("MONGO_INITDB_ROOT_PASSWORD", password);
+        addEnv("MONGO_INITDB_ROOT_USERNAME", this.username);
+        addEnv("MONGO_INITDB_ROOT_PASSWORD", this.password);
         withCreateContainerCmdModifier(it -> it.withEntrypoint("bash"));
         setCommand(
             "-c",
@@ -103,7 +103,9 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
      * @return a connection url pointing to a mongodb instance
      */
     public String getConnectionString() {
-        return constructConnectionString(ConnectionString.builder().username(username).password(password).build());
+        return constructConnectionString(
+            ConnectionString.builder().username(this.username).password(this.password).build()
+        );
     }
 
     /**
@@ -112,7 +114,7 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
      * @return a replica set url.
      */
     public String getReplicaSetUrl() {
-        return getReplicaSetUrl(ConnectionString.builder().username(username).password(password).build());
+        return getReplicaSetUrl(ConnectionString.builder().username(this.username).password(this.password).build());
     }
 
     /**
@@ -126,7 +128,12 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
             throw new IllegalStateException("MongoDBContainer should be started first");
         }
         return constructConnectionString(
-            ConnectionString.builder().databaseName(databaseName).username(username).password(password).build()
+            ConnectionString
+                .builder()
+                .databaseName(databaseName)
+                .username(this.username)
+                .password(this.password)
+                .build()
         );
     }
 
@@ -154,11 +161,16 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
 
     private String[] buildMongoEvalCommand(final String command) {
         final String authOptions =
-            " -u " + username + " -p " + password + " --authenticationDatabase " + DEFAULT_AUTHENTICATION_DATABASE_NAME;
+            " -u " +
+            this.username +
+            " -p " +
+            this.password +
+            " --authenticationDatabase " +
+            DEFAULT_AUTHENTICATION_DATABASE_NAME;
         return new String[] {
             "sh",
             "-c",
-            "mongosh mongo" +
+            "mongosh " +
             authOptions +
             " --eval \"" +
             command +

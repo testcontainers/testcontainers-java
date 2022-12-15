@@ -120,7 +120,7 @@ public class MongoDBContainerTest {
     }
 
     @Test
-    public void shouldTestAuthentication() {
+    public void shouldTestAuthenticationAccessControl() {
         final String usernameFullAccess = "my-name";
         final String passwordFullAccess = "my-pass";
         try (
