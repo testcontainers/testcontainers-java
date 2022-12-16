@@ -98,18 +98,12 @@ subprojects {
         if (System.properties['test.profile'] == 'podman') {
             exclude '**/*DockerCompose*'
             filter {
-                excludeTestsMatching '*AuthenticatedImagePullTest*'
                 excludeTestsMatching '*DockerNetworkModeTest*'
-                excludeTestsMatching '*AmbiguousImagePullTest*'
-                excludeTestsMatching '*ImagePullPolicyTest*'
 
-                excludeTestsMatching '*testThatAuthLocatorIsUsedForDockerComposePull'
-                excludeTestsMatching '*testMemoryLimitModified'
                 excludeTestsMatching '*testBuilder'
                 excludeTestsMatching '*testModifiers'
-                excludeTestsMatching '*shouldOnlyPublishExposedPorts'
+
                 excludeTestsMatching '*shouldReportOOMAfterWait'
-                excludeTestsMatching '*runCommandInsideDockerShouldNotFailIfImageDoesNotExistsLocally'
             }
 
         }
