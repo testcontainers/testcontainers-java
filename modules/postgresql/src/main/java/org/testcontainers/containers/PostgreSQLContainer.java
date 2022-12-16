@@ -2,6 +2,8 @@ package org.testcontainers.containers;
 
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
+import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
@@ -27,6 +29,11 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
 
     static final String DEFAULT_PASSWORD = "test";
 
+    private static final WaitStrategy DEFAULT_WAIT_STRATEGY = new LogMessageWaitStrategy()
+        .withRegEx(".*database system is ready to accept connections.*\\s")
+        .withTimes(2)
+        .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS));
+
     private String databaseName = "test";
 
     private String username = "test";
@@ -51,11 +58,18 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
+        this.waitStrategy = DEFAULT_WAIT_STRATEGY;
+        this.setCommand("postgres", "-c", FSYNC_OFF_OPTION);
+
+        addExposedPort(POSTGRESQL_PORT);
+    }
+
+    public PostgreSQLContainer(final DockerImageName dockerImageName, final WaitStrategy additionalWaitStrategy) {
+        super(dockerImageName);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+
         this.waitStrategy =
-            new LogMessageWaitStrategy()
-                .withRegEx(".*database system is ready to accept connections.*\\s")
-                .withTimes(2)
-                .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS));
+            new WaitAllStrategy().withStrategy(DEFAULT_WAIT_STRATEGY).withStrategy(additionalWaitStrategy);
         this.setCommand("postgres", "-c", FSYNC_OFF_OPTION);
 
         addExposedPort(POSTGRESQL_PORT);
