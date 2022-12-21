@@ -26,6 +26,8 @@ public final class DockerImageName {
 
     private static final Pattern REPO_NAME = Pattern.compile(REPO_NAME_PART + "(/" + REPO_NAME_PART + ")*");
 
+    private static final String LIBRARY_PREFIX = "library/";
+
     private final String rawName;
 
     @With
@@ -231,8 +233,15 @@ public final class DockerImageName {
      * @return whether this image has declared compatibility.
      */
     public boolean isCompatibleWith(DockerImageName other) {
-        // is this image already the same or equivalent?
-        if (other.equals(this)) {
+        // Make sure we always compare against a version of the image name containing the LIBRARY_PREFIX
+        String finalImageName;
+        if (this.repository.startsWith(LIBRARY_PREFIX)) {
+            finalImageName = this.repository;
+        } else {
+            finalImageName = LIBRARY_PREFIX + this.repository;
+        }
+        DockerImageName imageWithLibraryPrefix = DockerImageName.parse(finalImageName);
+        if (other.equals(this) || imageWithLibraryPrefix.equals(this)) {
             return true;
         }
 
