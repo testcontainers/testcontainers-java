@@ -21,12 +21,28 @@ You are not limited to Unit tests and can of course use an instance of the Neo4j
 
 ## Additional features
 
+### Custom password
+
+A custom password can be provided:
+
+<!--codeinclude-->
+[Custom password](../../../modules/neo4j/src/test/java/org/testcontainers/containers/Neo4jContainerTest.java) inside_block:withAdminPassword
+<!--/codeinclude-->
+
 ### Disable authentication
 
 Authentication can be disabled:
 
 <!--codeinclude-->
 [Disable authentication](../../../modules/neo4j/src/test/java/org/testcontainers/containers/Neo4jContainerTest.java) inside_block:withoutAuthentication
+<!--/codeinclude-->
+
+### Random password
+
+A random (`UUID`-random based) password can be set:
+
+<!--codeinclude-->
+[Random password](../../../modules/neo4j/src/test/java/org/testcontainers/containers/Neo4jContainerTest.java) inside_block:withRandomPassword
 <!--/codeinclude-->
 
 ### Neo4j-Configuration
