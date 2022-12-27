@@ -1,8 +1,17 @@
 description = "Testcontainers :: MockServer"
+ext.moduleName = "org.testcontainers.mockserver"
 
 dependencies {
     api project(':testcontainers')
 
     testImplementation 'org.mock-server:mockserver-client-java:5.14.0'
     testImplementation 'org.assertj:assertj-core:3.23.1'
+}
+
+jar {
+    inputs.property("moduleName", moduleName)
+
+    manifest {
+        attributes 'Automatic-Module-Name': moduleName
+    }
 }

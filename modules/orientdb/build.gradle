@@ -1,4 +1,5 @@
 description = "TestContainers :: Orientdb"
+ext.moduleName = "org.testcontainers.orientdb"
 
 dependencies {
     api project(":testcontainers")
@@ -8,4 +9,12 @@ dependencies {
     testImplementation 'org.assertj:assertj-core:3.23.1'
     testImplementation 'org.apache.tinkerpop:gremlin-driver:3.6.1'
     testImplementation "com.orientechnologies:orientdb-gremlin:3.2.13"
+}
+
+jar {
+    inputs.property("moduleName", moduleName)
+
+    manifest {
+        attributes 'Automatic-Module-Name': moduleName
+    }
 }

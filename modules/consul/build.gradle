@@ -1,4 +1,5 @@
 description = "Testcontainers :: Consul"
+ext.moduleName = "org.testcontainers.consul"
 
 dependencies {
     api project(':testcontainers')
@@ -6,4 +7,12 @@ dependencies {
     testImplementation 'com.ecwid.consul:consul-api:1.4.5'
     testImplementation 'io.rest-assured:rest-assured:5.3.0'
     testImplementation 'org.assertj:assertj-core:3.23.1'
+}
+
+jar {
+    inputs.property("moduleName", moduleName)
+
+    manifest {
+        attributes 'Automatic-Module-Name': moduleName
+    }
 }

@@ -1,3 +1,5 @@
+ext.moduleName = "org.testcontainers.jdbc.test"
+
 dependencies {
     api project(':jdbc')
     api project(':test-support')
@@ -14,4 +16,12 @@ dependencies {
     api 'org.apache.tomcat:tomcat-jdbc:10.0.27'
     api 'org.vibur:vibur-dbcp:25.0'
     api 'mysql:mysql-connector-java:8.0.31'
+}
+
+jar {
+    inputs.property("moduleName", moduleName)
+
+    manifest {
+        attributes 'Automatic-Module-Name': moduleName
+    }
 }

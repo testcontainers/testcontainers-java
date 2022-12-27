@@ -1,4 +1,5 @@
 description = "Testcontainers :: JDBC :: Presto"
+ext.moduleName = "org.testcontainers.presto"
 
 dependencies {
     api project(':jdbc')
@@ -6,4 +7,12 @@ dependencies {
     testImplementation project(':jdbc-test')
     testImplementation 'io.prestosql:presto-jdbc:350'
     compileOnly 'org.jetbrains:annotations:23.0.0'
+}
+
+jar {
+    inputs.property("moduleName", moduleName)
+
+    manifest {
+        attributes 'Automatic-Module-Name': moduleName
+    }
 }

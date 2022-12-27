@@ -1,4 +1,5 @@
 description = "Testcontainers :: GCloud"
+ext.moduleName = "org.testcontainers.gcloud"
 
 dependencies {
     api project(':testcontainers')
@@ -9,4 +10,12 @@ dependencies {
     testImplementation 'com.google.cloud:google-cloud-spanner:6.33.0'
     testImplementation 'com.google.cloud:google-cloud-bigtable:2.16.0'
     testImplementation 'org.assertj:assertj-core:3.23.1'
+}
+
+jar {
+    inputs.property("moduleName", moduleName)
+
+    manifest {
+        attributes 'Automatic-Module-Name': moduleName
+    }
 }

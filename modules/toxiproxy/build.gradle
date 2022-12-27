@@ -1,4 +1,5 @@
 description = "Testcontainers :: Toxiproxy"
+ext.moduleName = "org.testcontainers.toxiproxy"
 
 dependencies {
     api project(':testcontainers')
@@ -8,4 +9,12 @@ dependencies {
     testImplementation 'org.assertj:assertj-core:3.23.1'
 
     testImplementation project(':test-support')
+}
+
+jar {
+    inputs.property("moduleName", moduleName)
+
+    manifest {
+        attributes 'Automatic-Module-Name': moduleName
+    }
 }

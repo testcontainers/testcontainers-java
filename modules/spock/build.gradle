@@ -3,6 +3,7 @@ plugins {
 }
 
 description = "Testcontainers :: Spock-Extension"
+ext.moduleName = "org.testcontainers.spock"
 
 dependencies {
     api project(':testcontainers')
@@ -33,5 +34,13 @@ test {
     useJUnitPlatform()
     testLogging {
         events "passed", "skipped", "failed"
+    }
+}
+
+jar {
+    inputs.property("moduleName", moduleName)
+
+    manifest {
+        attributes 'Automatic-Module-Name': moduleName
     }
 }

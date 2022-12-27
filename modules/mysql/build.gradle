@@ -1,4 +1,5 @@
 description = "Testcontainers :: JDBC :: MySQL"
+ext.moduleName = "org.testcontainers.mysql"
 
 dependencies {
     annotationProcessor 'com.google.auto.service:auto-service:1.0.1'
@@ -16,4 +17,12 @@ dependencies {
     testImplementation 'dev.miku:r2dbc-mysql:0.8.2.RELEASE'
 
     compileOnly 'org.jetbrains:annotations:23.0.0'
+}
+
+jar {
+    inputs.property("moduleName", moduleName)
+
+    manifest {
+        attributes 'Automatic-Module-Name': moduleName
+    }
 }

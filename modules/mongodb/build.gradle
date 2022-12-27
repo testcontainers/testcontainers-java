@@ -1,4 +1,5 @@
 description = "Testcontainers :: MongoDB"
+ext.moduleName = "org.testcontainers.mongodb"
 
 dependencies {
     api project(':testcontainers')
@@ -11,4 +12,12 @@ tasks.japicmp {
     methodExcludes = [
         "org.testcontainers.containers.MongoDBContainer#containerIsStarted(com.github.dockerjava.api.command.InspectContainerResponse)"
     ]
+}
+
+jar {
+    inputs.property("moduleName", moduleName)
+
+    manifest {
+        attributes 'Automatic-Module-Name': moduleName
+    }
 }

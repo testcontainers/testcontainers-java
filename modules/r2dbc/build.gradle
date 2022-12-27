@@ -3,6 +3,7 @@ plugins {
 }
 
 description = "Testcontainers :: R2DBC"
+ext.moduleName = "org.testcontainers.r2dbc"
 
 dependencies {
     annotationProcessor 'com.google.auto.service:auto-service:1.0.1'
@@ -17,4 +18,12 @@ dependencies {
 
     testFixturesImplementation 'io.projectreactor:reactor-core:3.5.0'
     testFixturesImplementation 'org.assertj:assertj-core:3.23.1'
+}
+
+jar {
+    inputs.property("moduleName", moduleName)
+
+    manifest {
+        attributes 'Automatic-Module-Name': moduleName
+    }
 }

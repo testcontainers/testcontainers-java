@@ -1,4 +1,5 @@
 description = "TestContainers :: Neo4j"
+ext.moduleName = "org.testcontainers.neo4j"
 
 def generatedResourcesDir = new File(project.buildDir, "generated-resources")
 def customNeo4jPluginDestinationDir = new File(generatedResourcesDir, "custom-plugins")
@@ -35,4 +36,12 @@ dependencies {
 
     testImplementation 'org.neo4j.driver:neo4j-java-driver:4.4.9'
     testImplementation 'org.assertj:assertj-core:3.23.1'
+}
+
+jar {
+    inputs.property("moduleName", moduleName)
+
+    manifest {
+        attributes 'Automatic-Module-Name': moduleName
+    }
 }

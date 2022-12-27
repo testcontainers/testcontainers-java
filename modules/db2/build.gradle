@@ -1,4 +1,5 @@
 description = "Testcontainers :: JDBC :: DB2"
+ext.moduleName = "org.testcontainers.db2"
 
 dependencies {
     api project(':jdbc')
@@ -6,4 +7,12 @@ dependencies {
     testImplementation project(':jdbc-test')
     testImplementation 'com.ibm.db2:jcc:11.5.8.0'
     testImplementation 'org.assertj:assertj-core:3.23.1'
+}
+
+jar {
+    inputs.property("moduleName", moduleName)
+
+    manifest {
+        attributes 'Automatic-Module-Name': moduleName
+    }
 }

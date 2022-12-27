@@ -1,4 +1,5 @@
 description = "Testcontainers :: Pulsar"
+ext.moduleName = "org.testcontainers.pulsar"
 
 dependencies {
     api project(':testcontainers')
@@ -6,4 +7,12 @@ dependencies {
     testImplementation group: 'org.apache.pulsar', name: 'pulsar-client', version: '2.10.2'
     testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.23.1'
     testImplementation group: 'org.apache.pulsar', name: 'pulsar-client-admin', version: '2.10.2'
+}
+
+jar {
+    inputs.property("moduleName", moduleName)
+
+    manifest {
+        attributes 'Automatic-Module-Name': moduleName
+    }
 }

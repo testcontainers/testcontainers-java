@@ -1,4 +1,5 @@
 description = "Testcontainers :: Localstack"
+ext.moduleName = "org.testcontainers.localstack"
 
 dependencies {
     api project(':testcontainers')
@@ -9,4 +10,12 @@ dependencies {
     testImplementation 'com.amazonaws:aws-java-sdk-logs:1.12.356'
     testImplementation 'software.amazon.awssdk:s3:2.18.29'
     testImplementation 'org.assertj:assertj-core:3.23.1'
+}
+
+jar {
+    inputs.property("moduleName", moduleName)
+
+    manifest {
+        attributes 'Automatic-Module-Name': moduleName
+    }
 }

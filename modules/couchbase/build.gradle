@@ -1,4 +1,5 @@
 description = "Testcontainers :: Couchbase"
+ext.moduleName = "org.testcontainers.couchbase"
 
 dependencies {
     api project(':testcontainers')
@@ -8,4 +9,12 @@ dependencies {
     testImplementation 'com.couchbase.client:java-client:3.4.0'
     testImplementation 'org.awaitility:awaitility:4.2.0'
     testImplementation 'org.assertj:assertj-core:3.23.1'
+}
+
+jar {
+    inputs.property("moduleName", moduleName)
+
+    manifest {
+        attributes 'Automatic-Module-Name': moduleName
+    }
 }

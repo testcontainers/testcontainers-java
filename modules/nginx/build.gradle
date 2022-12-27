@@ -1,7 +1,16 @@
 description = "Testcontainers :: Nginx"
+ext.moduleName = "org.testcontainers.nginx"
 
 dependencies {
     api project(':testcontainers')
     compileOnly 'org.jetbrains:annotations:23.0.0'
     testImplementation 'org.assertj:assertj-core:3.23.1'
+}
+
+jar {
+    inputs.property("moduleName", moduleName)
+
+    manifest {
+        attributes 'Automatic-Module-Name': moduleName
+    }
 }

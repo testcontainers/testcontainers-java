@@ -1,4 +1,5 @@
 description = "Testcontainers :: JUnit Jupiter Extension"
+ext.moduleName = "org.testcontainers.junit.jupter"
 
 dependencies {
     api project(':testcontainers')
@@ -24,5 +25,13 @@ test {
     useJUnitPlatform()
     testLogging {
         events "passed", "skipped", "failed"
+    }
+}
+
+jar {
+    inputs.property("moduleName", moduleName)
+
+    manifest {
+        attributes 'Automatic-Module-Name': moduleName
     }
 }

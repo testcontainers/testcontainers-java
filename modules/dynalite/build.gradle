@@ -1,4 +1,5 @@
 description = "Testcontainers :: Dynalite"
+ext.moduleName = "org.testcontainers.dynalite"
 
 dependencies {
     api project(':testcontainers')
@@ -6,4 +7,12 @@ dependencies {
     compileOnly 'com.amazonaws:aws-java-sdk-dynamodb:1.12.356'
     testImplementation 'com.amazonaws:aws-java-sdk-dynamodb:1.12.353'
     testImplementation 'org.assertj:assertj-core:3.23.1'
+}
+
+jar {
+    inputs.property("moduleName", moduleName)
+
+    manifest {
+        attributes 'Automatic-Module-Name': moduleName
+    }
 }

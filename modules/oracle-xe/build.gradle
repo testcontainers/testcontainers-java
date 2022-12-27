@@ -1,4 +1,5 @@
 description = "Testcontainers :: JDBC :: Oracle XE"
+ext.moduleName = "org.testcontainers.oraclexe"
 
 dependencies {
     api project(':jdbc')
@@ -7,4 +8,12 @@ dependencies {
     testImplementation 'com.oracle.ojdbc:ojdbc8:19.3.0.0'
 
     compileOnly 'org.jetbrains:annotations:23.0.0'
+}
+
+jar {
+    inputs.property("moduleName", moduleName)
+
+    manifest {
+        attributes 'Automatic-Module-Name': moduleName
+    }
 }

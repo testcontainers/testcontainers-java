@@ -1,7 +1,16 @@
 description = "Testcontainers :: Database-Commons"
+ext.moduleName = "org.testcontainers.database.commons"
 
 dependencies {
     api project(':testcontainers')
 
     testImplementation 'org.assertj:assertj-core:3.23.1'
+}
+
+jar {
+    inputs.property("moduleName", moduleName)
+
+    manifest {
+        attributes 'Automatic-Module-Name': moduleName
+    }
 }

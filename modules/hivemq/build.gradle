@@ -1,4 +1,5 @@
 description = "TestContainers :: HiveMQ"
+ext.moduleName = "org.testcontainers.hivemq"
 
 dependencies {
     api(project(":testcontainers"))
@@ -34,5 +35,13 @@ test {
 compileTestJava {
     javaCompiler = javaToolchains.compilerFor {
         languageVersion = JavaLanguageVersion.of(11)
+    }
+}
+
+jar {
+    inputs.property("moduleName", moduleName)
+
+    manifest {
+        attributes 'Automatic-Module-Name': moduleName
     }
 }

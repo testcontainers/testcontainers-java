@@ -1,4 +1,5 @@
 description = "Testcontainers :: JDBC :: MariaDB"
+ext.moduleName = "org.testcontainers.mariadb"
 
 dependencies {
     annotationProcessor 'com.google.auto.service:auto-service:1.0.1'
@@ -14,4 +15,12 @@ dependencies {
 
     testImplementation testFixtures(project(':r2dbc'))
     testImplementation 'org.mariadb:r2dbc-mariadb:1.0.2'
+}
+
+jar {
+    inputs.property("moduleName", moduleName)
+
+    manifest {
+        attributes 'Automatic-Module-Name': moduleName
+    }
 }

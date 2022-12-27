@@ -1,4 +1,5 @@
 description = "Testcontainers :: MS SQL Server"
+ext.moduleName = "org.testcontainers.mssqlserver"
 
 dependencies {
     annotationProcessor 'com.google.auto.service:auto-service:1.0.1'
@@ -17,4 +18,12 @@ dependencies {
 
     // MSSQL's wait strategy requires the JDBC driver
     testImplementation testFixtures(project(':r2dbc'))
+}
+
+jar {
+    inputs.property("moduleName", moduleName)
+
+    manifest {
+        attributes 'Automatic-Module-Name': moduleName
+    }
 }
