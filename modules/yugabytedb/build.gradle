@@ -1,4 +1,5 @@
 description = "Testcontainers :: JDBC :: YugabyteDB"
+ext.moduleName = "org.testcontainers.yugabytedb"
 
 dependencies {
     api project(':jdbc')
@@ -7,4 +8,12 @@ dependencies {
     testImplementation 'com.yugabyte:java-driver-core:4.6.0-yb-11'
     // YSQL driver
     testImplementation 'com.yugabyte:jdbc-yugabytedb:42.3.5-yb-1'
+}
+
+jar {
+    inputs.property("moduleName", moduleName)
+
+    manifest {
+        attributes 'Automatic-Module-Name': moduleName
+    }
 }
