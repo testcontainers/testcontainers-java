@@ -1,6 +1,8 @@
-package org.testcontainers.containers;
+package org.testcontainers.yugabytedb;
 
 import org.testcontainers.jdbc.ConnectionUrl;
+import org.testcontainers.jdbc.containers.JdbcDatabaseContainer;
+import org.testcontainers.jdbc.containers.JdbcDatabaseContainerProvider;
 import org.testcontainers.utility.DockerImageName;
 
 /**

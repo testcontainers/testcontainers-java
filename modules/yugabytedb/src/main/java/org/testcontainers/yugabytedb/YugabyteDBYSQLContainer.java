@@ -1,6 +1,7 @@
-package org.testcontainers.containers;
+package org.testcontainers.yugabytedb;
 
-import org.testcontainers.containers.strategy.YugabyteDBYSQLWaitStrategy;
+import org.testcontainers.jdbc.containers.JdbcDatabaseContainer;
+import org.testcontainers.yugabytedb.strategy.YugabyteDBYSQLWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;

@@ -1,8 +1,8 @@
-package org.testcontainers.jdbc.questdb;
+package org.testcontainers.questdb.jdbc.questdb;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.testcontainers.jdbc.AbstractJDBCDriverTest;
+import org.testcontainers.jdbctest.AbstractJDBCDriverTest;
 
 import java.util.Arrays;
 import java.util.EnumSet;

@@ -1,4 +1,4 @@
-package org.testcontainers.containers.delegate;
+package org.testcontainers.yugabytedb.delegate;
 
 import org.testcontainers.delegate.DatabaseDelegate;
 

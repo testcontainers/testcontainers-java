@@ -1,9 +1,9 @@
-package org.testcontainers.junit.yugabytedb;
+package org.testcontainers.yugabytedb.junit.yugabytedb;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import org.junit.Test;
-import org.testcontainers.containers.YugabyteDBYCQLContainer;
+import org.testcontainers.yugabytedb.YugabyteDBYCQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import static org.assertj.core.api.Assertions.assertThat;

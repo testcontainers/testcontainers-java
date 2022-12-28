@@ -1,8 +1,9 @@
-package org.testcontainers.containers;
+package org.testcontainers.yugabytedb;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import org.testcontainers.containers.delegate.YugabyteDBYCQLDelegate;
-import org.testcontainers.containers.strategy.YugabyteDBYCQLWaitStrategy;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.yugabytedb.delegate.YugabyteDBYCQLDelegate;
+import org.testcontainers.yugabytedb.strategy.YugabyteDBYCQLWaitStrategy;
 import org.testcontainers.ext.ScriptUtils;
 import org.testcontainers.utility.DockerImageName;
 

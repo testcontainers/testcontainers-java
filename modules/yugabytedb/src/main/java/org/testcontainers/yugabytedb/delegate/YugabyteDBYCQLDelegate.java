@@ -1,10 +1,10 @@
-package org.testcontainers.containers.delegate;
+package org.testcontainers.yugabytedb.delegate;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.testcontainers.containers.Container.ExecResult;
-import org.testcontainers.containers.YugabyteDBYCQLContainer;
+import org.testcontainers.yugabytedb.YugabyteDBYCQLContainer;
 import org.testcontainers.ext.ScriptUtils.UncategorizedScriptException;
 
 import java.util.Collection;

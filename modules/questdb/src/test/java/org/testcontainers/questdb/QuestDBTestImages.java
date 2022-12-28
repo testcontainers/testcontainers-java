@@ -1,4 +1,4 @@
-package org.testcontainers;
+package org.testcontainers.questdb;
 
 import org.testcontainers.utility.DockerImageName;
 

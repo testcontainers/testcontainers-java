@@ -1,4 +1,4 @@
-package org.testcontainers.junit.questdb;
+package org.testcontainers.questdb.junit.questdb;
 
 import io.questdb.client.Sender;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -7,9 +7,9 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.junit.Test;
-import org.testcontainers.QuestDBTestImages;
-import org.testcontainers.containers.QuestDBContainer;
-import org.testcontainers.db.AbstractContainerDatabaseTest;
+import org.testcontainers.questdb.QuestDBTestImages;
+import org.testcontainers.questdb.QuestDBContainer;
+import org.testcontainers.jdbctest.db.AbstractContainerDatabaseTest;
 
 import java.io.IOException;
 import java.net.URLEncoder;

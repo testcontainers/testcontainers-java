@@ -1,9 +1,9 @@
-package org.testcontainers.containers.strategy;
+package org.testcontainers.yugabytedb.strategy;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.containers.Container.ExecResult;
-import org.testcontainers.containers.YugabyteDBYCQLContainer;
+import org.testcontainers.yugabytedb.YugabyteDBYCQLContainer;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 

@@ -1,4 +1,4 @@
-package org.testcontainers.containers;
+package org.testcontainers.influxdb;
 
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;

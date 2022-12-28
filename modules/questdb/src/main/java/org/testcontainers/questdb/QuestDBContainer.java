@@ -1,7 +1,8 @@
-package org.testcontainers.containers;
+package org.testcontainers.questdb;
 
 import lombok.NonNull;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.jdbc.containers.JdbcDatabaseContainer;
 import org.testcontainers.utility.DockerImageName;
 
 /**

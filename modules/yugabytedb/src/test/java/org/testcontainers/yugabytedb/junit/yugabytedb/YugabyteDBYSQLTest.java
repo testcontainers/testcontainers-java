@@ -1,8 +1,8 @@
-package org.testcontainers.junit.yugabytedb;
+package org.testcontainers.yugabytedb.junit.yugabytedb;
 
 import org.junit.Test;
-import org.testcontainers.containers.YugabyteDBYSQLContainer;
-import org.testcontainers.db.AbstractContainerDatabaseTest;
+import org.testcontainers.yugabytedb.YugabyteDBYSQLContainer;
+import org.testcontainers.jdbctest.db.AbstractContainerDatabaseTest;
 import org.testcontainers.utility.DockerImageName;
 
 import java.sql.SQLException;

@@ -1,4 +1,7 @@
-package org.testcontainers.containers;
+package org.testcontainers.questdb;
+
+import org.testcontainers.jdbc.containers.JdbcDatabaseContainer;
+import org.testcontainers.jdbc.containers.JdbcDatabaseContainerProvider;
 
 public class QuestDBProvider extends JdbcDatabaseContainerProvider {
 
