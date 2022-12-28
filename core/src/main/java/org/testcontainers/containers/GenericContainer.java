@@ -937,7 +937,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      *
      * @return the {@link WaitStrategy} to use
      */
-    protected org.testcontainers.containers.wait.strategy.WaitStrategy getWaitStrategy() {
+    public org.testcontainers.containers.wait.strategy.WaitStrategy getWaitStrategy() {
         return waitStrategy;
     }
 

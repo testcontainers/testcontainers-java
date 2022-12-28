@@ -327,7 +327,7 @@ public class ContainerDatabaseDriver implements Driver {
      * @param jdbcUrl the JDBC URL of the container instance to get
      * @return an instance of database container or <code>null</code> if no container associated with JDBC URL
      */
-    static JdbcDatabaseContainer getContainer(String jdbcUrl) {
+    public static JdbcDatabaseContainer getContainer(String jdbcUrl) {
         synchronized (jdbcUrlContainerCache) {
             return jdbcUrlContainerCache.get(jdbcUrl);
         }

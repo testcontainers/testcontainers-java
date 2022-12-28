@@ -11,7 +11,7 @@ public class PostgreSQLConnectionURLTest {
 
     @Test
     public void shouldCorrectlyAppendQueryString() {
-        PostgreSQLContainer<?> postgres = new FixedJdbcUrlPostgreSQLContainer();
+        FixedJdbcUrlPostgreSQLContainer postgres = new FixedJdbcUrlPostgreSQLContainer();
         String connectionUrl = postgres.constructUrlForConnection("?stringtype=unspecified&stringtype=unspecified");
         String queryString = connectionUrl.substring(connectionUrl.indexOf('?'));
 
@@ -24,7 +24,7 @@ public class PostgreSQLConnectionURLTest {
 
     @Test
     public void shouldCorrectlyAppendQueryStringWhenNoBaseParams() {
-        PostgreSQLContainer<?> postgres = new NoParamsUrlPostgreSQLContainer();
+        NoParamsUrlPostgreSQLContainer postgres = new NoParamsUrlPostgreSQLContainer();
         String connectionUrl = postgres.constructUrlForConnection("?stringtype=unspecified&stringtype=unspecified");
         String queryString = connectionUrl.substring(connectionUrl.indexOf('?'));
 
@@ -37,7 +37,7 @@ public class PostgreSQLConnectionURLTest {
 
     @Test
     public void shouldReturnOriginalURLWhenEmptyQueryString() {
-        PostgreSQLContainer<?> postgres = new FixedJdbcUrlPostgreSQLContainer();
+        FixedJdbcUrlPostgreSQLContainer postgres = new FixedJdbcUrlPostgreSQLContainer();
         String connectionUrl = postgres.constructUrlForConnection("");
 
         assertThat(postgres.getJdbcUrl()).as("Query String remains unchanged").isEqualTo(connectionUrl);
@@ -69,6 +69,11 @@ public class PostgreSQLConnectionURLTest {
         public Integer getMappedPort(int originalPort) {
             return 34532;
         }
+
+        @Override
+        public String constructUrlForConnection(String queryString) {
+            return super.constructUrlForConnection(queryString);
+        }
     }
 
     static class NoParamsUrlPostgreSQLContainer extends PostgreSQLContainer<FixedJdbcUrlPostgreSQLContainer> {
@@ -80,6 +85,11 @@ public class PostgreSQLConnectionURLTest {
         @Override
         public String getJdbcUrl() {
             return "jdbc:postgresql://host:port/database";
+        }
+
+        @Override
+        public String constructUrlForConnection(String queryString) {
+            return super.constructUrlForConnection(queryString);
         }
     }
 }

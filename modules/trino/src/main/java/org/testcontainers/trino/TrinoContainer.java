@@ -19,7 +19,7 @@ public class TrinoContainer extends JdbcDatabaseContainer<TrinoContainer> {
     static final String IMAGE = "trinodb/trino";
 
     @VisibleForTesting
-    static final String DEFAULT_TAG = "352";
+    public static final String DEFAULT_TAG = "352";
 
     private static final int TRINO_PORT = 8080;
 
