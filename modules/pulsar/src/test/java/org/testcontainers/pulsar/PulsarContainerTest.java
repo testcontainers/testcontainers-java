@@ -29,10 +29,10 @@ public class PulsarContainerTest {
     @Test
     public void testUsage() throws Exception {
         try (
-                // do not use PULSAR_IMAGE to make the doc looks easier
-                // constructorWithVersion {
-                PulsarContainer pulsar = new PulsarContainer(DockerImageName.parse("apachepulsar/pulsar:2.10.0"));
-                // }
+            // do not use PULSAR_IMAGE to make the doc looks easier
+            // constructorWithVersion {
+            PulsarContainer pulsar = new PulsarContainer(DockerImageName.parse("apachepulsar/pulsar:2.10.0"));
+            // }
         ) {
             pulsar.start();
             // coordinates {

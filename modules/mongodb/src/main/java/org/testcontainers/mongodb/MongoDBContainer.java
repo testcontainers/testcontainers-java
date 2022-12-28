@@ -4,6 +4,7 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
@@ -99,7 +100,7 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
         };
     }
 
-    private void checkMongoNodeExitCode(final ExecResult execResult) {
+    private void checkMongoNodeExitCode(final Container.ExecResult execResult) {
         if (execResult.getExitCode() != CONTAINER_EXIT_CODE_OK) {
             final String errorMessage = String.format("An error occurred: %s", execResult.getStdout());
             log.error(errorMessage);
@@ -122,7 +123,7 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
         );
     }
 
-    private void checkMongoNodeExitCodeAfterWaiting(final ExecResult execResultWaitForMaster) {
+    private void checkMongoNodeExitCodeAfterWaiting(final Container.ExecResult execResultWaitForMaster) {
         if (execResultWaitForMaster.getExitCode() != CONTAINER_EXIT_CODE_OK) {
             final String errorMessage = String.format(
                 "A single node replica set was not initialized in a set timeout: %d attempts",

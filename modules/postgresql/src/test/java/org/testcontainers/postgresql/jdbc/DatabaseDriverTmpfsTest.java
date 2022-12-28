@@ -13,10 +13,10 @@ import java.sql.DriverManager;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * This test belongs in the jdbc module, as it is focused on testing the behaviour of {@link JdbcDatabaseContainer}.
- * However, the need to use the {@link PostgreSQLContainerProvider} (due to the jdbc:tc:postgresql) URL forces it to live here in
+ * This test belongs in the jdbc module, as it is focused on testing the behaviour of {@link org.testcontainers.jdbc.containers.JdbcDatabaseContainer}.
+ * However, the need to use the {@link org.testcontainers.postgresql.PostgreSQLContainerProvider} (due to the jdbc:tc:postgresql) URL forces it to live here in
  * the mysql module, to avoid circular dependencies.
- * TODO: Move to the jdbc module and either (a) implement a barebones {@link JdbcDatabaseContainerProvider} for testing, or (b) refactor into a unit test.
+ * TODO: Move to the jdbc module and either (a) implement a barebones {@link org.testcontainers.jdbc.containers.JdbcDatabaseContainerProvider} for testing, or (b) refactor into a unit test.
  */
 public class DatabaseDriverTmpfsTest {
 

@@ -1,4 +1,4 @@
-package org.testcontainers.jdbc.mysql;
+package org.testcontainers.mysql.jdbc.mysql;
 
 import org.junit.Test;
 import org.testcontainers.jdbc.ContainerDatabaseDriver;
