@@ -2,9 +2,9 @@ package org.testcontainers.yugabytedb.strategy;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.testcontainers.yugabytedb.YugabyteDBYSQLContainer;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
+import org.testcontainers.yugabytedb.YugabyteDBYSQLContainer;
 
 import java.sql.Connection;
 import java.sql.SQLException;

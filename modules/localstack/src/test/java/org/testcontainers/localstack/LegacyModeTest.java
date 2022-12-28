@@ -9,8 +9,8 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.testcontainers.DockerClientFactory;
-import org.testcontainers.localstack.LocalStackContainer.Service;
 import org.testcontainers.images.RemoteDockerImage;
+import org.testcontainers.localstack.LocalStackContainer.Service;
 import org.testcontainers.utility.DockerImageName;
 
 import java.util.Arrays;

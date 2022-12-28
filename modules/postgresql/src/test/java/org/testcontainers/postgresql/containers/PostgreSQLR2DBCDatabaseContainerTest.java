@@ -1,9 +1,9 @@
 package org.testcontainers.postgresql.containers;
 
 import io.r2dbc.spi.ConnectionFactoryOptions;
-import org.testcontainers.postgresql.PostgreSQLTestImages;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.postgresql.PostgreSQLR2DBCDatabaseContainer;
+import org.testcontainers.postgresql.PostgreSQLTestImages;
 import org.testcontainers.r2dbc.AbstractR2DBCDatabaseContainerTest;
 
 public class PostgreSQLR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseContainerTest<PostgreSQLContainer<?>> {

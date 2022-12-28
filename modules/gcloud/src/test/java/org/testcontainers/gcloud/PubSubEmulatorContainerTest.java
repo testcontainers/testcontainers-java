@@ -24,7 +24,6 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import org.junit.Rule;
 import org.junit.Test;
-import org.testcontainers.gcloud.PubSubEmulatorContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;

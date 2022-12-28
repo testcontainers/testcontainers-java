@@ -7,14 +7,14 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.testcontainers.selenium.BrowserWebDriverContainer;
-import org.testcontainers.selenium.BrowserWebDriverContainer.VncRecordingMode;
-import org.testcontainers.selenium.DefaultRecordingFileFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.VncRecordingContainer;
 import org.testcontainers.containers.VncRecordingContainer.VncRecordingFormat;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.lifecycle.TestDescription;
+import org.testcontainers.selenium.BrowserWebDriverContainer;
+import org.testcontainers.selenium.BrowserWebDriverContainer.VncRecordingMode;
+import org.testcontainers.selenium.DefaultRecordingFileFactory;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 

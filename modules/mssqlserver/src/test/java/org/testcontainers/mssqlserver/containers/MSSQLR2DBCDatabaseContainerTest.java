@@ -1,9 +1,9 @@
 package org.testcontainers.mssqlserver.containers;
 
 import io.r2dbc.spi.ConnectionFactoryOptions;
-import org.testcontainers.mssqlserver.MSSQLServerTestImages;
 import org.testcontainers.mssqlserver.MSSQLR2DBCDatabaseContainer;
 import org.testcontainers.mssqlserver.MSSQLServerContainer;
+import org.testcontainers.mssqlserver.MSSQLServerTestImages;
 import org.testcontainers.r2dbc.AbstractR2DBCDatabaseContainerTest;
 
 public class MSSQLR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseContainerTest<MSSQLServerContainer<?>> {

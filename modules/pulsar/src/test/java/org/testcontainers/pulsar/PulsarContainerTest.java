@@ -10,7 +10,6 @@ import org.apache.pulsar.client.api.Schema;
 import org.apache.pulsar.client.api.SubscriptionInitialPosition;
 import org.apache.pulsar.client.api.transaction.Transaction;
 import org.junit.Test;
-import org.testcontainers.pulsar.PulsarContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;

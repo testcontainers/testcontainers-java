@@ -1,7 +1,7 @@
 package org.testcontainers.cockroachdb;
 
-import org.testcontainers.jdbc.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.jdbc.containers.JdbcDatabaseContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;

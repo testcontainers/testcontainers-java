@@ -16,7 +16,6 @@ import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
 import org.junit.Rule;
 import org.junit.Test;
-import org.testcontainers.gcloud.SpannerEmulatorContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import java.util.Arrays;

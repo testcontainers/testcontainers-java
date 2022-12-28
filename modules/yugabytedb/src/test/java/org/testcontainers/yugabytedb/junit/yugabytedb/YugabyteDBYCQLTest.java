@@ -3,8 +3,8 @@ package org.testcontainers.yugabytedb.junit.yugabytedb;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import org.junit.Test;
-import org.testcontainers.yugabytedb.YugabyteDBYCQLContainer;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.yugabytedb.YugabyteDBYCQLContainer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

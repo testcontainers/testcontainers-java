@@ -3,9 +3,9 @@ package org.testcontainers.yugabytedb.strategy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.containers.Container.ExecResult;
-import org.testcontainers.yugabytedb.YugabyteDBYCQLContainer;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
+import org.testcontainers.yugabytedb.YugabyteDBYCQLContainer;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;

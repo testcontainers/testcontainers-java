@@ -8,7 +8,6 @@ import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.Key;
 import org.junit.Rule;
 import org.junit.Test;
-import org.testcontainers.gcloud.DatastoreEmulatorContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;

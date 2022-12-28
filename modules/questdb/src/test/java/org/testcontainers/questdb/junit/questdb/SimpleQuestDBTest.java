@@ -7,9 +7,9 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.junit.Test;
-import org.testcontainers.questdb.QuestDBTestImages;
-import org.testcontainers.questdb.QuestDBContainer;
 import org.testcontainers.jdbctest.db.AbstractContainerDatabaseTest;
+import org.testcontainers.questdb.QuestDBContainer;
+import org.testcontainers.questdb.QuestDBTestImages;
 
 import java.io.IOException;
 import java.net.URLEncoder;

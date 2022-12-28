@@ -1,7 +1,7 @@
 package org.testcontainers.db2;
 
-import org.testcontainers.jdbc.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.jdbc.containers.JdbcDatabaseContainer;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.LicenseAcceptance;
 

@@ -18,7 +18,6 @@ import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.Testcontainers;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
-import org.testcontainers.kafka.KafkaContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;

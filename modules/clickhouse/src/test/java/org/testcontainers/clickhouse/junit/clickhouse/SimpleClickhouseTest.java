@@ -3,8 +3,8 @@ package org.testcontainers.clickhouse.junit.clickhouse;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.testcontainers.clickhouse.ClickhouseTestImages;
 import org.testcontainers.clickhouse.ClickHouseContainer;
+import org.testcontainers.clickhouse.ClickhouseTestImages;
 import org.testcontainers.jdbctest.db.AbstractContainerDatabaseTest;
 import org.testcontainers.utility.DockerImageName;
 

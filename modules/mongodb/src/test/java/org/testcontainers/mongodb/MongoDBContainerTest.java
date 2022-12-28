@@ -11,7 +11,6 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.TransactionBody;
 import org.bson.Document;
 import org.junit.Test;
-import org.testcontainers.mongodb.MongoDBContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import static org.assertj.core.api.Assertions.assertThat;

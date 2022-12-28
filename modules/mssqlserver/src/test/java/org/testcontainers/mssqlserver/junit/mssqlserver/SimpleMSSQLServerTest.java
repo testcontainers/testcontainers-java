@@ -1,9 +1,9 @@
 package org.testcontainers.mssqlserver.junit.mssqlserver;
 
 import org.junit.Test;
-import org.testcontainers.mssqlserver.MSSQLServerTestImages;
-import org.testcontainers.mssqlserver.MSSQLServerContainer;
 import org.testcontainers.jdbctest.db.AbstractContainerDatabaseTest;
+import org.testcontainers.mssqlserver.MSSQLServerContainer;
+import org.testcontainers.mssqlserver.MSSQLServerTestImages;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

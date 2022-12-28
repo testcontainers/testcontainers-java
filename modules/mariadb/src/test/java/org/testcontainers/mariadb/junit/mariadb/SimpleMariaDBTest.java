@@ -2,9 +2,9 @@ package org.testcontainers.mariadb.junit.mariadb;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.junit.Test;
-import org.testcontainers.mariadb.MariaDBTestImages;
-import org.testcontainers.mariadb.MariaDBContainer;
 import org.testcontainers.jdbctest.db.AbstractContainerDatabaseTest;
+import org.testcontainers.mariadb.MariaDBContainer;
+import org.testcontainers.mariadb.MariaDBTestImages;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

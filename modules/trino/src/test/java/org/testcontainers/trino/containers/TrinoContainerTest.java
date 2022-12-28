@@ -1,8 +1,8 @@
 package org.testcontainers.trino.containers;
 
 import org.junit.Test;
-import org.testcontainers.trino.TrinoTestImages;
 import org.testcontainers.trino.TrinoContainer;
+import org.testcontainers.trino.TrinoTestImages;
 
 import java.sql.Connection;
 import java.sql.ResultSet;

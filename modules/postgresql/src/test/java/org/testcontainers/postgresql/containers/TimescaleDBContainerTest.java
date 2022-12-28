@@ -2,8 +2,8 @@ package org.testcontainers.postgresql.containers;
 
 import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.jdbctest.db.AbstractContainerDatabaseTest;
 import org.testcontainers.jdbc.containers.JdbcDatabaseContainer;
+import org.testcontainers.jdbctest.db.AbstractContainerDatabaseTest;
 import org.testcontainers.postgresql.TimescaleDBContainerProvider;
 
 import java.sql.ResultSet;

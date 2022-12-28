@@ -1,8 +1,8 @@
 package org.testcontainers.presto.containers;
 
 import org.junit.Test;
-import org.testcontainers.presto.PrestoTestImages;
 import org.testcontainers.presto.PrestoContainer;
+import org.testcontainers.presto.PrestoTestImages;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

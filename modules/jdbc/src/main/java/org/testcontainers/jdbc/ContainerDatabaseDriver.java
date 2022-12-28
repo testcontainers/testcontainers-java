@@ -2,10 +2,10 @@ package org.testcontainers.jdbc;
 
 import org.apache.commons.io.IOUtils;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.jdbc.containers.JdbcDatabaseContainer;
-import org.testcontainers.jdbc.containers.JdbcDatabaseContainerProvider;
 import org.testcontainers.delegate.DatabaseDelegate;
 import org.testcontainers.ext.ScriptUtils;
+import org.testcontainers.jdbc.containers.JdbcDatabaseContainer;
+import org.testcontainers.jdbc.containers.JdbcDatabaseContainerProvider;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;

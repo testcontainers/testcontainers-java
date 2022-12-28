@@ -1,8 +1,8 @@
 package org.testcontainers.db2.junit.db2;
 
 import org.junit.Test;
-import org.testcontainers.db2.Db2TestImages;
 import org.testcontainers.db2.Db2Container;
+import org.testcontainers.db2.Db2TestImages;
 import org.testcontainers.jdbctest.db.AbstractContainerDatabaseTest;
 
 import java.sql.ResultSet;

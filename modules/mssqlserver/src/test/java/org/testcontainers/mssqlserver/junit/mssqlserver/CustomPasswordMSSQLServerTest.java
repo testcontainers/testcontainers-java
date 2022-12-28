@@ -4,8 +4,8 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.testcontainers.mssqlserver.MSSQLServerTestImages;
 import org.testcontainers.mssqlserver.MSSQLServerContainer;
+import org.testcontainers.mssqlserver.MSSQLServerTestImages;
 
 import java.util.Arrays;
 import java.util.Collection;

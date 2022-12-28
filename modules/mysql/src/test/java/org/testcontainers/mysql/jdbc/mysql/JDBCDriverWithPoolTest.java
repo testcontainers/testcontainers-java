@@ -9,9 +9,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.testcontainers.jdbc.ContainerDatabaseDriver;
-import org.testcontainers.jdbc.containers.JdbcDatabaseContainer;
-import org.testcontainers.jdbc.containers.JdbcDatabaseContainerProvider;
-import org.testcontainers.mysql.MySQLContainerProvider;
 import org.vibur.dbcp.ViburDBCPDataSource;
 
 import java.sql.Connection;

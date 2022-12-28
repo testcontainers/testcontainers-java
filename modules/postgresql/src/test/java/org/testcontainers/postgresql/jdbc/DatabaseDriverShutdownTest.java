@@ -4,8 +4,6 @@ import org.junit.AfterClass;
 import org.junit.Test;
 import org.testcontainers.jdbc.ContainerDatabaseDriver;
 import org.testcontainers.jdbc.containers.JdbcDatabaseContainer;
-import org.testcontainers.jdbc.containers.JdbcDatabaseContainerProvider;
-import org.testcontainers.postgresql.PostgreSQLContainerProvider;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

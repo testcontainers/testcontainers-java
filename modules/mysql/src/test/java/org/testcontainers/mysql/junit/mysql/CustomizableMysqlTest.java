@@ -1,9 +1,9 @@
 package org.testcontainers.mysql.junit.mysql;
 
 import org.junit.Test;
-import org.testcontainers.mysql.MySQLTestImages;
-import org.testcontainers.mysql.MySQLContainer;
 import org.testcontainers.jdbctest.db.AbstractContainerDatabaseTest;
+import org.testcontainers.mysql.MySQLContainer;
+import org.testcontainers.mysql.MySQLTestImages;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

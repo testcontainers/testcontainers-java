@@ -6,7 +6,6 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
-import org.testcontainers.cassandra.CassandraContainer;
 import org.testcontainers.cassandra.wait.CassandraQueryWaitStrategy;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.utility.DockerImageName;

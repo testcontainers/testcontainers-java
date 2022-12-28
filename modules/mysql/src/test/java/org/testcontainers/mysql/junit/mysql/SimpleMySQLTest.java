@@ -3,11 +3,11 @@ package org.testcontainers.mysql.junit.mysql;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.mysql.MySQLTestImages;
 import org.testcontainers.containers.ContainerLaunchException;
-import org.testcontainers.mysql.MySQLContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.jdbctest.db.AbstractContainerDatabaseTest;
+import org.testcontainers.mysql.MySQLContainer;
+import org.testcontainers.mysql.MySQLTestImages;
 
 import java.sql.Connection;
 import java.sql.ResultSet;

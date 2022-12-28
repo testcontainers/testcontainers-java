@@ -1,8 +1,8 @@
 package org.testcontainers.postgresql.containers;
 
 import org.junit.Test;
-import org.testcontainers.postgresql.PostgreSQLTestImages;
 import org.testcontainers.postgresql.PostgreSQLContainer;
+import org.testcontainers.postgresql.PostgreSQLTestImages;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;

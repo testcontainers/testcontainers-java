@@ -10,7 +10,6 @@ import com.google.cloud.firestore.QuerySnapshot;
 import com.google.cloud.firestore.WriteResult;
 import org.junit.Rule;
 import org.junit.Test;
-import org.testcontainers.gcloud.FirestoreEmulatorContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import java.util.HashMap;

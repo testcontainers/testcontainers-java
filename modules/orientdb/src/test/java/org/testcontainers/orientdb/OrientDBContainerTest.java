@@ -2,7 +2,6 @@ package org.testcontainers.orientdb;
 
 import com.orientechnologies.orient.core.db.ODatabaseSession;
 import org.junit.Test;
-import org.testcontainers.orientdb.OrientDBContainer;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 

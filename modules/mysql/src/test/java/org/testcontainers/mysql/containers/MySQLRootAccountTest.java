@@ -4,9 +4,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.testcontainers.mysql.MySQLTestImages;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.mysql.MySQLContainer;
+import org.testcontainers.mysql.MySQLTestImages;
 import org.testcontainers.utility.DockerImageName;
 
 import java.sql.Connection;

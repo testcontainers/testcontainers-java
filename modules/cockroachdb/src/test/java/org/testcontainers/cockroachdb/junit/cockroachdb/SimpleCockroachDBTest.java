@@ -1,8 +1,8 @@
 package org.testcontainers.cockroachdb.junit.cockroachdb;
 
 import org.junit.Test;
-import org.testcontainers.cockroachdb.CockroachDBTestImages;
 import org.testcontainers.cockroachdb.CockroachContainer;
+import org.testcontainers.cockroachdb.CockroachDBTestImages;
 import org.testcontainers.jdbctest.db.AbstractContainerDatabaseTest;
 
 import java.sql.ResultSet;

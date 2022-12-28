@@ -1,9 +1,9 @@
 package org.testcontainers.postgresql.junit.postgresql;
 
 import org.junit.Test;
-import org.testcontainers.postgresql.PostgreSQLTestImages;
-import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.jdbctest.db.AbstractContainerDatabaseTest;
+import org.testcontainers.postgresql.PostgreSQLContainer;
+import org.testcontainers.postgresql.PostgreSQLTestImages;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

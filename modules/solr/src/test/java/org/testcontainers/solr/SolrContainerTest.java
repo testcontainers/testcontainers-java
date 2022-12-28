@@ -6,7 +6,6 @@ import org.apache.solr.client.solrj.impl.Http2SolrClient;
 import org.apache.solr.client.solrj.response.SolrPingResponse;
 import org.junit.After;
 import org.junit.Test;
-import org.testcontainers.solr.SolrContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;

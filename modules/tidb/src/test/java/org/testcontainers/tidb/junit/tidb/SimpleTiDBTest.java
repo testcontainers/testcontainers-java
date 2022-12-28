@@ -1,9 +1,9 @@
 package org.testcontainers.tidb.junit.tidb;
 
 import org.junit.Test;
-import org.testcontainers.tidb.TiDBTestImages;
 import org.testcontainers.jdbctest.db.AbstractContainerDatabaseTest;
 import org.testcontainers.tidb.TiDBContainer;
+import org.testcontainers.tidb.TiDBTestImages;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

@@ -3,7 +3,6 @@ package org.testcontainers.jdbc.containers;
 import lombok.NonNull;
 import org.junit.Test;
 import org.slf4j.Logger;
-import org.testcontainers.jdbc.containers.JdbcDatabaseContainer;
 
 import java.sql.Connection;
 import java.sql.SQLException;

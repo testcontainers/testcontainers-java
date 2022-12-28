@@ -1,10 +1,10 @@
 package org.testcontainers.jdbc;
 
 import lombok.extern.slf4j.Slf4j;
-import org.testcontainers.jdbc.containers.JdbcDatabaseContainer;
 import org.testcontainers.delegate.AbstractDatabaseDelegate;
 import org.testcontainers.exception.ConnectionCreationException;
 import org.testcontainers.ext.ScriptUtils;
+import org.testcontainers.jdbc.containers.JdbcDatabaseContainer;
 
 import java.sql.SQLException;
 import java.sql.Statement;

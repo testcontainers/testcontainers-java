@@ -4,8 +4,8 @@ import lombok.Cleanup;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
-import org.testcontainers.nginx.NginxContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.nginx.NginxContainer;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 

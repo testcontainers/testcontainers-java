@@ -19,7 +19,6 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import org.junit.Rule;
 import org.junit.Test;
-import org.testcontainers.gcloud.BigtableEmulatorContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;

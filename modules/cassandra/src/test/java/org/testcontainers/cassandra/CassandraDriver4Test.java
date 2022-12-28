@@ -5,7 +5,6 @@ import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata;
 import org.junit.Rule;
 import org.junit.Test;
-import org.testcontainers.cassandra.CassandraContainer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

@@ -9,7 +9,6 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.testcontainers.azure.CosmosDBEmulatorContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.FileOutputStream;

@@ -3,9 +3,9 @@ package org.testcontainers.mysql.junit.mysql;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.testcontainers.mysql.MySQLTestImages;
-import org.testcontainers.mysql.MySQLContainer;
 import org.testcontainers.jdbctest.db.AbstractContainerDatabaseTest;
+import org.testcontainers.mysql.MySQLContainer;
+import org.testcontainers.mysql.MySQLTestImages;
 import org.testcontainers.utility.DockerImageName;
 
 import java.sql.ResultSet;

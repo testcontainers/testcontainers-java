@@ -1,7 +1,6 @@
 package org.testcontainers.mockserver;
 
 import lombok.Cleanup;
-import org.testcontainers.mockserver.MockServerContainer;
 
 import java.io.BufferedReader;
 import java.io.IOException;
