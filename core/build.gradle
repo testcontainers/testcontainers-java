@@ -92,6 +92,8 @@ dependencies {
 
     shaded 'org.zeroturnaround:zt-exec:1.12'
 
+    shaded 'dev.dirs:directories:26'
+
     testImplementation 'org.apache.httpcomponents:httpclient:4.5.9'
     testImplementation 'redis.clients:jedis:4.3.1'
     testImplementation 'com.rabbitmq:amqp-client:5.16.0'

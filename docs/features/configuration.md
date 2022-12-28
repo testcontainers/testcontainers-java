@@ -6,11 +6,13 @@ You can override some default properties if your environment requires that.
 The configuration will be loaded from multiple locations. Properties are considered in the following order:
 
 1. Environment variables
-2. `.testcontainers.properties` in user's home folder. Example locations:  
-**Linux:** `/home/myuser/.testcontainers.properties`  
-**Windows:** `C:/Users/myuser/.testcontainers.properties`  
-**macOS:** `/Users/myuser/.testcontainers.properties`
+2. `testcontainers.properties` in user's configuration folder. Example locations:  
+**Linux:** `/home/myuser/.config/testcontainers/testcontainers.properties`  
+**Windows:** `C:/Users/myuser/AppData/Roaming/testcontainers/config/testcontainers.properties`  
+**macOS:** `/Users/myuser/Library/Application Support/testcontainers/testcontainers.properties`
 3. `testcontainers.properties` on the classpath.
+
+For backwards compatibility, `.testcontainers.properties` in user's home folder will be used if it exists.
 
 Note that when using environment variables, configuration property names should be set in upper 
 case with underscore separators, preceded by `TESTCONTAINERS_` - e.g. `checks.disable` becomes 
@@ -33,7 +35,7 @@ Before running any containers Testcontainers will perform a set of startup check
         ✔ File should be mountable
         ✔ A port exposed by a docker container should be accessible
 ```
-It takes a couple of seconds, but if you want to speed up your tests, you can disable the checks once you have everything configured. Add `checks.disable=true` to your `$HOME/.testcontainers.properties` to completely disable them.
+It takes a couple of seconds, but if you want to speed up your tests, you can disable the checks once you have everything configured. Add `checks.disable=true` to your `testcontainers.properties` in your [configuration directory](#configuration-locations) to completely disable them.
 
 ## Customizing images
 
@@ -115,7 +117,8 @@ However, sometimes customization is required. Testcontainers will respect the fo
 > Docker's host on which ports are exposed.  
 > Example: `docker.svc.local`
 
-For advanced users, the Docker host connection can be configured **via configuration** in `~/.testcontainers.properties`.
+For advanced users, the Docker host connection can be configured **via configuration** in `testcontainers.properties`
+in your [configuration directory](#configuration-locations).
 Note that these settings require use of the `EnvironmentAndSystemPropertyClientProviderStrategy`. The example below 
 illustrates usage:
 

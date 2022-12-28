@@ -360,8 +360,9 @@ public abstract class DockerClientProviderStrategy {
             .filter(DockerClientProviderStrategy::isPersistable)
             .peek(strategy -> {
                 log.info(
-                    "Loaded {} from ~/.testcontainers.properties, will try it first",
-                    strategy.getClass().getName()
+                    "Loaded {} from {}, will try it first",
+                    strategy.getClass().getName(),
+                    TestcontainersConfiguration.getUserConfigFile()
                 );
             })
             .findFirst();

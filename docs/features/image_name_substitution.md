@@ -67,7 +67,7 @@ This can be done in one of two ways:
 
 * Setting environment variables `TESTCONTAINERS_HUB_IMAGE_NAME_PREFIX=registry.mycompany.com/mirror/`
 * Via config file, setting `hub.image.name.prefix` in either:
-    * the `~/.testcontainers.properties` file in your user home directory, or
+    * the `testcontainers.properties` file in your [configuration directory](./configuration.md#configuration-locations), or
     * a file named `testcontainers.properties` on the classpath
     
 Testcontainers will automatically apply the prefix to every image that it pulls from Docker Hub - please verify that all [the required images](../supported_docker_environment/image_registry_rate_limiting.md#which-images-are-used-by-testcontainers) exist in your registry.
@@ -119,8 +119,8 @@ For example:
 
 Note that it is also possible to provide this same configuration property:
 
-* in a `testcontainers.properties` file at the root of a library JAR file (useful if you wish to distribute a drop-in image substitutor JAR within an organization) 
-* in a properties file in the user's home directory (`~/.testcontainers.properties`; note the leading `.`)
+* in a `testcontainers.properties` file at the root of a library JAR file (useful if you wish to distribute a drop-in image substitutor JAR within an organization), 
+* in a properties file in the user's [configuration directory](./configuration.md#configuration-locations),
 * or as an environment variable (e.g. `TESTCONTAINERS_IMAGE_SUBSTITUTOR=com.mycompany.testcontainers.ExampleImageNameSubstitutor`).
 
 Please see [the documentation on configuration mechanisms](./configuration.md) for more information.

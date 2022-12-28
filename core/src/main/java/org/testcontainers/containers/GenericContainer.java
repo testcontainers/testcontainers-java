@@ -410,7 +410,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                             "" +
                             "Reuse was requested but the environment does not support the reuse of containers\n" +
                             "To enable reuse of containers, you must set 'testcontainers.reuse.enable=true' in a file located at {}",
-                            Paths.get(System.getProperty("user.home"), ".testcontainers.properties")
+                            TestcontainersConfiguration.getUserConfigFile()
                         );
                     reusable = false;
                 }

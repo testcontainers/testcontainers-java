@@ -2,6 +2,8 @@ package org.testcontainers.utility;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
+import dev.dirs.ProjectDirectories;
+import dev.dirs.UnsupportedOperatingSystemException;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
@@ -33,7 +35,8 @@ import java.util.stream.Stream;
  * <p>
  * Configuration may be provided in:
  * <ul>
- *     <li>A file in the user's home directory named <code>.testcontainers.properties</code></li>
+ *     <li>A file in the user's configuration directory named <code>testcontainers.properties</code>,
+ *     see {@link #getUserConfigFile()}</li>
  *     <li>A file in the classpath named <code>testcontainers.properties</code></li>
  *     <li>Environment variables</li>
  * </ul>
@@ -46,8 +49,6 @@ import java.util.stream.Stream;
 public class TestcontainersConfiguration {
 
     private static String PROPERTIES_FILE_NAME = "testcontainers.properties";
-
-    private static File USER_CONFIG_FILE = new File(System.getProperty("user.home"), "." + PROPERTIES_FILE_NAME);
 
     private static final String AMBASSADOR_IMAGE = "richnorth/ambassador";
 
@@ -247,8 +248,8 @@ public class TestcontainersConfiguration {
 
     /**
      * Gets a configured setting from an environment variable (if present) or a configuration file property otherwise.
-     * The configuration file will be the <code>.testcontainers.properties</code> file in the user's home directory or
-     * a <code>testcontainers.properties</code> found on the classpath.
+     * The configuration file will be the {@link #getUserConfigFile()} file or a <code>testcontainers.properties</code> found
+     * on the classpath.
      * <p>
      * Note that when searching environment variables, the prefix `TESTCONTAINERS_` will usually be applied to the
      * property name, which will be converted to upper-case with underscore separators. This prefix will not be added
@@ -264,7 +265,7 @@ public class TestcontainersConfiguration {
 
     /**
      * Gets a configured setting from an environment variable (if present) or a configuration file property otherwise.
-     * The configuration file will be the <code>.testcontainers.properties</code> file in the user's home directory.
+     * The configuration file will be the {@link #getUserConfigFile()} file.
      * <p>
      * Note that when searching environment variables, the prefix `TESTCONTAINERS_` will usually be applied to the
      * property name, which will be converted to upper-case with underscore separators. This prefix will not be added
@@ -320,6 +321,7 @@ public class TestcontainersConfiguration {
 
     @Synchronized
     public boolean updateUserConfig(@NonNull String prop, @NonNull String value) {
+        File userConfigFile = getUserConfigFile();
         try {
             if (value.equals(userProperties.get(prop))) {
                 return false;
@@ -327,8 +329,9 @@ public class TestcontainersConfiguration {
 
             userProperties.setProperty(prop, value);
 
-            USER_CONFIG_FILE.createNewFile();
-            try (OutputStream outputStream = new FileOutputStream(USER_CONFIG_FILE)) {
+            userConfigFile.getParentFile().mkdirs();
+            userConfigFile.createNewFile();
+            try (OutputStream outputStream = new FileOutputStream(userConfigFile)) {
                 userProperties.store(outputStream, "Modified by Testcontainers");
             }
 
@@ -336,7 +339,7 @@ public class TestcontainersConfiguration {
             userProperties.setProperty(prop, value);
             return true;
         } catch (Exception e) {
-            log.debug("Can't store environment property {} in {}", prop, USER_CONFIG_FILE);
+            log.debug("Can't store environment property {} in {}", prop, userConfigFile);
             return false;
         }
     }
@@ -344,7 +347,7 @@ public class TestcontainersConfiguration {
     @SneakyThrows(MalformedURLException.class)
     private static TestcontainersConfiguration loadConfiguration() {
         return new TestcontainersConfiguration(
-            readProperties(USER_CONFIG_FILE.toURI().toURL()),
+            readProperties(getUserConfigFile().toURI().toURL()),
             ClasspathScanner
                 .scanFor(PROPERTIES_FILE_NAME)
                 .map(TestcontainersConfiguration::readProperties)
@@ -400,5 +403,33 @@ public class TestcontainersConfiguration {
             }
         }
         return original;
+    }
+
+    /**
+     * Returns the location of the user's configuration file according to the operating system's convention:
+     *
+     * <dl>
+     *   <dt>Linux</dt>
+     *   <dd><code>${XDG_CONFIG_HOME:-$HOME/.config}/testcontainers/testcontainers.properties</code></dd>
+     *   <dt>Windows</dt>
+     *   <dd><code>{FOLDERID_ApplicationData}/testcontainers/config/testcontainers.properties</code></dd>
+     *   <dt>macOS</dt>
+     *   <dd><code>$HOME/Library/Application Support/testcontainers/testcontainers.properties</code></dd>
+     * </dl>
+     * <p>
+     * If `$HOME/.testcontainers.properties` exists, it is returned instead, for backwards compatibility.
+     */
+    public static File getUserConfigFile() {
+        File legacy = new File(System.getProperty("user.home"), "." + PROPERTIES_FILE_NAME);
+        if (legacy.exists()) {
+            return legacy;
+        }
+
+        try {
+            ProjectDirectories projectDirectories = ProjectDirectories.from("", "", "testcontainers");
+            return new File(projectDirectories.configDir, PROPERTIES_FILE_NAME);
+        } catch (UnsupportedOperatingSystemException e) {
+            return legacy;
+        }
     }
 }

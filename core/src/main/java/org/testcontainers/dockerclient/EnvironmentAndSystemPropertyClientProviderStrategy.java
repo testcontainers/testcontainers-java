@@ -14,7 +14,7 @@ import java.util.Optional;
  * Resolution order is:
  * <ol>
  *     <li>DOCKER_HOST env var</li>
- *     <li>docker.host in ~/.testcontainers.properties</li>
+ *     <li>docker.host in {@link TestcontainersConfiguration#getUserConfigFile()}</li>
  * </ol>
  *
  * @deprecated this class is used by the SPI and should not be used directly
