@@ -14,7 +14,7 @@ public class YugabyteDBYSQLContainerProvider extends JdbcDatabaseContainerProvid
 
     private static final String DEFAULT_TAG = "2.14.4.0-b26";
 
-    private static final String NAME = "yugabyte";
+    private static final String NAME = "yugabytedb";
 
     private static final String USER_PARAM = "user";
 
