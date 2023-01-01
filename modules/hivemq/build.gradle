@@ -2,7 +2,7 @@ description = "TestContainers :: HiveMQ"
 
 dependencies {
     api(project(":testcontainers"))
-    api("org.jetbrains:annotations:23.0.0")
+    api("org.jetbrains:annotations:23.1.0")
 
     shaded("org.apache.commons:commons-lang3:3.12.0")
     shaded("commons-io:commons-io:2.11.0")
