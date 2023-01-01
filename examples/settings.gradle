@@ -34,6 +34,7 @@ include 'immudb'
 include 'zookeeper'
 include 'hazelcast'
 include 'nats'
+include 'sftp'
 
 ext.isCI = System.getenv("CI") != null
 
