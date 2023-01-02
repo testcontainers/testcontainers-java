@@ -20,7 +20,7 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.9.1'
     testRuntimeOnly 'org.junit.platform:junit-platform-testkit:1.9.1'
 
-    testCompileOnly 'org.jetbrains:annotations:23.0.0'
+    testCompileOnly 'org.jetbrains:annotations:23.1.0'
 }
 
 sourceJar {
