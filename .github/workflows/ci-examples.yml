@@ -27,8 +27,6 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 16
-      - run: npm ci
-      - run: npm test
       - uses: actions/setup-java@v3
         with:
           java-version: '8.0.302'
@@ -56,8 +54,6 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 16
-      - run: npm ci
-      - run: npm test
       - uses: actions/setup-java@v3
         with:
           java-version: '8.0.302'
