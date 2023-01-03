@@ -16,7 +16,7 @@ jobs:
       contents: write  # for release-drafter/release-drafter to create a github release
       pull-requests: write  # for release-drafter/release-drafter to add label to PR
     if: github.repository == 'testcontainers/testcontainers-java'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux,  X64]
     steps:
       - uses: release-drafter/release-drafter@6df64e4ba4842c203c604c1f45246c5863410adb # v5.19.0
         env:

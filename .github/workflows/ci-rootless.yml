@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   test:
-    runs-on: ubuntu-18.04
+    runs-on: [self-hosted, Linux,  X64]
     strategy:
       fail-fast: false
       matrix:
