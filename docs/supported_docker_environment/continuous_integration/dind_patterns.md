@@ -34,8 +34,9 @@ Where:
 
 
 !!! note
-    If you are using Docker Desktop, you need to mount the Docker socket that bypasses the API proxy (see [this comment](https://github.com/docker/for-mac/issues/5588#issuecomment-934600089) for more details):
-    `-v /var/run/docker.sock.raw:/var/run/docker.sock`
+    If you are using Docker Desktop, you need to configure the `TESTCONTAINERS_HOST_OVERRIDE` environment variable to use the special DNS name
+    `host.docker.internal` for accessing the host from within a container, which is provided by Docker Desktop:
+    `-e TESTCONTAINERS_HOST_OVERRIDE=host.docker.internal`
 
 ### Docker Compose example
 The same can be achieved with Docker Compose:
