@@ -34,7 +34,7 @@ Where:
 
 
 !!! note
-    If you are using Docker Desktop, you need to configure `TESTCONTAINERS_HOST_OVERRIDE` to use the special DNS name 
+    If you are using Docker Desktop, you need to configure the `TESTCONTAINERS_HOST_OVERRIDE` environment variable to use the special DNS name
     `host.docker.internal` for accessing the host from within a container, which is provided by Docker Desktop:
     `-e TESTCONTAINERS_HOST_OVERRIDE=host.docker.internal`
 
