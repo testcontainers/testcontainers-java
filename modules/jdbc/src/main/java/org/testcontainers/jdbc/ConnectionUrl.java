@@ -4,9 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.testcontainers.UnstableAPI;
+import org.testcontainers.utility.MountableFile;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -60,6 +64,8 @@ public class ConnectionUrl {
     private Map<String, String> queryParameters;
 
     private Map<String, String> tmpfsOptions = new HashMap<>();
+
+    private Map<String, List<MountableFile>> copyFilesToContainerOptions = Collections.emptyMap();
 
     public static ConnectionUrl newInstance(final String url) {
         ConnectionUrl connectionUrl = new ConnectionUrl(url);
@@ -135,6 +141,8 @@ public class ConnectionUrl {
 
         tmpfsOptions = parseTmpfsOptions(containerParameters);
 
+        copyFilesToContainerOptions = parseCopyFilesToContainerOptions(containerParameters);
+
         initScriptPath = Optional.ofNullable(containerParameters.get("TC_INITSCRIPT"));
 
         reusable = Boolean.parseBoolean(containerParameters.get("TC_REUSABLE"));
@@ -158,6 +166,31 @@ public class ConnectionUrl {
         return Stream
             .of(tmpfsOptions.split(","))
             .collect(Collectors.toMap(string -> string.split(":")[0], string -> string.split(":")[1]));
+    }
+
+    private Map<String, List<MountableFile>> parseCopyFilesToContainerOptions(Map<String, String> containerParameters) {
+        if (!containerParameters.containsKey("TC_COPY_FILES")) {
+            return Collections.emptyMap();
+        }
+
+        String copyFilesToContainerOptions = containerParameters.get("TC_COPY_FILES");
+
+        Map<String, List<MountableFile>> mounts = new HashMap<>();
+        Arrays
+            .stream(copyFilesToContainerOptions.split(","))
+            .map(string -> string.split(":"))
+            .forEach(split -> {
+                String hostPath = split[0];
+                String containerPath = split[1];
+                Integer mode = split.length > 2 ? Integer.parseInt(split[2], 8) : null;
+                MountableFile mountableFile = (hostPath.startsWith("/"))
+                    ? MountableFile.forHostPath(hostPath, mode)
+                    : MountableFile.forClasspathResource(hostPath, mode);
+                mounts.putIfAbsent(containerPath, new ArrayList<>());
+                mounts.get(containerPath).add(mountableFile);
+            });
+
+        return mounts;
     }
 
     /**
@@ -199,6 +232,10 @@ public class ConnectionUrl {
 
     public Map<String, String> getTmpfsOptions() {
         return Collections.unmodifiableMap(tmpfsOptions);
+    }
+
+    public Map<String, List<MountableFile>> getCopyFilesToContainerOptions() {
+        return Collections.unmodifiableMap(copyFilesToContainerOptions);
     }
 
     /**
