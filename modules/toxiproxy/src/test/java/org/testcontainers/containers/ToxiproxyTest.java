@@ -3,6 +3,7 @@ package org.testcontainers.containers;
 import eu.rekawek.toxiproxy.Proxy;
 import eu.rekawek.toxiproxy.ToxiproxyClient;
 import eu.rekawek.toxiproxy.model.ToxicDirection;
+import java.util.concurrent.TimeUnit;
 import org.junit.Rule;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
@@ -181,10 +182,10 @@ public class ToxiproxyTest {
         int expectedMinLatency,
         long expectedMaxLatency
     ) {
-        final long start = System.currentTimeMillis();
+        final long start = System.nanoTime();
         String s = jedis.get("somekey");
-        final long end = System.currentTimeMillis();
-        final long duration = end - start;
+        final long end = System.nanoTime();
+        final long duration = TimeUnit.NANOSECONDS.toMillis(end - start);
 
         assertThat(s).as(String.format("access to the container %s works OK", description)).isEqualTo("somevalue");
         assertThat(duration >= expectedMinLatency)

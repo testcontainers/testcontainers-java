@@ -1,6 +1,7 @@
 package org.testcontainers.containers;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import java.util.concurrent.TimeUnit;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
@@ -149,10 +150,10 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
             );
 
         // Repeatedly try and open a connection to the DB and execute a test query
-        long start = System.currentTimeMillis();
+        long start = System.nanoTime();
 
         Exception lastConnectionException = null;
-        while (System.currentTimeMillis() < start + (1000 * startupTimeoutSeconds)) {
+        while ((System.nanoTime() - start) <  TimeUnit.SECONDS.toNanos(startupTimeoutSeconds)) {
             if (!isRunning()) {
                 Thread.sleep(100L);
             } else {
@@ -239,9 +240,9 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
 
         SQLException lastException = null;
         try {
-            long start = System.currentTimeMillis();
+            long start = System.nanoTime();
             // give up if we hit the time limit or the container stops running for some reason
-            while (System.currentTimeMillis() < start + (1000 * connectTimeoutSeconds) && isRunning()) {
+            while ((System.nanoTime() - start < TimeUnit.SECONDS.toNanos(connectTimeoutSeconds)) && isRunning()) {
                 try {
                     logger()
                         .debug(

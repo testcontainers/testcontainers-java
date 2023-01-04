@@ -73,14 +73,14 @@ public class WaitingConsumer extends BaseConsumer<WaitingConsumer> {
      */
     public void waitUntil(Predicate<OutputFrame> predicate, long limit, TimeUnit limitUnit, int times)
         throws TimeoutException {
-        long expiry = limitUnit.toMillis(limit) + System.currentTimeMillis();
+        long expiry = limitUnit.toNanos(limit) + System.nanoTime();
 
         waitUntil(predicate, expiry, times);
     }
 
     private void waitUntil(Predicate<OutputFrame> predicate, long expiry, int times) throws TimeoutException {
         int numberOfMatches = 0;
-        while (System.currentTimeMillis() < expiry) {
+        while (System.nanoTime() < expiry) {
             try {
                 OutputFrame frame = frames.pollLast(100, TimeUnit.MILLISECONDS);
 
@@ -129,13 +129,13 @@ public class WaitingConsumer extends BaseConsumer<WaitingConsumer> {
      * @param limitUnit maximum time to wait (units)
      */
     public void waitUntilEnd(long limit, TimeUnit limitUnit) throws TimeoutException {
-        long expiry = limitUnit.toMillis(limit) + System.currentTimeMillis();
+        long expiry = limitUnit.toNanos(limit) + System.nanoTime();
 
         waitUntilEnd(expiry);
     }
 
     private void waitUntilEnd(Long expiry) throws TimeoutException {
-        while (System.currentTimeMillis() < expiry) {
+        while (System.nanoTime() < expiry) {
             try {
                 OutputFrame frame = frames.pollLast(100, TimeUnit.MILLISECONDS);
 
