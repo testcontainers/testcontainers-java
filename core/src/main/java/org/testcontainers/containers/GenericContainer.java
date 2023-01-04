@@ -470,6 +470,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                         }
                     );
 
+            String emulationWarning = checkForEmulation();
+            if (emulationWarning != null) {
+                logger().warn(emulationWarning);
+            }
+
             // Tell subclasses that we're starting
             containerIsStarting(containerInfo, reused);
 
@@ -958,6 +963,32 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         if (waitStrategy != null) {
             waitStrategy.waitUntilReady(this);
         }
+    }
+
+    private String checkForEmulation() {
+        try {
+            DockerClient dockerClient = DockerClientFactory.instance().client();
+            String imageId = getCurrentContainerInfo().getImageId();
+            String imageArch = dockerClient.inspectImageCmd(imageId).exec().getArch();
+            String serverArch = dockerClient.versionCmd().exec().getArch();
+
+            if (!serverArch.equals(imageArch)) {
+                return (
+                    "The architecture '" +
+                    imageArch +
+                    "' for image '" +
+                    getDockerImageName() +
+                    "' (ID " +
+                    imageId +
+                    ") does not match the Docker server architecture '" +
+                    serverArch +
+                    "'. This will cause the container to execute much more slowly due to emulation and may lead to timeout failures."
+                );
+            }
+        } catch (Exception archCheckException) {
+            // ignore any exceptions since this is just used for a log message
+        }
+        return null;
     }
 
     /**
