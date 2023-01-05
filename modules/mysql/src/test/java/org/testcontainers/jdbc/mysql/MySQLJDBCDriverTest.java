@@ -46,7 +46,7 @@ public class MySQLJDBCDriverTest extends AbstractJDBCDriverTest {
                     EnumSet.of(Options.CustomIniFile),
                 },
                 {
-                    "jdbc:tc:mysql://hostname/databasename?TC_COPY_FILES=somepath/mysql_conf_override/my.cnf:/etc/mysql/conf.d/mysqld.cnf",
+                    "jdbc:tc:mysql://hostname/databasename?TC_COPY_FILE=somepath/mysql_conf_override/my.cnf:/etc/mysql/conf.d/mysqld.cnf",
                     EnumSet.of(Options.CopyFiles),
                 },
             }
