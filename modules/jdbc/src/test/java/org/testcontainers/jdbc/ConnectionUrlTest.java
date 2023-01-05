@@ -5,6 +5,8 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.testcontainers.utility.MountableFile;
 
+import java.nio.file.Paths;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ConnectionUrlTest {
@@ -72,17 +74,17 @@ public class ConnectionUrlTest {
     @Test
     public void testCopyFilesOption() {
         String urlString =
-            "jdbc:tc:mysql://somehostname/databasename?TC_COPY_FILES=/key:path1,logback-test.xml:path2:755";
+            "jdbc:tc:mysql://somehostname/databasename" +
+            "?TC_COPY_FILE=file:key1:path1" +
+            "?TC_COPY_FILE=file:/key2:path2" +
+            "&TC_COPY_FILE=logback-test.xml:path3:755";
         ConnectionUrl url = ConnectionUrl.newInstance(urlString);
 
         assertThat(url.getQueryParameters()).as("Connection Parameters set is empty").isEmpty();
         assertThat(url.getContainerParameters()).as("Container Parameters set is not empty").isNotEmpty();
-        assertThat(url.getContainerParameters())
-            .as("Container Parameter TC_COPY_FILES is true")
-            .containsEntry("TC_COPY_FILES", "/key:path1,logback-test.xml:path2:755");
         assertThat(url.getCopyFilesToContainerOptions())
             .as("copyFiles option has correct values")
-            .containsOnlyKeys("path1", "path2");
+            .containsOnlyKeys("path1", "path2", "path3");
 
         assertThat(url.getCopyFilesToContainerOptions())
             .as("copyFiles option path1 has correct value")
@@ -95,7 +97,7 @@ public class ConnectionUrlTest {
             .asList()
             .element(0)
             .extracting("filesystemPath")
-            .isEqualTo("/key");
+            .isEqualTo(Paths.get(".").toAbsolutePath().normalize() + "/key1");
         assertThat(url.getCopyFilesToContainerOptions())
             .as("copyFiles option path1 has correct value")
             .extractingByKey("path1")
@@ -115,10 +117,30 @@ public class ConnectionUrlTest {
             .asList()
             .element(0)
             .extracting("filesystemPath")
-            .isEqualTo(MountableFile.forClasspathResource("logback-test.xml").getFilesystemPath());
+            .isEqualTo("/key2");
         assertThat(url.getCopyFilesToContainerOptions())
             .as("copyFiles option path1 has correct value")
             .extractingByKey("path2")
+            .asList()
+            .element(0)
+            .extracting("fileMode")
+            .isEqualTo(0100000 | 0644);
+
+        assertThat(url.getCopyFilesToContainerOptions())
+            .as("copyFiles option path1 has correct value")
+            .extractingByKey("path3")
+            .asList()
+            .hasSize(1);
+        assertThat(url.getCopyFilesToContainerOptions())
+            .as("copyFiles option path1 has correct value")
+            .extractingByKey("path3")
+            .asList()
+            .element(0)
+            .extracting("filesystemPath")
+            .isEqualTo(MountableFile.forClasspathResource("logback-test.xml").getFilesystemPath());
+        assertThat(url.getCopyFilesToContainerOptions())
+            .as("copyFiles option path1 has correct value")
+            .extractingByKey("path3")
             .asList()
             .element(0)
             .extracting("fileMode")

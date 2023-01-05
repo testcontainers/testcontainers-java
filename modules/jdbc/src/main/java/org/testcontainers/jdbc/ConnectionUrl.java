@@ -7,7 +7,6 @@ import org.testcontainers.UnstableAPI;
 import org.testcontainers.utility.MountableFile;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -141,7 +140,7 @@ public class ConnectionUrl {
 
         tmpfsOptions = parseTmpfsOptions(containerParameters);
 
-        copyFilesToContainerOptions = parseCopyFilesToContainerOptions(containerParameters);
+        copyFilesToContainerOptions = parseCopyFilesToContainerOptions(this.getUrl());
 
         initScriptPath = Optional.ofNullable(containerParameters.get("TC_INITSCRIPT"));
 
@@ -168,27 +167,22 @@ public class ConnectionUrl {
             .collect(Collectors.toMap(string -> string.split(":")[0], string -> string.split(":")[1]));
     }
 
-    private Map<String, List<MountableFile>> parseCopyFilesToContainerOptions(Map<String, String> containerParameters) {
-        if (!containerParameters.containsKey("TC_COPY_FILES")) {
-            return Collections.emptyMap();
-        }
-
-        String copyFilesToContainerOptions = containerParameters.get("TC_COPY_FILES");
+    private Map<String, List<MountableFile>> parseCopyFilesToContainerOptions(CharSequence url) {
+        Matcher matcher = Patterns.COPY_FILE_MATCHING_PATTERN.matcher(this.getUrl());
 
         Map<String, List<MountableFile>> mounts = new HashMap<>();
-        Arrays
-            .stream(copyFilesToContainerOptions.split(","))
-            .map(string -> string.split(":"))
-            .forEach(split -> {
-                String hostPath = split[0];
-                String containerPath = split[1];
-                Integer mode = split.length > 2 ? Integer.parseInt(split[2], 8) : null;
-                MountableFile mountableFile = (hostPath.startsWith("/"))
-                    ? MountableFile.forHostPath(hostPath, mode)
-                    : MountableFile.forClasspathResource(hostPath, mode);
-                mounts.putIfAbsent(containerPath, new ArrayList<>());
-                mounts.get(containerPath).add(mountableFile);
-            });
+        while (matcher.find()) {
+            boolean isFile = matcher.group(1).startsWith("file:");
+            String[] split = matcher.group(1).replaceFirst("file:", "").split(":");
+            String hostPath = split[0];
+            String containerPath = split[1];
+            Integer mode = split.length > 2 ? Integer.parseInt(split[2], 8) : null;
+            MountableFile mountableFile = isFile
+                ? MountableFile.forHostPath(hostPath, mode)
+                : MountableFile.forClasspathResource(hostPath, mode);
+            mounts.putIfAbsent(containerPath, new ArrayList<>());
+            mounts.get(containerPath).add(mountableFile);
+        }
 
         return mounts;
     }
@@ -293,6 +287,8 @@ public class ConnectionUrl {
             "(\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)" +
             ".*"
         );
+
+        Pattern COPY_FILE_MATCHING_PATTERN = Pattern.compile("TC_COPY_FILE=([^?&]+)");
 
         String TC_PARAM_NAME_PATTERN = "(TC_[A-Z_]+)";
 
