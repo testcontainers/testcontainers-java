@@ -3,7 +3,6 @@ package org.testcontainers.containers;
 import eu.rekawek.toxiproxy.Proxy;
 import eu.rekawek.toxiproxy.ToxiproxyClient;
 import eu.rekawek.toxiproxy.model.ToxicDirection;
-import java.util.concurrent.TimeUnit;
 import org.junit.Rule;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
@@ -11,6 +10,7 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;

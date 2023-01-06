@@ -1,7 +1,6 @@
 package org.testcontainers.containers;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import java.util.concurrent.TimeUnit;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
@@ -21,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -153,7 +153,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
         long start = System.nanoTime();
 
         Exception lastConnectionException = null;
-        while ((System.nanoTime() - start) <  TimeUnit.SECONDS.toNanos(startupTimeoutSeconds)) {
+        while ((System.nanoTime() - start) < TimeUnit.SECONDS.toNanos(startupTimeoutSeconds)) {
             if (!isRunning()) {
                 Thread.sleep(100L);
             } else {
