@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   test:
-    runs-on: [self-hosted, Linux,  X64]
+    runs-on: [self-hosted, Linux,  X64, docker, podman, fedora]
     strategy:
       fail-fast: false
       matrix:

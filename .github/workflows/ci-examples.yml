@@ -19,7 +19,7 @@ permissions:
 
 jobs:
   find_gradle_jobs:
-    runs-on: [self-hosted, Linux,  X64]
+    runs-on: [self-hosted, Linux,  X64, docker, podman, fedora]
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
@@ -48,7 +48,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.find_gradle_jobs.outputs.matrix) }}
-    runs-on: [self-hosted, Linux,  X64]
+    runs-on: [self-hosted, Linux,  X64, docker, podman, fedora]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
