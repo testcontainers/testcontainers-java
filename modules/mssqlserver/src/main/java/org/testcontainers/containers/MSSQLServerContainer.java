@@ -1,6 +1,5 @@
 package org.testcontainers.containers;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.LicenseAcceptance;
 
@@ -134,7 +133,7 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
         return self();
     }
 
-    public SELF withPid(@NonNull final ProductId productId) {
+    public SELF withPid(final ProductId productId) {
         this.pid = productId;
         return self();
     }
