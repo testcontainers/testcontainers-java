@@ -134,7 +134,6 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
         return self();
     }
 
-    @Override
     public SELF withPid(@NonNull final ProductId productId) {
         this.pid = productId;
         return self();

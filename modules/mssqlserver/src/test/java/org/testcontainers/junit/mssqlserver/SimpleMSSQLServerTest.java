@@ -12,6 +12,7 @@ import java.sql.Statement;
 import javax.sql.DataSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.testcontainers.containers.MSSQLServerContainer.ProductId.*;
 
 public class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
 
@@ -44,9 +45,37 @@ public class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
+    public void testWithDefaultPid() throws SQLException {
+        try (
+            MSSQLServerContainer<?> mssqlServer = new MSSQLServerContainer<>(MSSQLServerTestImages.MSSQL_SERVER_IMAGE)
+        ) {
+            mssqlServer.start();
+            ResultSet resultSet = performQuery(mssqlServer, "SELECT @@VERSION;");
+
+            String versionResultSet = resultSet.getString(1);
+            assertThat(versionResultSet).contains("Developer Edition");
+        }
+    }
+
+    @Test
+    public void testWithCustomPid() throws SQLException {
+        try (
+            MSSQLServerContainer<?> mssqlServer = new MSSQLServerContainer<>(MSSQLServerTestImages.MSSQL_SERVER_IMAGE)
+                .withPid(WEB)
+        ) {
+            mssqlServer.start();
+            ResultSet resultSet = performQuery(mssqlServer, "SELECT @@VERSION;");
+
+            String versionResultSet = resultSet.getString(1);
+            assertThat(versionResultSet).contains("Web Edition");
+        }
+    }
+
+    @Test
     public void testSetupDatabase() throws SQLException {
         try (
             MSSQLServerContainer<?> mssqlServer = new MSSQLServerContainer<>(MSSQLServerTestImages.MSSQL_SERVER_IMAGE)
+                .withPid(ENTERPRISE);
         ) {
             mssqlServer.start();
             DataSource ds = getDataSource(mssqlServer);
