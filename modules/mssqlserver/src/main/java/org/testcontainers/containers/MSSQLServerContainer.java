@@ -1,5 +1,6 @@
 package org.testcontainers.containers;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.LicenseAcceptance;
 
@@ -12,33 +13,24 @@ import java.util.stream.Stream;
  */
 public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
 
-    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("mcr.microsoft.com/mssql/server");
-
     @Deprecated
     public static final String DEFAULT_TAG = "2017-CU12";
-
     public static final String NAME = "sqlserver";
-
-    public static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
-
     public static final Integer MS_SQL_SERVER_PORT = 1433;
-
     static final String DEFAULT_USER = "SA";
-
     static final String DEFAULT_PASSWORD = "A_Str0ng_Required_Password";
-
-    private String password = DEFAULT_PASSWORD;
-
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("mcr.microsoft.com/mssql/server");
+    public static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
     private static final int DEFAULT_STARTUP_TIMEOUT_SECONDS = 240;
-
     private static final int DEFAULT_CONNECT_TIMEOUT_SECONDS = 240;
-
-    private static final Pattern[] PASSWORD_CATEGORY_VALIDATION_PATTERNS = new Pattern[] {
+    private static final Pattern[] PASSWORD_CATEGORY_VALIDATION_PATTERNS = new Pattern[]{
         Pattern.compile("[A-Z]+"),
         Pattern.compile("[a-z]+"),
         Pattern.compile("[0-9]+"),
         Pattern.compile("[^a-zA-Z0-9]+", Pattern.CASE_INSENSITIVE),
     };
+    private String password = DEFAULT_PASSWORD;
+    private ProductId pid = ProductId.DEVELOPER;
 
     /**
      * @deprecated use {@link MSSQLServerContainer(DockerImageName)} instead
@@ -68,13 +60,14 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
 
     @Override
     protected void configure() {
-        // If license was not accepted programatically, check if it was accepted via resource file
+        // If license was not accepted programmatically, check if it was accepted via resource file
         if (!getEnvMap().containsKey("ACCEPT_EULA")) {
             LicenseAcceptance.assertLicenseAccepted(this.getDockerImageName());
             acceptLicense();
         }
 
         addEnv("SA_PASSWORD", password);
+        addEnv("MSSQL_PID", pid.getProductId());
     }
 
     /**
@@ -130,6 +123,12 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
         return self();
     }
 
+    @Override
+    public SELF withPid(@NonNull final ProductId productId) {
+        this.pid = productId;
+        return self();
+    }
+
     private void checkPasswordStrength(String password) {
         if (password == null) {
             throw new IllegalArgumentException("Null password is not allowed");
@@ -157,6 +156,25 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
                 " - Non-alphanumeric characters such as: exclamation point (!), dollar sign ($), number sign (#), " +
                 "or percent (%)."
             );
+        }
+    }
+
+    public enum ProductId {
+        EVALUATION("Evaluation"),
+        DEVELOPER("Developer"),
+        EXPRESS("Express"),
+        WEB("Web"),
+        STANDARD("Standard"),
+        ENTERPRISE("Enterprise");
+
+        private final String pid;
+
+        ProductId(String pid) {
+            this.pid = pid;
+        }
+
+        public String getProductId() {
+            return pid;
         }
     }
 }
