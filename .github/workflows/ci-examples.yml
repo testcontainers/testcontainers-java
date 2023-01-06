@@ -1,5 +1,5 @@
 name: CI-Examples
-#Gn
+#Gns
 on:
   pull_request: {}
   push: { branches: [ main ] }
