@@ -13,24 +13,35 @@ import java.util.stream.Stream;
  */
 public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
 
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("mcr.microsoft.com/mssql/server");
+
     @Deprecated
     public static final String DEFAULT_TAG = "2017-CU12";
+
     public static final String NAME = "sqlserver";
-    public static final Integer MS_SQL_SERVER_PORT = 1433;
-    static final String DEFAULT_USER = "SA";
-    static final String DEFAULT_PASSWORD = "A_Str0ng_Required_Password";
-    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("mcr.microsoft.com/mssql/server");
+
     public static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
+
+    public static final Integer MS_SQL_SERVER_PORT = 1433;
+
+    static final String DEFAULT_USER = "SA";
+
+    static final String DEFAULT_PASSWORD = "A_Str0ng_Required_Password";
+
+    private String password = DEFAULT_PASSWORD;
+
+    private ProductId pid = ProductId.DEVELOPER;
+
     private static final int DEFAULT_STARTUP_TIMEOUT_SECONDS = 240;
+
     private static final int DEFAULT_CONNECT_TIMEOUT_SECONDS = 240;
-    private static final Pattern[] PASSWORD_CATEGORY_VALIDATION_PATTERNS = new Pattern[]{
+
+    private static final Pattern[] PASSWORD_CATEGORY_VALIDATION_PATTERNS = new Pattern[] {
         Pattern.compile("[A-Z]+"),
         Pattern.compile("[a-z]+"),
         Pattern.compile("[0-9]+"),
         Pattern.compile("[^a-zA-Z0-9]+", Pattern.CASE_INSENSITIVE),
     };
-    private String password = DEFAULT_PASSWORD;
-    private ProductId pid = ProductId.DEVELOPER;
 
     /**
      * @deprecated use {@link MSSQLServerContainer(DockerImageName)} instead
