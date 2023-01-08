@@ -12,7 +12,6 @@ import java.sql.Statement;
 import javax.sql.DataSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.testcontainers.containers.MSSQLServerContainer.ProductId.WEB;
 
 public class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
 
@@ -61,7 +60,7 @@ public class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
     public void testWithCustomPid() throws SQLException {
         try (
             MSSQLServerContainer<?> mssqlServer = new MSSQLServerContainer<>(MSSQLServerTestImages.MSSQL_SERVER_IMAGE)
-                .withPid(WEB)
+                .withPid(MSSQLServerContainer.ProductId.WEB)
         ) {
             mssqlServer.start();
             ResultSet resultSet = performQuery(mssqlServer, "SELECT @@VERSION;");
