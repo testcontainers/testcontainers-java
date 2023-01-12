@@ -20,12 +20,12 @@ jobs:
           ref: main
       - name: Update testcontainers.version property in gradle.properties
         run: |
-          sed -ie "s/^testcontainers\.version=.*/testcontainers\.version=${GITHUB_REF##*/}/g" gradle.properties
+          sed -i "s/^testcontainers\.version=.*/testcontainers\.version=${GITHUB_REF##*/}/g" gradle.properties
           git diff
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@2b011faafdcbc9ceb11414d64d0573f37c774b04 # v3.10.1
         with:
-          title: [japicmp] Update testcontainers version to ${GITHUB_REF##*/}
+          title: Update testcontainers version to ${GITHUB_REF##*/}
           body: |
             Update testcontainers version to ${GITHUB_REF##*/}
           branch: update-tc-version
