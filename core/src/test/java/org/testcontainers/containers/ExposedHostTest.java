@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import com.sun.net.httpserver.HttpServer;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import lombok.SneakyThrows;
@@ -87,17 +88,27 @@ public class ExposedHostTest {
     }
     
     @Test
-    public void testExposedHostPortIsReusable() {
+    public void testExposedHostPortIsReusable() throws IOException, InterruptedException {
         Testcontainers.exposeHostPorts(server.getAddress().getPort());
         GenericContainer shouldReusedContainer = new GenericContainer<>(TestImages.TINY_IMAGE).withCommand("top").withReuse(true);
         GenericContainer shouldBeSkippedContainer = new GenericContainer<>(TestImages.TINY_IMAGE).withCommand("top").withReuse(true);
         
         shouldReusedContainer.start();
         shouldReusedContainer.waitUntilContainerStarted();
+        assertThat(shouldReusedContainer
+                .execInContainer("wget", "-O", "-", "http://host.testcontainers.internal:" + server.getAddress().getPort())
+                .getStdout())
+                .as("received response")
+                .isEqualTo("Hello World!");
         String id = shouldReusedContainer.getContainerId();
         shouldBeSkippedContainer.start();
         shouldBeSkippedContainer.waitUntilContainerStarted();
         assertThat(shouldBeSkippedContainer.getContainerId()).isEqualTo(id);
+        assertThat(shouldBeSkippedContainer
+                .execInContainer("wget", "-O", "-", "http://host.testcontainers.internal:" + server.getAddress().getPort())
+                .getStdout())
+                .as("received response")
+                .isEqualTo("Hello World!");
     }
     
     @SneakyThrows
