@@ -42,7 +42,7 @@
             "installMaven": "false",
             "installGradle": "false"
         },
-        "ghcr.io/devcontainers/features/docker-from-docker:1": {},
+        "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
         "ghcr.io/devcontainers/features/node:1": {}
 	},
 	"postStartCommand": ["./gradlew", "compileJava"]
