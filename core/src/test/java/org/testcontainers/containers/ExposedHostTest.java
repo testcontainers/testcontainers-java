@@ -2,6 +2,7 @@ package org.testcontainers.containers;
 
 import com.google.common.collect.ImmutableMap;
 import com.sun.net.httpserver.HttpServer;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import lombok.SneakyThrows;
