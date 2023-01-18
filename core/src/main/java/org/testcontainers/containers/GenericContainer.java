@@ -432,7 +432,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 copyToTransferableContainerPathMap.forEach(this::copyFileToContainer);
             }
 
-            if(!reused){
+            if (!reused) {
                 connectToPortForwardingNetwork(createCommand.getNetworkMode());
             }
 
