@@ -41,11 +41,13 @@ public class OutputFrame {
     }
 
     private static int determineLineEndingLength(final byte[] bytes) {
-        switch (bytes[bytes.length - 1]) {
-            case '\r':
-                return 1;
-            case '\n':
-                return (bytes[bytes.length - 2] == '\r') ? 2 : 1;
+        if (bytes.length > 0) {
+            switch (bytes[bytes.length - 1]) {
+                case '\r':
+                    return 1;
+                case '\n':
+                    return ((bytes.length > 1) && (bytes[bytes.length - 2] == '\r')) ? 2 : 1;
+            }
         }
         return 0;
     }
