@@ -119,12 +119,12 @@ public class FrameConsumerResultCallbackTest {
         callback.addConsumer(OutputFrame.OutputType.STDOUT, waitConsumer);
         callback.onNext(new Frame(StreamType.RAW, FRAME_PAYLOAD.getBytes()));
         waitConsumer.waitUntil(
-            frame -> frame.getType() == OutputFrame.OutputType.STDOUT && frame.getUtf8String().equals("Test2"),
+            frame -> frame.getType() == OutputFrame.OutputType.STDOUT && frame.getUtf8String().equals("Test2\n"),
             1,
             TimeUnit.SECONDS
         );
         waitConsumer.waitUntil(
-            frame -> frame.getType() == OutputFrame.OutputType.STDOUT && frame.getUtf8String().equals("Тест1"),
+            frame -> frame.getType() == OutputFrame.OutputType.STDOUT && frame.getUtf8String().equals("Тест1\n"),
             1,
             TimeUnit.SECONDS
         );
@@ -157,7 +157,7 @@ public class FrameConsumerResultCallbackTest {
             frame -> {
                 return (
                     frame.getType() == OutputFrame.OutputType.STDOUT &&
-                    frame.getUtf8String().equals("\u001B[1;33mTest2\u001B[0m")
+                    frame.getUtf8String().equals("\u001B[1;33mTest2\u001B[0m\n")
                 );
             },
             1,
@@ -167,7 +167,7 @@ public class FrameConsumerResultCallbackTest {
             frame -> {
                 return (
                     frame.getType() == OutputFrame.OutputType.STDOUT &&
-                    frame.getUtf8String().equals("\u001B[0;32mТест1\u001B[0m")
+                    frame.getUtf8String().equals("\u001B[0;32mТест1\u001B[0m\n")
                 );
             },
             1,
@@ -221,19 +221,10 @@ public class FrameConsumerResultCallbackTest {
 
     private static class BasicConsumer implements Consumer<OutputFrame> {
 
-        private boolean firstLine = true;
-
         private StringBuilder input = new StringBuilder();
 
         @Override
         public void accept(OutputFrame outputFrame) {
-            if (outputFrame.getType() == OutputFrame.OutputType.END) {
-                return;
-            }
-            if (!firstLine) {
-                input.append('\n');
-            }
-            firstLine = false;
             input.append(outputFrame.getUtf8String());
         }
 
