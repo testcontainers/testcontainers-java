@@ -4,61 +4,50 @@ import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.StreamType;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
 /**
  * Holds exactly one complete line of container output. Lines are split on newline characters (LF, CR LF).
  */
 public class OutputFrame {
 
-    public static final OutputFrame END = new OutputFrame(OutputType.END, null, "");
+    public static final OutputFrame END = new OutputFrame(OutputType.END, null);
 
     private final OutputType type;
 
-    private final byte[] bytesWithoutLineEnding;
-
-    private final String lineEnding;
+    private final byte[] bytes;
 
     public OutputFrame(final OutputType type, final byte[] bytes) {
-        this(type, bytes, "");
-    }
-
-    OutputFrame(final OutputType type, final byte[] bytesWithoutLineEnding, final String lineEnding) {
         this.type = type;
-        this.bytesWithoutLineEnding = bytesWithoutLineEnding;
-        this.lineEnding = lineEnding;
+        this.bytes = bytes;
     }
 
     public OutputType getType() {
         return type;
     }
 
-    public byte[] getBytesWithoutLineEnding() {
-        return bytesWithoutLineEnding;
-    }
-
-    public String getUtf8StringWithoutLineEnding() {
-        return (bytesWithoutLineEnding == null) ? "" : new String(bytesWithoutLineEnding, StandardCharsets.UTF_8);
-    }
-
     public byte[] getBytes() {
-        if (lineEnding.isEmpty()) {
-            return bytesWithoutLineEnding;
-        }
-        final byte[] lineEndingBytes = lineEnding.getBytes(StandardCharsets.UTF_8);
-        if (bytesWithoutLineEnding == null) {
-            return lineEndingBytes;
-        }
-        final byte[] bytes = Arrays.copyOf(bytesWithoutLineEnding, bytesWithoutLineEnding.length + lineEndingBytes.length);
-        System.arraycopy(lineEndingBytes, 0, bytes, bytesWithoutLineEnding.length, lineEndingBytes.length);
         return bytes;
     }
 
     public String getUtf8String() {
-        if (bytesWithoutLineEnding == null) {
-            return lineEnding;
+        return (bytes == null) ? "" : new String(bytes, StandardCharsets.UTF_8);
+    }
+
+    public String getUtf8StringWithoutLineEnding() {
+        if (bytes == null) {
+            return "";
         }
-        return new String(bytesWithoutLineEnding, StandardCharsets.UTF_8) + lineEnding;
+        return new String(bytes, 0, bytes.length - determineLineEndingLength(bytes), StandardCharsets.UTF_8);
+    }
+
+    private static int determineLineEndingLength(final byte[] bytes) {
+        switch (bytes[bytes.length - 1]) {
+            case '\r':
+                return 1;
+            case '\n':
+                return (bytes[bytes.length - 2] == '\r') ? 2 : 1;
+        }
+        return 0;
     }
 
     public enum OutputType {
