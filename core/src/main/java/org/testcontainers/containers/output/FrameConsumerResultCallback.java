@@ -101,21 +101,30 @@ public class FrameConsumerResultCallback extends ResultCallbackTemplate<FrameCon
             while (i < b.length) {
                 switch (b[i]) {
                     case '\n':
-                        if (!lastCR) {
+                        if (lastCR) {
+                            consume("\r\n");
+                            lastCR = false;
+                        } else {
                             buffer.write(b, start, i - start);
-                            consume(true);
+                            consume("\n");
                         }
                         start = i + 1;
-                        lastCR = false;
                         break;
                     case '\r':
-                        buffer.write(b, start, i - start);
-                        consume(true);
+                        if (lastCR) {
+                            consume("\r");
+                            // lastCR stays true
+                        } else {
+                            buffer.write(b, start, i - start);
+                            lastCR = true;
+                        }
                         start = i + 1;
-                        lastCR = true;
                         break;
                     default:
-                        lastCR = false;
+                        if (lastCR) {
+                            consume("\r");
+                            lastCR = false;
+                        }
                 }
                 i++;
             }
@@ -124,7 +133,7 @@ public class FrameConsumerResultCallback extends ResultCallbackTemplate<FrameCon
 
         void processBuffer() {
             if (buffer.size() > 0) {
-                consume(false);
+                consume(lastCR ? "\r" : "");
             }
         }
 
@@ -132,10 +141,10 @@ public class FrameConsumerResultCallback extends ResultCallbackTemplate<FrameCon
             consumer.accept(OutputFrame.END);
         }
 
-        private void consume(final boolean newLine) {
+        private void consume(final String lineEnding) {
             final String string = new String(buffer.toByteArray(), StandardCharsets.UTF_8);
             final byte[] bytes = processAnsiColorCodes(string).getBytes(StandardCharsets.UTF_8);
-            consumer.accept(new OutputFrame(type, bytes, newLine));
+            consumer.accept(new OutputFrame(type, bytes, lineEnding));
             buffer.reset();
         }
 

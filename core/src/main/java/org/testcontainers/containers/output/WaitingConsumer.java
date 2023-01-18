@@ -85,7 +85,7 @@ public class WaitingConsumer extends BaseConsumer<WaitingConsumer> {
                 final OutputFrame frame = frames.pollLast(100, TimeUnit.MILLISECONDS);
 
                 if (frame != null) {
-                    LOGGER.debug("{}: {}", frame.getType(), frame.getUtf8String());
+                    LOGGER.debug("{}: {}", frame.getType(), frame.getUtf8StringWithoutLineEnding());
 
                     if (predicate.test(frame)) {
                         numberOfMatches++;

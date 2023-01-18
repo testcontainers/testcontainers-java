@@ -16,11 +16,9 @@ public class ToStringConsumer extends BaseConsumer<ToStringConsumer> {
     @Override
     public void accept(OutputFrame outputFrame) {
         try {
-            if (outputFrame.getBytes() != null) {
-                stringBuffer.write(outputFrame.getBytes());
-                if (outputFrame.newLine) {
-                    stringBuffer.write('\n');
-                }
+            final byte[] bytes = outputFrame.getBytes();
+            if (bytes != null) {
+                stringBuffer.write(bytes);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

@@ -51,7 +51,7 @@ public class Slf4jLogConsumer extends BaseConsumer<Slf4jLogConsumer> {
     @Override
     public void accept(OutputFrame outputFrame) {
         final OutputFrame.OutputType outputType = outputFrame.getType();
-        final String utf8String = outputFrame.getUtf8String();
+        final String utf8String = outputFrame.getUtf8StringWithoutLineEnding();
 
         final Map<String, String> originalMdc = MDC.getCopyOfContextMap();
         MDC.setContextMap(mdc);

@@ -39,7 +39,7 @@ public class LogMessageWaitStrategy extends AbstractWaitStrategy {
 
             Predicate<OutputFrame> waitPredicate = outputFrame -> {
                 // (?s) enables line terminator matching (equivalent to Pattern.DOTALL)
-                return (outputFrame.getUtf8String() + '\n').matches("(?s)" + regEx);
+                return outputFrame.getUtf8String().matches("(?s)" + regEx);
             };
             try {
                 waitingConsumer.waitUntil(waitPredicate, startupTimeout.getSeconds(), TimeUnit.SECONDS, times);
