@@ -13,6 +13,10 @@ import org.testcontainers.utility.DockerImageName;
 public class FirestoreEmulatorContainer extends GenericContainer<FirestoreEmulatorContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse(
+        "gcr.io/google.com/cloudsdktool/google-cloud-cli"
+    );
+
+    private static final DockerImageName CLOUD_SDK_IMAGE_NAME = DockerImageName.parse(
         "gcr.io/google.com/cloudsdktool/cloud-sdk"
     );
 
@@ -22,7 +26,7 @@ public class FirestoreEmulatorContainer extends GenericContainer<FirestoreEmulat
 
     public FirestoreEmulatorContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, CLOUD_SDK_IMAGE_NAME);
 
         withExposedPorts(PORT);
         setWaitStrategy(new LogMessageWaitStrategy().withRegEx("(?s).*running.*$"));
