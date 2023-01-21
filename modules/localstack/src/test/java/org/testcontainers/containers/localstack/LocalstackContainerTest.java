@@ -351,7 +351,9 @@ public class LocalstackContainerTest {
     public static class WithoutServices {
 
         @ClassRule
-        public static LocalStackContainer localstack = new LocalStackContainer(LocalstackTestImages.LOCALSTACK_0_13_IMAGE);
+        public static LocalStackContainer localstack = new LocalStackContainer(
+            LocalstackTestImages.LOCALSTACK_0_13_IMAGE
+        );
 
         @Test
         public void servicesUseSingleEndpointUri() {
