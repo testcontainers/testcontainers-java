@@ -18,7 +18,7 @@ Testcontainers' release process is semi-automated through GitHub Actions. This d
 9. Handcraft and polish some of the release notes (e.g. substitute combinded dependency PRs and highlight certain features).
 10. Rename existing milestone corresponding to new release and close it. Then create a new `next` milstestone.
 11. When available through Maven Central, poke [Richard North](https://github.com/rnorth) to announce the release on Twitter!
-12. Merge PRs in order to update version in mkdocs.yml and gradle.properties
+12. Merge automated version update PRs in order to update the reference version in `mkdocs.yml` and `gradle.properties`.
 
 ## Internal details
 
