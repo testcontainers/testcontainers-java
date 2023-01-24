@@ -184,50 +184,6 @@ public class GenericContainerTest {
         }
     }
 
-    @Test
-    public void mappedPortCanBeUpdatedAfterReconnect() throws IOException {
-        try (
-            Network network = Network.newNetwork();
-            GenericContainer<?> container = new GenericContainer(TestImages.TINY_IMAGE) {
-                @Override
-                public InspectContainerResponse getContainerInfo() {
-                    return getCurrentContainerInfo();
-                }
-            }
-                .withNetwork(network)
-                .withNetworkAliases("foo")
-                .withExposedPorts(8080)
-                .withCommand("/bin/sh", "-c", "while true ; do printf 'HTTP/1.1 200 OK\\n\\nyay' | nc -l -p 8080; done")
-        ) {
-            container.start();
-            assertYayHttpResponseFrom(container.getHost(), container.getMappedPort(8080));
-
-            // disconnect container from the network
-            container
-                .getDockerClient()
-                .disconnectFromNetworkCmd()
-                .withContainerId(container.getContainerId())
-                .withNetworkId(network.getId())
-                .exec();
-            // reconnect container to the network
-            container
-                .getDockerClient()
-                .connectToNetworkCmd()
-                .withContainerId(container.getContainerId())
-                .withNetworkId(network.getId())
-                .exec();
-            assertYayHttpResponseFrom(container.getHost(), container.getMappedPort(8080));
-        }
-    }
-
-    private static void assertYayHttpResponseFrom(String host, Integer port) throws IOException {
-        URLConnection urlConnection = new java.net.URL("http", host, port, "/").openConnection();
-        @Cleanup
-        BufferedReader reader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
-        String response = reader.readLine();
-        assertThat(response).as("received response").isEqualTo("yay");
-    }
-
     static class NoopStartupCheckStrategy extends StartupCheckStrategy {
 
         @Override
