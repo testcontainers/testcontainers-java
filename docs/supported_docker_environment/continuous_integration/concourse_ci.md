@@ -1,6 +1,6 @@
 # Concourse CI
 
-This is an example to run Testcontainers tests on [ConcourseCI](https://concourse-ci.org/).
+This is an example to run Testcontainers tests on [Concourse CI](https://concourse-ci.org/).
 
 A possible `pipeline.yml` config looks like this:
 
