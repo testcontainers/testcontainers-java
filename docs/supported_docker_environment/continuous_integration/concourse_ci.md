@@ -2,7 +2,7 @@
 
 This is an example to run Testcontainers tests on [ConcourseCI](https://concourse-ci.org/).
 
-Above, the content of `pipeline.yml` can be found
+A possible `pipeline.yml` config looks like this:
 
 ```yaml
 resources:
