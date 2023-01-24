@@ -37,7 +37,7 @@ public class PubSubEmulatorContainerTest {
     @Rule
     // emulatorContainer {
     public PubSubEmulatorContainer emulator = new PubSubEmulatorContainer(
-        DockerImageName.parse("gcr.io/google.com/cloudsdktool/cloud-sdk:367.0.0-emulators")
+        DockerImageName.parse("gcr.io/google.com/cloudsdktool/google-cloud-cli:380.0.0-emulators")
     );
 
     // }
