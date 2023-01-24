@@ -12,6 +12,7 @@ Examples of different use cases provided by Testcontainers can be found below:
 - [Singleton Container Pattern](https://github.com/testcontainers/testcontainers-java/tree/main/examples/singleton-container)
 - [Solr](https://github.com/testcontainers/testcontainers-java/tree/main/examples/solr-container)
 - [Spring Boot](https://github.com/testcontainers/testcontainers-java/tree/main/examples/spring-boot)
+- [Solace](https://github.com/testcontainers/testcontainers-java/tree/main/examples/solace)
 - [Spring Boot with Kotlin](https://github.com/testcontainers/testcontainers-java/tree/main/examples/spring-boot-kotlin-redis)
 - [TestNG](https://github.com/testcontainers/testcontainers-java/tree/main/examples/redis-backed-cache-testng)
 - [ImmuDb](https://github.com/testcontainers/testcontainers-java/tree/main/examples/immudb)
