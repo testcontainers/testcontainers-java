@@ -1,4 +1,4 @@
-# ConcourseCI
+# Concourse CI
 
 This is an example to run Testcontainers tests on [ConcourseCI](https://concourse-ci.org/).
 
