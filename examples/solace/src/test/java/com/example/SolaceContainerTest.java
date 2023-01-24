@@ -2,8 +2,19 @@ package com.example;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.Ulimit;
-import com.solacesystems.jcsmp.*;
+import com.solacesystems.jcsmp.BytesXMLMessage;
+import com.solacesystems.jcsmp.JCSMPException;
+import com.solacesystems.jcsmp.JCSMPFactory;
+import com.solacesystems.jcsmp.JCSMPProperties;
+import com.solacesystems.jcsmp.JCSMPSession;
+import com.solacesystems.jcsmp.JCSMPStreamingPublishCorrelatingEventHandler;
+import com.solacesystems.jcsmp.TextMessage;
+import com.solacesystems.jcsmp.Topic;
+import com.solacesystems.jcsmp.XMLMessageConsumer;
+import com.solacesystems.jcsmp.XMLMessageListener;
+import com.solacesystems.jcsmp.XMLMessageProducer;
 import org.apache.commons.lang3.tuple.Pair;
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -19,20 +30,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
-
-import static com.example.SolaceContainerTest.Protocol.SMF;
-import static com.example.SolaceContainerTest.Protocol.SMF_SSL;
-import static com.solacesystems.jcsmp.JCSMPProperties.AUTHENTICATION_SCHEME_CLIENT_CERTIFICATE;
-import static java.lang.String.valueOf;
-import static java.time.Duration.ofSeconds;
-import static java.util.List.of;
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.testcontainers.utility.MountableFile.forHostPath;
 
 /**
  * @author Tomasz Forys
@@ -40,24 +43,28 @@ import static org.testcontainers.utility.MountableFile.forHostPath;
 public class SolaceContainerTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SolaceContainerTest.class);
+
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("solace/solace-pubsub-standard");
+
     private static final String DEFAULT_TAG = "10.2";
 
     private static final String MESSAGE = "HelloWorld";
+
     private static final String TOPIC_NAME = "TopicSMF/ActualTopic";
+
     private static final Topic TOPIC = JCSMPFactory.onlyInstance().createTopic(TOPIC_NAME);
 
     @Test
     public void testSolaceContainerWithSimpleAuthentication() {
         try (SolaceContainer solace = new SolaceContainer(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG))
             .withCredentials("user", "pass")
-            .withTopic(TOPIC_NAME, SMF)
+            .withTopic(TOPIC_NAME, Protocol.SMF)
             .withVpn("test_vpn")
             .withMaxConnections(1000)) {
             solace.start();
             JCSMPSession session = createSessionWithBasicAuth(solace);
-            assertThat(session).isNotNull();
-            assertThat(consumeMessageFromSolace(session)).isEqualTo(MESSAGE);
+            Assertions.assertThat(session).isNotNull();
+            Assertions.assertThat(consumeMessageFromSolace(session)).isEqualTo(MESSAGE);
             session.closeSession();
         }
     }
@@ -65,13 +72,13 @@ public class SolaceContainerTest {
     @Test
     public void testSolaceContainerWithCertificates() throws URISyntaxException {
         try (SolaceContainer solace = new SolaceContainer(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG))
-            .withClientCert(forHostPath(getResourceFile("solace.pem")), forHostPath(getResourceFile("rootCA.crt")))
-            .withTopic(TOPIC_NAME, SMF_SSL)
+            .withClientCert(MountableFile.forHostPath(getResourceFile("solace.pem")), MountableFile.forHostPath(getResourceFile("rootCA.crt")))
+            .withTopic(TOPIC_NAME, Protocol.SMF_SSL)
             .withMaxConnections(1000)) {
             solace.start();
             JCSMPSession session = createSessionWithCertificates(solace);
-            assertThat(session).isNotNull();
-            assertThat(consumeMessageFromSolace(session)).isEqualTo(MESSAGE);
+            Assertions.assertThat(session).isNotNull();
+            Assertions.assertThat(consumeMessageFromSolace(session)).isEqualTo(MESSAGE);
             session.closeSession();
         }
     }
@@ -82,7 +89,7 @@ public class SolaceContainerTest {
 
     private static JCSMPSession createSessionWithBasicAuth(SolaceContainer solace) {
         JCSMPProperties properties = new JCSMPProperties();
-        properties.setProperty(JCSMPProperties.HOST, solace.getOrigin(SMF));
+        properties.setProperty(JCSMPProperties.HOST, solace.getOrigin(Protocol.SMF));
         properties.setProperty(JCSMPProperties.VPN_NAME, solace.getVpn());
         properties.setProperty(JCSMPProperties.USERNAME, solace.getUsername());
         properties.setProperty(JCSMPProperties.PASSWORD, solace.getPassword());
@@ -91,12 +98,12 @@ public class SolaceContainerTest {
 
     private JCSMPSession createSessionWithCertificates(SolaceContainer solace) throws URISyntaxException {
         JCSMPProperties properties = new JCSMPProperties();
-        properties.setProperty(JCSMPProperties.HOST, solace.getOrigin(SMF_SSL));
+        properties.setProperty(JCSMPProperties.HOST, solace.getOrigin(Protocol.SMF_SSL));
         properties.setProperty(JCSMPProperties.VPN_NAME, solace.getVpn());
         properties.setProperty(JCSMPProperties.USERNAME, solace.getUsername());
         properties.setProperty(JCSMPProperties.SSL_VALIDATE_CERTIFICATE, true);
         properties.setProperty(JCSMPProperties.SSL_VALIDATE_CERTIFICATE_DATE, true);
-        properties.setProperty(JCSMPProperties.AUTHENTICATION_SCHEME, AUTHENTICATION_SCHEME_CLIENT_CERTIFICATE);
+        properties.setProperty(JCSMPProperties.AUTHENTICATION_SCHEME, JCSMPProperties.AUTHENTICATION_SCHEME_CLIENT_CERTIFICATE);
         properties.setProperty(JCSMPProperties.SSL_TRUST_STORE, getResourceFile("truststore").toString());
         properties.setProperty(JCSMPProperties.SSL_TRUST_STORE_PASSWORD, "solace");
         properties.setProperty(JCSMPProperties.SSL_KEY_STORE, getResourceFile("client.pfx").toString());
@@ -156,7 +163,7 @@ public class SolaceContainerTest {
             session.addSubscription(TOPIC);
             cons.start();
             publishMessageToSolace(session);
-            assertThat(latch.await(10L, SECONDS)).isTrue();
+            Assertions.assertThat(latch.await(10L, TimeUnit.SECONDS)).isTrue();
             return result[0];
         } catch (Exception e) {
             throw new RuntimeException("Cannot receive message from solace", e);
@@ -166,14 +173,23 @@ public class SolaceContainerTest {
     static class SolaceContainer extends GenericContainer<SolaceContainer> {
 
         private static final String DEFAULT_VPN = "default";
+
         private static final String DEFAULT_USERNAME = "default";
+
         private static final String SOLACE_READY_MESSAGE = ".*Running pre-startup checks:.*";
+
         private static final String SOLACE_ACTIVE_MESSAGE = "Primary Virtual Router is now active";
+
         private static final String TMP_SCRIPT_LOCATION = "/tmp/script.cli";
-        private static final List<String> CONFIG_SOLACE_CLI = of("/usr/sw/loads/currentload/bin/cli", "-A", "-es", "script.cli");
+
+        private static final List<String> CONFIG_SOLACE_CLI = List.of("/usr/sw/loads/currentload/bin/cli", "-A", "-es", "script.cli");
+
         private static final Long SHM_SIZE = (long) Math.pow(1024, 3);
+
         private String username = "root";
+
         private String password = "password";
+
         private String vpn = DEFAULT_VPN;
 
         private final List<Pair<String, Protocol>> topicsConfiguration = new ArrayList<>();
@@ -186,15 +202,17 @@ public class SolaceContainerTest {
             super(dockerImageName.toString());
             dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
             this.waitStrategy = Wait.forLogMessage(SOLACE_READY_MESSAGE, 1)
-                .withStartupTimeout(ofSeconds(60));
+                .withStartupTimeout(Duration.ofSeconds(60));
         }
 
         @Override
         protected void configure() {
-            addEnv("system_scaling_maxconnectioncount", valueOf(maxConnections));
-            withCreateContainerCmdModifier(cmd -> cmd.getHostConfig()
-                .withShmSize(SHM_SIZE)
-                .withUlimits(new Ulimit[]{new Ulimit("nofile", 2448L, 6592L)}));
+            addEnv("system_scaling_maxconnectioncount", String.valueOf(maxConnections));
+            withCreateContainerCmdModifier(cmd -> {
+                cmd.getHostConfig()
+                    .withShmSize(SHM_SIZE)
+                    .withUlimits(new Ulimit[]{new Ulimit("nofile", 2448L, 6592L)});
+            });
             configureSolace();
         }
 
@@ -209,11 +227,11 @@ public class SolaceContainerTest {
         @Override
         protected void containerIsStarted(InspectContainerResponse containerInfo) {
             if (withClientCert) {
-                executeCommand(of("cp", "/tmp/solace.pem", "/usr/sw/jail/certs/solace.pem"));
-                executeCommand(of("cp", "/tmp/rootCA.crt", "/usr/sw/jail/certs/rootCA.crt"));
+                executeCommand(List.of("cp", "/tmp/solace.pem", "/usr/sw/jail/certs/solace.pem"));
+                executeCommand(List.of("cp", "/tmp/rootCA.crt", "/usr/sw/jail/certs/rootCA.crt"));
             }
-            executeCommand(of("cp", TMP_SCRIPT_LOCATION, "/usr/sw/jail/cliscripts/script.cli"));
-            waitOnCommandResult(of("grep", "-R", SOLACE_ACTIVE_MESSAGE, "/usr/sw/jail/logs/system.log"), SOLACE_ACTIVE_MESSAGE);
+            executeCommand(List.of("cp", TMP_SCRIPT_LOCATION, "/usr/sw/jail/cliscripts/script.cli"));
+            waitOnCommandResult(List.of("grep", "-R", SOLACE_ACTIVE_MESSAGE, "/usr/sw/jail/logs/system.log"), SOLACE_ACTIVE_MESSAGE);
             executeCommand(CONFIG_SOLACE_CLI);
         }
 
@@ -299,7 +317,7 @@ public class SolaceContainerTest {
                     updateConfigScript(scriptFile, "end");
                 }
             }
-            return forHostPath(scriptFile);
+            return MountableFile.forHostPath(scriptFile);
         }
 
         private void executeCommand(List<String> command) {
