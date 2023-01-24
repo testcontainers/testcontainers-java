@@ -56,11 +56,13 @@ public class SolaceContainerTest {
 
     @Test
     public void testSolaceContainerWithSimpleAuthentication() {
-        try (SolaceContainer solace = new SolaceContainer(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG))
-            .withCredentials("user", "pass")
-            .withTopic(TOPIC_NAME, Protocol.SMF)
-            .withVpn("test_vpn")
-            .withMaxConnections(1000)) {
+        try (
+            SolaceContainer solace = new SolaceContainer(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG))
+                .withCredentials("user", "pass")
+                .withTopic(TOPIC_NAME, Protocol.SMF)
+                .withVpn("test_vpn")
+                .withMaxConnections(1000)
+        ) {
             solace.start();
             JCSMPSession session = createSessionWithBasicAuth(solace);
             Assertions.assertThat(session).isNotNull();
@@ -71,10 +73,15 @@ public class SolaceContainerTest {
 
     @Test
     public void testSolaceContainerWithCertificates() throws URISyntaxException {
-        try (SolaceContainer solace = new SolaceContainer(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG))
-            .withClientCert(MountableFile.forHostPath(getResourceFile("solace.pem")), MountableFile.forHostPath(getResourceFile("rootCA.crt")))
-            .withTopic(TOPIC_NAME, Protocol.SMF_SSL)
-            .withMaxConnections(1000)) {
+        try (
+            SolaceContainer solace = new SolaceContainer(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG))
+                .withClientCert(
+                    MountableFile.forHostPath(getResourceFile("solace.pem")),
+                    MountableFile.forHostPath(getResourceFile("rootCA.crt"))
+                )
+                .withTopic(TOPIC_NAME, Protocol.SMF_SSL)
+                .withMaxConnections(1000)
+        ) {
             solace.start();
             JCSMPSession session = createSessionWithCertificates(solace);
             Assertions.assertThat(session).isNotNull();
@@ -103,7 +110,10 @@ public class SolaceContainerTest {
         properties.setProperty(JCSMPProperties.USERNAME, solace.getUsername());
         properties.setProperty(JCSMPProperties.SSL_VALIDATE_CERTIFICATE, true);
         properties.setProperty(JCSMPProperties.SSL_VALIDATE_CERTIFICATE_DATE, true);
-        properties.setProperty(JCSMPProperties.AUTHENTICATION_SCHEME, JCSMPProperties.AUTHENTICATION_SCHEME_CLIENT_CERTIFICATE);
+        properties.setProperty(
+            JCSMPProperties.AUTHENTICATION_SCHEME,
+            JCSMPProperties.AUTHENTICATION_SCHEME_CLIENT_CERTIFICATE
+        );
         properties.setProperty(JCSMPProperties.SSL_TRUST_STORE, getResourceFile("truststore").toString());
         properties.setProperty(JCSMPProperties.SSL_TRUST_STORE_PASSWORD, "solace");
         properties.setProperty(JCSMPProperties.SSL_KEY_STORE, getResourceFile("client.pfx").toString());
@@ -123,17 +133,19 @@ public class SolaceContainerTest {
     }
 
     private void publishMessageToSolace(JCSMPSession session) throws JCSMPException {
-        XMLMessageProducer producer = session.getMessageProducer(new JCSMPStreamingPublishCorrelatingEventHandler() {
-            @Override
-            public void responseReceivedEx(Object o) {
-                LOGGER.info("Producer received response for msg: " + o);
-            }
+        XMLMessageProducer producer = session.getMessageProducer(
+            new JCSMPStreamingPublishCorrelatingEventHandler() {
+                @Override
+                public void responseReceivedEx(Object o) {
+                    LOGGER.info("Producer received response for msg: " + o);
+                }
 
-            @Override
-            public void handleErrorEx(Object o, JCSMPException e, long l) {
-                LOGGER.error(String.format("Producer received error for msg: %s - %s", o, e));
+                @Override
+                public void handleErrorEx(Object o, JCSMPException e, long l) {
+                    LOGGER.error(String.format("Producer received error for msg: %s - %s", o, e));
+                }
             }
-        });
+        );
         TextMessage msg = producer.createTextMessage();
         msg.setText(MESSAGE);
         producer.send(msg, TOPIC);
@@ -143,23 +155,25 @@ public class SolaceContainerTest {
         CountDownLatch latch = new CountDownLatch(1);
         try {
             String[] result = new String[1];
-            XMLMessageConsumer cons = session.getMessageConsumer(new XMLMessageListener() {
-                @Override
-                public void onReceive(BytesXMLMessage msg) {
-                    if (msg instanceof TextMessage textMessage) {
-                        String message = textMessage.getText();
-                        result[0] = message;
-                        LOGGER.info("TextMessage received: " + message);
+            XMLMessageConsumer cons = session.getMessageConsumer(
+                new XMLMessageListener() {
+                    @Override
+                    public void onReceive(BytesXMLMessage msg) {
+                        if (msg instanceof TextMessage textMessage) {
+                            String message = textMessage.getText();
+                            result[0] = message;
+                            LOGGER.info("TextMessage received: " + message);
+                        }
+                        latch.countDown();
                     }
-                    latch.countDown();
-                }
 
-                @Override
-                public void onException(JCSMPException e) {
-                    LOGGER.error("Exception received: " + e.getMessage());
-                    latch.countDown();
+                    @Override
+                    public void onException(JCSMPException e) {
+                        LOGGER.error("Exception received: " + e.getMessage());
+                        latch.countDown();
+                    }
                 }
-            });
+            );
             session.addSubscription(TOPIC);
             cons.start();
             publishMessageToSolace(session);
@@ -182,7 +196,12 @@ public class SolaceContainerTest {
 
         private static final String TMP_SCRIPT_LOCATION = "/tmp/script.cli";
 
-        private static final List<String> CONFIG_SOLACE_CLI = List.of("/usr/sw/loads/currentload/bin/cli", "-A", "-es", "script.cli");
+        private static final List<String> CONFIG_SOLACE_CLI = List.of(
+            "/usr/sw/loads/currentload/bin/cli",
+            "-A",
+            "-es",
+            "script.cli"
+        );
 
         private static final Long SHM_SIZE = (long) Math.pow(1024, 3);
 
@@ -201,17 +220,17 @@ public class SolaceContainerTest {
         public SolaceContainer(final DockerImageName dockerImageName) {
             super(dockerImageName.toString());
             dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
-            this.waitStrategy = Wait.forLogMessage(SOLACE_READY_MESSAGE, 1)
-                .withStartupTimeout(Duration.ofSeconds(60));
+            this.waitStrategy = Wait.forLogMessage(SOLACE_READY_MESSAGE, 1).withStartupTimeout(Duration.ofSeconds(60));
         }
 
         @Override
         protected void configure() {
             addEnv("system_scaling_maxconnectioncount", String.valueOf(maxConnections));
             withCreateContainerCmdModifier(cmd -> {
-                cmd.getHostConfig()
+                cmd
+                    .getHostConfig()
                     .withShmSize(SHM_SIZE)
-                    .withUlimits(new Ulimit[]{new Ulimit("nofile", 2448L, 6592L)});
+                    .withUlimits(new Ulimit[] { new Ulimit("nofile", 2448L, 6592L) });
             });
             configureSolace();
         }
@@ -231,7 +250,10 @@ public class SolaceContainerTest {
                 executeCommand(List.of("cp", "/tmp/rootCA.crt", "/usr/sw/jail/certs/rootCA.crt"));
             }
             executeCommand(List.of("cp", TMP_SCRIPT_LOCATION, "/usr/sw/jail/cliscripts/script.cli"));
-            waitOnCommandResult(List.of("grep", "-R", SOLACE_ACTIVE_MESSAGE, "/usr/sw/jail/logs/system.log"), SOLACE_ACTIVE_MESSAGE);
+            waitOnCommandResult(
+                List.of("grep", "-R", SOLACE_ACTIVE_MESSAGE, "/usr/sw/jail/logs/system.log"),
+                SOLACE_ACTIVE_MESSAGE
+            );
             executeCommand(CONFIG_SOLACE_CLI);
         }
 
@@ -312,8 +334,20 @@ public class SolaceContainerTest {
                     // Add publish/subscribe topic exceptions
                     updateConfigScript(scriptFile, "configure");
                     updateConfigScript(scriptFile, "acl-profile default message-vpn " + vpn);
-                    updateConfigScript(scriptFile, "publish-topic exceptions " + topicConfig.getValue().getService() + " list " + topicConfig.getKey());
-                    updateConfigScript(scriptFile, "subscribe-topic exceptions " + topicConfig.getValue().getService() + " list " + topicConfig.getKey());
+                    updateConfigScript(
+                        scriptFile,
+                        "publish-topic exceptions " +
+                        topicConfig.getValue().getService() +
+                        " list " +
+                        topicConfig.getKey()
+                    );
+                    updateConfigScript(
+                        scriptFile,
+                        "subscribe-topic exceptions " +
+                        topicConfig.getValue().getService() +
+                        " list " +
+                        topicConfig.getKey()
+                    );
                     updateConfigScript(scriptFile, "end");
                 }
             }
@@ -336,14 +370,17 @@ public class SolaceContainerTest {
         }
 
         private void waitOnCommandResult(List<String> command, String waitingFor) {
-            waitUntilConditionIsMet(() -> {
-                try {
-                    return execInContainer(command.toArray(new String[0])).getStdout().contains(waitingFor);
-                } catch (IOException | InterruptedException e) {
-                    logger().error("Could not execute command {}: {}", command, e.getMessage());
-                    return true;
-                }
-            }, 30);
+            waitUntilConditionIsMet(
+                () -> {
+                    try {
+                        return execInContainer(command.toArray(new String[0])).getStdout().contains(waitingFor);
+                    } catch (IOException | InterruptedException e) {
+                        logger().error("Could not execute command {}: {}", command, e.getMessage());
+                        return true;
+                    }
+                },
+                30
+            );
         }
 
         private void waitUntilConditionIsMet(BooleanSupplier awaitedCondition, int timeoutInSec) {
@@ -358,7 +395,6 @@ public class SolaceContainerTest {
                 }
             } while (!done && System.currentTimeMillis() - startTime < timeoutInSec * 1000);
         }
-
 
         public SolaceContainer withMaxConnections(final int maxConnections) {
             this.maxConnections = maxConnections;
@@ -387,7 +423,6 @@ public class SolaceContainerTest {
             return withCopyFileToContainer(certFile, "/tmp/solace.pem")
                 .withCopyFileToContainer(caFile, "/tmp/rootCA.crt");
         }
-
 
         public String getVpn() {
             return vpn;
