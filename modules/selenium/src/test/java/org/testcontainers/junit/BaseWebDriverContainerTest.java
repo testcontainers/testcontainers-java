@@ -49,8 +49,7 @@ public class BaseWebDriverContainerTest {
         driver.quit();
     }
 
-    protected void assertBrowserNameIs(BrowserWebDriverContainer<?> rule, String expectedName) {
-        Capabilities capabilities = ("chrome".equals(expectedName)) ? new ChromeOptions() : new FirefoxOptions();
+    protected void assertBrowserNameIs(BrowserWebDriverContainer<?> rule, String expectedName, Capabilities capabilities) {
         RemoteWebDriver driver = new RemoteWebDriver(rule.getSeleniumAddress(), capabilities);
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(30));
         String actual = driver.getCapabilities().getBrowserName();
