@@ -55,5 +55,5 @@ For what is possible, consult the [`docker-java CreateContainerCmd` source code]
 
 ## Parallel Container Startup
 
-Usually, containers are initially sequentially when more than one container are used. Using 
+Usually, containers are started sequentially when more than one container is used.
 `Startables.deepStart(container1, container2, ...).join()` will start all containers in parallel. 
