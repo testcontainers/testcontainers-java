@@ -274,18 +274,14 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
                     return EDGE_IMAGE.withTag(seleniumVersion);
                 }
                 throw new UnsupportedOperationException(
-                    "For browser 'msedge' selenium version must be 4 or higher;" +
-                    "docker images are available from there upwards;" +
-                    "provided version: '" +
-                    seleniumVersion +
-                    "'"
+                    "For browser 'MicrosoftEdge' selenium version must be 4 or higher;" +
+                        "docker images are available from there upwards;" +
+                        "provided version: '" + seleniumVersion + "'"
                 );
             default:
                 throw new UnsupportedOperationException(
-                    "Browser name must be 'chrome', 'firefox' or 'msedge';" +
-                    "provided '" +
-                    browserName +
-                    "' is not supported"
+                    "Browser name must be 'chrome', 'firefox' or 'MicrosoftEdge';" +
+                        "provided '" + browserName + "' is not supported"
                 );
         }
     }
@@ -462,6 +458,6 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
         private static final String FIREFOX = "firefox";
 
-        private static final String EDGE = "msedge";
+        private static final String EDGE = "MicrosoftEdge";
     }
 }
