@@ -270,8 +270,9 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
             case BrowserType.FIREFOX:
                 return (supportsVncWithoutDebugImage ? FIREFOX_IMAGE : FIREFOX_DEBUG_IMAGE).withTag(seleniumVersion);
             case BrowserType.EDGE:
-                if (supportsVncWithoutDebugImage)
+                if (supportsVncWithoutDebugImage) {
                     return EDGE_IMAGE.withTag(seleniumVersion);
+                }
                 throw new UnsupportedOperationException(
                     "For browser 'MicrosoftEdge' selenium version must be 4 or higher;" +
                         "docker images are available from there upwards;" +
