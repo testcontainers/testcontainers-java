@@ -6,9 +6,6 @@ import org.junit.Test;
 import org.openqa.selenium.edge.EdgeOptions;
 import org.testcontainers.containers.BrowserWebDriverContainer;
 
-/**
- *
- */
 public class EdgeWebDriverContainerTest extends BaseWebDriverContainerTest {
 
     // junitRule {
@@ -20,7 +17,7 @@ public class EdgeWebDriverContainerTest extends BaseWebDriverContainerTest {
 
     @Before
     public void checkBrowserIsIndeedMSEdge() {
-        assertBrowserNameIs("MicrosoftEdge", new EdgeOptions());
+        assertBrowserNameIs(edge, "msedge", new EdgeOptions());
     }
 
     @Test

@@ -47,8 +47,15 @@ public class BaseWebDriverContainerTest {
         driver.quit();
     }
 
-    protected void assertBrowserNameIs(String expectedName, Capabilities capabilities) {
-        String actual = capabilities.getBrowserName();
+    protected void assertBrowserNameIs(
+        BrowserWebDriverContainer<?> rule,
+        String expectedName,
+        Capabilities capabilities
+    ) {
+        RemoteWebDriver driver = new RemoteWebDriver(rule.getSeleniumAddress(), capabilities);
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(30));
+        String actual = driver.getCapabilities().getBrowserName();
         assertThat(actual).as(String.format("actual browser name is %s", actual)).isEqualTo(expectedName);
+        driver.quit();
     }
 }
