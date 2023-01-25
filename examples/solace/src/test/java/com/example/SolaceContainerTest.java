@@ -27,12 +27,8 @@ import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -71,7 +67,7 @@ public class SolaceContainerTest {
     }
 
     @Test
-    public void testSolaceContainerWithCertificates() throws URISyntaxException {
+    public void testSolaceContainerWithCertificates() {
         try (
             SolaceContainer solace = new SolaceContainer(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG))
                 .withClientCert(
@@ -88,8 +84,8 @@ public class SolaceContainerTest {
         }
     }
 
-    private Path getResourceFile(String name) throws URISyntaxException {
-        return Paths.get(Thread.currentThread().getContextClassLoader().getResource(name).toURI());
+    private String getResourceFileLocation(String name) {
+        return Thread.currentThread().getContextClassLoader().getResource(name).getPath();
     }
 
     private static JCSMPSession createSessionWithBasicAuth(SolaceContainer solace) {
@@ -101,7 +97,7 @@ public class SolaceContainerTest {
         return createSession(properties);
     }
 
-    private JCSMPSession createSessionWithCertificates(SolaceContainer solace) throws URISyntaxException {
+    private JCSMPSession createSessionWithCertificates(SolaceContainer solace) {
         JCSMPProperties properties = new JCSMPProperties();
         properties.setProperty(JCSMPProperties.HOST, solace.getOrigin(Protocol.SMF_SSL));
         properties.setProperty(JCSMPProperties.VPN_NAME, solace.getVpn());
@@ -112,9 +108,9 @@ public class SolaceContainerTest {
             JCSMPProperties.AUTHENTICATION_SCHEME,
             JCSMPProperties.AUTHENTICATION_SCHEME_CLIENT_CERTIFICATE
         );
-        properties.setProperty(JCSMPProperties.SSL_TRUST_STORE, getResourceFile("truststore").toString());
+        properties.setProperty(JCSMPProperties.SSL_TRUST_STORE, getResourceFileLocation("truststore"));
         properties.setProperty(JCSMPProperties.SSL_TRUST_STORE_PASSWORD, "solace");
-        properties.setProperty(JCSMPProperties.SSL_KEY_STORE, getResourceFile("client.pfx").toString());
+        properties.setProperty(JCSMPProperties.SSL_KEY_STORE, getResourceFileLocation("client.pfx"));
         properties.setProperty(JCSMPProperties.SSL_KEY_STORE_PASSWORD, "solace");
         return createSession(properties);
     }
@@ -196,13 +192,6 @@ public class SolaceContainerTest {
 
         private static final String TMP_SCRIPT_LOCATION = "/tmp/script.cli";
 
-        private static final List<String> CONFIG_SOLACE_CLI = Arrays.asList(
-            "/usr/sw/loads/currentload/bin/cli",
-            "-A",
-            "-es",
-            "script.cli"
-        );
-
         private static final Long SHM_SIZE = (long) Math.pow(1024, 3);
 
         private String username = "root";
@@ -239,15 +228,18 @@ public class SolaceContainerTest {
         @Override
         protected void containerIsStarted(InspectContainerResponse containerInfo) {
             if (withClientCert) {
-                executeCommand(Arrays.asList("cp", "/tmp/solace.pem", "/usr/sw/jail/certs/solace.pem"));
-                executeCommand(Arrays.asList("cp", "/tmp/rootCA.crt", "/usr/sw/jail/certs/rootCA.crt"));
+                executeCommand("cp", "/tmp/solace.pem", "/usr/sw/jail/certs/solace.pem");
+                executeCommand("cp", "/tmp/rootCA.crt", "/usr/sw/jail/certs/rootCA.crt");
             }
-            executeCommand(Arrays.asList("cp", TMP_SCRIPT_LOCATION, "/usr/sw/jail/cliscripts/script.cli"));
+            executeCommand("cp", TMP_SCRIPT_LOCATION, "/usr/sw/jail/cliscripts/script.cli");
             waitOnCommandResult(
-                Arrays.asList("grep", "-R", SOLACE_ACTIVE_MESSAGE, "/usr/sw/jail/logs/system.log"),
-                SOLACE_ACTIVE_MESSAGE
+                SOLACE_ACTIVE_MESSAGE,
+                "grep",
+                "-R",
+                SOLACE_ACTIVE_MESSAGE,
+                "/usr/sw/jail/logs/system.log"
             );
-            executeCommand(CONFIG_SOLACE_CLI);
+            executeCommand("/usr/sw/loads/currentload/bin/cli", "-A", "-es", "script.cli");
         }
 
         private Transferable createConfigurationScript() {
@@ -314,6 +306,7 @@ public class SolaceContainerTest {
                 updateConfigScript(scriptBuilder, "service");
                 for (Pair<String, Protocol> topicConfig : topicsConfiguration) {
                     Protocol protocol = topicConfig.getValue();
+                    String topicName = topicConfig.getKey();
                     updateConfigScript(scriptBuilder, protocol.getService());
                     if (protocol.isSupportSSL()) {
                         if (withClientCert) {
@@ -329,17 +322,11 @@ public class SolaceContainerTest {
                     updateConfigScript(scriptBuilder, "acl-profile default message-vpn " + vpn);
                     updateConfigScript(
                         scriptBuilder,
-                        "publish-topic exceptions " +
-                        topicConfig.getValue().getService() +
-                        " list " +
-                        topicConfig.getKey()
+                        String.format("publish-topic exceptions %s list %s", protocol.getService(), topicName)
                     );
                     updateConfigScript(
                         scriptBuilder,
-                        "subscribe-topic exceptions " +
-                        topicConfig.getValue().getService() +
-                        " list " +
-                        topicConfig.getKey()
+                        String.format("subscribe-topic exceptions %s list %s", protocol.getService(), topicName)
                     );
                     updateConfigScript(scriptBuilder, "end");
                 }
@@ -347,9 +334,9 @@ public class SolaceContainerTest {
             return Transferable.of(scriptBuilder.toString());
         }
 
-        private void executeCommand(List<String> command) {
+        private void executeCommand(String... command) {
             try {
-                ExecResult execResult = execInContainer(command.toArray(new String[0]));
+                ExecResult execResult = execInContainer(command);
                 if (execResult.getExitCode() != 0) {
                     logger().error("Could not execute command {}: {}", command, execResult.getStderr());
                 }
@@ -362,14 +349,14 @@ public class SolaceContainerTest {
             scriptBuilder.append(command).append(NEW_LINE);
         }
 
-        private void waitOnCommandResult(List<String> command, String waitingFor) {
+        private void waitOnCommandResult(String waitingFor, String... command) {
             Awaitility
                 .await()
                 .pollInterval(Duration.ofMillis(500))
                 .timeout(Duration.ofSeconds(30))
                 .until(() -> {
                     try {
-                        return execInContainer(command.toArray(new String[0])).getStdout().contains(waitingFor);
+                        return execInContainer(command).getStdout().contains(waitingFor);
                     } catch (IOException | InterruptedException e) {
                         logger().error("Could not execute command {}: {}", command, e.getMessage());
                         return true;
