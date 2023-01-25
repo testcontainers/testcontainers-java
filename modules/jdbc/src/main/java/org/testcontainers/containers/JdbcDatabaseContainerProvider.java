@@ -53,7 +53,13 @@ public abstract class JdbcDatabaseContainerProvider {
         } else {
             result = newInstance();
         }
+        final String startupTimeoutStr = url.getContainerParameters().getOrDefault("TC_STARTUPTIMEOUT", "120");
+        final String connectionTimeoutStr = url.getContainerParameters().getOrDefault("TC_CONNECTIONTIMEOUT", "120");
+        final int startupTimeout = Integer.parseInt(startupTimeoutStr);
+        final int connectionTimeout = Integer.parseInt(connectionTimeoutStr);
         result.withReuse(url.isReusable());
+        result.withStartupTimeoutSeconds(startupTimeout);
+        result.withConnectTimeoutSeconds(connectionTimeout);
         return result;
     }
 
@@ -67,6 +73,14 @@ public abstract class JdbcDatabaseContainerProvider {
         final String databaseName = connectionUrl.getDatabaseName().orElse("test");
         final String user = connectionUrl.getQueryParameters().getOrDefault(userParamName, "test");
         final String password = connectionUrl.getQueryParameters().getOrDefault(pwdParamName, "test");
+        final String startupTimeoutStr = connectionUrl
+            .getContainerParameters()
+            .getOrDefault("TC_STARTUPTIMEOUT", "120");
+        final String connectionTimeoutStr = connectionUrl
+            .getContainerParameters()
+            .getOrDefault("TC_CONNECTIONTIMEOUT", "120");
+        final int startupTimeout = Integer.parseInt(startupTimeoutStr);
+        final int connectionTimeout = Integer.parseInt(connectionTimeoutStr);
 
         final JdbcDatabaseContainer<?> instance;
         if (connectionUrl.getImageTag().isPresent()) {
@@ -79,6 +93,8 @@ public abstract class JdbcDatabaseContainerProvider {
             .withReuse(connectionUrl.isReusable())
             .withDatabaseName(databaseName)
             .withUsername(user)
-            .withPassword(password);
+            .withPassword(password)
+            .withStartupTimeoutSeconds(startupTimeout)
+            .withConnectTimeoutSeconds(connectionTimeout);
     }
 }
