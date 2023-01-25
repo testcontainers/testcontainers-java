@@ -275,13 +275,17 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
                 }
                 throw new UnsupportedOperationException(
                     "For browser 'MicrosoftEdge' selenium version must be 4 or higher;" +
-                        "docker images are available from there upwards;" +
-                        "provided version: '" + seleniumVersion + "'"
+                    "docker images are available from there upwards;" +
+                    "provided version: '" +
+                    seleniumVersion +
+                    "'"
                 );
             default:
                 throw new UnsupportedOperationException(
                     "Browser name must be 'chrome', 'firefox' or 'MicrosoftEdge';" +
-                        "provided '" + browserName + "' is not supported"
+                    "provided '" +
+                    browserName +
+                    "' is not supported"
                 );
         }
     }

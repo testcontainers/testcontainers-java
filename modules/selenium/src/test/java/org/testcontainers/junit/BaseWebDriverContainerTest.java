@@ -4,8 +4,6 @@ import org.junit.ClassRule;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.testcontainers.containers.BrowserWebDriverContainer;
 import org.testcontainers.containers.GenericContainer;
@@ -49,11 +47,8 @@ public class BaseWebDriverContainerTest {
         driver.quit();
     }
 
-    protected void assertBrowserNameIs(BrowserWebDriverContainer<?> rule, String expectedName, Capabilities capabilities) {
-        RemoteWebDriver driver = new RemoteWebDriver(rule.getSeleniumAddress(), capabilities);
-        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(30));
-        String actual = driver.getCapabilities().getBrowserName();
+    protected void assertBrowserNameIs(String expectedName, Capabilities capabilities) {
+        String actual = capabilities.getBrowserName();
         assertThat(actual).as(String.format("actual browser name is %s", actual)).isEqualTo(expectedName);
-        driver.quit();
     }
 }
