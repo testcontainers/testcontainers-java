@@ -19,8 +19,8 @@ public class EdgeWebDriverContainerTest extends BaseWebDriverContainerTest {
         .withNetwork(NETWORK);
 
     @Before
-    public void checkBrowserIsIndeedMicrosoftEdge() {
-        assertBrowserNameIs(edge, "MicrosoftEdge", new EdgeOptions());
+    public void checkBrowserIsIndeedMSEdge() {
+        assertBrowserNameIs(edge, "msedge", new EdgeOptions());
     }
 
     @Test
