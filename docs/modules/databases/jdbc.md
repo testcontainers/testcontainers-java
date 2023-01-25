@@ -57,7 +57,7 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 
 #### Using YugabyteDB
 
-`jdbc:tc:yugabytedb:2.14.4.0-b26:///databasename`
+`jdbc:tc:yugabyte:2.16.0.1-b7:///databasename`
 
 
 ### Using a classpath init script

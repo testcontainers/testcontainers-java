@@ -20,7 +20,7 @@ public class YugabyteDBYSQLJDBCDriverTest extends AbstractJDBCDriverTest {
         return Arrays.asList(
             new Object[][] {
                 {
-                    "jdbc:tc:yugabytedb://hostname/yugabyte?user=yugabyte&password=yugabyte",
+                    "jdbc:tc:yugabyte://hostname/yugabyte?user=yugabyte&password=yugabyte",
                     EnumSet.noneOf(Options.class),
                 },
             }
