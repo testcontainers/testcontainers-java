@@ -15,27 +15,27 @@ import com.solacesystems.jcsmp.XMLMessageListener;
 import com.solacesystems.jcsmp.XMLMessageProducer;
 import org.apache.commons.lang3.tuple.Pair;
 import org.assertj.core.api.Assertions;
+import org.awaitility.Awaitility;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BooleanSupplier;
 
 /**
  * @author Tomasz Forys
@@ -61,7 +61,6 @@ public class SolaceContainerTest {
                 .withCredentials("user", "pass")
                 .withTopic(TOPIC_NAME, Protocol.SMF)
                 .withVpn("test_vpn")
-                .withMaxConnections(1000)
         ) {
             solace.start();
             JCSMPSession session = createSessionWithBasicAuth(solace);
@@ -76,11 +75,10 @@ public class SolaceContainerTest {
         try (
             SolaceContainer solace = new SolaceContainer(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG))
                 .withClientCert(
-                    MountableFile.forHostPath(getResourceFile("solace.pem")),
-                    MountableFile.forHostPath(getResourceFile("rootCA.crt"))
+                    MountableFile.forClasspathResource("solace.pem"),
+                    MountableFile.forClasspathResource("rootCA.crt")
                 )
                 .withTopic(TOPIC_NAME, Protocol.SMF_SSL)
-                .withMaxConnections(1000)
         ) {
             solace.start();
             JCSMPSession session = createSessionWithCertificates(solace);
@@ -186,6 +184,8 @@ public class SolaceContainerTest {
 
     static class SolaceContainer extends GenericContainer<SolaceContainer> {
 
+        private static final String NEW_LINE = System.getProperty("line.separator");
+
         private static final String DEFAULT_VPN = "default";
 
         private static final String DEFAULT_USERNAME = "default";
@@ -196,7 +196,7 @@ public class SolaceContainerTest {
 
         private static final String TMP_SCRIPT_LOCATION = "/tmp/script.cli";
 
-        private static final List<String> CONFIG_SOLACE_CLI = List.of(
+        private static final List<String> CONFIG_SOLACE_CLI = Arrays.asList(
             "/usr/sw/loads/currentload/bin/cli",
             "-A",
             "-es",
@@ -215,8 +215,6 @@ public class SolaceContainerTest {
 
         private boolean withClientCert;
 
-        private int maxConnections = 100;
-
         public SolaceContainer(final DockerImageName dockerImageName) {
             super(dockerImageName.toString());
             dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
@@ -225,7 +223,6 @@ public class SolaceContainerTest {
 
         @Override
         protected void configure() {
-            addEnv("system_scaling_maxconnectioncount", String.valueOf(maxConnections));
             withCreateContainerCmdModifier(cmd -> {
                 cmd
                     .getHostConfig()
@@ -236,122 +233,118 @@ public class SolaceContainerTest {
         }
 
         private void configureSolace() {
-            try {
-                withCopyFileToContainer(createConfigurationScript(), TMP_SCRIPT_LOCATION);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            withCopyToContainer(createConfigurationScript(), TMP_SCRIPT_LOCATION);
         }
 
         @Override
         protected void containerIsStarted(InspectContainerResponse containerInfo) {
             if (withClientCert) {
-                executeCommand(List.of("cp", "/tmp/solace.pem", "/usr/sw/jail/certs/solace.pem"));
-                executeCommand(List.of("cp", "/tmp/rootCA.crt", "/usr/sw/jail/certs/rootCA.crt"));
+                executeCommand(Arrays.asList("cp", "/tmp/solace.pem", "/usr/sw/jail/certs/solace.pem"));
+                executeCommand(Arrays.asList("cp", "/tmp/rootCA.crt", "/usr/sw/jail/certs/rootCA.crt"));
             }
-            executeCommand(List.of("cp", TMP_SCRIPT_LOCATION, "/usr/sw/jail/cliscripts/script.cli"));
+            executeCommand(Arrays.asList("cp", TMP_SCRIPT_LOCATION, "/usr/sw/jail/cliscripts/script.cli"));
             waitOnCommandResult(
-                List.of("grep", "-R", SOLACE_ACTIVE_MESSAGE, "/usr/sw/jail/logs/system.log"),
+                Arrays.asList("grep", "-R", SOLACE_ACTIVE_MESSAGE, "/usr/sw/jail/logs/system.log"),
                 SOLACE_ACTIVE_MESSAGE
             );
             executeCommand(CONFIG_SOLACE_CLI);
         }
 
-        private MountableFile createConfigurationScript() throws IOException {
-            Path scriptFile = Files.createTempFile("script", ".cli");
-            updateConfigScript(scriptFile, "enable");
-            updateConfigScript(scriptFile, "configure");
+        private Transferable createConfigurationScript() {
+            StringBuilder scriptBuilder = new StringBuilder();
+            updateConfigScript(scriptBuilder, "enable");
+            updateConfigScript(scriptBuilder, "configure");
 
             // Create VPN if not default
             if (!vpn.equals(DEFAULT_VPN)) {
-                updateConfigScript(scriptFile, "create message-vpn " + vpn);
-                updateConfigScript(scriptFile, "no shutdown");
-                updateConfigScript(scriptFile, "exit");
+                updateConfigScript(scriptBuilder, "create message-vpn " + vpn);
+                updateConfigScript(scriptBuilder, "no shutdown");
+                updateConfigScript(scriptBuilder, "exit");
             }
 
             // Configure username and password
             if (username.equals(DEFAULT_USERNAME)) {
                 throw new RuntimeException("Cannot override password for default client");
             }
-            updateConfigScript(scriptFile, "create client-username " + username + " message-vpn " + vpn);
-            updateConfigScript(scriptFile, "password " + password);
-            updateConfigScript(scriptFile, "no shutdown");
-            updateConfigScript(scriptFile, "exit");
+            updateConfigScript(scriptBuilder, "create client-username " + username + " message-vpn " + vpn);
+            updateConfigScript(scriptBuilder, "password " + password);
+            updateConfigScript(scriptBuilder, "no shutdown");
+            updateConfigScript(scriptBuilder, "exit");
 
             if (withClientCert) {
                 // Client certificate authority configuration
-                updateConfigScript(scriptFile, "authentication");
-                updateConfigScript(scriptFile, "create client-certificate-authority RootCA");
-                updateConfigScript(scriptFile, "certificate file rootCA.crt");
-                updateConfigScript(scriptFile, "show client-certificate-authority ca-name *");
-                updateConfigScript(scriptFile, "end");
+                updateConfigScript(scriptBuilder, "authentication");
+                updateConfigScript(scriptBuilder, "create client-certificate-authority RootCA");
+                updateConfigScript(scriptBuilder, "certificate file rootCA.crt");
+                updateConfigScript(scriptBuilder, "show client-certificate-authority ca-name *");
+                updateConfigScript(scriptBuilder, "end");
 
                 // Server certificates configuration
-                updateConfigScript(scriptFile, "configure");
-                updateConfigScript(scriptFile, "ssl");
-                updateConfigScript(scriptFile, "server-certificate solace.pem");
-                updateConfigScript(scriptFile, "cipher-suite msg-backbone name AES128-SHA");
-                updateConfigScript(scriptFile, "exit");
+                updateConfigScript(scriptBuilder, "configure");
+                updateConfigScript(scriptBuilder, "ssl");
+                updateConfigScript(scriptBuilder, "server-certificate solace.pem");
+                updateConfigScript(scriptBuilder, "cipher-suite msg-backbone name AES128-SHA");
+                updateConfigScript(scriptBuilder, "exit");
 
-                updateConfigScript(scriptFile, "message-vpn " + vpn);
+                updateConfigScript(scriptBuilder, "message-vpn " + vpn);
                 // Enable client certificate authentication
-                updateConfigScript(scriptFile, "authentication client-certificate");
-                updateConfigScript(scriptFile, "allow-api-provided-username");
-                updateConfigScript(scriptFile, "no shutdown");
-                updateConfigScript(scriptFile, "end");
+                updateConfigScript(scriptBuilder, "authentication client-certificate");
+                updateConfigScript(scriptBuilder, "allow-api-provided-username");
+                updateConfigScript(scriptBuilder, "no shutdown");
+                updateConfigScript(scriptBuilder, "end");
             } else {
                 // Configure VPN Basic authentication
-                updateConfigScript(scriptFile, "message-vpn " + vpn);
-                updateConfigScript(scriptFile, "authentication basic auth-type internal");
-                updateConfigScript(scriptFile, "no shutdown");
-                updateConfigScript(scriptFile, "end");
+                updateConfigScript(scriptBuilder, "message-vpn " + vpn);
+                updateConfigScript(scriptBuilder, "authentication basic auth-type internal");
+                updateConfigScript(scriptBuilder, "no shutdown");
+                updateConfigScript(scriptBuilder, "end");
             }
 
             if (!topicsConfiguration.isEmpty()) {
                 // Enable services
-                updateConfigScript(scriptFile, "configure");
+                updateConfigScript(scriptBuilder, "configure");
                 // Configure default ACL
-                updateConfigScript(scriptFile, "acl-profile default message-vpn " + vpn);
+                updateConfigScript(scriptBuilder, "acl-profile default message-vpn " + vpn);
                 // Configure default action to disallow
-                updateConfigScript(scriptFile, "subscribe-topic default-action disallow");
-                updateConfigScript(scriptFile, "publish-topic default-action disallow");
-                updateConfigScript(scriptFile, "exit");
+                updateConfigScript(scriptBuilder, "subscribe-topic default-action disallow");
+                updateConfigScript(scriptBuilder, "publish-topic default-action disallow");
+                updateConfigScript(scriptBuilder, "exit");
 
-                updateConfigScript(scriptFile, "message-vpn " + vpn);
-                updateConfigScript(scriptFile, "service");
+                updateConfigScript(scriptBuilder, "message-vpn " + vpn);
+                updateConfigScript(scriptBuilder, "service");
                 for (Pair<String, Protocol> topicConfig : topicsConfiguration) {
                     Protocol protocol = topicConfig.getValue();
-                    updateConfigScript(scriptFile, protocol.getService());
+                    updateConfigScript(scriptBuilder, protocol.getService());
                     if (protocol.isSupportSSL()) {
                         if (withClientCert) {
-                            updateConfigScript(scriptFile, "ssl");
+                            updateConfigScript(scriptBuilder, "ssl");
                         } else {
-                            updateConfigScript(scriptFile, "plain-text");
+                            updateConfigScript(scriptBuilder, "plain-text");
                         }
                     }
-                    updateConfigScript(scriptFile, "no shutdown");
-                    updateConfigScript(scriptFile, "end");
+                    updateConfigScript(scriptBuilder, "no shutdown");
+                    updateConfigScript(scriptBuilder, "end");
                     // Add publish/subscribe topic exceptions
-                    updateConfigScript(scriptFile, "configure");
-                    updateConfigScript(scriptFile, "acl-profile default message-vpn " + vpn);
+                    updateConfigScript(scriptBuilder, "configure");
+                    updateConfigScript(scriptBuilder, "acl-profile default message-vpn " + vpn);
                     updateConfigScript(
-                        scriptFile,
+                        scriptBuilder,
                         "publish-topic exceptions " +
                         topicConfig.getValue().getService() +
                         " list " +
                         topicConfig.getKey()
                     );
                     updateConfigScript(
-                        scriptFile,
+                        scriptBuilder,
                         "subscribe-topic exceptions " +
                         topicConfig.getValue().getService() +
                         " list " +
                         topicConfig.getKey()
                     );
-                    updateConfigScript(scriptFile, "end");
+                    updateConfigScript(scriptBuilder, "end");
                 }
             }
-            return MountableFile.forHostPath(scriptFile);
+            return Transferable.of(scriptBuilder.toString());
         }
 
         private void executeCommand(List<String> command) {
@@ -365,40 +358,23 @@ public class SolaceContainerTest {
             }
         }
 
-        private void updateConfigScript(Path scriptFilePath, String command) throws IOException {
-            Files.writeString(scriptFilePath, command + System.lineSeparator(), StandardOpenOption.APPEND);
+        private void updateConfigScript(StringBuilder scriptBuilder, String command) {
+            scriptBuilder.append(command).append(NEW_LINE);
         }
 
         private void waitOnCommandResult(List<String> command, String waitingFor) {
-            waitUntilConditionIsMet(
-                () -> {
+            Awaitility
+                .await()
+                .pollInterval(Duration.ofMillis(500))
+                .timeout(Duration.ofSeconds(30))
+                .until(() -> {
                     try {
                         return execInContainer(command.toArray(new String[0])).getStdout().contains(waitingFor);
                     } catch (IOException | InterruptedException e) {
                         logger().error("Could not execute command {}: {}", command, e.getMessage());
                         return true;
                     }
-                },
-                30
-            );
-        }
-
-        private void waitUntilConditionIsMet(BooleanSupplier awaitedCondition, int timeoutInSec) {
-            boolean done;
-            long startTime = System.currentTimeMillis();
-            do {
-                done = awaitedCondition.getAsBoolean();
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            } while (!done && System.currentTimeMillis() - startTime < timeoutInSec * 1000);
-        }
-
-        public SolaceContainer withMaxConnections(final int maxConnections) {
-            this.maxConnections = maxConnections;
-            return this;
+                });
         }
 
         public SolaceContainer withCredentials(final String username, final String password) {

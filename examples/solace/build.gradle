@@ -11,4 +11,5 @@ dependencies {
     testImplementation 'org.assertj:assertj-core:3.23.1'
     testImplementation 'ch.qos.logback:logback-classic:1.3.5'
     testImplementation 'com.solacesystems:sol-jcsmp:10.17.0'
+    testImplementation 'org.awaitility:awaitility:4.2.0'
 }
