@@ -35,6 +35,7 @@ subprojects {
     apply plugin: 'checkstyle'
 
     group = "org.testcontainers"
+    version = '1.17.6-j1'
 
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
