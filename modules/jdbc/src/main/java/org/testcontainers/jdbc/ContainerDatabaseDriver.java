@@ -6,6 +6,7 @@ import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.JdbcDatabaseContainerProvider;
 import org.testcontainers.delegate.DatabaseDelegate;
 import org.testcontainers.ext.ScriptUtils;
+import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -107,6 +108,12 @@ public class ContainerDatabaseDriver implements Driver {
                 for (JdbcDatabaseContainerProvider candidateContainerType : databaseContainers) {
                     if (candidateContainerType.supports(connectionUrl.getDatabaseType())) {
                         container = candidateContainerType.newInstance(connectionUrl);
+
+                        int startupTimeout = Integer.parseInt(TestcontainersConfiguration.getInstance().getEnvVarOrProperty("tc.jdbc.startuptimeout", "120"));
+                        int connectionTimeout = Integer.parseInt(TestcontainersConfiguration.getInstance().getEnvVarOrProperty("tc.jdbc.connectiontimeout", "120"));
+                        container.withStartupTimeoutSeconds(startupTimeout);
+                        container.withConnectTimeoutSeconds(connectionTimeout);
+
                         container.withTmpFs(connectionUrl.getTmpfsOptions());
                         delegate = container.getJdbcDriverInstance();
                     }
