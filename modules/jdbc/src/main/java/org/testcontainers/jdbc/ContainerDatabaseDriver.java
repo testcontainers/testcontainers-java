@@ -109,8 +109,16 @@ public class ContainerDatabaseDriver implements Driver {
                     if (candidateContainerType.supports(connectionUrl.getDatabaseType())) {
                         container = candidateContainerType.newInstance(connectionUrl);
 
-                        int startupTimeout = Integer.parseInt(TestcontainersConfiguration.getInstance().getEnvVarOrProperty("tc.jdbc.startuptimeout", "120"));
-                        int connectionTimeout = Integer.parseInt(TestcontainersConfiguration.getInstance().getEnvVarOrProperty("tc.jdbc.connectiontimeout", "120"));
+                        int startupTimeout = Integer.parseInt(
+                            TestcontainersConfiguration
+                                .getInstance()
+                                .getEnvVarOrProperty("tc.jdbc.startuptimeout", "120")
+                        );
+                        int connectionTimeout = Integer.parseInt(
+                            TestcontainersConfiguration
+                                .getInstance()
+                                .getEnvVarOrProperty("tc.jdbc.connectiontimeout", "120")
+                        );
                         container.withStartupTimeoutSeconds(startupTimeout);
                         container.withConnectTimeoutSeconds(connectionTimeout);
 
