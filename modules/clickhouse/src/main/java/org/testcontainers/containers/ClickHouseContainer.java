@@ -1,16 +1,19 @@
 package org.testcontainers.containers;
 
-import com.google.common.collect.Sets;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
+import java.util.HashSet;
 import java.util.Set;
 
-public class ClickHouseContainer extends JdbcDatabaseContainer {
+public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContainer> {
+
     public static final String NAME = "clickhouse";
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("yandex/clickhouse-server");
+
+    private static final DockerImageName CLICKHOUSE_IMAGE_NAME = DockerImageName.parse("clickhouse/clickhouse-server");
 
     @Deprecated
     public static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
@@ -19,14 +22,19 @@ public class ClickHouseContainer extends JdbcDatabaseContainer {
     public static final String DEFAULT_TAG = "18.10.3";
 
     public static final Integer HTTP_PORT = 8123;
+
     public static final Integer NATIVE_PORT = 9000;
 
     private static final String DRIVER_CLASS_NAME = "ru.yandex.clickhouse.ClickHouseDriver";
+
     private static final String JDBC_URL_PREFIX = "jdbc:" + NAME + "://";
+
     private static final String TEST_QUERY = "SELECT 1";
 
     private String databaseName = "default";
+
     private String username = "default";
+
     private String password = "";
 
     /**
@@ -43,26 +51,29 @@ public class ClickHouseContainer extends JdbcDatabaseContainer {
 
     public ClickHouseContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, CLICKHOUSE_IMAGE_NAME);
 
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
-
-        withExposedPorts(HTTP_PORT, NATIVE_PORT);
-        waitingFor(
+        addExposedPorts(HTTP_PORT, NATIVE_PORT);
+        this.waitStrategy =
             new HttpWaitStrategy()
                 .forStatusCode(200)
-                .forResponsePredicate(responseBody -> "Ok.".equals(responseBody))
-                .withStartupTimeout(Duration.ofMinutes(1))
-        );
+                .forResponsePredicate("Ok."::equals)
+                .withStartupTimeout(Duration.ofMinutes(1));
     }
 
     @Override
     public Set<Integer> getLivenessCheckPortNumbers() {
-        return Sets.newHashSet(HTTP_PORT);
+        return new HashSet<>(getMappedPort(HTTP_PORT));
     }
 
     @Override
     public String getDriverClassName() {
-        return DRIVER_CLASS_NAME;
+        try {
+            Class.forName(DRIVER_CLASS_NAME);
+            return DRIVER_CLASS_NAME;
+        } catch (ClassNotFoundException e) {
+            return "com.clickhouse.jdbc.ClickHouseDriver";
+        }
     }
 
     @Override

@@ -11,5 +11,4 @@ abstract class AbstractTestBase {
 
     @Container
     RedisContainer redisPerTest = new RedisContainer();
-
 }

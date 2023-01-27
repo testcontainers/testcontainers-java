@@ -29,7 +29,6 @@ public class MariaDBContainerProvider extends JdbcDatabaseContainerProvider {
 
     @Override
     public JdbcDatabaseContainer newInstance(ConnectionUrl connectionUrl) {
-       return newInstanceFromConnectionUrl(connectionUrl, USER_PARAM, PASSWORD_PARAM);
+        return newInstanceFromConnectionUrl(connectionUrl, USER_PARAM, PASSWORD_PARAM);
     }
-
 }

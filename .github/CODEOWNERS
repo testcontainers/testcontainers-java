@@ -3,7 +3,7 @@
 # These owners will be the default reviewers for everything in
 # the repo.
 
-*                       @rnorth @bsideup @kiview
+*                       @testcontainers/java-team
 
 # The last matching pattern takes the most
 # precedence.

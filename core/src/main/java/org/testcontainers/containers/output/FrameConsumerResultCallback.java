@@ -1,6 +1,5 @@
 package org.testcontainers.containers.output;
 
-
 import com.github.dockerjava.api.async.ResultCallbackTemplate;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.StreamType;
@@ -31,7 +30,9 @@ public class FrameConsumerResultCallback extends ResultCallbackTemplate<FrameCon
 
     private static final String LINE_BREAK_REGEX = "((\\r?\\n)|(\\r))";
 
-    static final String LINE_BREAK_AT_END_REGEX = LINE_BREAK_REGEX + "$";
+    private static final Pattern LINE_BREAK_PATTERN = Pattern.compile(LINE_BREAK_REGEX);
+
+    static final Pattern LINE_BREAK_AT_END_PATTERN = Pattern.compile(LINE_BREAK_REGEX + "$");
 
     private Map<OutputFrame.OutputType, Consumer<OutputFrame>> consumers;
 
@@ -79,7 +80,7 @@ public class FrameConsumerResultCallback extends ResultCallbackTemplate<FrameCon
         // Sink any errors
         try {
             close();
-        } catch (IOException ignored) { }
+        } catch (IOException ignored) {}
     }
 
     @Override
@@ -140,7 +141,7 @@ public class FrameConsumerResultCallback extends ResultCallbackTemplate<FrameCon
 
     private void normalizeLogLines(String utf8String, Consumer<OutputFrame> consumer) {
         // Reformat strings to normalize new lines.
-        List<String> lines = new ArrayList<>(Arrays.asList(utf8String.split(LINE_BREAK_REGEX)));
+        List<String> lines = new ArrayList<>(Arrays.asList(LINE_BREAK_PATTERN.split(utf8String)));
         if (lines.isEmpty()) {
             consumer.accept(new OutputFrame(OutputFrame.OutputType.STDOUT, EMPTY_LINE));
             return;
@@ -168,7 +169,6 @@ public class FrameConsumerResultCallback extends ResultCallbackTemplate<FrameCon
         }
         return utf8String;
     }
-
 
     private byte[] merge(byte[] str1, byte[] str2) {
         byte[] mergedString = new byte[str1.length + str2.length];

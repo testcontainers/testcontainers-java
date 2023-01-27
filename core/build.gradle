@@ -6,7 +6,15 @@ sourceSets {
     jarFileTest
 }
 
+test.maxParallelForks = 4
+
 idea.module.testSourceDirs += sourceSets.jarFileTest.allSource.srcDirs
+
+jar {
+    manifest {
+        attributes('Implementation-Version': project.getProperty("version"))
+    }
+}
 
 shadowJar {
     [
@@ -38,13 +46,13 @@ tasks.japicmp {
         "org.testcontainers.shaded.*",
     ]
 
-    classExcludes = []
+    classExcludes = [
+        "org.testcontainers.utility.RyukResourceReaper",
+    ]
 
     methodExcludes = [
-        "org.testcontainers.utility.ResourceReaper#start(java.lang.String,com.github.dockerjava.api.DockerClient)",
-        "org.testcontainers.utility.ResourceReaper#start(com.github.dockerjava.api.DockerClient)",
-        "org.testcontainers.utility.ResourceReaper#registerNetworkForCleanup(java.lang.String)",
-        "org.testcontainers.utility.ResourceReaper#removeNetworks(java.lang.String)",
+        "org.testcontainers.containers.Container#getDockerClient()",
+        "org.testcontainers.containers.ContainerState#getDockerClient()",
     ]
 
     fieldExcludes = []
@@ -58,50 +66,44 @@ configurations.all {
 }
 
 dependencies {
-    baseline 'org.testcontainers:testcontainers:1.16.3', {
-        exclude group: "*", module: "*"
-    }
-
     api 'junit:junit:4.13.2'
-    api 'org.slf4j:slf4j-api:1.7.35'
-    compileOnly 'org.jetbrains:annotations:23.0.0'
-    testCompileClasspath 'org.jetbrains:annotations:23.0.0'
-    api 'org.apache.commons:commons-compress:1.21'
+    api 'org.slf4j:slf4j-api:1.7.36'
+    compileOnly 'org.jetbrains:annotations:23.1.0'
+    testCompileOnly 'org.jetbrains:annotations:23.0.0'
+    api 'org.apache.commons:commons-compress:1.22'
     api ('org.rnorth.duct-tape:duct-tape:1.0.8') {
         exclude(group: 'org.jetbrains', module: 'annotations')
     }
 
-    shaded 'org.awaitility:awaitility:4.1.1'
+    shaded 'org.awaitility:awaitility:4.2.0'
 
-    api platform('com.github.docker-java:docker-java-bom:3.2.13')
+    api platform('com.github.docker-java:docker-java-bom:3.2.14')
     shaded platform('com.github.docker-java:docker-java-bom:3.2.13')
 
     api "com.github.docker-java:docker-java-api"
 
     shaded 'com.github.docker-java:docker-java-core'
-    shaded 'com.github.docker-java:docker-java-transport-okhttp'
 
     api 'com.github.docker-java:docker-java-transport-zerodep'
 
-    shaded "org.yaml:snakeyaml:1.30"
+    shaded "org.yaml:snakeyaml:1.33"
 
     shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
 
     shaded 'org.zeroturnaround:zt-exec:1.12'
 
     testImplementation 'org.apache.httpcomponents:httpclient:4.5.9'
-    testImplementation 'redis.clients:jedis:4.0.1'
-    testImplementation 'com.rabbitmq:amqp-client:5.14.2'
-    testImplementation 'org.mongodb:mongo-java-driver:3.12.10'
+    testImplementation 'redis.clients:jedis:4.3.1'
+    testImplementation 'com.rabbitmq:amqp-client:5.16.0'
+    testImplementation 'org.mongodb:mongo-java-driver:3.12.11'
 
-    testImplementation ('org.mockito:mockito-core:4.3.1') {
+    testImplementation ('org.mockito:mockito-core:4.11.0') {
         exclude(module: 'hamcrest-core')
     }
     // Synthetic JAR used for MountableFileTest and DirectoryTarResourceTest
     testImplementation files('testlib/repo/fakejar/fakejar/0/fakejar-0.jar')
 
-    testImplementation 'org.rnorth.visible-assertions:visible-assertions:2.1.2'
-    testImplementation 'org.assertj:assertj-core:3.22.0'
+    testImplementation 'org.assertj:assertj-core:3.23.1'
     testImplementation project(':test-support')
 
     jarFileTestCompileOnly "org.projectlombok:lombok:${lombok.version}"

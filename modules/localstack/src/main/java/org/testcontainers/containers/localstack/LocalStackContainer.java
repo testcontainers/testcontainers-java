@@ -27,20 +27,22 @@ import java.util.stream.Collectors;
 /**
  * <p>Container for LocalStack, 'A fully functional local AWS cloud stack'.</p>
  * <p>{@link LocalStackContainer#withServices(Service...)} should be used to select which services
- * are to be launched. See {@link Service} for available choices. It is advised that
- * {@link LocalStackContainer#getEndpointConfiguration(Service)} and
- * {@link LocalStackContainer#getDefaultCredentialsProvider()}
- * be used to obtain compatible endpoint configuration and credentials, respectively.</p>
+ * are to be launched. See {@link Service} for available choices.
  */
 @Slf4j
 public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
 
     static final int PORT = 4566;
+
     private static final String HOSTNAME_EXTERNAL_ENV_VAR = "HOSTNAME_EXTERNAL";
+
     private final List<EnabledService> services = new ArrayList<>();
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("localstack/localstack");
+
     private static final String DEFAULT_TAG = "0.11.2";
+
+    private static final String DEFAULT_REGION = "us-east-1";
 
     @Deprecated
     public static final String VERSION = DEFAULT_TAG;
@@ -88,7 +90,6 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
      */
     public LocalStackContainer(final DockerImageName dockerImageName, boolean useLegacyMode) {
         super(dockerImageName);
-
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         this.legacyMode = useLegacyMode;
@@ -109,7 +110,9 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
         }
 
         log.warn("Version {} is not a semantic version, LocalStack will run in legacy mode.", version);
-        log.warn("Consider using \"LocalStackContainer(DockerImageName dockerImageName, boolean legacyMode)\" constructor if you want to disable legacy mode.");
+        log.warn(
+            "Consider using \"LocalStackContainer(DockerImageName dockerImageName, boolean legacyMode)\" constructor if you want to disable legacy mode."
+        );
         return true;
     }
 
@@ -126,22 +129,25 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
             // do nothing
             hostnameExternalReason = "explicitly as environment variable";
         } else if (getNetwork() != null && getNetworkAliases() != null && getNetworkAliases().size() >= 1) {
-            withEnv(HOSTNAME_EXTERNAL_ENV_VAR, getNetworkAliases().get(getNetworkAliases().size() - 1));  // use the last network alias set
+            withEnv(HOSTNAME_EXTERNAL_ENV_VAR, getNetworkAliases().get(getNetworkAliases().size() - 1)); // use the last network alias set
             hostnameExternalReason = "to match last network alias on container with non-default network";
         } else {
             withEnv(HOSTNAME_EXTERNAL_ENV_VAR, getHost());
             hostnameExternalReason = "to match host-routable address for container";
         }
-        logger().info("{} environment variable set to {} ({})", HOSTNAME_EXTERNAL_ENV_VAR, getEnvMap().get(HOSTNAME_EXTERNAL_ENV_VAR), hostnameExternalReason);
+        logger()
+            .info(
+                "{} environment variable set to {} ({})",
+                HOSTNAME_EXTERNAL_ENV_VAR,
+                getEnvMap().get(HOSTNAME_EXTERNAL_ENV_VAR),
+                hostnameExternalReason
+            );
 
         exposePorts();
     }
 
     private void exposePorts() {
-        services.stream()
-            .map(this::getServicePort)
-            .distinct()
-            .forEach(this::addExposedPort);
+        services.stream().map(this::getServicePort).distinct().forEach(this::addExposedPort);
     }
 
     public LocalStackContainer withServices(Service... services) {
@@ -184,7 +190,9 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
      *
      * @param service the service that is to be accessed
      * @return an {@link AwsClientBuilder.EndpointConfiguration}
+     * @deprecated {@link LocalStackContainer} will not depend on aws sdk.
      */
+    @Deprecated
     public AwsClientBuilder.EndpointConfiguration getEndpointConfiguration(Service service) {
         return new AwsClientBuilder.EndpointConfiguration(getEndpointOverride(service).toString(), getRegion());
     }
@@ -218,10 +226,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
             String ipAddress = address;
             // resolve IP address and use that as the endpoint so that path-style access is automatically used for S3
             ipAddress = InetAddress.getByName(address).getHostAddress();
-            return new URI("http://" +
-                ipAddress +
-                ":" +
-                getMappedPort(getServicePort(service)));
+            return new URI("http://" + ipAddress + ":" + getMappedPort(getServicePort(service)));
         } catch (UnknownHostException | URISyntaxException e) {
             throw new IllegalStateException("Cannot obtain endpoint URL", e);
         }
@@ -251,7 +256,9 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
              .build()
      </code></pre>
      * @return an {@link AWSCredentialsProvider}
+     * @deprecated {@link LocalStackContainer} will not depend on aws sdk.
      */
+    @Deprecated
     public AWSCredentialsProvider getDefaultCredentialsProvider() {
         return new AWSStaticCredentialsProvider(new BasicAWSCredentials(getAccessKey(), getSecretKey()));
     }
@@ -307,7 +314,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
      * @return a default region
      */
     public String getRegion() {
-        return "us-east-1";
+        return this.getEnvMap().getOrDefault("DEFAULT_REGION", DEFAULT_REGION);
     }
 
     public interface EnabledService {
@@ -332,7 +339,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
         DYNAMODB("dynamodb", 4569),
         DYNAMODB_STREAMS("dynamodbstreams", 4570),
         // TODO: Clarify usage for ELASTICSEARCH and ELASTICSEARCH_SERVICE
-//        ELASTICSEARCH("es",           4571),
+        //        ELASTICSEARCH("es",           4571),
         S3("s3", 4572),
         FIREHOSE("firehose", 4573),
         LAMBDA("lambda", 4574),

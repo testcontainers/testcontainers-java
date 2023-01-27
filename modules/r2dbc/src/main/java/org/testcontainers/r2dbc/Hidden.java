@@ -52,7 +52,8 @@ class Hidden {
             // when protocol does NOT contain COLON, the length becomes 1
             String protocolDelegate = protocols.length == 2 ? protocols[1] : "";
 
-            return ConnectionFactoryOptions.builder()
+            return ConnectionFactoryOptions
+                .builder()
                 .from(options)
                 .option(ConnectionFactoryOptions.DRIVER, driverDelegate)
                 .option(ConnectionFactoryOptions.PROTOCOL, protocolDelegate)
@@ -68,6 +69,5 @@ class Hidden {
         public String getDriver() {
             return DRIVER;
         }
-
     }
 }

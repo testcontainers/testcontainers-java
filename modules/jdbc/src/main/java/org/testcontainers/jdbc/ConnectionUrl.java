@@ -1,5 +1,10 @@
 package org.testcontainers.jdbc;
 
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import org.testcontainers.UnstableAPI;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -9,13 +14,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import org.testcontainers.UnstableAPI;
-
-import static java.util.stream.Collectors.toMap;
 
 /**
  * This is an Immutable class holding JDBC Connection Url and its parsed components, used by {@link ContainerDatabaseDriver}.
@@ -60,6 +58,7 @@ public class ConnectionUrl {
     private Map<String, String> containerParameters;
 
     private Map<String, String> queryParameters;
+
     private Map<String, String> tmpfsOptions = new HashMap<>();
 
     public static ConnectionUrl newInstance(final String url) {
@@ -94,7 +93,9 @@ public class ConnectionUrl {
             //Try for Oracle pattern
             urlMatcher = Patterns.ORACLE_URL_MATCHING_PATTERN.matcher(this.getUrl());
             if (!urlMatcher.matches()) {
-                throw new IllegalArgumentException("JDBC URL matches jdbc:tc: prefix but the database or tag name could not be identified");
+                throw new IllegalArgumentException(
+                    "JDBC URL matches jdbc:tc: prefix but the database or tag name could not be identified"
+                );
             }
         }
         databaseType = urlMatcher.group("databaseType");
@@ -113,9 +114,10 @@ public class ConnectionUrl {
             databaseName = Optional.of(dbInstanceMatcher.group("databaseName"));
         }
 
-        queryParameters = Collections.unmodifiableMap(
-            parseQueryParameters(
-                Optional.ofNullable(urlMatcher.group("queryParameters")).orElse("")));
+        queryParameters =
+            Collections.unmodifiableMap(
+                parseQueryParameters(Optional.ofNullable(urlMatcher.group("queryParameters")).orElse(""))
+            );
 
         String query = queryParameters
             .entrySet()
@@ -133,7 +135,6 @@ public class ConnectionUrl {
 
         tmpfsOptions = parseTmpfsOptions(containerParameters);
 
-
         initScriptPath = Optional.ofNullable(containerParameters.get("TC_INITSCRIPT"));
 
         reusable = Boolean.parseBoolean(containerParameters.get("TC_REUSABLE"));
@@ -145,7 +146,6 @@ public class ConnectionUrl {
 
         Matcher daemonMatcher = Patterns.DAEMON_MATCHING_PATTERN.matcher(this.getUrl());
         inDaemonMode = daemonMatcher.matches() && Boolean.parseBoolean(daemonMatcher.group(2));
-
     }
 
     private Map<String, String> parseTmpfsOptions(Map<String, String> containerParameters) {
@@ -155,10 +155,9 @@ public class ConnectionUrl {
 
         String tmpfsOptions = containerParameters.get("TC_TMPFS");
 
-        return Stream.of(tmpfsOptions.split(","))
-            .collect(toMap(
-                string -> string.split(":")[0],
-                string -> string.split(":")[1]));
+        return Stream
+            .of(tmpfsOptions.split(","))
+            .collect(Collectors.toMap(string -> string.split(":")[0], string -> string.split(":")[1]));
     }
 
     /**
@@ -167,7 +166,6 @@ public class ConnectionUrl {
      * @return {@link Map}
      */
     private Map<String, String> parseContainerParameters() {
-
         Map<String, String> results = new HashMap<>();
 
         Matcher matcher = Patterns.TC_PARAM_MATCHING_PATTERN.matcher(this.getUrl());
@@ -186,14 +184,14 @@ public class ConnectionUrl {
      * @return {@link Map}
      */
     private Map<String, String> parseQueryParameters(final String queryString) {
-
         Map<String, String> results = new HashMap<>();
         Matcher matcher = Patterns.QUERY_PARAM_MATCHING_PATTERN.matcher(queryString);
         while (matcher.find()) {
             String key = matcher.group(1);
             String value = matcher.group(2);
-            if (!key.matches(Patterns.TC_PARAM_NAME_PATTERN))
+            if (!key.matches(Patterns.TC_PARAM_NAME_PATTERN)) {
                 results.put(key, value);
+            }
         }
 
         return results;
@@ -211,36 +209,36 @@ public class ConnectionUrl {
     public interface Patterns {
         Pattern URL_MATCHING_PATTERN = Pattern.compile(
             "jdbc:tc:" +
-                "(?<databaseType>[a-z0-9]+)" +
-                "(:(?<imageTag>[^:]+))?" +
-                "://" +
-                "(?<dbHostString>[^?]+)" +
-                "(?<queryParameters>\\?.*)?"
+            "(?<databaseType>[a-z0-9]+)" +
+            "(:(?<imageTag>[^:]+))?" +
+            "://" +
+            "(?<dbHostString>[^?]+)" +
+            "(?<queryParameters>\\?.*)?"
         );
 
         Pattern ORACLE_URL_MATCHING_PATTERN = Pattern.compile(
             "jdbc:tc:" +
-                "(?<databaseType>[a-z]+)" +
-                "(:(?<imageTag>(?!thin).+))?:thin:(//)?" +
-                "(" +
-                "(?<username>[^:" +
-                "?^/]+)/(?<password>[^?^/]+)" +
-                ")?" +
-                "@" +
-                "(?<dbHostString>[^?]+)" +
-                "(?<queryParameters>\\?.*)?"
+            "(?<databaseType>[a-z]+)" +
+            "(:(?<imageTag>(?!thin).+))?:thin:(//)?" +
+            "(" +
+            "(?<username>[^:" +
+            "?^/]+)/(?<password>[^?^/]+)" +
+            ")?" +
+            "@" +
+            "(?<dbHostString>[^?]+)" +
+            "(?<queryParameters>\\?.*)?"
         );
 
         //Matches to part of string - hostname:port/databasename
         Pattern DB_INSTANCE_MATCHING_PATTERN = Pattern.compile(
             "(?<databaseHost>[^:]+)" +
-                "(:(?<databasePort>[0-9]+))?" +
-                "(" +
-                "(?<sidOrServiceName>[:/])" +
-                "|" +
-                ";databaseName=" +
-                ")" +
-                "(?<databaseName>[^\\\\?]+)"
+            "(:(?<databasePort>[0-9]+))?" +
+            "(" +
+            "(?<sidOrServiceName>[:/])" +
+            "|" +
+            ";databaseName=" +
+            ")" +
+            "(?<databaseName>[^\\\\?]+)"
         );
 
         Pattern DAEMON_MATCHING_PATTERN = Pattern.compile(".*([?&]?)TC_DAEMON=([^?&]+).*");
@@ -251,24 +249,27 @@ public class ConnectionUrl {
         @Deprecated
         Pattern INITSCRIPT_MATCHING_PATTERN = Pattern.compile(".*([?&]?)TC_INITSCRIPT=([^?&]+).*");
 
-        Pattern INITFUNCTION_MATCHING_PATTERN = Pattern.compile(".*([?&]?)TC_INITFUNCTION=" +
+        Pattern INITFUNCTION_MATCHING_PATTERN = Pattern.compile(
+            ".*([?&]?)TC_INITFUNCTION=" +
             "((\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*\\.)*\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)" +
             "::" +
             "(\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)" +
-            ".*");
+            ".*"
+        );
 
         String TC_PARAM_NAME_PATTERN = "(TC_[A-Z_]+)";
 
         Pattern TC_PARAM_MATCHING_PATTERN = Pattern.compile(TC_PARAM_NAME_PATTERN + "=([^?&]+)");
 
         Pattern QUERY_PARAM_MATCHING_PATTERN = Pattern.compile("([^?&=]+)=([^?&]*)");
-
     }
 
     @Getter
     @AllArgsConstructor
     public class InitFunctionDef {
+
         private String className;
+
         private String methodName;
     }
 }

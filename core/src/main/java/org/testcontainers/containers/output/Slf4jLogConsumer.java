@@ -1,18 +1,22 @@
 package org.testcontainers.containers.output;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.MDC;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A consumer for container output that logs output to an SLF4J logger.
  */
 public class Slf4jLogConsumer extends BaseConsumer<Slf4jLogConsumer> {
+
     private final Logger logger;
+
     private final Map<String, String> mdc = new HashMap<>();
+
     private boolean separateOutputStreams;
+
     private String prefix = "";
 
     public Slf4jLogConsumer(Logger logger) {
@@ -49,7 +53,7 @@ public class Slf4jLogConsumer extends BaseConsumer<Slf4jLogConsumer> {
         OutputFrame.OutputType outputType = outputFrame.getType();
 
         String utf8String = outputFrame.getUtf8String();
-        utf8String = utf8String.replaceAll(FrameConsumerResultCallback.LINE_BREAK_AT_END_REGEX, "");
+        utf8String = FrameConsumerResultCallback.LINE_BREAK_AT_END_PATTERN.matcher(utf8String).replaceAll("");
 
         Map<String, String> originalMdc = MDC.getCopyOfContextMap();
         MDC.setContextMap(mdc);

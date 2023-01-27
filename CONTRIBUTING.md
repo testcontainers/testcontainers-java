@@ -10,4 +10,4 @@ Testcontainers is [in the GitHub Sponsors program](https://github.com/sponsors/t
 
 This repository is supported by our sponsors, meaning that issues are eligible to have a 'bounty' attached to them by sponsors.
 
-Please see [the bounty policy page](https://testcontainers.org/bounty) if you are interested, either as a sponsor or as a contributor.
+Please see [the bounty policy page](https://www.testcontainers.org/bounty) if you are interested, either as a sponsor or as a contributor.

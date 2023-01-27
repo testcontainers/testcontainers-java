@@ -3,7 +3,6 @@ package org.testcontainers.containers;
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.utility.DockerImageName;
 
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -26,10 +25,15 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
     static final String DEFAULT_PASSWORD = "test";
 
     private static final String MY_CNF_CONFIG_OVERRIDE_PARAM_NAME = "TC_MY_CNF";
+
     public static final Integer MYSQL_PORT = 3306;
+
     private String databaseName = "test";
+
     private String username = DEFAULT_USER;
+
     private String password = DEFAULT_PASSWORD;
+
     private static final String MYSQL_ROOT_USER = "root";
 
     /**
@@ -46,23 +50,29 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
 
     public MySQLContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         addExposedPort(MYSQL_PORT);
     }
 
-
+    /**
+     * @return the ports on which to check if the container is ready
+     * @deprecated use {@link #getLivenessCheckPortNumbers()} instead
+     */
     @NotNull
     @Override
+    @Deprecated
     protected Set<Integer> getLivenessCheckPorts() {
-        return new HashSet<>(getMappedPort(MYSQL_PORT));
+        return super.getLivenessCheckPorts();
     }
 
     @Override
     protected void configure() {
-        optionallyMapResourceParameterAsVolume(MY_CNF_CONFIG_OVERRIDE_PARAM_NAME, "/etc/mysql/conf.d",
-            "mysql-default-conf");
+        optionallyMapResourceParameterAsVolume(
+            MY_CNF_CONFIG_OVERRIDE_PARAM_NAME,
+            "/etc/mysql/conf.d",
+            "mysql-default-conf"
+        );
 
         addEnv("MYSQL_DATABASE", databaseName);
         if (!MYSQL_ROOT_USER.equalsIgnoreCase(username)) {
@@ -92,8 +102,7 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
     @Override
     public String getJdbcUrl() {
         String additionalUrlParams = constructUrlParameters("?", "&");
-        return "jdbc:mysql://" + getHost() + ":" + getMappedPort(MYSQL_PORT) +
-            "/" + databaseName + additionalUrlParams;
+        return "jdbc:mysql://" + getHost() + ":" + getMappedPort(MYSQL_PORT) + "/" + databaseName + additionalUrlParams;
     }
 
     @Override

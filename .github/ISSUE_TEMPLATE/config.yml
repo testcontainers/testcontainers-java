@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Need help or have a question?
+    url: https://slack.testcontainers.org/
+    about: Visit our slack channel.
+  - name: Have a question or want to drive a Community conversation?
+    url: https://github.com/testcontainers/testcontainers-java/discussions/
+    about: Visit our Discussions page.

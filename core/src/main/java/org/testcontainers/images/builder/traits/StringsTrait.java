@@ -9,22 +9,23 @@ import org.testcontainers.images.builder.Transferable;
  *
  */
 public interface StringsTrait<SELF extends StringsTrait<SELF> & BuildContextBuilderTrait<SELF>> {
-
     default SELF withFileFromString(String path, String content) {
-        return ((SELF) this).withFileFromTransferable(path, new Transferable() {
+        return ((SELF) this).withFileFromTransferable(
+                path,
+                new Transferable() {
+                    @Getter
+                    byte[] bytes = content.getBytes();
 
-            @Getter
-            byte[] bytes = content.getBytes();
+                    @Override
+                    public long getSize() {
+                        return bytes.length;
+                    }
 
-            @Override
-            public long getSize() {
-                return bytes.length;
-            }
-
-            @Override
-            public String getDescription() {
-                return "String: " + StringUtils.abbreviate(content, 100);
-            }
-        });
+                    @Override
+                    public String getDescription() {
+                        return "String: " + StringUtils.abbreviate(content, 100);
+                    }
+                }
+            );
     }
 }

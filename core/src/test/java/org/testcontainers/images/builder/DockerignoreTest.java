@@ -9,8 +9,8 @@ import org.testcontainers.utility.DockerImageName;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
-import static org.rnorth.visibleassertions.VisibleAssertions.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 public class DockerignoreTest {
 
@@ -24,10 +24,10 @@ public class DockerignoreTest {
                 .withDockerfile(INVALID_DOCKERIGNORE_PATH.resolve("Dockerfile"))
                 .get();
             fail("Should not be able to build an image with an invalid .dockerignore file");
-        }
-        catch (DockerClientException e) {
-            if (!e.getMessage().contains("Invalid pattern"))
+        } catch (DockerClientException e) {
+            if (!e.getMessage().contains("Invalid pattern")) {
                 throw e;
+            }
         }
     }
 
@@ -35,22 +35,22 @@ public class DockerignoreTest {
     @Test
     public void testValidDockerignore() throws Exception {
         ImageFromDockerfile img = new ImageFromDockerfile()
-                .withFileFromPath(".", DockerfileBuildTest.RESOURCE_PATH)
-                .withDockerfile(DockerfileBuildTest.RESOURCE_PATH.resolve("Dockerfile-currentdir"));
-        try(
+            .withFileFromPath(".", DockerfileBuildTest.RESOURCE_PATH)
+            .withDockerfile(DockerfileBuildTest.RESOURCE_PATH.resolve("Dockerfile-currentdir"));
+        try (
             final GenericContainer<?> container = new GenericContainer(DockerImageName.parse(img.get()))
-            .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
-            .withCommand("ls", "/")
+                .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
+                .withCommand("ls", "/")
         ) {
-
             container.start();
 
             final String logs = container.getLogs();
-            assertTrue("Files in the container indicated the .dockerignore was not applied. Output was: " + logs,
-                    logs.contains("should_not_be_ignored.txt"));
-            assertTrue("Files in the container indicated the .dockerignore was not applied. Output was: " + logs,
-                    !logs.contains("should_be_ignored.txt"));
+            assertThat(logs)
+                .as("Files in the container indicated the .dockerignore was not applied. Output was: " + logs)
+                .contains("should_not_be_ignored.txt");
+            assertThat(logs)
+                .as("Files in the container indicated the .dockerignore was not applied. Output was: " + logs)
+                .doesNotContain("should_be_ignored.txt");
         }
     }
-
 }

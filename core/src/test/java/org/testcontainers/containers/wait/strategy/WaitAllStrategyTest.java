@@ -10,19 +10,27 @@ import org.testcontainers.containers.GenericContainer;
 
 import java.time.Duration;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
-import static org.rnorth.visibleassertions.VisibleAssertions.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 public class WaitAllStrategyTest {
 
     @Mock
     private GenericContainer container;
+
     @Mock
     private WaitStrategy strategy1;
+
     @Mock
     private WaitStrategy strategy2;
+
     @Mock
     private WaitStrategy strategy3;
 
@@ -36,53 +44,50 @@ public class WaitAllStrategyTest {
      */
     @Test
     public void parentTimeoutApplies() {
-
         DummyStrategy child1 = new DummyStrategy(Duration.ofMillis(10));
         child1.withStartupTimeout(Duration.ofMillis(20));
 
-        assertEquals("withStartupTimeout directly sets the timeout", 20L, child1.startupTimeout.toMillis());
+        assertThat(child1.startupTimeout.toMillis()).as("withStartupTimeout directly sets the timeout").isEqualTo(20L);
 
-        new WaitAllStrategy()
-            .withStrategy(child1)
-            .withStartupTimeout(Duration.ofMillis(30));
+        new WaitAllStrategy().withStrategy(child1).withStartupTimeout(Duration.ofMillis(30));
 
-        assertEquals("WaitAllStrategy overrides a child's timeout", 30L, child1.startupTimeout.toMillis());
+        assertThat(child1.startupTimeout.toMillis()).as("WaitAllStrategy overrides a child's timeout").isEqualTo(30L);
     }
 
     @Test
     public void parentTimeoutAppliesToMultipleChildren() {
-
         Duration defaultInnerWait = Duration.ofMillis(2);
         Duration outerWait = Duration.ofMillis(6);
 
         DummyStrategy child1 = new DummyStrategy(defaultInnerWait);
         DummyStrategy child2 = new DummyStrategy(defaultInnerWait);
 
-        new WaitAllStrategy()
-            .withStrategy(child1)
-            .withStrategy(child2)
-            .withStartupTimeout(outerWait);
+        new WaitAllStrategy().withStrategy(child1).withStrategy(child2).withStartupTimeout(outerWait);
 
-        assertEquals("WaitAllStrategy overrides a child's timeout (1st)", 6L, child1.startupTimeout.toMillis());
-        assertEquals("WaitAllStrategy overrides a child's timeout (2nd)", 6L, child2.startupTimeout.toMillis());
+        assertThat(child1.startupTimeout.toMillis())
+            .as("WaitAllStrategy overrides a child's timeout (1st)")
+            .isEqualTo(6L);
+        assertThat(child2.startupTimeout.toMillis())
+            .as("WaitAllStrategy overrides a child's timeout (2nd)")
+            .isEqualTo(6L);
     }
 
     @Test
     public void parentTimeoutAppliesToAdditionalChildren() {
-
         Duration defaultInnerWait = Duration.ofMillis(2);
         Duration outerWait = Duration.ofMillis(20);
 
         DummyStrategy child1 = new DummyStrategy(defaultInnerWait);
         DummyStrategy child2 = new DummyStrategy(defaultInnerWait);
 
-        new WaitAllStrategy()
-            .withStrategy(child1)
-            .withStartupTimeout(outerWait)
-            .withStrategy(child2);
+        new WaitAllStrategy().withStrategy(child1).withStartupTimeout(outerWait).withStrategy(child2);
 
-        assertEquals("WaitAllStrategy overrides a child's timeout (1st)", 20L, child1.startupTimeout.toMillis());
-        assertEquals("WaitAllStrategy overrides a child's timeout (2nd, additional)", 20L, child2.startupTimeout.toMillis());
+        assertThat(child1.startupTimeout.toMillis())
+            .as("WaitAllStrategy overrides a child's timeout (1st)")
+            .isEqualTo(20L);
+        assertThat(child2.startupTimeout.toMillis())
+            .as("WaitAllStrategy overrides a child's timeout (2nd, additional)")
+            .isEqualTo(20L);
     }
 
     /*
@@ -90,10 +95,7 @@ public class WaitAllStrategyTest {
      */
     @Test
     public void childExecutionTest() {
-
-        final WaitStrategy underTest = new WaitAllStrategy()
-            .withStrategy(strategy1)
-            .withStrategy(strategy2);
+        final WaitStrategy underTest = new WaitAllStrategy().withStrategy(strategy1).withStrategy(strategy2);
 
         doNothing().when(strategy1).waitUntilReady(eq(container));
         doNothing().when(strategy2).waitUntilReady(eq(container));
@@ -107,7 +109,6 @@ public class WaitAllStrategyTest {
 
     @Test
     public void withoutOuterTimeoutShouldRelyOnInnerStrategies() {
-
         final WaitStrategy underTest = new WaitAllStrategy(WaitAllStrategy.Mode.WITH_INDIVIDUAL_TIMEOUTS_ONLY)
             .withStrategy(strategy1)
             .withStrategy(strategy2)
@@ -116,9 +117,13 @@ public class WaitAllStrategyTest {
         doNothing().when(strategy1).waitUntilReady(eq(container));
         doThrow(TimeoutException.class).when(strategy2).waitUntilReady(eq(container));
 
-        assertThrows("The outer strategy timeout applies", TimeoutException.class, () -> {
-            underTest.waitUntilReady(container);
-        });
+        assertThat(
+            catchThrowable(() -> {
+                underTest.waitUntilReady(container);
+            })
+        )
+            .as("The outer strategy timeout applies")
+            .isInstanceOf(TimeoutException.class);
 
         InOrder inOrder = inOrder(strategy1, strategy2, strategy3);
         inOrder.verify(strategy1).waitUntilReady(any());
@@ -128,17 +133,19 @@ public class WaitAllStrategyTest {
 
     @Test
     public void timeoutChangeShouldNotBePossibleWithIndividualTimeoutMode() {
-
         final WaitStrategy underTest = new WaitAllStrategy(WaitAllStrategy.Mode.WITH_INDIVIDUAL_TIMEOUTS_ONLY);
 
-        assertThrows("Cannot change timeout for individual timeouts", IllegalStateException.class, () -> {
-            underTest.withStartupTimeout(Duration.ofSeconds(42));
-        });
+        assertThat(
+            catchThrowable(() -> {
+                underTest.withStartupTimeout(Duration.ofSeconds(42));
+            })
+        )
+            .as("Cannot change timeout for individual timeouts")
+            .isInstanceOf(IllegalStateException.class);
     }
 
     @Test
     public void shouldNotMessWithIndividualTimeouts() {
-
         new WaitAllStrategy(WaitAllStrategy.Mode.WITH_INDIVIDUAL_TIMEOUTS_ONLY)
             .withStrategy(strategy1)
             .withStrategy(strategy2);
@@ -149,18 +156,15 @@ public class WaitAllStrategyTest {
 
     @Test
     public void shouldOverwriteIndividualTimeouts() {
-
         Duration someSeconds = Duration.ofSeconds(23);
-        new WaitAllStrategy()
-            .withStartupTimeout(someSeconds)
-            .withStrategy(strategy1)
-            .withStrategy(strategy2);
+        new WaitAllStrategy().withStartupTimeout(someSeconds).withStrategy(strategy1).withStrategy(strategy2);
 
         verify(strategy1).withStartupTimeout(someSeconds);
         verify(strategy1).withStartupTimeout(someSeconds);
     }
 
     static class DummyStrategy extends AbstractWaitStrategy {
+
         DummyStrategy(Duration defaultInnerWait) {
             super.startupTimeout = defaultInnerWait;
         }

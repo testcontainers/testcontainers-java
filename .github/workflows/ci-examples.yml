@@ -2,7 +2,11 @@ name: CI-Examples
 
 on:
   pull_request: {}
-  push: { branches: [ master ] }
+  push: { branches: [ main ] }
+
+concurrency:
+  group: "${{ github.workflow }}-${{ github.head_ref || github.sha }}"
+  cancel-in-progress: true
 
 env:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -10,23 +14,22 @@ env:
   GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
   GRADLE_ENTERPRISE_CACHE_PASSWORD: ${{ secrets.GRADLE_ENTERPRISE_CACHE_PASSWORD }}
 
+permissions:
+  contents: read
+
 jobs:
   find_gradle_jobs:
     runs-on: ubuntu-18.04
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions/setup-java@v3
         with:
           java-version: '8.0.302'
           distribution: temurin
-      - name: Cache Gradle Home files
-        uses: actions/cache@v2.1.7
-        continue-on-error: true
-        with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-home-testmatrix-examples-${{ hashFiles('**/*.gradle') }}
+      - name: Setup Gradle Build Action
+        uses: gradle/gradle-build-action@v2
       - id: set-matrix
         working-directory: ./examples/
         env:
@@ -36,7 +39,7 @@ jobs:
         run: |
           TASKS=$(./gradlew --no-daemon --parallel -q testMatrix)
           echo $TASKS
-          echo "::set-output name=matrix::{\"gradle_args\":$TASKS}"
+          echo "matrix={\"gradle_args\":$TASKS}" >> $GITHUB_OUTPUT
   check:
     needs: find_gradle_jobs
     strategy:
@@ -44,19 +47,17 @@ jobs:
       matrix: ${{ fromJson(needs.find_gradle_jobs.outputs.matrix) }}
     runs-on: ubuntu-18.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions/setup-java@v3
         with:
           java-version: '8.0.302'
           distribution: temurin
-      - name: Cache Gradle Home files
-        uses: actions/cache@v2.1.7
-        continue-on-error: true
-        with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-home-examples-${{matrix.gradle_args}}_check-${{ hashFiles('**/*.gradle') }}
       - name: Clear existing docker image cache
         run: docker image prune -af
+      - name: Setup Gradle Build Action
+        uses: gradle/gradle-build-action@v2
+        with:
+          gradle-home-cache-cleanup: true
       - name: Build and test Examples with Gradle (${{matrix.gradle_args}})
         working-directory: ./examples/
         run: |

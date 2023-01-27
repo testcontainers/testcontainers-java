@@ -3,14 +3,28 @@ package org.testcontainers.images.builder.dockerfile;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.images.builder.dockerfile.statement.Statement;
-import org.testcontainers.images.builder.dockerfile.traits.*;
+import org.testcontainers.images.builder.dockerfile.traits.AddStatementTrait;
+import org.testcontainers.images.builder.dockerfile.traits.CmdStatementTrait;
+import org.testcontainers.images.builder.dockerfile.traits.CopyStatementTrait;
+import org.testcontainers.images.builder.dockerfile.traits.DockerfileBuilderTrait;
+import org.testcontainers.images.builder.dockerfile.traits.EntryPointStatementTrait;
+import org.testcontainers.images.builder.dockerfile.traits.EnvStatementTrait;
+import org.testcontainers.images.builder.dockerfile.traits.ExposeStatementTrait;
+import org.testcontainers.images.builder.dockerfile.traits.FromStatementTrait;
+import org.testcontainers.images.builder.dockerfile.traits.LabelStatementTrait;
+import org.testcontainers.images.builder.dockerfile.traits.RunStatementTrait;
+import org.testcontainers.images.builder.dockerfile.traits.UserStatementTrait;
+import org.testcontainers.images.builder.dockerfile.traits.VolumeStatementTrait;
+import org.testcontainers.images.builder.dockerfile.traits.WorkdirStatementTrait;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Data
 @Slf4j
-public class DockerfileBuilder implements DockerfileBuilderTrait<DockerfileBuilder>,
+public class DockerfileBuilder
+    implements
+        DockerfileBuilderTrait<DockerfileBuilder>,
         FromStatementTrait<DockerfileBuilder>,
         AddStatementTrait<DockerfileBuilder>,
         CopyStatementTrait<DockerfileBuilder>,
@@ -27,7 +41,6 @@ public class DockerfileBuilder implements DockerfileBuilderTrait<DockerfileBuild
     private final List<Statement> statements = new ArrayList<>();
 
     public String build() {
-
         StringBuilder builder = new StringBuilder();
 
         for (Statement statement : statements) {

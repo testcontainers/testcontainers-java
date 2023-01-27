@@ -10,11 +10,16 @@ import java.util.Collection;
  * @author Eugeny Karpov
  */
 public interface DatabaseDelegate extends AutoCloseable {
-
     /**
      * Execute statement by the implementation of the delegate
      */
-    void execute(String statement, String scriptPath, int lineNumber, boolean continueOnError, boolean ignoreFailedDrops);
+    void execute(
+        String statement,
+        String scriptPath,
+        int lineNumber,
+        boolean continueOnError,
+        boolean ignoreFailedDrops
+    );
 
     /**
      * Execute collection of statements

@@ -2,8 +2,6 @@ package org.testcontainers.containers.wait.strategy;
 
 import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
-import java.util.HashMap;
-import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.rnorth.ducttape.TimeoutException;
 import org.testcontainers.containers.ContainerLaunchException;
@@ -12,14 +10,29 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.Socket;
 import java.net.URI;
 import java.net.URL;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509ExtendedTrustManager;
 
 import static org.rnorth.ducttape.unreliables.Unreliables.retryUntilSuccess;
 
@@ -37,16 +50,28 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
     private static final String AUTH_BASIC = "Basic ";
 
     private String path = "/";
+
     private String method = "GET";
+
     private Set<Integer> statusCodes = new HashSet<>();
+
     private boolean tlsEnabled;
+
     private String username;
+
     private String password;
+
     private final Map<String, String> headers = new HashMap<>();
+
     private Predicate<String> responsePredicate;
+
     private Predicate<Integer> statusCodePredicate = null;
+
     private Optional<Integer> livenessPort = Optional.empty();
+
     private Duration readTimeout = Duration.ofSeconds(1);
+
+    private boolean allowInsecure;
 
     /**
      * Waits for the given status code.
@@ -113,6 +138,16 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
     }
 
     /**
+     * Indicates that HTTPS connection could use untrusted (self signed) certificate chains.
+     *
+     * @return this
+     */
+    public HttpWaitStrategy allowInsecure() {
+        this.allowInsecure = true;
+        return this;
+    }
+
+    /**
      * Authenticate with HTTP Basic Authorization credentials.
      *
      * @param username the username
@@ -174,14 +209,16 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
     protected void waitUntilReady() {
         final String containerName = waitStrategyTarget.getContainerInfo().getName();
 
-        final Integer livenessCheckPort = livenessPort.map(waitStrategyTarget::getMappedPort).orElseGet(() -> {
-            final Set<Integer> livenessCheckPorts = getLivenessCheckPorts();
-            if (livenessCheckPorts == null || livenessCheckPorts.isEmpty()) {
-                log.warn("{}: No exposed ports or mapped ports - cannot wait for status", containerName);
-                return -1;
-            }
-            return livenessCheckPorts.iterator().next();
-        });
+        final Integer livenessCheckPort = livenessPort
+            .map(waitStrategyTarget::getMappedPort)
+            .orElseGet(() -> {
+                final Set<Integer> livenessCheckPorts = getLivenessCheckPorts();
+                if (livenessCheckPorts == null || livenessCheckPorts.isEmpty()) {
+                    log.warn("{}: No exposed ports or mapped ports - cannot wait for status", containerName);
+                    return -1;
+                }
+                return livenessCheckPorts.iterator().next();
+            });
 
         if (null == livenessCheckPort || -1 == livenessCheckPort) {
             return;
@@ -191,11 +228,20 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
 
         try {
             // Un-map the port for logging
-            int originalPort = waitStrategyTarget.getExposedPorts().stream()
+            int originalPort = waitStrategyTarget
+                .getExposedPorts()
+                .stream()
                 .filter(exposedPort -> rawUri.getPort() == waitStrategyTarget.getMappedPort(exposedPort))
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("Target port " + rawUri.getPort() + " is not exposed"));
-            log.info("{}: Waiting for {} seconds for URL: {} (where port {} maps to container port {})", containerName, startupTimeout.getSeconds(), uri, rawUri.getPort(), originalPort);
+            log.info(
+                "{}: Waiting for {} seconds for URL: {} (where port {} maps to container port {})",
+                containerName,
+                startupTimeout.getSeconds(),
+                uri,
+                rawUri.getPort(),
+                originalPort
+            );
         } catch (RuntimeException e) {
             // do not allow a failure in logging to prevent progress, but log for diagnosis
             log.warn("Unexpected error occurred - will proceed to try to wait anyway", e);
@@ -203,67 +249,130 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
 
         // try to connect to the URL
         try {
-            retryUntilSuccess((int) startupTimeout.getSeconds(), TimeUnit.SECONDS, () -> {
-                getRateLimiter().doWhenReady(() -> {
-                    try {
-                        final HttpURLConnection connection = (HttpURLConnection) new URL(uri).openConnection();
-                        connection.setReadTimeout(Math.toIntExact(readTimeout.toMillis()));
+            retryUntilSuccess(
+                (int) startupTimeout.getSeconds(),
+                TimeUnit.SECONDS,
+                () -> {
+                    getRateLimiter()
+                        .doWhenReady(() -> {
+                            try {
+                                final HttpURLConnection connection = openConnection(uri);
+                                connection.setReadTimeout(Math.toIntExact(readTimeout.toMillis()));
 
-                        // authenticate
-                        if (!Strings.isNullOrEmpty(username)) {
-                            connection.setRequestProperty(HEADER_AUTHORIZATION, buildAuthString(username, password));
-                            connection.setUseCaches(false);
-                        }
+                                // authenticate
+                                if (!Strings.isNullOrEmpty(username)) {
+                                    connection.setRequestProperty(
+                                        HEADER_AUTHORIZATION,
+                                        buildAuthString(username, password)
+                                    );
+                                    connection.setUseCaches(false);
+                                }
 
-                        // Add user configured headers
-                        this.headers.forEach(connection::setRequestProperty);
-                        connection.setRequestMethod(method);
-                        connection.connect();
+                                // Add user configured headers
+                                this.headers.forEach(connection::setRequestProperty);
+                                connection.setRequestMethod(method);
+                                connection.connect();
 
-                        log.trace("Get response code {}", connection.getResponseCode());
+                                log.trace("Get response code {}", connection.getResponseCode());
 
-                        // Choose the statusCodePredicate strategy depending on what we defined.
-                        Predicate<Integer> predicate;
-                        if (statusCodes.isEmpty() && statusCodePredicate == null) {
-                            // We have no status code and no predicate so we expect a 200 OK response code
-                            predicate = responseCode -> HttpURLConnection.HTTP_OK == responseCode;
-                        } else if (!statusCodes.isEmpty() && statusCodePredicate == null) {
-                            // We use the default status predicate checker when we only have status codes
-                            predicate = responseCode -> statusCodes.contains(responseCode);
-                        } else if (statusCodes.isEmpty()) {
-                            // We only have a predicate
-                            predicate = statusCodePredicate;
-                        } else {
-                            // We have both predicate and status code
-                            predicate = statusCodePredicate.or(responseCode -> statusCodes.contains(responseCode));
-                        }
-                        if (!predicate.test(connection.getResponseCode())) {
-                            throw new RuntimeException(String.format("HTTP response code was: %s",
-                                connection.getResponseCode()));
-                        }
+                                // Choose the statusCodePredicate strategy depending on what we defined.
+                                Predicate<Integer> predicate;
+                                if (statusCodes.isEmpty() && statusCodePredicate == null) {
+                                    // We have no status code and no predicate so we expect a 200 OK response code
+                                    predicate = responseCode -> HttpURLConnection.HTTP_OK == responseCode;
+                                } else if (!statusCodes.isEmpty() && statusCodePredicate == null) {
+                                    // We use the default status predicate checker when we only have status codes
+                                    predicate = responseCode -> statusCodes.contains(responseCode);
+                                } else if (statusCodes.isEmpty()) {
+                                    // We only have a predicate
+                                    predicate = statusCodePredicate;
+                                } else {
+                                    // We have both predicate and status code
+                                    predicate =
+                                        statusCodePredicate.or(responseCode -> statusCodes.contains(responseCode));
+                                }
+                                if (!predicate.test(connection.getResponseCode())) {
+                                    throw new RuntimeException(
+                                        String.format("HTTP response code was: %s", connection.getResponseCode())
+                                    );
+                                }
 
-                        if(responsePredicate != null) {
-                            String responseBody = getResponseBody(connection);
+                                if (responsePredicate != null) {
+                                    String responseBody = getResponseBody(connection);
 
-                            log.trace("Get response {}", responseBody);
+                                    log.trace("Get response {}", responseBody);
 
-                            if(!responsePredicate.test(responseBody)) {
-                                throw new RuntimeException(String.format("Response: %s did not match predicate",
-                                    responseBody));
+                                    if (!responsePredicate.test(responseBody)) {
+                                        throw new RuntimeException(
+                                            String.format("Response: %s did not match predicate", responseBody)
+                                        );
+                                    }
+                                }
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
                             }
+                        });
+                    return true;
+                }
+            );
+        } catch (TimeoutException e) {
+            throw new ContainerLaunchException(
+                String.format(
+                    "Timed out waiting for URL to be accessible (%s should return HTTP %s)",
+                    uri,
+                    statusCodes.isEmpty() ? HttpURLConnection.HTTP_OK : statusCodes
+                ),
+                e
+            );
+        }
+    }
+
+    private HttpURLConnection openConnection(final String uri) throws IOException, MalformedURLException {
+        if (tlsEnabled) {
+            final HttpsURLConnection connection = (HttpsURLConnection) new URL(uri).openConnection();
+            if (allowInsecure) {
+                // Create a trust manager that does not validate certificate chains
+                // and trust all certificates
+                final TrustManager[] trustAllCerts = new TrustManager[] {
+                    new X509ExtendedTrustManager() {
+                        @Override
+                        public X509Certificate[] getAcceptedIssuers() {
+                            return new X509Certificate[0];
                         }
 
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
-                return true;
-            });
+                        @Override
+                        public void checkClientTrusted(final X509Certificate[] certs, final String authType) {}
 
-        } catch (TimeoutException e) {
-            throw new ContainerLaunchException(String.format(
-                "Timed out waiting for URL to be accessible (%s should return HTTP %s)", uri, statusCodes.isEmpty() ?
-                    HttpURLConnection.HTTP_OK : statusCodes));
+                        @Override
+                        public void checkServerTrusted(final X509Certificate[] certs, final String authType) {}
+
+                        @Override
+                        public void checkClientTrusted(X509Certificate[] chain, String authType, Socket socket) {}
+
+                        @Override
+                        public void checkServerTrusted(X509Certificate[] chain, String authType, Socket socket) {}
+
+                        @Override
+                        public void checkClientTrusted(X509Certificate[] chain, String authType, SSLEngine engine) {}
+
+                        @Override
+                        public void checkServerTrusted(X509Certificate[] chain, String authType, SSLEngine engine) {}
+                    },
+                };
+
+                try {
+                    // Create custom SSL context and set the "trust all certificates" trust manager
+                    final SSLContext sc = SSLContext.getInstance("SSL");
+                    sc.init(new KeyManager[0], trustAllCerts, new SecureRandom());
+                    connection.setSSLSocketFactory(sc.getSocketFactory());
+                } catch (final NoSuchAlgorithmException | KeyManagementException ex) {
+                    throw new IOException("Unable to create custom SSL factory instance", ex);
+                }
+            }
+
+            return connection;
+        } else {
+            return (HttpURLConnection) new URL(uri).openConnection();
         }
     }
 

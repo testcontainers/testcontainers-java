@@ -6,6 +6,7 @@ import org.testcontainers.utility.DockerImageName;
  * Factory for MS SQL Server containers.
  */
 public class MSSQLServerContainerProvider extends JdbcDatabaseContainerProvider {
+
     @Override
     public boolean supports(String databaseType) {
         return databaseType.equals(MSSQLServerContainer.NAME);
