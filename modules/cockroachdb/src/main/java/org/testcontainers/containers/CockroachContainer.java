@@ -4,6 +4,9 @@ import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer> {
 
@@ -104,22 +107,57 @@ public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer
 
     @Override
     public CockroachContainer withUsername(String username) {
-        throw new UnsupportedOperationException(
-            "The CockroachDB docker image does not currently support this - please see https://github.com/cockroachdb/cockroach/issues/19826"
-        );
+        validateIfVersionSupportsUsernameOrPasswordOrDatabase(getDockerImageName(), "username");
+        this.username = username;
+        return withEnv("COCKROACH_USER", username);
     }
 
     @Override
     public CockroachContainer withPassword(String password) {
-        throw new UnsupportedOperationException(
-            "The CockroachDB docker image does not currently support this - please see https://github.com/cockroachdb/cockroach/issues/19826"
-        );
+        validateIfVersionSupportsUsernameOrPasswordOrDatabase(getDockerImageName(), "password");
+        this.password = password;
+        return withEnv("COCKROACH_PASSWORD", password).withCommand("start-single-node");
     }
 
     @Override
     public CockroachContainer withDatabaseName(final String databaseName) {
-        throw new UnsupportedOperationException(
-            "The CockroachDB docker image does not currently support this - please see https://github.com/cockroachdb/cockroach/issues/19826"
-        );
+        validateIfVersionSupportsUsernameOrPasswordOrDatabase(getDockerImageName(), "databaseName");
+        this.databaseName = databaseName;
+        return withEnv("COCKROACH_DATABASE", databaseName);
+    }
+
+    private void validateIfVersionSupportsUsernameOrPasswordOrDatabase(String dockerImageName, String parameter) {
+        List<Integer> versions;
+
+        try {
+            versions =
+                Arrays
+                    .stream(dockerImageName.split(":")[1].replaceFirst("v", "").split("\\."))
+                    .map(Integer::parseInt)
+                    .collect(Collectors.toList());
+        } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+            throw new IllegalArgumentException(
+                String.format(
+                    "Expected image name with a format %s, but was %s",
+                    "cockroachdb/cockroach:vXX.xx.xx",
+                    dockerImageName
+                )
+            );
+        }
+
+        if (versions.size() != 3) {
+            throw new IllegalStateException(
+                String.format(
+                    "Version %s should be of a format xx.xx.xx, but was not, " + "the operation cannot be verified",
+                    versions
+                )
+            );
+        }
+
+        if (!(versions.get(0) >= 22 && versions.get(1) >= 1)) {
+            throw new UnsupportedOperationException(
+                String.format("Setting a %s in not supported in the versions below 22.1.0", parameter)
+            );
+        }
     }
 }
