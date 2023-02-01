@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -230,6 +231,9 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
      * @return This container.
      */
     public S withAdminPassword(final String adminPassword) {
+        if (adminPassword != null && adminPassword.length() < 8) {
+            logger().warn("Your provided admin password is too short and will not work with Neo4j 5.3+.");
+        }
         this.adminPassword = adminPassword;
         return self();
     }
@@ -359,5 +363,9 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
         }
 
         return false;
+    }
+
+    public S withRandomPassword() {
+        return withAdminPassword(UUID.randomUUID().toString());
     }
 }

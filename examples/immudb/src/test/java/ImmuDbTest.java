@@ -1,7 +1,7 @@
 import io.codenotary.immudb4j.Entry;
 import io.codenotary.immudb4j.ImmuClient;
-import io.codenotary.immudb4j.exceptions.CorruptedDataException;
 import io.codenotary.immudb4j.exceptions.VerificationException;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -45,8 +45,12 @@ public class ImmuDbTest {
                 .withServerUrl(immuDbContainer.getHost())
                 .withServerPort(immuDbContainer.getMappedPort(IMMUDB_PORT))
                 .build();
-        this.immuClient.login(IMMUDB_USER, IMMUDB_PASSWORD);
-        this.immuClient.useDatabase(IMMUDB_DATABASE);
+        this.immuClient.openSession(IMMUDB_DATABASE, IMMUDB_USER, IMMUDB_PASSWORD);
+    }
+
+    @After
+    public void tearDown() {
+        this.immuClient.closeSession();
     }
 
     @Test
@@ -62,7 +66,7 @@ public class ImmuDbTest {
             } else {
                 Assert.fail();
             }
-        } catch (CorruptedDataException | VerificationException e) {
+        } catch (VerificationException e) {
             Assert.fail();
         }
     }

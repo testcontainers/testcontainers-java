@@ -99,6 +99,19 @@ public class Startables {
             })
             .toArray(CompletableFuture[]::new);
 
-        return CompletableFuture.allOf(futures);
+        return allOfFailfast(futures);
+    }
+
+    private static <T> CompletableFuture<Void> allOfFailfast(CompletableFuture<?>[] futures) {
+        CompletableFuture<Void> result = CompletableFuture.allOf(futures);
+        for (CompletableFuture<?> future : futures) {
+            future.whenComplete((t, ex) -> {
+                if (ex != null) {
+                    result.completeExceptionally(ex);
+                }
+            });
+        }
+
+        return result;
     }
 }
