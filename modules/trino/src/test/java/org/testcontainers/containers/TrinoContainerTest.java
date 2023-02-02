@@ -63,6 +63,20 @@ public class TrinoContainerTest {
         }
     }
 
+    @Test
+    public void testWaitingForInitialization() throws Exception {
+        try (TrinoContainer trino = new TrinoContainer(TrinoTestImages.TRINO_TEST_IMAGE)) {
+            trino.start();
+            try (
+                Connection connection = trino.createConnection();
+                Statement statement = connection.createStatement();
+                ResultSet resultSet = statement.executeQuery(trino.getTestQueryString())
+            ) {
+                assertThat(resultSet.next()).as("results").isTrue();
+                assertThat(resultSet.getLong(1)).as("Value").isGreaterThan(0);
+            }
+        }
+    }
     private void assertContainerHasCorrectExposedAndLivenessCheckPorts(TrinoContainer trino) {
         assertThat(trino.getExposedPorts()).containsExactly(8080);
         assertThat(trino.getLivenessCheckPortNumbers()).containsExactly(trino.getMappedPort(8080));
