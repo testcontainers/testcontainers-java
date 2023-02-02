@@ -70,6 +70,8 @@ public class TestcontainersConfiguration {
     private static final String SSHD_IMAGE = "testcontainers/sshd";
 
     private static final String ORACLE_IMAGE = "gvenzl/oracle-xe";
+    
+    private static final String MONGO_IMAGE = "mongo";
 
     private static final ImmutableMap<DockerImageName, String> CONTAINER_MAPPING = ImmutableMap
         .<DockerImageName, String>builder()
@@ -84,6 +86,7 @@ public class TestcontainersConfiguration {
         .put(DockerImageName.parse(LOCALSTACK_IMAGE), "localstack.container.image")
         .put(DockerImageName.parse(SSHD_IMAGE), "sshd.container.image")
         .put(DockerImageName.parse(ORACLE_IMAGE), "oracle.container.image")
+        .put(DockerImageName.parse(MONGO_IMAGE), "mongo.container.image")
         .build();
 
     @Getter(lazy = true)
