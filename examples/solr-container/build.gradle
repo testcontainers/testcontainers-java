@@ -14,6 +14,6 @@ dependencies {
 
     testImplementation 'org.testcontainers:testcontainers'
     testImplementation 'org.testcontainers:solr'
-    testImplementation 'org.assertj:assertj-core:3.23.1'
+    testImplementation 'org.assertj:assertj-core:3.24.2'
 
 }
