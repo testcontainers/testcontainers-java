@@ -18,7 +18,7 @@ dependencies {
     testRuntimeOnly 'org.postgresql:postgresql:42.5.2'
     testRuntimeOnly 'mysql:mysql-connector-java:8.0.31'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.9.2'
-    testRuntimeOnly 'org.junit.platform:junit-platform-testkit:1.9.1'
+    testRuntimeOnly 'org.junit.platform:junit-platform-testkit:1.9.2'
 
     testCompileOnly 'org.jetbrains:annotations:24.0.0'
 }
