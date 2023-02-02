@@ -14,6 +14,8 @@ updates:
     ignore:
       - dependency-name: "org.slf4j:slf4j-api"
         update-types: [ "version-update:semver-major" ]
+      - dependency-name: "org.mockito:mockito-core"
+        update-types: [ "version-update:semver-major" ]
   - package-ecosystem: "gradle"
     directory: "/"
     allow:
@@ -98,6 +100,9 @@ updates:
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "org.mockito:mockito-core"
+        update-types: [ "version-update:semver-major" ]
   - package-ecosystem: "gradle"
     directory: "/modules/jdbc-test"
     schedule:
@@ -111,6 +116,9 @@ updates:
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "org.mockito:mockito-core"
+        update-types: [ "version-update:semver-major" ]
   - package-ecosystem: "gradle"
     directory: "/modules/k3s"
     schedule:
