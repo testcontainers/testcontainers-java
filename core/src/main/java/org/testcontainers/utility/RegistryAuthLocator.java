@@ -229,7 +229,7 @@ public class RegistryAuthLocator {
             final Iterator<Map.Entry<String, JsonNode>> fields = auths.fields();
             while (fields.hasNext()) {
                 final Map.Entry<String, JsonNode> entry = fields.next();
-                if (entry.getKey().contains("://" + reposName) || entry.getKey().equals(reposName)) {
+                if (entry.getKey().endsWith("://" + reposName) || entry.getKey().equals(reposName)) {
                     return entry;
                 }
             }

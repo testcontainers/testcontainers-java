@@ -1,6 +1,6 @@
 // empty build.gradle for dependabot
 plugins {
-    id 'com.diffplug.spotless' version '6.12.0' apply false
+    id 'com.diffplug.spotless' version '6.13.0' apply false
 }
 
 apply from: "$rootDir/../gradle/ci-support.gradle"
