@@ -42,7 +42,7 @@ public class WaitingConsumer extends BaseConsumer<WaitingConsumer> {
      * @param predicate a predicate to test against each frame
      */
     public void waitUntil(Predicate<OutputFrame> predicate) throws TimeoutException {
-        // ~2.9 million centuries ought to be enough for anyone
+        // ~2.9 thousands centuries ought to be enough for anyone
         waitUntil(predicate, Long.MAX_VALUE, 1);
     }
 
@@ -73,14 +73,17 @@ public class WaitingConsumer extends BaseConsumer<WaitingConsumer> {
      */
     public void waitUntil(Predicate<OutputFrame> predicate, long limit, TimeUnit limitUnit, int times)
         throws TimeoutException {
-        long expiry = limitUnit.toNanos(limit) + System.nanoTime();
+        long timeoutLimitInNanos = limitUnit.toNanos(limit) ;
 
-        waitUntil(predicate, expiry, times);
+        waitUntil(predicate, timeoutLimitInNanos, times);
     }
 
-    private void waitUntil(Predicate<OutputFrame> predicate, long expiry, int times) throws TimeoutException {
+    private void waitUntil(Predicate<OutputFrame> predicate, long timeoutLimitInNanos, int times) throws TimeoutException {
         int numberOfMatches = 0;
-        while (System.nanoTime() < expiry) {
+
+        final long startTime = System.nanoTime();
+
+        while (System.nanoTime() - startTime < timeoutLimitInNanos) {
             try {
                 OutputFrame frame = frames.pollLast(100, TimeUnit.MILLISECONDS);
 
