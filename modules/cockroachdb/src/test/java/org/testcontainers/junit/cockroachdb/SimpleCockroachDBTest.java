@@ -55,10 +55,11 @@ public class SimpleCockroachDBTest extends AbstractContainerDatabaseTest {
         try {
             cockroach.start();
             String jdbcUrl = cockroach.getJdbcUrl();
-            assertThat(jdbcUrl).contains("?");
-            assertThat(jdbcUrl).contains("&");
-            assertThat(jdbcUrl).contains("sslmode=disable");
-            assertThat(jdbcUrl).contains("application_name=cockroach");
+            assertThat(jdbcUrl)
+                .contains("?")
+                .contains("&")
+                .contains("sslmode=disable")
+                .contains("application_name=cockroach");
         } finally {
             cockroach.stop();
         }

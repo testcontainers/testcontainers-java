@@ -1,12 +1,10 @@
 package org.testcontainers.containers;
 
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer> {
 
@@ -32,11 +30,15 @@ public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer
 
     private static final int DB_PORT = 26257;
 
+    private static final String FIRST_VERSION_WITH_ENV_VARS_SUPPORT = "22.1.0";
+
     private String databaseName = "postgres";
 
     private String username = "root";
 
     private String password = "";
+
+    private boolean isVersionGreaterThanOrEqualTo221;
 
     /**
      * @deprecated use {@link CockroachContainer(DockerImageName)} instead
@@ -53,6 +55,7 @@ public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer
     public CockroachContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        isVersionGreaterThanOrEqualTo221 = isVersionGreaterThanOrEqualTo221(dockerImageName);
 
         withExposedPorts(REST_API_PORT, DB_PORT);
         waitingFor(
@@ -107,54 +110,32 @@ public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer
 
     @Override
     public CockroachContainer withUsername(String username) {
-        validateIfVersionSupportsUsernameOrPasswordOrDatabase(getDockerImageName(), "username");
+        validateIfVersionSupportsUsernameOrPasswordOrDatabase("username");
         this.username = username;
         return withEnv("COCKROACH_USER", username);
     }
 
     @Override
     public CockroachContainer withPassword(String password) {
-        validateIfVersionSupportsUsernameOrPasswordOrDatabase(getDockerImageName(), "password");
+        validateIfVersionSupportsUsernameOrPasswordOrDatabase("password");
         this.password = password;
         return withEnv("COCKROACH_PASSWORD", password).withCommand("start-single-node");
     }
 
     @Override
     public CockroachContainer withDatabaseName(final String databaseName) {
-        validateIfVersionSupportsUsernameOrPasswordOrDatabase(getDockerImageName(), "databaseName");
+        validateIfVersionSupportsUsernameOrPasswordOrDatabase("databaseName");
         this.databaseName = databaseName;
         return withEnv("COCKROACH_DATABASE", databaseName);
     }
 
-    private void validateIfVersionSupportsUsernameOrPasswordOrDatabase(String dockerImageName, String parameter) {
-        List<Integer> versions;
+    private boolean isVersionGreaterThanOrEqualTo221(DockerImageName dockerImageName) {
+        ComparableVersion version = new ComparableVersion(dockerImageName.getVersionPart().replaceFirst("v", ""));
+        return version.isGreaterThanOrEqualTo(FIRST_VERSION_WITH_ENV_VARS_SUPPORT);
+    }
 
-        try {
-            versions =
-                Arrays
-                    .stream(dockerImageName.split(":")[1].replaceFirst("v", "").split("\\."))
-                    .map(Integer::parseInt)
-                    .collect(Collectors.toList());
-        } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
-            throw new IllegalArgumentException(
-                String.format(
-                    "Expected image name with a format %s, but was %s",
-                    "cockroachdb/cockroach:vXX.xx.xx",
-                    dockerImageName
-                )
-            );
-        }
-
-        if (versions.size() != 3) {
-            throw new IllegalStateException(
-                String.format(
-                    "Version %s should be of a format xx.xx.xx, but was not, " + "the operation cannot be verified",
-                    versions
-                )
-            );
-        }
-
-        if (!(versions.get(0) >= 22 && versions.get(1) >= 1)) {
+    private void validateIfVersionSupportsUsernameOrPasswordOrDatabase(String parameter) {
+        if (!isVersionGreaterThanOrEqualTo221) {
             throw new UnsupportedOperationException(
                 String.format("Setting a %s in not supported in the versions below 22.1.0", parameter)
             );
