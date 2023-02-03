@@ -1,6 +1,7 @@
 package org.testcontainers.containers;
 
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
@@ -29,11 +30,15 @@ public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer
 
     private static final int DB_PORT = 26257;
 
+    private static final String FIRST_VERSION_WITH_ENV_VARS_SUPPORT = "22.1.0";
+
     private String databaseName = "postgres";
 
     private String username = "root";
 
     private String password = "";
+
+    private boolean isVersionGreaterThanOrEqualTo221;
 
     /**
      * @deprecated use {@link CockroachContainer(DockerImageName)} instead
@@ -50,6 +55,7 @@ public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer
     public CockroachContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        isVersionGreaterThanOrEqualTo221 = isVersionGreaterThanOrEqualTo221(dockerImageName);
 
         withExposedPorts(REST_API_PORT, DB_PORT);
         waitingFor(
@@ -104,22 +110,35 @@ public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer
 
     @Override
     public CockroachContainer withUsername(String username) {
-        throw new UnsupportedOperationException(
-            "The CockroachDB docker image does not currently support this - please see https://github.com/cockroachdb/cockroach/issues/19826"
-        );
+        validateIfVersionSupportsUsernameOrPasswordOrDatabase("username");
+        this.username = username;
+        return withEnv("COCKROACH_USER", username);
     }
 
     @Override
     public CockroachContainer withPassword(String password) {
-        throw new UnsupportedOperationException(
-            "The CockroachDB docker image does not currently support this - please see https://github.com/cockroachdb/cockroach/issues/19826"
-        );
+        validateIfVersionSupportsUsernameOrPasswordOrDatabase("password");
+        this.password = password;
+        return withEnv("COCKROACH_PASSWORD", password).withCommand("start-single-node");
     }
 
     @Override
     public CockroachContainer withDatabaseName(final String databaseName) {
-        throw new UnsupportedOperationException(
-            "The CockroachDB docker image does not currently support this - please see https://github.com/cockroachdb/cockroach/issues/19826"
-        );
+        validateIfVersionSupportsUsernameOrPasswordOrDatabase("databaseName");
+        this.databaseName = databaseName;
+        return withEnv("COCKROACH_DATABASE", databaseName);
+    }
+
+    private boolean isVersionGreaterThanOrEqualTo221(DockerImageName dockerImageName) {
+        ComparableVersion version = new ComparableVersion(dockerImageName.getVersionPart().replaceFirst("v", ""));
+        return version.isGreaterThanOrEqualTo(FIRST_VERSION_WITH_ENV_VARS_SUPPORT);
+    }
+
+    private void validateIfVersionSupportsUsernameOrPasswordOrDatabase(String parameter) {
+        if (!isVersionGreaterThanOrEqualTo221) {
+            throw new UnsupportedOperationException(
+                String.format("Setting a %s in not supported in the versions below 22.1.0", parameter)
+            );
+        }
     }
 }
