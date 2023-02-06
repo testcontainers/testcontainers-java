@@ -205,23 +205,19 @@ public class SolaceContainerTest {
         private boolean withClientCert;
 
         public SolaceContainer(final DockerImageName dockerImageName) {
-            super(dockerImageName.toString());
+            super(dockerImageName);
             dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
-            this.waitStrategy = Wait.forLogMessage(SOLACE_READY_MESSAGE, 1).withStartupTimeout(Duration.ofSeconds(60));
-        }
-
-        @Override
-        protected void configure() {
             withCreateContainerCmdModifier(cmd -> {
                 cmd
                     .getHostConfig()
                     .withShmSize(SHM_SIZE)
                     .withUlimits(new Ulimit[] { new Ulimit("nofile", 2448L, 6592L) });
             });
-            configureSolace();
+            this.waitStrategy = Wait.forLogMessage(SOLACE_READY_MESSAGE, 1).withStartupTimeout(Duration.ofSeconds(60));
         }
 
-        private void configureSolace() {
+        @Override
+        protected void configure() {
             withCopyToContainer(createConfigurationScript(), TMP_SCRIPT_LOCATION);
         }
 
@@ -388,7 +384,7 @@ public class SolaceContainerTest {
         }
 
         public String getVpn() {
-            return vpn;
+            return this.vpn;
         }
 
         public String getOrigin(Protocol port) {
@@ -396,11 +392,11 @@ public class SolaceContainerTest {
         }
 
         public String getUsername() {
-            return username;
+            return this.username;
         }
 
         public String getPassword() {
-            return password;
+            return this.password;
         }
     }
 
@@ -425,19 +421,19 @@ public class SolaceContainerTest {
         }
 
         public Integer getPort() {
-            return port;
+            return this.port;
         }
 
         private String getProtocol() {
-            return protocol;
+            return this.protocol;
         }
 
         public String getService() {
-            return service;
+            return this.service;
         }
 
         public boolean isSupportSSL() {
-            return supportSSL;
+            return this.supportSSL;
         }
     }
 }
