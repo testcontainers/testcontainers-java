@@ -205,6 +205,9 @@ labels:
   - name: modules/selenium
     color: '#006b75'
 
+  - name: modules/solace
+    color: '#006b75'
+
   - name: modules/solr
     color: '#006b75'
 

@@ -75,6 +75,8 @@
   - modules/redpanda/**/*
 "modules/selenium":
   - modules/selenium/**/*
+"modules/solace":
+  - modules/solace/**/*
 "modules/solr":
   - modules/solr/**/*
 "modules/spock":
