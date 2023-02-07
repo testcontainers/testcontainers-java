@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * SolaceContainer allows a Solace PubSub+ container to be launched and controlled.
+ * Testcontainers implementation of Solace PubSub+
  *
  * @author Tomasz Forys
  */
@@ -49,6 +49,7 @@ public class SolaceContainer extends GenericContainer<SolaceContainer> {
 
     /**
      * Create a new solace container with the specified image name.
+     *
      * @param dockerImageName the image name that should be used.
      */
     public SolaceContainer(final DockerImageName dockerImageName) {
