@@ -31,12 +31,19 @@ public class TiDBContainer extends JdbcDatabaseContainer<TiDBContainer> {
 
     private String password = "";
 
+    private TiDBJdbcConnectorType connectorType;
+
     public TiDBContainer(String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
     }
 
     public TiDBContainer(final DockerImageName dockerImageName) {
+        this(dockerImageName, TiDBJdbcConnectorType.MYSQL);
+    }
+
+    public TiDBContainer(final DockerImageName dockerImageName, TiDBJdbcConnectorType connectorType) {
         super(dockerImageName);
+        this.connectorType = connectorType;
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         addExposedPorts(TIDB_PORT, REST_API_PORT);
@@ -64,17 +71,27 @@ public class TiDBContainer extends JdbcDatabaseContainer<TiDBContainer> {
     @Override
     public String getDriverClassName() {
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            return "com.mysql.cj.jdbc.Driver";
+            Class.forName(connectorType.driverName);
+            return connectorType.driverName;
         } catch (ClassNotFoundException e) {
-            return "com.mysql.jdbc.Driver";
+            return connectorType.legacyDriverName;
         }
     }
 
     @Override
     public String getJdbcUrl() {
         String additionalUrlParams = constructUrlParameters("?", "&");
-        return "jdbc:mysql://" + getHost() + ":" + getMappedPort(TIDB_PORT) + "/" + databaseName + additionalUrlParams;
+        return (
+            "jdbc:" +
+            connectorType.jdbcPrefix +
+            "://" +
+            getHost() +
+            ":" +
+            getMappedPort(TIDB_PORT) +
+            "/" +
+            databaseName +
+            additionalUrlParams
+        );
     }
 
     @Override

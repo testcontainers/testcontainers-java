@@ -4,6 +4,7 @@ import org.junit.Test;
 import org.testcontainers.TiDBTestImages;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 import org.testcontainers.tidb.TiDBContainer;
+import org.testcontainers.tidb.TiDBJdbcConnectorType;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -11,6 +12,19 @@ import java.sql.SQLException;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class SimpleTiDBTest extends AbstractContainerDatabaseTest {
+
+    @Test
+    public void testSimple_mariadb() throws SQLException {
+        try (TiDBContainer tidb = new TiDBContainer(TiDBTestImages.TIDB_IMAGE, TiDBJdbcConnectorType.MARIA_DB)) {
+            tidb.start();
+
+            ResultSet resultSet = performQuery(tidb, "SELECT 1");
+
+            int resultSetInt = resultSet.getInt(1);
+            assertThat(resultSetInt).isEqualTo(1);
+            assertHasCorrectExposedAndLivenessCheckPorts(tidb);
+        }
+    }
 
     @Test
     public void testSimple() throws SQLException {
@@ -29,6 +43,20 @@ public class SimpleTiDBTest extends AbstractContainerDatabaseTest {
     public void testExplicitInitScript() throws SQLException {
         try (
             TiDBContainer tidb = new TiDBContainer(TiDBTestImages.TIDB_IMAGE).withInitScript("somepath/init_tidb.sql")
+        ) { // TiDB is expected to be compatible with MySQL
+            tidb.start();
+
+            ResultSet resultSet = performQuery(tidb, "SELECT foo FROM bar");
+
+            String firstColumnValue = resultSet.getString(1);
+            assertThat(firstColumnValue).isEqualTo("hello world");
+        }
+    }
+
+    @Test
+    public void testExplicitInitScript_mariadb() throws SQLException {
+        try (
+            TiDBContainer tidb = new TiDBContainer(TiDBTestImages.TIDB_IMAGE, TiDBJdbcConnectorType.MARIA_DB).withInitScript("somepath/init_tidb.sql")
         ) { // TiDB is expected to be compatible with MySQL
             tidb.start();
 
