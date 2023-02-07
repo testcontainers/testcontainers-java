@@ -36,7 +36,9 @@ public class SolaceContainerSMFTest {
     public void testSolaceContainerWithSimpleAuthentication() {
         try (
             // solaceContainerSetup {
-            SolaceContainer solace = new SolaceContainer(SolaceContainerTestProperties.getImageName())
+            SolaceContainer solace = new SolaceContainer(
+                SolaceContainerTestProperties.getImageName().asCanonicalNameString()
+            )
                 .withCredentials("user", "pass")
                 .withTopic(SolaceContainerTestProperties.TOPIC_NAME, Service.SMF)
                 .withVpn("test_vpn")

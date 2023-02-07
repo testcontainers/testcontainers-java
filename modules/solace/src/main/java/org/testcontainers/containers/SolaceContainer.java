@@ -21,8 +21,6 @@ import java.util.List;
  */
 public class SolaceContainer extends GenericContainer<SolaceContainer> {
 
-    private static final String NEW_LINE = System.getProperty("line.separator");
-
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("solace/solace-pubsub-standard");
 
     private static final String DEFAULT_VPN = "default";
@@ -52,7 +50,11 @@ public class SolaceContainer extends GenericContainer<SolaceContainer> {
      *
      * @param dockerImageName the image name that should be used.
      */
-    public SolaceContainer(final DockerImageName dockerImageName) {
+    public SolaceContainer(String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
+    }
+
+    public SolaceContainer(DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
         withCreateContainerCmdModifier(cmd -> {
@@ -181,7 +183,7 @@ public class SolaceContainer extends GenericContainer<SolaceContainer> {
     }
 
     private void updateConfigScript(StringBuilder scriptBuilder, String command) {
-        scriptBuilder.append(command).append(NEW_LINE);
+        scriptBuilder.append(command).append("\n");
     }
 
     private void waitOnCommandResult(String waitingFor, String... command) {
