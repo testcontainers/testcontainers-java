@@ -22,27 +22,31 @@ public class SolaceContainerMQTTTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SolaceContainerMQTTTest.class);
 
+    private static final String MESSAGE = "HelloWorld";
+
+    private static final String TOPIC_NAME = "Topic/ActualTopic";
+
     @Test
     public void testSolaceContainer() {
         try (
-            SolaceContainer solace = new SolaceContainer(SolaceContainerTestProperties.getImageName())
-                .withTopic(SolaceContainerTestProperties.TOPIC_NAME, Service.MQTT)
+            SolaceContainer solaceContainer = new SolaceContainer("solace/solace-pubsub-standard:10.2")
+                .withTopic(TOPIC_NAME, Service.MQTT)
                 .withVpn("mqtt-vpn")
         ) {
-            solace.start();
+            solaceContainer.start();
             MqttClient client = createClient(
-                solace.getUsername(),
-                solace.getPassword(),
-                solace.getOrigin(Service.MQTT)
+                solaceContainer.getUsername(),
+                solaceContainer.getPassword(),
+                solaceContainer.getOrigin(Service.MQTT)
             );
             Assertions.assertThat(client).isNotNull();
-            Assertions.assertThat(consumeMessageFromSolace(client)).isEqualTo(SolaceContainerTestProperties.MESSAGE);
+            Assertions.assertThat(consumeMessageFromSolace(client)).isEqualTo(MESSAGE);
         }
     }
 
     private static MqttClient createClient(String username, String password, String host) {
         try {
-            MqttClient mqttClient = new MqttClient(host, SolaceContainerTestProperties.MESSAGE);
+            MqttClient mqttClient = new MqttClient(host, MESSAGE);
             MqttConnectOptions connOpts = new MqttConnectOptions();
             connOpts.setCleanSession(true);
             connOpts.setUserName(username);
@@ -56,9 +60,9 @@ public class SolaceContainerMQTTTest {
     }
 
     private void publishMessageToSolace(MqttClient mqttClient) throws MqttException {
-        MqttMessage message = new MqttMessage(SolaceContainerTestProperties.MESSAGE.getBytes());
+        MqttMessage message = new MqttMessage(MESSAGE.getBytes());
         message.setQos(0);
-        mqttClient.publish(SolaceContainerTestProperties.TOPIC_NAME, message);
+        mqttClient.publish(TOPIC_NAME, message);
     }
 
     private String consumeMessageFromSolace(MqttClient client) {
@@ -83,7 +87,7 @@ public class SolaceContainerMQTTTest {
                     public void deliveryComplete(IMqttDeliveryToken token) {}
                 }
             );
-            client.subscribe(SolaceContainerTestProperties.TOPIC_NAME, 0);
+            client.subscribe(TOPIC_NAME, 0);
             publishMessageToSolace(client);
             Assertions.assertThat(latch.await(10L, TimeUnit.SECONDS)).isTrue();
             return result[0];

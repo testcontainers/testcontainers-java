@@ -23,22 +23,26 @@ import java.io.IOException;
  */
 public class SolaceContainerRESTTest {
 
+    private static final String MESSAGE = "HelloWorld";
+
+    private static final String TOPIC_NAME = "Topic/ActualTopic";
+
     @Test
     public void testSolaceContainer() throws IOException {
         try (
-            SolaceContainer solace = new SolaceContainer(SolaceContainerTestProperties.getImageName())
-                .withTopic(SolaceContainerTestProperties.TOPIC_NAME, Service.REST)
+            SolaceContainer solaceContainer = new SolaceContainer("solace/solace-pubsub-standard:10.2")
+                .withTopic(TOPIC_NAME, Service.REST)
                 .withVpn("rest-vpn")
         ) {
-            solace.start();
-            testPublishMessageToSolace(solace, Service.REST);
+            solaceContainer.start();
+            testPublishMessageToSolace(solaceContainer, Service.REST);
         }
     }
 
-    private void testPublishMessageToSolace(SolaceContainer solace, Service service) throws IOException {
-        HttpClient client = createClient(solace);
-        HttpPost request = new HttpPost(solace.getOrigin(service) + "/" + SolaceContainerTestProperties.TOPIC_NAME);
-        request.setEntity(new StringEntity(SolaceContainerTestProperties.MESSAGE));
+    private void testPublishMessageToSolace(SolaceContainer solaceContainer, Service service) throws IOException {
+        HttpClient client = createClient(solaceContainer);
+        HttpPost request = new HttpPost(solaceContainer.getOrigin(service) + "/" + TOPIC_NAME);
+        request.setEntity(new StringEntity(MESSAGE));
         request.addHeader(HttpHeaders.CONTENT_TYPE, "text/plain");
         HttpResponse response = client.execute(request);
         if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {

@@ -28,26 +28,24 @@ public class SolaceContainerSMFTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SolaceContainerSMFTest.class);
 
-    private static final Topic TOPIC = JCSMPFactory
-        .onlyInstance()
-        .createTopic(SolaceContainerTestProperties.TOPIC_NAME);
+    private static final String MESSAGE = "HelloWorld";
+
+    private static final Topic TOPIC = JCSMPFactory.onlyInstance().createTopic("Topic/ActualTopic");
 
     @Test
     public void testSolaceContainerWithSimpleAuthentication() {
         try (
             // solaceContainerSetup {
-            SolaceContainer solace = new SolaceContainer(
-                SolaceContainerTestProperties.getImageName().asCanonicalNameString()
-            )
+            SolaceContainer solaceContainer = new SolaceContainer("solace/solace-pubsub-standard:10.2")
                 .withCredentials("user", "pass")
-                .withTopic(SolaceContainerTestProperties.TOPIC_NAME, Service.SMF)
+                .withTopic("Topic/ActualTopic", Service.SMF)
                 .withVpn("test_vpn")
             // }
         ) {
-            solace.start();
-            JCSMPSession session = createSessionWithBasicAuth(solace);
+            solaceContainer.start();
+            JCSMPSession session = createSessionWithBasicAuth(solaceContainer);
             Assertions.assertThat(session).isNotNull();
-            Assertions.assertThat(consumeMessageFromSolace(session)).isEqualTo(SolaceContainerTestProperties.MESSAGE);
+            Assertions.assertThat(consumeMessageFromSolace(session)).isEqualTo(MESSAGE);
             session.closeSession();
         }
     }
@@ -56,18 +54,18 @@ public class SolaceContainerSMFTest {
     public void testSolaceContainerWithCertificates() {
         try (
             // solaceContainerUsageSSL {
-            SolaceContainer solace = new SolaceContainer(SolaceContainerTestProperties.getImageName())
+            SolaceContainer solaceContainer = new SolaceContainer("solace/solace-pubsub-standard:10.2")
                 .withClientCert(
                     MountableFile.forClasspathResource("solace.pem"),
                     MountableFile.forClasspathResource("rootCA.crt")
                 )
-                .withTopic(SolaceContainerTestProperties.TOPIC_NAME, Service.SMF_SSL)
+                .withTopic("Topic/ActualTopic", Service.SMF_SSL)
             // }
         ) {
-            solace.start();
-            JCSMPSession session = createSessionWithCertificates(solace);
+            solaceContainer.start();
+            JCSMPSession session = createSessionWithCertificates(solaceContainer);
             Assertions.assertThat(session).isNotNull();
-            Assertions.assertThat(consumeMessageFromSolace(session)).isEqualTo(SolaceContainerTestProperties.MESSAGE);
+            Assertions.assertThat(consumeMessageFromSolace(session)).isEqualTo(MESSAGE);
             session.closeSession();
         }
     }
@@ -129,7 +127,7 @@ public class SolaceContainerSMFTest {
             }
         );
         TextMessage msg = producer.createTextMessage();
-        msg.setText(SolaceContainerTestProperties.MESSAGE);
+        msg.setText(MESSAGE);
         producer.send(msg, TOPIC);
     }
 

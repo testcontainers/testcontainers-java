@@ -26,19 +26,27 @@ public class SolaceContainerAMQPTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SolaceContainerAMQPTest.class);
 
+    private static final String MESSAGE = "HelloWorld";
+
+    private static final String TOPIC_NAME = "Topic/ActualTopic";
+
     @Test
     public void testSolaceContainer() throws JMSException {
         try (
-            SolaceContainer solace = new SolaceContainer(SolaceContainerTestProperties.getImageName())
-                .withTopic(SolaceContainerTestProperties.TOPIC_NAME, Service.AMQP)
+            SolaceContainer solaceContainer = new SolaceContainer("solace/solace-pubsub-standard:10.2")
+                .withTopic(TOPIC_NAME, Service.AMQP)
                 .withVpn("amqp-vpn")
         ) {
-            solace.start();
+            solaceContainer.start();
             // solaceContainerUsage {
-            Session session = createSession(solace.getUsername(), solace.getPassword(), solace.getOrigin(Service.AMQP));
+            Session session = createSession(
+                solaceContainer.getUsername(),
+                solaceContainer.getPassword(),
+                solaceContainer.getOrigin(Service.AMQP)
+            );
             // }
             Assertions.assertThat(session).isNotNull();
-            Assertions.assertThat(consumeMessageFromSolace(session)).isEqualTo(SolaceContainerTestProperties.MESSAGE);
+            Assertions.assertThat(consumeMessageFromSolace(session)).isEqualTo(MESSAGE);
             session.close();
         }
     }
@@ -58,7 +66,7 @@ public class SolaceContainerAMQPTest {
 
     private void publishMessageToSolace(Session session, Topic topic) throws JMSException {
         MessageProducer messageProducer = session.createProducer(topic);
-        TextMessage message = session.createTextMessage(SolaceContainerTestProperties.MESSAGE);
+        TextMessage message = session.createTextMessage(MESSAGE);
         messageProducer.send(message);
         messageProducer.close();
     }
@@ -67,7 +75,7 @@ public class SolaceContainerAMQPTest {
         CountDownLatch latch = new CountDownLatch(1);
         try {
             String[] result = new String[1];
-            Topic topic = session.createTopic(SolaceContainerTestProperties.TOPIC_NAME);
+            Topic topic = session.createTopic(TOPIC_NAME);
             MessageConsumer messageConsumer = session.createConsumer(topic);
             messageConsumer.setMessageListener(message -> {
                 try {
