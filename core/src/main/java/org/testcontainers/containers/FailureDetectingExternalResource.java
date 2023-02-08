@@ -2,11 +2,7 @@ package org.testcontainers.containers;
 
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
-import org.junit.runners.model.MultipleFailureException;
 import org.junit.runners.model.Statement;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * {@link TestRule} which is called before and after each test, and also is notified on success/failure.
@@ -22,20 +18,22 @@ public class FailureDetectingExternalResource implements TestRule {
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                List<Throwable> errors = new ArrayList<Throwable>();
+                Throwable error = null;
 
                 try {
                     starting(description);
                     base.evaluate();
                     succeeded(description);
                 } catch (Throwable e) {
-                    errors.add(e);
+                    error = e;
                     failed(e, description);
                 } finally {
                     finished(description);
                 }
 
-                MultipleFailureException.assertEmpty(errors);
+                if (error != null) {
+                    throw error;
+                }
             }
         };
     }

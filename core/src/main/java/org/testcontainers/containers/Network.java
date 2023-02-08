@@ -4,8 +4,9 @@ import com.github.dockerjava.api.command.CreateNetworkCmd;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Singular;
-import org.junit.rules.ExternalResource;
 import org.junit.rules.TestRule;
+import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.utility.ResourceReaper;
 
@@ -40,7 +41,7 @@ public interface Network extends AutoCloseable, TestRule {
 
     @Builder
     @Getter
-    class NetworkImpl extends ExternalResource implements Network {
+    class NetworkImpl implements Network, TestRule {
 
         private final String name = UUID.randomUUID().toString();
 
@@ -63,6 +64,22 @@ public interface Network extends AutoCloseable, TestRule {
             }
 
             return id;
+        }
+
+        @Override
+        public Statement apply(Statement base, Description description) {
+            return new Statement() {
+                @Override
+                public void evaluate() throws Throwable {
+                    before();
+
+                    try {
+                        base.evaluate();
+                    } finally {
+                        after();
+                    }
+                }
+            };
         }
 
         private String create() {
@@ -93,7 +110,10 @@ public interface Network extends AutoCloseable, TestRule {
             return createNetworkCmd.exec().getId();
         }
 
-        @Override
+        protected void before() throws Throwable {
+            // do nothing
+        }
+
         protected void after() {
             close();
         }

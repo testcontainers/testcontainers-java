@@ -3,7 +3,6 @@ package org.testcontainers.testsupport;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
-import org.junit.runners.model.MultipleFailureException;
 import org.junit.runners.model.Statement;
 
 import java.time.LocalDate;
@@ -94,9 +93,9 @@ public class FlakyTestJUnit4RetryRule implements TestRule {
                 }
             }
 
-            throw new IllegalStateException(
+            throw new FlakyTestException(
                 "@Flaky-annotated test failed despite retries.",
-                new MultipleFailureException(causes)
+                causes
             );
         }
     }
