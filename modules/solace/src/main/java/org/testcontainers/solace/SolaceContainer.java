@@ -1,9 +1,10 @@
-package org.testcontainers.containers;
+package org.testcontainers.solace;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.Ulimit;
 import org.apache.commons.lang3.tuple.Pair;
 import org.awaitility.Awaitility;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;

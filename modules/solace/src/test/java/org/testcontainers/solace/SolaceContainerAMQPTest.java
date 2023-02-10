@@ -1,4 +1,4 @@
-package org.testcontainers.containers;
+package org.testcontainers.solace;
 
 import org.apache.qpid.jms.JmsConnectionFactory;
 import org.assertj.core.api.Assertions;

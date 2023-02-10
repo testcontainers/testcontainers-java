@@ -1,4 +1,4 @@
-package org.testcontainers.containers;
+package org.testcontainers.solace;
 
 import com.solacesystems.jcsmp.BytesXMLMessage;
 import com.solacesystems.jcsmp.JCSMPException;
@@ -71,7 +71,7 @@ public class SolaceContainerSMFTest {
     }
 
     private String getResourceFileLocation(String name) {
-        return Thread.currentThread().getContextClassLoader().getResource(name).getPath();
+        return getClass().getClassLoader().getResource(name).getPath();
     }
 
     private static JCSMPSession createSessionWithBasicAuth(SolaceContainer solace) {
@@ -88,6 +88,8 @@ public class SolaceContainerSMFTest {
         properties.setProperty(JCSMPProperties.HOST, solace.getOrigin(Service.SMF_SSL));
         properties.setProperty(JCSMPProperties.VPN_NAME, solace.getVpn());
         properties.setProperty(JCSMPProperties.USERNAME, solace.getUsername());
+        // Just for testing purposes
+        properties.setProperty(JCSMPProperties.SSL_VALIDATE_CERTIFICATE_HOST, false);
         properties.setProperty(JCSMPProperties.SSL_VALIDATE_CERTIFICATE, true);
         properties.setProperty(JCSMPProperties.SSL_VALIDATE_CERTIFICATE_DATE, true);
         properties.setProperty(

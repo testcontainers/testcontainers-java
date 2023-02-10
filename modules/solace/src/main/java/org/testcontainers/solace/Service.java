@@ -1,4 +1,4 @@
-package org.testcontainers.containers;
+package org.testcontainers.solace;
 
 /**
  * Services that are supported by Testcontainers implementation
@@ -6,25 +6,10 @@ package org.testcontainers.containers;
  * @author Tomasz Forys
  */
 public enum Service {
-    /**
-     AMQP service
-     */
     AMQP("amqp", 5672, "amqp", false),
-    /**
-     MQTT service
-     */
     MQTT("mqtt", 1883, "tcp", false),
-    /**
-     REST service
-     */
     REST("rest", 9000, "http", false),
-    /**
-     SMF service
-     */
     SMF("smf", 55555, "tcp", true),
-    /**
-     SMF with SSL
-     */
     SMF_SSL("smf", 55443, "tcps", true);
 
     private final String name;

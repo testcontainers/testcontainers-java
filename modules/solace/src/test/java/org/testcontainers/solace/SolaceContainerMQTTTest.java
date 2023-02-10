@@ -1,4 +1,4 @@
-package org.testcontainers.containers;
+package org.testcontainers.solace;
 
 import org.assertj.core.api.Assertions;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;

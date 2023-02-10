@@ -1,4 +1,4 @@
-package org.testcontainers.containers;
+package org.testcontainers.solace;
 
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
