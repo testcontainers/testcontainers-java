@@ -290,7 +290,7 @@ updates:
       - dependency-name: "org.slf4j:slf4j-api"
         update-types: [ "version-update:semver-major" ]
       - dependency-name: "org.springframework.boot"
-        versions: [ "version-update:semver-major" ]
+        update-types: [ "version-update:semver-major" ]
       - dependency-name: "com.diffplug.spotless"
         update-types: [ "version-update:semver-minor" ]
 
