@@ -68,7 +68,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
      * Testcontainers will use the tag of the docker image to infer whether or not the used version
      * of Localstack required services list.
      */
-    private final boolean servicesListRequired;
+    private final boolean servicesEnvVarRequired;
 
     /**
      * @deprecated use {@link LocalStackContainer(DockerImageName)} instead
@@ -102,13 +102,13 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         this.legacyMode = useLegacyMode;
-        this.servicesListRequired = isServicesListRequired(dockerImageName.getVersionPart());
+        this.servicesEnvVarRequired = isServicesEnvVarRequired(dockerImageName.getVersionPart());
 
         withFileSystemBind(DockerClientFactory.instance().getRemoteDockerUnixSocketPath(), "/var/run/docker.sock");
         waitingFor(Wait.forLogMessage(".*Ready\\.\n", 1));
     }
 
-    private static boolean isServicesListRequired(String version) {
+    private static boolean isServicesEnvVarRequired(String version) {
         if (version.equals("latest")) {
             return false;
         }
@@ -145,12 +145,15 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
     protected void configure() {
         super.configure();
 
-        if (servicesListRequired) {
+        if (servicesEnvVarRequired) {
             Preconditions.check("services list must not be empty", !services.isEmpty());
         }
 
         if (!services.isEmpty()) {
             withEnv("SERVICES", services.stream().map(EnabledService::getName).collect(Collectors.joining(",")));
+            if (this.servicesEnvVarRequired) {
+                withEnv("EAGER_SERVICE_LOADING", "1");
+            }
         }
 
         String hostnameExternalReason;

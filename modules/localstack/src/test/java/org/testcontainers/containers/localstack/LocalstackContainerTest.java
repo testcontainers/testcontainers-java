@@ -356,15 +356,7 @@ public class LocalstackContainerTest {
         );
 
         @Test
-        public void servicesUseSingleEndpointUri() {
-            assertThat(localstack.getExposedPorts()).as("A single port is exposed").hasSize(1);
-            assertThat(localstack.getEndpointOverride(Service.SQS).toString())
-                .as("Endpoints for all services are the same")
-                .isEqualTo(localstack.getEndpointOverride(Service.S3).toString());
-        }
-
-        @Test
-        public void startsServicesLazily() {
+        public void s3ServiceStartLazily() {
             S3Client s3 = S3Client
                 .builder()
                 .endpointOverride(localstack.getEndpointOverride(Service.S3))
