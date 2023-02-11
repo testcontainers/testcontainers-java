@@ -7,7 +7,7 @@ dependencies {
     testImplementation 'org.postgresql:postgresql:42.5.1'
     testImplementation project(':jdbc-test')
     testImplementation 'org.assertj:assertj-core:3.24.2'
-    testImplementation 'org.questdb:questdb:6.7-jdk8'
+    testImplementation 'org.questdb:questdb:7.0.0-jdk8'
     testImplementation 'org.awaitility:awaitility:4.2.0'
     testImplementation 'org.apache.httpcomponents:httpclient:4.5.14'
 }
