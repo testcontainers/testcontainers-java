@@ -6,7 +6,7 @@ dependencies {
     compileOnly 'com.amazonaws:aws-java-sdk-s3:1.12.398'
     testImplementation 'com.amazonaws:aws-java-sdk-s3:1.12.398'
     testImplementation 'com.amazonaws:aws-java-sdk-sqs:1.12.398'
-    testImplementation 'com.amazonaws:aws-java-sdk-logs:1.12.398'
+    testImplementation 'com.amazonaws:aws-java-sdk-logs:1.12.405'
     testImplementation 'software.amazon.awssdk:s3:2.19.29'
     testImplementation 'org.assertj:assertj-core:3.24.2'
 }
