@@ -9,7 +9,7 @@ dependencies {
     shaded("org.javassist:javassist:3.29.2-GA")
     shaded("org.jboss.shrinkwrap:shrinkwrap-api:1.2.6")
     shaded("org.jboss.shrinkwrap:shrinkwrap-impl-base:1.2.6")
-    shaded("net.lingala.zip4j:zip4j:2.11.3")
+    shaded("net.lingala.zip4j:zip4j:2.11.4")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
     testImplementation(project(":junit-jupiter"))
