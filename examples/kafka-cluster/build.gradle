@@ -7,8 +7,8 @@ repositories {
 }
 
 dependencies {
-    testCompileOnly "org.projectlombok:lombok:1.18.24"
-    testAnnotationProcessor "org.projectlombok:lombok:1.18.24"
+    testCompileOnly "org.projectlombok:lombok:1.18.26"
+    testAnnotationProcessor "org.projectlombok:lombok:1.18.26"
     testImplementation 'org.testcontainers:kafka'
     testImplementation 'org.apache.kafka:kafka-clients:3.4.0'
     testImplementation 'org.assertj:assertj-core:3.24.2'
