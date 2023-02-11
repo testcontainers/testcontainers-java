@@ -62,6 +62,15 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
     private final boolean legacyMode;
 
     /**
+     * Starting with version 0.13.0, setting services list on Localstack is not required. When <code>false</code>,
+     * containers are started lazily. When <code>true</code>, container fails to start if services list is not provided.
+     *
+     * Testcontainers will use the tag of the docker image to infer whether or not the used version
+     * of Localstack required services list.
+     */
+    private final boolean servicesEnvVarRequired;
+
+    /**
      * @deprecated use {@link LocalStackContainer(DockerImageName)} instead
      */
     @Deprecated
@@ -93,9 +102,25 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         this.legacyMode = useLegacyMode;
+        this.servicesEnvVarRequired = isServicesEnvVarRequired(dockerImageName.getVersionPart());
 
         withFileSystemBind(DockerClientFactory.instance().getRemoteDockerUnixSocketPath(), "/var/run/docker.sock");
         waitingFor(Wait.forLogMessage(".*Ready\\.\n", 1));
+    }
+
+    private static boolean isServicesEnvVarRequired(String version) {
+        if (version.equals("latest")) {
+            return false;
+        }
+
+        ComparableVersion comparableVersion = new ComparableVersion(version);
+        if (comparableVersion.isSemanticVersion()) {
+            return comparableVersion.isLessThan("0.13");
+        }
+
+        log.warn("Version {} is not a semantic version, services list is required.", version);
+
+        return true;
     }
 
     private static boolean shouldRunInLegacyMode(String version) {
@@ -120,9 +145,16 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
     protected void configure() {
         super.configure();
 
-        Preconditions.check("services list must not be empty", !services.isEmpty());
+        if (servicesEnvVarRequired) {
+            Preconditions.check("services list must not be empty", !services.isEmpty());
+        }
 
-        withEnv("SERVICES", services.stream().map(EnabledService::getName).collect(Collectors.joining(",")));
+        if (!services.isEmpty()) {
+            withEnv("SERVICES", services.stream().map(EnabledService::getName).collect(Collectors.joining(",")));
+            if (this.servicesEnvVarRequired) {
+                withEnv("EAGER_SERVICE_LOADING", "1");
+            }
+        }
 
         String hostnameExternalReason;
         if (getEnvMap().containsKey(HOSTNAME_EXTERNAL_ENV_VAR)) {
@@ -147,7 +179,11 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
     }
 
     private void exposePorts() {
-        services.stream().map(this::getServicePort).distinct().forEach(this::addExposedPort);
+        if (legacyMode) {
+            services.stream().map(this::getServicePort).distinct().forEach(this::addExposedPort);
+        } else {
+            this.addExposedPort(PORT);
+        }
     }
 
     public LocalStackContainer withServices(Service... services) {
