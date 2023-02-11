@@ -7,6 +7,6 @@ dependencies {
     testImplementation 'com.google.cloud:google-cloud-firestore:3.7.9'
     testImplementation 'com.google.cloud:google-cloud-pubsub:1.123.1'
     testImplementation 'com.google.cloud:google-cloud-spanner:6.35.2'
-    testImplementation 'com.google.cloud:google-cloud-bigtable:2.18.3'
+    testImplementation 'com.google.cloud:google-cloud-bigtable:2.19.0'
     testImplementation 'org.assertj:assertj-core:3.24.2'
 }
