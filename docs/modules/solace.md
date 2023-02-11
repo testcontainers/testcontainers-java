@@ -9,15 +9,15 @@ Note that it's based on the [official Docker image](https://hub.docker.com/r/sol
 You can start a solace container instance from any Java application by using:
 
 <!--codeinclude-->
-[Solace container setup with simple authentication](../../modules/solace/src/test/java/org/testcontainers/containers/SolaceContainerSMFTest.java) inside_block:solaceContainerSetup
+[Solace container setup with simple authentication](../../modules/solace/src/test/java/org/testcontainers/solace/SolaceContainerSMFTest.java) inside_block:solaceContainerSetup
 <!--/codeinclude-->
 
 <!--codeinclude-->
-[Solace container setup with SSL](../../modules/solace/src/test/java/org/testcontainers/containers/SolaceContainerSMFTest.java) inside_block:solaceContainerUsageSSL
+[Solace container setup with SSL](../../modules/solace/src/test/java/org/testcontainers/solace/SolaceContainerSMFTest.java) inside_block:solaceContainerUsageSSL
 <!--/codeinclude-->
 
 <!--codeinclude-->
-[Using a Solace container](../../modules/solace/src/test/java/org/testcontainers/containers/SolaceContainerAMQPTest.java) inside_block:solaceContainerUsage
+[Using a Solace container](../../modules/solace/src/test/java/org/testcontainers/solace/SolaceContainerAMQPTest.java) inside_block:solaceContainerUsage
 <!--/codeinclude-->
 
 ## Adding this module to your project dependencies
