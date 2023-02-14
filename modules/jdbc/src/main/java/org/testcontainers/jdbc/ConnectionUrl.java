@@ -19,8 +19,6 @@ import java.util.stream.Stream;
  * This is an Immutable class holding JDBC Connection Url and its parsed components, used by {@link ContainerDatabaseDriver}.
  * <p>
  * {@link ConnectionUrl#parseUrl()} method must be called after instantiating this class.
- *
- * @author manikmagar
  */
 @EqualsAndHashCode(of = "url")
 @Getter
@@ -203,8 +201,6 @@ public class ConnectionUrl {
 
     /**
      * This interface defines the Regex Patterns used by {@link ConnectionUrl}.
-     *
-     * @author manikmagar
      */
     public interface Patterns {
         Pattern URL_MATCHING_PATTERN = Pattern.compile(

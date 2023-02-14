@@ -4,9 +4,6 @@ import lombok.Data;
 
 import java.net.URL;
 
-/**
- * @author Simon Schneider
- */
 @Data
 public class SolrContainerConfiguration {
 

@@ -14,7 +14,6 @@ import java.util.Set;
 /**
  * Testcontainers implementation for YugabyteDB YCQL API.
  *
- * @author srinivasa-vasu
  * @see <a href="https://docs.yugabyte.com/stable/api/ycql/">YCQL API</a>
  */
 public class YugabyteDBYCQLContainer extends GenericContainer<YugabyteDBYCQLContainer> {
