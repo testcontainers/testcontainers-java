@@ -82,6 +82,7 @@ nav:
           - modules/pulsar.md
           - modules/rabbitmq.md
           - modules/redpanda.md
+          - modules/solace.md
           - modules/solr.md
           - modules/toxiproxy.md
           - modules/vault.md
