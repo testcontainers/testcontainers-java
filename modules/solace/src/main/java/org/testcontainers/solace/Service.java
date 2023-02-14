@@ -2,8 +2,6 @@ package org.testcontainers.solace;
 
 /**
  * Services that are supported by Testcontainers implementation
- *
- * @author Tomasz Forys
  */
 public enum Service {
     AMQP("amqp", 5672, "amqp", false),

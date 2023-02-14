@@ -17,8 +17,6 @@ import java.util.List;
 
 /**
  * Testcontainers implementation of Solace PubSub+
- *
- * @author Tomasz Forys
  */
 public class SolaceContainer extends GenericContainer<SolaceContainer> {
 

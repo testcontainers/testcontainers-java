@@ -21,9 +21,6 @@ import org.testcontainers.utility.MountableFile;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-/**
- * @author Tomasz Forys
- */
 public class SolaceContainerSMFTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SolaceContainerSMFTest.class);

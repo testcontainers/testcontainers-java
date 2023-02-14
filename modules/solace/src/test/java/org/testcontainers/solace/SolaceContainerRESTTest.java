@@ -18,9 +18,6 @@ import org.junit.Test;
 
 import java.io.IOException;
 
-/**
- * @author Tomasz Forys
- */
 public class SolaceContainerRESTTest {
 
     private static final String MESSAGE = "HelloWorld";

@@ -19,9 +19,6 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 
-/**
- * @author Tomasz Forys
- */
 public class SolaceContainerAMQPTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SolaceContainerAMQPTest.class);
