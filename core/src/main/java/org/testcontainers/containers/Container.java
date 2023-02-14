@@ -455,7 +455,7 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
 
     void setImage(Future<String> image);
 
-    void setEnv(List<String> env);
+    SELF setEnv(List<String> env);
 
     void setCommandParts(String[] commandParts);
 
