@@ -11,8 +11,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * YugabyteDB YSQL API unit test class
- *
- * @author srinivasa-vasu
  */
 public class YugabyteDBYSQLTest extends AbstractContainerDatabaseTest {
 

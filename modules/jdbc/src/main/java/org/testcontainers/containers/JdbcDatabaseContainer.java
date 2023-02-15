@@ -24,8 +24,6 @@ import java.util.stream.Collectors;
 
 /**
  * Base class for containers that expose a JDBC connection
- *
- * @author richardnorth
  */
 public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<SELF>>
     extends GenericContainer<SELF>

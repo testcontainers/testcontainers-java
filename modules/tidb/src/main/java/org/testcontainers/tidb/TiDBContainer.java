@@ -10,8 +10,6 @@ import java.util.Set;
 
 /**
  * Testcontainers implementation for TiDB.
- *
- * @author Icemap
  */
 public class TiDBContainer extends JdbcDatabaseContainer<TiDBContainer> {
 

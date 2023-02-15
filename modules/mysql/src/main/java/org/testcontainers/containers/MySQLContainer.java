@@ -5,9 +5,6 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.util.Set;
 
-/**
- * @author richardnorth
- */
 public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
 
     public static final String NAME = "mysql";
