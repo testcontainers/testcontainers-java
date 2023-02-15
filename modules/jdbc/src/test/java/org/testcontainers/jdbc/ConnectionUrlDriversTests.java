@@ -12,8 +12,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * This Test class validates that all supported JDBC URL's can be parsed by ConnectionUrl class.
- *
- * @author ManikMagar
  */
 @RunWith(Parameterized.class)
 public class ConnectionUrlDriversTests {

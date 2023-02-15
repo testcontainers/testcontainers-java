@@ -7,8 +7,6 @@ import java.util.Set;
 
 /**
  * Container implementation for the MariaDB project.
- *
- * @author Miguel Gonzalez Sanchez
  */
 public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
 

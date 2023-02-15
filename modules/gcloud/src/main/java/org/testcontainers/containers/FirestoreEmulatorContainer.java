@@ -7,8 +7,6 @@ import org.testcontainers.utility.DockerImageName;
  * A Firestore container that relies in google cloud sdk.
  *
  * Default port is 8080.
- *
- * @author Eddú Meléndez
  */
 public class FirestoreEmulatorContainer extends GenericContainer<FirestoreEmulatorContainer> {
 
