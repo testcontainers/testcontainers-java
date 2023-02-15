@@ -134,6 +134,8 @@ public class ContainerDatabaseDriver implements Driver {
                 container.start();
             }
 
+            LOGGER.debug("Container is started (JDBC URL: {})", container.getJdbcUrl());
+
             /*
               Create a connection using the delegated driver. The container must be ready to accept connections.
              */
