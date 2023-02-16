@@ -18,7 +18,8 @@ public class RedisBackedCacheTest {
 
     @Rule
     public GenericContainer<?> redis = new GenericContainer<>(DockerImageName.parse("redis:3.0.6"))
-                                            .withExposedPorts(6379);
+        .withExposedPorts(6379);
+
     private Cache cache;
 
     @Before
@@ -34,13 +35,17 @@ public class RedisBackedCacheTest {
         Optional<String> foundObject = cache.get("foo", String.class);
 
         assertThat(foundObject.isPresent()).as("When an object in the cache is retrieved, it can be found").isTrue();
-        assertThat(foundObject.get()).as("When we put a String in to the cache and retrieve it, the value is the same").isEqualTo("FOO");
+        assertThat(foundObject.get())
+            .as("When we put a String in to the cache and retrieve it, the value is the same")
+            .isEqualTo("FOO");
     }
 
     @Test
     public void testNotFindingAValueThatWasNotInserted() {
         Optional<String> foundObject = cache.get("bar", String.class);
 
-        assertThat(foundObject.isPresent()).as("When an object that's not in the cache is retrieved, nothing is found").isFalse();
+        assertThat(foundObject.isPresent())
+            .as("When an object that's not in the cache is retrieved, nothing is found")
+            .isFalse();
     }
 }

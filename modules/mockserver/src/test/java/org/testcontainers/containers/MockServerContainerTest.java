@@ -10,38 +10,32 @@ import static org.mockserver.model.HttpResponse.response;
 
 public class MockServerContainerTest {
 
-    public static final DockerImageName MOCKSERVER_IMAGE = DockerImageName.parse(
-        "mockserver/mockserver:mockserver-5.14.0"
-    );
+    public static final DockerImageName MOCKSERVER_IMAGE = DockerImageName
+        .parse("mockserver/mockserver")
+        .withTag("mockserver-" + MockServerClient.class.getPackage().getImplementationVersion());
 
     @Test
     public void shouldCallActualMockserverVersion() throws Exception {
-        String actualVersion = MockServerClient.class.getPackage().getImplementationVersion();
-        try (
-            MockServerContainer mockServer = new MockServerContainer(
-                MOCKSERVER_IMAGE.withTag("mockserver-" + actualVersion)
-            )
-        ) {
+        try (MockServerContainer mockServer = new MockServerContainer(MOCKSERVER_IMAGE)) {
             mockServer.start();
 
             String expectedBody = "Hello World!";
 
-            MockServerClient client = new MockServerClient(mockServer.getHost(), mockServer.getServerPort());
+            try (MockServerClient client = new MockServerClient(mockServer.getHost(), mockServer.getServerPort())) {
+                assertThat(client.hasStarted()).as("Mockserver running").isTrue();
 
-            assertThat(client.isRunning()).as("Mockserver running").isTrue();
+                client.when(request().withPath("/hello")).respond(response().withBody(expectedBody));
 
-            client.when(request().withPath("/hello")).respond(response().withBody(expectedBody));
-
-            assertThat(SimpleHttpClient.responseFromMockserver(mockServer, "/hello"))
-                .as("MockServer returns correct result")
-                .isEqualTo(expectedBody);
+                assertThat(SimpleHttpClient.responseFromMockserver(mockServer, "/hello"))
+                    .as("MockServer returns correct result")
+                    .isEqualTo(expectedBody);
+            }
         }
     }
 
     @Test
     public void newVersionStartsWithDefaultWaitStrategy() {
-        DockerImageName dockerImageName = DockerImageName.parse("mockserver/mockserver:mockserver-5.14.0");
-        try (MockServerContainer mockServer = new MockServerContainer(dockerImageName)) {
+        try (MockServerContainer mockServer = new MockServerContainer(MOCKSERVER_IMAGE)) {
             mockServer.start();
         }
     }

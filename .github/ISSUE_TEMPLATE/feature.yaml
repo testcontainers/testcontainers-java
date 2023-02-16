@@ -39,16 +39,19 @@ body:
         - Oracle-XE
         - OrientDB
         - PostgreSQL
+        - QuestDB
         - Presto
         - Pulsar
         - RabbitMQ
         - Redpanda
         - Selenium
+        - Solace
         - Solr
         - TiDB
         - ToxiProxy
         - Trino
         - Vault
+        - YugabyteDB
         - New Module
   - type: textarea
     id: problem

@@ -8,9 +8,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Set;
 
-/**
- * @author richardnorth
- */
 public class NginxContainer<SELF extends NginxContainer<SELF>>
     extends GenericContainer<SELF>
     implements LinkableContainer {
@@ -56,10 +53,12 @@ public class NginxContainer<SELF extends NginxContainer<SELF>>
         return new URL(scheme + "://" + getHost() + ":" + getMappedPort(port));
     }
 
+    @Deprecated
     public void setCustomContent(String htmlContentPath) {
         addFileSystemBind(htmlContentPath, "/usr/share/nginx/html", BindMode.READ_ONLY);
     }
 
+    @Deprecated
     public SELF withCustomContent(String htmlContentPath) {
         this.setCustomContent(htmlContentPath);
         return self();

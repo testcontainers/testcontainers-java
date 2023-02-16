@@ -18,6 +18,8 @@ public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
 
     private static final int REDPANDA_PORT = 9092;
 
+    private static final int SCHEMA_REGISTRY_PORT = 8081;
+
     private static final String STARTER_SCRIPT = "/testcontainers_start.sh";
 
     public RedpandaContainer(String image) {
@@ -33,7 +35,7 @@ public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
             throw new IllegalArgumentException("Redpanda version must be >= v22.2.1");
         }
 
-        withExposedPorts(REDPANDA_PORT);
+        withExposedPorts(REDPANDA_PORT, SCHEMA_REGISTRY_PORT);
         withCreateContainerCmdModifier(cmd -> {
             cmd.withEntrypoint("sh");
         });
@@ -49,12 +51,17 @@ public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
 
         command += "/usr/bin/rpk redpanda start --mode dev-container ";
         command += "--kafka-addr PLAINTEXT://0.0.0.0:29092,OUTSIDE://0.0.0.0:9092 ";
-        command += "--advertise-kafka-addr PLAINTEXT://kafka:29092,OUTSIDE://" + getHost() + ":" + getMappedPort(9092);
+        command +=
+            "--advertise-kafka-addr PLAINTEXT://127.0.0.1:29092,OUTSIDE://" + getHost() + ":" + getMappedPort(9092);
 
         copyFileToContainer(Transferable.of(command, 0777), STARTER_SCRIPT);
     }
 
     public String getBootstrapServers() {
         return String.format("PLAINTEXT://%s:%s", getHost(), getMappedPort(REDPANDA_PORT));
+    }
+
+    public String getSchemaRegistryAddress() {
+        return String.format("http://%s:%s", getHost(), getMappedPort(SCHEMA_REGISTRY_PORT));
     }
 }

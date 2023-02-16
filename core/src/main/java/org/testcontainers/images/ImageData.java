@@ -24,6 +24,6 @@ public class ImageData {
     }
 
     static ImageData from(Image image) {
-        return ImageData.builder().createdAt(Instant.ofEpochMilli(image.getCreated())).build();
+        return ImageData.builder().createdAt(Instant.ofEpochSecond(image.getCreated())).build();
     }
 }

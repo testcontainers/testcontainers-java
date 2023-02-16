@@ -4,6 +4,10 @@ on:
   pull_request: {}
   push: { branches: [ main ] }
 
+concurrency:
+  group: "${{ github.workflow }}-${{ github.head_ref || github.sha }}"
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -24,11 +28,8 @@ jobs:
         with:
           java-version: '8.0.302'
           distribution: temurin
-      - name: Cache Gradle Home files
-        uses: actions/cache@v3.0.9
-        with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-home-testmatrix-${{ hashFiles('**/*.gradle') }}
+      - name: Setup Gradle Build Action
+        uses: gradle/gradle-build-action@v2
       - id: set-matrix
         env:
           # Since we override the tests executor,
@@ -37,7 +38,7 @@ jobs:
         run: |
           TASKS=$(./gradlew --no-daemon --parallel -q testMatrix)
           echo $TASKS
-          echo "::set-output name=matrix::{\"gradle_args\":$TASKS}"
+          echo "matrix={\"gradle_args\":$TASKS}" >> $GITHUB_OUTPUT
   check:
     needs: [find_gradle_jobs]
     strategy:
@@ -50,14 +51,16 @@ jobs:
         with:
           java-version: '8.0.302'
           distribution: temurin
-      - name: Cache Gradle Home files
-        uses: actions/cache@v3.0.9
-        continue-on-error: true
-        with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-home-${{matrix.gradle_args}}_check-${{ hashFiles('**/*.gradle') }}
       - name: Clear existing docker image cache
         run: docker image prune -af
+      - name: Setup Gradle Build Action
+        uses: gradle/gradle-build-action@v2
+        with:
+          gradle-home-cache-includes: |
+            caches
+            notifications
+            jdks
+          gradle-home-cache-cleanup: true
       - name: Build and test with Gradle (${{matrix.gradle_args}})
         run: |
           ./gradlew --no-daemon --continue --scan ${{matrix.gradle_args}}

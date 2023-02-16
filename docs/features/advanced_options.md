@@ -52,3 +52,9 @@ For example, this can be used to change the container hostname:
     It is typically quite stable, though.
 
 For what is possible, consult the [`docker-java CreateContainerCmd` source code](https://github.com/docker-java/docker-java/blob/3.2.1/docker-java-api/src/main/java/com/github/dockerjava/api/command/CreateContainerCmd.java).
+
+## Parallel Container Startup
+
+Usually, containers are started sequentially when more than one container is used.
+Using `Startables.deepStart(container1, container2, ...).join()` will start all containers in parallel. 
+This can be advantageous to reduce the impact of the container startup overhead.

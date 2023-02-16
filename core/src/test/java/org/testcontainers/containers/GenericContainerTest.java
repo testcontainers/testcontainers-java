@@ -55,7 +55,9 @@ public class GenericContainerTest {
                 })
                 .withCommand("sh", "-c", "A='0123456789'; for i in $(seq 0 32); do A=$A$A; done; sleep 10m")
         ) {
-            assertThatThrownBy(container::start).hasStackTraceContaining("Container crashed with out-of-memory");
+            assertThatThrownBy(container::start)
+                .hasStackTraceContaining("Wait strategy failed. Container crashed with out-of-memory (OOMKilled)")
+                .hasStackTraceContaining("Nope!");
         }
     }
 
@@ -67,7 +69,10 @@ public class GenericContainerTest {
                 .waitingFor(new WaitForExitedState(state -> state.getExitCode() > 0))
                 .withCommand("sh", "-c", "usleep 100; exit 123")
         ) {
-            assertThatThrownBy(container::start).hasStackTraceContaining("Container exited with code 123");
+            assertThatThrownBy(container::start)
+                .hasStackTraceContaining("Container startup failed for image " + TestImages.TINY_IMAGE)
+                .hasStackTraceContaining("Wait strategy failed. Container exited with code 123")
+                .hasStackTraceContaining("Nope!");
         }
     }
 
@@ -80,7 +85,9 @@ public class GenericContainerTest {
                 .waitingFor(new WaitForExitedState(state -> state.getExitCodeLong() > 0))
                 .withCommand("sh", "-c", "grep -q test /tmp/test && exit 100")
         ) {
-            assertThatThrownBy(container::start).hasStackTraceContaining("Container exited with code 100");
+            assertThatThrownBy(container::start)
+                .hasStackTraceContaining("Wait strategy failed. Container exited with code 100")
+                .hasStackTraceContaining("Nope!");
         }
     }
 
@@ -93,7 +100,9 @@ public class GenericContainerTest {
                 .waitingFor(new WaitForExitedState(state -> state.getExitCodeLong() > 0))
                 .withCommand("sh", "-c", "ls -ll /tmp | grep '\\-rwxrwxrwx\\|test' && exit 100")
         ) {
-            assertThatThrownBy(container::start).hasStackTraceContaining("Container exited with code 100");
+            assertThatThrownBy(container::start)
+                .hasStackTraceContaining("Wait strategy failed. Container exited with code 100")
+                .hasStackTraceContaining("Nope!");
         }
     }
 
@@ -107,7 +116,9 @@ public class GenericContainerTest {
                 .waitingFor(new WaitForExitedState(state -> state.getExitCodeLong() > 0))
                 .withCommand("sh", "-c", "grep -q test /tmp/test && exit 100")
         ) {
-            assertThatThrownBy(container::start).hasStackTraceContaining("Container exited with code 100");
+            assertThatThrownBy(container::start)
+                .hasStackTraceContaining("Wait strategy failed. Container exited with code 100")
+                .hasStackTraceContaining("Nope!");
         }
     }
 

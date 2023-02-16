@@ -7,13 +7,13 @@ dependencies {
     api project(':jdbc')
 
     compileOnly project(':r2dbc')
-    compileOnly 'io.r2dbc:r2dbc-mssql:0.9.0.RELEASE'
+    compileOnly 'io.r2dbc:r2dbc-mssql:1.0.0.RELEASE'
 
     testImplementation project(':jdbc-test')
-    testImplementation 'com.microsoft.sqlserver:mssql-jdbc:11.2.1.jre8'
+    testImplementation 'com.microsoft.sqlserver:mssql-jdbc:12.2.0.jre8'
 
     testImplementation project(':r2dbc')
-    testImplementation 'io.r2dbc:r2dbc-mssql:0.8.7.RELEASE'
+    testImplementation 'io.r2dbc:r2dbc-mssql:1.0.0.RELEASE'
 
     // MSSQL's wait strategy requires the JDBC driver
     testImplementation testFixtures(project(':r2dbc'))
