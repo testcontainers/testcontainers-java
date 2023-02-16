@@ -5,7 +5,7 @@ from SeleniumHQ's [docker-selenium](https://github.com/SeleniumHQ/docker-seleniu
 
 ## Benefits
 
-* Fully compatible with Selenium 3 & 4 tests, by providing a `RemoteWebDriver` instance
+* Fully compatible with Selenium 3 & 4 tests for Chrome and Firefox and Selenium 4 tests for Edge, by providing a `RemoteWebDriver` instance
 * No need to have specific web browsers, or even a desktop environment, installed on test servers. The only dependency
   is a working Docker installation and your Java JUnit test suite.
 * Browsers are always launched from a fixed, clean image. This means no configuration drift from user changes or
@@ -46,10 +46,11 @@ running on - which is quite likely), you'll need to use [the host exposing](../f
 
 ### Other browsers
 
-At the moment, Chrome and Firefox are supported. To switch, simply change the first parameter to the rule constructor:
+At the moment, Chrome, Firefox and Edge are supported. To switch, simply change the first parameter to the rule constructor:
 <!--codeinclude-->
 [Chrome](../../modules/selenium/src/test/java/org/testcontainers/junit/ChromeWebDriverContainerTest.java) inside_block:junitRule
 [Firefox](../../modules/selenium/src/test/java/org/testcontainers/junit/FirefoxWebDriverContainerTest.java) inside_block:junitRule
+[Edge](../../modules/selenium/src/test/java/org/testcontainers/junit/EdgeWebDriverContainerTest.java) inside_block:junitRule
 <!--/codeinclude-->
 
 ### Recording videos
@@ -81,7 +82,7 @@ Note the factory must implement `org.testcontainers.containers.RecordingFileFact
 
 ## More examples
 
-A few different examples are shown in [ChromeWebDriverContainerTest.java](https://github.com/testcontainers/testcontainers-java/blob/master/modules/selenium/src/test/java/org/testcontainers/junit/ChromeWebDriverContainerTest.java).
+A few different examples are shown in [ChromeWebDriverContainerTest.java](https://github.com/testcontainers/testcontainers-java/blob/main/modules/selenium/src/test/java/org/testcontainers/junit/ChromeWebDriverContainerTest.java).
 
 ## Adding this module to your project dependencies
 

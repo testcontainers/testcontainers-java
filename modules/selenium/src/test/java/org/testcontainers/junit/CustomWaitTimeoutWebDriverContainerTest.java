@@ -21,6 +21,6 @@ public class CustomWaitTimeoutWebDriverContainerTest extends BaseWebDriverContai
 
     @Test
     public void simpleExploreTest() {
-        doSimpleExplore(chromeWithCustomTimeout);
+        doSimpleExplore(chromeWithCustomTimeout, new ChromeOptions());
     }
 }

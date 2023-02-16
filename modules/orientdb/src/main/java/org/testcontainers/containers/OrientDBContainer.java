@@ -10,16 +10,15 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Optional;
 
-/**
- * @author robfrank
- */
 public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrientDBContainer.class);
@@ -69,7 +68,7 @@ public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
         serverPassword = DEFAULT_SERVER_PASSWORD;
         databaseName = DEFAULT_DATABASE_NAME;
 
-        waitStrategy = new LogMessageWaitStrategy().withRegEx(".*Gremlin started correctly.*");
+        waitStrategy = new LogMessageWaitStrategy().withRegEx(".*OrientDB Studio available.*");
 
         addExposedPorts(DEFAULT_BINARY_PORT, DEFAULT_HTTP_PORT);
     }
@@ -107,6 +106,7 @@ public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
         orientDB = new OrientDB(getServerUrl(), "root", serverPassword, OrientDBConfig.defaultConfig());
     }
 
+    @Deprecated
     public OrientDB getOrientDB() {
         return orientDB;
     }
@@ -119,13 +119,33 @@ public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
         return getServerUrl() + "/" + databaseName;
     }
 
+    @Deprecated
     public ODatabaseSession getSession() {
         return getSession(DEFAULT_USERNAME, DEFAULT_PASSWORD);
     }
 
+    @Deprecated
     public synchronized ODatabaseSession getSession(String username, String password) {
-        orientDB.createIfNotExists(databaseName, ODatabaseType.PLOCAL);
-
+        String orientdbVersion = Arrays
+            .stream(this.getContainerInfo().getConfig().getEnv())
+            .filter(env -> env.startsWith("ORIENTDB_VERSION"))
+            .map(env -> env.split("=")[1])
+            .findFirst()
+            .orElseThrow(() -> new IllegalStateException("no required env var"));
+        boolean isGreaterThan32 = new ComparableVersion(orientdbVersion).isGreaterThanOrEqualTo("3.2.0");
+        if (isGreaterThan32) {
+            String script = String.format(
+                "CREATE DATABASE %s plocal users(%s identified by '%s' role admin)",
+                databaseName,
+                username,
+                password
+            );
+            if (!orientDB.exists(databaseName)) {
+                orientDB.execute(script);
+            }
+        } else {
+            orientDB.createIfNotExists(databaseName, ODatabaseType.PLOCAL);
+        }
         if (session == null) {
             session = orientDB.open(databaseName, username, password);
 
@@ -134,6 +154,7 @@ public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
         return session;
     }
 
+    @Deprecated
     private void loadScript(String path, ODatabaseSession session) {
         try {
             URL resource = getClass().getClassLoader().getResource(path);

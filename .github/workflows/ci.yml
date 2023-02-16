@@ -2,7 +2,11 @@ name: CI
 
 on:
   pull_request: {}
-  push: { branches: [ master ] }
+  push: { branches: [ main ] }
+
+concurrency:
+  group: "${{ github.workflow }}-${{ github.head_ref || github.sha }}"
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -14,14 +18,6 @@ env:
   GRADLE_ENTERPRISE_CACHE_PASSWORD: ${{ secrets.GRADLE_ENTERPRISE_CACHE_PASSWORD }}
 
 jobs:
-  thundra_test_initializer:
-    runs-on: ubuntu-latest
-    outputs:
-      thundra_agent_testrun_id: ${{ steps.thundra_test_initializer.outputs.thundra_agent_testrun_id }}
-    steps:
-      - uses: actions/checkout@v3
-      - id: thundra_test_initializer
-        uses: thundra-io/thundra-test-init-action@v1
   find_gradle_jobs:
     runs-on: ubuntu-18.04
     outputs:
@@ -32,11 +28,8 @@ jobs:
         with:
           java-version: '8.0.302'
           distribution: temurin
-      - name: Cache Gradle Home files
-        uses: actions/cache@v3.0.8
-        with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-home-testmatrix-${{ hashFiles('**/*.gradle') }}
+      - name: Setup Gradle Build Action
+        uses: gradle/gradle-build-action@v2
       - id: set-matrix
         env:
           # Since we override the tests executor,
@@ -45,9 +38,9 @@ jobs:
         run: |
           TASKS=$(./gradlew --no-daemon --parallel -q testMatrix)
           echo $TASKS
-          echo "::set-output name=matrix::{\"gradle_args\":$TASKS}"
+          echo "matrix={\"gradle_args\":$TASKS}" >> $GITHUB_OUTPUT
   check:
-    needs: [find_gradle_jobs, thundra_test_initializer]
+    needs: [find_gradle_jobs]
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.find_gradle_jobs.outputs.matrix) }}
@@ -58,24 +51,16 @@ jobs:
         with:
           java-version: '8.0.302'
           distribution: temurin
-      - name: Cache Gradle Home files
-        uses: actions/cache@v3.0.8
-        continue-on-error: true
-        with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-home-${{matrix.gradle_args}}_check-${{ hashFiles('**/*.gradle') }}
       - name: Clear existing docker image cache
         run: docker image prune -af
-      - name: Thundra Gradle Test Instrumentation
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
-        uses: thundra-io/thundra-gradle-test-action@v1
+      - name: Setup Gradle Build Action
+        uses: gradle/gradle-build-action@v2
         with:
-          apikey: ${{ secrets.THUNDRA_API_KEY }}
-          project_id: ${{ secrets.THUNDRA_PROJECT_ID }}
+          gradle-home-cache-includes: |
+            caches
+            notifications
+            jdks
+          gradle-home-cache-cleanup: true
       - name: Build and test with Gradle (${{matrix.gradle_args}})
         run: |
-          ./gradlew --no-daemon --continue --scan ${{matrix.gradle_args}} \
-            $([[ -f $THUNDRA_GRADLE_INIT_SCRIPT_PATH ]] && echo "--init-script $THUNDRA_GRADLE_INIT_SCRIPT_PATH")
-        env:
-          THUNDRA_AGENT_TEST_RUN_ID: ${{ needs.thundra_test_initializer.outputs.thundra_agent_testrun_id }}
-          THUNDRA_AGENT_REPORT_REST_BASEURL: https://collector.thundra.us/v1
+          ./gradlew --no-daemon --continue --scan ${{matrix.gradle_args}}

@@ -22,6 +22,7 @@
             />
             <property name="allowSingleLineStatement" value="true"/>
         </module>
+        <module name="AvoidStarImport"/>
         <module name="AvoidStaticImport">
             <property name="excludes"
                       value="
@@ -38,9 +39,27 @@
                       "
             />
         </module>
+        <module name="RegexpSinglelineJava">
+            <property name="maximum" value="0"/>
+            <property name="format" value="org\.junit\.Assert\.assert" />
+            <property name="message"
+                      value="Please use AssertJ imports." />
+            <property name="ignoreComments" value="true" />
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="maximum" value="0"/>
+            <property name="format" value="org\.junit\.jupiter\.api\.Assertions\.assert" />
+            <property name="message"
+                      value="Please use AssertJ imports." />
+            <property name="ignoreComments" value="true" />
+        </module>
         <module name="EmptyLineSeparator">
             <property name="allowNoEmptyLineBetweenFields" value="false" />
         </module>
         <module name="OneStatementPerLineCheck"/>
+    </module>
+    <module name="RegexpSingleline">
+        <property name="format" value="^\s*\*\s*@author"/>
+        <property name="message" value="Remove author tags from source files."/>
     </module>
 </module>

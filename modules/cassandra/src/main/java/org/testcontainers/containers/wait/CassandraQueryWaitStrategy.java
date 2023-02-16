@@ -12,8 +12,6 @@ import static org.rnorth.ducttape.unreliables.Unreliables.retryUntilSuccess;
 
 /**
  * Waits until Cassandra returns its version
- *
- * @author Eugeny Karpov
  */
 public class CassandraQueryWaitStrategy extends AbstractWaitStrategy {
 

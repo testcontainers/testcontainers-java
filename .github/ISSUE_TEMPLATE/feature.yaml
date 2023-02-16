@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Please provide the following information
+        Before submitting a `feature`, please make sure there is no existing feature for the one you are requesting and it has been discussed with the team via [discussions](https://github.com/testcontainers/testcontainers-java/discussions) or Slack. If so, please provide the following information:
   - type: dropdown
     id: module
     attributes:
@@ -39,16 +39,19 @@ body:
         - Oracle-XE
         - OrientDB
         - PostgreSQL
+        - QuestDB
         - Presto
         - Pulsar
         - RabbitMQ
         - Redpanda
         - Selenium
+        - Solace
         - Solr
         - TiDB
         - ToxiProxy
         - Trino
         - Vault
+        - YugabyteDB
         - New Module
   - type: textarea
     id: problem

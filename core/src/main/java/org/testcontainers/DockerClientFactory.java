@@ -13,7 +13,6 @@ import com.github.dockerjava.api.model.Info;
 import com.github.dockerjava.api.model.Version;
 import com.github.dockerjava.api.model.Volume;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableMap;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.Synchronized;
@@ -34,6 +33,7 @@ import org.testcontainers.utility.TestcontainersConfiguration;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,9 +56,24 @@ public class DockerClientFactory {
 
     public static final String TESTCONTAINERS_SESSION_ID_LABEL = TESTCONTAINERS_LABEL + ".sessionId";
 
+    public static final String TESTCONTAINERS_LANG_LABEL = TESTCONTAINERS_LABEL + ".lang";
+
+    public static final String TESTCONTAINERS_VERSION_LABEL = TESTCONTAINERS_LABEL + ".version";
+
     public static final String SESSION_ID = UUID.randomUUID().toString();
 
-    public static final Map<String, String> DEFAULT_LABELS = ImmutableMap.of(TESTCONTAINERS_LABEL, "true");
+    public static final Map<String, String> DEFAULT_LABELS = markerLabels();
+
+    static Map<String, String> markerLabels() {
+        String implementationVersion = DockerClientFactory.class.getPackage().getImplementationVersion();
+        String testcontainersVersion = implementationVersion == null ? "unspecified" : implementationVersion;
+
+        Map<String, String> labels = new HashMap<>();
+        labels.put(TESTCONTAINERS_LABEL, "true");
+        labels.put(TESTCONTAINERS_LANG_LABEL, "java");
+        labels.put(TESTCONTAINERS_VERSION_LABEL, testcontainersVersion);
+        return Collections.unmodifiableMap(labels);
+    }
 
     private static final DockerImageName TINY_IMAGE = DockerImageName.parse("alpine:3.16");
 

@@ -18,8 +18,6 @@ import java.util.Set;
 
 /**
  * Testcontainer for RabbitMQ.
- *
- * @author Martin Greber
  */
 public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
 

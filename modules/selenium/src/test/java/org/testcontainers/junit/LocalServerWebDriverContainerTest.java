@@ -1,6 +1,8 @@
 package org.testcontainers.junit;
 
-import org.junit.*;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.bio.SocketConnector;
 import org.mortbay.jetty.handler.ResourceHandler;
@@ -42,7 +44,7 @@ public class LocalServerWebDriverContainerTest {
     @Test
     public void testConnection() {
         // getWebDriver {
-        RemoteWebDriver driver = chrome.getWebDriver();
+        RemoteWebDriver driver = new RemoteWebDriver(chrome.getSeleniumAddress(), new ChromeOptions());
         // }
 
         // Construct a URL that the browser container can access

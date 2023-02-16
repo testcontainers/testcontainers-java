@@ -24,6 +24,7 @@ public class TrinoContainerTest {
                 assertThat(resultSet.getString("node_version"))
                     .as("Trino version")
                     .isEqualTo(TrinoContainer.DEFAULT_TAG);
+                assertContainerHasCorrectExposedAndLivenessCheckPorts(trino);
             }
         }
     }
@@ -60,5 +61,10 @@ public class TrinoContainerTest {
                 assertThat(resultSet.next()).as("results").isFalse();
             }
         }
+    }
+
+    private void assertContainerHasCorrectExposedAndLivenessCheckPorts(TrinoContainer trino) {
+        assertThat(trino.getExposedPorts()).containsExactly(8080);
+        assertThat(trino.getLivenessCheckPortNumbers()).containsExactly(trino.getMappedPort(8080));
     }
 }

@@ -29,8 +29,30 @@ public class BucketDefinition {
 
     private int quota = 100;
 
+    private int numReplicas = 0;
+
     public BucketDefinition(final String name) {
         this.name = name;
+    }
+
+    /**
+     * Allows to configure the number of replicas on a bucket (defaults to 0).
+     * <p>
+     * By default the bucket is initialized with 0 replicas since only a single container is launched. Modifying
+     * this value can still be useful in some test scenarios (i.e. to test failures with the wrong number of replicas
+     * and durability requirements on operations).
+     * <p>
+     * Couchbase buckets can have a maximum of three replicas configured.
+     *
+     * @param numReplicas the number of replicas to configure.
+     * @return this {@link BucketDefinition} for chaining purposes.
+     */
+    public BucketDefinition withReplicas(final int numReplicas) {
+        if (numReplicas < 0 || numReplicas > 3) {
+            throw new IllegalArgumentException("The number of replicas must be between 0 and 3 (inclusive)");
+        }
+        this.numReplicas = numReplicas;
+        return this;
     }
 
     /**
@@ -45,9 +67,9 @@ public class BucketDefinition {
     }
 
     /**
-     * Sets a custom bucket quota (100MB by default).
+     * Sets a custom bucket quota (100MiB by default).
      *
-     * @param quota the quota to set for the bucket.
+     * @param quota the quota to set for the bucket in mebibytes.
      * @return this {@link BucketDefinition} for chaining purposes.
      */
     public BucketDefinition withQuota(final int quota) {
@@ -83,5 +105,9 @@ public class BucketDefinition {
 
     public int getQuota() {
         return quota;
+    }
+
+    public int getNumReplicas() {
+        return numReplicas;
     }
 }

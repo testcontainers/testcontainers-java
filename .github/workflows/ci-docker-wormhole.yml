@@ -2,7 +2,11 @@ name: CI-Docker-Wormhole
 
 on:
   pull_request: {}
-  push: { branches: [ master ] }
+  push: { branches: [ main ] }
+
+concurrency:
+  group: "${{ github.workflow }}-${{ github.head_ref || github.sha }}"
+  cancel-in-progress: true
 
 permissions:
   contents: read

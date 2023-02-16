@@ -4,6 +4,8 @@ dependencies {
     api project(':testcontainers')
 
     compileOnly 'org.influxdb:influxdb-java:2.23'
+
+    testImplementation 'org.assertj:assertj-core:3.24.2'
     testImplementation 'org.influxdb:influxdb-java:2.23'
-    testImplementation 'org.assertj:assertj-core:3.23.1'
+    testImplementation "com.influxdb:influxdb-client-java:6.7.0"
 }

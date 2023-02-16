@@ -13,8 +13,6 @@ import org.testcontainers.ext.ScriptUtils.ScriptStatementFailedException;
 
 /**
  * Cassandra database delegate
- *
- * @author Eugeny Karpov
  */
 @Slf4j
 @RequiredArgsConstructor

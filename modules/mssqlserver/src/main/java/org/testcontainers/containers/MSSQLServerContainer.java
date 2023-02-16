@@ -1,6 +1,5 @@
 package org.testcontainers.containers;
 
-import com.google.common.collect.Sets;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.LicenseAcceptance;
 
@@ -8,9 +7,6 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-/**
- * @author Stefan Hufschmidt
- */
 public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("mcr.microsoft.com/mssql/server");
@@ -64,7 +60,7 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
 
     @Override
     public Set<Integer> getLivenessCheckPortNumbers() {
-        return Sets.newHashSet(MS_SQL_SERVER_PORT);
+        return super.getLivenessCheckPortNumbers();
     }
 
     @Override
