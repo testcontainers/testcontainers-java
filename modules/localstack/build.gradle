@@ -9,3 +9,10 @@ dependencies {
     testImplementation 'software.amazon.awssdk:s3:2.20.2'
     testImplementation 'org.assertj:assertj-core:3.24.2'
 }
+
+tasks.japicmp {
+    methodExcludes = [
+        "org.testcontainers.containers.localstack.LocalStackContainer#getEndpointConfiguration(org.testcontainers.containers.localstack.LocalStackContainer\$Service)",
+        "org.testcontainers.containers.localstack.LocalStackContainer#getDefaultCredentialsProvider()"
+    ]
+}
