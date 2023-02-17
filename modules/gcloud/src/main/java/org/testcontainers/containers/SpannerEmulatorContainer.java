@@ -5,8 +5,6 @@ import org.testcontainers.utility.DockerImageName;
 
 /**
  * A Spanner container. Default ports: 9010 for GRPC and 9020 for HTTP.
- *
- * @author Eddú Meléndez
  */
 public class SpannerEmulatorContainer extends GenericContainer<SpannerEmulatorContainer> {
 

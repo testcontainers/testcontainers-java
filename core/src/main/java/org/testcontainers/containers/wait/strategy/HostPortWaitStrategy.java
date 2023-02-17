@@ -22,8 +22,6 @@ import java.util.stream.Collectors;
 
 /**
  * Waits until a socket connection can be established on a port exposed or mapped by the container.
- *
- * @author richardnorth
  */
 @Slf4j
 public class HostPortWaitStrategy extends AbstractWaitStrategy {

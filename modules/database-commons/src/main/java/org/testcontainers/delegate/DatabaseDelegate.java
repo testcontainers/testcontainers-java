@@ -6,8 +6,6 @@ import java.util.Collection;
  * Database delegate
  *
  * Gives an abstraction from concrete database
- *
- * @author Eugeny Karpov
  */
 public interface DatabaseDelegate extends AutoCloseable {
     /**

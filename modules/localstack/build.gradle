@@ -3,10 +3,16 @@ description = "Testcontainers :: Localstack"
 dependencies {
     api project(':testcontainers')
 
-    compileOnly 'com.amazonaws:aws-java-sdk-s3:1.12.405'
     testImplementation 'com.amazonaws:aws-java-sdk-s3:1.12.405'
     testImplementation 'com.amazonaws:aws-java-sdk-sqs:1.12.405'
-    testImplementation 'com.amazonaws:aws-java-sdk-logs:1.12.405'
+    testImplementation 'com.amazonaws:aws-java-sdk-logs:1.12.406'
     testImplementation 'software.amazon.awssdk:s3:2.20.2'
     testImplementation 'org.assertj:assertj-core:3.24.2'
+}
+
+tasks.japicmp {
+    methodExcludes = [
+        "org.testcontainers.containers.localstack.LocalStackContainer#getEndpointConfiguration(org.testcontainers.containers.localstack.LocalStackContainer\$Service)",
+        "org.testcontainers.containers.localstack.LocalStackContainer#getDefaultCredentialsProvider()"
+    ]
 }

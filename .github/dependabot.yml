@@ -234,6 +234,14 @@ updates:
       interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
+    directory: "/modules/solace"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "org.apache.qpid:qpid-jms-client"
+        update-types: [ "version-update:semver-major" ]
+  - package-ecosystem: "gradle"
     directory: "/modules/solr"
     schedule:
       interval: "monthly"

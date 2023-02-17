@@ -5,6 +5,7 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.delegate.DatabaseDelegate;
 import org.testcontainers.ext.ScriptUtils;
@@ -24,8 +25,6 @@ import java.util.stream.Collectors;
 
 /**
  * Base class for containers that expose a JDBC connection
- *
- * @author richardnorth
  */
 public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<SELF>>
     extends GenericContainer<SELF>
@@ -302,15 +301,25 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
         return urlParameters;
     }
 
+    @Deprecated
     protected void optionallyMapResourceParameterAsVolume(
         @NotNull String paramName,
         @NotNull String pathNameInContainer,
         @NotNull String defaultResource
     ) {
+        optionallyMapResourceParameterAsVolume(paramName, pathNameInContainer, defaultResource, null);
+    }
+
+    protected void optionallyMapResourceParameterAsVolume(
+        @NotNull String paramName,
+        @NotNull String pathNameInContainer,
+        @NotNull String defaultResource,
+        @Nullable Integer fileMode
+    ) {
         String resourceName = parameters.getOrDefault(paramName, defaultResource);
 
         if (resourceName != null) {
-            final MountableFile mountableFile = MountableFile.forClasspathResource(resourceName);
+            final MountableFile mountableFile = MountableFile.forClasspathResource(resourceName, fileMode);
             withCopyFileToContainer(mountableFile, pathNameInContainer);
         }
     }

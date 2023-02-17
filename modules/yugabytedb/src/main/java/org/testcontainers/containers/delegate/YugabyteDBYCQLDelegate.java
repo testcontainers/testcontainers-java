@@ -16,7 +16,6 @@ import java.util.Collection;
  * this requirement. This functionality is kept to address the initialization requirements
  * from standalone services that can't leverage liquibase or something similar.
  *
- * @author srinivasa-vasu
  * @see YugabyteDBYCQLContainer
  */
 @RequiredArgsConstructor
