@@ -43,9 +43,8 @@ public class MockServerContainerTest {
     @Test
     public void waitStrategyShouldWorkWithActiveTLS() {
         try (MockServerContainer mockServer = new MockServerContainer(MOCKSERVER_IMAGE)) {
-            mockServer.withEnv( "MOCKSERVER_TLS_MUTUAL_AUTHENTICATION_REQUIRED", "true" );
+            mockServer.withEnv("MOCKSERVER_TLS_MUTUAL_AUTHENTICATION_REQUIRED", "true");
             mockServer.start();
         }
     }
-
 }
