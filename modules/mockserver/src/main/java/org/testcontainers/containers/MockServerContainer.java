@@ -36,7 +36,7 @@ public class MockServerContainer extends GenericContainer<MockServerContainer> {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, DockerImageName.parse("mockserver/mockserver"));
 
-        waitingFor(Wait.forHttp("/mockserver/status").withMethod("PUT").forStatusCode(200));
+        waitingFor(Wait.forLogMessage(".*started on port: " + PORT + ".*", 1));
 
         withCommand("-serverPort " + PORT);
         addExposedPorts(PORT);
