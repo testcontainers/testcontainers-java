@@ -74,7 +74,7 @@ public class KafkaContainerTest {
         try (
             Network network = Network.newNetwork();
             // withExternalZookeeper {
-            KafkaContainer kafka = new KafkaContainer(KAFKA_TEST_IMAGE)
+            KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:6.2.1"))
                 .withNetwork(network)
                 .withExternalZookeeper("zookeeper:2181");
             // }
@@ -134,7 +134,11 @@ public class KafkaContainerTest {
 
     @Test
     public void testUsageKraft() throws Exception {
-        try (KafkaContainer kafka = new KafkaContainer(KAFKA_KRAFT_TEST_IMAGE).withKraft()) {
+        try (
+            // withKraft {
+            KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.0.1")).withKraft()
+            // }
+        ) {
             kafka.start();
             testKafkaFunctionality(kafka.getBootstrapServers());
         }
