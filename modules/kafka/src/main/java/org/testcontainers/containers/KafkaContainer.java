@@ -202,7 +202,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
                 clusterId = execInContainer("kafka-storage", "random-uuid").getStdout().trim();
             }
         } catch (IOException | InterruptedException e) {
-            throw new RuntimeException(e);
+            logger().error("Failed to execute `kafka-storage random-uuid`. Exception message: {}", e.getMessage());
         }
         command +=
             "echo 'kafka-storage format --ignore-formatted -t \"" +
