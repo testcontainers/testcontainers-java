@@ -38,7 +38,7 @@ The self-managed (Kraft) mode is available as a preview feature since version 3.
 declared as a production ready in 3.3.1 (confluentinc/cp-kafka:7.3.x).
 
 <!--codeinclude-->
-[Kraft mode](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:withKraft
+[Kraft mode](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:withKraftMode
 <!--/codeinclude-->
 
 See the [versions interoperability matrix](https://docs.confluent.io/platform/current/installation/versions-interoperability.html) for more details. 

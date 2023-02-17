@@ -135,7 +135,7 @@ public class KafkaContainerTest {
     @Test
     public void testUsageKraft() throws Exception {
         try (
-            // withKraft {
+            // withKraftMode {
             KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.0.1")).withKraft()
             // }
         ) {
