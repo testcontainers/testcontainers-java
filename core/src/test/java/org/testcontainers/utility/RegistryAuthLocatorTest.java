@@ -68,6 +68,21 @@ public class RegistryAuthLocatorTest {
     }
 
     @Test
+    public void lookupAuthConfigWithJsonKeyCredentialsPartialMatchShouldGiveNoResult()
+        throws URISyntaxException, IOException {
+        // contains entry for registry.example.com
+        final RegistryAuthLocator authLocator = createTestAuthLocator("config-with-json-key.json");
+
+        final AuthConfig authConfig = authLocator.lookupAuthConfig(
+            DockerImageName.parse("registry.example.co/org/repo"), // partial match of registry name
+            new AuthConfig()
+        );
+
+        assertThat(authConfig.getUsername()).as("auth config username").isNull();
+        assertThat(authConfig.getPassword()).as("auth config password").isNull();
+    }
+
+    @Test
     public void lookupAuthConfigUsingStore() throws URISyntaxException, IOException {
         final RegistryAuthLocator authLocator = createTestAuthLocator("config-with-store.json");
 

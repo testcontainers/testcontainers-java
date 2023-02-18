@@ -19,9 +19,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Optional;
 
-/**
- * @author robfrank
- */
 public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrientDBContainer.class);

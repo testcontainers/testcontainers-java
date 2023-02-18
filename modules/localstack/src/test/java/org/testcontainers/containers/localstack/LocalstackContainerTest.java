@@ -347,4 +347,27 @@ public class LocalstackContainerTest {
                 .isEqualTo(region);
         }
     }
+
+    public static class WithoutServices {
+
+        @ClassRule
+        public static LocalStackContainer localstack = new LocalStackContainer(
+            LocalstackTestImages.LOCALSTACK_0_13_IMAGE
+        );
+
+        @Test
+        public void s3ServiceStartLazily() {
+            S3Client s3 = S3Client
+                .builder()
+                .endpointOverride(localstack.getEndpointOverride(Service.S3))
+                .credentialsProvider(
+                    StaticCredentialsProvider.create(
+                        AwsBasicCredentials.create(localstack.getAccessKey(), localstack.getSecretKey())
+                    )
+                )
+                .region(Region.of(localstack.getRegion()))
+                .build();
+            assertThat(s3.listBuckets().buckets()).as("S3 Service is started lazily").isEmpty();
+        }
+    }
 }
