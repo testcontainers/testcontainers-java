@@ -52,9 +52,7 @@ public class TestcontainersExtension
         Store store = context.getStore(NAMESPACE);
         List<StoreAdapter> sharedContainersStoreAdapters = findSharedContainers(testClass);
 
-        sharedContainersStoreAdapters.forEach(adapter -> {
-            store.getOrComputeIfAbsent(adapter.getKey(), k -> adapter.start());
-        });
+        startSharedContainers(sharedContainersStoreAdapters, store, context);
 
         List<TestLifecycleAware> lifecycleAwareContainers = sharedContainersStoreAdapters
             .stream()
@@ -66,6 +64,20 @@ public class TestcontainersExtension
         signalBeforeTestToContainers(lifecycleAwareContainers, testDescriptionFrom(context));
     }
 
+    private void startSharedContainers(
+        List<StoreAdapter> sharedContainersStoreAdapters,
+        Store store,
+        ExtensionContext context
+    ) {
+        Stream<StoreAdapter> storeAdapterStream = sharedContainersStoreAdapters.stream();
+        if (isParallelExecutionEnabled(context)) {
+            storeAdapterStream = storeAdapterStream.parallel();
+        }
+        storeAdapterStream.forEach(adapter -> {
+            store.getOrComputeIfAbsent(adapter.getKey(), k -> adapter.start());
+        });
+    }
+
     @Override
     public void afterAll(ExtensionContext context) {
         signalAfterTestToContainersFor(SHARED_LIFECYCLE_AWARE_CONTAINERS, context);
@@ -75,16 +87,40 @@ public class TestcontainersExtension
     public void beforeEach(final ExtensionContext context) {
         Store store = context.getStore(NAMESPACE);
 
-        List<TestLifecycleAware> lifecycleAwareContainers = collectParentTestInstances(context)
+        List<StoreAdapter> restartContainers = collectParentTestInstances(context)
             .parallelStream()
             .flatMap(this::findRestartContainers)
+            .collect(Collectors.toList());
+
+        List<TestLifecycleAware> lifecycleAwareContainers = findTestLifecycleAwareContainers(
+            restartContainers,
+            store,
+            context
+        );
+
+        store.put(LOCAL_LIFECYCLE_AWARE_CONTAINERS, lifecycleAwareContainers);
+        signalBeforeTestToContainers(lifecycleAwareContainers, testDescriptionFrom(context));
+    }
+
+    private List<TestLifecycleAware> findTestLifecycleAwareContainers(
+        List<StoreAdapter> restartContainers,
+        Store store,
+        ExtensionContext context
+    ) {
+        Stream<StoreAdapter> storeAdapterStream = restartContainers.stream();
+        if (isParallelExecutionEnabled(context)) {
+            storeAdapterStream = storeAdapterStream.parallel();
+        }
+
+        return storeAdapterStream
             .peek(adapter -> store.getOrComputeIfAbsent(adapter.getKey(), k -> adapter.start()))
             .filter(this::isTestLifecycleAware)
             .map(lifecycleAwareAdapter -> (TestLifecycleAware) lifecycleAwareAdapter.container)
             .collect(Collectors.toList());
+    }
 
-        store.put(LOCAL_LIFECYCLE_AWARE_CONTAINERS, lifecycleAwareContainers);
-        signalBeforeTestToContainers(lifecycleAwareContainers, testDescriptionFrom(context));
+    private boolean isParallelExecutionEnabled(ExtensionContext context) {
+        return findTestcontainers(context).map(Testcontainers::parallel).orElse(false);
     }
 
     @Override
