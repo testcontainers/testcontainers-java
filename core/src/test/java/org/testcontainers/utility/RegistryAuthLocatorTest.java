@@ -240,7 +240,7 @@ public class RegistryAuthLocatorTest {
 
     @Test
     public void lookupAuthConfigRespectsCheckOrderPreference() throws URISyntaxException, IOException {
-        final RegistryAuthLocator authLocator = createTestAuthLocator("config-basic-auth.json", "config-empty.json");
+        final RegistryAuthLocator authLocator = createTestAuthLocator("config-empty.json", "config-basic-auth.json");
 
         final AuthConfig authConfig = authLocator.lookupAuthConfig(
             DockerImageName.parse("registry.example.com/org/repo"),

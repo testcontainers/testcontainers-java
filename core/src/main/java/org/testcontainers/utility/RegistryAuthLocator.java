@@ -183,12 +183,12 @@ public class RegistryAuthLocator {
             commandPathPrefix
         );
 
-        if (configFile.exists()) {
-            log.debug("RegistryAuthLocator reading from configFile: {}", configFile);
-            return OBJECT_MAPPER.readTree(configFile);
-        } else if (configEnv != null) {
+        if (configEnv != null) {
             log.debug("RegistryAuthLocator reading from environment variable: {}", DOCKER_AUTH_ENV_VAR);
             return OBJECT_MAPPER.readTree(configEnv);
+        } else if (configFile.exists()) {
+            log.debug("RegistryAuthLocator reading from configFile: {}", configFile);
+            return OBJECT_MAPPER.readTree(configFile);
         }
 
         throw new NotFoundException(
