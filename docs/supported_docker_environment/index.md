@@ -50,7 +50,7 @@ Testcontainers will try to connect to a Docker daemon using the following strate
 
 Testcontainers will try to authenticate to registries with supplied config using the following strategies in order:
 
+* Environment variables:
+    * `DOCKER_AUTH_CONFIG`
 * Docker config
 	* At location specified in `DOCKER_CONFIG` or at `{HOME}/.docker/config.json`
-* Environment variables:
-	* `DOCKER_AUTH_CONFIG`
