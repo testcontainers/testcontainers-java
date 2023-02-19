@@ -22,8 +22,6 @@ import static org.rnorth.ducttape.unreliables.Unreliables.retryUntilSuccess;
  * check the DB status with this way with a smoke test query that uses the underlying
  * custom objects and wait for the operation to complete.
  * </p>
- *
- * @author srinivasa-vasu
  */
 @RequiredArgsConstructor
 @Slf4j

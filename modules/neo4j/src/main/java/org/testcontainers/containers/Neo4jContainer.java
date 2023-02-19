@@ -23,7 +23,6 @@ import java.util.stream.Stream;
  * Testcontainer for Neo4j.
  *
  * @param <S> "SELF" to be used in the <code>withXXX</code> methods.
- * @author Michael J. Simons
  */
 public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContainer<S> {
 

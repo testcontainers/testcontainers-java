@@ -45,6 +45,7 @@ body:
         - RabbitMQ
         - Redpanda
         - Selenium
+        - Solace
         - Solr
         - TiDB
         - ToxiProxy

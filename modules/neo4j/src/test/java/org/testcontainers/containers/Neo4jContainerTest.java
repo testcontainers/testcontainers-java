@@ -28,8 +28,6 @@ import static org.assertj.core.api.Assumptions.assumeThat;
 
 /**
  * Tests of functionality special to the Neo4jContainer.
- *
- * @author Michael J. Simons
  */
 public class Neo4jContainerTest {
 
