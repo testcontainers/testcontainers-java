@@ -104,7 +104,6 @@ dependencies {
     testImplementation files('testlib/repo/fakejar/fakejar/0/fakejar-0.jar')
 
     testImplementation 'org.assertj:assertj-core:3.24.2'
-    testImplementation project(':test-support')
 
     jarFileTestCompileOnly "org.projectlombok:lombok:${lombok.version}"
     jarFileTestAnnotationProcessor "org.projectlombok:lombok:${lombok.version}"
