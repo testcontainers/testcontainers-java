@@ -35,4 +35,5 @@ compileTestJava {
     javaCompiler = javaToolchains.compilerFor {
         languageVersion = JavaLanguageVersion.of(11)
     }
+    options.release.set(11)
 }
