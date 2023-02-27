@@ -1,10 +1,10 @@
 package org.testcontainers.containers.wait.strategy;
 
-import java.util.concurrent.TimeUnit;
-
 import org.rnorth.ducttape.TimeoutException;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.ContainerLaunchException;
+
+import java.util.concurrent.TimeUnit;
 
 public class ShellStrategy extends AbstractWaitStrategy {
 
