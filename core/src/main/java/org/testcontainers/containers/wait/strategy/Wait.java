@@ -66,4 +66,14 @@ public class Wait {
     public static DockerHealthcheckWaitStrategy forHealthcheck() {
         return new DockerHealthcheckWaitStrategy();
     }
+
+    /**
+     * Convenience method to return a WaitStrategy for a shell command.
+     *
+     * @param command the command to run
+     * @return ShellStrategy
+     */
+    public static ShellStrategy forSuccessfulCommand(String command) {
+        return new ShellStrategy(command);
+    }
 }
