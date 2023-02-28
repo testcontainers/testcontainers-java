@@ -107,6 +107,12 @@ public class RemoteDockerImage extends LazyFuture<String> {
                         imageName,
                         Duration.between(Instant.now(), lastRetryAllowed).getSeconds()
                     );
+                    // to avoid busy wait if docker repository returns 5xx
+                    try {
+                        Thread.sleep(1000L);
+                    } catch (InterruptedException interruptedException) {
+                        Thread.currentThread().interrupt();
+                    }
                 }
             }
             logger.error(
