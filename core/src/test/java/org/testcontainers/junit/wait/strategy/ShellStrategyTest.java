@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class ShellStrategyTest extends AbstractWaitStrategyTest<ShellStrategy> {
 
-    private final String LOCK_FILE = "/tmp/ready.lock";
+    private static final String LOCK_FILE = "/tmp/ready.lock";
 
     @Test
     public void testWaitUntilReady_Success() {
@@ -26,7 +26,12 @@ public class ShellStrategyTest extends AbstractWaitStrategyTest<ShellStrategy> {
     @NotNull
     @Override
     protected ShellStrategy buildWaitStrategy(AtomicBoolean ready) {
-        return new ShellStrategy(String.format("stat %s", LOCK_FILE)) {
+        return createShellStrategy(ready).withCommand(String.format("stat %s", LOCK_FILE));
+    }
+
+    @NotNull
+    private static ShellStrategy createShellStrategy(AtomicBoolean ready) {
+        return new ShellStrategy() {
             @Override
             protected void waitUntilReady() {
                 super.waitUntilReady();

@@ -8,10 +8,11 @@ import java.util.concurrent.TimeUnit;
 
 public class ShellStrategy extends AbstractWaitStrategy {
 
-    private final String command;
+    private String command;
 
-    public ShellStrategy(String command) {
+    public ShellStrategy withCommand(String command) {
         this.command = command;
+        return this;
     }
 
     @Override
@@ -20,10 +21,12 @@ public class ShellStrategy extends AbstractWaitStrategy {
             Unreliables.retryUntilTrue(
                 (int) startupTimeout.getSeconds(),
                 TimeUnit.SECONDS,
-                () -> waitStrategyTarget.execInContainer("/bin/sh", "-c", command).getExitCode() == 0
+                () -> waitStrategyTarget.execInContainer("/bin/sh", "-c", this.command).getExitCode() == 0
             );
         } catch (TimeoutException e) {
-            throw new ContainerLaunchException("Timed out waiting for container to execute command successfully");
+            throw new ContainerLaunchException(
+                "Timed out waiting for container to execute `" + this.command + "` successfully."
+            );
         }
     }
 }

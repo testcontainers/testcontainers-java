@@ -74,6 +74,6 @@ public class Wait {
      * @return ShellStrategy
      */
     public static ShellStrategy forSuccessfulCommand(String command) {
-        return new ShellStrategy(command);
+        return new ShellStrategy().withCommand(command);
     }
 }
