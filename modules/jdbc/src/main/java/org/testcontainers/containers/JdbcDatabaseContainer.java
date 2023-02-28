@@ -158,7 +158,6 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
                 try (Connection connection = createConnection(""); Statement statement = connection.createStatement()) {
                     boolean testQuerySucceeded = statement.execute(this.getTestQueryString());
                     if (testQuerySucceeded) {
-                        logger().info("Container is started (JDBC URL: {})", this.getJdbcUrl());
                         return;
                     }
                 } catch (NoDriverFoundException e) {
@@ -184,6 +183,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
 
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
+        logger().info("Container is started (JDBC URL: {})", this.getJdbcUrl());
         runInitScriptIfRequired();
     }
 
