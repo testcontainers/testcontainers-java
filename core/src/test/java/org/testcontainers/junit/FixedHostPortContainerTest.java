@@ -1,8 +1,7 @@
 package org.testcontainers.junit;
 
-import com.google.common.util.concurrent.Uninterruptibles;
+import org.awaitility.Awaitility;
 import org.junit.Test;
-import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.TestImages;
 import org.testcontainers.containers.FixedHostPortGenericContainer;
 import org.testcontainers.containers.GenericContainer;
@@ -11,6 +10,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -86,15 +86,17 @@ public class FixedHostPortContainerTest {
      */
     private String readResponse(GenericContainer container, Integer port) throws IOException {
         try (
-            final BufferedReader reader = Unreliables.retryUntilSuccess(
-                10,
-                TimeUnit.SECONDS,
-                () -> {
-                    Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
-                    final Socket socket = new Socket(container.getHost(), port);
-                    return new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                }
-            )
+            final BufferedReader reader = Awaitility
+                .await()
+                .atMost(10, TimeUnit.SECONDS)
+                .pollInterval(1, TimeUnit.SECONDS)
+                .until(
+                    () -> {
+                        final Socket socket = new Socket(container.getHost(), port);
+                        return new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                    },
+                    Objects::nonNull
+                )
         ) {
             return reader.readLine();
         }

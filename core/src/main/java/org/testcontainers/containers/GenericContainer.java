@@ -36,7 +36,6 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
-import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.UnstableAPI;
@@ -90,6 +89,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -331,23 +331,37 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             logger().debug("Starting container: {}", getDockerImageName());
 
             AtomicInteger attempt = new AtomicInteger(0);
-            Unreliables.retryUntilSuccess(
-                startupAttempts,
-                () -> {
-                    logger()
-                        .debug(
-                            "Trying to start container: {} (attempt {}/{})",
-                            getDockerImageName(),
-                            attempt.incrementAndGet(),
-                            startupAttempts
-                        );
-                    tryStart(startedAt);
-                    return true;
-                }
-            );
+            Callable<Boolean> callable = () -> {
+                logger()
+                    .debug(
+                        "Trying to start container: {} (attempt {}/{})",
+                        getDockerImageName(),
+                        attempt.incrementAndGet(),
+                        startupAttempts
+                    );
+                tryStart(startedAt);
+                return true;
+            };
+            execWithRetry(callable);
         } catch (Exception e) {
             throw new ContainerLaunchException("Container startup failed for image " + getDockerImageName(), e);
         }
+    }
+
+    private <T> T execWithRetry(Callable<T> callable) {
+        int attempt = 0;
+        Exception lastException = null;
+
+        while (attempt < startupAttempts) {
+            try {
+                return callable.call();
+            } catch (Exception e) {
+                lastException = e;
+                attempt++;
+            }
+        }
+
+        throw new RuntimeException("Retry limit hit with exception", lastException);
     }
 
     @UnstableAPI

@@ -10,7 +10,7 @@ import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.rnorth.ducttape.unreliables.Unreliables.retryUntilSuccess;
+import static org.awaitility.Awaitility.await;
 
 /**
  * Custom wait strategy for YCQL API.
@@ -37,11 +37,11 @@ public final class YugabyteDBYCQLWaitStrategy extends AbstractWaitStrategy {
     public void waitUntilReady(WaitStrategyTarget target) {
         YugabyteDBYCQLContainer container = (YugabyteDBYCQLContainer) target;
         AtomicBoolean status = new AtomicBoolean(true);
-        retryUntilSuccess(
-            (int) startupTimeout.getSeconds(),
-            TimeUnit.SECONDS,
-            () -> {
-                YugabyteDBYCQLWaitStrategy.this.getRateLimiter()
+        await()
+            .atMost(startupTimeout.getSeconds(), TimeUnit.SECONDS)
+            .ignoreExceptions()
+            .until(() -> {
+                getRateLimiter()
                     .doWhenReady(() -> {
                         try {
                             ExecResult result = container.execInContainer(
@@ -68,9 +68,8 @@ public final class YugabyteDBYCQLWaitStrategy extends AbstractWaitStrategy {
                             }
                         }
                     });
-                return status;
-            }
-        );
+                return status.get();
+            });
     }
 
     @Override

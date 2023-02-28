@@ -2,7 +2,6 @@ package org.testcontainers.junit;
 
 import com.github.dockerjava.api.model.HostConfig;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.util.concurrent.Uninterruptibles;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -20,7 +19,6 @@ import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.rnorth.ducttape.RetryCountExceededException;
-import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.TestImages;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.Container;
@@ -42,6 +40,7 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
@@ -49,6 +48,7 @@ import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.awaitility.Awaitility.await;
 
 /**
  * Tests for GenericContainerRules
@@ -215,20 +215,9 @@ public class GenericContainerRuleTest {
         channel.basicPublish(RABBIQMQ_TEST_EXCHANGE, RABBITMQ_TEST_ROUTING_KEY, null, RABBITMQ_TEST_MESSAGE.getBytes());
 
         // check the message was received
-        assertThat(
-            Unreliables.retryUntilSuccess(
-                5,
-                TimeUnit.SECONDS,
-                () -> {
-                    if (!messageWasReceived[0]) {
-                        throw new IllegalStateException("Message not received yet");
-                    }
-                    return true;
-                }
-            )
-        )
-            .as("The message was received")
-            .isTrue();
+        await()
+            .atMost(5, TimeUnit.SECONDS)
+            .untilAsserted(() -> assertThat(messageWasReceived[0]).as("The message was received").isTrue());
     }
 
     @Test
@@ -409,16 +398,16 @@ public class GenericContainerRuleTest {
     }
 
     private BufferedReader getReaderForContainerPort80(GenericContainer container) {
-        return Unreliables.retryUntilSuccess(
-            10,
-            TimeUnit.SECONDS,
-            () -> {
-                Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
-
-                Socket socket = new Socket(container.getHost(), container.getFirstMappedPort());
-                return new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            }
-        );
+        return await()
+            .atMost(10, TimeUnit.SECONDS)
+            .pollInterval(1, TimeUnit.SECONDS)
+            .until(
+                () -> {
+                    Socket socket = new Socket(container.getHost(), container.getFirstMappedPort());
+                    return new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                },
+                Objects::nonNull
+            );
     }
 
     @Test

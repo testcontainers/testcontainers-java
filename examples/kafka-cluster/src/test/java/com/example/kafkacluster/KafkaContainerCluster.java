@@ -1,7 +1,6 @@
 package com.example.kafkacluster;
 
 import lombok.SneakyThrows;
-import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.KafkaContainer;
@@ -15,6 +14,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+
+import static org.awaitility.Awaitility.await;
 
 /**
  * Provides an easy way to launch a Kafka cluster with multiple brokers.
@@ -87,10 +88,9 @@ public class KafkaContainerCluster implements Startable {
         // sequential start to avoid resource contention on CI systems with weaker hardware
         brokers.forEach(GenericContainer::start);
 
-        Unreliables.retryUntilTrue(
-            30,
-            TimeUnit.SECONDS,
-            () -> {
+        await()
+            .atMost(10, TimeUnit.SECONDS)
+            .untilAsserted(() -> {
                 Container.ExecResult result =
                     this.zookeeper.execInContainer(
                             "sh",
@@ -101,9 +101,10 @@ public class KafkaContainerCluster implements Startable {
                         );
                 String brokers = result.getStdout();
 
-                return brokers != null && brokers.split(",").length == this.brokersNum;
-            }
-        );
+                if (brokers == null || brokers.split(",").length != this.brokersNum) {
+                    throw new IllegalStateException("Zookeeper is not ready yet");
+                }
+            });
     }
 
     @Override

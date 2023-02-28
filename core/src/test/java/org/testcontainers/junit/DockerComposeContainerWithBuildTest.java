@@ -4,7 +4,6 @@ import com.github.dockerjava.api.model.Container;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.DockerComposeContainer;
 
@@ -14,6 +13,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 @RunWith(Parameterized.class)
 public class DockerComposeContainerWithBuildTest {
@@ -68,29 +68,23 @@ public class DockerComposeContainerWithBuildTest {
                 .isEqualTo(true);
         }
 
-        Unreliables.retryUntilSuccess(
-            10,
-            TimeUnit.SECONDS,
-            () -> {
-                final boolean isBuiltImagePresentAfterRunning = isImagePresent(builtImageName.get());
-                assertThat(isBuiltImagePresentAfterRunning)
-                    .as("the built image is not present after running")
+        await()
+            .atMost(10, TimeUnit.SECONDS)
+            .untilAsserted(() -> {
+                final boolean isBuiltImagePresentAfterStopping = isImagePresent(builtImageName.get());
+                assertThat(isBuiltImagePresentAfterStopping)
+                    .as("the built image is not present after stopping")
                     .isEqualTo(shouldBuiltImageBePresentAfterRunning);
-                return null;
-            }
-        );
+            });
 
-        Unreliables.retryUntilSuccess(
-            10,
-            TimeUnit.SECONDS,
-            () -> {
-                final boolean isPulledImagePresentAfterRunning = isImagePresent(pulledImageName.get());
-                assertThat(isPulledImagePresentAfterRunning)
-                    .as("the pulled image is present after running")
+        await()
+            .atMost(10, TimeUnit.SECONDS)
+            .untilAsserted(() -> {
+                final boolean isPulledImagePresentAfterStopping = isImagePresent(pulledImageName.get());
+                assertThat(isPulledImagePresentAfterStopping)
+                    .as("the pulled image is not present after stopping")
                     .isEqualTo(shouldPulledImageBePresentAfterRunning);
-                return null;
-            }
-        );
+            });
     }
 
     private String imageNameForRunningContainer(final String containerNameSuffix) {

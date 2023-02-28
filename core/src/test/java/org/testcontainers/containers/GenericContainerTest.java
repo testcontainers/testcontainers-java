@@ -12,8 +12,8 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.assertj.core.api.Assumptions;
+import org.awaitility.Awaitility;
 import org.junit.Test;
-import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.TestImages;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
@@ -198,20 +198,18 @@ public class GenericContainerTest {
         @Override
         @SneakyThrows
         protected void waitUntilReady() {
-            Unreliables.retryUntilTrue(
-                5,
-                TimeUnit.SECONDS,
-                () -> {
+            Awaitility
+                .await()
+                .atMost(5, TimeUnit.SECONDS)
+                .until(() -> {
                     ContainerState state = waitStrategyTarget.getCurrentContainerInfo().getState();
 
                     log.debug("Current state: {}", state);
                     if (!"exited".equalsIgnoreCase(state.getStatus())) {
-                        Thread.sleep(100);
                         return false;
                     }
                     return predicate.test(state);
-                }
-            );
+                });
 
             throw new IllegalStateException("Nope!");
         }

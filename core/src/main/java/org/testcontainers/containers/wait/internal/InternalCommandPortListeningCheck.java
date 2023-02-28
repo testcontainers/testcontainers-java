@@ -9,13 +9,14 @@ import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 /**
  * Mechanism for testing that a socket is listening when run from the container being checked.
  */
 @RequiredArgsConstructor
 @Slf4j
-public class InternalCommandPortListeningCheck implements java.util.concurrent.Callable<Boolean> {
+public class InternalCommandPortListeningCheck implements Callable<Boolean> {
 
     private final WaitStrategyTarget waitStrategyTarget;
 

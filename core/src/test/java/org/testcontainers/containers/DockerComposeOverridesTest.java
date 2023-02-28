@@ -1,20 +1,21 @@
 package org.testcontainers.containers;
 
-import com.google.common.util.concurrent.Uninterruptibles;
 import org.assertj.core.api.Assumptions;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.rnorth.ducttape.unreliables.Unreliables;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+
+import static org.awaitility.Awaitility.await;
 
 @RunWith(Parameterized.class)
 public class DockerComposeOverridesTest {
@@ -76,34 +77,32 @@ public class DockerComposeOverridesTest {
         ) {
             compose.start();
 
-            BufferedReader br = Unreliables.retryUntilSuccess(
-                10,
-                TimeUnit.SECONDS,
-                () -> {
-                    Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
+            BufferedReader br = await()
+                .atMost(10, TimeUnit.SECONDS)
+                .pollInterval(1, TimeUnit.SECONDS)
+                .until(
+                    () -> {
+                        Socket socket = new Socket(
+                            compose.getServiceHost(SERVICE_NAME, SERVICE_PORT),
+                            compose.getServicePort(SERVICE_NAME, SERVICE_PORT)
+                        );
+                        return new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                    },
+                    Objects::nonNull
+                );
 
-                    Socket socket = new Socket(
-                        compose.getServiceHost(SERVICE_NAME, SERVICE_PORT),
-                        compose.getServicePort(SERVICE_NAME, SERVICE_PORT)
-                    );
-                    return new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                }
-            );
-
-            Unreliables.retryUntilTrue(
-                10,
-                TimeUnit.SECONDS,
-                () -> {
+            await()
+                .atMost(10, TimeUnit.SECONDS)
+                .pollInterval(100, TimeUnit.MILLISECONDS)
+                .until(() -> {
                     while (br.ready()) {
                         String line = br.readLine();
                         if (line.contains(expectedEnvVar)) {
                             return true;
                         }
                     }
-                    Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
                     return false;
-                }
-            );
+                });
         }
     }
 }

@@ -1,7 +1,6 @@
 package com.example.kafkacluster;
 
 import org.apache.kafka.common.Uuid;
-import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.KafkaContainer;
@@ -14,6 +13,8 @@ import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import static org.awaitility.Awaitility.await;
 
 public class KafkaContainerKraftCluster implements Startable {
 
@@ -79,10 +80,9 @@ public class KafkaContainerKraftCluster implements Startable {
         // Needs to start all the brokers at once
         brokers.parallelStream().forEach(GenericContainer::start);
 
-        Unreliables.retryUntilTrue(
-            30,
-            TimeUnit.SECONDS,
-            () -> {
+        await()
+            .atMost(30, TimeUnit.SECONDS)
+            .untilAsserted(() -> {
                 Container.ExecResult result =
                     this.brokers.stream()
                         .findFirst()
@@ -94,9 +94,10 @@ public class KafkaContainerKraftCluster implements Startable {
                         );
                 String brokers = result.getStdout().replace("\n", "");
 
-                return brokers != null && Integer.valueOf(brokers) == this.brokersNum;
-            }
-        );
+                if (brokers == null || Integer.valueOf(brokers) != this.brokersNum) {
+                    throw new IllegalStateException("Expected " + this.brokersNum + " brokers, but got " + brokers);
+                }
+            });
     }
 
     @Override

@@ -4,11 +4,12 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
-import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.GenericContainer;
 
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+
+import static org.awaitility.Awaitility.await;
 
 /**
  * Approach to determine whether a container has 'started up' correctly.
@@ -40,10 +41,10 @@ public abstract class StartupCheckStrategy {
 
     public boolean waitUntilStartupSuccessful(DockerClient dockerClient, String containerId) {
         final Boolean[] startedOK = { null };
-        Unreliables.retryUntilTrue(
-            (int) timeout.toMillis(),
-            TimeUnit.MILLISECONDS,
-            () -> {
+        await()
+            .atMost(timeout.toMillis(), TimeUnit.MILLISECONDS)
+            .pollInterval(100, TimeUnit.MILLISECONDS)
+            .until(() -> {
                 //noinspection CodeBlock2Expr
                 return DOCKER_CLIENT_RATE_LIMITER.getWhenReady(() -> {
                     StartupStatus state = checkStartupState(dockerClient, containerId);
@@ -58,8 +59,7 @@ public abstract class StartupCheckStrategy {
                             return false;
                     }
                 });
-            }
-        );
+            });
         return startedOK[0];
     }
 
