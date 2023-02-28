@@ -55,6 +55,11 @@ subprojects {
         version = '1.18.24'
     }
 
+    jar {
+        manifest {
+            attributes('Automatic-Module-Name': "org.testcontainers.${project.name}")
+        }
+    }
 
     task delombok(type: io.franzbecker.gradle.lombok.task.DelombokTask) {
         outputs.cacheIf {
