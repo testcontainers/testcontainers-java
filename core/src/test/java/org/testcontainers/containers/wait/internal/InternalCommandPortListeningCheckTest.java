@@ -1,12 +1,11 @@
 package org.testcontainers.containers.wait.internal;
 
 import com.google.common.collect.ImmutableSet;
+import org.awaitility.core.ConditionTimeoutException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.rnorth.ducttape.TimeoutException;
-import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 
@@ -14,6 +13,7 @@ import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.fail;
+import static org.awaitility.Awaitility.await;
 
 @RunWith(Parameterized.class)
 public class InternalCommandPortListeningCheckTest {
@@ -48,7 +48,7 @@ public class InternalCommandPortListeningCheckTest {
             ImmutableSet.of(8080)
         );
 
-        Unreliables.retryUntilTrue(5, TimeUnit.SECONDS, check);
+        await().atMost(5, TimeUnit.SECONDS).until(check);
     }
 
     @Test
@@ -59,9 +59,9 @@ public class InternalCommandPortListeningCheckTest {
         );
 
         try {
-            Unreliables.retryUntilTrue(5, TimeUnit.SECONDS, check);
+            await().atMost(5, TimeUnit.SECONDS).until(check);
             fail("expected to fail");
-        } catch (TimeoutException e) {}
+        } catch (ConditionTimeoutException e) {}
     }
 
     @Test
@@ -71,6 +71,6 @@ public class InternalCommandPortListeningCheckTest {
             ImmutableSet.of(100, 8080)
         );
 
-        Unreliables.retryUntilTrue(5, TimeUnit.SECONDS, check);
+        await().atMost(5, TimeUnit.SECONDS).until(check);
     }
 }

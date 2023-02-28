@@ -13,8 +13,6 @@ import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
-import org.rnorth.ducttape.timeouts.Timeouts;
-import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.VncRecordingContainer.VncRecordingFormat;
@@ -35,9 +33,12 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
+import static org.awaitility.Awaitility.await;
 
 /**
  * A chrome/firefox/custom container based on SeleniumHQ's standalone container sets.
@@ -342,19 +343,10 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
             }
 
             driver =
-                Unreliables.retryUntilSuccess(
-                    30,
-                    TimeUnit.SECONDS,
-                    () -> {
-                        return Timeouts.getWithTimeout(
-                            10,
-                            TimeUnit.SECONDS,
-                            () -> {
-                                return new RemoteWebDriver(getSeleniumAddress(), capabilities);
-                            }
-                        );
-                    }
-                );
+                await()
+                    .atMost(30, TimeUnit.SECONDS)
+                    .pollInterval(10, TimeUnit.SECONDS)
+                    .until(() -> new RemoteWebDriver(getSeleniumAddress(), capabilities), Objects::nonNull);
         }
         return driver;
     }

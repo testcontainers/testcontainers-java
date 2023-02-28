@@ -1,10 +1,11 @@
 package org.testcontainers.containers.wait.strategy;
 
-import org.rnorth.ducttape.TimeoutException;
-import org.rnorth.ducttape.unreliables.Unreliables;
+import org.awaitility.core.ConditionTimeoutException;
 import org.testcontainers.containers.ContainerLaunchException;
 
 import java.util.concurrent.TimeUnit;
+
+import static org.awaitility.Awaitility.await;
 
 /**
  * Wait strategy leveraging Docker's built-in healthcheck mechanism.
@@ -16,12 +17,8 @@ public class DockerHealthcheckWaitStrategy extends AbstractWaitStrategy {
     @Override
     protected void waitUntilReady() {
         try {
-            Unreliables.retryUntilTrue(
-                (int) startupTimeout.getSeconds(),
-                TimeUnit.SECONDS,
-                waitStrategyTarget::isHealthy
-            );
-        } catch (TimeoutException e) {
+            await().atMost(startupTimeout.getSeconds(), TimeUnit.SECONDS).until(waitStrategyTarget::isHealthy);
+        } catch (ConditionTimeoutException e) {
             throw new ContainerLaunchException("Timed out waiting for container to become healthy");
         }
     }

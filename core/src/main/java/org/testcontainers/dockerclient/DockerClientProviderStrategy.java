@@ -17,12 +17,10 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.awaitility.Awaitility;
+import org.awaitility.core.ConditionTimeoutException;
 import org.jetbrains.annotations.Nullable;
-import org.rnorth.ducttape.TimeoutException;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
-import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.UnstableAPI;
 import org.testcontainers.utility.TestcontainersConfiguration;
@@ -54,6 +52,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.net.SocketFactory;
+
+import static org.awaitility.Awaitility.await;
 
 /**
  * Mechanism to find a viable Docker client configuration according to the host system environment.
@@ -111,19 +111,17 @@ public abstract class DockerClientProviderStrategy {
     public DockerClient getClient() {
         DockerClient dockerClient = getDockerClient();
         try {
-            Unreliables.retryUntilSuccess(
-                30,
-                TimeUnit.SECONDS,
-                () -> {
+            await()
+                .atMost(30, TimeUnit.SECONDS)
+                .until(() -> {
                     return PING_RATE_LIMITER.getWhenReady(() -> {
                         log.debug("Pinging docker daemon...");
                         dockerClient.pingCmd().exec();
                         log.debug("Pinged");
                         return true;
                     });
-                }
-            );
-        } catch (TimeoutException e) {
+                });
+        } catch (ConditionTimeoutException e) {
             IOUtils.closeQuietly(dockerClient);
             throw e;
         }
@@ -188,8 +186,7 @@ public abstract class DockerClientProviderStrategy {
 
         try (Socket socket = socketProvider.call()) {
             Duration timeout = Duration.ofMillis(200);
-            Awaitility
-                .await()
+            await()
                 .atMost(TestcontainersConfiguration.getInstance().getClientPingTimeout(), TimeUnit.SECONDS)
                 .pollInterval(timeout)
                 .pollDelay(Duration.ofSeconds(0)) // start checking immediately

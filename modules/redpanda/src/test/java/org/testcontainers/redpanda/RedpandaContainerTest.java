@@ -16,7 +16,6 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.Test;
-import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
@@ -28,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.awaitility.Awaitility.await;
 
 public class RedpandaContainerTest {
 
@@ -137,24 +137,16 @@ public class RedpandaContainerTest {
 
             producer.send(new ProducerRecord<>(topicName, "testcontainers", "rulezzz")).get();
 
-            Unreliables.retryUntilTrue(
-                10,
-                TimeUnit.SECONDS,
-                () -> {
+            await()
+                .atMost(10, TimeUnit.SECONDS)
+                .untilAsserted(() -> {
                     ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
-
-                    if (records.isEmpty()) {
-                        return false;
-                    }
 
                     assertThat(records)
                         .hasSize(1)
                         .extracting(ConsumerRecord::topic, ConsumerRecord::key, ConsumerRecord::value)
                         .containsExactly(tuple(topicName, "testcontainers", "rulezzz"));
-
-                    return true;
-                }
-            );
+                });
 
             consumer.unsubscribe();
         }

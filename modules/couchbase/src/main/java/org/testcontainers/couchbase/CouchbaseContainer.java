@@ -27,7 +27,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
@@ -46,6 +45,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
+import static org.awaitility.Awaitility.await;
 
 /**
  * The couchbase container initializes and configures a Couchbase Server single node cluster.
@@ -341,8 +342,9 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         timePhase("renameNode", this::renameNode);
         timePhase("initializeServices", this::initializeServices);
         timePhase("setMemoryQuotas", this::setMemoryQuotas);
-        timePhase("configureAdminUser", this::configureAdminUser);
         timePhase("configureExternalPorts", this::configureExternalPorts);
+        //        timePhase("createBuckets", this::createBuckets);
+        timePhase("configureAdminUser", this::configureAdminUser);
 
         if (enabledServices.contains(CouchbaseService.INDEX)) {
             timePhase("configureIndexer", this::configureIndexer);
@@ -361,7 +363,15 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
      * Before we can start configuring the host, we need to wait until the cluster manager is listening.
      */
     private void waitUntilNodeIsOnline() {
-        new HttpWaitStrategy().forPort(MGMT_PORT).forPath("/pools").forStatusCode(200).waitUntilReady(this);
+        await()
+            .atMost(5, TimeUnit.MINUTES)
+            .pollInterval(2, TimeUnit.SECONDS)
+            .ignoreExceptions()
+            .until(() -> {
+                @Cleanup
+                Response response = doHttpRequest(MGMT_PORT, "/pools", "GET", null, false);
+                return response.code() == 200;
+            });
     }
 
     /**
@@ -369,7 +379,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
      */
     private void initializeIsEnterprise() {
         @Cleanup
-        Response response = doHttpRequest(MGMT_PORT, "/pools", "GET", null, true);
+        Response response = doHttpRequest(MGMT_PORT, "/pools", "GET", null, false);
 
         try {
             isEnterprise = MAPPER.readTree(response.body().string()).get("isEnterprise").asBoolean();
@@ -472,11 +482,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
             MGMT_PORT,
             "/settings/web",
             "POST",
-            new FormBody.Builder()
-                .add("username", username)
-                .add("password", password)
-                .add("port", Integer.toString(MGMT_PORT))
-                .build(),
+            new FormBody.Builder().add("username", username).add("password", password).add("port", "SAME").build(),
             false
         );
 
@@ -571,7 +577,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
                 "POST",
                 new FormBody.Builder()
                     .add("name", bucket.getName())
-                    .add("ramQuotaMB", Integer.toString(bucket.getQuota()))
+                    .add("ramQuota", Integer.toString(bucket.getQuota()))
                     .add("flushEnabled", bucket.hasFlushEnabled() ? "1" : "0")
                     .add("replicaNumber", Integer.toString(bucket.getNumReplicas()))
                     .build(),
@@ -579,134 +585,6 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
             );
 
             checkSuccessfulResponse(response, "Could not create bucket " + bucket.getName());
-
-            timePhase(
-                "createBucket:" + bucket.getName() + ":waitForAllServicesEnabled",
-                () -> {
-                    new HttpWaitStrategy()
-                        .forPath("/pools/default/b/" + bucket.getName())
-                        .forPort(MGMT_PORT)
-                        .withBasicCredentials(username, password)
-                        .forStatusCode(200)
-                        .forResponsePredicate(new AllServicesEnabledPredicate())
-                        .waitUntilReady(this);
-                }
-            );
-
-            if (enabledServices.contains(CouchbaseService.QUERY)) {
-                // If the query service is enabled, make sure that we only proceed if the query engine also
-                // knows about the bucket in its metadata configuration.
-                timePhase(
-                    "createBucket:" + bucket.getName() + ":queryKeyspacePresent",
-                    () -> {
-                        Unreliables.retryUntilTrue(
-                            1,
-                            TimeUnit.MINUTES,
-                            () -> {
-                                @Cleanup
-                                Response queryResponse = doHttpRequest(
-                                    QUERY_PORT,
-                                    "/query/service",
-                                    "POST",
-                                    new FormBody.Builder()
-                                        .add(
-                                            "statement",
-                                            "SELECT COUNT(*) > 0 as present FROM system:keyspaces WHERE name = \"" +
-                                            bucket.getName() +
-                                            "\""
-                                        )
-                                        .build(),
-                                    true
-                                );
-
-                                String body = queryResponse.body() != null ? queryResponse.body().string() : null;
-                                checkSuccessfulResponse(
-                                    queryResponse,
-                                    "Could not poll query service state for bucket: " + bucket.getName()
-                                );
-
-                                return Optional
-                                    .of(MAPPER.readTree(body))
-                                    .map(n -> n.at("/results/0/present"))
-                                    .map(JsonNode::asBoolean)
-                                    .orElse(false);
-                            }
-                        );
-                    }
-                );
-            }
-
-            if (bucket.hasPrimaryIndex()) {
-                if (enabledServices.contains(CouchbaseService.QUERY)) {
-                    @Cleanup
-                    Response queryResponse = doHttpRequest(
-                        QUERY_PORT,
-                        "/query/service",
-                        "POST",
-                        new FormBody.Builder()
-                            .add("statement", "CREATE PRIMARY INDEX on `" + bucket.getName() + "`")
-                            .build(),
-                        true
-                    );
-
-                    try {
-                        checkSuccessfulResponse(
-                            queryResponse,
-                            "Could not create primary index for bucket " + bucket.getName()
-                        );
-                    } catch (IllegalStateException ex) {
-                        // potentially ignore the error, the index will be eventually built.
-                        if (!ex.getMessage().contains("Index creation will be retried in background")) {
-                            throw ex;
-                        }
-                    }
-
-                    timePhase(
-                        "createBucket:" + bucket.getName() + ":primaryIndexOnline",
-                        () -> {
-                            Unreliables.retryUntilTrue(
-                                1,
-                                TimeUnit.MINUTES,
-                                () -> {
-                                    @Cleanup
-                                    Response stateResponse = doHttpRequest(
-                                        QUERY_PORT,
-                                        "/query/service",
-                                        "POST",
-                                        new FormBody.Builder()
-                                            .add(
-                                                "statement",
-                                                "SELECT count(*) > 0 AS online FROM system:indexes where keyspace_id = \"" +
-                                                bucket.getName() +
-                                                "\" and is_primary = true and state = \"online\""
-                                            )
-                                            .build(),
-                                        true
-                                    );
-
-                                    String body = stateResponse.body() != null ? stateResponse.body().string() : null;
-                                    checkSuccessfulResponse(
-                                        stateResponse,
-                                        "Could not poll primary index state for bucket: " + bucket.getName()
-                                    );
-
-                                    return Optional
-                                        .of(MAPPER.readTree(body))
-                                        .map(n -> n.at("/results/0/online"))
-                                        .map(JsonNode::asBoolean)
-                                        .orElse(false);
-                                }
-                            );
-                        }
-                    );
-                } else {
-                    logger()
-                        .info(
-                            "Primary index creation for bucket {} ignored, since QUERY service is not present.",
-                            bucket.getName()
-                        );
-                }
-            }
         }
     }
 
