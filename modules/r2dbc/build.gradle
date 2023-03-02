@@ -16,5 +16,5 @@ dependencies {
     testImplementation project(':postgresql')
 
     testFixturesImplementation 'io.projectreactor:reactor-core:3.5.2'
-    testFixturesImplementation 'org.assertj:assertj-core:3.23.1'
+    testFixturesImplementation 'org.assertj:assertj-core:3.24.2'
 }
