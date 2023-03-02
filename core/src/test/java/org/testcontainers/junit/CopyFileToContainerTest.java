@@ -48,16 +48,16 @@ public class CopyFileToContainerTest {
     public void shouldUseCopyOnlyWithReadOnlyClasspathResources() {
         String resource = "/test_copy_to_container.txt";
         GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
-            .withClasspathResourceMapping(resource, "/readOnlyNoSelinux", BindMode.READ_ONLY, SelinuxContext.NONE)
-            .withClasspathResourceMapping(resource, "/readOnly", BindMode.READ_ONLY)
             .withClasspathResourceMapping(resource, "/readOnlyShared", BindMode.READ_ONLY, SelinuxContext.SHARED)
+            .withClasspathResourceMapping(resource, "/readOnly", BindMode.READ_ONLY)
+            .withClasspathResourceMapping(resource, "/readOnlyNoSelinux", BindMode.READ_ONLY, SelinuxContext.NONE)
             .withClasspathResourceMapping(resource, "/readWrite", BindMode.READ_WRITE);
 
         Map<MountableFile, String> copyMap = container.getCopyToFileContainerPathMap();
-        assertThat(copyMap).as("uses copy for read-only and no Selinux").containsValue("/readOnlyNoSelinux");
+        assertThat(copyMap).as("uses copy for read-only with Selinux").containsValue("/readOnlyShared");
+        assertThat(copyMap).as("uses copy for read-only").containsValue("/readOnly");
 
-        assertThat(copyMap).as("uses mount for read-only").doesNotContainValue("/readOnly");
-        assertThat(copyMap).as("uses mount for read-only with Selinux").doesNotContainValue("/readOnlyShared");
+        assertThat(copyMap).as("uses mount for read-only and no Selinux").doesNotContainValue("/readOnlyNoSelinux");
         assertThat(copyMap).as("uses mount for read-write").doesNotContainValue("/readWrite");
     }
 
