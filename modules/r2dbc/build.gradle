@@ -6,7 +6,7 @@ description = "Testcontainers :: R2DBC"
 
 dependencies {
     annotationProcessor 'com.google.auto.service:auto-service:1.0.1'
-    compileOnly 'com.google.auto.service:auto-service:1.0-rc6'
+    compileOnly 'com.google.auto.service:auto-service:1.0.1'
 
     api project(':testcontainers')
     api 'io.r2dbc:r2dbc-spi:0.8.1.RELEASE'
