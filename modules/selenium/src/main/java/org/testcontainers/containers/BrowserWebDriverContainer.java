@@ -52,6 +52,8 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
     private static final DockerImageName FIREFOX_IMAGE = DockerImageName.parse("selenium/standalone-firefox");
 
+    private static final DockerImageName EDGE_IMAGE = DockerImageName.parse("selenium/standalone-edge");
+
     private static final DockerImageName CHROME_DEBUG_IMAGE = DockerImageName.parse("selenium/standalone-chrome-debug");
 
     private static final DockerImageName FIREFOX_DEBUG_IMAGE = DockerImageName.parse(
@@ -61,6 +63,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     private static final DockerImageName[] COMPATIBLE_IMAGES = new DockerImageName[] {
         CHROME_IMAGE,
         FIREFOX_IMAGE,
+        EDGE_IMAGE,
         CHROME_DEBUG_IMAGE,
         FIREFOX_DEBUG_IMAGE,
     };
@@ -126,7 +129,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
      */
     public BrowserWebDriverContainer(DockerImageName dockerImageName) {
         super(dockerImageName);
-        // we assert compatibility with the chrome/firefox image later, after capabilities are processed
+        // we assert compatibility with the chrome/firefox/edge image later, after capabilities are processed
 
         final WaitStrategy logWaitStrategy = new LogMessageWaitStrategy()
             .withRegEx(
@@ -266,9 +269,23 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
                 return (supportsVncWithoutDebugImage ? CHROME_IMAGE : CHROME_DEBUG_IMAGE).withTag(seleniumVersion);
             case BrowserType.FIREFOX:
                 return (supportsVncWithoutDebugImage ? FIREFOX_IMAGE : FIREFOX_DEBUG_IMAGE).withTag(seleniumVersion);
+            case BrowserType.EDGE:
+                if (supportsVncWithoutDebugImage) {
+                    return EDGE_IMAGE.withTag(seleniumVersion);
+                }
+                throw new UnsupportedOperationException(
+                    "For browser 'MicrosoftEdge' selenium version must be 4 or higher;" +
+                    "docker images are available from there upwards;" +
+                    "provided version: '" +
+                    seleniumVersion +
+                    "'"
+                );
             default:
                 throw new UnsupportedOperationException(
-                    "Browser name must be 'chrome' or 'firefox'; provided '" + browserName + "' is not supported"
+                    "Browser name must be 'chrome', 'firefox' or 'MicrosoftEdge';" +
+                    "provided '" +
+                    browserName +
+                    "' is not supported"
                 );
         }
     }
@@ -444,5 +461,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         private static final String CHROME = "chrome";
 
         private static final String FIREFOX = "firefox";
+
+        private static final String EDGE = "MicrosoftEdge";
     }
 }

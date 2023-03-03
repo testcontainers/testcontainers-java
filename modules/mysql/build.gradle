@@ -2,7 +2,7 @@ description = "Testcontainers :: JDBC :: MySQL"
 
 dependencies {
     annotationProcessor 'com.google.auto.service:auto-service:1.0.1'
-    compileOnly 'com.google.auto.service:auto-service:1.0'
+    compileOnly 'com.google.auto.service:auto-service:1.0.1'
 
     api project(':jdbc')
 
@@ -10,10 +10,10 @@ dependencies {
     compileOnly 'dev.miku:r2dbc-mysql:0.8.2.RELEASE'
 
     testImplementation project(':jdbc-test')
-    testImplementation 'mysql:mysql-connector-java:8.0.31'
+    testImplementation 'mysql:mysql-connector-java:8.0.32'
 
     testImplementation testFixtures(project(':r2dbc'))
     testImplementation 'dev.miku:r2dbc-mysql:0.8.2.RELEASE'
 
-    compileOnly 'org.jetbrains:annotations:23.0.0'
+    compileOnly 'org.jetbrains:annotations:24.0.0'
 }

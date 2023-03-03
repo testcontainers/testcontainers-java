@@ -83,6 +83,7 @@ nav:
           - modules/pulsar.md
           - modules/rabbitmq.md
           - modules/redpanda.md
+          - modules/solace.md
           - modules/solr.md
           - modules/toxiproxy.md
           - modules/vault.md
@@ -99,6 +100,7 @@ nav:
                 - supported_docker_environment/continuous_integration/aws_codebuild.md
                 - supported_docker_environment/continuous_integration/dind_patterns.md
                 - supported_docker_environment/continuous_integration/circle_ci.md
+                - supported_docker_environment/continuous_integration/concourse_ci.md
                 - supported_docker_environment/continuous_integration/drone.md
                 - supported_docker_environment/continuous_integration/gitlab_ci.md
                 - supported_docker_environment/continuous_integration/bitbucket_pipelines.md

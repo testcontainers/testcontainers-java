@@ -14,8 +14,6 @@ import static org.assertj.core.api.Assertions.fail;
 
 /**
  * Test for basic functionality when used as a <code>@ClassRule</code>.
- *
- * @author Michael J. Simons
  */
 public class Neo4jContainerJUnitIntegrationTest {
 

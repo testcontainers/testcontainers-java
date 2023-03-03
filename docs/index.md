@@ -9,8 +9,9 @@
     <a href="https://golang.testcontainers.org/" class="card-grid-item"><img src="language-logos/go.svg"/>Go</a>
     <a href="https://dotnet.testcontainers.org/" class="card-grid-item"><img src="language-logos/dotnet.svg"/>.NET</a>
     <a href="https://testcontainers-python.readthedocs.io/en/latest/" class="card-grid-item"><img src="language-logos/python.svg"/>Python</a>
-    <a href="https://github.com/testcontainers/testcontainers-node" class="card-grid-item"><img src="language-logos/nodejs.svg"/>Node.js</a>
+    <a href="https://node.testcontainers.org/" class="card-grid-item"><img src="language-logos/nodejs.svg"/>Node.js</a>
     <a href="https://docs.rs/testcontainers/latest/testcontainers/" class="card-grid-item"><img src="language-logos/rust.svg"/>Rust</a>
+    <a href="https://github.com/testcontainers/testcontainers-hs/" class="card-grid-item" ><img src="language-logos/haskell.svg"/>Haskell</a>
 </div>
 
 ## About Testcontainers for Java
