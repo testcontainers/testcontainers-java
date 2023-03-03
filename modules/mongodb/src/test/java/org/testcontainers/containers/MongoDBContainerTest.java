@@ -11,11 +11,16 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.TransactionBody;
 import org.bson.Document;
 import org.junit.Test;
+import org.testcontainers.containers.output.OutputFrame.OutputType;
 import org.testcontainers.utility.DockerImageName;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.testcontainers.containers.MongoDBContainer.*;
+import static org.testcontainers.utility.DockerImageName.*;
 
 public class MongoDBContainerTest {
+
+    private static final DockerImageName DOCKER_IMAGE_NAME = DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG);
 
     /**
      * Taken from <a href="https://docs.mongodb.com/manual/core/transactions/">https://docs.mongodb.com</a>
@@ -24,7 +29,7 @@ public class MongoDBContainerTest {
     public void shouldExecuteTransactions() {
         try (
             // creatingMongoDBContainer {
-            final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.0.10"))
+            final MongoDBContainer mongoDBContainer = new MongoDBContainer(parse("mongo:" + DEFAULT_TAG))
             // }
         ) {
             // startingMongoDBContainer {
@@ -85,17 +90,25 @@ public class MongoDBContainerTest {
             mongoSyncClient.close();
         }
     }
+    private void evaluateCommand(MongoDBContainer mongoDBContainer, Document command) {
+        try(final MongoClient client = MongoClients.create(mongoDBContainer.getConnectionString())) {
+            Document admin = client.getDatabase("admin").runCommand(command);
+            System.out.println("admin.toJson() = " + admin.toJson());
+        } catch (RuntimeException re) {
+            throw new IllegalStateException(re.getMessage(), re);
+        }
+    }
 
     @Test
     public void supportsMongoDB_4_4() {
-        try (final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.4"))) {
+        try (final MongoDBContainer mongoDBContainer = new MongoDBContainer(parse("mongo:4.4"))) {
             mongoDBContainer.start();
         }
     }
 
     @Test
     public void shouldTestDatabaseName() {
-        try (final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.0.10"))) {
+        try (final MongoDBContainer mongoDBContainer = new MongoDBContainer(DOCKER_IMAGE_NAME)) {
             mongoDBContainer.start();
             final String databaseName = "my-db";
             assertThat(mongoDBContainer.getReplicaSetUrl(databaseName)).endsWith(databaseName);
@@ -103,10 +116,16 @@ public class MongoDBContainerTest {
     }
 
     @Test
-    public void supportsMongoDB_6() {
-        try (final MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0.1")) {
+    public void testShouldSupportSharding() {
+        try (final MongoDBContainer mongoDBContainer = new MongoDBContainer(DOCKER_IMAGE_NAME)
+                                                           .withSharding()) {
             mongoDBContainer.start();
-            executeTx(mongoDBContainer);
+            try {
+                executeTx(mongoDBContainer);
+            } finally {
+                System.out.println("logs = " + mongoDBContainer.getLogs(OutputType.values()));
+            }
         }
     }
+
 }

@@ -6,6 +6,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 
 import java.io.IOException;
 
@@ -28,6 +29,11 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
     private static final int AWAIT_INIT_REPLICA_SET_ATTEMPTS = 60;
 
     private static final String MONGODB_DATABASE_NAME_DEFAULT = "test";
+    private static final String STARTER_SCRIPT = "/testcontainers_start.sh";
+
+    private boolean shardingEnabled;
+
+    private String shardedDatabase;
 
     /**
      * @deprecated use {@link MongoDBContainer(DockerImageName)} instead
@@ -46,8 +52,40 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         withExposedPorts(MONGODB_INTERNAL_PORT);
-        withCommand("--replSet", "docker-rs");
-        waitingFor(Wait.forLogMessage("(?i).*waiting for connections.*", 1));
+        if (shardingEnabled) {
+            withCreateContainerCmdModifier(cmd -> {
+                cmd.withEntrypoint("sh");
+            });
+            withCommand("-c", "while [ ! -f " + STARTER_SCRIPT + " ]; do sleep 0.1; done; " + STARTER_SCRIPT);
+            waitingFor(Wait.forLogMessage("(?i).*mongos ready.*", 1));
+        } else {
+            withCommand("--replSet", "docker-rs");
+            waitingFor(Wait.forLogMessage("(?i).*waiting for connections.*", 1));
+        }
+    }
+
+    @Override
+    protected void containerIsStarting(InspectContainerResponse containerInfo) {
+        copyFileToContainer(MountableFile.forClasspathResource("/sharding.sh", 0777), STARTER_SCRIPT);
+    }
+
+    @Override
+    @SneakyThrows(value = { IOException.class, InterruptedException.class })
+    protected void containerIsStarted(InspectContainerResponse containerInfo) {
+        if (!shardingEnabled) {
+            initReplicaSet();
+        }
+    }
+
+
+    public MongoDBContainer withSharding(String database) {
+        shardedDatabase = database;
+        shardingEnabled = true;
+        return this;
+    }
+
+    public MongoDBContainer withSharding() {
+        return withSharding( MONGODB_DATABASE_NAME_DEFAULT);
     }
 
     /**
@@ -83,18 +121,14 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
 
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo, boolean reused) {
-        if (reused && isReplicationSetAlreadyInitialized()) {
-            log.debug("Replica set already initialized.");
-        } else {
-            initReplicaSet();
-        }
+        initReplicaSet(reused);
     }
 
     private String[] buildMongoEvalCommand(final String command) {
         return new String[] {
             "sh",
             "-c",
-            "mongosh mongo --eval \"" + command + "\"  || mongo --eval \"" + command + "\"",
+            "mongosh mongo --eval \"" + command + "\"",
         };
     }
 
@@ -133,20 +167,24 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
     }
 
     @SneakyThrows(value = { IOException.class, InterruptedException.class })
-    private void initReplicaSet() {
-        log.debug("Initializing a single node node replica set...");
-        final ExecResult execResultInitRs = execInContainer(buildMongoEvalCommand("rs.initiate();"));
-        log.debug(execResultInitRs.getStdout());
-        checkMongoNodeExitCode(execResultInitRs);
+    private void initReplicaSet(boolean reused) {
+        if (reused && isReplicationSetAlreadyInitialized()) {
+            log.debug("Replica set already initialized.");
+        } else {
+            log.debug("Initializing a single node node replica set...");
+            final ExecResult execResultInitRs = execInContainer(buildMongoEvalCommand("rs.initiate();"));
+            log.debug(execResultInitRs.getStdout());
+            checkMongoNodeExitCode(execResultInitRs);
 
-        log.debug(
-            "Awaiting for a single node replica set initialization up to {} attempts",
-            AWAIT_INIT_REPLICA_SET_ATTEMPTS
-        );
-        final ExecResult execResultWaitForMaster = execInContainer(buildMongoEvalCommand(buildMongoWaitCommand()));
-        log.debug(execResultWaitForMaster.getStdout());
+            log.debug(
+                "Awaiting for a single node replica set initialization up to {} attempts",
+                AWAIT_INIT_REPLICA_SET_ATTEMPTS
+                     );
+            final ExecResult execResultWaitForMaster = execInContainer(buildMongoEvalCommand(buildMongoWaitCommand()));
+            log.debug(execResultWaitForMaster.getStdout());
 
-        checkMongoNodeExitCodeAfterWaiting(execResultWaitForMaster);
+            checkMongoNodeExitCodeAfterWaiting(execResultWaitForMaster);
+        }
     }
 
     public static class ReplicaSetInitializationException extends RuntimeException {
