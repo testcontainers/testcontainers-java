@@ -85,7 +85,7 @@ public class DockerRegistryContainer extends GenericContainer<DockerRegistryCont
     }
 
     public DockerImageName createImage(String tag) {
-        return createImage("testcontainers/helloworld:latest", tag);
+        return createImage("registry.testcontainers.com/testcontainers/helloworld:latest", tag);
     }
 
     @SneakyThrows(InterruptedException.class)

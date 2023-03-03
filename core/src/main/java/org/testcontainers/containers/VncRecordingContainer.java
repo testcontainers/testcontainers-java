@@ -60,7 +60,7 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
      */
     public VncRecordingContainer(@NonNull Network network, @NonNull String targetNetworkAlias)
         throws IllegalStateException {
-        super(DockerImageName.parse("testcontainers/vnc-recorder:1.3.0"));
+        super(DockerImageName.parse("registry.testcontainers.com/testcontainers/vnc-recorder:1.3.0"));
         this.targetNetworkAlias = targetNetworkAlias;
         withNetwork(network);
         waitingFor(

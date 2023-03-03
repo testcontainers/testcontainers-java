@@ -15,7 +15,7 @@ public class MultiplePortsExposedTest {
     @Rule
     // rule {
     public GenericContainer<?> container = new GenericContainer<>(
-        DockerImageName.parse("testcontainers/helloworld:1.1.0")
+        DockerImageName.parse("registry.testcontainers.com/testcontainers/helloworld:1.1.0")
     )
         .withExposedPorts(8080, 8081)
         .withLogConsumer(new Slf4jLogConsumer(log));

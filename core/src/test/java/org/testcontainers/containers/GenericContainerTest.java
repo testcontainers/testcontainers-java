@@ -127,7 +127,7 @@ public class GenericContainerTest {
         ImageFromDockerfile image = new ImageFromDockerfile("publish-multiple")
             .withDockerfileFromBuilder(builder -> {
                 builder
-                    .from("testcontainers/helloworld:1.1.0") //
+                    .from("registry.testcontainers.com/testcontainers/helloworld:1.1.0") //
                     .expose(8080, 8081)
                     .build();
             });
@@ -163,7 +163,7 @@ public class GenericContainerTest {
         ImageFromDockerfile image = new ImageFromDockerfile("publish-multiple")
             .withDockerfileFromBuilder(builder -> {
                 builder
-                    .from("testcontainers/helloworld:1.1.0")
+                    .from("registry.testcontainers.com/testcontainers/helloworld:1.1.0")
                     .expose(8080, 8081) // one additional port exposed in image
                     .build();
             });

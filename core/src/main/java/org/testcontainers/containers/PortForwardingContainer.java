@@ -31,7 +31,7 @@ public enum PortForwardingContainer {
     private Connection createSSHSession() {
         String password = UUID.randomUUID().toString();
         container =
-            new GenericContainer<>(DockerImageName.parse("testcontainers/sshd:1.1.0"))
+            new GenericContainer<>(DockerImageName.parse("registry.testcontainers.com/testcontainers/sshd:1.1.0"))
                 .withExposedPorts(22)
                 .withEnv("PASSWORD", password)
                 .withCommand(

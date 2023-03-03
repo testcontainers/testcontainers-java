@@ -53,13 +53,13 @@ public class TestcontainersConfiguration {
 
     private static final String SOCAT_IMAGE = "alpine/socat";
 
-    private static final String VNC_RECORDER_IMAGE = "testcontainers/vnc-recorder";
+    private static final String VNC_RECORDER_IMAGE = "registry.testcontainers.com/testcontainers/vnc-recorder";
 
     private static final String COMPOSE_IMAGE = "docker/compose";
 
     private static final String ALPINE_IMAGE = "alpine";
 
-    private static final String RYUK_IMAGE = "testcontainers/ryuk";
+    private static final String RYUK_IMAGE = "registry.testcontainers.com/testcontainers/ryuk";
 
     private static final String KAFKA_IMAGE = "confluentinc/cp-kafka";
 
@@ -67,7 +67,7 @@ public class TestcontainersConfiguration {
 
     private static final String LOCALSTACK_IMAGE = "localstack/localstack";
 
-    private static final String SSHD_IMAGE = "testcontainers/sshd";
+    private static final String SSHD_IMAGE = "registry.testcontainers.com/testcontainers/sshd";
 
     private static final String ORACLE_IMAGE = "gvenzl/oracle-xe";
 

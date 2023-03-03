@@ -25,7 +25,7 @@ public class BaseWebDriverContainerTest {
 
     @ClassRule
     public static GenericContainer<?> HELLO_WORLD = new GenericContainer<>(
-        DockerImageName.parse("testcontainers/helloworld:1.1.0")
+        DockerImageName.parse("registry.testcontainers.com/testcontainers/helloworld:1.1.0")
     )
         .withNetwork(NETWORK)
         .withNetworkAliases("helloworld")
