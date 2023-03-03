@@ -29,6 +29,7 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
     private static final int AWAIT_INIT_REPLICA_SET_ATTEMPTS = 60;
 
     private static final String MONGODB_DATABASE_NAME_DEFAULT = "test";
+
     private static final String STARTER_SCRIPT = "/testcontainers_start.sh";
 
     private final boolean shardingEnabled;
@@ -165,7 +166,7 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
             log.debug(
                 "Awaiting for a single node replica set initialization up to {} attempts",
                 AWAIT_INIT_REPLICA_SET_ATTEMPTS
-                     );
+            );
             final ExecResult execResultWaitForMaster = execInContainer(buildMongoEvalCommand(buildMongoWaitCommand()));
             log.debug(execResultWaitForMaster.getStdout());
 

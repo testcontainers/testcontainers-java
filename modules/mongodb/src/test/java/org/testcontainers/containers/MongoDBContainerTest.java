@@ -9,20 +9,15 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.TransactionBody;
+import org.assertj.core.api.Assertions;
 import org.bson.Document;
+import org.junit.Assert;
 import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
 
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertNotNull;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.testcontainers.containers.MongoDBContainer.DEFAULT_IMAGE_NAME;
-import static org.testcontainers.containers.MongoDBContainer.DEFAULT_TAG;
-import static org.testcontainers.utility.DockerImageName.parse;
-
 public class MongoDBContainerTest {
 
-    private static final DockerImageName DOCKER_IMAGE_NAME = DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG);
+    private static final DockerImageName DOCKER_IMAGE_NAME = MongoDBContainer.DEFAULT_IMAGE_NAME.withTag(MongoDBContainer.DEFAULT_TAG);
 
     /**
      * Taken from <a href="https://docs.mongodb.com/manual/core/transactions/">https://docs.mongodb.com</a>
@@ -31,7 +26,7 @@ public class MongoDBContainerTest {
     public void shouldExecuteTransactions() {
         try (
             // creatingMongoDBContainer {
-            final MongoDBContainer mongoDBContainer = new MongoDBContainer(parse("mongo:" + DEFAULT_TAG))
+            final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:" + MongoDBContainer.DEFAULT_TAG))
             // }
         ) {
             // startingMongoDBContainer {
@@ -43,7 +38,7 @@ public class MongoDBContainerTest {
 
     private void executeTx(MongoDBContainer mongoDBContainer) {
         final String mongoRsUrl = mongoDBContainer.getReplicaSetUrl();
-        assertThat(mongoRsUrl).isNotNull();
+        Assertions.assertThat(mongoRsUrl).isNotNull();
         final String connectionString = mongoDBContainer.getConnectionString();
         final MongoClient mongoSyncClientBase = MongoClients.create(connectionString);
         final MongoClient mongoSyncClient = MongoClients.create(mongoRsUrl);
@@ -84,7 +79,7 @@ public class MongoDBContainerTest {
 
         try {
             final String trxResultActual = clientSession.withTransaction(txnBody, txnOptions);
-            assertThat(trxResultActual).isEqualTo(trxResult);
+            Assertions.assertThat(trxResultActual).isEqualTo(trxResult);
         } catch (RuntimeException re) {
             throw new IllegalStateException(re.getMessage(), re);
         } finally {
@@ -95,7 +90,7 @@ public class MongoDBContainerTest {
 
     @Test
     public void supportsMongoDB_4_4() {
-        try (final MongoDBContainer mongoDBContainer = new MongoDBContainer(parse("mongo:4.4"))) {
+        try (final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.4"))) {
             mongoDBContainer.start();
         }
     }
@@ -105,7 +100,7 @@ public class MongoDBContainerTest {
         try (final MongoDBContainer mongoDBContainer = new MongoDBContainer(DOCKER_IMAGE_NAME)) {
             mongoDBContainer.start();
             final String databaseName = "my-db";
-            assertThat(mongoDBContainer.getReplicaSetUrl(databaseName)).endsWith(databaseName);
+            Assertions.assertThat(mongoDBContainer.getReplicaSetUrl(databaseName)).endsWith(databaseName);
         }
     }
 
@@ -115,16 +110,11 @@ public class MongoDBContainerTest {
             mongoDBContainer.start();
             final MongoClient mongoClient = MongoClients.create(mongoDBContainer.getReplicaSetUrl());
 
-            mongoClient
-                .getDatabase("mydb1")
-                .getCollection("foo")
-                .insertOne(new Document("abc", 0));
+            mongoClient.getDatabase("mydb1").getCollection("foo").insertOne(new Document("abc", 0));
 
-            Document shards = mongoClient.getDatabase("config")
-                                         .getCollection("shards")
-                                         .find().first();
-            assertNotNull(shards);
-            assertFalse(shards.isEmpty());
+            Document shards = mongoClient.getDatabase("config").getCollection("shards").find().first();
+            Assert.assertNotNull(shards);
+            Assert.assertFalse(shards.isEmpty());
         }
     }
 }
