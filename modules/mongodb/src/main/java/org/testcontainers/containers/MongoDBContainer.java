@@ -114,7 +114,7 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
         return new String[] {
             "sh",
             "-c",
-            "mongosh mongo --eval \"" + command + "\"",
+            "mongosh mongo --eval \"" + command + "\"  || mongo --eval \"" + command + "\"",
         };
     }
 
