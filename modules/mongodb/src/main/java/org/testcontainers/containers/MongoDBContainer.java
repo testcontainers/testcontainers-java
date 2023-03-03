@@ -18,9 +18,9 @@ import java.io.IOException;
 @Slf4j
 public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
 
-    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("mongo");
+    static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("mongo");
 
-    private static final String DEFAULT_TAG = "4.0.10";
+    static final String DEFAULT_TAG = "6.0.4";
 
     private static final int CONTAINER_EXIT_CODE_OK = 0;
 
@@ -31,24 +31,27 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
     private static final String MONGODB_DATABASE_NAME_DEFAULT = "test";
     private static final String STARTER_SCRIPT = "/testcontainers_start.sh";
 
-    private boolean shardingEnabled;
-
-    private String shardedDatabase;
+    private final boolean shardingEnabled;
 
     /**
      * @deprecated use {@link MongoDBContainer(DockerImageName)} instead
      */
     @Deprecated
     public MongoDBContainer() {
-        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG), false);
     }
 
     public MongoDBContainer(@NonNull final String dockerImageName) {
-        this(DockerImageName.parse(dockerImageName));
+        this(DockerImageName.parse(dockerImageName), false);
     }
 
     public MongoDBContainer(final DockerImageName dockerImageName) {
+        this(dockerImageName, false);
+    }
+
+    public MongoDBContainer(final DockerImageName dockerImageName, boolean shardingEnabled) {
         super(dockerImageName);
+        this.shardingEnabled = shardingEnabled;
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         withExposedPorts(MONGODB_INTERNAL_PORT);
@@ -70,22 +73,10 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
     }
 
     @Override
-    @SneakyThrows(value = { IOException.class, InterruptedException.class })
-    protected void containerIsStarted(InspectContainerResponse containerInfo) {
+    protected void containerIsStarted(InspectContainerResponse containerInfo, boolean reused) {
         if (!shardingEnabled) {
-            initReplicaSet();
+            initReplicaSet(reused);
         }
-    }
-
-
-    public MongoDBContainer withSharding(String database) {
-        shardedDatabase = database;
-        shardingEnabled = true;
-        return this;
-    }
-
-    public MongoDBContainer withSharding() {
-        return withSharding( MONGODB_DATABASE_NAME_DEFAULT);
     }
 
     /**
@@ -117,11 +108,6 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
             throw new IllegalStateException("MongoDBContainer should be started first");
         }
         return getConnectionString() + "/" + databaseName;
-    }
-
-    @Override
-    protected void containerIsStarted(InspectContainerResponse containerInfo, boolean reused) {
-        initReplicaSet(reused);
     }
 
     private String[] buildMongoEvalCommand(final String command) {

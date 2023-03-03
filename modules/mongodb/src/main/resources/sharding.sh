@@ -3,47 +3,66 @@
 CONFIGSVR=/tmp/mongod/configsvr
 SHARDSVR=/tmp/mongod/shardsvr
 
-function retry {
-    eval $*
-    retVal=$?
-    if [ $retVal -ne 0 ]
+function retry() {
+    COUNT=${COUNT:-0}
+    if [ $COUNT == 5 ]
     then
-        COUNT=1
-        while [ $retVal -ne 0 -a $COUNT != 5 ]
-        do
-            sleep $COUNT
-            COUNT=$[ $COUNT + 1 ]
-            echo "Retry [$COUNT] '$*' "
-            eval $*
-            retVal=$?
-        done
-        if [ $COUNT == 5 ]
+        echo Failed $COUNT attempts
+        exit 1
+    fi
+
+    sleep $COUNT
+    echo "Attempt #$[ $COUNT  + 1 ] '$*' "
+    eval $*
+    if [ $? -ne 0 ]
+    then
+        COUNT=$[ $COUNT + 1 ]
+        retry $*
+    fi
+    unset COUNT
+}
+
+function initReplSet() {
+    PORT=$1
+    COUNT=${2:-1}
+
+    CMD="mongosh --quiet --port $PORT --eval \"if(db.adminCommand({replSetGetStatus: 1})['myState'] != 1) quit(900)\""
+    eval $CMD
+    retVal=$?
+    if [ $retVal -ne 0 -a $COUNT -ne 5 ]
+    then
+        echo "Initiating replSet (attempt $COUNT)"
+        mongosh --quiet --port $PORT --eval 'rs.initiate();'
+        if [ $? -ne 0 ]
         then
-            exit 1
+            sleep $COUNT
+            initReplSet $PORT $[ $COUNT + 1 ]
         fi
     fi
+    unset COUNT
 }
 
 rm -rf $CONFIGSVR $SHARDSVR
 mkdir -p $CONFIGSVR
 mkdir -p $SHARDSVR
 
-echo "Staring configsvr"
-mongod --configsvr --port 27019 --replSet configsvr-rs --dbpath $CONFIGSVR --syslog &
+echo "Starting configsvr"
+mongod --bind_ip_all --configsvr --port 27019 --replSet configsvr-rs --dbpath $CONFIGSVR --logpath /tmp/configsvr.log &
 echo "Initiating configsvr replSet"
-retry "mongosh --port 27019 --eval 'rs.initiate();'"
+initReplSet 27019
 
 echo "Starting shardsvr"
-mongod --shardsvr --port 27018 --replSet shardsvr-rs --dbpath $SHARDSVR --syslog &
+mongod --bind_ip_all --shardsvr --port 27018 --replSet shardsvr-rs --dbpath $SHARDSVR --logpath /tmp/shardsvr.log &
 
 echo "Initiating shardsvr replSet"
-retry "mongosh --port 27018 --eval 'rs.initiate();'"
+initReplSet 27018
 
 echo "Starting mongos"
-mongos --configdb configsvr-rs/localhost:27019 --syslog &
-echo "Adding a shard"
-retry "mongosh --eval 'sh.addShard(\"shardsvr-rs/localhost:27018\");'"
+mongos --bind_ip_all --configdb configsvr-rs/localhost:27019 --logpath /tmp/mongos.log &
 
+echo "Adding a shard"
+retry "mongosh --eval 'sh.addShard(\"shardsvr-rs/`hostname`:27018\");'"
 
 echo "mongos ready"
-mongosh
+mongosh --quiet tctest --eval "db.testcollection.insertOne({});"
+sleep 36000

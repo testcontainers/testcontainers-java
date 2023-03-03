@@ -11,12 +11,14 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.TransactionBody;
 import org.bson.Document;
 import org.junit.Test;
-import org.testcontainers.containers.output.OutputFrame.OutputType;
 import org.testcontainers.utility.DockerImageName;
 
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertNotNull;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.testcontainers.containers.MongoDBContainer.*;
-import static org.testcontainers.utility.DockerImageName.*;
+import static org.testcontainers.containers.MongoDBContainer.DEFAULT_IMAGE_NAME;
+import static org.testcontainers.containers.MongoDBContainer.DEFAULT_TAG;
+import static org.testcontainers.utility.DockerImageName.parse;
 
 public class MongoDBContainerTest {
 
@@ -90,14 +92,6 @@ public class MongoDBContainerTest {
             mongoSyncClient.close();
         }
     }
-    private void evaluateCommand(MongoDBContainer mongoDBContainer, Document command) {
-        try(final MongoClient client = MongoClients.create(mongoDBContainer.getConnectionString())) {
-            Document admin = client.getDatabase("admin").runCommand(command);
-            System.out.println("admin.toJson() = " + admin.toJson());
-        } catch (RuntimeException re) {
-            throw new IllegalStateException(re.getMessage(), re);
-        }
-    }
 
     @Test
     public void supportsMongoDB_4_4() {
@@ -116,16 +110,21 @@ public class MongoDBContainerTest {
     }
 
     @Test
-    public void testShouldSupportSharding() {
-        try (final MongoDBContainer mongoDBContainer = new MongoDBContainer(DOCKER_IMAGE_NAME)
-                                                           .withSharding()) {
+    public void shouldSupportSharding() {
+        try (final MongoDBContainer mongoDBContainer = new MongoDBContainer(DOCKER_IMAGE_NAME, true)) {
             mongoDBContainer.start();
-            try {
-                executeTx(mongoDBContainer);
-            } finally {
-                System.out.println("logs = " + mongoDBContainer.getLogs(OutputType.values()));
-            }
+            final MongoClient mongoClient = MongoClients.create(mongoDBContainer.getReplicaSetUrl());
+
+            mongoClient
+                .getDatabase("mydb1")
+                .getCollection("foo")
+                .insertOne(new Document("abc", 0));
+
+            Document shards = mongoClient.getDatabase("config")
+                                         .getCollection("shards")
+                                         .find().first();
+            assertNotNull(shards);
+            assertFalse(shards.isEmpty());
         }
     }
-
 }
