@@ -20,7 +20,7 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
 
     static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("mongo");
 
-    static final String DEFAULT_TAG = "6.0.4";
+    static final String DEFAULT_TAG = "6";
 
     private static final int CONTAINER_EXIT_CODE_OK = 0;
 
@@ -32,30 +32,30 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
 
     private static final String STARTER_SCRIPT = "/testcontainers_start.sh";
 
-    private final boolean shardingEnabled;
+    private boolean shardingEnabled;
 
     /**
      * @deprecated use {@link MongoDBContainer(DockerImageName)} instead
      */
     @Deprecated
     public MongoDBContainer() {
-        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG), false);
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
 
     public MongoDBContainer(@NonNull final String dockerImageName) {
-        this(DockerImageName.parse(dockerImageName), false);
+        this(DockerImageName.parse(dockerImageName));
     }
 
     public MongoDBContainer(final DockerImageName dockerImageName) {
-        this(dockerImageName, false);
-    }
-
-    public MongoDBContainer(final DockerImageName dockerImageName, boolean shardingEnabled) {
         super(dockerImageName);
-        this.shardingEnabled = shardingEnabled;
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         withExposedPorts(MONGODB_INTERNAL_PORT);
+        configure();
+    }
+
+    @Override
+    public void configure() {
         if (shardingEnabled) {
             withCreateContainerCmdModifier(cmd -> {
                 cmd.withEntrypoint("sh");
@@ -70,7 +70,19 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
 
     @Override
     protected void containerIsStarting(InspectContainerResponse containerInfo) {
-        copyFileToContainer(MountableFile.forClasspathResource("/sharding.sh", 0777), STARTER_SCRIPT);
+        if(shardingEnabled) {
+            copyFileToContainer(MountableFile.forClasspathResource("/sharding.sh", 0777), STARTER_SCRIPT);
+        }
+    }
+
+    /**
+     * Enables sharding on the cluster
+     *
+     * @return this
+     */
+    public MongoDBContainer withSharding() {
+        this.shardingEnabled = true;
+        return this;
     }
 
     @Override

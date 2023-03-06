@@ -15,6 +15,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+
 public class MongoDBContainerTest {
 
     private static final DockerImageName DOCKER_IMAGE_NAME = MongoDBContainer.DEFAULT_IMAGE_NAME.withTag(MongoDBContainer.DEFAULT_TAG);
@@ -37,11 +39,8 @@ public class MongoDBContainerTest {
     }
 
     private void executeTx(MongoDBContainer mongoDBContainer) {
-        final String mongoRsUrl = mongoDBContainer.getReplicaSetUrl();
-        Assertions.assertThat(mongoRsUrl).isNotNull();
-        final String connectionString = mongoDBContainer.getConnectionString();
-        final MongoClient mongoSyncClientBase = MongoClients.create(connectionString);
-        final MongoClient mongoSyncClient = MongoClients.create(mongoRsUrl);
+        final MongoClient mongoSyncClientBase = MongoClients.create(mongoDBContainer.getConnectionString());
+        final MongoClient mongoSyncClient = MongoClients.create(mongoDBContainer.getReplicaSetUrl());
         mongoSyncClient
             .getDatabase("mydb1")
             .getCollection("foo")
@@ -106,15 +105,26 @@ public class MongoDBContainerTest {
 
     @Test
     public void shouldSupportSharding() {
-        try (final MongoDBContainer mongoDBContainer = new MongoDBContainer(DOCKER_IMAGE_NAME, true)) {
+        try (final MongoDBContainer mongoDBContainer = new MongoDBContainer(DOCKER_IMAGE_NAME)
+                                                           .withSharding()) {
             mongoDBContainer.start();
             final MongoClient mongoClient = MongoClients.create(mongoDBContainer.getReplicaSetUrl());
 
             mongoClient.getDatabase("mydb1").getCollection("foo").insertOne(new Document("abc", 0));
 
             Document shards = mongoClient.getDatabase("config").getCollection("shards").find().first();
-            Assert.assertNotNull(shards);
-            Assert.assertFalse(shards.isEmpty());
+            Assertions.assertThat(shards).isNotNull();
+            Assertions.assertThat(shards).isNotEmpty();
+            Assertions.assertThat(isReplicaSet(mongoClient));
         }
+    }
+
+    private boolean isReplicaSet(MongoClient mongoClient) {
+        return runIsMaster(mongoClient).get("setName") != null;
+    }
+
+    private Document runIsMaster(MongoClient mongoClient) {
+        return mongoClient.getDatabase("admin")
+                          .runCommand(new Document("ismaster", 1));
     }
 }
