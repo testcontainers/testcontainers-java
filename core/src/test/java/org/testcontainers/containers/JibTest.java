@@ -20,7 +20,9 @@ public class JibTest {
             GenericContainer<?> busybox = new GenericContainer<>(
                 new JibImage(
                     "busybox:1.35",
-                    jibContainerBuilder -> jibContainerBuilder.setEntrypoint("echo", "Hello World")
+                    jibContainerBuilder -> {
+                        return jibContainerBuilder.setEntrypoint("echo", "Hello World");
+                    }
                 )
             )
                 .withStartupCheckStrategy(new OneShotStartupCheckStrategy().withTimeout(Duration.ofSeconds(3)))
@@ -38,10 +40,11 @@ public class JibTest {
             GenericContainer<?> busybox = new GenericContainer<>(
                 new JibImage(
                     "busybox:1.35",
-                    jibContainerBuilder ->
-                        jibContainerBuilder
+                    jibContainerBuilder -> {
+                        return jibContainerBuilder
                             .setEntrypoint("echo", "Hello World")
-                            .setLabels(Collections.singletonMap("foo", "bar"))
+                            .setLabels(Collections.singletonMap("foo", "bar"));
+                    }
                 )
             )
                 .withStartupCheckStrategy(new OneShotStartupCheckStrategy().withTimeout(Duration.ofSeconds(3)))
@@ -57,8 +60,9 @@ public class JibTest {
             GenericContainer<?> busybox = new GenericContainer<>(
                 new JibImage(
                     "busybox:1.35",
-                    jibContainerBuilder ->
-                        jibContainerBuilder.setEntrypoint("echo", "Hello World").addLabel("foo", "bar")
+                    jibContainerBuilder -> {
+                        return jibContainerBuilder.setEntrypoint("echo", "Hello World").addLabel("foo", "bar");
+                    }
                 )
             )
                 .withStartupCheckStrategy(new OneShotStartupCheckStrategy().withTimeout(Duration.ofSeconds(3)))
