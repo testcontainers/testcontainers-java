@@ -11,11 +11,8 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.TransactionBody;
 import org.assertj.core.api.Assertions;
 import org.bson.Document;
-import org.junit.Assert;
 import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
-
-import static org.hamcrest.MatcherAssert.assertThat;
 
 public class MongoDBContainerTest {
 
