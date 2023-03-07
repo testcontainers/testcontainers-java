@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class JibTest {
 
     @Test
-    public void testJibFromWithString() {
+    public void useJibFluentApi() {
         try (
             // jibContainerUsage {
             GenericContainer<?> busybox = new GenericContainer<>(
