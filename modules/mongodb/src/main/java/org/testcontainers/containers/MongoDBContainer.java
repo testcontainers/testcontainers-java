@@ -70,7 +70,7 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
 
     @Override
     protected void containerIsStarting(InspectContainerResponse containerInfo) {
-        if(shardingEnabled) {
+        if (shardingEnabled) {
             copyFileToContainer(MountableFile.forClasspathResource("/sharding.sh", 0777), STARTER_SCRIPT);
         }
     }

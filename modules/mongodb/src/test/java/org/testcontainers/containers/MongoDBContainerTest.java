@@ -16,7 +16,9 @@ import org.testcontainers.utility.DockerImageName;
 
 public class MongoDBContainerTest {
 
-    private static final DockerImageName DOCKER_IMAGE_NAME = MongoDBContainer.DEFAULT_IMAGE_NAME.withTag(MongoDBContainer.DEFAULT_TAG);
+    private static final DockerImageName DOCKER_IMAGE_NAME = MongoDBContainer.DEFAULT_IMAGE_NAME.withTag(
+        MongoDBContainer.DEFAULT_TAG
+    );
 
     /**
      * Taken from <a href="https://docs.mongodb.com/manual/core/transactions/">https://docs.mongodb.com</a>
@@ -25,7 +27,9 @@ public class MongoDBContainerTest {
     public void shouldExecuteTransactions() {
         try (
             // creatingMongoDBContainer {
-            final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:" + MongoDBContainer.DEFAULT_TAG))
+            final MongoDBContainer mongoDBContainer = new MongoDBContainer(
+                DockerImageName.parse("mongo:" + MongoDBContainer.DEFAULT_TAG)
+            )
             // }
         ) {
             // startingMongoDBContainer {
@@ -102,8 +106,7 @@ public class MongoDBContainerTest {
 
     @Test
     public void shouldSupportSharding() {
-        try (final MongoDBContainer mongoDBContainer = new MongoDBContainer(DOCKER_IMAGE_NAME)
-                                                           .withSharding()) {
+        try (final MongoDBContainer mongoDBContainer = new MongoDBContainer(DOCKER_IMAGE_NAME).withSharding()) {
             mongoDBContainer.start();
             final MongoClient mongoClient = MongoClients.create(mongoDBContainer.getReplicaSetUrl());
 
@@ -121,7 +124,6 @@ public class MongoDBContainerTest {
     }
 
     private Document runIsMaster(MongoClient mongoClient) {
-        return mongoClient.getDatabase("admin")
-                          .runCommand(new Document("ismaster", 1));
+        return mongoClient.getDatabase("admin").runCommand(new Document("ismaster", 1));
     }
 }
