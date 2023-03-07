@@ -47,16 +47,7 @@ public class JibTest {
                 .withStartupCheckStrategy(new OneShotStartupCheckStrategy().withTimeout(Duration.ofSeconds(3)))
         ) {
             busybox.start();
-            String image = busybox.getContainerInfo().getConfig().getImage();
-            InspectImageResponse imageResponse = DockerClientFactory.lazyClient().inspectImageCmd(image).exec();
-            assertThat(imageResponse.getConfig().getLabels())
-                .containsEntry("foo", "bar")
-                .containsKeys(
-                    "org.testcontainers",
-                    "org.testcontainers.sessionId",
-                    "org.testcontainers.lang",
-                    "org.testcontainers.version"
-                );
+            assertImageLabels(busybox);
         }
     }
 
@@ -73,16 +64,20 @@ public class JibTest {
                 .withStartupCheckStrategy(new OneShotStartupCheckStrategy().withTimeout(Duration.ofSeconds(3)))
         ) {
             busybox.start();
-            String image = busybox.getContainerInfo().getConfig().getImage();
-            InspectImageResponse imageResponse = DockerClientFactory.lazyClient().inspectImageCmd(image).exec();
-            assertThat(imageResponse.getConfig().getLabels())
-                .containsEntry("foo", "bar")
-                .containsKeys(
-                    "org.testcontainers",
-                    "org.testcontainers.sessionId",
-                    "org.testcontainers.lang",
-                    "org.testcontainers.version"
-                );
+            assertImageLabels(busybox);
         }
+    }
+
+    private static void assertImageLabels(GenericContainer<?> busybox) {
+        String image = busybox.getContainerInfo().getConfig().getImage();
+        InspectImageResponse imageResponse = DockerClientFactory.lazyClient().inspectImageCmd(image).exec();
+        assertThat(imageResponse.getConfig().getLabels())
+            .containsEntry("foo", "bar")
+            .containsKeys(
+                "org.testcontainers",
+                "org.testcontainers.sessionId",
+                "org.testcontainers.lang",
+                "org.testcontainers.version"
+            );
     }
 }
