@@ -16,6 +16,8 @@ updates:
         update-types: [ "version-update:semver-major" ]
       - dependency-name: "org.mockito:mockito-core"
         update-types: [ "version-update:semver-major" ]
+      - dependency-name: "org.yaml:snakeyaml"
+        update-types: [ "version-update:semver-major" ]
   - package-ecosystem: "gradle"
     directory: "/"
     allow:
