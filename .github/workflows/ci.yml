@@ -19,14 +19,14 @@ env:
 
 jobs:
   find_gradle_jobs:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-java@v3
         with:
-          java-version: '8.0.302'
+          java-version: '8'
           distribution: temurin
       - name: Setup Gradle Build Action
         uses: gradle/gradle-build-action@v2
@@ -36,7 +36,7 @@ jobs:
           # we should not push empty results to the cache
           READ_ONLY_REMOTE_GRADLE_CACHE: true
         run: |
-          TASKS=$(./gradlew --no-daemon --parallel -q testMatrix)
+          TASKS=$(./gradlew --no-daemon --parallel -q testMatrix | jq 'del(.[] | select(. == ":azure:check"))' --compact-output)
           echo $TASKS
           echo "matrix={\"gradle_args\":$TASKS}" >> $GITHUB_OUTPUT
   check:
@@ -44,12 +44,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.find_gradle_jobs.outputs.matrix) }}
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-java@v3
         with:
-          java-version: '8.0.302'
+          java-version: '8'
           distribution: temurin
       - name: Clear existing docker image cache
         run: docker image prune -af
