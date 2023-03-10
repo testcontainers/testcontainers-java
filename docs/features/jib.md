@@ -8,4 +8,4 @@ You can use it as an alternative to Testcontainers default `DockerfileBuilder`.
 <!--/codeinclude-->
 
 !!! hint
-Testcontainers library JAR will not automatically add a `jib-core` JAR to your project. Minimum version required is `com.google.cloud.tools:jib-core:0.22.0`.
+The Testcontainers library JAR will not automatically add a `jib-core` JAR to your project. Minimum version required is `com.google.cloud.tools:jib-core:0.22.0`.
