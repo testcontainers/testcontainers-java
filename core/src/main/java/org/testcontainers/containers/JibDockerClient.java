@@ -64,6 +64,7 @@ public class JibDockerClient implements DockerClient {
     @Override
     public void save(ImageReference imageReference, Path outputPath, Consumer<Long> writtenByteCountListener)
         throws IOException {
+        // TODO: async support for saveImageCmd will be revisited in the future in docker-java
         InputStream inputStream = this.dockerClient.saveImageCmd(imageReference.toString()).exec();
         try (
             InputStream stdout = new BufferedInputStream(inputStream);
