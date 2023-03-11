@@ -18,6 +18,7 @@ import org.junit.platform.commons.support.ModifierSupport;
 import org.junit.platform.commons.support.ReflectionSupport;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.lifecycle.Startable;
+import org.testcontainers.lifecycle.Startables;
 import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
 
@@ -69,13 +70,15 @@ public class TestcontainersExtension
         Store store,
         ExtensionContext context
     ) {
-        Stream<StoreAdapter> storeAdapterStream = sharedContainersStoreAdapters.stream();
         if (isParallelExecutionEnabled(context)) {
-            storeAdapterStream = storeAdapterStream.parallel();
+            Startables
+                .deepStart(sharedContainersStoreAdapters.stream().map(storeAdapter -> storeAdapter.container))
+                .join();
+        } else {
+            sharedContainersStoreAdapters.forEach(adapter -> {
+                store.getOrComputeIfAbsent(adapter.getKey(), k -> adapter.start());
+            });
         }
-        storeAdapterStream.forEach(adapter -> {
-            store.getOrComputeIfAbsent(adapter.getKey(), k -> adapter.start());
-        });
     }
 
     @Override
@@ -107,13 +110,14 @@ public class TestcontainersExtension
         Store store,
         ExtensionContext context
     ) {
-        Stream<StoreAdapter> storeAdapterStream = restartContainers.stream();
         if (isParallelExecutionEnabled(context)) {
-            storeAdapterStream = storeAdapterStream.parallel();
+            Startables.deepStart(restartContainers.stream().map(adapter -> adapter.container)).join();
+        } else {
+            restartContainers.forEach(adapter -> store.getOrComputeIfAbsent(adapter.getKey(), k -> adapter.start()));
         }
 
-        return storeAdapterStream
-            .peek(adapter -> store.getOrComputeIfAbsent(adapter.getKey(), k -> adapter.start()))
+        return restartContainers
+            .stream()
             .filter(this::isTestLifecycleAware)
             .map(lifecycleAwareAdapter -> (TestLifecycleAware) lifecycleAwareAdapter.container)
             .collect(Collectors.toList());
