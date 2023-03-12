@@ -217,6 +217,10 @@ public class TestcontainersConfiguration {
         return Integer.parseInt(getEnvVarOrProperty("client.ping.timeout", "10"));
     }
 
+    public String getLoggerNamePrefix() {
+        return getEnvVarOrUserProperty("testcontainers.logger.prefix", "");
+    }
+
     @Nullable
     @Contract("_, !null, _ -> !null")
     private String getConfigurable(
