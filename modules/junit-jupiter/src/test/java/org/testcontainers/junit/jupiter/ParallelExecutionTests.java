@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ParallelExecutionTests {
 
     @Container
-    private static final PostgreSQLContainer<?> POSTGRE_SQL_CONTAINER = new PostgreSQLContainer<>(
+    private static final PostgreSQLContainer<?> POSTGRESQL_CONTAINER = new PostgreSQLContainer<>(
         JUnitJupiterTestImages.POSTGRES_IMAGE
     )
         .withDatabaseName("foo")
@@ -18,11 +18,11 @@ public class ParallelExecutionTests {
         .withPassword("secret");
 
     @Container
-    private MySQLContainer mySQLContainer = new MySQLContainer();
+    private MySQLContainer<?> mySQLContainer = new MySQLContainer<>(JUnitJupiterTestImages.MYSQL_IMAGE);
 
     @Test
     void test() {
-        assertThat(POSTGRE_SQL_CONTAINER.isRunning()).isTrue();
+        assertThat(POSTGRESQL_CONTAINER.isRunning()).isTrue();
         assertThat(mySQLContainer.isRunning()).isTrue();
     }
 }
