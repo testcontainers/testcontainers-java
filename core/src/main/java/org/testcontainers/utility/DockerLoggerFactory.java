@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class DockerLoggerFactory {
 
+    private static final String loggerNamePrefix = System.getProperty("testcontainers.logger.prefix", "");
+
     public static Logger getLogger(String dockerImageName) {
         final String abbreviatedName;
         if (dockerImageName.contains("@sha256")) {
@@ -17,9 +19,9 @@ public final class DockerLoggerFactory {
         }
 
         if ("UTF-8".equals(System.getProperty("file.encoding"))) {
-            return LoggerFactory.getLogger("\uD83D\uDC33 [" + abbreviatedName + "]");
+            return LoggerFactory.getLogger(loggerNamePrefix + "\uD83D\uDC33 [" + abbreviatedName + "]");
         } else {
-            return LoggerFactory.getLogger("docker[" + abbreviatedName + "]");
+            return LoggerFactory.getLogger(loggerNamePrefix + "docker[" + abbreviatedName + "]");
         }
     }
 }
