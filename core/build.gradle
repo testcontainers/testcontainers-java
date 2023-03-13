@@ -62,6 +62,7 @@ configurations.all {
     resolutionStrategy {
         // use lower Jackson version
         force 'com.fasterxml.jackson.core:jackson-databind:2.8.8'
+        force 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.8.8'
     }
 }
 
@@ -74,6 +75,8 @@ dependencies {
     api ('org.rnorth.duct-tape:duct-tape:1.0.8') {
         exclude(group: 'org.jetbrains', module: 'annotations')
     }
+
+    provided 'com.google.cloud.tools:jib-core:0.22.0'
 
     shaded 'org.awaitility:awaitility:4.2.0'
 
