@@ -1,4 +1,4 @@
-package org.testcontainers.containers;
+package org.testcontainers.jib;
 
 import com.github.dockerjava.api.command.InspectImageResponse;
 import com.github.dockerjava.api.command.LoadImageCallback;
@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 @UnstableAPI
-public class JibDockerClient implements DockerClient {
+class JibDockerClient implements DockerClient {
 
     private static JibDockerClient instance;
 
