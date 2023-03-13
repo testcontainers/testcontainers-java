@@ -20,7 +20,7 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
 
     static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("mongo");
 
-    static final String DEFAULT_TAG = "6";
+    static final String DEFAULT_TAG = "4.0.4";
 
     private static final int CONTAINER_EXIT_CODE_OK = 0;
 
