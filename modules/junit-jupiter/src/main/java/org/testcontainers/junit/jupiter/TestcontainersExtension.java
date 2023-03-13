@@ -53,7 +53,7 @@ public class TestcontainersExtension
         Store store = context.getStore(NAMESPACE);
         List<StoreAdapter> sharedContainersStoreAdapters = findSharedContainers(testClass);
 
-        startSharedContainers(sharedContainersStoreAdapters, store, context);
+        startContainers(sharedContainersStoreAdapters, store, context);
 
         List<TestLifecycleAware> lifecycleAwareContainers = sharedContainersStoreAdapters
             .stream()
@@ -65,19 +65,15 @@ public class TestcontainersExtension
         signalBeforeTestToContainers(lifecycleAwareContainers, testDescriptionFrom(context));
     }
 
-    private void startSharedContainers(
-        List<StoreAdapter> sharedContainersStoreAdapters,
-        Store store,
-        ExtensionContext context
-    ) {
+    private void startContainers(List<StoreAdapter> storeAdapters, Store store, ExtensionContext context) {
+        if (storeAdapters.isEmpty()) {
+            return;
+        }
+
         if (isParallelExecutionEnabled(context)) {
-            Startables
-                .deepStart(sharedContainersStoreAdapters.stream().map(storeAdapter -> storeAdapter.container))
-                .join();
+            Startables.deepStart(storeAdapters.stream().map(storeAdapter -> storeAdapter.container)).join();
         } else {
-            sharedContainersStoreAdapters.forEach(adapter -> {
-                store.getOrComputeIfAbsent(adapter.getKey(), k -> adapter.start());
-            });
+            storeAdapters.forEach(adapter -> store.getOrComputeIfAbsent(adapter.getKey(), k -> adapter.start()));
         }
     }
 
@@ -110,11 +106,7 @@ public class TestcontainersExtension
         Store store,
         ExtensionContext context
     ) {
-        if (isParallelExecutionEnabled(context)) {
-            Startables.deepStart(restartContainers.stream().map(adapter -> adapter.container)).join();
-        } else {
-            restartContainers.forEach(adapter -> store.getOrComputeIfAbsent(adapter.getKey(), k -> adapter.start()));
-        }
+        startContainers(restartContainers, store, context);
 
         return restartContainers
             .stream()
