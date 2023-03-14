@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.Socket;
 import java.net.URI;
 import java.net.URL;
 import java.security.KeyManagementException;
@@ -29,8 +30,9 @@ import java.util.function.Predicate;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
 import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
+import javax.net.ssl.X509ExtendedTrustManager;
 
 import static org.rnorth.ducttape.unreliables.Unreliables.retryUntilSuccess;
 
@@ -332,7 +334,7 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
                 // Create a trust manager that does not validate certificate chains
                 // and trust all certificates
                 final TrustManager[] trustAllCerts = new TrustManager[] {
-                    new X509TrustManager() {
+                    new X509ExtendedTrustManager() {
                         @Override
                         public X509Certificate[] getAcceptedIssuers() {
                             return new X509Certificate[0];
@@ -343,6 +345,18 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
 
                         @Override
                         public void checkServerTrusted(final X509Certificate[] certs, final String authType) {}
+
+                        @Override
+                        public void checkClientTrusted(X509Certificate[] chain, String authType, Socket socket) {}
+
+                        @Override
+                        public void checkServerTrusted(X509Certificate[] chain, String authType, Socket socket) {}
+
+                        @Override
+                        public void checkClientTrusted(X509Certificate[] chain, String authType, SSLEngine engine) {}
+
+                        @Override
+                        public void checkServerTrusted(X509Certificate[] chain, String authType, SSLEngine engine) {}
                     },
                 };
 

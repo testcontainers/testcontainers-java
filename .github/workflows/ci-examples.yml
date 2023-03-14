@@ -4,6 +4,10 @@ on:
   pull_request: {}
   push: { branches: [ main ] }
 
+concurrency:
+  group: "${{ github.workflow }}-${{ github.head_ref || github.sha }}"
+  cancel-in-progress: true
+
 env:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -15,14 +19,14 @@ permissions:
 
 jobs:
   find_gradle_jobs:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-java@v3
         with:
-          java-version: '8.0.302'
+          java-version: '8'
           distribution: temurin
       - name: Setup Gradle Build Action
         uses: gradle/gradle-build-action@v2
@@ -41,12 +45,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.find_gradle_jobs.outputs.matrix) }}
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-java@v3
         with:
-          java-version: '8.0.302'
+          java-version: '8'
           distribution: temurin
       - name: Clear existing docker image cache
         run: docker image prune -af

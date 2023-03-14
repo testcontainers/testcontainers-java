@@ -6,9 +6,6 @@ import org.testcontainers.utility.DockerImageName;
 
 /**
  * Testcontainers implementation for QuestDB.
- *
- * @author vangreen
- * @author jerrinot
  */
 public class QuestDBContainer extends JdbcDatabaseContainer<QuestDBContainer> {
 

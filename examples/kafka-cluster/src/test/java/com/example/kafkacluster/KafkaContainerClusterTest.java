@@ -39,6 +39,18 @@ public class KafkaContainerClusterTest {
         }
     }
 
+    @Test
+    public void testKafkaContainerKraftCluster() throws Exception {
+        try (KafkaContainerKraftCluster cluster = new KafkaContainerKraftCluster("7.0.0", 3, 2)) {
+            cluster.start();
+            String bootstrapServers = cluster.getBootstrapServers();
+
+            assertThat(cluster.getBrokers()).hasSize(3);
+
+            testKafkaFunctionality(bootstrapServers, 3, 2);
+        }
+    }
+
     protected void testKafkaFunctionality(String bootstrapServers, int partitions, int rf) throws Exception {
         try (
             AdminClient adminClient = AdminClient.create(

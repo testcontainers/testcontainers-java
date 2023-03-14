@@ -4,12 +4,16 @@ on:
   pull_request: {}
   push: { branches: [ main ] }
 
+concurrency:
+  group: "${{ github.workflow }}-${{ github.head_ref || github.sha }}"
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
 jobs:
   in-docker_test:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
       - name: Build with Gradle

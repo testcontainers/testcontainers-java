@@ -36,16 +36,6 @@ import javax.script.ScriptException;
  *
  * Generic utility methods for working with SQL scripts. Mainly for internal use
  * within the framework.
- *
- * @author Thomas Risberg
- * @author Sam Brannen
- * @author Juergen Hoeller
- * @author Keith Donald
- * @author Dave Syer
- * @author Chris Beams
- * @author Oliver Gierke
- * @author Chris Baldwin
- * @since 4.0.3
  */
 public abstract class ScriptUtils {
 

@@ -1,14 +1,13 @@
 package org.testcontainers.containers;
 
 import com.google.common.collect.Sets;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 
 import java.util.Set;
 
 /**
  * Container implementation for the MariaDB project.
- *
- * @author Miguel Gonzalez Sanchez
  */
 public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
 
@@ -67,7 +66,8 @@ public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcD
         optionallyMapResourceParameterAsVolume(
             MY_CNF_CONFIG_OVERRIDE_PARAM_NAME,
             "/etc/mysql/conf.d",
-            "mariadb-default-conf"
+            "mariadb-default-conf",
+            Transferable.DEFAULT_DIR_MODE
         );
 
         addEnv("MYSQL_DATABASE", databaseName);
