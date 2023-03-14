@@ -110,7 +110,7 @@ public class MongoDBContainerTest {
             Document shards = mongoClient.getDatabase("config").getCollection("shards").find().first();
             assertThat(shards).isNotNull();
             assertThat(shards).isNotEmpty();
-            assertThat(isReplicaSet(mongoClient));
+            assertThat(isReplicaSet(mongoClient)).isFalse();
         }
     }
 
