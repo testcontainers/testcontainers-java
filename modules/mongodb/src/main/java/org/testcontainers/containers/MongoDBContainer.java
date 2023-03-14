@@ -51,7 +51,6 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         withExposedPorts(MONGODB_INTERNAL_PORT);
-        configure();
     }
 
     @Override
