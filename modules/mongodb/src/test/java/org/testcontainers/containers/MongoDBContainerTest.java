@@ -9,16 +9,13 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.TransactionBody;
-import org.assertj.core.api.Assertions;
 import org.bson.Document;
 import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
 
-public class MongoDBContainerTest {
+import static org.assertj.core.api.Assertions.assertThat;
 
-    private static final DockerImageName DOCKER_IMAGE_NAME = MongoDBContainer.DEFAULT_IMAGE_NAME.withTag(
-        MongoDBContainer.DEFAULT_TAG
-    );
+public class MongoDBContainerTest {
 
     /**
      * Taken from <a href="https://docs.mongodb.com/manual/core/transactions/">https://docs.mongodb.com</a>
@@ -27,9 +24,7 @@ public class MongoDBContainerTest {
     public void shouldExecuteTransactions() {
         try (
             // creatingMongoDBContainer {
-            final MongoDBContainer mongoDBContainer = new MongoDBContainer(
-                DockerImageName.parse("mongo:" + MongoDBContainer.DEFAULT_TAG)
-            )
+            final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.0.10"))
             // }
         ) {
             // startingMongoDBContainer {
@@ -79,7 +74,7 @@ public class MongoDBContainerTest {
 
         try {
             final String trxResultActual = clientSession.withTransaction(txnBody, txnOptions);
-            Assertions.assertThat(trxResultActual).isEqualTo(trxResult);
+            assertThat(trxResultActual).isEqualTo(trxResult);
         } catch (RuntimeException re) {
             throw new IllegalStateException(re.getMessage(), re);
         } finally {
@@ -97,25 +92,25 @@ public class MongoDBContainerTest {
 
     @Test
     public void shouldTestDatabaseName() {
-        try (final MongoDBContainer mongoDBContainer = new MongoDBContainer(DOCKER_IMAGE_NAME)) {
+        try (final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.0.10"))) {
             mongoDBContainer.start();
             final String databaseName = "my-db";
-            Assertions.assertThat(mongoDBContainer.getReplicaSetUrl(databaseName)).endsWith(databaseName);
+            assertThat(mongoDBContainer.getReplicaSetUrl(databaseName)).endsWith(databaseName);
         }
     }
 
     @Test
     public void shouldSupportSharding() {
-        try (final MongoDBContainer mongoDBContainer = new MongoDBContainer(DOCKER_IMAGE_NAME).withSharding()) {
+        try (final MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6").withSharding()) {
             mongoDBContainer.start();
             final MongoClient mongoClient = MongoClients.create(mongoDBContainer.getReplicaSetUrl());
 
             mongoClient.getDatabase("mydb1").getCollection("foo").insertOne(new Document("abc", 0));
 
             Document shards = mongoClient.getDatabase("config").getCollection("shards").find().first();
-            Assertions.assertThat(shards).isNotNull();
-            Assertions.assertThat(shards).isNotEmpty();
-            Assertions.assertThat(isReplicaSet(mongoClient));
+            assertThat(shards).isNotNull();
+            assertThat(shards).isNotEmpty();
+            assertThat(isReplicaSet(mongoClient));
         }
     }
 

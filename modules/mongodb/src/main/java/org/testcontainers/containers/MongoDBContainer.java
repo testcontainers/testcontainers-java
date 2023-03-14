@@ -18,9 +18,9 @@ import java.io.IOException;
 @Slf4j
 public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
 
-    static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("mongo");
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("mongo");
 
-    static final String DEFAULT_TAG = "4.0.10";
+    private static final String DEFAULT_TAG = "4.0.10";
 
     private static final int CONTAINER_EXIT_CODE_OK = 0;
 
