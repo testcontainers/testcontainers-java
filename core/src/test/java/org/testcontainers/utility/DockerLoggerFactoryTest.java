@@ -14,21 +14,18 @@ public class DockerLoggerFactoryTest {
 
     @Test
     public void debugIsNotSwallowedForContainerLogs() {
-        // Arrange
         ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
         listAppender.start();
         LOGGER.addAppender(listAppender);
 
-        // Act
         LOGGER.debug("some text");
 
-        // Assert
         assertThat(listAppender.list).withFailMessage("Log message has been swallowed").hasSize(1);
 
         ILoggingEvent event = listAppender.list.get(0);
 
         assertThat(event.getFormattedMessage()).isEqualTo("some text");
         assertThat(event.getLevel()).isEqualTo(Level.DEBUG);
-        assertThat(event.getLoggerName()).startsWith("org.testcontainers.docker");
+        assertThat(event.getLoggerName()).startsWith("tc");
     }
 }

@@ -16,6 +16,6 @@ public final class DockerLoggerFactory {
             abbreviatedName = dockerImageName;
         }
 
-        return LoggerFactory.getLogger("org.testcontainers.docker." + abbreviatedName);
+        return LoggerFactory.getLogger("tc." + abbreviatedName);
     }
 }
