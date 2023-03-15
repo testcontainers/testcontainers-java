@@ -85,7 +85,24 @@ We can do this in our test `setUp` method, to set up our component under test:
     not work on your current or future CI environment. As such, **avoid hard-coding** the address, and use 
     `getHost()` instead.
 
-## 4. Run the tests!
+## 4. Additional attributes
+There are two additional attributes available for `@Testcontainers` annotation.
+These attributes can be useful in some cases.
+
+If docker is not available in the current environment, tests using containers will fail. We can disable these tests
+in order to prevent failures. We just need to set `disabledWithoutDocker` attribute to `true`.
+
+`
+@Testcontainers(disabledWithoutDocker = true)
+`
+
+We can have multiple containers in our tests, these containers will be started sequentially. However, we can enable
+parallel container initialization which can save some time. We just need to set `parallel` attribute to `true`.
+
+`
+@Testcontainers(parallel = true)
+`
+## 5. Run the tests!
 
 That's it!
 
