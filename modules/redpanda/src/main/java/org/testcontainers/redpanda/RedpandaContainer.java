@@ -12,9 +12,15 @@ import org.testcontainers.utility.DockerImageName;
  */
 public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
 
-    private static final String REDPANDA_FULL_IMAGE_NAME = "docker.redpanda.com/vectorized/redpanda";
+    private static final String REDPANDA_FULL_IMAGE_NAME = "docker.redpanda.com/redpandadata/redpanda";
+
+    @Deprecated
+    private static final String REDPANDA_OLD_FULL_IMAGE_NAME = "docker.redpanda.com/vectorized/redpanda";
 
     private static final DockerImageName REDPANDA_IMAGE = DockerImageName.parse(REDPANDA_FULL_IMAGE_NAME);
+
+    @Deprecated
+    private static final DockerImageName REDPANDA_OLD_IMAGE = DockerImageName.parse(REDPANDA_OLD_FULL_IMAGE_NAME);
 
     private static final int REDPANDA_PORT = 9092;
 
@@ -28,7 +34,7 @@ public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
 
     public RedpandaContainer(DockerImageName imageName) {
         super(imageName);
-        imageName.assertCompatibleWith(REDPANDA_IMAGE);
+        imageName.assertCompatibleWith(REDPANDA_OLD_IMAGE, REDPANDA_IMAGE);
 
         boolean isLessThanBaseVersion = new ComparableVersion(imageName.getVersionPart()).isLessThan("v22.2.1");
         if (REDPANDA_FULL_IMAGE_NAME.equals(imageName.getUnversionedPart()) && isLessThanBaseVersion) {
