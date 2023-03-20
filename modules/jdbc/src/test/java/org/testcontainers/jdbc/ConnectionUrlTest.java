@@ -13,10 +13,10 @@ public class ConnectionUrlTest {
 
     @Test
     public void testConnectionUrl1() {
-        String urlString = "jdbc:tc:mysql:5.7.34://somehostname:3306/databasename?a=b&c=d";
+        String urlString = "jdbc:tc:my_db:5.7.34://somehostname:3306/databasename?a=b&c=d";
         ConnectionUrl url = ConnectionUrl.newInstance(urlString);
 
-        assertThat(url.getDatabaseType()).as("Database Type value is as expected").isEqualTo("mysql");
+        assertThat(url.getDatabaseType()).as("Database Type value is as expected").isEqualTo("my_db");
         assertThat(url.getImageTag()).as("Database Image tag value is as expected").contains("5.7.34");
         assertThat(url.getDbHostString())
             .as("Database Host String is as expected")
