@@ -15,6 +15,10 @@ public class CrateDBJDBCDriverTest extends AbstractJDBCDriverTest {
         return Arrays.asList(
             new Object[][] {
                 { "jdbc:tc:cratedb:5.2.3://hostname/crate?user=crate&password=somepwd", EnumSet.noneOf(Options.class) },
+                {
+                    "jdbc:tc:cratedb_legacy:5.2.3://hostname/crate?user=crate&password=somepwd",
+                    EnumSet.noneOf(Options.class),
+                },
             }
         );
     }

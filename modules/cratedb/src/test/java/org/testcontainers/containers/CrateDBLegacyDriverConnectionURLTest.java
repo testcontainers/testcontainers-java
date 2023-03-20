@@ -6,7 +6,7 @@ import org.testcontainers.CrateDBTestImages;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
-public class CrateDBConnectionURLTest {
+public class CrateDBLegacyDriverConnectionURLTest {
 
     @Test
     public void shouldCorrectlyAppendQueryString() {
@@ -53,7 +53,7 @@ public class CrateDBConnectionURLTest {
             .isInstanceOf(IllegalArgumentException.class);
     }
 
-    static class FixedJdbcUrlCrateDBContainer extends CrateDBContainer<FixedJdbcUrlCrateDBContainer> {
+    static class FixedJdbcUrlCrateDBContainer extends CrateDBLegacyDriverContainer<FixedJdbcUrlCrateDBContainer> {
 
         public FixedJdbcUrlCrateDBContainer() {
             super(CrateDBTestImages.CRATEDB_TEST_IMAGE);
@@ -70,7 +70,7 @@ public class CrateDBConnectionURLTest {
         }
     }
 
-    static class NoParamsUrlCrateDBContainer extends CrateDBContainer<FixedJdbcUrlCrateDBContainer> {
+    static class NoParamsUrlCrateDBContainer extends CrateDBLegacyDriverContainer<FixedJdbcUrlCrateDBContainer> {
 
         public NoParamsUrlCrateDBContainer() {
             super(CrateDBTestImages.CRATEDB_TEST_IMAGE);
@@ -78,7 +78,7 @@ public class CrateDBConnectionURLTest {
 
         @Override
         public String getJdbcUrl() {
-            return "jdbc:postgresql://host:port/database";
+            return "jdbc:crate://host:port/database";
         }
     }
 }

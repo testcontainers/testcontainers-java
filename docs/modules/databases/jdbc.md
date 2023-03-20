@@ -33,7 +33,7 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 
 #### Using CrateDB
 
-`jdbc:tc:crate:5.2.3//localhost:5432/crate`
+`jdbc:tc:cratedb:5.2.3//localhost:5432/crate` or `jdbc:tc:cratedb_legacy:5.2.3//localhost:5432/crate`
 
 #### Using PostgreSQL
 

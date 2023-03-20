@@ -4,7 +4,7 @@ import org.testcontainers.jdbc.ConnectionUrl;
 import org.testcontainers.utility.DockerImageName;
 
 /**
- * Factory for CrateDB containers using its JDBC driver.
+ * Factory for CrateDB containers using PostgreSQL JDBC driver.
  */
 public class CrateDBContainerProvider extends JdbcDatabaseContainerProvider {
 

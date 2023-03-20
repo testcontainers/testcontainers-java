@@ -22,5 +22,6 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 !!! hint
     Adding this Testcontainers library JAR will not automatically add a database driver JAR to your project. You should ensure that your project also has a suitable database driver as a dependency.
+    If you'd like to use the PostgreSQL JDBC Driver, use `org.postgresql:postgresql`, if you'd like to use CrateDB's JDBC driver, use `io.crate:crate-jdbc`.
 
 

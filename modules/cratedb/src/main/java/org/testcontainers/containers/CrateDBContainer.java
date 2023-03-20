@@ -14,7 +14,7 @@ public class CrateDBContainer<SELF extends CrateDBContainer<SELF>> extends JdbcD
 
     public static final String DEFAULT_TAG = "latest";
 
-    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("crate");
+    protected static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("crate");
 
     public static final Integer CRATEDB_PG_PORT = 5432;
 
@@ -61,14 +61,14 @@ public class CrateDBContainer<SELF extends CrateDBContainer<SELF>> extends JdbcD
 
     @Override
     public String getDriverClassName() {
-        return "io.crate.client.jdbc.CrateDriver";
+        return "org.postgresql.Driver";
     }
 
     @Override
     public String getJdbcUrl() {
         String additionalUrlParams = constructUrlParameters("?", "&");
         return (
-            "jdbc:crate://" +
+            "jdbc:postgresql://" +
             getHost() +
             ":" +
             getMappedPort(CRATEDB_PG_PORT) +
