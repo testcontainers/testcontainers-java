@@ -31,6 +31,10 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 
 `jdbc:tc:mysql:5.7.34:///databasename`
 
+#### Using CrateDB
+
+`jdbc:tc:crate:5.2.3//localhost:5432/crate`
+
 #### Using PostgreSQL
 
 `jdbc:tc:postgresql:9.6.8:///databasename`
