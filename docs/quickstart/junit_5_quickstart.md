@@ -86,22 +86,14 @@ We can do this in our test `setUp` method, to set up our component under test:
     `getHost()` instead.
 
 ## 4. Additional attributes
-There are two additional attributes available for `@Testcontainers` annotation.
-These attributes can be useful in some cases.
 
-If docker is not available in the current environment, tests using containers will fail. We can disable these tests
-in order to prevent failures. We just need to set `disabledWithoutDocker` attribute to `true`.
+Additional attributes are available for the `@Testcontainers` annotation.
+Those attributes can be helpful when:
 
-`
-@Testcontainers(disabledWithoutDocker = true)
-`
+* Tests should be skipped instead of failing because Docker is unavailable in the
+current environment. Set `disabledWithoutDocker` to `true`.
+* Enable parallel container initialization instead of sequential (by default). Set `parallel` to `true`.
 
-We can have multiple containers in our tests, these containers will be started sequentially. However, we can enable
-parallel container initialization which can save some time. We just need to set `parallel` attribute to `true`.
-
-`
-@Testcontainers(parallel = true)
-`
 ## 5. Run the tests!
 
 That's it!
