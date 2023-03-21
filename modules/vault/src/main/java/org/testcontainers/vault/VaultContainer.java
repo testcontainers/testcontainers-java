@@ -154,7 +154,9 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
      *
      * @param level the logging level to set for Vault.
      * @return this
+     * @deprecated use {@link #withEnv(String, String)} instead
      */
+    @Deprecated
     public SELF withLogLevel(VaultLogLevel level) {
         return withEnv("VAULT_LOG_LEVEL", level.config);
     }
