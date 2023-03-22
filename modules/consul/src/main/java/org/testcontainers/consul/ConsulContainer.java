@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 public class ConsulContainer extends GenericContainer<ConsulContainer> {
 
     private static final DockerImageName DEFAULT_OLD_IMAGE_NAME = DockerImageName.parse("consul");
+
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("hashicorp/consul");
 
     private static final int CONSUL_HTTP_PORT = 8500;
