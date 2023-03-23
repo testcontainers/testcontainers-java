@@ -30,6 +30,7 @@ import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.localstack.LocalStackContainer.Service;
+import org.testcontainers.utility.DockerImageName;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
@@ -266,6 +267,11 @@ public class LocalstackContainerTest {
             .withEnv("AWS_REGION", "eu-west-1");
 
         @Test
+        public void localstackHostEnVarIsSet() {
+            assertThat(localstackInDockerNetwork.getEnvMap().get("HOSTNAME_EXTERNAL")).isEqualTo("localstack");
+        }
+
+        @Test
         public void s3TestOverDockerNetwork() throws Exception {
             runAwsCliAgainstDockerNetworkContainer(
                 "s3api create-bucket --bucket foo --create-bucket-configuration LocationConstraint=eu-west-1"
@@ -357,17 +363,92 @@ public class LocalstackContainerTest {
 
         @Test
         public void s3ServiceStartLazily() {
-            S3Client s3 = S3Client
-                .builder()
-                .endpointOverride(localstack.getEndpointOverride(Service.S3))
-                .credentialsProvider(
-                    StaticCredentialsProvider.create(
-                        AwsBasicCredentials.create(localstack.getAccessKey(), localstack.getSecretKey())
+            try (
+                S3Client s3 = S3Client
+                    .builder()
+                    .endpointOverride(localstack.getEndpointOverride(Service.S3))
+                    .credentialsProvider(
+                        StaticCredentialsProvider.create(
+                            AwsBasicCredentials.create(localstack.getAccessKey(), localstack.getSecretKey())
+                        )
                     )
+                    .region(Region.of(localstack.getRegion()))
+                    .build()
+            ) {
+                assertThat(s3.listBuckets().buckets()).as("S3 Service is started lazily").isEmpty();
+            }
+        }
+    }
+
+    public static class WithVersion2 {
+
+        private static Network network = Network.newNetwork();
+
+        @ClassRule
+        public static LocalStackContainer localstack = new LocalStackContainer(
+            DockerImageName.parse("localstack/localstack:latest")
+        )
+            .withNetwork(network)
+            .withNetworkAliases("localstack");
+
+        @ClassRule
+        public static GenericContainer<?> awsCliInDockerNetwork = new GenericContainer<>(
+            LocalstackTestImages.AWS_CLI_IMAGE
+        )
+            .withNetwork(network)
+            .withCreateContainerCmdModifier(cmd -> cmd.withEntrypoint("tail"))
+            .withCommand(" -f /dev/null")
+            .withEnv("AWS_ACCESS_KEY_ID", "accesskey")
+            .withEnv("AWS_SECRET_ACCESS_KEY", "secretkey")
+            .withEnv("AWS_REGION", "eu-west-1");
+
+        @Test
+        public void localstackHostEnVarIsSet() {
+            assertThat(localstack.getEnvMap().get("LOCALSTACK_HOST")).isEqualTo("localstack");
+        }
+
+        @Test
+        public void sqsTestOverDockerNetwork() throws Exception {
+            final String queueCreationResponse = runAwsCliAgainstDockerNetworkContainer(
+                "sqs create-queue --queue-name baz"
+            );
+
+            assertThat(queueCreationResponse)
+                .as("Created queue has external hostname URL")
+                .contains("http://localstack:" + LocalStackContainer.PORT);
+
+            runAwsCliAgainstDockerNetworkContainer(
+                String.format(
+                    "sqs send-message --endpoint http://localstack:%d --queue-url http://localstack:%d/queue/baz --message-body test",
+                    LocalStackContainer.PORT,
+                    LocalStackContainer.PORT
                 )
-                .region(Region.of(localstack.getRegion()))
-                .build();
-            assertThat(s3.listBuckets().buckets()).as("S3 Service is started lazily").isEmpty();
+            );
+            final String message = runAwsCliAgainstDockerNetworkContainer(
+                String.format(
+                    "sqs receive-message --endpoint http://localstack:%d --queue-url http://localstack:%d/queue/baz",
+                    LocalStackContainer.PORT,
+                    LocalStackContainer.PORT
+                )
+            );
+
+            assertThat(message).as("the sent message can be received").contains("\"Body\": \"test\"");
+        }
+
+        private String runAwsCliAgainstDockerNetworkContainer(String command) throws Exception {
+            final String[] commandParts = String
+                .format(
+                    "/usr/local/bin/aws --region eu-west-1 %s --endpoint-url http://localstack:%d --no-verify-ssl",
+                    command,
+                    LocalStackContainer.PORT
+                )
+                .split(" ");
+            final Container.ExecResult execResult = awsCliInDockerNetwork.execInContainer(commandParts);
+            assertThat(execResult.getExitCode()).isEqualTo(0);
+
+            final String logs = execResult.getStdout() + execResult.getStderr();
+            log.info(logs);
+            return logs;
         }
     }
 }
