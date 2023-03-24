@@ -295,16 +295,34 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      *
      * @param resourcePath  path to the resource on the classpath (relative to the classpath root; should not start with a leading slash)
      * @param containerPath path this should be mapped to inside the container
-     * @param mode          access mode for the file
+     * @param bindMode      access mode for the file
      * @return this
      */
     default SELF withClasspathResourceMapping(
         final String resourcePath,
         final String containerPath,
-        final BindMode mode
+        final BindMode bindMode
     ) {
-        withClasspathResourceMapping(resourcePath, containerPath, mode, SelinuxContext.NONE);
-        return self();
+        return withClasspathResourceMapping(resourcePath, null, containerPath, bindMode, SelinuxContext.NONE);
+    }
+
+    /**
+     * Map a resource (file or directory) on the classpath to a path inside the container.
+     * This will only work if you are running your tests outside a Docker container.
+     *
+     * @param resourcePath  path to the resource on the classpath (relative to the classpath root; should not start with a leading slash)
+     * @param fileMode      octal value of posix file mode (000..777)
+     * @param containerPath path this should be mapped to inside the container
+     * @param bindMode      access mode for the file
+     * @return this
+     */
+    default SELF withClasspathResourceMapping(
+        final String resourcePath,
+        final Integer fileMode,
+        final String containerPath,
+        final BindMode bindMode
+    ) {
+        return withClasspathResourceMapping(resourcePath, fileMode, containerPath, bindMode, SelinuxContext.NONE);
     }
 
     /**
@@ -313,14 +331,35 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      *
      * @param resourcePath   path to the resource on the classpath (relative to the classpath root; should not start with a leading slash)
      * @param containerPath  path this should be mapped to inside the container
-     * @param mode           access mode for the file
+     * @param bindMode       access mode for the file
+     * @param selinuxContext selinux context argument to use for this file
+     * @return this
+     */
+    default SELF withClasspathResourceMapping(
+        String resourcePath,
+        String containerPath,
+        BindMode bindMode,
+        SelinuxContext selinuxContext
+    ) {
+        return withClasspathResourceMapping(resourcePath, null, containerPath, bindMode, selinuxContext);
+    }
+
+    /**
+     * Map a resource (file or directory) on the classpath to a path inside the container.
+     * This will only work if you are running your tests outside a Docker container.
+     *
+     * @param resourcePath   path to the resource on the classpath (relative to the classpath root; should not start with a leading slash)
+     * @param fileMode       octal value of posix file mode (000..777)
+     * @param containerPath  path this should be mapped to inside the container
+     * @param bindMode       access mode for the file
      * @param selinuxContext selinux context argument to use for this file
      * @return this
      */
     SELF withClasspathResourceMapping(
         String resourcePath,
+        Integer fileMode,
         String containerPath,
-        BindMode mode,
+        BindMode bindMode,
         SelinuxContext selinuxContext
     );
 

@@ -1256,28 +1256,17 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public SELF withClasspathResourceMapping(
         final String resourcePath,
+        final Integer fileMode,
         final String containerPath,
-        final BindMode mode
-    ) {
-        return withClasspathResourceMapping(resourcePath, containerPath, mode, SelinuxContext.NONE);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public SELF withClasspathResourceMapping(
-        final String resourcePath,
-        final String containerPath,
-        final BindMode mode,
+        final BindMode bindMode,
         final SelinuxContext selinuxContext
     ) {
-        final MountableFile mountableFile = MountableFile.forClasspathResource(resourcePath);
+        final MountableFile mountableFile = MountableFile.forClasspathResource(resourcePath, fileMode);
 
-        if (mode == BindMode.READ_ONLY && selinuxContext == SelinuxContext.NONE) {
+        if (bindMode == BindMode.READ_ONLY && selinuxContext == SelinuxContext.NONE) {
             withCopyFileToContainer(mountableFile, containerPath);
         } else {
-            addFileSystemBind(mountableFile.getResolvedPath(), containerPath, mode, selinuxContext);
+            addFileSystemBind(mountableFile.getResolvedPath(), containerPath, bindMode, selinuxContext);
         }
 
         return self();

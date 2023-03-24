@@ -102,6 +102,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
         // Spaces are deliberate to allow user to define additional jvm options as elasticsearch resolves option files lexicographically
         withClasspathResourceMapping(
             "elasticsearch-default-memory-vm.options",
+            0664,
             "/usr/share/elasticsearch/config/jvm.options.d/ elasticsearch-default-memory-vm.options",
             BindMode.READ_ONLY
         );
