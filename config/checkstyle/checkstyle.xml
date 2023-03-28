@@ -58,4 +58,8 @@
         </module>
         <module name="OneStatementPerLineCheck"/>
     </module>
+    <module name="RegexpSingleline">
+        <property name="format" value="^\s*\*\s*@author"/>
+        <property name="message" value="Remove author tags from source files."/>
+    </module>
 </module>

@@ -32,7 +32,7 @@
 "modules/influx":
   - modules/influxdb/**/*
 "modules/jdbc":
-  - modules/jdbc/*
+  - modules/jdbc/**/*
 "modules/jupiter":
   - modules/junit-jupiter/**/*
 "modules/k3s":
@@ -75,6 +75,8 @@
   - modules/redpanda/**/*
 "modules/selenium":
   - modules/selenium/**/*
+"modules/solace":
+  - modules/solace/**/*
 "modules/solr":
   - modules/solr/**/*
 "modules/spock":

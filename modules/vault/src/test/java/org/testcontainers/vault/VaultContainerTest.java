@@ -24,7 +24,7 @@ public class VaultContainerTest {
 
     @ClassRule
     // vaultContainer {
-    public static VaultContainer<?> vaultContainer = new VaultContainer<>("vault:1.6.1")
+    public static VaultContainer<?> vaultContainer = new VaultContainer<>("hashicorp/vault:1.13")
         .withVaultToken(VAULT_TOKEN)
         .withSecretInVault("secret/testing1", "top_secret=password123")
         .withSecretInVault(

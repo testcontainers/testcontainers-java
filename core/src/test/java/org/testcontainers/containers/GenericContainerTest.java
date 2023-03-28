@@ -73,6 +73,7 @@ public class GenericContainerTest {
                 .withCommand("sh", "-c", "usleep 100; exit 123")
         ) {
             assertThatThrownBy(container::start)
+                .hasStackTraceContaining("Container startup failed for image " + TestImages.TINY_IMAGE)
                 .hasStackTraceContaining("Wait strategy failed. Container exited with code 123")
                 .hasStackTraceContaining("Nope!");
         }
