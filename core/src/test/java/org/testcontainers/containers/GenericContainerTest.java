@@ -14,7 +14,6 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.assertj.core.api.Assumptions;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.DockerClientFactory;
@@ -35,6 +34,7 @@ import java.util.stream.Collectors;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.assertj.core.api.Assumptions.assumeThat;
 
 public class GenericContainerTest {
 
@@ -183,8 +183,8 @@ public class GenericContainerTest {
     }
 
     @Test
-    @Ignore("This test will only work if the Docker server supports emulation--not all do")
     public void testArchitectureCheck() {
+        assumeThat(DockerClientFactory.instance().client().versionCmd().exec().getArch()).isNotEqualTo("amd64");
         // Choose an image that is *different* from the server architecture--this ensures we always get a warning.
         final String image;
         if (DockerClientFactory.instance().client().versionCmd().exec().getArch().equals("amd64")) {

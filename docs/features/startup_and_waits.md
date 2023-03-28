@@ -1,19 +1,5 @@
 # Waiting for containers to start or be ready
 
-## Container startup lifecycle
-
-This is the startup lifecycle when new containers are created. Note: this does not currently cover the case for experimental reused containers.
-
-1. Start dependencies specified with `dependOn`, if any. See [Depending on another container](#depending-on-another-container).
-1. Create the container.
-1. Notify subclasses that the container has been created by calling `containerIsCreated`.
-1. Start the container.
-1. Wait for mapped ports to be exposed.
-1. Notify subclasses that the container is starting by calling `containerIsStarting`.
-1. Call the the startup strategy to wait for a successful startup. See [Startup check Strategies](#startup-check-strategies).
-1. Call `waitUntilContainerStarted` which calls the wait strategy (unless `waitStrategy` has been set to `null`) to wait for a successful startup. See [Wait Strategies](#wait-strategies).
-1. Notify subclasses that the container has been started by calling `containerIsStarted`.
-
 !!! info "Wait strategies vs Startup strategies"
 
     **Wait strategy:** is the container in a state that is useful for testing. This is generally approximated as 'can we talk to this container over the network'. However, there are quite a few variations and nuances.

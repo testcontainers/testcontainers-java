@@ -968,7 +968,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private String checkForEmulation() {
         try {
             DockerClient dockerClient = DockerClientFactory.instance().client();
-            String imageId = getCurrentContainerInfo().getImageId();
+            String imageId = getContainerInfo().getImageId();
             String imageArch = dockerClient.inspectImageCmd(imageId).exec().getArch();
             String serverArch = dockerClient.versionCmd().exec().getArch();
 
