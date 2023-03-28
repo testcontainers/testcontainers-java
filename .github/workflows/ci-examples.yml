@@ -1,8 +1,19 @@
 name: CI-Examples
 
 on:
-  pull_request: {}
-  push: { branches: [ main ] }
+  pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - 'README.md'
+      - 'RELEASING.md'
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - 'README.md'
+      - 'RELEASING.md'
 
 concurrency:
   group: "${{ github.workflow }}-${{ github.head_ref || github.sha }}"
