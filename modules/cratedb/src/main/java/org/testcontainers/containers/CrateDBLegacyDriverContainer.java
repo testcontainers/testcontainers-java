@@ -2,7 +2,7 @@ package org.testcontainers.containers;
 
 import org.testcontainers.utility.DockerImageName;
 
-public class CrateDBLegacyDriverContainer<SELF extends CrateDBContainer<SELF>> extends CrateDBContainer<SELF> {
+public class CrateDBLegacyDriverContainer extends CrateDBContainer {
 
     public static final String NAME = "cratedblegacy";
 

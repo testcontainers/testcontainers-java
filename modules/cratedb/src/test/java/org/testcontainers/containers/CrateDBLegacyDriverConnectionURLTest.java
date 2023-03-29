@@ -10,7 +10,7 @@ public class CrateDBLegacyDriverConnectionURLTest {
 
     @Test
     public void shouldCorrectlyAppendQueryString() {
-        CrateDBContainer<?> cratedb = new FixedJdbcUrlCrateDBContainer();
+        CrateDBContainer cratedb = new FixedJdbcUrlCrateDBContainer();
         String connectionUrl = cratedb.constructUrlForConnection("?stringtype=unspecified&stringtype=unspecified");
         String queryString = connectionUrl.substring(connectionUrl.indexOf('?'));
 
@@ -23,7 +23,7 @@ public class CrateDBLegacyDriverConnectionURLTest {
 
     @Test
     public void shouldCorrectlyAppendQueryStringWhenNoBaseParams() {
-        CrateDBContainer<?> cratedb = new NoParamsUrlCrateDBContainer();
+        CrateDBContainer cratedb = new NoParamsUrlCrateDBContainer();
         String connectionUrl = cratedb.constructUrlForConnection("?stringtype=unspecified&stringtype=unspecified");
         String queryString = connectionUrl.substring(connectionUrl.indexOf('?'));
 
@@ -36,7 +36,7 @@ public class CrateDBLegacyDriverConnectionURLTest {
 
     @Test
     public void shouldReturnOriginalURLWhenEmptyQueryString() {
-        CrateDBContainer<?> cratedb = new FixedJdbcUrlCrateDBContainer();
+        CrateDBContainer cratedb = new FixedJdbcUrlCrateDBContainer();
         String connectionUrl = cratedb.constructUrlForConnection("");
 
         assertThat(cratedb.getJdbcUrl()).as("Query String remains unchanged").isEqualTo(connectionUrl);
@@ -53,7 +53,7 @@ public class CrateDBLegacyDriverConnectionURLTest {
             .isInstanceOf(IllegalArgumentException.class);
     }
 
-    static class FixedJdbcUrlCrateDBContainer extends CrateDBLegacyDriverContainer<FixedJdbcUrlCrateDBContainer> {
+    static class FixedJdbcUrlCrateDBContainer extends CrateDBLegacyDriverContainer {
 
         public FixedJdbcUrlCrateDBContainer() {
             super(CrateDBTestImages.CRATEDB_TEST_IMAGE);
@@ -70,7 +70,7 @@ public class CrateDBLegacyDriverConnectionURLTest {
         }
     }
 
-    static class NoParamsUrlCrateDBContainer extends CrateDBLegacyDriverContainer<FixedJdbcUrlCrateDBContainer> {
+    static class NoParamsUrlCrateDBContainer extends CrateDBLegacyDriverContainer {
 
         public NoParamsUrlCrateDBContainer() {
             super(CrateDBTestImages.CRATEDB_TEST_IMAGE);

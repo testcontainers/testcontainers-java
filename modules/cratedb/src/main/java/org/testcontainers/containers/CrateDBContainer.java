@@ -6,7 +6,7 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.util.Set;
 
-public class CrateDBContainer<SELF extends CrateDBContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
+public class CrateDBContainer extends JdbcDatabaseContainer<CrateDBContainer> {
 
     public static final String NAME = "cratedb";
 
@@ -91,19 +91,19 @@ public class CrateDBContainer<SELF extends CrateDBContainer<SELF>> extends JdbcD
     }
 
     @Override
-    public SELF withDatabaseName(final String databaseName) {
+    public CrateDBContainer withDatabaseName(final String databaseName) {
         this.databaseName = databaseName;
         return self();
     }
 
     @Override
-    public SELF withUsername(final String username) {
+    public CrateDBContainer withUsername(final String username) {
         this.username = username;
         return self();
     }
 
     @Override
-    public SELF withPassword(final String password) {
+    public CrateDBContainer withPassword(final String password) {
         this.password = password;
         return self();
     }

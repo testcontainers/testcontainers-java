@@ -20,7 +20,7 @@ public class SimpleCrateDBTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSimple() throws SQLException {
-        try (CrateDBContainer<?> cratedb = new CrateDBContainer<>(CrateDBTestImages.CRATEDB_TEST_IMAGE)) {
+        try (CrateDBContainer cratedb = new CrateDBContainer(CrateDBTestImages.CRATEDB_TEST_IMAGE)) {
             cratedb.start();
 
             ResultSet resultSet = performQuery(cratedb, "SELECT 1");
@@ -33,7 +33,7 @@ public class SimpleCrateDBTest extends AbstractContainerDatabaseTest {
     @Test
     public void testCommandOverride() throws SQLException {
         try (
-            CrateDBContainer<?> cratedb = new CrateDBContainer<>(CrateDBTestImages.CRATEDB_TEST_IMAGE)
+            CrateDBContainer cratedb = new CrateDBContainer(CrateDBTestImages.CRATEDB_TEST_IMAGE)
                 .withCommand("crate -C cluster.name=testcontainers")
         ) {
             cratedb.start();
@@ -47,7 +47,7 @@ public class SimpleCrateDBTest extends AbstractContainerDatabaseTest {
     @Test
     public void testExplicitInitScript() throws SQLException {
         try (
-            CrateDBContainer<?> cratedb = new CrateDBContainer<>(CrateDBTestImages.CRATEDB_TEST_IMAGE)
+            CrateDBContainer cratedb = new CrateDBContainer(CrateDBTestImages.CRATEDB_TEST_IMAGE)
                 .withInitScript("somepath/init_cratedb.sql")
         ) {
             cratedb.start();
@@ -59,7 +59,7 @@ public class SimpleCrateDBTest extends AbstractContainerDatabaseTest {
         }
     }
 
-    private void assertHasCorrectExposedAndLivenessCheckPorts(CrateDBContainer<?> cratedb) {
+    private void assertHasCorrectExposedAndLivenessCheckPorts(CrateDBContainer cratedb) {
         assertThat(cratedb.getExposedPorts())
             .containsExactly(CrateDBContainer.CRATEDB_PG_PORT, CrateDBContainer.CRATEDB_HTTP_PORT);
         assertThat(cratedb.getLivenessCheckPortNumbers())

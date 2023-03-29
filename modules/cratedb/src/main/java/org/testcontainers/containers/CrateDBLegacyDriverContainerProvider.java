@@ -14,6 +14,6 @@ public class CrateDBLegacyDriverContainerProvider extends JdbcDatabaseContainerP
 
     @Override
     public JdbcDatabaseContainer<?> newInstance(String tag) {
-        return new CrateDBLegacyDriverContainer<>(DockerImageName.parse(CrateDBContainer.IMAGE).withTag(tag));
+        return new CrateDBLegacyDriverContainer(DockerImageName.parse(CrateDBContainer.IMAGE).withTag(tag));
     }
 }
