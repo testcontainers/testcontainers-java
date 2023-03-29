@@ -4,7 +4,7 @@ import org.testcontainers.utility.DockerImageName;
 
 public class CrateDBLegacyDriverContainer<SELF extends CrateDBContainer<SELF>> extends CrateDBContainer<SELF> {
 
-    public static final String NAME = "cratedb_legacy";
+    public static final String NAME = "cratedblegacy";
 
     public CrateDBLegacyDriverContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);

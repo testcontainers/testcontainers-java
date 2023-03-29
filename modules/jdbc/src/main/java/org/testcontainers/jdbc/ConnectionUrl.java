@@ -205,7 +205,7 @@ public class ConnectionUrl {
     public interface Patterns {
         Pattern URL_MATCHING_PATTERN = Pattern.compile(
             "jdbc:tc:" +
-            "(?<databaseType>[a-z0-9_]+)" +
+            "(?<databaseType>[a-z0-9]+)" +
             "(:(?<imageTag>[^:]+))?" +
             "://" +
             "(?<dbHostString>[^?]+)" +
