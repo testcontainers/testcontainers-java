@@ -12,7 +12,7 @@ public class CrateDBContainer<SELF extends CrateDBContainer<SELF>> extends JdbcD
 
     public static final String IMAGE = "crate";
 
-    public static final String DEFAULT_TAG = "latest";
+    public static final String DEFAULT_TAG = "5.2.5";
 
     protected static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("crate");
 
@@ -25,14 +25,6 @@ public class CrateDBContainer<SELF extends CrateDBContainer<SELF>> extends JdbcD
     private String username = "crate";
 
     private String password = "crate";
-
-    /**
-     * @deprecated use {@link #CrateDBContainer(DockerImageName)} or {@link #CrateDBContainer(String)} instead
-     */
-    @Deprecated
-    public CrateDBContainer() {
-        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
-    }
 
     public CrateDBContainer(final String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));

@@ -1,4 +1,4 @@
-# Postgres Module
+# CrateDB Module
 
 See [Database containers](./index.md) for documentation and usage that is common to all relational database container types.
 
