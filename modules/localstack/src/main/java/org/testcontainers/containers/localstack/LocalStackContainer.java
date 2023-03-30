@@ -103,8 +103,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         this.legacyMode = useLegacyMode;
-        String imageTag = dockerImageName.getVersionPart();
-        String version = imageTag.startsWith("v") ? imageTag.substring(1) : imageTag;
+        String version = dockerImageName.getVersionPart();
         this.servicesEnvVarRequired = isServicesEnvVarRequired(version);
         this.isVersion2 = isVersion2(version);
 
@@ -118,7 +117,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
         }
 
         ComparableVersion comparableVersion = new ComparableVersion(version);
-        return comparableVersion.isGreaterThanOrEqualTo("2.0");
+        return comparableVersion.isGreaterThanOrEqualTo("2.0.0");
     }
 
     private static boolean isServicesEnvVarRequired(String version) {

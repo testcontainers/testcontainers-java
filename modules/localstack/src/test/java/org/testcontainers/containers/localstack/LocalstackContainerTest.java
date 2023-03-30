@@ -386,7 +386,7 @@ public class LocalstackContainerTest {
 
         @ClassRule
         public static LocalStackContainer localstack = new LocalStackContainer(
-            DockerImageName.parse("localstack/localstack:latest")
+            DockerImageName.parse("localstack/localstack:2.0")
         )
             .withNetwork(network)
             .withNetworkAliases("localstack");
