@@ -221,6 +221,7 @@ A huge thank you to our sponsors:
 * [Apache SeaTunnel](https://github.com/apache/incubator-seatunnel) - Integration testing with different datasource.
 * [Bucket4j](https://github.com/bucket4j/bucket4j) - Java rate-limiting library based on the token-bucket algorithm.
 * [Spark ClickHouse Connector](https://github.com/housepower/spark-clickhouse-connector) - Integration tests for Apache Spark with both single node ClickHouse instance and multi-node ClickHouse cluster.
+* [Quarkus](https://github.com/quarkusio/quarkus) - Testcontainers is used extensively for Quarkus' [DevServices](https://quarkus.io/guides/dev-services) feature.
 
 ## License
 
