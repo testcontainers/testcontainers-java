@@ -4,7 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 import org.testcontainers.containers.FailureDetectingExternalResource;
-import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
 
@@ -12,9 +12,9 @@ import java.util.Optional;
 
 public class TestcontainersRule extends FailureDetectingExternalResource {
 
-    private final GenericContainer<?> container;
+    private final Startable container;
 
-    public TestcontainersRule(GenericContainer<?> container) {
+    public TestcontainersRule(Startable container) {
         this.container = container;
     }
 

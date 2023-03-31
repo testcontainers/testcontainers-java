@@ -5,6 +5,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
+import org.testcontainers.TestcontainersRule;
 import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.utility.TestEnvironment;
 import redis.clients.jedis.Jedis;
@@ -27,7 +28,6 @@ public class DockerComposeContainerScalingTest {
         Assume.assumeTrue(TestEnvironment.dockerApiAtLeast("1.22"));
     }
 
-    @Rule
     public DockerComposeContainer environment = new DockerComposeContainer(
         new File("src/test/resources/scaled-compose-test.yml")
     )
@@ -35,6 +35,9 @@ public class DockerComposeContainerScalingTest {
         .withExposedService("redis", REDIS_PORT) // implicit '_1'
         .withExposedService("redis_2", REDIS_PORT) // explicit service index
         .withExposedService("redis", 3, REDIS_PORT); // explicit service index via parameter
+
+    @Rule
+    public TestcontainersRule rule = new TestcontainersRule(environment);
 
     @Before
     public void setupClients() {
