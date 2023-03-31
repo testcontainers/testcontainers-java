@@ -53,6 +53,7 @@ nav:
                 - modules/databases/cockroachdb.md
                 - modules/databases/couchbase.md
                 - modules/databases/clickhouse.md
+                - modules/databases/cratedb.md
                 - modules/databases/db2.md
                 - modules/databases/dynalite.md
                 - modules/databases/influxdb.md
