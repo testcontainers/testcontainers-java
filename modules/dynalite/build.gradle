@@ -3,6 +3,7 @@ description = "Testcontainers :: Dynalite"
 dependencies {
     api project(':testcontainers')
 
+    testImplementation 'junit:junit:4.13.2'
     compileOnly 'com.amazonaws:aws-java-sdk-dynamodb:1.12.418'
     testImplementation 'com.amazonaws:aws-java-sdk-dynamodb:1.12.418'
     testImplementation 'org.assertj:assertj-core:3.24.2'

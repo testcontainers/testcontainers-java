@@ -3,6 +3,7 @@ description = "Testcontainers :: JDBC :: CockroachDB"
 dependencies {
     api project(':jdbc')
 
+    testImplementation 'junit:junit:4.13.2'
     testImplementation project(':jdbc-test')
     testImplementation 'org.postgresql:postgresql:42.5.4'
     testImplementation 'org.assertj:assertj-core:3.24.2'

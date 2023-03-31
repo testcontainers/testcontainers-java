@@ -9,6 +9,8 @@ dependencies {
     compileOnly project(':r2dbc')
     compileOnly 'io.r2dbc:r2dbc-mssql:1.0.0.RELEASE'
 
+    testImplementation 'junit:junit:4.13.2'
+
     testImplementation project(':jdbc-test')
     testImplementation 'com.microsoft.sqlserver:mssql-jdbc:12.2.0.jre8'
 

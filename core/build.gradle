@@ -48,11 +48,28 @@ tasks.japicmp {
 
     classExcludes = [
         "org.testcontainers.utility.RyukResourceReaper",
+        "org.testcontainers.containers.VncRecordingContainer",
+        "org.testcontainers.containers.SocatContainer",
+        "org.testcontainers.containers.Network",
+        "org.testcontainers.containers.FailureDetectingExternalResource",
+        "org.testcontainers.containers.FixedHostPortGenericContainer",
+        "org.testcontainers.containers.GenericContainer",
+        "org.testcontainers.containers.DockerComposeContainer"
     ]
 
     methodExcludes = [
         "org.testcontainers.containers.Container#getDockerClient()",
         "org.testcontainers.containers.ContainerState#getDockerClient()",
+        "org.testcontainers.containers.DockerComposeContainer#apply(org.junit.runners.model.Statement,org.junit.runner.Description)",
+        "org.testcontainers.containers.DockerComposeContainer#failed(java.lang.Throwable,org.junit.runner.Description)",
+        "org.testcontainers.containers.DockerComposeContainer#finished(org.junit.runner.Description)",
+        "org.testcontainers.containers.DockerComposeContainer#starting(org.junit.runner.Description)",
+        "org.testcontainers.containers.DockerComposeContainer#succeeded(org.junit.runner.Description)",
+        "org.testcontainers.containers.GenericContainer#apply(org.junit.runners.model.Statement,org.junit.runner.Description)",
+        "org.testcontainers.containers.GenericContainer#failed(java.lang.Throwable,org.junit.runner.Description)",
+        "org.testcontainers.containers.GenericContainer#finished(org.junit.runner.Description)",
+        "org.testcontainers.containers.GenericContainer#starting(org.junit.runner.Description)",
+        "org.testcontainers.containers.GenericContainer#succeeded(org.junit.runner.Description)"
     ]
 
     fieldExcludes = []
@@ -67,7 +84,7 @@ configurations.all {
 }
 
 dependencies {
-    api 'junit:junit:4.13.2'
+    testImplementation 'junit:junit:4.13.2'
     api 'org.slf4j:slf4j-api:1.7.36'
     compileOnly 'org.jetbrains:annotations:24.0.0'
     testCompileOnly 'org.jetbrains:annotations:24.0.0'

@@ -14,6 +14,8 @@ dependencies {
 
     compileOnly 'org.jetbrains:annotations:24.0.0'
 
+    testImplementation 'junit:junit:4.13.2'
+
     testImplementation testFixtures(project(':r2dbc'))
     testImplementation 'com.oracle.database.r2dbc:oracle-r2dbc:1.0.0'
 }

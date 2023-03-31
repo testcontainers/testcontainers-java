@@ -3,6 +3,7 @@ description = "Testcontainers :: JDBC :: DB2"
 dependencies {
     api project(':jdbc')
 
+    testImplementation 'junit:junit:4.13.2'
     testImplementation project(':jdbc-test')
     testImplementation 'com.ibm.db2:jcc:11.5.8.0'
     testImplementation 'org.assertj:assertj-core:3.24.2'

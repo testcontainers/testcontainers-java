@@ -9,6 +9,8 @@ dependencies {
     compileOnly project(':r2dbc')
     compileOnly 'io.r2dbc:r2dbc-postgresql:0.8.13.RELEASE'
 
+    testImplementation 'junit:junit:4.13.2'
+
     testImplementation project(':jdbc-test')
     testImplementation 'org.postgresql:postgresql:42.5.4'
 

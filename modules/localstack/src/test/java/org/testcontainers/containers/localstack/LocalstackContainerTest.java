@@ -26,7 +26,6 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
-import org.testcontainers.TestcontainersRule;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
@@ -400,12 +399,6 @@ public class LocalstackContainerTest {
             .withEnv("AWS_ACCESS_KEY_ID", "accesskey")
             .withEnv("AWS_SECRET_ACCESS_KEY", "secretkey")
             .withEnv("AWS_REGION", "eu-west-1");
-
-        @ClassRule
-        public static TestcontainersRule localStackRule = new TestcontainersRule(localstack);
-
-        @ClassRule
-        public static TestcontainersRule cli = new TestcontainersRule(awsCliInDockerNetwork);
 
         @Test
         public void localstackHostEnVarIsSet() {

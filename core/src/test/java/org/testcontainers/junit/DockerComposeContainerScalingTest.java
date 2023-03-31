@@ -1,11 +1,10 @@
 package org.testcontainers.junit;
 
+import org.junit.After;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
-import org.testcontainers.TestcontainersRule;
 import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.utility.TestEnvironment;
 import redis.clients.jedis.Jedis;
@@ -36,17 +35,20 @@ public class DockerComposeContainerScalingTest {
         .withExposedService("redis_2", REDIS_PORT) // explicit service index
         .withExposedService("redis", 3, REDIS_PORT); // explicit service index via parameter
 
-    @Rule
-    public TestcontainersRule rule = new TestcontainersRule(environment);
-
     @Before
     public void setupClients() {
+        this.environment.start();
         for (int i = 0; i < 3; i++) {
             String name = String.format("redis_%d", i + 1);
 
             clients[i] =
                 new Jedis(environment.getServiceHost(name, REDIS_PORT), environment.getServicePort(name, REDIS_PORT));
         }
+    }
+
+    @After
+    public void tearDown() {
+        this.environment.stop();
     }
 
     @Test

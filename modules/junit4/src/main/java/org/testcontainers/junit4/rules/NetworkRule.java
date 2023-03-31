@@ -1,4 +1,4 @@
-package org.testcontainers;
+package org.testcontainers.junit4.rules;
 
 import org.junit.rules.ExternalResource;
 import org.testcontainers.containers.Network;

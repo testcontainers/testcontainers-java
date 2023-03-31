@@ -3,6 +3,8 @@ description = "Testcontainers :: JDBC :: TiDB"
 dependencies {
     api project(':jdbc')
 
+    testImplementation 'junit:junit:4.13.2'
+
     testImplementation project(':jdbc-test')
     testImplementation 'mysql:mysql-connector-java:8.0.32'
 

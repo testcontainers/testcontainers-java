@@ -1,4 +1,4 @@
-package org.testcontainers.containers;
+package org.testcontainers.junit4.rules;
 
 import org.junit.Test;
 import org.junit.runner.Description;

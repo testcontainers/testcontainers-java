@@ -4,6 +4,7 @@ dependencies {
     api project(':testcontainers')
     api project(':jdbc')
 
+    testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.postgresql:postgresql:42.5.4'
     testImplementation project(':jdbc-test')
     testImplementation 'org.assertj:assertj-core:3.24.2'

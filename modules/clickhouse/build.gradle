@@ -4,6 +4,7 @@ dependencies {
     api project(':testcontainers')
     api project(':jdbc')
 
+    testImplementation 'junit:junit:4.13.2'
     testImplementation project(':jdbc-test')
     testImplementation 'ru.yandex.clickhouse:clickhouse-jdbc:0.3.2'
     testImplementation 'org.assertj:assertj-core:3.24.2'

@@ -1,9 +1,7 @@
-package org.testcontainers;
+package org.testcontainers.junit4.rules;
 
-import org.jetbrains.annotations.NotNull;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
-import org.testcontainers.containers.FailureDetectingExternalResource;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
@@ -18,7 +16,6 @@ public class TestcontainersRule extends FailureDetectingExternalResource {
         this.container = container;
     }
 
-    @NotNull
     @Override
     public Statement apply(Statement base, Description description) {
         return super.apply(base, description);

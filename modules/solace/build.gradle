@@ -5,6 +5,7 @@ dependencies {
 
     shaded 'org.awaitility:awaitility:4.2.0'
 
+    testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.assertj:assertj-core:3.24.2'
     testImplementation 'com.solacesystems:sol-jcsmp:10.18.0'
     testImplementation 'org.apache.qpid:qpid-jms-client:0.61.0'

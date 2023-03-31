@@ -1,0 +1,10 @@
+description = "Testcontainers :: JUnit4"
+
+dependencies {
+    api project(':testcontainers')
+    implementation 'junit:junit:4.13.2'
+
+    testImplementation ('org.mockito:mockito-core:4.11.0') {
+        exclude(module: 'hamcrest-core')
+    }
+}
