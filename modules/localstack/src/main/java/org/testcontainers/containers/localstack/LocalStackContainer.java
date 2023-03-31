@@ -37,6 +37,8 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("localstack/localstack");
 
+    private static final DockerImageName LOCALSTACK_PRO_IMAGE_NAME = DockerImageName.parse("localstack/localstack-pro");
+
     private static final String DEFAULT_TAG = "0.11.2";
 
     private static final String DEFAULT_REGION = "us-east-1";
@@ -100,7 +102,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
     @Deprecated
     public LocalStackContainer(final DockerImageName dockerImageName, boolean useLegacyMode) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, LOCALSTACK_PRO_IMAGE_NAME);
 
         this.legacyMode = useLegacyMode;
         String version = dockerImageName.getVersionPart();
