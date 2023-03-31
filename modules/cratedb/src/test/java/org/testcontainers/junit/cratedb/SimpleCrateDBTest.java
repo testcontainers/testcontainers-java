@@ -2,7 +2,7 @@ package org.testcontainers.junit.cratedb;
 
 import org.junit.Test;
 import org.testcontainers.CrateDBTestImages;
-import org.testcontainers.containers.CrateDBContainer;
+import org.testcontainers.cratedb.CrateDBContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
 import java.sql.ResultSet;
@@ -60,12 +60,8 @@ public class SimpleCrateDBTest extends AbstractContainerDatabaseTest {
     }
 
     private void assertHasCorrectExposedAndLivenessCheckPorts(CrateDBContainer cratedb) {
-        assertThat(cratedb.getExposedPorts())
-            .containsExactly(CrateDBContainer.CRATEDB_PG_PORT, CrateDBContainer.CRATEDB_HTTP_PORT);
+        assertThat(cratedb.getExposedPorts()).containsExactly(5432, 4200);
         assertThat(cratedb.getLivenessCheckPortNumbers())
-            .containsExactlyInAnyOrder(
-                cratedb.getMappedPort(CrateDBContainer.CRATEDB_PG_PORT),
-                cratedb.getMappedPort(CrateDBContainer.CRATEDB_HTTP_PORT)
-            );
+            .containsExactlyInAnyOrder(cratedb.getMappedPort(5432), cratedb.getMappedPort(4200));
     }
 }

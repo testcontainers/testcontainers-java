@@ -1,5 +1,7 @@
-package org.testcontainers.containers;
+package org.testcontainers.cratedb;
 
+import org.testcontainers.containers.JdbcDatabaseContainer;
+import org.testcontainers.containers.JdbcDatabaseContainerProvider;
 import org.testcontainers.jdbc.ConnectionUrl;
 import org.testcontainers.utility.DockerImageName;
 

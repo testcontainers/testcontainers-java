@@ -1,6 +1,7 @@
-package org.testcontainers.containers;
+package org.testcontainers.cratedb;
 
 import org.jetbrains.annotations.NotNull;
+import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
@@ -8,17 +9,17 @@ import java.util.Set;
 
 public class CrateDBContainer extends JdbcDatabaseContainer<CrateDBContainer> {
 
-    public static final String NAME = "cratedb";
+    static final String NAME = "cratedb";
 
-    public static final String IMAGE = "crate";
+    static final String IMAGE = "crate";
 
-    public static final String DEFAULT_TAG = "5.2.5";
+    static final String DEFAULT_TAG = "5.2.5";
 
-    protected static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("crate");
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("crate");
 
-    public static final Integer CRATEDB_PG_PORT = 5432;
+    static final Integer CRATEDB_PG_PORT = 5432;
 
-    public static final Integer CRATEDB_HTTP_PORT = 4200;
+    static final Integer CRATEDB_HTTP_PORT = 4200;
 
     private String databaseName = "crate";
 
