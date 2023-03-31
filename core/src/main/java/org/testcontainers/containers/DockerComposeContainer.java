@@ -16,8 +16,6 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.output.OutputFrame;
@@ -66,9 +64,7 @@ import java.util.stream.Stream;
  * Container which launches Docker Compose, for the purposes of launching a defined set of containers.
  */
 @Slf4j
-public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
-    extends FailureDetectingExternalResource
-    implements Startable {
+public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> implements Startable {
 
     /**
      * Random identifier which will become part of spawned containers names, so we can shut them down
@@ -147,32 +143,6 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
         this.project = randomProjectId();
 
         this.dockerClient = DockerClientFactory.lazyClient();
-    }
-
-    @Override
-    @Deprecated
-    public Statement apply(Statement base, Description description) {
-        return super.apply(base, description);
-    }
-
-    @Override
-    @Deprecated
-    public void starting(Description description) {
-        start();
-    }
-
-    @Override
-    @Deprecated
-    protected void succeeded(Description description) {}
-
-    @Override
-    @Deprecated
-    protected void failed(Throwable e, Description description) {}
-
-    @Override
-    @Deprecated
-    public void finished(Description description) {
-        stop();
     }
 
     @Override
