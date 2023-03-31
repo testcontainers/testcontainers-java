@@ -76,7 +76,7 @@ dependencies {
         exclude(group: 'org.jetbrains', module: 'annotations')
     }
 
-    provided 'com.google.cloud.tools:jib-core:0.22.0'
+    provided 'com.google.cloud.tools:jib-core:0.23.0'
 
     shaded 'org.awaitility:awaitility:4.2.0'
 
