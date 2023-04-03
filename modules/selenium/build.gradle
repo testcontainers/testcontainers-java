@@ -13,5 +13,5 @@ dependencies {
     testImplementation project(':nginx')
     testImplementation 'org.assertj:assertj-core:3.24.2'
 
-    compileOnly 'org.jetbrains:annotations:24.0.0'
+    compileOnly 'org.jetbrains:annotations:24.0.1'
 }
