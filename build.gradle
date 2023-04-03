@@ -97,15 +97,6 @@ subprojects {
 
         if (System.properties['test.profile'] == 'podman') {
             exclude '**/*DockerCompose*'
-            filter {
-                excludeTestsMatching '*DockerNetworkModeTest*'
-
-                excludeTestsMatching '*testBuilder'
-                excludeTestsMatching '*testModifiers'
-
-                excludeTestsMatching '*shouldReportOOMAfterWait'
-            }
-
         }
     }
 
