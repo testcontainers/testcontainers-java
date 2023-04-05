@@ -23,12 +23,19 @@ import javax.script.ScriptException;
  *
  * Supports 2.x and 3.x Cassandra versions
  */
-public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends GenericContainer<SELF> {
+public class CassandraContainer<S extends CassandraContainer<S>> extends GenericContainer<S> {
 
-    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("cassandra");
+    private static final String PASSWORD = "cassandra";
+
+    private static final String USERNAME = "cassandra";
+
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse(USERNAME);
 
     private static final String DEFAULT_TAG = "3.11.2";
 
+    /**
+     * @deprecated use {@link #CassandraContainer(DockerImageName)} instead
+     */
     @Deprecated
     public static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
 
@@ -37,10 +44,6 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
     private static final String DEFAULT_LOCAL_DATACENTER = "datacenter1";
 
     private static final String CONTAINER_CONFIG_LOCATION = "/etc/cassandra";
-
-    private static final String USERNAME = "cassandra";
-
-    private static final String PASSWORD = "cassandra";
 
     private String configLocation;
 
@@ -137,7 +140,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
      *
      * @param configLocation relative classpath with the directory that contains cassandra.yaml and other configuration files
      */
-    public SELF withConfigurationOverride(String configLocation) {
+    public S withConfigurationOverride(String configLocation) {
         this.configLocation = configLocation;
         return self();
     }
@@ -149,7 +152,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
      *
      * @param initScriptPath relative classpath resource
      */
-    public SELF withInitScript(String initScriptPath) {
+    public S withInitScript(String initScriptPath) {
         this.initScriptPath = initScriptPath;
         return self();
     }
@@ -157,7 +160,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
     /**
      * Initialize Cassandra client with JMX reporting enabled or disabled
      */
-    public SELF withJmxReporting(boolean enableJmxReporting) {
+    public S withJmxReporting(boolean enableJmxReporting) {
         this.enableJmxReporting = enableJmxReporting;
         return self();
     }
@@ -203,6 +206,9 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
         return getCluster(this, enableJmxReporting);
     }
 
+    /**
+     * @deprecated
+     */
     @Deprecated
     public static Cluster getCluster(ContainerState containerState, boolean enableJmxReporting) {
         final Cluster.Builder builder = Cluster
@@ -215,6 +221,9 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
         return builder.build();
     }
 
+    /**
+     * @deprecated
+     */
     @Deprecated
     public static Cluster getCluster(ContainerState containerState) {
         return getCluster(containerState, false);
@@ -238,6 +247,9 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
         return getEnvMap().getOrDefault("CASSANDRA_DC", DEFAULT_LOCAL_DATACENTER);
     }
 
+    /**
+     * @deprecated
+     */
     @Deprecated
     private DatabaseDelegate getDatabaseDelegate() {
         return new CassandraDatabaseDelegate(this);
