@@ -8,6 +8,7 @@ import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
 import java.net.URL;
@@ -54,7 +55,7 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
     @Test
     public void testSimple() throws SQLException {
         try (
-            MySQLContainer<?> mysql = new MySQLContainer<>(MySQLTestImages.MYSQL_57_IMAGE)
+            MySQLContainer<?> mysql = new MySQLContainer<>(DockerImageName.parse("mysql:8.0.31"))
                 .withLogConsumer(new Slf4jLogConsumer(logger))
         ) {
             mysql.start();

@@ -9,7 +9,7 @@ public class OracleR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseConta
 
     @Override
     protected OracleContainer createContainer() {
-        return new OracleContainer("gvenzl/oracle-xe:21-slim-faststart");
+        return new OracleContainer("gvenzl/oracle-free:23.2.0-faststart");
     }
 
     @Override
@@ -20,7 +20,7 @@ public class OracleR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseConta
     }
 
     protected String createR2DBCUrl() {
-        return "r2dbc:tc:oracle:///db?TC_IMAGE_TAG=21-slim-faststart";
+        return "r2dbc:tc:oracle:///db?TC_IMAGE_TAG=23.2.0-faststart";
     }
 
     @Override

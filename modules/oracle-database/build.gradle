@@ -1,4 +1,4 @@
-description = "Testcontainers :: JDBC :: Oracle XE"
+description = "Testcontainers :: JDBC :: Oracle Database"
 
 dependencies {
     annotationProcessor 'com.google.auto.service:auto-service:1.0.1'
