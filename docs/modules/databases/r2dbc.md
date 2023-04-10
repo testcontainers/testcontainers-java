@@ -49,6 +49,10 @@ So that the URL becomes:
 
 `r2dbc:tc:sqlserver:///?TC_IMAGE_TAG=2017-CU12`
 
+#### Using Oracle:
+
+`r2dbc:tc:oracle:///?TC_IMAGE_TAG=21-slim-faststart`
+
 ## Obtaining `ConnectionFactoryOptions` from database container objects
 
 If you already have an instance of the database container, you can get an instance of `ConnectionFactoryOptions` from it:

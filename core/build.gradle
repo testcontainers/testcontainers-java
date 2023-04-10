@@ -62,6 +62,7 @@ configurations.all {
     resolutionStrategy {
         // use lower Jackson version
         force 'com.fasterxml.jackson.core:jackson-databind:2.8.8'
+        force 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.8.8'
     }
 }
 
@@ -73,6 +74,14 @@ dependencies {
     api 'org.apache.commons:commons-compress:1.22'
     api ('org.rnorth.duct-tape:duct-tape:1.0.8') {
         exclude(group: 'org.jetbrains', module: 'annotations')
+    }
+
+    provided('com.google.cloud.tools:jib-core:0.22.0') {
+        exclude group: 'com.google.guava', module: 'guava'
+        exclude group: 'com.fasterxml.jackson.datatype', module: 'jackson-datatype-jsr310'
+        exclude group: 'com.fasterxml.jackson.core', module: 'jackson-core'
+        exclude group: 'com.fasterxml.jackson.core', module: 'jackson-databind'
+        exclude group: 'org.apache.commons', module: 'commons-compress'
     }
 
     shaded 'org.awaitility:awaitility:4.2.0'
@@ -92,6 +101,7 @@ dependencies {
 
     shaded 'org.zeroturnaround:zt-exec:1.12'
 
+    testImplementation 'com.google.cloud.tools:jib-core:0.22.0'
     testImplementation 'org.apache.httpcomponents:httpclient:4.5.9'
     testImplementation 'redis.clients:jedis:4.3.1'
     testImplementation 'com.rabbitmq:amqp-client:5.16.0'
@@ -115,6 +125,7 @@ dependencies {
 tasks.generatePomFileForMavenJavaPublication.finalizedBy(
     tasks.register('checkPOMdependencies', org.testcontainers.build.ComparePOMWithLatestReleasedTask) {
         ignore = [
+            "com.google.cloud.tools:jib-core"
         ]
     }
 )

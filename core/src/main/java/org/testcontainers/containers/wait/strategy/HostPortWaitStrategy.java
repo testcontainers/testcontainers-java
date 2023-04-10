@@ -74,6 +74,7 @@ public class HostPortWaitStrategy extends AbstractWaitStrategy {
                             .pollInSameThread()
                             .pollInterval(Duration.ofMillis(100))
                             .pollDelay(Duration.ZERO)
+                            .failFast("container is no longer running", () -> !waitStrategyTarget.isRunning())
                             .ignoreExceptions()
                             .forever()
                             .until(externalCheck);

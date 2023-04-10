@@ -19,6 +19,8 @@
   - modules/consul/**/*
 "modules/couchbase":
   - modules/couchbase/**/*
+"modules/cratedb":
+  - modules/cratedb/**/*
 "modules/db2":
   - modules/db2/**/*
 "modules/dynalite":
