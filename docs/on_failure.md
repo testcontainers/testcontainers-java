@@ -1,15 +1,16 @@
 # Fixing Issues with Discovering A Supported Container Runtime Environment
 
+
 If you ended up on this page, 
 it seems that either Testcontainers was not able to find a supported container runtime in your environment,
-or you found page while browsing the documentation in search of information on dealing with errors regarding Testcontainers' environment discovery mechanism.
+or you found this page while searching for information to deal with errors regarding the environment discovery mechanism of Testcontainers.
 
-Testcontainers requires a supported container runtime environment to be present in order to function.
-Here is a list of supported container runtime environments, that can get you up to speed quickly:
+Testcontainers requires a supported container runtime environment to be present in order to manage and run containers.
+Here is a list of supported container runtime environments:
 
 * [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 * [Docker Engine on Linux](https://docs.docker.com/engine/install/)
-* [Testcontainers Cloud](https://www.testcontainers.cloud)
+* [Testcontainers Cloud](https://www.testcontainers.cloud?utm_medium=direct&utm_source=testcontainers.com&utm_content=docs&utm_term=on-failure)
 
-For more extensive information on supported container runtime environments, and how to configure container runtime environments that are not supported by default,
+For more extensive information on supported container runtime environments, as well as known limitations of alternative container runtime environments,
 please refer to [this page](https://www.testcontainers.org/supported_docker_environment/) in our documentation.
