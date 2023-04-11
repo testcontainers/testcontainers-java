@@ -97,6 +97,7 @@ nav:
     - Examples: examples.md
     - System Requirements:
           - supported_docker_environment/index.md
+          - error_missing_container_runtime_environment.md
           - Continuous Integration:
                 - supported_docker_environment/continuous_integration/aws_codebuild.md
                 - supported_docker_environment/continuous_integration/dind_patterns.md
