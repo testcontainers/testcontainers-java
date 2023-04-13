@@ -16,6 +16,8 @@ updates:
         update-types: [ "version-update:semver-major" ]
       - dependency-name: "org.mockito:mockito-core"
         update-types: [ "version-update:semver-major" ]
+      - dependency-name: "org.yaml:snakeyaml"
+        update-types: [ "version-update:semver-major" ]
   - package-ecosystem: "gradle"
     directory: "/"
     allow:
@@ -57,6 +59,11 @@ updates:
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/couchbase"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
+    directory: "/modules/cratedb"
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
@@ -234,6 +241,14 @@ updates:
       interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
+    directory: "/modules/solace"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "org.apache.qpid:qpid-jms-client"
+        update-types: [ "version-update:semver-major" ]
+  - package-ecosystem: "gradle"
     directory: "/modules/solr"
     schedule:
       interval: "monthly"
@@ -289,8 +304,10 @@ updates:
         update-types: [ "version-update:semver-minor" ]
       - dependency-name: "org.slf4j:slf4j-api"
         update-types: [ "version-update:semver-major" ]
-      - dependency-name: "org.springframework.boot:*"
-        versions: [ "[3,)" ]
+      - dependency-name: "org.springframework.boot"
+        update-types: [ "version-update:semver-major" ]
+      - dependency-name: "com.diffplug.spotless"
+        update-types: [ "version-update:semver-minor" ]
 
 # GitHub Actions
   - package-ecosystem: "github-actions"

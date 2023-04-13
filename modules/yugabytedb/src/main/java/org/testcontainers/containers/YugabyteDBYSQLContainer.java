@@ -10,7 +10,6 @@ import java.util.Set;
 /**
  * Testcontainers implementation for YugabyteDB YSQL API.
  *
- * @author srinivasa-vasu
  * @see <a href="https://docs.yugabyte.com/stable/api/ysql/">YSQL API</a>
  */
 

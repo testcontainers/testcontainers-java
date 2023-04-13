@@ -7,9 +7,6 @@ import org.testcontainers.utility.DockerImageName;
  * A Bigtable container that relies in google cloud sdk.
  *
  * Default port is 9000.
- *
- * @author Eddú Meléndez
- * @author Ray Tsang
  */
 public class BigtableEmulatorContainer extends GenericContainer<BigtableEmulatorContainer> {
 

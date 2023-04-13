@@ -8,9 +8,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Set;
 
-/**
- * @author richardnorth
- */
 public class NginxContainer<SELF extends NginxContainer<SELF>>
     extends GenericContainer<SELF>
     implements LinkableContainer {

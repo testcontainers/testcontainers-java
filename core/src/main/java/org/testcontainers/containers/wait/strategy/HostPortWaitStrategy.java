@@ -22,8 +22,6 @@ import java.util.stream.Collectors;
 
 /**
  * Waits until a socket connection can be established on a port exposed or mapped by the container.
- *
- * @author richardnorth
  */
 @Slf4j
 public class HostPortWaitStrategy extends AbstractWaitStrategy {
@@ -76,6 +74,7 @@ public class HostPortWaitStrategy extends AbstractWaitStrategy {
                             .pollInSameThread()
                             .pollInterval(Duration.ofMillis(100))
                             .pollDelay(Duration.ZERO)
+                            .failFast("container is no longer running", () -> !waitStrategyTarget.isRunning())
                             .ignoreExceptions()
                             .forever()
                             .until(externalCheck);

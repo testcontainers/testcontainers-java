@@ -9,8 +9,6 @@ import java.util.EnumSet;
 
 /**
  * YugabyteDB YSQL API JDBC connectivity driver test class
- *
- * @author srinivasa-vasu
  */
 @RunWith(Parameterized.class)
 public class YugabyteDBYSQLJDBCDriverTest extends AbstractJDBCDriverTest {

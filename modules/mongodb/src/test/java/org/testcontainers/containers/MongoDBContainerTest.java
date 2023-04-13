@@ -35,11 +35,8 @@ public class MongoDBContainerTest {
     }
 
     private void executeTx(MongoDBContainer mongoDBContainer) {
-        final String mongoRsUrl = mongoDBContainer.getReplicaSetUrl();
-        assertThat(mongoRsUrl).isNotNull();
-        final String connectionString = mongoDBContainer.getConnectionString();
-        final MongoClient mongoSyncClientBase = MongoClients.create(connectionString);
-        final MongoClient mongoSyncClient = MongoClients.create(mongoRsUrl);
+        final MongoClient mongoSyncClientBase = MongoClients.create(mongoDBContainer.getConnectionString());
+        final MongoClient mongoSyncClient = MongoClients.create(mongoDBContainer.getReplicaSetUrl());
         mongoSyncClient
             .getDatabase("mydb1")
             .getCollection("foo")
@@ -103,10 +100,25 @@ public class MongoDBContainerTest {
     }
 
     @Test
-    public void supportsMongoDB_6() {
-        try (final MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0.1")) {
+    public void shouldSupportSharding() {
+        try (final MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6").withSharding()) {
             mongoDBContainer.start();
-            executeTx(mongoDBContainer);
+            final MongoClient mongoClient = MongoClients.create(mongoDBContainer.getReplicaSetUrl());
+
+            mongoClient.getDatabase("mydb1").getCollection("foo").insertOne(new Document("abc", 0));
+
+            Document shards = mongoClient.getDatabase("config").getCollection("shards").find().first();
+            assertThat(shards).isNotNull();
+            assertThat(shards).isNotEmpty();
+            assertThat(isReplicaSet(mongoClient)).isFalse();
         }
+    }
+
+    private boolean isReplicaSet(MongoClient mongoClient) {
+        return runIsMaster(mongoClient).get("setName") != null;
+    }
+
+    private Document runIsMaster(MongoClient mongoClient) {
+        return mongoClient.getDatabase("admin").runCommand(new Document("ismaster", 1));
     }
 }

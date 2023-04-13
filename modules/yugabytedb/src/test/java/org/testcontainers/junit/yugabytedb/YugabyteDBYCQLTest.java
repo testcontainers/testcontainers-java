@@ -10,8 +10,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * YugabyteDB YCQL API unit test class
- *
- * @author srinivasa-vasu
  */
 public class YugabyteDBYCQLTest {
 
