@@ -62,7 +62,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("docker/compose:1.29.2");
 
-    private ComposeDelegate composeDelegate;
+    private final ComposeDelegate composeDelegate;
 
     private String project;
 
