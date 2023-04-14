@@ -346,7 +346,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 }
             );
         } catch (Exception e) {
-            throw new ContainerLaunchException("Container startup failed", e);
+            throw new ContainerLaunchException("Container startup failed for image " + getDockerImageName(), e);
         }
     }
 
@@ -360,7 +360,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                     logger().warn("{} can't be reused because it overrides {}", getClass(), method.getName());
                     return false;
                 }
-            } catch (NoSuchMethodException e) {
+            } catch (NoSuchMethodException | NoClassDefFoundError e) {
                 // ignore
             }
         }
@@ -470,6 +470,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                         }
                     );
 
+            String emulationWarning = checkForEmulation();
+            if (emulationWarning != null) {
+                logger().warn(emulationWarning);
+            }
+
             // Tell subclasses that we're starting
             containerIsStarting(containerInfo, reused);
 
@@ -493,25 +498,31 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 }
 
                 if (inspectContainerResponse == null) {
-                    throw new IllegalStateException("Container is removed");
+                    throw new IllegalStateException("Wait strategy failed. Container is removed", e);
                 }
 
                 InspectContainerResponse.ContainerState state = inspectContainerResponse.getState();
                 if (Boolean.TRUE.equals(state.getDead())) {
-                    throw new IllegalStateException("Container is dead");
+                    throw new IllegalStateException("Wait strategy failed. Container is dead", e);
                 }
 
                 if (Boolean.TRUE.equals(state.getOOMKilled())) {
-                    throw new IllegalStateException("Container crashed with out-of-memory (OOMKilled)");
+                    throw new IllegalStateException(
+                        "Wait strategy failed. Container crashed with out-of-memory (OOMKilled)",
+                        e
+                    );
                 }
 
                 String error = state.getError();
                 if (!StringUtils.isBlank(error)) {
-                    throw new IllegalStateException("Container crashed: " + error);
+                    throw new IllegalStateException("Wait strategy failed. Container crashed: " + error, e);
                 }
 
                 if (!Boolean.TRUE.equals(state.getRunning())) {
-                    throw new IllegalStateException("Container exited with code " + state.getExitCode());
+                    throw new IllegalStateException(
+                        "Wait strategy failed. Container exited with code " + state.getExitCode(),
+                        e
+                    );
                 }
 
                 throw e;
@@ -952,6 +963,32 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         if (waitStrategy != null) {
             waitStrategy.waitUntilReady(this);
         }
+    }
+
+    private String checkForEmulation() {
+        try {
+            DockerClient dockerClient = DockerClientFactory.instance().client();
+            String imageId = getContainerInfo().getImageId();
+            String imageArch = dockerClient.inspectImageCmd(imageId).exec().getArch();
+            String serverArch = dockerClient.versionCmd().exec().getArch();
+
+            if (!serverArch.equals(imageArch)) {
+                return (
+                    "The architecture '" +
+                    imageArch +
+                    "' for image '" +
+                    getDockerImageName() +
+                    "' (ID " +
+                    imageId +
+                    ") does not match the Docker server architecture '" +
+                    serverArch +
+                    "'. This will cause the container to execute much more slowly due to emulation and may lead to timeout failures."
+                );
+            }
+        } catch (Exception archCheckException) {
+            // ignore any exceptions since this is just used for a log message
+        }
+        return null;
     }
 
     /**

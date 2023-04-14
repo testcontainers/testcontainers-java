@@ -11,11 +11,11 @@ import static org.mockserver.model.HttpResponse.response;
 
 public class MockServerContainerRuleTest {
 
-    public static final DockerImageName MOCKSERVER_IMAGE = DockerImageName.parse(
-        "jamesdbloom/mockserver:mockserver-5.13.2"
-    );
-
     // creatingProxy {
+    public static final DockerImageName MOCKSERVER_IMAGE = DockerImageName
+        .parse("mockserver/mockserver")
+        .withTag("mockserver-" + MockServerClient.class.getPackage().getImplementationVersion());
+
     @Rule
     public MockServerContainer mockServer = new MockServerContainer(MOCKSERVER_IMAGE);
 
@@ -23,21 +23,20 @@ public class MockServerContainerRuleTest {
 
     @Test
     public void shouldReturnExpectation() throws Exception {
-        // spotless:off
         // testSimpleExpectation {
-        new MockServerClient(mockServer.getHost(), mockServer.getServerPort())
-            .when(request()
-                .withPath("/person")
-                .withQueryStringParameter("name", "peter"))
-            .respond(response()
-                .withBody("Peter the person!"));
+        try (
+            MockServerClient mockServerClient = new MockServerClient(mockServer.getHost(), mockServer.getServerPort())
+        ) {
+            mockServerClient
+                .when(request().withPath("/person").withQueryStringParameter("name", "peter"))
+                .respond(response().withBody("Peter the person!"));
 
-        // ...a GET request to '/person?name=peter' returns "Peter the person!"
+            // ...a GET request to '/person?name=peter' returns "Peter the person!"
+
+            assertThat(SimpleHttpClient.responseFromMockserver(mockServer, "/person?name=peter"))
+                .as("Expectation returns expected response body")
+                .contains("Peter the person");
+        }
         // }
-        // spotless:on
-
-        assertThat(SimpleHttpClient.responseFromMockserver(mockServer, "/person?name=peter"))
-            .as("Expectation returns expected response body")
-            .contains("Peter the person");
     }
 }

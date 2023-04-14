@@ -51,9 +51,18 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 
 `jdbc:tc:cockroach:v21.2.3:///databasename`
 
+#### Using CrateDB
+
+`jdbc:tc:cratedb:5.2.3//localhost:5432/crate`
+
 #### Using TiDB
 
 `jdbc:tc:tidb:v6.1.0:///databasename`
+
+#### Using YugabyteDB
+
+`jdbc:tc:yugabyte:2.14.4.0-b26:///databasename`
+
 
 ### Using a classpath init script
 

@@ -4,31 +4,31 @@ Testcontainers module for [Vault](https://github.com/hashicorp/vault). Vault is 
 
 ## Usage example
 
-Running Vault in your Junit tests is easily done with an @Rule or @ClassRule such as the following:
+Start Vault container as a `@ClassRule`:
 
-```java
-public class SomeTest {
+<!--codeinclude-->
+[Starting a Vault container](../../modules/vault/src/test/java/org/testcontainers/vault/VaultContainerTest.java) inside_block:vaultContainer
+<!--/codeinclude-->
 
-    @ClassRule
-    public static VaultContainer vaultContainer = new VaultContainer<>()
-            .withVaultToken("my-root-token")
-            .withVaultPort(8200)
-            .withSecretInVault("secret/testing", "top_secret=password1","db_password=dbpassword1");
-    
-    @Test
-    public void someTestMethod() {
-       //interact with Vault via the container's host, port and Vault token. 
-       
-       //There are many integration clients for Vault so let's just define a general one here:
-       VaultClient client = new VaultClient(
-               vaultContainer.getHost(),
-               vaultContainer.getMappedPort(8200),
-               "my-root-token");
-       
-       List<String> secrets = client.readSecret("secret/testing");
-       
-    }
-```
+Use CLI to read data from Vault container:
+
+<!--codeinclude-->
+[Use CLI to read data](../../modules/vault/src/test/java/org/testcontainers/vault/VaultContainerTest.java) inside_block:readFirstSecretPathWithCli
+<!--/codeinclude-->
+
+Use Http API to read data from Vault container:
+
+<!--codeinclude-->
+[Use Http API to read data](../../modules/vault/src/test/java/org/testcontainers/vault/VaultContainerTest.java) inside_block:readFirstSecretPathOverHttpApi
+<!--/codeinclude-->
+
+Use client library to read data from Vault container:
+
+<!--codeinclude-->
+[Use library to read data](../../modules/vault/src/test/java/org/testcontainers/vault/VaultContainerTest.java) inside_block:readWithLibrary
+<!--/codeinclude-->
+
+[See full example.](https://github.com/testcontainers/testcontainers-java/blob/master/modules/vault/src/test/java/org/testcontainers/vault/VaultContainerTest.java)
 
 ## Why Vault in Junit tests?
 

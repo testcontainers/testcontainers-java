@@ -18,6 +18,7 @@ body:
         - Cassandra
         - Clickhouse
         - CockroachDB
+        - CrateDB
         - Consul
         - Couchbase
         - DB2
@@ -39,16 +40,19 @@ body:
         - Oracle-XE
         - OrientDB
         - PostgreSQL
+        - QuestDB
         - Presto
         - Pulsar
         - RabbitMQ
         - Redpanda
         - Selenium
+        - Solace
         - Solr
         - TiDB
         - ToxiProxy
         - Trino
         - Vault
+        - YugabyteDB
         - New Module
   - type: textarea
     id: problem

@@ -14,3 +14,5 @@ jobs:
       - checkout
       - run: mvn -B clean install
 ```
+
+You can learn more about the best practices of using Testcontainers together with CircleCI in [this article](https://www.atomicjar.com/2022/12/testcontainers-with-circleci/).

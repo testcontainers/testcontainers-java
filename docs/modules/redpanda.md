@@ -1,10 +1,10 @@
 # Redpanda
 
 Testcontainers can be used to automatically instantiate and manage [Redpanda](https://redpanda.com/) containers.
-More precisely Testcontainers uses the official Docker images for [Redpanda](https://hub.docker.com/r/vectorized/redpanda/)
+More precisely Testcontainers uses the official Docker images for [Redpanda](https://hub.docker.com/r/redpandadata/redpanda)
 
 !!! note
-    This module uses features provided in `docker.redpanda.com/vectorized/redpanda`.
+    This module uses features provided in `docker.redpanda.com/redpandadata/redpanda`.
 
 ## Example
 
@@ -17,6 +17,12 @@ Now your tests or any other process running on your machine can get access to ru
 
 <!--codeinclude-->
 [Bootstrap Servers](../../modules/redpanda/src/test/java/org/testcontainers/redpanda/RedpandaContainerTest.java) inside_block:getBootstrapServers
+<!--/codeinclude-->
+
+Redpanda also provides a schema registry implementation. Like the Redpanda broker, you can access by using the following schema registry location:
+
+<!--codeinclude-->
+[Schema Registry](../../modules/redpanda/src/test/java/org/testcontainers/redpanda/RedpandaContainerTest.java) inside_block:getSchemaRegistryAddress
 <!--/codeinclude-->
 
 ## Adding this module to your project dependencies

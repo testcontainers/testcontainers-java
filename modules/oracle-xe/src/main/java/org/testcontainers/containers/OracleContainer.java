@@ -23,7 +23,7 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
 
-    private static final int ORACLE_PORT = 1521;
+    static final int ORACLE_PORT = 1521;
 
     private static final int APEX_HTTP_PORT = 8080;
 
@@ -103,7 +103,7 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     @Override
     public String getDriverClassName() {
-        return "oracle.jdbc.OracleDriver";
+        return "oracle.jdbc.driver.OracleDriver";
     }
 
     @Override

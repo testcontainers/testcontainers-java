@@ -24,7 +24,9 @@ import java.util.stream.Collectors;
  */
 public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericContainer<SELF> {
 
-    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("vault");
+    private static final DockerImageName DEFAULT_OLD_IMAGE_NAME = DockerImageName.parse("vault");
+
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("hashicorp/vault");
 
     private static final String DEFAULT_TAG = "1.1.3";
 
@@ -50,7 +52,7 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
 
     public VaultContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DEFAULT_OLD_IMAGE_NAME, DEFAULT_IMAGE_NAME);
 
         // Use the vault healthcheck endpoint to check for readiness, per https://www.vaultproject.io/api/system/health.html
         setWaitStrategy(Wait.forHttp("/v1/sys/health").forStatusCode(200));
@@ -58,6 +60,10 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
         withCreateContainerCmdModifier(cmd -> cmd.withCapAdd(Capability.IPC_LOCK));
         withEnv("VAULT_ADDR", "http://0.0.0.0:" + port);
         withExposedPorts(port);
+    }
+
+    public String getHttpHostAddress() {
+        return String.format("http://%s:%s", getHost(), getMappedPort(port));
     }
 
     @Override
@@ -150,7 +156,9 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
      *
      * @param level the logging level to set for Vault.
      * @return this
+     * @deprecated use {@link #withEnv(String, String)} instead
      */
+    @Deprecated
     public SELF withLogLevel(VaultLogLevel level) {
         return withEnv("VAULT_LOG_LEVEL", level.config);
     }
@@ -182,8 +190,8 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
 
     /**
      * Run initialization commands using the vault cli.
-     *
-     * Useful for enableing more secret engines like:
+     * <p>
+     * Useful for enabling more secret engines like:
      * <pre>
      *     .withInitCommand("secrets enable pki")
      *     .withInitCommand("secrets enable transit")
