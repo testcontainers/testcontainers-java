@@ -22,7 +22,7 @@ import java.util.Optional;
 @Slf4j
 public final class RootlessPodmanClientProviderStrategy extends DockerClientProviderStrategy {
 
-    public static final int PRIORITY = UnixSocketClientProviderStrategy.PRIORITY + 1;
+    public static final int PRIORITY = UnixSocketClientProviderStrategy.PRIORITY - 1;
 
     @Getter(lazy = true)
     @Nullable
