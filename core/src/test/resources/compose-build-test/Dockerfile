@@ -1,3 +1,3 @@
-FROM redis:2.6.17
+FROM redis
 
 CMD ["redis-server"]
