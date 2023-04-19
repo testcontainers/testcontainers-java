@@ -45,7 +45,7 @@ public class ComposeContainerWithBuildTest {
 
     @Test
     public void performTest() {
-        final File composeFile = new File("src/test/resources/compose-build-test/docker-compose.yml");
+        final File composeFile = new File("src/test/resources/compose-v2-build-test/docker-compose.yml");
 
         final AtomicReference<String> builtImageName = new AtomicReference<>("");
         final AtomicReference<String> pulledImageName = new AtomicReference<>("");
