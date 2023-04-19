@@ -156,6 +156,13 @@ public class DockerClientFactory {
         return getOrInitializeStrategy().getTransportConfig();
     }
 
+    /**
+     * Returns the path to the Docker socket, suitable for mapping into the container itself via a volume.
+     *
+     * In some special cases, this might not be the same path that this library uses to talk to Docker;
+     * for example, if Docker is running inside a VM, this path is the path to the Docker socket within
+     * the VM.
+     */
     @UnstableAPI
     public String getRemoteDockerUnixSocketPath() {
         String dockerSocketOverride = System.getenv("TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE");
@@ -164,6 +171,16 @@ public class DockerClientFactory {
         }
 
         URI dockerHost = getTransportConfig().getDockerHost();
+
+        // Special case: it looks like we are running Colima on a Mac. Colima runs a VM. Inside
+        // the VM, you need to access Docker via /var/run/docker.sock; on the Mac itself, you
+        // need to access it via something like ~/.colima/default/docker.sock, which can be found
+        // via the current Docker context. To make this just work by default, if it looks like we're
+        // running Colima, return the path that works inside the VM.
+        if (dockerHost.getRawPath().contains("/.colima/")) {
+            return "/var/run/docker.sock";
+        }
+
         String path = "unix".equals(dockerHost.getScheme()) ? dockerHost.getRawPath() : "/var/run/docker.sock";
         return SystemUtils.IS_OS_WINDOWS ? "/" + path : path;
     }

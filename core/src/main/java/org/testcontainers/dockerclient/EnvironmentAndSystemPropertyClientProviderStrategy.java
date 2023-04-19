@@ -35,6 +35,7 @@ public final class EnvironmentAndSystemPropertyClientProviderStrategy extends Do
     }
 
     EnvironmentAndSystemPropertyClientProviderStrategy(DefaultDockerClientConfig.Builder configBuilder) {
+        boolean applicable = false;
         String dockerConfigSource = TestcontainersConfiguration
             .getInstance()
             .getEnvVarOrProperty("dockerconfig.source", "auto");
@@ -55,6 +56,18 @@ public final class EnvironmentAndSystemPropertyClientProviderStrategy extends Do
         }
 
         dockerClientConfig = configBuilder.build();
+        // DefaultDockerClientConfig.Builder is often able to read a docker host from the current context file.
+        // If it does not find such a thing and there's also no explicit host setting, it will set the host to the default
+        // Unix or Windows socket location. So if we find something other than those defaults, we'll use it; otherwise,
+        // we'll let other strategies kick in (including UnixSocketClientProviderStrategy and NpipeSocketClientProviderStrategy
+        // themselves).
+        applicable =
+            applicable ||
+            (
+                !dockerClientConfig.getDockerHost().equals(UnixSocketClientProviderStrategy.SOCKET_LOCATION) &&
+                !dockerClientConfig.getDockerHost().equals(NpipeSocketClientProviderStrategy.SOCKET_LOCATION)
+            );
+        this.applicable = applicable;
     }
 
     private Optional<String> getSetting(final String name) {

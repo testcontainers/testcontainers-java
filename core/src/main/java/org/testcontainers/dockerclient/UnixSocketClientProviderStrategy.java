@@ -17,7 +17,7 @@ public final class UnixSocketClientProviderStrategy extends DockerClientProvider
 
     protected static final String DOCKER_SOCK_PATH = "/var/run/docker.sock";
 
-    private static final String SOCKET_LOCATION = "unix://" + DOCKER_SOCK_PATH;
+    protected static final String SOCKET_LOCATION = "unix://" + DOCKER_SOCK_PATH;
 
     private static final int SOCKET_FILE_MODE_MASK = 0xc000;
 

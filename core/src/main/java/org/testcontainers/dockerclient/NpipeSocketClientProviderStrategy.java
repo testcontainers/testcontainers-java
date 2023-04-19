@@ -13,7 +13,7 @@ public final class NpipeSocketClientProviderStrategy extends DockerClientProvide
 
     protected static final String DOCKER_SOCK_PATH = "//./pipe/docker_engine";
 
-    private static final String SOCKET_LOCATION = "npipe://" + DOCKER_SOCK_PATH;
+    protected static final String SOCKET_LOCATION = "npipe://" + DOCKER_SOCK_PATH;
 
     public static final int PRIORITY = EnvironmentAndSystemPropertyClientProviderStrategy.PRIORITY - 20;
 
