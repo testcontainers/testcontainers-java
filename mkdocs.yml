@@ -94,6 +94,7 @@ nav:
           - test_framework_integration/junit_5.md
           - test_framework_integration/spock.md
           - test_framework_integration/manual_lifecycle_control.md
+          - test_framework_integration_kotest.md
     - Examples: examples.md
     - System Requirements:
           - supported_docker_environment/index.md
