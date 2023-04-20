@@ -7,7 +7,7 @@ Issues and requests are maintained at the [Kotest Repository](https://github.com
 
 ## Documentation
 
-The full and updated documentation for Kotest integration with TestContainers can be found at [kotest.io](https://kotest.io/docs/extensions/test_containers.html)
+The full and updated documentation for Kotest integration with Testcontainers can be found at [kotest.io](https://kotest.io/docs/extensions/test_containers.html)
 
 
 ### Dependencies
