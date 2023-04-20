@@ -2,7 +2,7 @@
 
 [Kotest](https://github.com/kotest/kotest) extension for [Testcontainers](https://github.com/testcontainers/testcontainers-java) library, which allows to use Docker containers inside of Kotest tests.
 
-The source code is maintained at [Kotest Extensions TestContainers](https://github.com/kotest/kotest-extensions-testcontainers)
+The source code is maintained at [Kotest Extensions Testcontainers](https://github.com/kotest/kotest-extensions-testcontainers)
 Issues and requests are maintained at the [Kotest Repository](https://github.com/kotest/kotest)
 
 ## Documentation
