@@ -2,7 +2,6 @@
 
 The following Open Source frameworks add direct integration to Testcontainers
 
-
 | Framework | Source Code | Documentation |
 | --- | --- | --- |
 | jqwik | [jqwik-testcontainers](https://github.com/jqwik-team/jqwik-testcontainers) | [README](https://github.com/jqwik-team/jqwik-testcontainers) |
