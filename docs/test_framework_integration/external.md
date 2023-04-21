@@ -1,7 +1,5 @@
 # External Integrations
 
-Test Frameworks are encouraged to integrate with Testcontainers if they see fit. 
-
 The following Open Source frameworks add direct integration to Testcontainers
 
 
