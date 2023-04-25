@@ -47,7 +47,7 @@ public class RedpandaContainerTest {
     public void testUsageWithStringImage() throws Exception {
         try (
             // constructorWithVersion {
-            RedpandaContainer container = new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v22.2.1")
+            RedpandaContainer container = new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v23.1.2")
             // }
         ) {
             container.start();
