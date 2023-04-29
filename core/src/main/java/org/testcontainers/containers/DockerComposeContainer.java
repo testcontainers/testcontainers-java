@@ -143,7 +143,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
         this.dockerComposeFiles = new DockerComposeFiles(composeFiles);
 
         // Use a unique identifier so that containers created for this compose environment can be identified
-        this.identifier = identifier;
+        this.identifier = identifier.toLowerCase();
         this.project = randomProjectId();
 
         this.dockerClient = DockerClientFactory.lazyClient();
