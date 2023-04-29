@@ -357,7 +357,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
     private void startAmbassadorContainers() {
         if (!this.ambassadorPortMappings.isEmpty()) {
             this.ambassadorContainer.withCreateContainerCmdModifier(createContainerCmd -> {
-                    createContainerCmd.withNetworkMode(this.project + "_default");
+                    createContainerCmd.withNetworkMode("bridge");
                 });
             this.ambassadorContainer.start();
         }
