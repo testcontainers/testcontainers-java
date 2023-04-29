@@ -355,8 +355,11 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
     }
 
     private void startAmbassadorContainers() {
-        if (!ambassadorPortMappings.isEmpty()) {
-            ambassadorContainer.start();
+        if (!this.ambassadorPortMappings.isEmpty()) {
+            this.ambassadorContainer.withCreateContainerCmdModifier(createContainerCmd ->
+                    createContainerCmd.withNetworkMode(this.project + "_default")
+                );
+            this.ambassadorContainer.start();
         }
     }
 
@@ -418,8 +421,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
         ambassadorPortMappings
             .computeIfAbsent(serviceInstanceName, __ -> new ConcurrentHashMap<>())
             .put(servicePort, ambassadorPort);
-        ambassadorContainer.withTarget(ambassadorPort, serviceInstanceName, servicePort);
-        ambassadorContainer.addLink(new FutureContainer(this.project + "_" + serviceInstanceName), serviceInstanceName);
+        ambassadorContainer.withTarget(ambassadorPort, this.project + "_" + serviceInstanceName, servicePort);
         addWaitStrategy(serviceInstanceName, waitStrategy);
         return self();
     }
