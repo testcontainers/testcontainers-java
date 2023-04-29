@@ -689,7 +689,7 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
         final String composeFileEnvVariableValue = Joiner.on(UNIX_PATH_SEPERATOR).join(absoluteDockerComposeFiles); // we always need the UNIX path separator
         logger().debug("Set env COMPOSE_FILE={}", composeFileEnvVariableValue);
         addEnv(ENV_COMPOSE_FILE, composeFileEnvVariableValue);
-        addFileSystemBind(pwd, containerPwd, BindMode.READ_WRITE);
+        withCopyFileToContainer(MountableFile.forHostPath(pwd), containerPwd);
 
         // Ensure that compose can access docker. Since the container is assumed to be running on the same machine
         //  as the docker daemon, just mapping the docker control socket is OK.
