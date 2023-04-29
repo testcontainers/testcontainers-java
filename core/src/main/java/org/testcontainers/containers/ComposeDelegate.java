@@ -90,7 +90,7 @@ class ComposeDelegate {
         this.dockerClient = DockerClientFactory.lazyClient();
         this.composeFiles = composeFiles;
         this.dockerComposeFiles = new DockerComposeFiles(this.composeFiles);
-        this.identifier = identifier;
+        this.identifier = identifier.toLowerCase();
         this.project = randomProjectId();
         this.executable = executable;
         this.defaultImageName = defaultImageName;

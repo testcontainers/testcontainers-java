@@ -125,7 +125,6 @@ dependencies {
 tasks.generatePomFileForMavenJavaPublication.finalizedBy(
     tasks.register('checkPOMdependencies', org.testcontainers.build.ComparePOMWithLatestReleasedTask) {
         ignore = [
-            "com.google.cloud.tools:jib-core"
         ]
     }
 )
