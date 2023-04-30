@@ -1,8 +1,8 @@
 package com.example.linkedcontainer;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.RuleChain;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,8 +27,16 @@ public class RedmineClientTest {
         .withEnv("POSTGRES_ENV_POSTGRES_USER", POSTGRES_USERNAME)
         .withEnv("POSTGRES_ENV_POSTGRES_PASSWORD", POSTGRES_PASSWORD);
 
-    @Rule
-    public RuleChain chain = RuleChain.outerRule(postgreSQLContainer).around(redmineContainer);
+    @BeforeEach
+    public void setUp() {
+        postgreSQLContainer.start();
+        redmineContainer.start();
+    }
+    @AfterEach
+    public void tearDown() {
+        redmineContainer.stop();
+        postgreSQLContainer.stop();
+    }
 
     @Test
     public void canGetIssueCount() throws Exception {
