@@ -3,8 +3,8 @@ package org.testcontainers.examples;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.core.HazelcastInstance;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -46,7 +46,7 @@ public class HazelcastTest {
 
     private static final String TRUE_VALUE = "true";
 
-    @After
+    @AfterEach
     public void cleanUp() {
         HazelcastClient.shutdownAll();
     }

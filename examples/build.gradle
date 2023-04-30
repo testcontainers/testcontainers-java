@@ -6,8 +6,10 @@ plugins {
 apply from: "$rootDir/../gradle/ci-support.gradle"
 
 subprojects {
-    apply plugin:"java"
+    apply plugin: "java"
     apply from: "$rootDir/../gradle/spotless.gradle"
+    apply from: "$rootDir/junit5.gradle"
+
     apply plugin: 'checkstyle'
 
     repositories {
@@ -17,5 +19,8 @@ subprojects {
     checkstyle {
         toolVersion = "9.3"
         configFile = rootProject.file('../config/checkstyle/checkstyle.xml')
+    }
+
+    task prepareKotlinBuildScriptModel {
     }
 }

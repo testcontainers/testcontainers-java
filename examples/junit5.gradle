@@ -1,0 +1,11 @@
+def jjVersion = "5.9.2"
+
+dependencies {
+    testImplementation(platform("org.junit:junit-bom:$jjVersion"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+}
+
+test {
+    useJUnitPlatform()
+}
