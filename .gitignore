@@ -71,3 +71,4 @@ src/pip-delete-this-directory.txt
 
 # Python virtual environment
 /.venv/
+.idea
