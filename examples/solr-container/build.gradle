@@ -12,8 +12,5 @@ dependencies {
 
     implementation 'org.apache.solr:solr-solrj:8.11.2'
 
-    testImplementation 'org.testcontainers:testcontainers'
     testImplementation 'org.testcontainers:solr'
-    testImplementation 'org.assertj:assertj-core:3.24.2'
-
 }

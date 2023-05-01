@@ -7,6 +7,10 @@ dependencies {
 
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
     testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
+
+    testImplementation 'org.assertj:assertj-core:3.24.2'
+
+    testImplementation 'org.testcontainers:testcontainers'
 }
 
 test {
