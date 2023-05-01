@@ -1,6 +1,13 @@
 def jjVersion = "5.9.2"
 
 dependencies {
+    compileOnly ("org.slf4j:slf4j-api:1.7.36")
+
+    testAnnotationProcessor "org.projectlombok:lombok:1.18.26"
+    testCompileOnly "org.projectlombok:lombok:1.18.26"
+
+    testImplementation ("org.testcontainers:testcontainers")
+
     testImplementation(platform("org.junit:junit-bom:$jjVersion"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("org.junit.platform:junit-platform-suite")
@@ -8,9 +15,7 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
     testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
 
-    testImplementation 'org.assertj:assertj-core:3.24.2'
-
-    testImplementation 'org.testcontainers:testcontainers'
+    testImplementation("org.assertj:assertj-core:3.24.2")
 }
 
 test {
