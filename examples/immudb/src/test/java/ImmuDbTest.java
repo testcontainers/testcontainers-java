@@ -1,11 +1,12 @@
 import io.codenotary.immudb4j.Entry;
 import io.codenotary.immudb4j.ImmuClient;
 import io.codenotary.immudb4j.exceptions.VerificationException;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 
@@ -29,15 +30,20 @@ public class ImmuDbTest {
     private final String IMMUDB_DATABASE = "defaultdb";
 
     // Test container for the ImmuDb database, with the latest version of the image and exposed port
-    @ClassRule
-    public static final GenericContainer<?> immuDbContainer = new GenericContainer<>("codenotary/immudb:1.3")
+    public static final GenericContainer<?> immuDbContainer =  new GenericContainer<>("codenotary/immudb:1.3")
         .withExposedPorts(IMMUDB_PORT)
         .waitingFor(Wait.forLogMessage(".*Web API server enabled.*", 1));
 
     // ImmuClient used to interact with the DB
     private ImmuClient immuClient;
 
-    @Before
+    @BeforeAll
+    public static void beforeAll() {
+        immuDbContainer.start();
+
+        }
+
+    @BeforeEach
     public void setUp() {
         this.immuClient =
             ImmuClient
@@ -48,9 +54,14 @@ public class ImmuDbTest {
         this.immuClient.openSession(IMMUDB_DATABASE, IMMUDB_USER, IMMUDB_PASSWORD);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         this.immuClient.closeSession();
+    }
+
+    @AfterAll
+    public static void afterAll() {
+        immuDbContainer.stop();
     }
 
     @Test
@@ -64,10 +75,10 @@ public class ImmuDbTest {
                 byte[] value = entry.getValue();
                 assertThat(new String(value)).isEqualTo("test2");
             } else {
-                Assert.fail();
+                Assertions.fail("Entry Null");
             }
         } catch (VerificationException e) {
-            Assert.fail();
+            Assertions.fail(e.getMessage());
         }
     }
 }
