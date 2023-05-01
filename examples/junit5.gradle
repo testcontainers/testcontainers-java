@@ -3,8 +3,8 @@ def jjVersion = "5.9.2"
 dependencies {
     compileOnly ("org.slf4j:slf4j-api:1.7.36")
 
-    testAnnotationProcessor "org.projectlombok:lombok:1.18.26"
-    testCompileOnly "org.projectlombok:lombok:1.18.26"
+    annotationProcessor "org.projectlombok:lombok:1.18.26"
+    implementation "org.projectlombok:lombok:1.18.26"
 
     testImplementation ("org.testcontainers:testcontainers")
 
