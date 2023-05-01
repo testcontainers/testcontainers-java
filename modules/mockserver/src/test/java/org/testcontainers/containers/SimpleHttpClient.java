@@ -1,14 +1,16 @@
 package org.testcontainers.containers;
 
 import lombok.Cleanup;
-
+import org.mockserver.configuration.Configuration;
 import org.mockserver.logging.MockServerLogger;
 import org.mockserver.socket.tls.KeyStoreFactory;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
+
 import javax.net.ssl.HttpsURLConnection;
 
 public class SimpleHttpClient {
@@ -25,7 +27,10 @@ public class SimpleHttpClient {
             .openConnection();
         try {
             httpUrlConnection.setSSLSocketFactory(
-                new KeyStoreFactory(new MockServerLogger()).sslContext().getSocketFactory());
+                new KeyStoreFactory(Configuration.configuration(), new MockServerLogger())
+                    .sslContext()
+                    .getSocketFactory()
+            );
             @Cleanup
             BufferedReader reader = new BufferedReader(new InputStreamReader(httpUrlConnection.getInputStream()));
             return reader.readLine();

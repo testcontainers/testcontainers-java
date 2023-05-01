@@ -57,14 +57,18 @@ public class MockServerContainerTest {
 
     @Test
     public void shouldCallMockserverUsingMutualTlsProtocol() throws Exception {
-        try (MockServerContainer mockServer = new MockServerContainer(MOCKSERVER_IMAGE)
-                .withEnv("MOCKSERVER_TLS_MUTUAL_AUTHENTICATION_REQUIRED", "true")) {
+        try (
+            MockServerContainer mockServer = new MockServerContainer(MOCKSERVER_IMAGE)
+                .withEnv("MOCKSERVER_TLS_MUTUAL_AUTHENTICATION_REQUIRED", "true")
+        ) {
             mockServer.start();
 
             String expectedBody = "Hello World!";
 
-            try (MockServerClient client = new MockServerClient(mockServer.getHost(), mockServer.getServerPort())
-                    .withSecure(true)) {
+            try (
+                MockServerClient client = new MockServerClient(mockServer.getHost(), mockServer.getServerPort())
+                    .withSecure(true)
+            ) {
                 assertThat(client.hasStarted()).as("Mockserver running").isTrue();
 
                 client.when(request().withPath("/hello")).respond(response().withBody(expectedBody));
