@@ -8,7 +8,7 @@ import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class CassandraDriver4Test {
+public class CassandraServer4Test {
 
     @Rule
     public CassandraContainer<?> cassandra = new CassandraContainer<>("cassandra:4.1.1");
