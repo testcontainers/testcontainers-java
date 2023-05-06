@@ -21,7 +21,7 @@ import javax.script.ScriptException;
 /**
  * Cassandra container
  *
- *  Testcontainers implementation for Apache Cassandra.
+ * Testcontainers implementation for Apache Cassandra.
  */
 public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends GenericContainer<SELF> {
 
