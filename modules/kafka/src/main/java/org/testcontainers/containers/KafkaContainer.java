@@ -6,9 +6,7 @@ import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 
-import java.io.IOException;
 import java.util.Objects;
-import java.util.UUID;
 
 /**
  * This container wraps Confluent Kafka and Zookeeper (optionally)
@@ -148,11 +146,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     protected void configureKraft() {
         //CP 7.4.0
         withEnv("KAFKA_CONTROLLER_QUORUM_MODE", "kraft");
-        withEnv("CLUSTER_ID",  getEnvMap()
-            .computeIfAbsent(
-                "CLUSTER_ID",
-                key -> clusterId
-            ));
+        withEnv("CLUSTER_ID", getEnvMap().computeIfAbsent("CLUSTER_ID", key -> clusterId));
         withEnv(
             "KAFKA_NODE_ID",
             getEnvMap().computeIfAbsent("KAFKA_NODE_ID", key -> getEnvMap().get("KAFKA_BROKER_ID"))
@@ -203,13 +197,13 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
                 brokerAdvertisedListener(containerInfo)
             );
 
-        if(kraftEnabled && isLesThanCP740()) {
+        if (kraftEnabled && isLesThanCP740()) {
             // Optimization: skip the checks
             command += "echo '' > /etc/confluent/docker/ensure \n";
             command += commandKraft();
         }
 
-        if(!kraftEnabled) {
+        if (!kraftEnabled) {
             // Optimization: skip the checks
             command += "echo '' > /etc/confluent/docker/ensure \n";
             command += commandZookeeper();
