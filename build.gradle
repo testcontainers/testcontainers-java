@@ -16,6 +16,7 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '8.1.0'
     id 'me.champeau.gradle.japicmp' version '0.4.1' apply false
     id 'com.diffplug.spotless' version '6.13.0' apply false
+    id 'org.sonarqube' version '4.0.0.2929'
 }
 
 apply from: "$rootDir/gradle/ci-support.gradle"
