@@ -24,6 +24,16 @@ Now your tests or any other process running on your machine can get access to ru
 <!--/codeinclude-->
 
 ## Options
+
+### Using Kraft mode
+
+KRaft mode was declared production ready in 3.3.1 (confluentinc/cp-kafka:7.3.x)" 
+
+<!--codeinclude-->
+[Kraft mode](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:withKraftMode
+<!--/codeinclude-->
+
+See the [versions interoperability matrix](https://docs.confluent.io/platform/current/installation/versions-interoperability.html) for more details.
         
 ### <a name="zookeeper"></a> Using external Zookeeper
 
@@ -31,17 +41,6 @@ If for some reason you want to use an externally running Zookeeper, then just pa
 <!--codeinclude-->
 [External Zookeeper](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:withExternalZookeeper
 <!--/codeinclude-->
-
-### Using Kraft mode
-
-The self-managed (Kraft) mode is available as a preview feature since version 3.0 (confluentinc/cp-kafka:7.0.x) and 
-declared as a production ready in 3.3.1 (confluentinc/cp-kafka:7.3.x).
-
-<!--codeinclude-->
-[Kraft mode](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:withKraftMode
-<!--/codeinclude-->
-
-See the [versions interoperability matrix](https://docs.confluent.io/platform/current/installation/versions-interoperability.html) for more details. 
 
 ## Multi-container usage
 
