@@ -1,6 +1,5 @@
 package org.testcontainers.containers;
 
-import java.util.List;
 import org.apache.pulsar.client.admin.ListTopicsOptions;
 import org.apache.pulsar.client.admin.PulsarAdmin;
 import org.apache.pulsar.client.admin.PulsarAdminException;
@@ -11,12 +10,11 @@ import org.apache.pulsar.client.api.PulsarClient;
 import org.apache.pulsar.client.api.Schema;
 import org.apache.pulsar.client.api.SubscriptionInitialPosition;
 import org.apache.pulsar.client.api.transaction.Transaction;
-import org.apache.pulsar.common.naming.TopicDomain;
-import org.apache.pulsar.common.policies.data.TopicStats;
 import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -109,10 +107,11 @@ public class PulsarContainerTest {
             try (PulsarAdmin pulsarAdmin = PulsarAdmin.builder().serviceHttpUrl(pulsar.getHttpServiceUrl()).build()) {
                 final List<String> topics = pulsarAdmin
                     .topics()
-                    .getPartitionedTopicList("pulsar/system",
-                        ListTopicsOptions.builder().includeSystemTopic(true).build());
-                assertThat(topics.contains("persistent://pulsar/system/transaction_coordinator_assign"))
-                    .isTrue();
+                    .getPartitionedTopicList(
+                        "pulsar/system",
+                        ListTopicsOptions.builder().includeSystemTopic(true).build()
+                    );
+                assertThat(topics.contains("persistent://pulsar/system/transaction_coordinator_assign")).isTrue();
             }
             testTransactionFunctionality(pulsar.getPulsarBrokerUrl());
         }
