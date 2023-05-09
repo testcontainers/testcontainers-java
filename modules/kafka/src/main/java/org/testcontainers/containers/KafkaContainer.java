@@ -117,7 +117,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         }
     }
 
-    private boolean isLesThanCP740() {
+    private boolean isLessThanCP740() {
         String actualVersion = DockerImageName.parse(getDockerImageName()).getVersionPart();
         return new ComparableVersion(actualVersion).isLessThan("7.4.0");
     }
@@ -145,8 +145,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     protected void configureKraft() {
         //CP 7.4.0
-        withEnv("KAFKA_CONTROLLER_QUORUM_MODE", "kraft");
-        withEnv("CLUSTER_ID", getEnvMap().computeIfAbsent("CLUSTER_ID", key -> clusterId));
+        getEnvMap().computeIfAbsent("CLUSTER_ID", key -> clusterId);
         withEnv(
             "KAFKA_NODE_ID",
             getEnvMap().computeIfAbsent("KAFKA_NODE_ID", key -> getEnvMap().get("KAFKA_BROKER_ID"))
@@ -197,7 +196,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
                 brokerAdvertisedListener(containerInfo)
             );
 
-        if (kraftEnabled && isLesThanCP740()) {
+        if (kraftEnabled && isLessThanCP740()) {
             // Optimization: skip the checks
             command += "echo '' > /etc/confluent/docker/ensure \n";
             command += commandKraft();
