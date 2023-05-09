@@ -10,7 +10,6 @@ import java.util.Objects;
 
 /**
  * This container wraps Confluent Kafka and Zookeeper (optionally)
- *
  */
 public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
@@ -100,7 +99,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
             throw new IllegalStateException("Cannot configure Kraft mode when Zookeeper configured");
         }
         verifyMinKraftVersion();
-        kraftEnabled = true;
+        this.kraftEnabled = true;
         return self();
     }
 
@@ -134,7 +133,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     @Override
     protected void configure() {
-        if (kraftEnabled) {
+        if (this.kraftEnabled) {
             waitingFor(Wait.forLogMessage(".*Transitioning from RECOVERY to RUNNING.*", 1));
             configureKraft();
         } else {
@@ -146,10 +145,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     protected void configureKraft() {
         //CP 7.4.0
         getEnvMap().computeIfAbsent("CLUSTER_ID", key -> clusterId);
-        withEnv(
-            "KAFKA_NODE_ID",
-            getEnvMap().computeIfAbsent("KAFKA_NODE_ID", key -> getEnvMap().get("KAFKA_BROKER_ID"))
-        );
+        getEnvMap().computeIfAbsent("KAFKA_NODE_ID", key -> getEnvMap().get("KAFKA_BROKER_ID"));
         withEnv(
             "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP",
             String.format("%s,CONTROLLER:PLAINTEXT", getEnvMap().get("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP"))
@@ -157,20 +153,17 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         withEnv("KAFKA_LISTENERS", String.format("%s,CONTROLLER://0.0.0.0:9094", getEnvMap().get("KAFKA_LISTENERS")));
 
         withEnv("KAFKA_PROCESS_ROLES", "broker,controller");
-        withEnv(
-            "KAFKA_CONTROLLER_QUORUM_VOTERS",
-            getEnvMap()
-                .computeIfAbsent(
-                    "KAFKA_CONTROLLER_QUORUM_VOTERS",
-                    key -> {
-                        return String.format(
-                            "%s@%s:9094",
-                            getEnvMap().get("KAFKA_NODE_ID"),
-                            getNetwork() != null ? getNetworkAliases().get(0) : "localhost"
-                        );
-                    }
-                )
-        );
+        getEnvMap()
+            .computeIfAbsent(
+                "KAFKA_CONTROLLER_QUORUM_VOTERS",
+                key -> {
+                    return String.format(
+                        "%s@%s:9094",
+                        getEnvMap().get("KAFKA_NODE_ID"),
+                        getNetwork() != null ? getNetworkAliases().get(0) : "localhost"
+                    );
+                }
+            );
         withEnv("KAFKA_CONTROLLER_LISTENER_NAMES", "CONTROLLER");
     }
 
@@ -196,13 +189,13 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
                 brokerAdvertisedListener(containerInfo)
             );
 
-        if (kraftEnabled && isLessThanCP740()) {
+        if (this.kraftEnabled && isLessThanCP740()) {
             // Optimization: skip the checks
             command += "echo '' > /etc/confluent/docker/ensure \n";
             command += commandKraft();
         }
 
-        if (!kraftEnabled) {
+        if (!this.kraftEnabled) {
             // Optimization: skip the checks
             command += "echo '' > /etc/confluent/docker/ensure \n";
             command += commandZookeeper();
@@ -217,7 +210,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         String command = "sed -i '/KAFKA_ZOOKEEPER_CONNECT/d' /etc/confluent/docker/configure\n";
         command +=
             "echo 'kafka-storage format --ignore-formatted -t \"" +
-            clusterId +
+            this.clusterId +
             "\" -c /etc/kafka/kafka.properties' >> /etc/confluent/docker/configure\n";
         return command;
     }
