@@ -1,5 +1,7 @@
 package org.testcontainers.containers;
 
+import java.util.List;
+import org.apache.pulsar.client.admin.ListTopicsOptions;
 import org.apache.pulsar.client.admin.PulsarAdmin;
 import org.apache.pulsar.client.admin.PulsarAdminException;
 import org.apache.pulsar.client.api.Consumer;
@@ -9,6 +11,8 @@ import org.apache.pulsar.client.api.PulsarClient;
 import org.apache.pulsar.client.api.Schema;
 import org.apache.pulsar.client.api.SubscriptionInitialPosition;
 import org.apache.pulsar.client.api.transaction.Transaction;
+import org.apache.pulsar.common.naming.TopicDomain;
+import org.apache.pulsar.common.policies.data.TopicStats;
 import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
 
@@ -23,14 +27,14 @@ public class PulsarContainerTest {
 
     public static final String TEST_TOPIC = "test_topic";
 
-    private static final DockerImageName PULSAR_IMAGE = DockerImageName.parse("apachepulsar/pulsar:2.10.0");
+    private static final DockerImageName PULSAR_IMAGE = DockerImageName.parse("apachepulsar/pulsar:3.0.0");
 
     @Test
     public void testUsage() throws Exception {
         try (
             // do not use PULSAR_IMAGE to make the doc looks easier
             // constructorWithVersion {
-            PulsarContainer pulsar = new PulsarContainer(DockerImageName.parse("apachepulsar/pulsar:2.10.0"));
+            PulsarContainer pulsar = new PulsarContainer(DockerImageName.parse("apachepulsar/pulsar:3.0.0"));
             // }
         ) {
             pulsar.start();
@@ -103,12 +107,11 @@ public class PulsarContainerTest {
             pulsar.start();
 
             try (PulsarAdmin pulsarAdmin = PulsarAdmin.builder().serviceHttpUrl(pulsar.getHttpServiceUrl()).build()) {
-                assertThat(
-                    pulsarAdmin
-                        .topics()
-                        .getList("pulsar/system")
-                        .contains("persistent://pulsar/system/transaction_coordinator_assign-partition-0")
-                )
+                final List<String> topics = pulsarAdmin
+                    .topics()
+                    .getPartitionedTopicList("pulsar/system",
+                        ListTopicsOptions.builder().includeSystemTopic(true).build());
+                assertThat(topics.contains("persistent://pulsar/system/transaction_coordinator_assign"))
                     .isTrue();
             }
             testTransactionFunctionality(pulsar.getPulsarBrokerUrl());
