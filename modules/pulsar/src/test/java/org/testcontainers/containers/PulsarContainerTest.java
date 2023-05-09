@@ -115,7 +115,7 @@ public class PulsarContainerTest {
         final List<String> topics = pulsarAdmin
             .topics()
             .getPartitionedTopicList("pulsar/system", ListTopicsOptions.builder().includeSystemTopic(true).build());
-        assertThat(topics.contains("persistent://pulsar/system/transaction_coordinator_assign")).isTrue();
+        assertThat(topics).contains("persistent://pulsar/system/transaction_coordinator_assign");
     }
 
     @Test
