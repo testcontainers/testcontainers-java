@@ -2,7 +2,6 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Container;
-import com.github.dockerjava.api.model.Network;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -274,29 +273,7 @@ class ComposeDelegate {
 
     void startAmbassadorContainer() {
         if (!this.ambassadorPortMappings.isEmpty()) {
-            //            if (this.composeVersion.equals(ComposeVersion.V2)) {
-            //                this.ambassadorContainer.withCreateContainerCmdModifier(createContainerCmd ->
-            //                    createContainerCmd.withNetworkMode(this.project + "_default")
-            //                );
-            //            }
             this.ambassadorContainer.start();
-            List<Container> containers = this.dockerClient.listContainersCmd().exec();
-            Set<String> networks = containers
-                .stream()
-                .filter(container ->
-                    Arrays.stream(container.getNames()).allMatch(name -> name.startsWith("/" + this.project))
-                )
-                .flatMap(container -> container.getNetworkSettings().getNetworks().keySet().stream())
-                .collect(Collectors.toSet());
-            for (String network : networks) {
-                Network networkContent = this.dockerClient.inspectNetworkCmd().withNetworkId(network).exec();
-                if (!networkContent.getContainers().containsKey(this.ambassadorContainer.getContainerId())) {
-                    this.dockerClient.connectToNetworkCmd()
-                        .withContainerId(this.ambassadorContainer.getContainerId())
-                        .withNetworkId(network)
-                        .exec();
-                }
-            }
         }
     }
 
@@ -334,19 +311,11 @@ class ComposeDelegate {
         ambassadorPortMappings
             .computeIfAbsent(serviceInstanceName, __ -> new ConcurrentHashMap<>())
             .put(servicePort, ambassadorPort);
-        //        if (this.composeVersion.equals(ComposeVersion.V1)) {
-        //            this.ambassadorContainer.withTarget(ambassadorPort, serviceInstanceName, servicePort);
-        //            this.ambassadorContainer.addLink(
-        //                new FutureContainer(this.project + this.composeSeparator + serviceInstanceName),
-        //                serviceInstanceName
-        //            );
-        //        } else {
-        this.ambassadorContainer.withTarget(
-                ambassadorPort,
-                this.project + this.composeSeparator + serviceInstanceName,
-                servicePort
-            );
-        //        }
+        ambassadorContainer.withTarget(ambassadorPort, serviceInstanceName, servicePort);
+        ambassadorContainer.addLink(
+            new FutureContainer(this.project + this.composeSeparator + serviceInstanceName),
+            serviceInstanceName
+        );
         addWaitStrategy(serviceInstanceName, waitStrategy);
     }
 
