@@ -6,11 +6,10 @@ import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 
-import java.io.IOException;
+import java.util.Objects;
 
 /**
  * This container wraps Confluent Kafka and Zookeeper (optionally)
- *
  */
 public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
@@ -29,11 +28,13 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     // https://docs.confluent.io/platform/7.0.0/release-notes/index.html#ak-raft-kraft
     private static final String MIN_KRAFT_TAG = "7.0.0";
 
+    public static final String DEFAULT_CLUSTER_ID = "4L6g3nShT-eMCtK--X86sw";
+
     protected String externalZookeeperConnect = null;
 
     private boolean kraftEnabled = false;
 
-    private String clusterId;
+    private String clusterId = DEFAULT_CLUSTER_ID;
 
     /**
      * @deprecated use {@link KafkaContainer(DockerImageName)} instead
@@ -98,7 +99,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
             throw new IllegalStateException("Cannot configure Kraft mode when Zookeeper configured");
         }
         verifyMinKraftVersion();
-        kraftEnabled = true;
+        this.kraftEnabled = true;
         return self();
     }
 
@@ -115,7 +116,13 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         }
     }
 
+    private boolean isLessThanCP740() {
+        String actualVersion = DockerImageName.parse(getDockerImageName()).getVersionPart();
+        return new ComparableVersion(actualVersion).isLessThan("7.4.0");
+    }
+
     public KafkaContainer withClusterId(String clusterId) {
+        Objects.requireNonNull(clusterId, "clusterId cannot be null");
         this.clusterId = clusterId;
         return self();
     }
@@ -126,7 +133,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     @Override
     protected void configure() {
-        if (kraftEnabled) {
+        if (this.kraftEnabled) {
             waitingFor(Wait.forLogMessage(".*Transitioning from RECOVERY to RUNNING.*", 1));
             configureKraft();
         } else {
@@ -136,10 +143,9 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     }
 
     protected void configureKraft() {
-        withEnv(
-            "KAFKA_NODE_ID",
-            getEnvMap().computeIfAbsent("KAFKA_NODE_ID", key -> getEnvMap().get("KAFKA_BROKER_ID"))
-        );
+        //CP 7.4.0
+        getEnvMap().computeIfAbsent("CLUSTER_ID", key -> clusterId);
+        getEnvMap().computeIfAbsent("KAFKA_NODE_ID", key -> getEnvMap().get("KAFKA_BROKER_ID"));
         withEnv(
             "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP",
             String.format("%s,CONTROLLER:PLAINTEXT", getEnvMap().get("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP"))
@@ -147,20 +153,17 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         withEnv("KAFKA_LISTENERS", String.format("%s,CONTROLLER://0.0.0.0:9094", getEnvMap().get("KAFKA_LISTENERS")));
 
         withEnv("KAFKA_PROCESS_ROLES", "broker,controller");
-        withEnv(
-            "KAFKA_CONTROLLER_QUORUM_VOTERS",
-            getEnvMap()
-                .computeIfAbsent(
-                    "KAFKA_CONTROLLER_QUORUM_VOTERS",
-                    key -> {
-                        return String.format(
-                            "%s@%s:9094",
-                            getEnvMap().get("KAFKA_NODE_ID"),
-                            getNetwork() != null ? getNetworkAliases().get(0) : "localhost"
-                        );
-                    }
-                )
-        );
+        getEnvMap()
+            .computeIfAbsent(
+                "KAFKA_CONTROLLER_QUORUM_VOTERS",
+                key -> {
+                    return String.format(
+                        "%s@%s:9094",
+                        getEnvMap().get("KAFKA_NODE_ID"),
+                        getNetwork() != null ? getNetworkAliases().get(0) : "localhost"
+                    );
+                }
+            );
         withEnv("KAFKA_CONTROLLER_LISTENER_NAMES", "CONTROLLER");
     }
 
@@ -186,10 +189,18 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
                 brokerAdvertisedListener(containerInfo)
             );
 
-        command += (kraftEnabled) ? commandKraft() : commandZookeeper();
+        if (this.kraftEnabled && isLessThanCP740()) {
+            // Optimization: skip the checks
+            command += "echo '' > /etc/confluent/docker/ensure \n";
+            command += commandKraft();
+        }
 
-        // Optimization: skip the checks
-        command += "echo '' > /etc/confluent/docker/ensure \n";
+        if (!this.kraftEnabled) {
+            // Optimization: skip the checks
+            command += "echo '' > /etc/confluent/docker/ensure \n";
+            command += commandZookeeper();
+        }
+
         // Run the original command
         command += "/etc/confluent/docker/run \n";
         copyFileToContainer(Transferable.of(command, 0777), STARTER_SCRIPT);
@@ -197,16 +208,9 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     protected String commandKraft() {
         String command = "sed -i '/KAFKA_ZOOKEEPER_CONNECT/d' /etc/confluent/docker/configure\n";
-        try {
-            if (clusterId == null) {
-                clusterId = execInContainer("kafka-storage", "random-uuid").getStdout().trim();
-            }
-        } catch (IOException | InterruptedException e) {
-            logger().error("Failed to execute `kafka-storage random-uuid`. Exception message: {}", e.getMessage());
-        }
         command +=
             "echo 'kafka-storage format --ignore-formatted -t \"" +
-            clusterId +
+            this.clusterId +
             "\" -c /etc/kafka/kafka.properties' >> /etc/confluent/docker/configure\n";
         return command;
     }

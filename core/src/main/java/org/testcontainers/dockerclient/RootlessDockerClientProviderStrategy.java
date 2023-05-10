@@ -34,15 +34,8 @@ public final class RootlessDockerClientProviderStrategy extends DockerClientProv
                 Path homePath = Paths.get(System.getProperty("user.home")).resolve(".docker").resolve("run");
                 return tryFolder(homePath)
                     .orElseGet(() -> {
-                        Path dockerDesktopPath = Paths
-                            .get(System.getProperty("user.home"))
-                            .resolve(".docker")
-                            .resolve("desktop");
-                        return tryFolder(dockerDesktopPath)
-                            .orElseGet(() -> {
-                                Path implicitPath = Paths.get("/run/user/" + LibC.INSTANCE.getuid());
-                                return tryFolder(implicitPath).orElse(null);
-                            });
+                        Path implicitPath = Paths.get("/run/user/" + LibC.INSTANCE.getuid());
+                        return tryFolder(implicitPath).orElse(null);
                     });
             });
     }
@@ -86,11 +79,7 @@ public final class RootlessDockerClientProviderStrategy extends DockerClientProv
 
     @Override
     protected boolean isApplicable() {
-        return (
-            (SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_MAC) &&
-            getSocketPath() != null &&
-            Files.exists(getSocketPath())
-        );
+        return SystemUtils.IS_OS_LINUX && getSocketPath() != null && Files.exists(getSocketPath());
     }
 
     @Override
