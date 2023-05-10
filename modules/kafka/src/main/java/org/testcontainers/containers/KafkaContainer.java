@@ -190,14 +190,10 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
             );
 
         if (this.kraftEnabled && isLessThanCP740()) {
-            // Optimization: skip the checks
-            command += "echo '' > /etc/confluent/docker/ensure \n";
             command += commandKraft();
         }
 
         if (!this.kraftEnabled) {
-            // Optimization: skip the checks
-            command += "echo '' > /etc/confluent/docker/ensure \n";
             command += commandZookeeper();
         }
 
