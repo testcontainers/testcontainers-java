@@ -6,7 +6,6 @@ import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.utility.DockerStatus;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -16,18 +15,14 @@ import java.util.concurrent.TimeUnit;
 public class ContainerFinishedWaitStrategy extends AbstractWaitStrategy {
 
     protected boolean isContainerFinished() {
-            InspectContainerResponse.ContainerState state = waitStrategyTarget.getCurrentContainerInfo().getState();
-            return DockerStatus.isContainerStopped( state ) && DockerStatus.isContainerExitCodeSuccess( state );
+        InspectContainerResponse.ContainerState state = waitStrategyTarget.getCurrentContainerInfo().getState();
+        return DockerStatus.isContainerStopped(state) && DockerStatus.isContainerExitCodeSuccess(state);
     }
 
     @Override
     protected void waitUntilReady() {
         try {
-            Unreliables.retryUntilTrue(
-                (int) startupTimeout.getSeconds(),
-                TimeUnit.SECONDS,
-                this::isContainerFinished
-            );
+            Unreliables.retryUntilTrue((int) startupTimeout.getSeconds(), TimeUnit.SECONDS, this::isContainerFinished);
         } catch (TimeoutException e) {
             throw new ContainerLaunchException("Timed out waiting for container to finish");
         }
