@@ -3,17 +3,17 @@ package org.testcontainers.junit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.DockerComposeContainer;
 
 import java.io.File;
 import java.util.LinkedHashSet;
-import java.util.concurrent.TimeUnit;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 @RunWith(Parameterized.class)
 public class DockerComposeContainerVolumeRemovalTest {
@@ -43,7 +43,7 @@ public class DockerComposeContainerVolumeRemovalTest {
         try (
             DockerComposeContainer environment = new DockerComposeContainer<>(composeFile)
                 .withExposedService("redis", 6379)
-                .withRemoveVolumes(removeVolumes)
+                .withRemoveVolumes(this.removeVolumes)
                 .withRemoveImages(DockerComposeContainer.RemoveImages.ALL)
         ) {
             environment.start();
@@ -53,17 +53,13 @@ public class DockerComposeContainerVolumeRemovalTest {
             assertThat(isVolumePresentWhileRunning).as("the container volume is present while running").isEqualTo(true);
         }
 
-        Unreliables.retryUntilSuccess(
-            10,
-            TimeUnit.SECONDS,
-            () -> {
+        await()
+            .untilAsserted(() -> {
                 final boolean isVolumePresentAfterRunning = isVolumePresent(volumeName.get());
                 assertThat(isVolumePresentAfterRunning)
                     .as("the container volume is present after running")
-                    .isEqualTo(shouldVolumesBePresentAfterRunning);
-                return null;
-            }
-        );
+                    .isEqualTo(this.shouldVolumesBePresentAfterRunning);
+            });
     }
 
     private String volumeNameForRunningContainer(final String containerNameSuffix) {
@@ -80,7 +76,7 @@ public class DockerComposeContainerVolumeRemovalTest {
     }
 
     private boolean isVolumePresent(final String volumeName) {
-        LinkedHashSet<String> nameFilter = new LinkedHashSet<>(1);
+        Set<String> nameFilter = new LinkedHashSet<>(1);
         nameFilter.add(volumeName);
         return DockerClientFactory
             .instance()
