@@ -1,10 +1,10 @@
 # Redpanda
 
 Testcontainers can be used to automatically instantiate and manage [Redpanda](https://redpanda.com/) containers.
-More precisely Testcontainers uses the official Docker images for [Redpanda](https://hub.docker.com/r/vectorized/redpanda/)
+More precisely Testcontainers uses the official Docker images for [Redpanda](https://hub.docker.com/r/redpandadata/redpanda)
 
 !!! note
-    This module uses features provided in `docker.redpanda.com/vectorized/redpanda`.
+    This module uses features provided in `docker.redpanda.com/redpandadata/redpanda`.
 
 ## Example
 

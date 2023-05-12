@@ -31,6 +31,8 @@ public class KafkaContainerTest {
 
     private static final DockerImageName KAFKA_TEST_IMAGE = DockerImageName.parse("confluentinc/cp-kafka:6.2.1");
 
+    private static final DockerImageName KAFKA_KRAFT_TEST_IMAGE = DockerImageName.parse("confluentinc/cp-kafka:7.0.1");
+
     private static final DockerImageName ZOOKEEPER_TEST_IMAGE = DockerImageName.parse(
         "confluentinc/cp-zookeeper:4.0.0"
     );
@@ -72,7 +74,7 @@ public class KafkaContainerTest {
         try (
             Network network = Network.newNetwork();
             // withExternalZookeeper {
-            KafkaContainer kafka = new KafkaContainer(KAFKA_TEST_IMAGE)
+            KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:6.2.1"))
                 .withNetwork(network)
                 .withExternalZookeeper("zookeeper:2181");
             // }
@@ -125,6 +127,69 @@ public class KafkaContainerTest {
     public void testWithHostExposedPortAndExternalNetwork() throws Exception {
         Testcontainers.exposeHostPorts(12345);
         try (KafkaContainer kafka = new KafkaContainer(KAFKA_TEST_IMAGE).withNetwork(Network.newNetwork())) {
+            kafka.start();
+            testKafkaFunctionality(kafka.getBootstrapServers());
+        }
+    }
+
+    @Test
+    public void testUsageKraftBeforeConfluentPlatformVersion74() throws Exception {
+        try (
+            KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.0.1")).withKraft()
+        ) {
+            kafka.start();
+            testKafkaFunctionality(kafka.getBootstrapServers());
+        }
+    }
+
+    @Test
+    public void testUsageKraftAfterConfluentPlatformVersion74() throws Exception {
+        try (
+            // withKraftMode {
+            KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.4.0")).withKraft()
+            // }
+        ) {
+            kafka.start();
+            testKafkaFunctionality(kafka.getBootstrapServers());
+        }
+    }
+
+    @Test
+    public void testNotSupportedKraftVersion() {
+        try (
+            KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:6.2.1")).withKraft()
+        ) {} catch (IllegalArgumentException e) {
+            assertThat(e.getMessage())
+                .isEqualTo(
+                    "Provided Confluent Platform's version 6.2.1 is not supported in Kraft mode (must be 7.0.0 or above)"
+                );
+        }
+    }
+
+    @Test
+    public void testKraftZookeeperMutualExclusion() {
+        try (
+            KafkaContainer kafka = new KafkaContainer(KAFKA_KRAFT_TEST_IMAGE).withKraft().withExternalZookeeper("")
+        ) {} catch (IllegalStateException e) {
+            assertThat(e.getMessage()).isEqualTo("Cannot configure Zookeeper when using Kraft mode");
+        }
+
+        try (
+            KafkaContainer kafka = new KafkaContainer(KAFKA_KRAFT_TEST_IMAGE).withExternalZookeeper("").withKraft()
+        ) {} catch (IllegalStateException e) {
+            assertThat(e.getMessage()).isEqualTo("Cannot configure Kraft mode when Zookeeper configured");
+        }
+
+        try (
+            KafkaContainer kafka = new KafkaContainer(KAFKA_KRAFT_TEST_IMAGE).withKraft().withEmbeddedZookeeper()
+        ) {} catch (IllegalStateException e) {
+            assertThat(e.getMessage()).isEqualTo("Cannot configure Zookeeper when using Kraft mode");
+        }
+    }
+
+    @Test
+    public void testKraftPrecedenceOverEmbeddedZookeeper() throws Exception {
+        try (KafkaContainer kafka = new KafkaContainer(KAFKA_KRAFT_TEST_IMAGE).withEmbeddedZookeeper().withKraft()) {
             kafka.start();
             testKafkaFunctionality(kafka.getBootstrapServers());
         }

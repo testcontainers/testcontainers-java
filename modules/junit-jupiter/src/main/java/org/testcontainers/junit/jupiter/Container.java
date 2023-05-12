@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  *
  * @see Testcontainers
  */
-@Target(ElementType.FIELD)
+@Target({ ElementType.FIELD, ElementType.ANNOTATION_TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Container {
 }

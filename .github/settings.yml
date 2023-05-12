@@ -124,6 +124,9 @@ labels:
   - name: modules/couchbase
     color: '#006b75'
 
+  - name: modules/cratedb
+    color: '#006b75'
+
   - name: modules/db2
     color: '#006b75'
 
@@ -203,6 +206,9 @@ labels:
     color: '#006b75'
 
   - name: modules/selenium
+    color: '#006b75'
+
+  - name: modules/solace
     color: '#006b75'
 
   - name: modules/solr
