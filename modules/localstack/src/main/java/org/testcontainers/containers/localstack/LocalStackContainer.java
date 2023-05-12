@@ -254,6 +254,35 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
         }
     }
 
+    /**
+     * Provides an endpoint to communicate with LocalStack service.
+     * The provided endpoint should be set in the AWS Java SDK v2 when building a client, e.g.:
+     * <pre><code>S3Client s3 = S3Client
+             .builder()
+             .endpointOverride(localstack.getEndpoint())
+             .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(
+             localstack.getAccessKey(), localstack.getSecretKey()
+             )))
+             .region(Region.of(localstack.getRegion()))
+             .build()
+             </code></pre>
+     * <p><strong>Please note that this method is only intended to be used for configuring AWS SDK clients
+     * that are running on the test host. If other containers need to call this one, they should be configured
+     * specifically to do so using a Docker network and appropriate addressing.</strong></p>
+     *
+     * @return an {@link URI} endpoint
+     */
+    public URI getEndpoint() {
+        try {
+            final String address = getHost();
+            // resolve IP address and use that as the endpoint so that path-style access is automatically used for S3
+            String ipAddress = InetAddress.getByName(address).getHostAddress();
+            return new URI("http://" + ipAddress + ":" + getMappedPort(PORT));
+        } catch (UnknownHostException | URISyntaxException e) {
+            throw new IllegalStateException("Cannot obtain endpoint URL", e);
+        }
+    }
+
     private int getServicePort(EnabledService service) {
         return legacyMode ? service.getPort() : PORT;
     }
