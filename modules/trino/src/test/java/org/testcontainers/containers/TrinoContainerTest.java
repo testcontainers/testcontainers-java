@@ -77,6 +77,7 @@ public class TrinoContainerTest {
             }
         }
     }
+
     private void assertContainerHasCorrectExposedAndLivenessCheckPorts(TrinoContainer trino) {
         assertThat(trino.getExposedPorts()).containsExactly(8080);
         assertThat(trino.getLivenessCheckPortNumbers()).containsExactly(trino.getMappedPort(8080));
