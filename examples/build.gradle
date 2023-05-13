@@ -8,6 +8,7 @@ apply from: "$rootDir/../gradle/ci-support.gradle"
 subprojects {
     apply plugin:"java"
     apply from: "$rootDir/../gradle/spotless.gradle"
+
     apply plugin: 'checkstyle'
 
     repositories {
@@ -17,5 +18,18 @@ subprojects {
     checkstyle {
         toolVersion = "9.3"
         configFile = rootProject.file('../config/checkstyle/checkstyle.xml')
+    }
+
+    dependencies {
+        testImplementation(platform('org.junit:junit-bom:5.9.2'))
+        testImplementation 'org.junit.jupiter:junit-jupiter'
+        testImplementation 'org.junit.platform:junit-platform-suite'
+
+        testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+        testRuntimeOnly 'org.junit.vintage:junit-vintage-engine'
+    }
+
+    test {
+        useJUnitPlatform()
     }
 }

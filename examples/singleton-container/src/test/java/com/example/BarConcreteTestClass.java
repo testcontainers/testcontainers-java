@@ -2,8 +2,8 @@ package com.example;
 
 import com.example.cache.Cache;
 import com.example.cache.RedisBackedCache;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.Jedis;
 
 import java.util.Optional;
@@ -14,7 +14,7 @@ public class BarConcreteTestClass extends AbstractIntegrationTest {
 
     private Cache cache;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Jedis jedis = new Jedis(redis.getHost(), redis.getMappedPort(6379));
 

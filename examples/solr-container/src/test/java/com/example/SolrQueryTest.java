@@ -5,8 +5,8 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.Http2SolrClient;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.SolrInputField;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.SolrContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -26,7 +26,7 @@ public class SolrQueryTest {
 
     private static SolrClient solrClient;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() throws IOException, SolrServerException {
         solrContainer.start();
         solrClient =

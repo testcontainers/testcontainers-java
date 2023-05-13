@@ -1,8 +1,8 @@
 import com.mycompany.cache.Cache;
 import com.mycompany.cache.RedisBackedCache;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 import redis.clients.jedis.Jedis;
@@ -16,17 +16,22 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class RedisBackedCacheTest {
 
-    @Rule
     public GenericContainer<?> redis = new GenericContainer<>(DockerImageName.parse("redis:3.0.6"))
         .withExposedPorts(6379);
 
     private Cache cache;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
+        redis.start();
         Jedis jedis = new Jedis(redis.getHost(), redis.getMappedPort(6379));
 
         cache = new RedisBackedCache(jedis, "test");
+    }
+
+    @AfterEach
+    public void tearDown() throws Exception {
+        redis.stop();
     }
 
     @Test

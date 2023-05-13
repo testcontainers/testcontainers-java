@@ -8,7 +8,7 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 
 import java.io.IOException;
