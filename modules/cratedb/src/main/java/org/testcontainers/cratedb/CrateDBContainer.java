@@ -13,7 +13,7 @@ public class CrateDBContainer extends JdbcDatabaseContainer<CrateDBContainer> {
 
     static final String IMAGE = "crate";
 
-    static final String DEFAULT_TAG = "5.2.5";
+    static final String DEFAULT_TAG = "5.3.1";
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("crate");
 
@@ -34,6 +34,7 @@ public class CrateDBContainer extends JdbcDatabaseContainer<CrateDBContainer> {
     public CrateDBContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        withCommand("crate -C discovery.type=single-node");
 
         this.waitStrategy = Wait.forHttp("/").forPort(CRATEDB_HTTP_PORT).forStatusCode(200);
 
