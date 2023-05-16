@@ -34,7 +34,7 @@ public class SimpleCrateDBTest extends AbstractContainerDatabaseTest {
     public void testCommandOverride() throws SQLException {
         try (
             CrateDBContainer cratedb = new CrateDBContainer(CrateDBTestImages.CRATEDB_TEST_IMAGE)
-                .withCommand("crate -C cluster.name=testcontainers")
+                .withCommand("crate -C discovery.type=single-node -C cluster.name=testcontainers")
         ) {
             cratedb.start();
 

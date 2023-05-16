@@ -55,7 +55,9 @@ public class ComposeContainer extends FailureDetectingExternalResource implement
      */
     private Map<String, String> env = new HashMap<>();
 
-    private ComposeContainer.RemoveImages removeImages;
+    private RemoveImages removeImages;
+
+    private boolean removeVolumes = true;
 
     public static final String COMPOSE_EXECUTABLE = SystemUtils.IS_OS_WINDOWS ? "docker.exe" : "docker";
 
@@ -156,7 +158,10 @@ public class ComposeContainer extends FailureDetectingExternalResource implement
                 this.composeDelegate.getAmbassadorContainer().stop();
 
                 // Kill the services using docker
-                String cmd = "compose down -v";
+                String cmd = "compose down";
+                if (removeVolumes) {
+                    cmd += " -v";
+                }
                 if (removeImages != null) {
                     cmd += " --rmi " + removeImages.dockerRemoveImagesType();
                 }
@@ -323,6 +328,17 @@ public class ComposeContainer extends FailureDetectingExternalResource implement
      */
     public ComposeContainer withRemoveImages(ComposeContainer.RemoveImages removeImages) {
         this.removeImages = removeImages;
+        return this;
+    }
+
+    /**
+     * Remove volumes after containers shut down.
+     *
+     * @param removeVolumes whether volumes are to be removed.
+     * @return this instance, for chaining.
+     */
+    public ComposeContainer withRemoveVolumes(boolean removeVolumes) {
+        this.removeVolumes = removeVolumes;
         return this;
     }
 

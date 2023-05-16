@@ -58,6 +58,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
 
     private RemoveImages removeImages;
 
+    private boolean removeVolumes = true;
+
     public static final String COMPOSE_EXECUTABLE = SystemUtils.IS_OS_WINDOWS ? "docker-compose.exe" : "docker-compose";
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("docker/compose:1.29.2");
@@ -162,7 +164,11 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
                 this.composeDelegate.getAmbassadorContainer().stop();
 
                 // Kill the services using docker-compose
-                String cmd = "down -v";
+                String cmd = "down";
+
+                if (removeVolumes) {
+                    cmd += " -v";
+                }
                 if (removeImages != null) {
                     cmd += " --rmi " + removeImages.dockerRemoveImagesType();
                 }
@@ -325,6 +331,17 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
      */
     public SELF withRemoveImages(RemoveImages removeImages) {
         this.removeImages = removeImages;
+        return self();
+    }
+
+    /**
+     * Remove volumes after containers shut down.
+     *
+     * @param removeVolumes whether volumes are to be removed.
+     * @return this instance, for chaining.
+     */
+    public SELF withRemoveVolumes(boolean removeVolumes) {
+        this.removeVolumes = removeVolumes;
         return self();
     }
 
