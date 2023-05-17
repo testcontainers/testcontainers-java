@@ -43,5 +43,4 @@ public class PullRetryPolicy {
     public static ImagePullRetryPolicy defaultRetryPolicy() {
         return new DefaultPullRetryPolicy();
     }
-
 }

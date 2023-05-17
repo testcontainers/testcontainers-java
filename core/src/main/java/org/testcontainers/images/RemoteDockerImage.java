@@ -3,7 +3,6 @@ package org.testcontainers.images;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.PullImageCmd;
 import com.github.dockerjava.api.exception.DockerClientException;
-import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.google.common.util.concurrent.Futures;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -21,8 +20,6 @@ import org.testcontainers.utility.DockerLoggerFactory;
 import org.testcontainers.utility.ImageNameSubstitutor;
 import org.testcontainers.utility.LazyFuture;
 
-import java.time.Duration;
-import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;

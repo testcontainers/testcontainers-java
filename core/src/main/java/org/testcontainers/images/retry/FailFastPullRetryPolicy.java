@@ -15,5 +15,4 @@ public class FailFastPullRetryPolicy implements ImagePullRetryPolicy {
     public boolean shouldRetry(DockerImageName imageName, Throwable error) {
         return false;
     }
-
 }

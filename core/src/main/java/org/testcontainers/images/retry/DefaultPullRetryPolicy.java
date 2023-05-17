@@ -16,6 +16,7 @@ import java.time.Duration;
 @Slf4j
 @ToString
 public class DefaultPullRetryPolicy extends LimitedDurationPullRetryPolicy {
+
     private static final Duration PULL_RETRY_TIME_LIMIT = Duration.ofMinutes(2);
 
     public DefaultPullRetryPolicy() {
