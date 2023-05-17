@@ -33,12 +33,16 @@ public class LimitedDurationPullRetryPolicy implements ImagePullRetryPolicy {
 
     @Override
     public boolean shouldRetry(DockerImageName imageName, Throwable error) {
-        log.warn(
-            "Retrying pull for image: {} ({}s remaining)",
-            imageName,
-            Duration.between(Instant.now(), lastRetryAllowed).getSeconds()
-        );
+        if (Instant.now().isBefore(lastRetryAllowed)) {
+            log.warn(
+                "Retrying pull for image: {} ({}s remaining)",
+                imageName,
+                Duration.between(Instant.now(), lastRetryAllowed).getSeconds()
+            );
 
-        return Instant.now().isBefore(lastRetryAllowed);
+            return true;
+        }
+
+        return false;
     }
 }
