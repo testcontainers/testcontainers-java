@@ -25,6 +25,6 @@ public class NoOfAttemptsPullRetryPolicy implements ImagePullRetryPolicy {
 
     @Override
     public boolean shouldRetry(DockerImageName imageName, Throwable error) {
-        return ++currentNoOfAttempts > maxAllowedNoOfAttempts;
+        return ++currentNoOfAttempts <= maxAllowedNoOfAttempts;
     }
 }
