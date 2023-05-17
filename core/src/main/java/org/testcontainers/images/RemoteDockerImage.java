@@ -14,6 +14,8 @@ import lombok.With;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ContainerFetchException;
+import org.testcontainers.images.retry.ImagePullRetryPolicy;
+import org.testcontainers.images.retry.PullRetryPolicy;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.DockerLoggerFactory;
 import org.testcontainers.utility.ImageNameSubstitutor;
@@ -29,13 +31,14 @@ import java.util.concurrent.Future;
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 public class RemoteDockerImage extends LazyFuture<String> {
 
-    private static final Duration PULL_RETRY_TIME_LIMIT = Duration.ofMinutes(2);
-
     @ToString.Exclude
     private Future<DockerImageName> imageNameFuture;
 
     @With
     private ImagePullPolicy imagePullPolicy = PullPolicy.defaultPolicy();
+
+    @With
+    private ImagePullRetryPolicy imagePullRetryPolicy = PullRetryPolicy.defaultRetryPolicy();
 
     @With
     private ImageNameSubstitutor imageNameSubstitutor = ImageNameSubstitutor.instance();
@@ -78,9 +81,10 @@ public class RemoteDockerImage extends LazyFuture<String> {
             );
 
             Exception lastFailure = null;
-            final Instant lastRetryAllowed = Instant.now().plus(PULL_RETRY_TIME_LIMIT);
+            boolean pull = true;
+            imagePullRetryPolicy.pullStarted();
 
-            while (Instant.now().isBefore(lastRetryAllowed)) {
+            do {
                 try {
                     PullImageCmd pullImageCmd = dockerClient
                         .pullImageCmd(imageName.getUnversionedPart())
@@ -99,16 +103,12 @@ public class RemoteDockerImage extends LazyFuture<String> {
                     LocalImagesCache.INSTANCE.refreshCache(imageName);
 
                     return imageName.asCanonicalNameString();
-                } catch (InterruptedException | InternalServerErrorException e) {
-                    // these classes of exception often relate to timeout/connection errors so should be retried
+                } catch (Exception e) {
                     lastFailure = e;
-                    logger.warn(
-                        "Retrying pull for image: {} ({}s remaining)",
-                        imageName,
-                        Duration.between(Instant.now(), lastRetryAllowed).getSeconds()
-                    );
+                    pull = imagePullRetryPolicy.shouldRetry(imageName, e);
                 }
-            }
+            } while (pull);
+
             logger.error(
                 "Failed to pull image: {}. Please check output of `docker pull {}`",
                 imageName,
