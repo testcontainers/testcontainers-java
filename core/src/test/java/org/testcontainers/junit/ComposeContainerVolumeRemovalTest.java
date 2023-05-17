@@ -37,7 +37,7 @@ public class ComposeContainerVolumeRemovalTest {
 
     @Test
     public void performTest() {
-        final File composeFile = new File("src/test/resources/compose-test.yml");
+        final File composeFile = new File("src/test/resources/v2-compose-test.yml");
 
         final AtomicReference<String> volumeName = new AtomicReference<>("");
         try (
@@ -48,7 +48,7 @@ public class ComposeContainerVolumeRemovalTest {
         ) {
             environment.start();
 
-            volumeName.set(volumeNameForRunningContainer("_redis_1"));
+            volumeName.set(volumeNameForRunningContainer("-redis-1"));
             final boolean isVolumePresentWhileRunning = isVolumePresent(volumeName.get());
             assertThat(isVolumePresentWhileRunning).as("the container volume is present while running").isEqualTo(true);
         }
