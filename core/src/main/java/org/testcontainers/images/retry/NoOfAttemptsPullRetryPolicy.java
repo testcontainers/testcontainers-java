@@ -1,8 +1,6 @@
 package org.testcontainers.images.retry;
 
 import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.utility.DockerImageName;
@@ -13,15 +11,25 @@ import org.testcontainers.utility.DockerImageName;
  *
  */
 @Slf4j
-@RequiredArgsConstructor
 @ToString
 public class NoOfAttemptsPullRetryPolicy implements ImagePullRetryPolicy {
 
-    @NonNull
     @Getter
     private final int maxAllowedNoOfAttempts;
 
     private int currentNoOfAttempts = 0;
+
+    public NoOfAttemptsPullRetryPolicy(Integer maxAllowedNoOfAttempts) {
+        if (maxAllowedNoOfAttempts == null) {
+            throw new NullPointerException("maxAllowedNoOfAttempts should not be null");
+        }
+
+        if (maxAllowedNoOfAttempts < 0) {
+            throw new IllegalArgumentException("maxAllowedNoOfAttempts should not be negative");
+        }
+
+        this.maxAllowedNoOfAttempts = maxAllowedNoOfAttempts;
+    }
 
     @Override
     public boolean shouldRetry(DockerImageName imageName, Throwable error) {

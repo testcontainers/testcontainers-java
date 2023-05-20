@@ -2,7 +2,9 @@ package org.testcontainers.images.retry;
 
 import com.github.dockerjava.api.exception.InternalServerErrorException;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.testcontainers.DockerRegistryContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -18,11 +20,29 @@ public class ImagePullRetryPolicyTest {
 
     private final DockerImageName imageName = registry.createImage();
 
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
+
     @Test
     public void shouldNotRetryWhenUsingFailFastPullRetryPolicy() {
         ImagePullRetryPolicy policy = PullRetryPolicy.failFast();
         policy.pullStarted();
         assertThat(policy.shouldRetry(imageName, new Exception())).isFalse();
+    }
+
+    @Test
+    public void shouldFailIfTheConfiguredDurationIsNegativeWhenUsingLimitedDurationPullRetryPolicy() {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("should not be negative");
+        PullRetryPolicy.limitedDuration(Duration.ofMinutes(-1));
+    }
+
+    @Test
+    public void shouldFailIfPullStartedIsNotBeingCalledBeforeShouldRetryWhenUsingLimitedDurationPullRetryPolicy() {
+        thrown.expect(IllegalStateException.class);
+        thrown.expectMessage("Please, check that pullStarted has been called.");
+        ImagePullRetryPolicy policy = PullRetryPolicy.limitedDuration(Duration.ofMinutes(1));
+        policy.shouldRetry(imageName, new Exception());
     }
 
     @Test
@@ -39,11 +59,18 @@ public class ImagePullRetryPolicyTest {
     }
 
     @Test
+    public void shouldFailIfTheConfiguredNumberOfAttemptsIsNegativeWhenUsingNoOfAttemptsPullRetryPolicy() {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("should not be negative");
+        PullRetryPolicy.noOfAttempts(-1);
+    }
+
+    @Test
     public void shouldRetryTheConfiguredNumberOfAttemptsWhenUsingNoOfAttemptsPullRetryPolicy() {
-        int allowedNoOfAttempts = 4;
-        ImagePullRetryPolicy policy = PullRetryPolicy.noOfAttempts(allowedNoOfAttempts);
+        int anyNumberOfOfAttemptsGreaterThanOrEqualToZero = 4;
+        ImagePullRetryPolicy policy = PullRetryPolicy.noOfAttempts(anyNumberOfOfAttemptsGreaterThanOrEqualToZero);
         policy.pullStarted();
-        while (allowedNoOfAttempts-- > 0) {
+        while (anyNumberOfOfAttemptsGreaterThanOrEqualToZero-- > 0) {
             assertThat(policy.shouldRetry(imageName, new Exception())).isTrue();
         }
 
@@ -65,8 +92,8 @@ public class ImagePullRetryPolicyTest {
         policy.pullStarted();
         assertThat(policy.shouldRetry(imageName, new InterruptedException())).isTrue();
         assertThat(
-            policy.shouldRetry(imageName,
-                new InternalServerErrorException("The message is not important for the test"))
-        ).isTrue();
+            policy.shouldRetry(imageName, new InternalServerErrorException("The message is not important for the test"))
+        )
+            .isTrue();
     }
 }
