@@ -14,8 +14,6 @@ import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.testcontainers.Testcontainers;
 import org.testcontainers.containers.BrowserWebDriverContainer;
 import org.testcontainers.containers.BrowserWebDriverContainer.VncRecordingMode;
@@ -29,7 +27,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Simple example of plain Selenium usage.
  */
-@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = DemoApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ContextConfiguration(initializers = SeleniumContainerTest.Initializer.class)
 public class SeleniumContainerTest {
