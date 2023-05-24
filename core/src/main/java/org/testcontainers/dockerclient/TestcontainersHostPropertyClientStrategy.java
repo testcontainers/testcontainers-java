@@ -7,7 +7,7 @@ import org.testcontainers.utility.TestcontainersConfiguration;
 import java.util.Optional;
 
 /**
- * Use <code>docker.host</code> in <code>~/.testcontainers.properties</code>
+ * Use <code>tc.host</code> in <code>~/.testcontainers.properties</code>
  * to try and locate a docker environment.
  *
  * @deprecated this class is used by the SPI and should not be used directly
