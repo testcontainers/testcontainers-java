@@ -174,7 +174,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     }
 
     @Override
-    protected void containerIsStarting(InspectContainerResponse containerInfo) {
+    protected void containerIsStarting(InspectContainerResponse containerInfo) throws IOException, InterruptedException {
         super.containerIsStarting(containerInfo);
 
         String command = "#!/bin/bash\n";
@@ -195,7 +195,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         copyFileToContainer(Transferable.of(command, 0777), STARTER_SCRIPT);
     }
 
-    protected String commandKraft() {
+    protected String commandKraft() throws IOException, InterruptedException {
         String command = "sed -i '/KAFKA_ZOOKEEPER_CONNECT/d' /etc/confluent/docker/configure\n";
         try {
             if (clusterId == null) {
@@ -203,6 +203,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
             }
         } catch (IOException | InterruptedException e) {
             logger().error("Failed to execute `kafka-storage random-uuid`. Exception message: {}", e.getMessage());
+            throw e;
         }
         command +=
             "echo 'kafka-storage format --ignore-formatted -t \"" +

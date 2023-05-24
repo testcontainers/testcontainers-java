@@ -22,6 +22,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.hash.Hashing;
+import java.io.IOException;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
@@ -690,11 +691,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     protected void containerIsCreated(String containerId) {}
 
     @SuppressWarnings({ "EmptyMethod", "UnusedParameters" })
-    protected void containerIsStarting(InspectContainerResponse containerInfo) {}
+    protected void containerIsStarting(InspectContainerResponse containerInfo) throws IOException, InterruptedException {}
 
     @SuppressWarnings({ "EmptyMethod", "UnusedParameters" })
     @UnstableAPI
-    protected void containerIsStarting(InspectContainerResponse containerInfo, boolean reused) {
+    protected void containerIsStarting(InspectContainerResponse containerInfo, boolean reused) throws IOException, InterruptedException {
         containerIsStarting(containerInfo);
     }
 

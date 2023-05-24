@@ -1,6 +1,7 @@
 package org.testcontainers.redpanda;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import java.io.IOException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.builder.Transferable;
@@ -50,7 +51,7 @@ public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
     }
 
     @Override
-    protected void containerIsStarting(InspectContainerResponse containerInfo) {
+    protected void containerIsStarting(InspectContainerResponse containerInfo) throws IOException, InterruptedException {
         super.containerIsStarting(containerInfo);
 
         String command = "#!/bin/bash\n";
