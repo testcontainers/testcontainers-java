@@ -408,9 +408,14 @@ public abstract class DockerClientProviderStrategy {
 
     @VisibleForTesting
     static String resolveDockerHostIpAddress(DockerClient client, URI dockerHost) {
-        String hostOverride = System.getenv("TESTCONTAINERS_HOST_OVERRIDE");
-        if (!StringUtils.isBlank(hostOverride)) {
-            return hostOverride;
+        String allowUserOverrides = TestcontainersConfiguration
+            .getInstance()
+            .getEnvVarOrUserProperty("allowUserOverrides", "false");
+        if (Boolean.parseBoolean(allowUserOverrides)) {
+            String hostOverride = System.getenv("TESTCONTAINERS_HOST_OVERRIDE");
+            if (!StringUtils.isBlank(hostOverride)) {
+                return hostOverride;
+            }
         }
 
         switch (dockerHost.getScheme()) {
