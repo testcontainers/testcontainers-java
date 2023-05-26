@@ -76,7 +76,7 @@ public class LocalstackContainerTest {
                 .standard()
                 .withEndpointConfiguration(
                     new AwsClientBuilder.EndpointConfiguration(
-                        localstack.getEndpoint().toString(),
+                        localstack.getEndpointOverride(Service.S3).toString(),
                         localstack.getRegion()
                     )
                 )
@@ -115,7 +115,7 @@ public class LocalstackContainerTest {
             // with_aws_sdk_v2 {
             S3Client s3 = S3Client
                 .builder()
-                .endpointOverride(localstack.getEndpoint())
+                .endpointOverride(localstack.getEndpointOverride(Service.S3))
                 .credentialsProvider(
                     StaticCredentialsProvider.create(
                         AwsBasicCredentials.create(localstack.getAccessKey(), localstack.getSecretKey())
