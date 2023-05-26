@@ -25,7 +25,7 @@ public final class TestcontainersHostPropertyClientStrategy extends DockerClient
 
     public TestcontainersHostPropertyClientStrategy(DefaultDockerClientConfig.Builder configBuilder) {
         Optional<String> tcHost = Optional.ofNullable(
-            TestcontainersConfiguration.getInstance().getEnvVarOrUserProperty("tc.host", null)
+            TestcontainersConfiguration.getInstance().getUserProperty("tc.host", null)
         );
 
         tcHost.ifPresent(configBuilder::withDockerHost);

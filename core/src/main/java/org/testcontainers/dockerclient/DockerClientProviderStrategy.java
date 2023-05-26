@@ -57,6 +57,14 @@ import javax.net.SocketFactory;
 
 /**
  * Mechanism to find a viable Docker client configuration according to the host system environment.
+ * <p>
+ * The order is:
+ * <ul>
+ *     <li>{@code TestcontainersHostPropertyClientProviderStrategy}</li>
+ *     <li>{@code EnvironmentAndSystemPropertyClientProviderStrategy}</li>
+ *     <li>Persistable {@code DockerClientProviderStrategy} in <code>~/.testcontainers.properties</code></li>
+ *     <li>Other strategies order by priority</li>
+ * </ul>
  */
 @Slf4j
 public abstract class DockerClientProviderStrategy {
@@ -87,6 +95,10 @@ public abstract class DockerClientProviderStrategy {
     }
 
     protected boolean isPersistable() {
+        return true;
+    }
+
+    public boolean allowUserOverrides() {
         return true;
     }
 
@@ -218,6 +230,7 @@ public abstract class DockerClientProviderStrategy {
         List<DockerClientProviderStrategy> allStrategies = new ArrayList<>();
 
         // The environment has the highest priority
+        allStrategies.add(new TestcontainersHostPropertyClientProviderStrategy());
         allStrategies.add(new EnvironmentAndSystemPropertyClientProviderStrategy());
 
         // Next strategy to try out is the one configured using the Testcontainers configuration mechanism
@@ -401,17 +414,19 @@ public abstract class DockerClientProviderStrategy {
 
     public synchronized String getDockerHostIpAddress() {
         if (dockerHostIpAddress == null) {
-            dockerHostIpAddress = resolveDockerHostIpAddress(getDockerClient(), getTransportConfig().getDockerHost());
+            dockerHostIpAddress =
+                resolveDockerHostIpAddress(
+                    getDockerClient(),
+                    getTransportConfig().getDockerHost(),
+                    allowUserOverrides()
+                );
         }
         return dockerHostIpAddress;
     }
 
     @VisibleForTesting
-    static String resolveDockerHostIpAddress(DockerClient client, URI dockerHost) {
-        String allowUserOverrides = TestcontainersConfiguration
-            .getInstance()
-            .getEnvVarOrUserProperty("allowUserOverrides", "false");
-        if (Boolean.parseBoolean(allowUserOverrides)) {
+    static String resolveDockerHostIpAddress(DockerClient client, URI dockerHost, boolean allowUserOverrides) {
+        if (allowUserOverrides) {
             String hostOverride = System.getenv("TESTCONTAINERS_HOST_OVERRIDE");
             if (!StringUtils.isBlank(hostOverride)) {
                 return hostOverride;

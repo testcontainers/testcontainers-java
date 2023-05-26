@@ -279,18 +279,16 @@ public class TestcontainersConfiguration {
     }
 
     /**
-     * Gets a configured setting from an environment variable.
-     * <p>
-     * Note that when searching environment variables, the prefix `TESTCONTAINERS_` will usually be applied to the
-     * property name, which will be converted to upper-case with underscore separators. This prefix will not be added
-     * if the property name begins `docker.`.
+     * Gets a configured setting from <code>~/.testcontainers.properties</code>.
      *
      * @param propertyName name of configuration file property (dot-separated lower case)
      * @return the found value, or null if not set
      */
     @Contract("_, !null -> !null")
     public String getUserProperty(@NotNull final String propertyName, @Nullable final String defaultValue) {
-        return getConfigurable(propertyName, defaultValue);
+        return this.userProperties.get(propertyName) != null
+            ? (String) this.userProperties.get(propertyName)
+            : defaultValue;
     }
 
     /**

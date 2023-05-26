@@ -158,10 +158,7 @@ public class DockerClientFactory {
 
     @UnstableAPI
     public String getRemoteDockerUnixSocketPath() {
-        String allowUserOverrides = TestcontainersConfiguration
-            .getInstance()
-            .getEnvVarOrUserProperty("allowUserOverrides", "false");
-        if (Boolean.parseBoolean(allowUserOverrides)) {
+        if (this.strategy.allowUserOverrides()) {
             String dockerSocketOverride = System.getenv("TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE");
             if (!StringUtils.isBlank(dockerSocketOverride)) {
                 return dockerSocketOverride;
