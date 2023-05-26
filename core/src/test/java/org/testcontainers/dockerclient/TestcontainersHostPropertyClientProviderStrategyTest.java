@@ -17,7 +17,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 
 @RunWith(MockitoJUnitRunner.class)
-public class TestcontainersHostPropertyClientStrategyTest {
+public class TestcontainersHostPropertyClientProviderStrategyTest {
 
     @Rule
     public MockTestcontainersConfigurationRule mockConfig = new MockTestcontainersConfigurationRule();
@@ -39,9 +39,9 @@ public class TestcontainersHostPropertyClientStrategyTest {
         Mockito
             .doReturn("tcp://127.0.0.1:9000")
             .when(TestcontainersConfiguration.getInstance())
-            .getEnvVarOrUserProperty(eq("tc.host"), isNull());
+            .getUserProperty(eq("tc.host"), isNull());
 
-        TestcontainersHostPropertyClientStrategy strategy = new TestcontainersHostPropertyClientStrategy();
+        TestcontainersHostPropertyClientProviderStrategy strategy = new TestcontainersHostPropertyClientProviderStrategy();
 
         TransportConfig transportConfig = strategy.getTransportConfig();
         assertThat(transportConfig.getDockerHost().toString()).isEqualTo("tcp://127.0.0.1:9000");
@@ -50,12 +50,9 @@ public class TestcontainersHostPropertyClientStrategyTest {
 
     @Test
     public void tcHostPropertyIsNotProvided() {
-        Mockito
-            .doReturn(null)
-            .when(TestcontainersConfiguration.getInstance())
-            .getEnvVarOrUserProperty(eq("tc.host"), isNull());
+        Mockito.doReturn(null).when(TestcontainersConfiguration.getInstance()).getUserProperty(eq("tc.host"), isNull());
 
-        TestcontainersHostPropertyClientStrategy strategy = new TestcontainersHostPropertyClientStrategy();
+        TestcontainersHostPropertyClientProviderStrategy strategy = new TestcontainersHostPropertyClientProviderStrategy();
 
         TransportConfig transportConfig = strategy.getTransportConfig();
         assertThat(transportConfig.getDockerHost()).isEqualTo(this.defaultDockerHost);

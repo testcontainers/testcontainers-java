@@ -13,17 +13,17 @@ import java.util.Optional;
  * @deprecated this class is used by the SPI and should not be used directly
  */
 @Deprecated
-public final class TestcontainersHostPropertyClientStrategy extends DockerClientProviderStrategy {
+public final class TestcontainersHostPropertyClientProviderStrategy extends DockerClientProviderStrategy {
 
     public static final int PRIORITY = EnvironmentAndSystemPropertyClientProviderStrategy.PRIORITY - 10;
 
     private final DockerClientConfig dockerClientConfig;
 
-    public TestcontainersHostPropertyClientStrategy() {
+    public TestcontainersHostPropertyClientProviderStrategy() {
         this(DefaultDockerClientConfig.createDefaultConfigBuilder());
     }
 
-    public TestcontainersHostPropertyClientStrategy(DefaultDockerClientConfig.Builder configBuilder) {
+    public TestcontainersHostPropertyClientProviderStrategy(DefaultDockerClientConfig.Builder configBuilder) {
         Optional<String> tcHost = Optional.ofNullable(
             TestcontainersConfiguration.getInstance().getUserProperty("tc.host", null)
         );
@@ -34,7 +34,7 @@ public final class TestcontainersHostPropertyClientStrategy extends DockerClient
 
     @Override
     public String getDescription() {
-        return "Testcontainers Host Strategy with tc.host=" + this.dockerClientConfig.getDockerHost();
+        return "Testcontainers Host with tc.host=" + this.dockerClientConfig.getDockerHost();
     }
 
     @Override
@@ -53,6 +53,11 @@ public final class TestcontainersHostPropertyClientStrategy extends DockerClient
 
     @Override
     protected boolean isPersistable() {
+        return false;
+    }
+
+    @Override
+    public boolean allowUserOverrides() {
         return false;
     }
 }
