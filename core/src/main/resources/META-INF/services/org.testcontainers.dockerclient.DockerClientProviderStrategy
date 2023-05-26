@@ -1,3 +1,4 @@
+org.testcontainers.dockerclient.TestcontainersHostPropertyClientProviderStrategy
 org.testcontainers.dockerclient.EnvironmentAndSystemPropertyClientProviderStrategy
 org.testcontainers.dockerclient.UnixSocketClientProviderStrategy
 org.testcontainers.dockerclient.DockerMachineClientProviderStrategy
