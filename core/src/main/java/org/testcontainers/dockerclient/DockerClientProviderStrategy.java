@@ -229,7 +229,7 @@ public abstract class DockerClientProviderStrategy {
         List<String> configurationFailures = new ArrayList<>();
         List<DockerClientProviderStrategy> allStrategies = new ArrayList<>();
 
-        // The environment has the highest priority
+        // Manually enforce priority independent of priority property of strategy
         allStrategies.add(new TestcontainersHostPropertyClientProviderStrategy());
         allStrategies.add(new EnvironmentAndSystemPropertyClientProviderStrategy());
 
