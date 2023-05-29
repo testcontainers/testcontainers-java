@@ -102,6 +102,10 @@ public abstract class DockerClientProviderStrategy {
         return true;
     }
 
+    public String getRemoteDockerUnixSocketPath() {
+        return null;
+    }
+
     /**
      * @return highest to lowest priority value
      */
