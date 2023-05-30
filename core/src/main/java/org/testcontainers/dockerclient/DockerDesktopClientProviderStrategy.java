@@ -19,7 +19,7 @@ import java.util.Optional;
  * </ul>
  */
 @Slf4j
-public class DesktopRootlessClientProviderStrategy extends DockerClientProviderStrategy {
+public class DockerDesktopClientProviderStrategy extends DockerClientProviderStrategy {
 
     public static final int PRIORITY = UnixSocketClientProviderStrategy.PRIORITY - 1;
 
