@@ -365,13 +365,13 @@ public class TestcontainersConfiguration {
         try (InputStream inputStream = url.openStream()) {
             properties.load(inputStream);
         } catch (FileNotFoundException e) {
-            log.warn(
+            log.debug(
                 "Attempted to read Testcontainers configuration file at {} but the file was not found. Exception message: {}",
                 url,
                 ExceptionUtils.getRootCauseMessage(e)
             );
         } catch (IOException e) {
-            log.warn(
+            log.debug(
                 "Attempted to read Testcontainers configuration file at {} but could it not be loaded. Exception message: {}",
                 url,
                 ExceptionUtils.getRootCauseMessage(e)
