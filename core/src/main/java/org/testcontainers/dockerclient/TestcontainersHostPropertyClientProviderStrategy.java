@@ -23,7 +23,7 @@ public final class TestcontainersHostPropertyClientProviderStrategy extends Dock
         this(DefaultDockerClientConfig.createDefaultConfigBuilder());
     }
 
-    public TestcontainersHostPropertyClientProviderStrategy(DefaultDockerClientConfig.Builder configBuilder) {
+    TestcontainersHostPropertyClientProviderStrategy(DefaultDockerClientConfig.Builder configBuilder) {
         Optional<String> tcHost = Optional.ofNullable(
             TestcontainersConfiguration.getInstance().getUserProperty("tc.host", null)
         );
