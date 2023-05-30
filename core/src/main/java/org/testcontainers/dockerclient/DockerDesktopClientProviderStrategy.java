@@ -17,8 +17,11 @@ import java.util.Optional;
  *     <li>Linux: ~/.docker/desktop/docker.sock</li>
  *     <li>MacOS: ~/.docker/run/docker.sock</li>
  * </ul>
+ *
+ * @deprecated this class is used by the SPI and should not be used directly
  */
 @Slf4j
+@Deprecated
 public class DockerDesktopClientProviderStrategy extends DockerClientProviderStrategy {
 
     public static final int PRIORITY = UnixSocketClientProviderStrategy.PRIORITY - 1;
