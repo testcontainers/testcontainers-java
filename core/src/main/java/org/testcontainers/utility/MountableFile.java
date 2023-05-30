@@ -23,12 +23,15 @@ import java.io.UncheckedIOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.stream.Stream;
@@ -123,6 +126,77 @@ public class MountableFile implements Transferable {
      */
     public static MountableFile forHostPath(final Path path, Integer mode) {
         return new MountableFile(path.toAbsolutePath().toString(), mode);
+    }
+
+    /**
+     * Obtains a {@link MountableFile} that contains the given bytes.
+     *
+     * @param content the content of the {@link MountableFile}
+     * @param mode octal value of posix file mode (000..777)
+     * @return a {@link MountableFile} that may be used to obtain a mountable path
+     */
+    public static MountableFile forByteArray(final byte @NotNull [] content, final Integer mode) {
+        return new MountableFile(writeBytesToTempLocation(content).toAbsolutePath().toString(), mode);
+    }
+
+    /**
+     * Obtains a {@link MountableFile} that contains the given bytes.
+     *
+     * @param content the content of the {@link MountableFile}
+     * @return a {@link MountableFile} that may be used to obtain a mountable path
+     */
+    public static MountableFile forByteArray(final byte @NotNull [] content) {
+        return forByteArray(content, null);
+    }
+
+    /**
+     * Obtains a {@link MountableFile} that contains the given {@link String}.
+     *
+     * @param content the content of the {@link MountableFile}
+     * @param mode octal value of posix file mode (000..777)
+     * @return a {@link MountableFile} that may be used to obtain a mountable path
+     */
+    public static MountableFile forString(
+        @NotNull final String content,
+        final Charset charset,
+        final Integer mode) {
+        return forByteArray(content.getBytes(charset), mode);
+    }
+
+    /**
+     * Obtains a {@link MountableFile} that contains the given {@link String}.
+     *
+     * @param content the content of the {@link MountableFile}
+     * @return a {@link MountableFile} that may be used to obtain a mountable path
+     */
+    public static MountableFile forString(
+        @NotNull final String content,
+        @NotNull final Charset charset) {
+        return forString(content, charset, null);
+    }
+
+    /**
+     * Obtains a {@link MountableFile} that contains the given UTF-8 {@link String}.
+     *
+     * @param content the content of the {@link MountableFile}
+     * @param mode octal value of posix file mode (000..777)
+     * @return a {@link MountableFile} that may be used to obtain a mountable path
+     */
+    public static MountableFile forUtf8String(
+        @NotNull final String content,
+        final Integer mode) {
+        return forByteArray(content.getBytes(StandardCharsets.UTF_8), mode);
+    }
+
+    /**
+     * Obtains a {@link MountableFile} that contains the given UTF-8 {@link String}.
+     *
+     * @param content the content of the {@link MountableFile}
+     * @return a {@link MountableFile} that may be used to obtain a mountable path
+     */
+    public static MountableFile forUtf8String(
+        @NotNull final String content) {
+        return forUtf8String(content, null);
     }
 
     @NotNull
@@ -270,7 +344,30 @@ public class MountableFile implements Transferable {
         }
     }
 
-    private File createTempDirectory() {
+    /**
+     * Writes the given bytes to a temporary file.
+     *
+     * @param bytes the bytes to write to the temporary file.
+     * @return the path of the temporary file/directory
+     */
+    private static @NotNull Path writeBytesToTempLocation(final byte @NotNull [] bytes) {
+        final File tmpLocation = createTempDirectory();
+        //noinspection ResultOfMethodCallIgnored
+        tmpLocation.delete();
+        tmpLocation.mkdirs();
+        final Path tempFile = tmpLocation.toPath().resolve(UUID.randomUUID().toString());
+        try {
+            Files.write(tempFile, bytes);
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to write bytes to temporary file.", e);
+        }
+
+        // Mark temporary files/dirs for deletion at JVM shutdown
+        deleteOnExit(tmpLocation.toPath());
+        return tempFile;
+    }
+
+    private static File createTempDirectory() {
         try {
             if (SystemUtils.IS_OS_MAC) {
                 return Files.createTempDirectory(Paths.get(OS_MAC_TMP_DIR), TESTCONTAINERS_TMP_DIR_PREFIX).toFile();
@@ -311,7 +408,7 @@ public class MountableFile implements Transferable {
         }
     }
 
-    private void deleteOnExit(final Path path) {
+    private static void deleteOnExit(final Path path) {
         Runtime
             .getRuntime()
             .addShutdownHook(

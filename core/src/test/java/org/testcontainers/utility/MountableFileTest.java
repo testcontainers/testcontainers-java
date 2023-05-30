@@ -11,6 +11,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Consumer;
@@ -130,6 +131,37 @@ public class MountableFileTest {
             assertThat(entry.getName()).as("no entries should have a trailing slash").doesNotEndWith("/");
         }
     }
+
+    @Test
+    public void forByteArray() {
+        performChecks(MountableFile.forByteArray("FOOBAR".getBytes(StandardCharsets.UTF_8), TEST_FILE_MODE));
+    }
+
+    @Test
+    public void forByteArrayWithoutMode() {
+        performChecks(MountableFile.forByteArray("FOOBAR".getBytes(StandardCharsets.UTF_8)));
+    }
+
+    @Test
+    public void forString() {
+        performChecks(MountableFile.forString("FOOBAR", StandardCharsets.UTF_8, TEST_FILE_MODE));
+    }
+
+    @Test
+    public void forStringWithoutMode() {
+        performChecks(MountableFile.forString("FOOBAR", StandardCharsets.UTF_8));
+    }
+
+    @Test
+    public void forUtf8String() {
+        performChecks(MountableFile.forUtf8String("FOOBAR", TEST_FILE_MODE));
+    }
+
+    @Test
+    public void forUtf8StringWithoutMode() {
+        performChecks(MountableFile.forUtf8String("FOOBAR"));
+    }
+
 
     private TarArchiveInputStream intoTarArchive(Consumer<TarArchiveOutputStream> consumer) throws IOException {
         @Cleanup
