@@ -102,7 +102,7 @@ public abstract class DockerClientProviderStrategy {
         return true;
     }
 
-   /**
+    /**
    /* @return the path under which the Docker unix socket is reachable relative to the Docker daemon
     */
     public String getRemoteDockerUnixSocketPath() {
