@@ -103,6 +103,13 @@ public abstract class DockerClientProviderStrategy {
     }
 
     /**
+   /* @return the path under which the Docker unix socket is reachable relative to the Docker daemon
+    */
+    public String getRemoteDockerUnixSocketPath() {
+        return null;
+    }
+
+    /**
      * @return highest to lowest priority value
      */
     protected int getPriority() {
