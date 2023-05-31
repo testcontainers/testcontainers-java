@@ -41,7 +41,7 @@ public class DockerDesktopClientProviderStrategy extends DockerClientProviderStr
 
     @Override
     public String getDescription() {
-        return "Rootless Docker accessed via Unix socket (" + getSocketPath() + ")";
+        return "Docker accessed via Unix socket (" + getSocketPath() + ")";
     }
 
     @Override
