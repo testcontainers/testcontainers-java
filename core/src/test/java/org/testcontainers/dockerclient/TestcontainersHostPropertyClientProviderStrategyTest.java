@@ -1,7 +1,5 @@
 package org.testcontainers.dockerclient;
 
-import com.github.dockerjava.core.DefaultDockerClientConfig;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,16 +22,6 @@ public class TestcontainersHostPropertyClientProviderStrategyTest {
 
     private URI defaultDockerHost;
 
-    private com.github.dockerjava.core.SSLConfig defaultSSLConfig;
-
-    @Before
-    public void checkEnvironmentClear() {
-        // If docker-java picks up non-default settings from the environment, our test needs to know to expect those
-        DefaultDockerClientConfig defaultConfig = DefaultDockerClientConfig.createDefaultConfigBuilder().build();
-        this.defaultDockerHost = defaultConfig.getDockerHost();
-        this.defaultSSLConfig = defaultConfig.getSSLConfig();
-    }
-
     @Test
     public void tcHostPropertyIsProvided() {
         Mockito
@@ -43,9 +31,9 @@ public class TestcontainersHostPropertyClientProviderStrategyTest {
 
         TestcontainersHostPropertyClientProviderStrategy strategy = new TestcontainersHostPropertyClientProviderStrategy();
 
+        assertThat(strategy.isApplicable()).isTrue();
         TransportConfig transportConfig = strategy.getTransportConfig();
         assertThat(transportConfig.getDockerHost().toString()).isEqualTo("tcp://127.0.0.1:9000");
-        assertThat(transportConfig.getSslConfig()).isEqualTo(this.defaultSSLConfig);
     }
 
     @Test
@@ -54,8 +42,6 @@ public class TestcontainersHostPropertyClientProviderStrategyTest {
 
         TestcontainersHostPropertyClientProviderStrategy strategy = new TestcontainersHostPropertyClientProviderStrategy();
 
-        TransportConfig transportConfig = strategy.getTransportConfig();
-        assertThat(transportConfig.getDockerHost()).isEqualTo(this.defaultDockerHost);
-        assertThat(transportConfig.getSslConfig()).isEqualTo(this.defaultSSLConfig);
+        assertThat(strategy.isApplicable()).isFalse();
     }
 }

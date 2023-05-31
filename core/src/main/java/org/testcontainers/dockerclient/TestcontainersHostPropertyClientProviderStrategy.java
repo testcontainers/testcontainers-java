@@ -50,10 +50,7 @@ public final class TestcontainersHostPropertyClientProviderStrategy extends Dock
 
     @Override
     protected boolean isApplicable() {
-        return (
-            TestcontainersConfiguration.getInstance().getUserProperty("tc.host", null) != null &&
-            this.dockerClientConfig != null
-        );
+        return this.dockerClientConfig != null;
     }
 
     @Override
