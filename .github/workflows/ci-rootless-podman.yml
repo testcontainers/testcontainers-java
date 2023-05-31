@@ -2,7 +2,7 @@ name: CI-Podman-Rootless
 
 on:
   pull_request: {}
-  push: { branches: [ main ] }
+  push: { branches: [main] }
 
 permissions:
   contents: read
@@ -18,12 +18,10 @@ jobs:
       - name: Configure podman
         run: |
           mkdir -p $HOME/.config/containers
-          echo 'unqualified-search-registries = ["docker.io"]' > $HOME/.config/containers/registries.conf
-          echo ''                                             >> $HOME/.config/containers/registries.conf
-          echo '[[registry]]'                                 >> $HOME/.config/containers/registries.conf
-          echo 'prefix = "localhost"'                         >> $HOME/.config/containers/registries.conf
-          echo 'location = "localhost"'                       >> $HOME/.config/containers/registries.conf
-          echo 'insecure = true'                              >> $HOME/.config/containers/registries.conf
+          echo '[[registry]]'            > $HOME/.config/containers/registries.conf
+          echo 'prefix = "localhost"'   >> $HOME/.config/containers/registries.conf
+          echo 'location = "localhost"' >> $HOME/.config/containers/registries.conf
+          echo 'insecure = true'        >> $HOME/.config/containers/registries.conf
       - name: Install latest podman release
         # see https://podman.io/getting-started/installation#ubuntu
         run: |
