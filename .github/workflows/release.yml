@@ -16,6 +16,8 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.release.target_commitish }}
       - uses: actions/setup-java@v3
         with:
           java-version: '8'
