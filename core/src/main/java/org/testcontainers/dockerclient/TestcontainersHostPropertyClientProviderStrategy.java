@@ -17,7 +17,7 @@ public final class TestcontainersHostPropertyClientProviderStrategy extends Dock
 
     public static final int PRIORITY = EnvironmentAndSystemPropertyClientProviderStrategy.PRIORITY - 10;
 
-    private final DockerClientConfig dockerClientConfig;
+    private DockerClientConfig dockerClientConfig;
 
     public TestcontainersHostPropertyClientProviderStrategy() {
         this(DefaultDockerClientConfig.createDefaultConfigBuilder());
@@ -28,8 +28,10 @@ public final class TestcontainersHostPropertyClientProviderStrategy extends Dock
             TestcontainersConfiguration.getInstance().getUserProperty("tc.host", null)
         );
 
-        tcHost.ifPresent(configBuilder::withDockerHost);
-        this.dockerClientConfig = configBuilder.build();
+        if (tcHost.isPresent()) {
+            configBuilder.withDockerHost(tcHost.get());
+            this.dockerClientConfig = configBuilder.build();
+        }
     }
 
     @Override
@@ -44,6 +46,14 @@ public final class TestcontainersHostPropertyClientProviderStrategy extends Dock
             .dockerHost(dockerClientConfig.getDockerHost())
             .sslConfig(dockerClientConfig.getSSLConfig())
             .build();
+    }
+
+    @Override
+    protected boolean isApplicable() {
+        return (
+            TestcontainersConfiguration.getInstance().getUserProperty("tc.host", null) != null &&
+            this.dockerClientConfig != null
+        );
     }
 
     @Override
