@@ -18,6 +18,8 @@ updates:
         update-types: [ "version-update:semver-major" ]
       - dependency-name: "org.yaml:snakeyaml"
         update-types: [ "version-update:semver-major" ]
+      - dependency-name: "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
+        update-types: [ "version-update:semver-minor", "version-update:semver-patch" ]
   - package-ecosystem: "gradle"
     directory: "/"
     allow:
