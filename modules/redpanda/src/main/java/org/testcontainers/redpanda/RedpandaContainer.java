@@ -55,7 +55,7 @@ public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
 
         String command = "#!/bin/bash\n";
 
-        command += "/usr/bin/rpk redpanda start --mode dev-container --overprovisioned --smp 1 ";
+        command += "/usr/bin/rpk redpanda start --mode dev-container --smp 1 --memory 1G ";
         command += "--kafka-addr PLAINTEXT://0.0.0.0:29092,OUTSIDE://0.0.0.0:9092 ";
         command +=
             "--advertise-kafka-addr PLAINTEXT://127.0.0.1:29092,OUTSIDE://" + getHost() + ":" + getMappedPort(9092);

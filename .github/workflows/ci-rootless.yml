@@ -3,14 +3,24 @@ name: CI-Docker-Rootless
 on:
   pull_request:
     paths-ignore:
-      - 'docs/**'
+      - 'docs/**/*.css'
+      - 'docs/**/*.html'
+      - 'docs/**/*.ico'
+      - 'docs/**/*.md'
+      - 'docs/**/*.png'
+      - 'docs/**/*.svg'
       - 'mkdocs.yml'
       - 'README.md'
       - 'RELEASING.md'
   push:
     branches: [ main ]
     paths-ignore:
-      - 'docs/**'
+      - 'docs/**/*.css'
+      - 'docs/**/*.html'
+      - 'docs/**/*.ico'
+      - 'docs/**/*.md'
+      - 'docs/**/*.png'
+      - 'docs/**/*.svg'
       - 'mkdocs.yml'
       - 'README.md'
       - 'RELEASING.md'
