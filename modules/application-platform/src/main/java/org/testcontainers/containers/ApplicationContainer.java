@@ -79,9 +79,27 @@ public abstract class ApplicationContainer extends GenericContainer<ApplicationC
 
         // Copy applications
         for(MountableFile archive : archives) {
-            //FIXME folder-like containerPath in copyFileToContainer is deprecated
-            withCopyFileToContainer(archive, getApplicationInstallDirectory());
+            withCopyFileToContainer(archive, getApplicationInstallDirectory() + extractApplicationName(archive));
         }
+    }
+
+    @Override
+    protected void containerIsCreated(String containerId) {
+        if( Objects.isNull(tempDirectory) ) {
+            return;
+        }
+
+        try {
+            //Delete files in temp directory
+            for(String file : tempDirectory.toFile().list()) {
+                Files.deleteIfExists(Paths.get(tempDirectory.toString(), file));
+            }
+            //Delete temp directory
+            Files.deleteIfExists(tempDirectory);
+        } catch (IOException e) {
+            logger().info("Unable to delete temporary directory " + tempDirectory.toString(), e);
+        }
+
     }
 
     @Override
@@ -132,10 +150,6 @@ public abstract class ApplicationContainer extends GenericContainer<ApplicationC
      * @return self
      */
     public ApplicationContainer withHttpPort(int httpPort) {
-        if( Objects.nonNull(this.httpPort) ) {
-            throw new IllegalStateException("Only one application HTTP port can be configured.");
-        }
-
         this.httpPort = httpPort;
         super.setExposedPorts(appendPort(getExposedPorts(), this.httpPort));
 
@@ -274,6 +288,14 @@ public abstract class ApplicationContainer extends GenericContainer<ApplicationC
         }
 
         return tempDirectory;
+    }
+
+    private static String extractApplicationName(MountableFile file) throws IllegalArgumentException {
+        String path = file.getFilesystemPath();
+        if( path.matches(".*\\.jar|.*\\.war|.*\\.ear") ) {
+            return path.substring(path.lastIndexOf("/"));
+        }
+        throw new IllegalArgumentException("File did not contain an application archive");
     }
 
     /**

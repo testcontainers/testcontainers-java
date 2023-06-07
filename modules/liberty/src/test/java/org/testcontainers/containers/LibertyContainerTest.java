@@ -8,11 +8,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.utility.MountableFile;
-
-import java.time.Duration;
-import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -21,17 +17,8 @@ import static io.restassured.RestAssured.given;
 public class LibertyContainerTest {
 
     private static ApplicationContainer testContainer = new LibertyContainer()
-        .withServerConfiguration(MountableFile.forClasspathResource("liberty/config/server.xml"))
         .withApplicationArchvies(createDeployment())
-        .withHttpPort(LibertyContainer.DEFAULT_HTTP_PORT)
-        .withAppContextRoot("test/app/service/")
-        .withLogConsumer(new Consumer<OutputFrame>() {
-            @Override
-            public void accept(OutputFrame outputFrame) {
-                System.out.println("[liberty]" + outputFrame.getUtf8String());
-            }
-        })
-        ;
+        .withAppContextRoot("test/app/service/");
 
     private static Archive<?> createDeployment() {
         return ShrinkWrap.create(WebArchive.class, "test.war")

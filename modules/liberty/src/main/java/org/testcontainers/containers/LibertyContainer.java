@@ -34,7 +34,8 @@ public class LibertyContainer extends ApplicationContainer {
     private static final String APPLICATION_DROPIN_DIR = "/config/dropins/";
 
     // Container fields
-    private MountableFile serverConfiguration;
+    @NonNull
+    private MountableFile serverConfiguration = MountableFile.forClasspathResource("default/config/defaultServer.xml");
 
     // Constructors
 
@@ -44,11 +45,13 @@ public class LibertyContainer extends ApplicationContainer {
 
     public LibertyContainer(@NonNull Future<String> image) {
         super(image);
+        preconfigure();
     }
 
     public LibertyContainer(DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        preconfigure();
     }
 
     // Overrides
@@ -57,9 +60,10 @@ public class LibertyContainer extends ApplicationContainer {
     public void configure() {
         super.configure();
 
-        //Copy server configuration
+        // Copy server configuration
         Objects.requireNonNull(serverConfiguration);
         withCopyFileToContainer(serverConfiguration, SERVER_CONFIG_DIR + "server.xml");
+
     }
 
     @Override
@@ -74,6 +78,19 @@ public class LibertyContainer extends ApplicationContainer {
 
     // Configuration
 
+    /**
+     * Setup default configurations that can be overridden by users
+     */
+    private void preconfigure() {
+        withHttpPort(DEFAULT_HTTP_PORT);
+    }
+
+    /**
+     * The server configuration file that will be copied to the Liberty container
+     *
+     * @param serverConfig - server.xml
+     * @return self
+     */
     public LibertyContainer withServerConfiguration(@NonNull MountableFile serverConfig) {
         this.serverConfiguration = serverConfig;
         return this;
