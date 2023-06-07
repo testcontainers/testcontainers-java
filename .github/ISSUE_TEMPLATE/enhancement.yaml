@@ -14,6 +14,7 @@ body:
       description: For which Testcontainers module does the enhancement proposal apply?
       options:
         - Core
+        - Application-Platform
         - Azure
         - Cassandra
         - Clickhouse
@@ -29,6 +30,7 @@ body:
         - InfluxDB
         - K3S
         - Kafka
+        - Liberty
         - LocalStack
         - MariaDB
         - MockServer

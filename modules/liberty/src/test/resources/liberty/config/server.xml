@@ -1,0 +1,5 @@
+<server>
+    <featureManager>
+        <feature>webProfile-10.0</feature>
+    </featureManager>
+</server>

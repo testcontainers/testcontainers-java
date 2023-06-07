@@ -32,6 +32,11 @@ updates:
 
 # Explicit entry for each module
   - package-ecosystem: "gradle"
+    directory: "/modules/application-platform"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
     directory: "/modules/azure"
     schedule:
       interval: "monthly"
@@ -138,6 +143,11 @@ updates:
         update-types: [ "version-update:semver-minor", "version-update:semver-patch" ]
   - package-ecosystem: "gradle"
     directory: "/modules/kafka"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
+    directory: "/modules/liberty"
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
