@@ -46,15 +46,15 @@ public final class EnvironmentAndSystemPropertyClientProviderStrategy extends Do
                 applicable = dockerHost.isPresent();
                 getSetting("docker.tls.verify").ifPresent(configBuilder::withDockerTlsVerify);
                 getSetting("docker.cert.path").ifPresent(configBuilder::withDockerCertPath);
+                dockerClientConfig = configBuilder.build();
                 break;
             case "autoIgnoringUserProperties":
-                applicable = configBuilder.isDockerHostSetExplicitly();
+                dockerClientConfig = configBuilder.build();
+                applicable = dockerClientConfig.getDockerHost() != null;
                 break;
             default:
                 throw new InvalidConfigurationException("Invalid value for dockerconfig.source: " + dockerConfigSource);
         }
-
-        dockerClientConfig = configBuilder.build();
     }
 
     private Optional<String> getSetting(final String name) {
