@@ -1,4 +1,4 @@
-description = "Testcontainers :: Application Platform"
+description = "Testcontainers :: Application Server Common"
 
 dependencies {
     api project(':testcontainers')

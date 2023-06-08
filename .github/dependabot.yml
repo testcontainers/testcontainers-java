@@ -32,7 +32,7 @@ updates:
 
 # Explicit entry for each module
   - package-ecosystem: "gradle"
-    directory: "/modules/application-platform"
+    directory: "/modules/application-server-commons"
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10

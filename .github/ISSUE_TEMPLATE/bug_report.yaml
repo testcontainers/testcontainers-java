@@ -14,7 +14,6 @@ body:
       description: Which Testcontainers module are you using?
       options:
         - Core
-        - Application-Platform
         - Azure
         - Cassandra
         - Clickhouse

@@ -3,22 +3,22 @@ package org.testcontainers.containers;
 import lombok.NonNull;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
+import org.testcontainers.applicationserver.ApplicationServerContainer;
 
 import java.time.Duration;
 import java.util.Objects;
-import java.util.concurrent.Future;
 
 /**
  * Represents an Open Liberty or WebSphere Liberty container
  */
-public class LibertyContainer extends ApplicationContainer {
+public class LibertyServerContainer extends ApplicationServerContainer {
 
     public static final String NAME = "Liberty";
 
     // About the image
-    static final String IMAGE = "open-liberty";
+    public static final String IMAGE = "open-liberty";
 
-    static final String DEFAULT_TAG = "23.0.0.3-full-java17-openj9";
+    public static final String DEFAULT_TAG = "23.0.0.3-full-java17-openj9";
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse(IMAGE);
 
@@ -38,20 +38,22 @@ public class LibertyContainer extends ApplicationContainer {
     private MountableFile serverConfiguration = MountableFile.forClasspathResource("default/config/defaultServer.xml");
 
     // Constructors
-
-    public LibertyContainer() {
-        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
+    public LibertyServerContainer(String imageName) {
+        this(DockerImageName.parse(imageName));
     }
 
-    public LibertyContainer(@NonNull Future<String> image) {
-        super(image);
-        preconfigure();
-    }
-
-    public LibertyContainer(DockerImageName dockerImageName) {
+    public LibertyServerContainer(DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
         preconfigure();
+    }
+
+    /**
+     * Configure defaults that can be overridden by developer prior to start()
+     */
+    private void preconfigure() {
+        withHttpPort(DEFAULT_HTTP_PORT);
+        withHttpWaitTimeout(DEFAULT_WAIT_TIMEOUT);
     }
 
     // Overrides
@@ -60,15 +62,9 @@ public class LibertyContainer extends ApplicationContainer {
     public void configure() {
         super.configure();
 
-        // Copy server configuration
+        // Copy default server configuration
         Objects.requireNonNull(serverConfiguration);
         withCopyFileToContainer(serverConfiguration, SERVER_CONFIG_DIR + "server.xml");
-
-    }
-
-    @Override
-    protected Duration getDefaultWaitTimeout() {
-        return DEFAULT_WAIT_TIMEOUT;
     }
 
     @Override
@@ -79,19 +75,13 @@ public class LibertyContainer extends ApplicationContainer {
     // Configuration
 
     /**
-     * Setup default configurations that can be overridden by users
-     */
-    private void preconfigure() {
-        withHttpPort(DEFAULT_HTTP_PORT);
-    }
-
-    /**
      * The server configuration file that will be copied to the Liberty container
      *
      * @param serverConfig - server.xml
      * @return self
      */
-    public LibertyContainer withServerConfiguration(@NonNull MountableFile serverConfig) {
+    public LibertyServerContainer withServerConfiguration(@NonNull MountableFile serverConfig) {
+        System.out.println("KJA1017 serverConfig called: " + serverConfig.getFilesystemPath());
         this.serverConfiguration = serverConfig;
         return this;
     }

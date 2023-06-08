@@ -14,7 +14,6 @@ body:
       description: Is this feature related to any of the existing modules?
       options:
         - Core
-        - Application-Platform
         - Azure
         - Cassandra
         - Clickhouse

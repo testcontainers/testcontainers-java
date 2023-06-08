@@ -1,4 +1,4 @@
-package org.testcontainers.containers;
+package org.testcontainers.applicationserver;
 
 import lombok.NonNull;
 import org.junit.Test;
@@ -10,28 +10,28 @@ import java.util.concurrent.Future;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ApplicationContainerTest {
+public class ApplicationServerContainerTest {
 
-    private static ApplicationContainer testContainer;
+    private static ApplicationServerContainer testContainer;
 
     @Test
     public void testNormalizePath() {
         String expected, actual;
 
         expected = "/path/to/application";
-        actual = ApplicationContainer.normalizePath("path", "to", "application");
+        actual = ApplicationServerContainer.normalizePath("path", "to", "application");
         assertThat(actual).isEqualTo(expected);
 
-        actual = ApplicationContainer.normalizePath("path/to", "application");
+        actual = ApplicationServerContainer.normalizePath("path/to", "application");
         assertThat(actual).isEqualTo(expected);
 
-        actual = ApplicationContainer.normalizePath("path/to/application");
+        actual = ApplicationServerContainer.normalizePath("path/to/application");
         assertThat(actual).isEqualTo(expected);
 
-        actual = ApplicationContainer.normalizePath("path/", "to/", "application/");
+        actual = ApplicationServerContainer.normalizePath("path/", "to/", "application/");
         assertThat(actual).isEqualTo(expected);
 
-        actual = ApplicationContainer.normalizePath("path/", "/to/", "/application/");
+        actual = ApplicationServerContainer.normalizePath("path/", "/to/", "/application/");
         assertThat(actual).isEqualTo(expected);
     }
 
@@ -42,7 +42,7 @@ public class ApplicationContainerTest {
         expected = List.of(8080, 9080, 9443);
 
         // Test expose ports, then add httpPort
-        testContainer = new ApplicationContainerStub(DockerImageName.parse("open-liberty:kernel-slim-java11-openj9"));
+        testContainer = new ApplicationServerContainerStub(DockerImageName.parse("open-liberty:kernel-slim-java11-openj9"));
         testContainer.withExposedPorts(9080, 9443);
         testContainer.withHttpPort(8080);
 
@@ -50,7 +50,7 @@ public class ApplicationContainerTest {
         assertThat(actual).containsExactlyElementsOf(expected);
 
         // Test httpPort then expose ports
-        testContainer = new ApplicationContainerStub(DockerImageName.parse("open-liberty:kernel-slim-java11-openj9"));
+        testContainer = new ApplicationServerContainerStub(DockerImageName.parse("open-liberty:kernel-slim-java11-openj9"));
         testContainer.withHttpPort(8080);
         testContainer.withExposedPorts(9080, 9443);
 
@@ -58,7 +58,7 @@ public class ApplicationContainerTest {
         assertThat(actual).containsExactlyElementsOf(expected);
 
         //Test httpPort then set exposed ports
-        testContainer = new ApplicationContainerStub(DockerImageName.parse("open-liberty:kernel-slim-java11-openj9"));
+        testContainer = new ApplicationServerContainerStub(DockerImageName.parse("open-liberty:kernel-slim-java11-openj9"));
         testContainer.withHttpPort(8080);
         testContainer.setExposedPorts(List.of(9080, 9443));
 
@@ -66,19 +66,14 @@ public class ApplicationContainerTest {
         assertThat(actual).containsExactlyElementsOf(expected);
     }
 
-    static class ApplicationContainerStub extends ApplicationContainer {
+    static class ApplicationServerContainerStub extends ApplicationServerContainer {
 
-        public ApplicationContainerStub(@NonNull Future<String> image) {
+        public ApplicationServerContainerStub(@NonNull Future<String> image) {
             super(image);
         }
 
-        public ApplicationContainerStub(DockerImageName dockerImageName) {
+        public ApplicationServerContainerStub(DockerImageName dockerImageName) {
             super(dockerImageName);
-        }
-
-        @Override
-        protected Duration getDefaultWaitTimeout() {
-            return Duration.ofSeconds(1);
         }
 
         @Override

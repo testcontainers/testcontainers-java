@@ -8,7 +8,8 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.testcontainers.utility.MountableFile;
+import org.testcontainers.applicationserver.ApplicationServerContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -16,8 +17,11 @@ import static io.restassured.RestAssured.given;
 
 public class LibertyContainerTest {
 
-    private static ApplicationContainer testContainer = new LibertyContainer()
-        .withApplicationArchvies(createDeployment())
+    private static final DockerImageName libertyImage = DockerImageName.parse(LibertyServerContainer.IMAGE)
+        .withTag(LibertyServerContainer.DEFAULT_TAG);
+
+    private static ApplicationServerContainer testContainer = new LibertyServerContainer(libertyImage)
+        .withArchvies(createDeployment())
         .withAppContextRoot("test/app/service/");
 
     private static Archive<?> createDeployment() {
@@ -39,7 +43,7 @@ public class LibertyContainerTest {
     public void testURLs() {
         String expectedURL, actualURL;
 
-        expectedURL = "http://" + testContainer.getHost() + ":" + testContainer.getMappedPort(LibertyContainer.DEFAULT_HTTP_PORT);
+        expectedURL = "http://" + testContainer.getHost() + ":" + testContainer.getMappedPort(LibertyServerContainer.DEFAULT_HTTP_PORT);
         actualURL = testContainer.getBaseURL();
         assertThat(actualURL).isEqualTo(expectedURL);
 

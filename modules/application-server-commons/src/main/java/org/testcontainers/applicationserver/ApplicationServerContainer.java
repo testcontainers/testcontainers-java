@@ -1,9 +1,10 @@
-package org.testcontainers.containers;
+package org.testcontainers.applicationserver;
 
 import lombok.NonNull;
 import org.apache.commons.lang3.SystemUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.DockerImageName;
@@ -24,22 +25,21 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Represents a JavaEE, JakartaEE, or Microprofile application platform running inside
- * a Docker container
+ * Represents a JavaEE, JakartaEE, or Microprofile application platform running inside a Docker container
  */
-public abstract class ApplicationContainer extends GenericContainer<ApplicationContainer> {
+public abstract class ApplicationServerContainer extends GenericContainer<ApplicationServerContainer> {
 
-    // List of applications to install
+    // List of archive(s) to install
     List<MountableFile> archives = new ArrayList<>();
 
-    // Where to save runtime application archives
+    // Where to save runtime archives
     private static final String TESTCONTAINERS_TMP_DIR_PREFIX = ".testcontainers-archive-";
 
     private static final String OS_MAC_TMP_DIR = "/tmp";
 
     private static Path tempDirectory;
 
-    // How to query application
+    // How to query an application
     private Integer httpPort;
 
     private String appContextRoot;
@@ -49,18 +49,20 @@ public abstract class ApplicationContainer extends GenericContainer<ApplicationC
 
     private String readinessPath;
 
-    private Duration readinessTimeout;
+    // How long to wait for readiness
+    @NonNull
+    private Duration httpWaitTimeout = Duration.ofSeconds(60);
 
     // Expected path for Microprofile platforms to query for readiness
     static final String MP_HEALTH_READINESS_PATH = "/health/ready";
 
     //Constructors
 
-    public ApplicationContainer(@NonNull final Future<String> image) {
+    public ApplicationServerContainer(@NonNull final Future<String> image) {
         super(image);
     }
 
-    public ApplicationContainer(final DockerImageName dockerImageName) {
+    public ApplicationServerContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
     }
 
@@ -74,7 +76,7 @@ public abstract class ApplicationContainer extends GenericContainer<ApplicationC
         waitingFor(
             Wait.forHttp(readinessPath != null ? readinessPath : appContextRoot)
                 .forPort(readinessPort != null ? readinessPort : httpPort)
-                .withStartupTimeout(readinessTimeout != null ? readinessTimeout : getDefaultWaitTimeout())
+                .withStartupTimeout(httpWaitTimeout)
         );
 
         // Copy applications
@@ -115,12 +117,14 @@ public abstract class ApplicationContainer extends GenericContainer<ApplicationC
     //Configuration
 
     /**
-     * One or more archives to be deployed to the application platform
+     * One or more archives to be deployed to the application platform.
+     *
+     * Calling this method more than once will append new archives to a list to be deployed.
      *
      * @param archives - An archive created using shrinkwrap and test runtime
      * @return self
      */
-    public ApplicationContainer withApplicationArchvies(@NonNull Archive<?>... archives) {
+    public ApplicationServerContainer withArchvies(@NonNull Archive<?>... archives) {
         Stream.of(archives).forEach(archive -> {
             String name = archive.getName();
             Path target = Paths.get(getTempDirectory().toString(), name);
@@ -132,12 +136,14 @@ public abstract class ApplicationContainer extends GenericContainer<ApplicationC
     }
 
     /**
-     * One or more archives to be deployed to the application platform
+     * One or more archives to be deployed to the application platform.
+     *
+     * Calling this method more than once will append new archives to a list to be deployed.
      *
      * @param archives - A MountableFile which represents an archive that was created prior to test runtime.
      * @return self
      */
-    public ApplicationContainer withApplicationArchives(@NonNull MountableFile... archives) {
+    public ApplicationServerContainer withArchives(@NonNull MountableFile... archives) {
         this.archives.addAll(Arrays.asList(archives));
         return this;
     }
@@ -146,64 +152,87 @@ public abstract class ApplicationContainer extends GenericContainer<ApplicationC
      * This will set the port used to construct the base application URL, as well as
      * the port used to determine container readiness in the case of Microprofile platforms.
      *
+     * Calling this method more than once will replace the current httpPort if it was already set.
+     *
      * @param httpPort - The HTTP port used by the Application platform
      * @return self
      */
-    public ApplicationContainer withHttpPort(int httpPort) {
-        this.httpPort = httpPort;
-        super.setExposedPorts(appendPort(getExposedPorts(), this.httpPort));
+    public ApplicationServerContainer withHttpPort(int httpPort) {
+        if( Objects.nonNull(this.httpPort) && this.httpPort == this.readinessPort ) {
+            int oldPort = this.httpPort;
+            this.readinessPort = this.httpPort = httpPort;
+            super.setExposedPorts(replacePort(getExposedPorts(), oldPort, this.httpPort));
+        } else {
+            this.httpPort = httpPort;
+            super.setExposedPorts(appendPort(getExposedPorts(), this.httpPort));
+        }
 
         return this;
     }
 
     /**
-     * This will set the path used to construct the base application URL
+     * This will set the path used to construct the base application URL.
+     *
+     * Calling this method more than once will replace the current appContextRoot if it was already set.
      *
      * @param appContextRoot - The application path
      * @return self
      */
-    public ApplicationContainer withAppContextRoot(@NonNull String appContextRoot) {
-        this.appContextRoot = normalizePath(appContextRoot);
+    public ApplicationServerContainer withAppContextRoot(@NonNull String appContextRoot) {
+        if( Objects.nonNull(this.appContextRoot) && this.appContextRoot == this.readinessPath ) {
+            this.readinessPath = this.appContextRoot = normalizePath(appContextRoot);
+        } else {
+            this.appContextRoot = normalizePath(appContextRoot);
+        }
+
         return this;
     }
 
     /**
-     * Sets the path to be used to determine container readiness.
-     * This will be used to construct a default WaitStrategy using Wait.forHttp()
+     * By default, the ApplicationServerContainer will be configured with a HttpWaitStrategy and wait
+     * for a successful response from the {@link ApplicationServerContainer#getApplicationURL()}.
+     *
+     * This method will overwrite the path used by the HttpWaitStrategy but will keep the httpPort.
+     *
+     * Calling this method more than once will replace the current readinessPath if it was already set.
      *
      * @param readinessPath - The path to be polled for readiness.
      * @return self
      */
-    public ApplicationContainer withReadinessPath(String readinessPath) {
-        return withReadinessPath(readinessPath, getDefaultWaitTimeout());
+    public ApplicationServerContainer withReadiness(String readinessPath) {
+        return withReadiness(readinessPath, this.httpPort);
     }
 
     /**
-     * Sets the path to be used to determine container readiness.
-     * The readiness check will timeout a user defined timeout.
-     * This will be used to construct a default WaitStrategy using Wait.forHttp()
+     * By default, the ApplicationServerContainer will be configured with a HttpWaitStrategy and wait
+     * for a successful response from the {@link ApplicationServerContainer#getApplicationURL()}.
      *
-     * @param readinessPath - The path to be polled for readiness.
-     * @param timeout - The timeout after which the readiness check will fail.
-     * @return self
-     */
-    public ApplicationContainer withReadinessPath(String readinessPath, Duration timeout) {
-        return withReadinessPath(readinessPath, httpPort, timeout);
-    }
-
-    /**
-     * Sets the path to be used to determine container readiness.
-     * The readiness check will timeout a user defined timeout.
-     * The readiness check will happen on an alternative port to the httpPort
+     * This method will overwrite the path used by the HttpWaitStrategy.
+     * This method will overwrite the port used by the HttpWaitStrategy.
+     *
+     * Calling this method more than once will replace the current readinessPath and readinessPort if any were already set.
      *
      * @param readinessPath - The path to be polled for readiness.
      * @param readinessPort - The port that should be used for the readiness check.
-     * @param timeout - The timeout after which the readiness check will fail.
      * @return self
      */
-    public ApplicationContainer withReadinessPath(@NonNull String readinessPath, @NonNull Integer readinessPort, @NonNull Duration timeout) {
+    public ApplicationServerContainer withReadiness(@NonNull String readinessPath, @NonNull Integer readinessPort) {
         this.readinessPath = normalizePath(readinessPath);
         this.readinessPort = readinessPort;
+        return this;
+    }
+
+    /**
+     * Set the timeout configured on the HttpWaitStrategy.
+     *
+     * Calling this method more than once will replace the current httpWaitTimeout if it was already set.
+     * Default value is 60 seconds
+     *
+     * @param httpWaitTimeout - The duration of time to wait for a successful http response
+     * @return self
+     */
+    public ApplicationServerContainer withHttpWaitTimeout(Duration httpWaitTimeout) {
+        this.httpWaitTimeout = httpWaitTimeout;
         return this;
     }
 
@@ -226,7 +255,7 @@ public abstract class ApplicationContainer extends GenericContainer<ApplicationC
 
     /**
      * The URL where the application is running.
-     * The application URL is a concatenation of the baseURL {@link ApplicationContainer#getBaseURL()} with the appContextRoot.
+     * The application URL is a concatenation of the baseURL {@link ApplicationServerContainer#getBaseURL()} with the appContextRoot.
      * This is the URL that the test client should use to connect to an application running on the application platform.
      *
      * @return - The application URL
@@ -247,15 +276,18 @@ public abstract class ApplicationContainer extends GenericContainer<ApplicationC
         return "http://" + getHost() + ':' + getMappedPort(this.httpPort);
     }
 
-    // Abstract
-
     /**
-     * Each implementation will need to determine an appropriate amount of time
-     * to wait for their application platform to start.
+     * Gets the current state of the HTTP port.
+     * Helpful during the configure step for implementations to set a default port
+     * if none was configured by the user.
      *
-     * @return - Duration to wait for startup
+     * @return true if an httpPort was set, false otherwise.
      */
-    abstract protected Duration getDefaultWaitTimeout();
+    protected boolean isHttpPortSet() {
+        return Objects.nonNull(httpPort);
+    }
+
+    // Abstract
 
     /**
      * Each implementation will need to provide an install directory
@@ -292,7 +324,8 @@ public abstract class ApplicationContainer extends GenericContainer<ApplicationC
 
     private static String extractApplicationName(MountableFile file) throws IllegalArgumentException {
         String path = file.getFilesystemPath();
-        if( path.matches(".*\\.jar|.*\\.war|.*\\.ear") ) {
+        //TODO would any application servers support .zip?
+        if( path.matches(".*\\.jar|.*\\.war|.*\\.ear|.*\\.rar") ) {
             return path.substring(path.lastIndexOf("/"));
         }
         throw new IllegalArgumentException("File did not contain an application archive");
@@ -309,6 +342,23 @@ public abstract class ApplicationContainer extends GenericContainer<ApplicationC
     protected static List<Integer> appendPort(List<Integer> portList, int appendingPort) {
         portList = new ArrayList<>(portList); //Ensure not immutable
         portList.add(0, appendingPort);
+        return portList.stream().distinct().collect(Collectors.toList());
+    }
+
+
+    /**
+     * Replaces a port in a list of ports putting the new port at position 0 and ensures port
+     * list does not contain any duplicates values to ensure this order is maintained.
+     *
+     * @param portList - List of existing ports
+     * @param oldPort  - The port to remove
+     * @param newPort  - The port to add
+     * @return - resulting list of ports
+     */
+    protected static List<Integer> replacePort(List<Integer> portList, Integer oldPort, Integer newPort) {
+        portList = new ArrayList<>(portList); //Ensure not immutable
+        portList.remove(oldPort);
+        portList.add(0, newPort);
         return portList.stream().distinct().collect(Collectors.toList());
     }
 
