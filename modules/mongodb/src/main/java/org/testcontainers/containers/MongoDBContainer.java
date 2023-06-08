@@ -56,7 +56,7 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
     @Override
     public void configure() {
         String[] commandParts = getCommandParts();
-        if (commandParts != null && commandParts.length > 0)  {
+        if (commandParts != null && commandParts.length > 0) {
             return;
         }
 

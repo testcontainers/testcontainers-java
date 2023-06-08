@@ -116,8 +116,10 @@ public class MongoDBContainerTest {
 
     @Test
     public void shouldRunWithCustomCommand() {
-        try (final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.0.10"))
-            .withCommand("--replSet", "rs0")) {
+        try (
+            final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.0.10"))
+                .withCommand("--replSet", "rs0")
+        ) {
             mongoDBContainer.start();
             assertThat(mongoDBContainer.getCommandParts()).containsExactly("--replSet", "rs0");
         }
