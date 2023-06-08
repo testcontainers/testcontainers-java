@@ -5,7 +5,16 @@ import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 import org.testcontainers.applicationserver.ApplicationServerContainer;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -17,8 +26,6 @@ public class LibertyServerContainer extends ApplicationServerContainer {
 
     // About the image
     public static final String IMAGE = "open-liberty";
-
-    public static final String DEFAULT_TAG = "23.0.0.3-full-java17-openj9";
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse(IMAGE);
 
@@ -33,9 +40,12 @@ public class LibertyServerContainer extends ApplicationServerContainer {
 
     private static final String APPLICATION_DROPIN_DIR = "/config/dropins/";
 
+    private static final List<String> DEFAULT_FEATURES = Arrays.asList("webProfile-10.0");
+
     // Container fields
-    @NonNull
-    private MountableFile serverConfiguration = MountableFile.forClasspathResource("default/config/defaultServer.xml");
+    private MountableFile serverConfiguration;
+
+    private List<String> features = new ArrayList<>();
 
     // Constructors
     public LibertyServerContainer(String imageName) {
@@ -62,9 +72,19 @@ public class LibertyServerContainer extends ApplicationServerContainer {
     public void configure() {
         super.configure();
 
-        // Copy default server configuration
-        Objects.requireNonNull(serverConfiguration);
-        withCopyFileToContainer(serverConfiguration, SERVER_CONFIG_DIR + "server.xml");
+        // Copy server configuration
+        if( Objects.nonNull(serverConfiguration) ) {
+            withCopyFileToContainer(serverConfiguration, SERVER_CONFIG_DIR + "server.xml");
+            return;
+        }
+
+        if ( ! features.isEmpty() ) {
+            withCopyFileToContainer(generateServerConfiguration(features), SERVER_CONFIG_DIR + "server.xml");
+            return;
+        }
+
+        withCopyFileToContainer(generateServerConfiguration(DEFAULT_FEATURES), SERVER_CONFIG_DIR + "server.xml");
+
     }
 
     @Override
@@ -75,14 +95,51 @@ public class LibertyServerContainer extends ApplicationServerContainer {
     // Configuration
 
     /**
-     * The server configuration file that will be copied to the Liberty container
+     * The server configuration file that will be copied to the Liberty container.
+     *
+     * Calling this method more than once will replace the existing serverConfig if set.
      *
      * @param serverConfig - server.xml
      * @return self
      */
     public LibertyServerContainer withServerConfiguration(@NonNull MountableFile serverConfig) {
-        System.out.println("KJA1017 serverConfig called: " + serverConfig.getFilesystemPath());
         this.serverConfiguration = serverConfig;
         return this;
+    }
+
+    /**
+     * A list of Liberty features to configure on the Liberty container.
+     *
+     * These features will be ignored if a serverConfig file is set.
+     *
+     * @param features - The list of features
+     * @return self
+     */
+    public LibertyServerContainer withFeatures(String... features) {
+        this.features.addAll(Arrays.asList(features));
+        return this;
+    }
+
+    // Helpers
+
+    private static final MountableFile generateServerConfiguration(List<String> features) {
+        String configContents = "";
+        configContents += "<server><featureManager>";
+        for(String feature : features) {
+            configContents += "<feature>" + feature + "</feature>";
+        }
+        configContents += "</featureManager></server>";
+        configContents += System.lineSeparator();
+
+        Path generatedConfigPath = Paths.get(getTempDirectory().toString(), "generatedServer.xml");
+
+        try {
+            Files.write(generatedConfigPath, configContents.getBytes(StandardCharsets.UTF_8),
+                StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+        } catch (IOException ioe) {
+            throw new RuntimeException("Unable to generate server configuration at runtime", ioe);
+        }
+
+        return MountableFile.forHostPath(generatedConfigPath);
     }
 }

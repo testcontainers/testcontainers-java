@@ -304,7 +304,7 @@ public abstract class ApplicationServerContainer extends GenericContainer<Applic
      *
      * @return - The temporary directory path
      */
-    private static Path getTempDirectory() {
+    protected static Path getTempDirectory() {
         if( Objects.nonNull(tempDirectory) ) {
             return tempDirectory;
         }
