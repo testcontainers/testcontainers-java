@@ -13,4 +13,4 @@ Here is a list of supported container runtime environments:
 * [Testcontainers Cloud](https://www.testcontainers.cloud?utm_medium=direct&utm_source=testcontainers.com&utm_content=docs&utm_term=on-failure)
 
 For more extensive information on supported container runtime environments, as well as known limitations of alternative container runtime environments,
-please refer to [this page](https://www.testcontainers.org/supported_docker_environment/) in our documentation.
+please refer to [this page](https://java.testcontainers.org/supported_docker_environment/) in our documentation.

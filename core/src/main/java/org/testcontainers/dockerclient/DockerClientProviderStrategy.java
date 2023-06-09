@@ -269,7 +269,7 @@ public abstract class DockerClientProviderStrategy {
                     "Could not find a valid Docker environment. Please check configuration. Attempted configurations were:\n" +
                     configurationFailures.stream().map(it -> "\t" + it).collect(Collectors.joining("\n")) +
                     "As no valid configuration was found, execution cannot continue.\n" +
-                    "See https://www.testcontainers.org/on_failure.html for more details."
+                    "See https://java.testcontainers.org/on_failure.html for more details."
                 );
 
                 FAIL_FAST_ALWAYS.set(true);
