@@ -18,9 +18,14 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Future;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -56,6 +61,9 @@ public abstract class ApplicationServerContainer extends GenericContainer<Applic
     // Expected path for Microprofile platforms to query for readiness
     static final String MP_HEALTH_READINESS_PATH = "/health/ready";
 
+    // Lazy environment variables
+    private Map<String, Supplier<String>> lazyEnvVars = new HashMap<>();
+
     //Constructors
 
     public ApplicationServerContainer(@NonNull final Future<String> image) {
@@ -82,6 +90,11 @@ public abstract class ApplicationServerContainer extends GenericContainer<Applic
         // Copy applications
         for(MountableFile archive : archives) {
             withCopyFileToContainer(archive, getApplicationInstallDirectory() + extractApplicationName(archive));
+        }
+
+        // Add lazy env variables
+        for(Map.Entry<String, Supplier<String>> entry : lazyEnvVars.entrySet()) {
+            withEnv(entry.getKey(), entry.getValue().get());
         }
     }
 
@@ -233,6 +246,27 @@ public abstract class ApplicationServerContainer extends GenericContainer<Applic
      */
     public ApplicationServerContainer withHttpWaitTimeout(Duration httpWaitTimeout) {
         this.httpWaitTimeout = httpWaitTimeout;
+        return this;
+    }
+
+    /**
+     * An environment variable whose value needs to wait until the configuration stage to be evaluated.
+     * The common use case for this would be to pass inter-container connection data.
+     *
+     * For example an application container often needs to have connection data to a dependent database:
+     * <pre>
+     *     OracleContainer db = new OracleContainer(...).withExposedPorts(1521);
+     *     ApplicationContainer app = new ApplicationContainer(...)
+     *       .withLazyEnv( "oracle.url", () -&gt; db.getJdbcUrl() ) // Need to wait until 'db' container is configured
+     *       .dependsOn(db);
+     * </pre>
+	 *
+     * @param key   - the key
+     * @param valueSupplier - the function that supplies the value
+     * @return self
+     */
+    public ApplicationServerContainer withLazyEnv(String key, Supplier<String> valueSupplier) {
+        lazyEnvVars.put(key, valueSupplier);
         return this;
     }
 

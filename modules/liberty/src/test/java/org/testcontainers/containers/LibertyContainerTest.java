@@ -17,13 +17,32 @@ import static io.restassured.RestAssured.given;
 
 public class LibertyContainerTest {
 
+    /*
+     * Typically application servers have a dependency on a database or other microservice during integration testing
+     * Use a mockServer to ensure dependsOn and lazy env variables work.
+     */
+    public static final DockerImageName mockImage = DockerImageName
+        .parse("mockserver/mockserver")
+        .withTag("mockserver-5.15.0");
+
+    private static GenericContainer<?> dependantService = new GenericContainer<>(mockImage)
+        .withExposedPorts(80,81);
+
+    //The liberty test container
     private static final DockerImageName libertyImage = DockerImageName.parse(LibertyServerContainer.IMAGE)
         .withTag("23.0.0.3-full-java17-openj9");
 
     private static ApplicationServerContainer testContainer = new LibertyServerContainer(libertyImage)
         .withArchvies(createDeployment())
-        .withAppContextRoot("test/app/service/");
+        .withAppContextRoot("test/app/service/")
+        .withLazyEnv("mock.port", () ->  "" + dependantService.getMappedPort(80))
+        .dependsOn(dependantService);
 
+    /**
+     * Creates a deployment using Shrinkwrap at runtime.
+     *
+     * @return - the application archive
+     */
     private static Archive<?> createDeployment() {
         return ShrinkWrap.create(WebArchive.class, "test.war")
             .addPackage("org.testcontainers.containers.app");
