@@ -3,6 +3,7 @@ package org.testcontainers.containers;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Cleanup;
+import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
 
@@ -15,45 +16,59 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Map;
+import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class MockoonContainerTest {
 
-    private static final DockerImageName MOCKSERVER_IMAGE = DockerImageName
+    // initialization {
+    public static final DockerImageName MOCKOON_IMAGE = DockerImageName
         .parse("mockoon/cli:3.0.0");
 
-    private static final String TEST_RESOURCE = "/demo.json";
+    @Rule
+    public MockoonContainer mockoonFromClasspath = new MockoonContainer(
+        MOCKOON_IMAGE,
+        "/demo.json" // Classpath Resource
+    );
+    // }
+
+    public static final String TEST_CLASSPATH_RESOURCE = "/demo.json";
+
+    @Test
+    public void shouldCallActualMockoonWithClasspathResource() throws Exception {
+        // testSimpleExpectation {
+
+        try (MockoonContainer mockoon = new MockoonContainer(MOCKOON_IMAGE, TEST_CLASSPATH_RESOURCE)) {
+            mockoon.start();
+
+            assertThat(jsonResponseFromMockoon(mockoon, "/template"))
+                .as("Mockoon returns expected result")
+                .containsKey("Templating example");
+        }
+
+        // }
+    }
 
     @Test
     public void shouldCallActualMockoonWithPath() throws Exception {
         Path tempFile = Files.createTempFile("testcontainer", "mockoon");
         Files.copy(
-            MockoonContainerTest.class.getResourceAsStream(TEST_RESOURCE),
+            Objects.requireNonNull(MockoonContainerTest.class.getResourceAsStream(TEST_CLASSPATH_RESOURCE)),
             tempFile,
             StandardCopyOption.REPLACE_EXISTING
         );
 
-        try (MockoonContainer mockoon = new MockoonContainer(MOCKSERVER_IMAGE, tempFile)) {
+        try (MockoonContainer mockoon = new MockoonContainer(MOCKOON_IMAGE, tempFile)) {
             mockoon.start();
 
-            assertThat(responseFromMockoon(mockoon, "/template"))
-                .as("Mockoon returns correct result")
+            assertThat(jsonResponseFromMockoon(mockoon, "/template"))
+                .as("Mockoon returns expected result")
                 .containsKey("Templating example");
         }
     }
 
-    @Test
-    public void shouldCallActualMockoonWithClasspathResource() throws Exception {
-        try (MockoonContainer mockoon = new MockoonContainer(MOCKSERVER_IMAGE, TEST_RESOURCE)) {
-            mockoon.start();
-
-            assertThat(responseFromMockoon(mockoon, "/template"))
-                .as("Mockoon returns correct result")
-                .containsKey("Templating example");
-        }
-    }
-    private static Map<String, Object> responseFromMockoon(MockoonContainer mockoon, String path) throws IOException {
+    private static Map<String, Object> jsonResponseFromMockoon(MockoonContainer mockoon, String path) throws IOException {
         URLConnection urlConnection = new URL(mockoon.getEndpoint() + path).openConnection();
         @Cleanup
         BufferedReader reader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
