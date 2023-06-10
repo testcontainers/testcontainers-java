@@ -4,9 +4,9 @@ import lombok.experimental.UtilityClass;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -70,7 +70,7 @@ public class Startables {
      * @return a {@link CompletableFuture} that resolves once all {@link Startable}s have started.
      */
     public CompletableFuture<Void> deepStart(Stream<? extends Startable> startables) {
-        return deepStart(new HashMap<>(), startables);
+        return deepStart(new ConcurrentHashMap<>(), startables);
     }
 
     /**
@@ -86,15 +86,11 @@ public class Startables {
             .sequential()
             .map(it -> {
                 // avoid a recursive update in `computeIfAbsent`
-                Map<Startable, CompletableFuture<Void>> subStarted = new HashMap<>(started);
                 CompletableFuture<Void> future = started.computeIfAbsent(
                     it,
-                    startable -> {
-                        return deepStart(subStarted, startable.getDependencies().stream())
-                            .thenRunAsync(startable::start, EXECUTOR);
-                    }
+                    startable -> deepStart(started, startable.getDependencies().stream())
+                        .thenRunAsync(startable::start, EXECUTOR)
                 );
-                started.putAll(subStarted);
                 return future;
             })
             .toArray(CompletableFuture[]::new);
