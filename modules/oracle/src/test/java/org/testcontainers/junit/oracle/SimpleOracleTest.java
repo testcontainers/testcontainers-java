@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.fail;
 public class SimpleOracleTest extends AbstractContainerDatabaseTest {
 
     public static final DockerImageName ORACLE_DOCKER_IMAGE_NAME = DockerImageName.parse(
-        "gvenzl/oracle-xe:21-slim-faststart"
+        "gvenzl/oracle-xe:slim"
     );
 
     private void runTest(OracleContainer container, String databaseName, String username, String password)
@@ -53,7 +53,7 @@ public class SimpleOracleTest extends AbstractContainerDatabaseTest {
     public void testPluggableDatabaseAndCustomUser() throws SQLException {
         try (
             // constructor {
-            OracleContainer oracle = new OracleContainer("gvenzl/oracle-xe:21-slim-faststart")
+            OracleContainer oracle = new OracleContainer("gvenzl/oracle-xe:slim")
                 .withDatabaseName("testDB")
                 .withUsername("testUser")
                 .withPassword("testPassword")
