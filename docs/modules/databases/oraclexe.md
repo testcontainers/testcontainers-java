@@ -6,7 +6,7 @@ See [Database containers](./index.md) for documentation and usage that is common
 
 You can use `OracleContainer` like any other JDBC container:
 <!--codeinclude-->
-[Container creation](../../../modules/oracle-xe/src/test/java/org/testcontainers/junit/oracle/SimpleOracleTest.java) inside_block:constructor
+[Container creation](../../../modules/oracle/src/test/java/org/testcontainers/junit/oracle/SimpleOracleTest.java) inside_block:constructor
 <!--/codeinclude-->
 
 ## Adding this module to your project dependencies
