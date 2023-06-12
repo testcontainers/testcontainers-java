@@ -121,6 +121,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
 
     private RemoveImages removeImages;
 
+    private boolean removeVolumes = true;
+
     @Deprecated
     public DockerComposeContainer(File composeFile, String identifier) {
         this(identifier, composeFile);
@@ -143,7 +145,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
         this.dockerComposeFiles = new DockerComposeFiles(composeFiles);
 
         // Use a unique identifier so that containers created for this compose environment can be identified
-        this.identifier = identifier;
+        this.identifier = identifier.toLowerCase();
         this.project = randomProjectId();
 
         this.dockerClient = DockerClientFactory.lazyClient();
@@ -368,7 +370,11 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
                 ambassadorContainer.stop();
 
                 // Kill the services using docker-compose
-                String cmd = "down -v";
+                String cmd = "down";
+
+                if (removeVolumes) {
+                    cmd += " -v";
+                }
                 if (removeImages != null) {
                     cmd += " --rmi " + removeImages.dockerRemoveImagesType();
                 }
@@ -601,6 +607,17 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
     }
 
     /**
+     * Remove volumes after containers shut down.
+     *
+     * @param removeVolumes whether volumes are to be removed.
+     * @return this instance, for chaining.
+     */
+    public SELF withRemoveVolumes(boolean removeVolumes) {
+        this.removeVolumes = removeVolumes;
+        return self();
+    }
+
+    /**
      * Set the maximum startup timeout all the waits set are bounded to.
      *
      * @return this instance. for chaining
@@ -689,7 +706,7 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
         final String composeFileEnvVariableValue = Joiner.on(UNIX_PATH_SEPERATOR).join(absoluteDockerComposeFiles); // we always need the UNIX path separator
         logger().debug("Set env COMPOSE_FILE={}", composeFileEnvVariableValue);
         addEnv(ENV_COMPOSE_FILE, composeFileEnvVariableValue);
-        addFileSystemBind(pwd, containerPwd, BindMode.READ_WRITE);
+        withCopyFileToContainer(MountableFile.forHostPath(pwd), containerPwd);
 
         // Ensure that compose can access docker. Since the container is assumed to be running on the same machine
         //  as the docker daemon, just mapping the docker control socket is OK.

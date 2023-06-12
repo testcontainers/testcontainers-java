@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ConsulContainerTest {
 
     @ClassRule
-    public static ConsulContainer consulContainer = new ConsulContainer(ConsulTestImages.CONSUL_IMAGE)
+    public static ConsulContainer consulContainer = new ConsulContainer("hashicorp/consul:1.15")
         .withConsulCommand("kv put config/testing1 value123");
 
     @Test

@@ -20,6 +20,7 @@ body:
         - CockroachDB
         - Consul
         - Couchbase
+        - CrateDB
         - DB2
         - Dynalite
         - Elasticsearch
@@ -45,6 +46,7 @@ body:
         - RabbitMQ
         - Redpanda
         - Selenium
+        - Solace
         - Solr
         - TiDB
         - ToxiProxy

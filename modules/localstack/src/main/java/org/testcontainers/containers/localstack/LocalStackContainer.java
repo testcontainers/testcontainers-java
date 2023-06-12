@@ -1,9 +1,5 @@
 package org.testcontainers.containers.localstack;
 
-import com.amazonaws.auth.AWSCredentialsProvider;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.client.builder.AwsClientBuilder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -25,20 +21,23 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * <p>Container for LocalStack, 'A fully functional local AWS cloud stack'.</p>
- * <p>{@link LocalStackContainer#withServices(Service...)} should be used to select which services
- * are to be launched. See {@link Service} for available choices.
+ * Testcontainers implementation for LocalStack.
  */
 @Slf4j
 public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
 
     static final int PORT = 4566;
 
+    @Deprecated
     private static final String HOSTNAME_EXTERNAL_ENV_VAR = "HOSTNAME_EXTERNAL";
+
+    private static final String LOCALSTACK_HOST_ENV_VAR = "LOCALSTACK_HOST";
 
     private final List<EnabledService> services = new ArrayList<>();
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("localstack/localstack");
+
+    private static final DockerImageName LOCALSTACK_PRO_IMAGE_NAME = DockerImageName.parse("localstack/localstack-pro");
 
     private static final String DEFAULT_TAG = "0.11.2";
 
@@ -60,6 +59,17 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
      * of Localstack supports this feature.
      */
     private final boolean legacyMode;
+
+    /**
+     * Starting with version 0.13.0, setting services list on Localstack is not required. When <code>false</code>,
+     * containers are started lazily. When <code>true</code>, container fails to start if services list is not provided.
+     *
+     * Testcontainers will use the tag of the docker image to infer whether or not the used version
+     * of Localstack required services list.
+     */
+    private final boolean servicesEnvVarRequired;
+
+    private final boolean isVersion2;
 
     /**
      * @deprecated use {@link LocalStackContainer(DockerImageName)} instead
@@ -87,15 +97,44 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
     /**
      * @param dockerImageName    image name to use for Localstack
      * @param useLegacyMode      if true, each AWS service is exposed on a different port
+     * @deprecated use {@link LocalStackContainer(DockerImageName)} instead
      */
+    @Deprecated
     public LocalStackContainer(final DockerImageName dockerImageName, boolean useLegacyMode) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, LOCALSTACK_PRO_IMAGE_NAME);
 
         this.legacyMode = useLegacyMode;
+        String version = dockerImageName.getVersionPart();
+        this.servicesEnvVarRequired = isServicesEnvVarRequired(version);
+        this.isVersion2 = isVersion2(version);
 
         withFileSystemBind(DockerClientFactory.instance().getRemoteDockerUnixSocketPath(), "/var/run/docker.sock");
         waitingFor(Wait.forLogMessage(".*Ready\\.\n", 1));
+    }
+
+    private static boolean isVersion2(String version) {
+        if (version.equals("latest")) {
+            return true;
+        }
+
+        ComparableVersion comparableVersion = new ComparableVersion(version);
+        return comparableVersion.isGreaterThanOrEqualTo("2.0.0");
+    }
+
+    private static boolean isServicesEnvVarRequired(String version) {
+        if (version.equals("latest")) {
+            return false;
+        }
+
+        ComparableVersion comparableVersion = new ComparableVersion(version);
+        if (comparableVersion.isSemanticVersion()) {
+            return comparableVersion.isLessThan("0.13");
+        }
+
+        log.warn("Version {} is not a semantic version, services list is required.", version);
+
+        return true;
     }
 
     private static boolean shouldRunInLegacyMode(String version) {
@@ -120,34 +159,49 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
     protected void configure() {
         super.configure();
 
-        Preconditions.check("services list must not be empty", !services.isEmpty());
-
-        withEnv("SERVICES", services.stream().map(EnabledService::getName).collect(Collectors.joining(",")));
-
-        String hostnameExternalReason;
-        if (getEnvMap().containsKey(HOSTNAME_EXTERNAL_ENV_VAR)) {
-            // do nothing
-            hostnameExternalReason = "explicitly as environment variable";
-        } else if (getNetwork() != null && getNetworkAliases() != null && getNetworkAliases().size() >= 1) {
-            withEnv(HOSTNAME_EXTERNAL_ENV_VAR, getNetworkAliases().get(getNetworkAliases().size() - 1)); // use the last network alias set
-            hostnameExternalReason = "to match last network alias on container with non-default network";
-        } else {
-            withEnv(HOSTNAME_EXTERNAL_ENV_VAR, getHost());
-            hostnameExternalReason = "to match host-routable address for container";
+        if (this.servicesEnvVarRequired) {
+            Preconditions.check("services list must not be empty", !services.isEmpty());
         }
-        logger()
-            .info(
-                "{} environment variable set to {} ({})",
-                HOSTNAME_EXTERNAL_ENV_VAR,
-                getEnvMap().get(HOSTNAME_EXTERNAL_ENV_VAR),
-                hostnameExternalReason
-            );
+
+        if (!services.isEmpty()) {
+            withEnv("SERVICES", services.stream().map(EnabledService::getName).collect(Collectors.joining(",")));
+            if (this.servicesEnvVarRequired) {
+                withEnv("EAGER_SERVICE_LOADING", "1");
+            }
+        }
+
+        if (this.isVersion2) {
+            resolveHostname(LOCALSTACK_HOST_ENV_VAR);
+        } else {
+            resolveHostname(HOSTNAME_EXTERNAL_ENV_VAR);
+        }
 
         exposePorts();
     }
 
+    private void resolveHostname(String envVar) {
+        String hostnameExternalReason;
+        if (getEnvMap().containsKey(envVar)) {
+            // do nothing
+            hostnameExternalReason = "explicitly as environment variable";
+        } else if (getNetwork() != null && getNetworkAliases() != null && getNetworkAliases().size() >= 1) {
+            withEnv(envVar, getNetworkAliases().get(getNetworkAliases().size() - 1)); // use the last network alias set
+            hostnameExternalReason = "to match last network alias on container with non-default network";
+        } else {
+            withEnv(envVar, getHost());
+            hostnameExternalReason = "to match host-routable address for container";
+        }
+
+        logger()
+            .info("{} environment variable set to {} ({})", envVar, getEnvMap().get(envVar), hostnameExternalReason);
+    }
+
     private void exposePorts() {
-        services.stream().map(this::getServicePort).distinct().forEach(this::addExposedPort);
+        if (legacyMode) {
+            services.stream().map(this::getServicePort).distinct().forEach(this::addExposedPort);
+        } else {
+            this.addExposedPort(PORT);
+        }
     }
 
     public LocalStackContainer withServices(Service... services) {
@@ -163,38 +217,6 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
     public LocalStackContainer withServices(EnabledService... services) {
         this.services.addAll(Arrays.asList(services));
         return self();
-    }
-
-    /**
-     * Provides an endpoint configuration that is preconfigured to communicate with a given simulated service.
-     * The provided endpoint configuration should be set in the AWS Java SDK when building a client, e.g.:
-     * <pre><code>AmazonS3 s3 = AmazonS3ClientBuilder
-            .standard()
-            .withEndpointConfiguration(localstack.getEndpointConfiguration(S3))
-            .withCredentials(localstack.getDefaultCredentialsProvider())
-            .build();
-     </code></pre>
-     * or for AWS SDK v2
-     * <pre><code>S3Client s3 = S3Client
-             .builder()
-             .endpointOverride(localstack.getEndpointOverride(LocalStackContainer.Service.S3))
-             .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(
-                localstack.getAccessKey(), localstack.getSecretKey()
-             )))
-             .region(Region.of(localstack.getRegion()))
-             .build()
-     </code></pre>
-     * <p><strong>Please note that this method is only intended to be used for configuring AWS SDK clients
-     * that are running on the test host. If other containers need to call this one, they should be configured
-     * specifically to do so using a Docker network and appropriate addressing.</strong></p>
-     *
-     * @param service the service that is to be accessed
-     * @return an {@link AwsClientBuilder.EndpointConfiguration}
-     * @deprecated {@link LocalStackContainer} will not depend on aws sdk.
-     */
-    @Deprecated
-    public AwsClientBuilder.EndpointConfiguration getEndpointConfiguration(Service service) {
-        return new AwsClientBuilder.EndpointConfiguration(getEndpointOverride(service).toString(), getRegion());
     }
 
     public URI getEndpointOverride(Service service) {
@@ -232,35 +254,37 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
         }
     }
 
-    private int getServicePort(EnabledService service) {
-        return legacyMode ? service.getPort() : PORT;
-    }
-
     /**
-     * Provides a {@link AWSCredentialsProvider} that is preconfigured to communicate with a given simulated service.
-     * The credentials provider should be set in the AWS Java SDK when building a client, e.g.:
-     * <pre><code>AmazonS3 s3 = AmazonS3ClientBuilder
-            .standard()
-            .withEndpointConfiguration(localstack.getEndpointConfiguration(S3))
-            .withCredentials(localstack.getDefaultCredentialsProvider())
-            .build();
-     </code></pre>
-     * or for AWS SDK v2 you can use {@link #getAccessKey()}, {@link #getSecretKey()} directly:
+     * Provides an endpoint to communicate with LocalStack service.
+     * The provided endpoint should be set in the AWS Java SDK v2 when building a client, e.g.:
      * <pre><code>S3Client s3 = S3Client
              .builder()
-             .endpointOverride(localstack.getEndpointOverride(LocalStackContainer.Service.S3))
+             .endpointOverride(localstack.getEndpoint())
              .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(
              localstack.getAccessKey(), localstack.getSecretKey()
              )))
              .region(Region.of(localstack.getRegion()))
              .build()
-     </code></pre>
-     * @return an {@link AWSCredentialsProvider}
-     * @deprecated {@link LocalStackContainer} will not depend on aws sdk.
+             </code></pre>
+     * <p><strong>Please note that this method is only intended to be used for configuring AWS SDK clients
+     * that are running on the test host. If other containers need to call this one, they should be configured
+     * specifically to do so using a Docker network and appropriate addressing.</strong></p>
+     *
+     * @return an {@link URI} endpoint
      */
-    @Deprecated
-    public AWSCredentialsProvider getDefaultCredentialsProvider() {
-        return new AWSStaticCredentialsProvider(new BasicAWSCredentials(getAccessKey(), getSecretKey()));
+    public URI getEndpoint() {
+        try {
+            final String address = getHost();
+            // resolve IP address and use that as the endpoint so that path-style access is automatically used for S3
+            String ipAddress = InetAddress.getByName(address).getHostAddress();
+            return new URI("http://" + ipAddress + ":" + getMappedPort(PORT));
+        } catch (UnknownHostException | URISyntaxException e) {
+            throw new IllegalStateException("Cannot obtain endpoint URL", e);
+        }
+    }
+
+    private int getServicePort(EnabledService service) {
+        return legacyMode ? service.getPort() : PORT;
     }
 
     /**

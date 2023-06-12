@@ -119,6 +119,12 @@ public interface ContainerState {
         }
     }
 
+    /**
+     * Inspects the container and returns up-to-date inspection response.
+     *
+     * @return up-to-date container inspect response
+     * @see #getContainerInfo()
+     */
     default InspectContainerResponse getCurrentContainerInfo() {
         return getDockerClient().inspectContainerCmd(getContainerId()).exec();
     }
@@ -140,10 +146,16 @@ public interface ContainerState {
 
     /**
      * Get the actual mapped port for a given port exposed by the container.
-     * Should be used in conjunction with {@link #getHost()}.
+     * It should be used in conjunction with {@link #getHost()}.
+     * <p>
+     * Note: The returned port number might be outdated (for instance, after disconnecting from a network and reconnecting
+     * again). If you always need up-to-date value, override the {@link #getContainerInfo()} to return the
+     * {@link #getCurrentContainerInfo()}.
      *
      * @param originalPort the original TCP port that is exposed
      * @return the port that the exposed port is mapped to, or null if it is not exposed
+     * @see #getContainerInfo()
+     * @see #getCurrentContainerInfo()
      */
     default Integer getMappedPort(int originalPort) {
         Preconditions.checkState(
@@ -222,7 +234,10 @@ public interface ContainerState {
     }
 
     /**
+     * Returns the container inspect response. The response might be cached/outdated.
+     *
      * @return the container info
+     * @see #getCurrentContainerInfo()
      */
     InspectContainerResponse getContainerInfo();
 

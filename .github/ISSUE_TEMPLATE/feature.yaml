@@ -18,6 +18,7 @@ body:
         - Cassandra
         - Clickhouse
         - CockroachDB
+        - CrateDB
         - Consul
         - Couchbase
         - DB2
@@ -45,6 +46,7 @@ body:
         - RabbitMQ
         - Redpanda
         - Selenium
+        - Solace
         - Solr
         - TiDB
         - ToxiProxy

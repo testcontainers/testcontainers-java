@@ -46,7 +46,7 @@ services:
     command: ["--tls=false"]
 
 variables:
-  # Instruct Testcontainers to use the daemon of DinD, use port 2735 for non-tls connections.
+  # Instruct Testcontainers to use the daemon of DinD, use port 2375 for non-tls connections.
   DOCKER_HOST: "tcp://docker:2375"
   # Instruct Docker not to start over TLS.
   DOCKER_TLS_CERTDIR: ""

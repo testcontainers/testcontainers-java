@@ -12,9 +12,6 @@ import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * @author Simon Schneider
- */
 public class SolrContainerTest {
 
     private static final DockerImageName SOLR_IMAGE = DockerImageName.parse("solr:8.3.0");
