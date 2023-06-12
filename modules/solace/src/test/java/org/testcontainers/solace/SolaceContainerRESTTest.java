@@ -12,11 +12,12 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class SolaceContainerRESTTest {
 
@@ -45,7 +46,7 @@ public class SolaceContainerRESTTest {
         if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
             Assert.fail("Cannot send message to solace - " + EntityUtils.toString(response.getEntity()));
         }
-        Assertions.assertThat(EntityUtils.toString(response.getEntity())).isEmpty();
+        assertThat(EntityUtils.toString(response.getEntity())).isEmpty();
     }
 
     private HttpClient createClient(SolaceContainer solaceContainer) {
