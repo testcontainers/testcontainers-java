@@ -1274,10 +1274,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     ) {
         final MountableFile mountableFile = MountableFile.forClasspathResource(resourcePath);
 
-        if (mode == BindMode.READ_ONLY && selinuxContext == SelinuxContext.SHARED) {
-            withCopyFileToContainer(mountableFile, containerPath);
-        } else {
+        if (mode == BindMode.READ_WRITE) {
             addFileSystemBind(mountableFile.getResolvedPath(), containerPath, mode, selinuxContext);
+        } else {
+            withCopyFileToContainer(mountableFile, containerPath);
         }
 
         return self();
