@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
  * It has to be assumed that the container will stop of its own accord, either with a success or failure exit code.
  */
 public class IndefiniteWaitOneShotStartupCheckStrategy extends OneShotStartupCheckStrategy {
+
     @Override
     public boolean waitUntilStartupSuccessful(DockerClient dockerClient, String containerId) {
         while (checkStartupState(dockerClient, containerId) == StartupStatus.NOT_YET_KNOWN) {

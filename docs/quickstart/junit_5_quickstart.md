@@ -21,47 +21,33 @@ Let's start from here, and see how to improve the test with Testcontainers:
 
 First, add Testcontainers as a dependency as follows:
 
-```groovy tab='Gradle'
-def junitJupiterVersion = '5.4.2'
-testImplementation "org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion"
-testImplementation "org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion"
-testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion"
-testImplementation "org.testcontainers:testcontainers:{{latest_version}}"
-testImplementation "org.testcontainers:junit-jupiter:{{latest_version}}"
-```
-
-```xml tab='Maven'
-<dependency>
-    <groupId>org.junit.jupiter</groupId>
-    <artifactId>junit-jupiter-api</artifactId>
-    <version>5.4.2</version>
-    <scope>test</scope>
-</dependency>
-<dependency>
-    <groupId>org.junit.jupiter</groupId>
-    <artifactId>junit-jupiter-params</artifactId>
-    <version>5.4.2</version>
-    <scope>test</scope>
-</dependency>
-<dependency>
-    <groupId>org.junit.jupiter</groupId>
-    <artifactId>junit-jupiter-engine</artifactId>
-    <version>5.4.2</version>
-    <scope>test</scope>
-</dependency>
-<dependency>
-    <groupId>org.testcontainers</groupId>
-    <artifactId>testcontainers</artifactId>
-    <version>{{latest_version}}</version>
-    <scope>test</scope>
-</dependency>
-<dependency>
-    <groupId>org.testcontainers</groupId>
-    <artifactId>junit-jupiter</artifactId>
-    <version>{{latest_version}}</version>
-    <scope>test</scope>
-</dependency>
-```
+=== "Gradle"
+    ```groovy
+    testImplementation "org.junit.jupiter:junit-jupiter:5.8.1"
+    testImplementation "org.testcontainers:testcontainers:{{latest_version}}"
+    testImplementation "org.testcontainers:junit-jupiter:{{latest_version}}"
+    ```
+=== "Maven"
+    ```xml
+    <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter</artifactId>
+        <version>5.8.1</version>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>testcontainers</artifactId>
+        <version>{{latest_version}}</version>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>junit-jupiter</artifactId>
+        <version>{{latest_version}}</version>
+        <scope>test</scope>
+    </dependency>
+    ```
 
 ## 2. Get Testcontainers to run a Redis container during our tests
 
@@ -99,7 +85,16 @@ We can do this in our test `setUp` method, to set up our component under test:
     not work on your current or future CI environment. As such, **avoid hard-coding** the address, and use 
     `getHost()` instead.
 
-## 4. Run the tests!
+## 4. Additional attributes
+
+Additional attributes are available for the `@Testcontainers` annotation.
+Those attributes can be helpful when:
+
+* Tests should be skipped instead of failing because Docker is unavailable in the
+current environment. Set `disabledWithoutDocker` to `true`.
+* Enable parallel container initialization instead of sequential (by default). Set `parallel` to `true`.
+
+## 5. Run the tests!
 
 That's it!
 

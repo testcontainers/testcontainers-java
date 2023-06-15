@@ -13,24 +13,28 @@ import org.testcontainers.containers.BrowserWebDriverContainer;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class HostPortExposedTest {
 
     private static HttpServer server;
+
     private static int localServerPort;
 
     @BeforeClass
     public static void setUp() throws Exception {
         server = HttpServer.create(new InetSocketAddress(0), 0);
-        server.createContext("/", exchange -> {
-            byte[] content = "Hello World!".getBytes();
-            exchange.sendResponseHeaders(200, content.length);
-            try (OutputStream responseBody = exchange.getResponseBody()) {
-                responseBody.write(content);
-                responseBody.flush();
+        server.createContext(
+            "/",
+            exchange -> {
+                byte[] content = "Hello World!".getBytes();
+                exchange.sendResponseHeaders(200, content.length);
+                try (OutputStream responseBody = exchange.getResponseBody()) {
+                    responseBody.write(content);
+                    responseBody.flush();
+                }
             }
-        });
+        );
 
         server.start();
         localServerPort = server.getAddress().getPort();
@@ -46,20 +50,19 @@ public class HostPortExposedTest {
     }
 
     @Rule
-    public BrowserWebDriverContainer browser = new BrowserWebDriverContainer()
+    public BrowserWebDriverContainer<?> browser = new BrowserWebDriverContainer<>()
         .withCapabilities(new ChromeOptions());
 
     @Test
     public void testContainerRunningAgainstExposedHostPort() {
         // useHostExposedPort {
-        final String rootUrl =
-            String.format("http://host.testcontainers.internal:%d/", localServerPort);
+        final String rootUrl = String.format("http://host.testcontainers.internal:%d/", localServerPort);
 
-        final RemoteWebDriver webDriver = browser.getWebDriver();
+        final RemoteWebDriver webDriver = new RemoteWebDriver(this.browser.getSeleniumAddress(), new ChromeOptions());
         webDriver.get(rootUrl);
         // }
 
         final String pageSource = webDriver.getPageSource();
-        assertTrue(pageSource.contains("Hello World!"));
+        assertThat(pageSource).contains("Hello World!");
     }
 }

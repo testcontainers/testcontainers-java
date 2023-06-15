@@ -4,43 +4,85 @@ import org.junit.Test;
 import org.mockserver.client.MockServerClient;
 import org.testcontainers.utility.DockerImageName;
 
-import static org.hamcrest.CoreMatchers.equalTo;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertThat;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
 public class MockServerContainerTest {
 
-    public static final DockerImageName MOCKSERVER_IMAGE = DockerImageName.parse("jamesdbloom/mockserver:mockserver-5.5.4");
+    public static final DockerImageName MOCKSERVER_IMAGE = DockerImageName
+        .parse("mockserver/mockserver")
+        .withTag("mockserver-" + MockServerClient.class.getPackage().getImplementationVersion());
 
     @Test
     public void shouldCallActualMockserverVersion() throws Exception {
-        String actualVersion = MockServerClient.class.getPackage().getImplementationVersion();
-        try (MockServerContainer mockServer = new MockServerContainer(MOCKSERVER_IMAGE.withTag("mockserver-" + actualVersion))) {
+        try (MockServerContainer mockServer = new MockServerContainer(MOCKSERVER_IMAGE)) {
             mockServer.start();
 
             String expectedBody = "Hello World!";
 
-            MockServerClient client = new MockServerClient(mockServer.getHost(), mockServer.getServerPort());
+            try (MockServerClient client = new MockServerClient(mockServer.getHost(), mockServer.getServerPort())) {
+                assertThat(client.hasStarted()).as("Mockserver running").isTrue();
 
-            assertTrue("Mockserver running", client.isRunning());
+                client.when(request().withPath("/hello")).respond(response().withBody(expectedBody));
 
-            client
-                .when(request().withPath("/hello"))
-                .respond(response().withBody(expectedBody));
+                assertThat(SimpleHttpClient.responseFromMockserver(mockServer, "/hello"))
+                    .as("MockServer returns correct result")
+                    .isEqualTo(expectedBody);
+            }
+        }
+    }
 
-            assertThat("MockServer returns correct result",
-                SimpleHttpClient.responseFromMockserver(mockServer, "/hello"),
-                equalTo(expectedBody)
-            );
+    @Test
+    public void shouldCallMockserverUsingTlsProtocol() throws Exception {
+        try (MockServerContainer mockServer = new MockServerContainer(MOCKSERVER_IMAGE)) {
+            mockServer.start();
+
+            String expectedBody = "Hello World!";
+
+            try (
+                MockServerClient client = new MockServerClient(mockServer.getHost(), mockServer.getServerPort())
+                    .withSecure(true)
+            ) {
+                assertThat(client.hasStarted()).as("Mockserver running").isTrue();
+
+                client.when(request().withPath("/hello")).respond(response().withBody(expectedBody));
+
+                assertThat(SimpleHttpClient.secureResponseFromMockserver(mockServer, "/hello"))
+                    .as("MockServer returns correct result")
+                    .isEqualTo(expectedBody);
+            }
+        }
+    }
+
+    @Test
+    public void shouldCallMockserverUsingMutualTlsProtocol() throws Exception {
+        try (
+            MockServerContainer mockServer = new MockServerContainer(MOCKSERVER_IMAGE)
+                .withEnv("MOCKSERVER_TLS_MUTUAL_AUTHENTICATION_REQUIRED", "true")
+        ) {
+            mockServer.start();
+
+            String expectedBody = "Hello World!";
+
+            try (
+                MockServerClient client = new MockServerClient(mockServer.getHost(), mockServer.getServerPort())
+                    .withSecure(true)
+            ) {
+                assertThat(client.hasStarted()).as("Mockserver running").isTrue();
+
+                client.when(request().withPath("/hello")).respond(response().withBody(expectedBody));
+
+                assertThat(SimpleHttpClient.secureResponseFromMockserver(mockServer, "/hello"))
+                    .as("MockServer returns correct result")
+                    .isEqualTo(expectedBody);
+            }
         }
     }
 
     @Test
     public void newVersionStartsWithDefaultWaitStrategy() {
-        DockerImageName dockerImageName = DockerImageName.parse("mockserver/mockserver:mockserver-5.11.2");
-        try (MockServerContainer mockServer = new MockServerContainer(dockerImageName)) {
+        try (MockServerContainer mockServer = new MockServerContainer(MOCKSERVER_IMAGE)) {
             mockServer.start();
         }
     }

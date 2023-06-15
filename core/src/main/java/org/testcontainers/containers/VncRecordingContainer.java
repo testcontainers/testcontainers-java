@@ -15,9 +15,8 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.Base64;
-
-import static java.time.temporal.ChronoUnit.SECONDS;
 
 /**
  * 'Sidekick container' with the sole purpose of recording the VNC screen output from another container.
@@ -48,7 +47,9 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
     public VncRecordingContainer(@NonNull GenericContainer<?> targetContainer) {
         this(
             targetContainer.getNetwork(),
-            targetContainer.getNetworkAliases().stream()
+            targetContainer
+                .getNetworkAliases()
+                .stream()
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("Target container must have a network alias"))
         );
@@ -57,14 +58,16 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
     /**
      * Create a sidekick container and attach it to another container. The VNC output of that container will be recorded.
      */
-    public VncRecordingContainer(@NonNull Network network, @NonNull String targetNetworkAlias) throws IllegalStateException {
-        super(DockerImageName.parse("testcontainers/vnc-recorder:1.2.0"));
-
+    public VncRecordingContainer(@NonNull Network network, @NonNull String targetNetworkAlias)
+        throws IllegalStateException {
+        super(DockerImageName.parse("testcontainers/vnc-recorder:1.3.0"));
         this.targetNetworkAlias = targetNetworkAlias;
         withNetwork(network);
-        waitingFor(new LogMessageWaitStrategy()
-            .withRegEx(".*Connected.*")
-            .withStartupTimeout(Duration.of(15, SECONDS)));
+        waitingFor(
+            new LogMessageWaitStrategy()
+                .withRegEx(".*Connected.*")
+                .withStartupTimeout(Duration.of(15, ChronoUnit.SECONDS))
+        );
     }
 
     public VncRecordingContainer withVncPassword(@NonNull String vncPassword) {
@@ -95,8 +98,17 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
         String encodedPassword = Base64.getEncoder().encodeToString(vncPassword.getBytes());
         setCommand(
             "-c",
-            "echo '" + encodedPassword + "' | base64 -d > /vnc_password && " +
-                "flvrec.py -o " + ORIGINAL_RECORDING_FILE_NAME + " -d -r " + frameRate + " -P /vnc_password " + targetNetworkAlias + " " + vncPort
+            "echo '" +
+            encodedPassword +
+            "' | base64 -d > /vnc_password && " +
+            "flvrec.py -o " +
+            ORIGINAL_RECORDING_FILE_NAME +
+            " -d -r " +
+            frameRate +
+            " -P /vnc_password " +
+            targetNetworkAlias +
+            " " +
+            vncPort
         );
     }
 
@@ -122,7 +134,8 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
     public enum VncRecordingFormat {
         FLV("flv") {
             @Override
-            String reencodeRecording(@NonNull VncRecordingContainer container, @NonNull String source) throws IOException, InterruptedException {
+            String reencodeRecording(@NonNull VncRecordingContainer container, @NonNull String source)
+                throws IOException, InterruptedException {
                 String newFileOutput = "/newScreen.flv";
                 container.execInContainer("ffmpeg", "-i", source, "-vcodec", "libx264", newFileOutput);
                 return newFileOutput;
@@ -130,17 +143,29 @@ public class VncRecordingContainer extends GenericContainer<VncRecordingContaine
         },
         MP4("mp4") {
             @Override
-            String reencodeRecording(@NonNull VncRecordingContainer container, @NonNull String source) throws IOException, InterruptedException {
+            String reencodeRecording(@NonNull VncRecordingContainer container, @NonNull String source)
+                throws IOException, InterruptedException {
                 String newFileOutput = "/newScreen.mp4";
-                container.execInContainer("ffmpeg", "-i", source, "-vcodec", "libx264", "-movflags", "faststart", "-pix_fmt", "yuv420p", newFileOutput);
+                container.execInContainer(
+                    "ffmpeg",
+                    "-i",
+                    source,
+                    "-vcodec",
+                    "libx264",
+                    "-movflags",
+                    "faststart",
+                    "-pix_fmt",
+                    "yuv420p",
+                    newFileOutput
+                );
                 return newFileOutput;
             }
         };
 
-        abstract String reencodeRecording(VncRecordingContainer container, String source) throws IOException, InterruptedException;
+        abstract String reencodeRecording(VncRecordingContainer container, String source)
+            throws IOException, InterruptedException;
 
         @Getter
         private final String filenameExtension;
     }
-
 }

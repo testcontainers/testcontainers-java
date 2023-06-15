@@ -4,7 +4,9 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import org.rnorth.ducttape.timeouts.Timeouts;
 
-import java.util.concurrent.*;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -17,7 +19,7 @@ public abstract class LazyFuture<T> implements Future<T> {
     @Getter(value = AccessLevel.MODULE, lazy = true)
     private final T resolvedValue = resolve();
 
-    abstract protected T resolve();
+    protected abstract T resolve();
 
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {

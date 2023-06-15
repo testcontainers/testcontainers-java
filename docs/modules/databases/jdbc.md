@@ -41,11 +41,28 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 
 #### Using TimescaleDB
 
-`jdbc:tc:timescaldb:2.1.0-pg13:///databasename`
+`jdbc:tc:timescaledb:2.1.0-pg13:///databasename`
 
 #### Using Trino
 
 `jdbc:tc:trino:352://localhost/memory/default`
+
+#### Using CockroachDB
+
+`jdbc:tc:cockroach:v21.2.3:///databasename`
+
+#### Using CrateDB
+
+`jdbc:tc:cratedb:5.2.3//localhost:5432/crate`
+
+#### Using TiDB
+
+`jdbc:tc:tidb:v6.1.0:///databasename`
+
+#### Using YugabyteDB
+
+`jdbc:tc:yugabyte:2.14.4.0-b26:///databasename`
+
 
 ### Using a classpath init script
 
@@ -119,5 +136,5 @@ Note that if you use `@Rule`, you will be given an isolated container for each t
 
 Examples/Tests:
 
- * [MySQL](https://github.com/testcontainers/testcontainers-java/blob/master/modules/mysql/src/test/java/org/testcontainers/junit/mysql/SimpleMySQLTest.java)
- * [PostgreSQL](https://github.com/testcontainers/testcontainers-java/blob/master/modules/postgresql/src/test/java/org/testcontainers/junit/postgresql/SimplePostgreSQLTest.java)
+ * [MySQL](https://github.com/testcontainers/testcontainers-java/blob/main/modules/mysql/src/test/java/org/testcontainers/junit/mysql/SimpleMySQLTest.java)
+ * [PostgreSQL](https://github.com/testcontainers/testcontainers-java/blob/main/modules/postgresql/src/test/java/org/testcontainers/junit/postgresql/SimplePostgreSQLTest.java)

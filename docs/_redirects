@@ -12,6 +12,7 @@
 /usage/database_containers.html         /modules/databases/
 /usage/neo4j_container.html             /modules/databases/neo4j/
 /compatibility.html                     /supported_docker_environment/
+/on_failure.html                        /error_missing_container_runtime_environment
 
 # No great 1:1 mapping exists for the following, so redirect to somewhere where at least a sensible sidebar will be shown
 

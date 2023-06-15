@@ -12,7 +12,7 @@
         <appender-ref ref="STDOUT"/>
     </root>
 
-    <logger name="org.testcontainers" level="DEBUG"/>
+    <logger name="org.testcontainers" level="INFO"/>
     <logger name="org.testcontainers.shaded" level="WARN"/>
 
 </configuration>

@@ -1,6 +1,5 @@
 package org.testcontainers.junit;
 
-
 import com.google.common.io.PatternFilenameFilter;
 import org.junit.Rule;
 import org.junit.Test;
@@ -9,6 +8,7 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.testcontainers.containers.BrowserWebDriverContainer;
+import org.testcontainers.containers.BrowserWebDriverContainer.VncRecordingMode;
 import org.testcontainers.containers.DefaultRecordingFileFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.VncRecordingContainer;
@@ -21,14 +21,11 @@ import org.testcontainers.utility.MountableFile;
 import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-import static java.time.temporal.ChronoUnit.SECONDS;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.testcontainers.containers.BrowserWebDriverContainer.VncRecordingMode.RECORD_ALL;
-import static org.testcontainers.containers.BrowserWebDriverContainer.VncRecordingMode.RECORD_FAILING;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(Enclosed.class)
 public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContainerTest {
@@ -52,32 +49,36 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
                 // To do this, simply add extra parameters to the rule constructor, so video will default to FLV format:
                 BrowserWebDriverContainer<?> chrome = new BrowserWebDriverContainer<>()
                     .withCapabilities(new ChromeOptions())
-                    .withRecordingMode(RECORD_ALL, target)
+                    .withRecordingMode(VncRecordingMode.RECORD_ALL, target)
                     // }
                     .withRecordingFileFactory(new DefaultRecordingFileFactory())
                     .withNetwork(NETWORK)
             ) {
                 File[] files = runSimpleExploreInContainer(chrome, "PASSED-.*\\.flv");
-                assertEquals("Recorded file not found", 1, files.length);
+                assertThat(files).as("Recorded file found").hasSize(1);
             }
         }
 
-        private File[] runSimpleExploreInContainer(BrowserWebDriverContainer<?> container, String fileNamePattern) throws InterruptedException {
+        private File[] runSimpleExploreInContainer(BrowserWebDriverContainer<?> container, String fileNamePattern)
+            throws InterruptedException {
             container.start();
 
             TimeUnit.MILLISECONDS.sleep(MINIMUM_VIDEO_DURATION_MILLISECONDS);
-            doSimpleExplore(container);
-            container.afterTest(new TestDescription() {
-                @Override
-                public String getTestId() {
-                    return getFilesystemFriendlyName();
-                }
+            doSimpleExplore(container, new ChromeOptions());
+            container.afterTest(
+                new TestDescription() {
+                    @Override
+                    public String getTestId() {
+                        return getFilesystemFriendlyName();
+                    }
 
-                @Override
-                public String getFilesystemFriendlyName() {
-                    return "ChromeThatRecordsAllTests-recordingTestThatShouldBeRecordedAndRetained";
-                }
-            }, Optional.empty());
+                    @Override
+                    public String getFilesystemFriendlyName() {
+                        return "ChromeThatRecordsAllTests-recordingTestThatShouldBeRecordedAndRetained";
+                    }
+                },
+                Optional.empty()
+            );
 
             return vncRecordingDirectory.getRoot().listFiles(new PatternFilenameFilter(fileNamePattern));
         }
@@ -90,13 +91,13 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
                 // Set (explicitly) FLV format for recorded video:
                 BrowserWebDriverContainer<?> chrome = new BrowserWebDriverContainer<>()
                     .withCapabilities(new ChromeOptions())
-                    .withRecordingMode(RECORD_ALL, target, VncRecordingFormat.FLV)
+                    .withRecordingMode(VncRecordingMode.RECORD_ALL, target, VncRecordingFormat.FLV)
                     // }
                     .withRecordingFileFactory(new DefaultRecordingFileFactory())
                     .withNetwork(NETWORK)
             ) {
                 File[] files = runSimpleExploreInContainer(chrome, "PASSED-.*\\.flv");
-                assertEquals("Recorded file not found", 1, files.length);
+                assertThat(files).as("Recorded file found").hasSize(1);
             }
         }
 
@@ -108,13 +109,13 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
                 // Set MP4 format for recorded video:
                 BrowserWebDriverContainer<?> chrome = new BrowserWebDriverContainer<>()
                     .withCapabilities(new ChromeOptions())
-                    .withRecordingMode(RECORD_ALL, target, VncRecordingFormat.MP4)
+                    .withRecordingMode(VncRecordingMode.RECORD_ALL, target, VncRecordingFormat.MP4)
                     // }
                     .withRecordingFileFactory(new DefaultRecordingFileFactory())
                     .withNetwork(NETWORK)
             ) {
                 File[] files = runSimpleExploreInContainer(chrome, "PASSED-.*\\.mp4");
-                assertEquals("Recorded file not found", 1, files.length);
+                assertThat(files).as("Recorded file found").hasSize(1);
             }
         }
 
@@ -124,7 +125,7 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
             try (
                 BrowserWebDriverContainer<?> chrome = new BrowserWebDriverContainer<>()
                     .withCapabilities(new ChromeOptions())
-                    .withRecordingMode(RECORD_ALL, vncRecordingDirectory.getRoot())
+                    .withRecordingMode(VncRecordingMode.RECORD_ALL, vncRecordingDirectory.getRoot())
                     .withRecordingFileFactory(new DefaultRecordingFileFactory())
                     .withNetwork(NETWORK)
             ) {
@@ -132,19 +133,28 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
                 mountableFile = MountableFile.forHostPath(recordedFiles[0].getCanonicalPath());
             }
 
-            try (GenericContainer<?> container = new GenericContainer<>(DockerImageName.parse("testcontainers/vnc-recorder:1.2.0"))) {
+            try (
+                GenericContainer<?> container = new GenericContainer<>(
+                    DockerImageName.parse("testcontainers/vnc-recorder:1.3.0")
+                )
+            ) {
                 String recordFileContainerPath = "/tmp/chromeTestRecord.flv";
-                container.withCopyFileToContainer(mountableFile, recordFileContainerPath)
-                        .withCreateContainerCmdModifier(createContainerCmd -> createContainerCmd.withEntrypoint("ffmpeg"))
-                        .withCommand("-i", recordFileContainerPath, "-f", "null", "-")
-                        .waitingFor(new LogMessageWaitStrategy()
-                                                .withRegEx(".*Duration.*")
-                                                .withStartupTimeout(Duration.of(60, SECONDS)))
-                        .start();
+                container
+                    .withCopyFileToContainer(mountableFile, recordFileContainerPath)
+                    .withCreateContainerCmdModifier(createContainerCmd -> createContainerCmd.withEntrypoint("ffmpeg"))
+                    .withCommand("-i", recordFileContainerPath, "-f", "null", "-")
+                    .waitingFor(
+                        new LogMessageWaitStrategy()
+                            .withRegEx(".*Duration.*")
+                            .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS))
+                    )
+                    .start();
                 String ffmpegOutput = container.getLogs();
 
-                assertTrue("Duration is incorrect in:\n " + ffmpegOutput,
-                    ffmpegOutput.contains("Duration: 00:") && !(ffmpegOutput.contains("Duration: 00:00:00.00")));
+                assertThat(ffmpegOutput)
+                    .as("Duration starts with 00:")
+                    .contains("Duration: 00:")
+                    .doesNotContain("Duration: 00:00:00.00");
             }
         }
     }
@@ -168,7 +178,7 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
             ) {
                 chrome.start();
 
-                doSimpleExplore(chrome);
+                doSimpleExplore(chrome, new ChromeOptions());
             }
         }
 
@@ -180,7 +190,7 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
                 // or if you only want videos for test failures:
                 BrowserWebDriverContainer<?> chrome = new BrowserWebDriverContainer<>()
                     .withCapabilities(new ChromeOptions())
-                    .withRecordingMode(RECORD_FAILING, target)
+                    .withRecordingMode(VncRecordingMode.RECORD_FAILING, target)
                     // }
                     .withRecordingFileFactory(new DefaultRecordingFileFactory())
                     .withNetwork(NETWORK)
@@ -188,26 +198,27 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
                 chrome.start();
 
                 TimeUnit.MILLISECONDS.sleep(MINIMUM_VIDEO_DURATION_MILLISECONDS);
-                doSimpleExplore(chrome);
-                chrome.afterTest(new TestDescription() {
-                    @Override
-                    public String getTestId() {
-                        return getFilesystemFriendlyName();
-                    }
+                doSimpleExplore(chrome, new ChromeOptions());
+                chrome.afterTest(
+                    new TestDescription() {
+                        @Override
+                        public String getTestId() {
+                            return getFilesystemFriendlyName();
+                        }
 
-                    @Override
-                    public String getFilesystemFriendlyName() {
-                        return "ChromeThatRecordsFailingTests-recordingTestThatShouldBeRecordedAndRetained";
-                    }
-                }, Optional.of(new RuntimeException("Force writing of video file.")));
+                        @Override
+                        public String getFilesystemFriendlyName() {
+                            return "ChromeThatRecordsFailingTests-recordingTestThatShouldBeRecordedAndRetained";
+                        }
+                    },
+                    Optional.of(new RuntimeException("Force writing of video file."))
+                );
 
                 String[] files = vncRecordingDirectory.getRoot().list(new PatternFilenameFilter("FAILED-.*\\.flv"));
-                assertEquals("Recorded file not found", 1, files.length);
+                assertThat(files).as("recorded file count").hasSize(1);
             }
-
         }
 
-        private static class CustomRecordingFileFactory extends DefaultRecordingFileFactory {
-        }
+        private static class CustomRecordingFileFactory extends DefaultRecordingFileFactory {}
     }
 }

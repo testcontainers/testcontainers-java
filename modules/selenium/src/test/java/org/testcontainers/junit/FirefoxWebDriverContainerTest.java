@@ -14,17 +14,17 @@ public class FirefoxWebDriverContainerTest extends BaseWebDriverContainerTest {
     // junitRule {
     @Rule
     public BrowserWebDriverContainer<?> firefox = new BrowserWebDriverContainer<>()
-            .withCapabilities(new FirefoxOptions())
-    // }
+        .withCapabilities(new FirefoxOptions())
+        // }
         .withNetwork(NETWORK);
 
     @Before
     public void checkBrowserIsIndeedFirefox() {
-        assertBrowserNameIs(firefox, "firefox");
+        assertBrowserNameIs(firefox, "firefox", new FirefoxOptions());
     }
 
     @Test
     public void simpleExploreTest() {
-        doSimpleExplore(firefox);
+        doSimpleExplore(firefox, new FirefoxOptions());
     }
 }

@@ -6,17 +6,21 @@ import org.junit.runners.model.Statement;
 
 import java.lang.annotation.Annotation;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 public class FlakyRuleTest {
 
     private static final String VALID_URL = "http://some.url/here";
+
     private static final String INVALID_URL = "";
 
     private static final String VALID_DATE_IN_FAR_FUTURE = "2063-04-05";
+
     private static final String VALID_DATE_IN_PAST = "1991-08-16";
+
     private static final String INVALID_DATE = "91-01-45";
+
     private static final int DEFAULT_TRIES = 3;
 
     private FlakyTestJUnit4RetryRule rule = new FlakyTestJUnit4RetryRule();
@@ -28,10 +32,10 @@ public class FlakyRuleTest {
         try {
             rule.apply(statement, description).evaluate();
             fail("Should not reach here");
-        } catch (Exception ignored) {
-
-        }
-        assertEquals("The statement should only be invoked once, even if it throws", 1, statement.invocationCount);
+        } catch (Exception ignored) {}
+        assertThat(statement.invocationCount)
+            .as("The statement should only be invoked once, even if it throws")
+            .isEqualTo(1);
     }
 
     @Test
@@ -42,10 +46,8 @@ public class FlakyRuleTest {
         try {
             rule.apply(statement, description).evaluate();
             fail("Should not reach here");
-        } catch (Exception ignored) {
-
-        }
-        assertEquals("The statement should be invoked three times", 3, statement.invocationCount);
+        } catch (Exception ignored) {}
+        assertThat(statement.invocationCount).as("The statement should be invoked three times").isEqualTo(3);
     }
 
     @Test
@@ -56,10 +58,8 @@ public class FlakyRuleTest {
         try {
             rule.apply(statement, description).evaluate();
             fail("Should not reach here");
-        } catch (Exception ignored) {
-
-        }
-        assertEquals("The statement should be invoked ten times", 10, statement.invocationCount);
+        } catch (Exception ignored) {}
+        assertThat(statement.invocationCount).as("The statement should be invoked ten times").isEqualTo(10);
     }
 
     @Test
@@ -70,7 +70,9 @@ public class FlakyRuleTest {
 
         rule.apply(statement, description).evaluate();
 
-        assertEquals("The statement should be invoked three times, and succeed the third time", 3, statement.invocationCount);
+        assertThat(statement.invocationCount)
+            .as("The statement should be invoked three times, and succeed the third time")
+            .isEqualTo(3);
     }
 
     @Test
@@ -81,7 +83,7 @@ public class FlakyRuleTest {
 
         rule.apply(statement, description).evaluate();
 
-        assertEquals("The statement should be invoked once", 1, statement.invocationCount);
+        assertThat(statement.invocationCount).as("The statement should be invoked once").isEqualTo(1);
     }
 
     @Test
@@ -91,10 +93,10 @@ public class FlakyRuleTest {
         try {
             rule.apply(statement, description).evaluate();
             fail("Should not reach here");
-        } catch (Exception ignored) {
-
-        }
-        assertEquals("The statement should only be invoked once, even if it throws", 1, statement.invocationCount);
+        } catch (Exception ignored) {}
+        assertThat(statement.invocationCount)
+            .as("The statement should only be invoked once, even if it throws")
+            .isEqualTo(1);
     }
 
     @Test
@@ -104,10 +106,10 @@ public class FlakyRuleTest {
         try {
             rule.apply(statement, description).evaluate();
             fail("Should not reach here");
-        } catch (IllegalArgumentException ignored) {
-
-        }
-        assertEquals("The statement should not be invoked if the annotation is invalid", 0, statement.invocationCount);
+        } catch (IllegalArgumentException ignored) {}
+        assertThat(statement.invocationCount)
+            .as("The statement should not be invoked if the annotation is invalid")
+            .isEqualTo(0);
     }
 
     @Test
@@ -117,14 +119,18 @@ public class FlakyRuleTest {
         try {
             rule.apply(statement, description).evaluate();
             fail("Should not reach here");
-        } catch (IllegalArgumentException ignored) {
-
-        }
-        assertEquals("The statement should not be invoked if the annotation is invalid", 0, statement.invocationCount);
+        } catch (IllegalArgumentException ignored) {}
+        assertThat(statement.invocationCount)
+            .as("The statement should not be invoked if the annotation is invalid")
+            .isEqualTo(0);
     }
 
     private Description newDescriptionWithAnnotation(String reviewDate, String gitHubUrl) {
-        return Description.createTestDescription("SomeTestClass", "someMethod", newAnnotation(reviewDate, gitHubUrl, DEFAULT_TRIES));
+        return Description.createTestDescription(
+            "SomeTestClass",
+            "someMethod",
+            newAnnotation(reviewDate, gitHubUrl, DEFAULT_TRIES)
+        );
     }
 
     private Description newDescriptionWithoutAnnotation() {
@@ -132,15 +138,27 @@ public class FlakyRuleTest {
     }
 
     private Description newDescriptionWithAnnotation() {
-        return Description.createTestDescription("SomeTestClass", "someMethod", newAnnotation(VALID_DATE_IN_FAR_FUTURE, VALID_URL, DEFAULT_TRIES));
+        return Description.createTestDescription(
+            "SomeTestClass",
+            "someMethod",
+            newAnnotation(VALID_DATE_IN_FAR_FUTURE, VALID_URL, DEFAULT_TRIES)
+        );
     }
 
     private Description newDescriptionWithAnnotationAndCustomTries(int maxTries) {
-        return Description.createTestDescription("SomeTestClass", "someMethod", newAnnotation(VALID_DATE_IN_FAR_FUTURE, VALID_URL, maxTries));
+        return Description.createTestDescription(
+            "SomeTestClass",
+            "someMethod",
+            newAnnotation(VALID_DATE_IN_FAR_FUTURE, VALID_URL, maxTries)
+        );
     }
 
     private Description newDescriptionWithExpiredAnnotation() {
-        return Description.createTestDescription("SomeTestClass", "someMethod", newAnnotation(VALID_DATE_IN_PAST, VALID_URL, DEFAULT_TRIES));
+        return Description.createTestDescription(
+            "SomeTestClass",
+            "someMethod",
+            newAnnotation(VALID_DATE_IN_PAST, VALID_URL, DEFAULT_TRIES)
+        );
     }
 
     private Flaky newAnnotation(final String reviewDate, String gitHubUrl, int tries) {
@@ -174,7 +192,9 @@ public class FlakyRuleTest {
     }
 
     private static class DummyStatement extends Statement {
+
         int shouldThrowTimes = -1;
+
         int invocationCount = 0;
 
         @Override

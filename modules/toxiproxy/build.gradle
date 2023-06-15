@@ -2,10 +2,8 @@ description = "Testcontainers :: Toxiproxy"
 
 dependencies {
     api project(':testcontainers')
-    api 'eu.rekawek.toxiproxy:toxiproxy-java:2.1.4'
+    api 'eu.rekawek.toxiproxy:toxiproxy-java:2.1.7'
 
     testImplementation 'redis.clients:jedis:3.0.1'
-    testImplementation 'org.rnorth.visible-assertions:visible-assertions:2.1.2'
-
-    testImplementation project(':test-support')
+    testImplementation 'org.assertj:assertj-core:3.24.2'
 }
