@@ -30,7 +30,7 @@ publishing {
 
                     name project.description
                     description 'Isolated container management for Java code testing'
-                    url 'https://testcontainers.org'
+                    url 'https://java.testcontainers.org'
                     issueManagement {
                         system 'GitHub'
                         url 'https://github.com/testcontainers/testcontainers-java/issues'
@@ -57,8 +57,12 @@ publishing {
 
                 def dependenciesNode = rootNode.appendNode('dependencies')
 
-                def addDependencies = { Configuration configuration, scope ->
-                    for (dependency in configuration.resolvedConfiguration.firstLevelModuleDependencies) {
+                def apiDeps= project.configurations.api.resolvedConfiguration.firstLevelModuleDependencies
+                def providedDeps = project.configurations.provided.resolvedConfiguration.firstLevelModuleDependencies
+                def newApiDeps = apiDeps - providedDeps
+
+                def addDependencies = { Set<ResolvedDependency> resolvedDependencies, scope ->
+                    for (dependency in resolvedDependencies) {
                         if (dependency.configuration.startsWith("platform-")) {
                             continue
                         }
@@ -66,6 +70,7 @@ publishing {
                             if (!dependency.moduleGroup || !dependency.moduleName || !dependency.moduleVersion) {
                                 throw new IllegalStateException("Wrong dependency: $dependency")
                             }
+
                             appendNode('groupId', dependency.moduleGroup)
                             appendNode('artifactId', dependency.moduleName)
                             appendNode('version', dependency.moduleVersion)
@@ -83,8 +88,8 @@ publishing {
                         }
                     }
                 }
-                addDependencies(project.configurations.api, 'compile')
-                addDependencies(project.configurations.provided, 'provided')
+                addDependencies(newApiDeps, 'compile')
+                addDependencies(providedDeps, 'provided')
             }
         }
     }

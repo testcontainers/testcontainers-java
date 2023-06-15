@@ -13,7 +13,6 @@ import com.github.dockerjava.api.model.Info;
 import com.github.dockerjava.api.model.Version;
 import com.github.dockerjava.api.model.Volume;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableMap;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.Synchronized;
@@ -34,6 +33,7 @@ import org.testcontainers.utility.TestcontainersConfiguration;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,16 +51,32 @@ import java.util.function.Consumer;
 public class DockerClientFactory {
 
     public static final ThreadGroup TESTCONTAINERS_THREAD_GROUP = new ThreadGroup("testcontainers");
+
     public static final String TESTCONTAINERS_LABEL = DockerClientFactory.class.getPackage().getName();
+
     public static final String TESTCONTAINERS_SESSION_ID_LABEL = TESTCONTAINERS_LABEL + ".sessionId";
+
+    public static final String TESTCONTAINERS_LANG_LABEL = TESTCONTAINERS_LABEL + ".lang";
+
+    public static final String TESTCONTAINERS_VERSION_LABEL = TESTCONTAINERS_LABEL + ".version";
 
     public static final String SESSION_ID = UUID.randomUUID().toString();
 
-    public static final Map<String, String> DEFAULT_LABELS = ImmutableMap.of(
-            TESTCONTAINERS_LABEL, "true"
-    );
+    public static final Map<String, String> DEFAULT_LABELS = markerLabels();
 
-    private static final DockerImageName TINY_IMAGE = DockerImageName.parse("alpine:3.14");
+    static Map<String, String> markerLabels() {
+        String implementationVersion = DockerClientFactory.class.getPackage().getImplementationVersion();
+        String testcontainersVersion = implementationVersion == null ? "unspecified" : implementationVersion;
+
+        Map<String, String> labels = new HashMap<>();
+        labels.put(TESTCONTAINERS_LABEL, "true");
+        labels.put(TESTCONTAINERS_LANG_LABEL, "java");
+        labels.put(TESTCONTAINERS_VERSION_LABEL, testcontainersVersion);
+        return Collections.unmodifiableMap(labels);
+    }
+
+    private static final DockerImageName TINY_IMAGE = DockerImageName.parse("alpine:3.16");
+
     private static DockerClientFactory instance;
 
     // Cached client configuration
@@ -79,9 +95,7 @@ public class DockerClientFactory {
     private final boolean fileMountingSupported = checkMountableFile();
 
     @VisibleForTesting
-    DockerClientFactory() {
-
-    }
+    DockerClientFactory() {}
 
     public static DockerClient lazyClient() {
         return new DockerClientDelegate() {
@@ -102,7 +116,7 @@ public class DockerClientFactory {
      *
      * @return the singleton instance of DockerClientFactory
      */
-    public synchronized static DockerClientFactory instance() {
+    public static synchronized DockerClientFactory instance() {
         if (instance == null) {
             instance = new DockerClientFactory();
         }
@@ -112,6 +126,7 @@ public class DockerClientFactory {
 
     /**
      * Checks whether Docker is accessible and {@link #client()} is able to produce a client.
+     *
      * @return true if Docker is available, false if not.
      */
     public synchronized boolean isDockerAvailable() {
@@ -143,22 +158,22 @@ public class DockerClientFactory {
 
     @UnstableAPI
     public String getRemoteDockerUnixSocketPath() {
-        String dockerSocketOverride = System.getenv("TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE");
-        if (!StringUtils.isBlank(dockerSocketOverride)) {
-            return dockerSocketOverride;
+        if (this.strategy != null && this.strategy.allowUserOverrides()) {
+            String dockerSocketOverride = System.getenv("TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE");
+            if (!StringUtils.isBlank(dockerSocketOverride)) {
+                return dockerSocketOverride;
+            }
+        }
+        if (this.strategy != null && this.strategy.getRemoteDockerUnixSocketPath() != null) {
+            return this.strategy.getRemoteDockerUnixSocketPath();
         }
 
         URI dockerHost = getTransportConfig().getDockerHost();
-        String path = "unix".equals(dockerHost.getScheme())
-            ? dockerHost.getRawPath()
-            : "/var/run/docker.sock";
-        return SystemUtils.IS_OS_WINDOWS
-               ? "/" + path
-               : path;
+        String path = "unix".equals(dockerHost.getScheme()) ? dockerHost.getRawPath() : "/var/run/docker.sock";
+        return SystemUtils.IS_OS_WINDOWS ? "/" + path : path;
     }
 
     /**
-     *
      * @return a new initialized Docker client
      */
     @Synchronized
@@ -175,16 +190,16 @@ public class DockerClientFactory {
 
         final DockerClientProviderStrategy strategy = getOrInitializeStrategy();
 
-        client = new DockerClientDelegate() {
+        client =
+            new DockerClientDelegate() {
+                @Getter
+                final DockerClient dockerClient = strategy.getDockerClient();
 
-            @Getter
-            final DockerClient dockerClient = strategy.getDockerClient();
-
-            @Override
-            public void close() {
-                throw new IllegalStateException("You should never close the global DockerClient!");
-            }
-        };
+                @Override
+                public void close() {
+                    throw new IllegalStateException("You should never close the global DockerClient!");
+                }
+            };
         log.info("Docker host IP address is {}", strategy.getDockerHostIpAddress());
 
         Info dockerInfo = strategy.getInfo();
@@ -192,11 +207,22 @@ public class DockerClientFactory {
         Version version = client.versionCmd().exec();
         log.debug("Docker version: {}", version.getRawValues());
         activeApiVersion = version.getApiVersion();
-        log.info("Connected to docker: \n" +
-                "  Server Version: " + dockerInfo.getServerVersion() + "\n" +
-                "  API Version: " + activeApiVersion + "\n" +
-                "  Operating System: " + dockerInfo.getOperatingSystem() + "\n" +
-                "  Total Memory: " + dockerInfo.getMemTotal() / (1024 * 1024) + " MB");
+        log.info(
+            "Connected to docker: \n" +
+            "  Server Version: " +
+            dockerInfo.getServerVersion() +
+            "\n" +
+            "  API Version: " +
+            activeApiVersion +
+            "\n" +
+            "  Operating System: " +
+            dockerInfo.getOperatingSystem() +
+            "\n" +
+            "  Total Memory: " +
+            dockerInfo.getMemTotal() /
+            (1024 * 1024) +
+            " MB"
+        );
 
         try {
             //noinspection deprecation
@@ -225,7 +251,8 @@ public class DockerClientFactory {
     }
 
     private void checkDockerVersion(String dockerVersion) {
-        boolean versionIsSufficient = new ComparableVersion(dockerVersion).compareTo(new ComparableVersion("1.6.0")) >= 0;
+        boolean versionIsSufficient = new ComparableVersion(dockerVersion).compareTo(new ComparableVersion("1.6.0")) >=
+        0;
         check("Docker server version should be at least 1.6.0", versionIsSufficient);
     }
 
@@ -241,14 +268,22 @@ public class DockerClientFactory {
     private boolean checkMountableFile() {
         DockerClient dockerClient = client();
 
-        MountableFile mountableFile = MountableFile.forClasspathResource(ResourceReaper.class.getName().replace(".", "/") + ".class");
+        MountableFile mountableFile = MountableFile.forClasspathResource(
+            ResourceReaper.class.getName().replace(".", "/") + ".class"
+        );
 
         Volume volume = new Volume("/dummy");
         try {
             return runInsideDocker(
-                createContainerCmd -> createContainerCmd.withBinds(new Bind(mountableFile.getResolvedPath(), volume, AccessMode.ro)),
+                createContainerCmd -> {
+                    createContainerCmd.withBinds(new Bind(mountableFile.getResolvedPath(), volume, AccessMode.ro));
+                },
                 (__, containerId) -> {
-                    try (InputStream stream = dockerClient.copyArchiveFromContainerCmd(containerId, volume.getPath()).exec()) {
+                    try (
+                        InputStream stream = dockerClient
+                            .copyArchiveFromContainerCmd(containerId, volume.getPath())
+                            .exec()
+                    ) {
                         stream.read();
                         return true;
                     } catch (Exception e) {
@@ -293,16 +328,22 @@ public class DockerClientFactory {
         return getOrInitializeStrategy().getDockerHostIpAddress();
     }
 
-    public <T> T runInsideDocker(Consumer<CreateContainerCmd> createContainerCmdConsumer, BiFunction<DockerClient, String, T> block) {
+    public <T> T runInsideDocker(
+        Consumer<CreateContainerCmd> createContainerCmdConsumer,
+        BiFunction<DockerClient, String, T> block
+    ) {
         return runInsideDocker(TINY_IMAGE, createContainerCmdConsumer, block);
     }
 
-    <T> T runInsideDocker(DockerImageName imageName, Consumer<CreateContainerCmd> createContainerCmdConsumer, BiFunction<DockerClient, String, T> block) {
+    <T> T runInsideDocker(
+        DockerImageName imageName,
+        Consumer<CreateContainerCmd> createContainerCmdConsumer,
+        BiFunction<DockerClient, String, T> block
+    ) {
         RemoteDockerImage dockerImage = new RemoteDockerImage(imageName);
         HashMap<String, String> labels = new HashMap<>(DEFAULT_LABELS);
         labels.putAll(ResourceReaper.instance().getLabels());
-        CreateContainerCmd createContainerCmd = client.createContainerCmd(dockerImage.get())
-                .withLabels(labels);
+        CreateContainerCmd createContainerCmd = client.createContainerCmd(dockerImage.get()).withLabels(labels);
         createContainerCmdConsumer.accept(createContainerCmd);
         String id = createContainerCmd.exec().getId();
 

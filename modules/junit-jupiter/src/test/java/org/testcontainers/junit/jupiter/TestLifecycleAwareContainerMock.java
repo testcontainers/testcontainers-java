@@ -11,9 +11,11 @@ import java.util.Optional;
 public class TestLifecycleAwareContainerMock implements Startable, TestLifecycleAware {
 
     static final String BEFORE_TEST = "beforeTest";
+
     static final String AFTER_TEST = "afterTest";
 
     private final List<String> lifecycleMethodCalls = new ArrayList<>();
+
     private final List<String> lifecycleFilesystemFriendlyNames = new ArrayList<>();
 
     private Throwable capturedThrowable;
@@ -43,12 +45,8 @@ public class TestLifecycleAwareContainerMock implements Startable, TestLifecycle
     }
 
     @Override
-    public void start() {
-
-    }
+    public void start() {}
 
     @Override
-    public void stop() {
-
-    }
+    public void stop() {}
 }

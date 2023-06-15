@@ -10,29 +10,31 @@ import java.util.function.Consumer;
  * BuildContextBuilder's trait for Dockerfile-based resources.
  *
  */
-public interface DockerfileTrait<SELF extends DockerfileTrait<SELF> & BuildContextBuilderTrait<SELF> & StringsTrait<SELF>> {
-
+public interface DockerfileTrait<
+    SELF extends DockerfileTrait<SELF> & BuildContextBuilderTrait<SELF> & StringsTrait<SELF>
+> {
     default SELF withDockerfileFromBuilder(Consumer<DockerfileBuilder> builderConsumer) {
-
         DockerfileBuilder builder = new DockerfileBuilder();
 
         builderConsumer.accept(builder);
 
         // return Transferable because we want to build Dockerfile's content lazily
-        return ((SELF) this).withFileFromTransferable("Dockerfile", new Transferable() {
+        return ((SELF) this).withFileFromTransferable(
+                "Dockerfile",
+                new Transferable() {
+                    @Getter(lazy = true)
+                    private final byte[] bytes = builder.build().getBytes();
 
-            @Getter(lazy = true)
-            private final byte[] bytes = builder.build().getBytes();
+                    @Override
+                    public long getSize() {
+                        return getBytes().length;
+                    }
 
-            @Override
-            public long getSize() {
-                return getBytes().length;
-            }
-
-            @Override
-            public String getDescription() {
-                return "Dockerfile: " + builder;
-            }
-        });
+                    @Override
+                    public String getDescription() {
+                        return "Dockerfile: " + builder;
+                    }
+                }
+            );
     }
 }

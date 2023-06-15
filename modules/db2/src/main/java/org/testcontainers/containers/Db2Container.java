@@ -6,7 +6,6 @@ import org.testcontainers.utility.LicenseAcceptance;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-import java.util.HashSet;
 import java.util.Set;
 
 public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
@@ -20,10 +19,13 @@ public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
 
     @Deprecated
     public static final String DEFAULT_TAG = "11.5.0.0a";
+
     public static final int DB2_PORT = 50000;
 
     private String databaseName = "test";
+
     private String username = "db2inst1";
+
     private String password = "foobar1234";
 
     /**
@@ -40,20 +42,25 @@ public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
 
     public Db2Container(final DockerImageName dockerImageName) {
         super(dockerImageName);
-
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         withPrivilegedMode(true);
-        this.waitStrategy = new LogMessageWaitStrategy()
+        this.waitStrategy =
+            new LogMessageWaitStrategy()
                 .withRegEx(".*Setup has completed\\..*")
                 .withStartupTimeout(Duration.of(10, ChronoUnit.MINUTES));
 
         addExposedPort(DB2_PORT);
     }
 
+    /**
+     * @return the ports on which to check if the container is ready
+     * @deprecated use {@link #getLivenessCheckPortNumbers()} instead
+     */
     @Override
+    @Deprecated
     protected Set<Integer> getLivenessCheckPorts() {
-        return new HashSet<>(getMappedPort(DB2_PORT));
+        return super.getLivenessCheckPorts();
     }
 
     @Override
@@ -69,10 +76,12 @@ public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
         addEnv("DB2INST1_PASSWORD", password);
 
         // These settings help the DB2 container start faster
-        if (!getEnvMap().containsKey("AUTOCONFIG"))
+        if (!getEnvMap().containsKey("AUTOCONFIG")) {
             addEnv("AUTOCONFIG", "false");
-        if (!getEnvMap().containsKey("ARCHIVE_LOGS"))
+        }
+        if (!getEnvMap().containsKey("ARCHIVE_LOGS")) {
             addEnv("ARCHIVE_LOGS", "false");
+        }
     }
 
     /**
@@ -92,8 +101,7 @@ public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
     @Override
     public String getJdbcUrl() {
         String additionalUrlParams = constructUrlParameters(":", ";", ";");
-        return "jdbc:db2://" + getHost() + ":" + getMappedPort(DB2_PORT) +
-            "/" + databaseName + additionalUrlParams;
+        return "jdbc:db2://" + getHost() + ":" + getMappedPort(DB2_PORT) + "/" + databaseName + additionalUrlParams;
     }
 
     @Override

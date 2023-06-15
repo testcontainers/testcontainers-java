@@ -10,14 +10,15 @@ import java.nio.charset.Charset;
  * Created by rnorth on 26/03/2016.
  */
 public class ToStringConsumer extends BaseConsumer<ToStringConsumer> {
-    private ByteArrayOutputStream stringBuffer = new ByteArrayOutputStream();
+
+    private final ByteArrayOutputStream stringBuffer = new ByteArrayOutputStream();
 
     @Override
     public void accept(OutputFrame outputFrame) {
         try {
-            if (outputFrame.getBytes() != null) {
-                stringBuffer.write(outputFrame.getBytes());
-                stringBuffer.flush();
+            final byte[] bytes = outputFrame.getBytes();
+            if (bytes != null) {
+                stringBuffer.write(bytes);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

@@ -79,14 +79,12 @@ enum LocalImagesCache {
             }
 
             cache.putAll(
-                Stream.of(repoTags)
+                Stream
+                    .of(repoTags)
                     // Protection against some edge case where local image repository tags end up with duplicates
                     // making toMap crash at merge time.
                     .distinct()
-                    .collect(Collectors.toMap(
-                        DockerImageName::new,
-                        it -> ImageData.from(image)
-                    ))
+                    .collect(Collectors.toMap(DockerImageName::new, it -> ImageData.from(image)))
             );
         }
     }

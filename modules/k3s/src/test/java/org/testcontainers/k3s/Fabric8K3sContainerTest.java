@@ -10,18 +10,16 @@ import io.fabric8.kubernetes.api.model.PodSpecBuilder;
 import io.fabric8.kubernetes.api.model.ProbeBuilder;
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
-import io.fabric8.kubernetes.client.dsl.PodResource;
-import io.fabric8.kubernetes.client.dsl.Readiable;
+import io.fabric8.kubernetes.client.dsl.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.assertj.core.api.Assertions;
-import org.assertj.core.api.Condition;
 import org.junit.Test;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.utility.DockerImageName;
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @Slf4j
 public class Fabric8K3sContainerTest {
@@ -49,15 +47,15 @@ public class Fabric8K3sContainerTest {
             List<Node> nodes = client.nodes().list().getItems();
             // }
 
-            Assertions.assertThat(nodes).hasSize(1);
+            assertThat(nodes).hasSize(1);
 
             // verify that we can start a pod
             Pod helloworld = dummyStartablePod();
             client.pods().create(helloworld);
             client.pods().inNamespace("default").withName("helloworld").waitUntilReady(30, TimeUnit.SECONDS);
 
-            Assertions.assertThat(client.pods().inNamespace("default").withName("helloworld"))
-                .extracting(Readiable::isReady)
+            assertThat(client.pods().inNamespace("default").withName("helloworld"))
+                .extracting(Resource::isReady)
                 .isEqualTo(true);
         }
     }

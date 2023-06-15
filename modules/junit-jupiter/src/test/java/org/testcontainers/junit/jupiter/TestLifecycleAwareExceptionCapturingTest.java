@@ -6,14 +6,14 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assume.assumeTrue;
 
 // The order of @ExtendsWith and @Testcontainers is crucial in order for the tests
 @Testcontainers
 @TestMethodOrder(OrderAnnotation.class)
 class TestLifecycleAwareExceptionCapturingTest {
+
     @Container
     private final TestLifecycleAwareContainerMock testContainer = new TestLifecycleAwareContainerMock();
 
@@ -31,7 +31,7 @@ class TestLifecycleAwareExceptionCapturingTest {
     @Order(2)
     void should_have_captured_thrownException() {
         Throwable capturedThrowable = startedTestContainer.getCapturedThrowable();
-        assertTrue(capturedThrowable instanceof AssumptionViolatedException);
-        assertEquals("got: <false>, expected: is <true>", capturedThrowable.getMessage());
+        assertThat(capturedThrowable).isInstanceOf(AssumptionViolatedException.class);
+        assertThat(capturedThrowable.getMessage()).isEqualTo("got: <false>, expected: is <true>");
     }
 }

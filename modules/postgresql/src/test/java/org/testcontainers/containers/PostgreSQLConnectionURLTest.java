@@ -3,10 +3,8 @@ package org.testcontainers.containers;
 import org.junit.Test;
 import org.testcontainers.PostgreSQLTestImages;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertFalse;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 public class PostgreSQLConnectionURLTest {
 
@@ -16,9 +14,11 @@ public class PostgreSQLConnectionURLTest {
         String connectionUrl = postgres.constructUrlForConnection("?stringtype=unspecified&stringtype=unspecified");
         String queryString = connectionUrl.substring(connectionUrl.indexOf('?'));
 
-        assertTrue("Query String contains expected params", queryString.contains("?stringtype=unspecified&stringtype=unspecified"));
-        assertEquals("Query String starts with '?'", 0, queryString.indexOf('?'));
-        assertFalse("Query String does not contain extra '?'", queryString.substring(1).contains("?"));
+        assertThat(queryString)
+            .as("Query String contains expected params")
+            .contains("?stringtype=unspecified&stringtype=unspecified");
+        assertThat(queryString.indexOf('?')).as("Query String starts with '?'").isZero();
+        assertThat(queryString.substring(1)).as("Query String does not contain extra '?'").doesNotContain("?");
     }
 
     @Test
@@ -27,9 +27,11 @@ public class PostgreSQLConnectionURLTest {
         String connectionUrl = postgres.constructUrlForConnection("?stringtype=unspecified&stringtype=unspecified");
         String queryString = connectionUrl.substring(connectionUrl.indexOf('?'));
 
-        assertTrue("Query String contains expected params", queryString.contains("?stringtype=unspecified&stringtype=unspecified"));
-        assertEquals("Query String starts with '?'", 0, queryString.indexOf('?'));
-        assertFalse("Query String does not contain extra '?'", queryString.substring(1).contains("?"));
+        assertThat(queryString)
+            .as("Query String contains expected params")
+            .contains("?stringtype=unspecified&stringtype=unspecified");
+        assertThat(queryString.indexOf('?')).as("Query String starts with '?'").isZero();
+        assertThat(queryString.substring(1)).as("Query String does not contain extra '?'").doesNotContain("?");
     }
 
     @Test
@@ -37,16 +39,22 @@ public class PostgreSQLConnectionURLTest {
         PostgreSQLContainer<?> postgres = new FixedJdbcUrlPostgreSQLContainer();
         String connectionUrl = postgres.constructUrlForConnection("");
 
-        assertTrue("Query String remains unchanged", postgres.getJdbcUrl().equals(connectionUrl));
+        assertThat(postgres.getJdbcUrl()).as("Query String remains unchanged").isEqualTo(connectionUrl);
     }
 
     @Test
     public void shouldRejectInvalidQueryString() {
-        assertThrows("Fails when invalid query string provided", IllegalArgumentException.class,
-            () -> new NoParamsUrlPostgreSQLContainer().constructUrlForConnection("stringtype=unspecified"));
+        assertThat(
+            catchThrowable(() -> {
+                new NoParamsUrlPostgreSQLContainer().constructUrlForConnection("stringtype=unspecified");
+            })
+        )
+            .as("Fails when invalid query string provided")
+            .isInstanceOf(IllegalArgumentException.class);
     }
 
     static class FixedJdbcUrlPostgreSQLContainer extends PostgreSQLContainer<FixedJdbcUrlPostgreSQLContainer> {
+
         public FixedJdbcUrlPostgreSQLContainer() {
             super(PostgreSQLTestImages.POSTGRES_TEST_IMAGE);
         }
@@ -63,6 +71,7 @@ public class PostgreSQLConnectionURLTest {
     }
 
     static class NoParamsUrlPostgreSQLContainer extends PostgreSQLContainer<FixedJdbcUrlPostgreSQLContainer> {
+
         public NoParamsUrlPostgreSQLContainer() {
             super(PostgreSQLTestImages.POSTGRES_TEST_IMAGE);
         }

@@ -7,9 +7,7 @@ import org.testcontainers.DockerClientFactory;
 
 import java.net.URI;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class DockerClientConfigUtilsTest {
 
@@ -17,34 +15,48 @@ public class DockerClientConfigUtilsTest {
 
     @Test
     public void getDockerHostIpAddressShouldReturnLocalhostWhenUnixSocket() {
-        Assumptions.assumeThat(DockerClientConfigUtils.IN_A_CONTAINER)
-            .as("in a container")
-            .isFalse();
+        Assumptions.assumeThat(DockerClientConfigUtils.IN_A_CONTAINER).as("in a container").isFalse();
 
-        String actual = DockerClientProviderStrategy.resolveDockerHostIpAddress(client, URI.create("unix:///var/run/docker.sock"));
-        assertEquals("localhost", actual);
+        String actual = DockerClientProviderStrategy.resolveDockerHostIpAddress(
+            client,
+            URI.create("unix:///var/run/docker.sock"),
+            true
+        );
+        assertThat(actual).isEqualTo("localhost");
     }
 
     @Test
     public void getDockerHostIpAddressShouldReturnDockerHostIpWhenHttpsUri() {
-        String actual = DockerClientProviderStrategy.resolveDockerHostIpAddress(client, URI.create("http://12.23.34.45"));
-        assertEquals("12.23.34.45", actual);
+        String actual = DockerClientProviderStrategy.resolveDockerHostIpAddress(
+            client,
+            URI.create("http://12.23.34.45"),
+            true
+        );
+        assertThat(actual).isEqualTo("12.23.34.45");
     }
 
     @Test
     public void getDockerHostIpAddressShouldReturnDockerHostIpWhenTcpUri() {
-        String actual = DockerClientProviderStrategy.resolveDockerHostIpAddress(client, URI.create("tcp://12.23.34.45"));
-        assertEquals("12.23.34.45", actual);
+        String actual = DockerClientProviderStrategy.resolveDockerHostIpAddress(
+            client,
+            URI.create("tcp://12.23.34.45"),
+            true
+        );
+        assertThat(actual).isEqualTo("12.23.34.45");
     }
 
     @Test
     public void getDockerHostIpAddressShouldReturnNullWhenUnsupportedUriScheme() {
-        String actual = DockerClientProviderStrategy.resolveDockerHostIpAddress(client, URI.create("gopher://12.23.34.45"));
-        assertNull(actual);
+        String actual = DockerClientProviderStrategy.resolveDockerHostIpAddress(
+            client,
+            URI.create("gopher://12.23.34.45"),
+            true
+        );
+        assertThat(actual).isNull();
     }
 
     @Test(timeout = 5_000)
     public void getDefaultGateway() {
-        assertNotNull(DockerClientConfigUtils.getDefaultGateway());
+        assertThat(DockerClientConfigUtils.getDefaultGateway()).isNotNull();
     }
 }

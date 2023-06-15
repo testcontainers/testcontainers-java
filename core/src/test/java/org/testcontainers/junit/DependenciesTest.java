@@ -2,7 +2,7 @@ package org.testcontainers.junit;
 
 import lombok.Getter;
 import org.junit.Test;
-import org.rnorth.visibleassertions.VisibleAssertions;
+import org.testcontainers.TestImages;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 import org.testcontainers.lifecycle.Startable;
@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.testcontainers.TestImages.TINY_IMAGE;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class DependenciesTest {
 
@@ -25,15 +25,15 @@ public class DependenciesTest {
         InvocationCountingStartable startable = new InvocationCountingStartable();
 
         try (
-            GenericContainer<?> container = new GenericContainer<>(TINY_IMAGE)
+            GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
                 .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
                 .dependsOn(startable)
         ) {
             container.start();
         }
 
-        VisibleAssertions.assertEquals("Started once", 1, startable.getStartInvocationCount().intValue());
-        VisibleAssertions.assertEquals("Does not trigger .stop()", 0, startable.getStopInvocationCount().intValue());
+        assertThat(startable.getStartInvocationCount().intValue()).as("Started once").isEqualTo(1);
+        assertThat(startable.getStopInvocationCount().intValue()).as("Does not trigger .stop()").isZero();
     }
 
     @Test
@@ -42,15 +42,15 @@ public class DependenciesTest {
         InvocationCountingStartable startable2 = new InvocationCountingStartable();
 
         try (
-            GenericContainer<?> container = new GenericContainer<>(TINY_IMAGE)
+            GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
                 .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
                 .dependsOn(startable1, startable2)
         ) {
             container.start();
         }
 
-        VisibleAssertions.assertEquals("Startable1 started once", 1, startable1.getStartInvocationCount().intValue());
-        VisibleAssertions.assertEquals("Startable2 started once", 1, startable2.getStartInvocationCount().intValue());
+        assertThat(startable1.getStartInvocationCount().intValue()).as("Startable1 started once").isEqualTo(1);
+        assertThat(startable2.getStartInvocationCount().intValue()).as("Startable2 started once").isEqualTo(1);
     }
 
     @Test
@@ -58,7 +58,7 @@ public class DependenciesTest {
         InvocationCountingStartable startable = new InvocationCountingStartable();
 
         try (
-            GenericContainer<?> container = new GenericContainer<>(TINY_IMAGE)
+            GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
                 .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
                 .dependsOn(startable)
         ) {
@@ -71,8 +71,8 @@ public class DependenciesTest {
             container.start();
         }
 
-        VisibleAssertions.assertEquals("Started multiple times", 3, startable.getStartInvocationCount().intValue());
-        VisibleAssertions.assertEquals("Does not trigger .stop()", 0, startable.getStopInvocationCount().intValue());
+        assertThat(startable.getStartInvocationCount().intValue()).as("Started multiple times").isEqualTo(3);
+        assertThat(startable.getStopInvocationCount().intValue()).as("Does not trigger .stop()").isZero();
     }
 
     @Test
@@ -85,7 +85,7 @@ public class DependenciesTest {
         startable.getDependencies().add(transitiveStartable);
 
         try (
-            GenericContainer<?> container = new GenericContainer<>(TINY_IMAGE)
+            GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
                 .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
                 .dependsOn(startable)
         ) {
@@ -93,9 +93,11 @@ public class DependenciesTest {
             container.stop();
         }
 
-        VisibleAssertions.assertEquals("Root started", 1, startable.getStartInvocationCount().intValue());
-        VisibleAssertions.assertEquals("Transitive started", 1, transitiveStartable.getStartInvocationCount().intValue());
-        VisibleAssertions.assertEquals("Transitive of transitive started", 1, transitiveOfTransitiveStartable.getStartInvocationCount().intValue());
+        assertThat(startable.getStartInvocationCount().intValue()).as("Root started").isEqualTo(1);
+        assertThat(transitiveStartable.getStartInvocationCount().intValue()).as("Transitive started").isEqualTo(1);
+        assertThat(transitiveOfTransitiveStartable.getStartInvocationCount().intValue())
+            .as("Transitive of transitive started")
+            .isEqualTo(1);
     }
 
     @Test
@@ -115,15 +117,16 @@ public class DependenciesTest {
 
         Startables.deepStart(Stream.of(d)).get(1, TimeUnit.SECONDS);
 
-        VisibleAssertions.assertEquals("A started", 1, a.getStartInvocationCount().intValue());
-        VisibleAssertions.assertEquals("B started", 1, b.getStartInvocationCount().intValue());
-        VisibleAssertions.assertEquals("C started", 1, c.getStartInvocationCount().intValue());
-        VisibleAssertions.assertEquals("D started", 1, d.getStartInvocationCount().intValue());
+        assertThat(a.getStartInvocationCount().intValue()).as("A started").isEqualTo(1);
+        assertThat(b.getStartInvocationCount().intValue()).as("B started").isEqualTo(1);
+        assertThat(c.getStartInvocationCount().intValue()).as("C started").isEqualTo(1);
+        assertThat(d.getStartInvocationCount().intValue()).as("D started").isEqualTo(1);
     }
 
     @Test
     public void shouldHandleParallelStream() throws Exception {
-        List<Startable> startables = Stream.generate(InvocationCountingStartable::new)
+        List<Startable> startables = Stream
+            .generate(InvocationCountingStartable::new)
             .limit(10)
             .collect(Collectors.toList());
 

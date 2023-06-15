@@ -6,8 +6,7 @@ import org.testcontainers.containers.SeleniumUtils;
 import java.io.IOException;
 import java.util.jar.Manifest;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.*;
-
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Created by Julien LAMY
@@ -33,7 +32,8 @@ public class SeleniumUtilsTest {
         Manifest manifest = new Manifest();
         manifest.read(this.getClass().getClassLoader().getResourceAsStream(urlManifest));
         String seleniumVersion = SeleniumUtils.getSeleniumVersionFromManifest(manifest);
-        assertEquals("Check if Selenium Version detected is the correct one.", expectedVersion, seleniumVersion);
+        assertThat(seleniumVersion)
+            .as("Check if Selenium Version detected is the correct one.")
+            .isEqualTo(expectedVersion);
     }
-
 }

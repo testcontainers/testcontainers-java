@@ -5,20 +5,22 @@ import com.github.dockerjava.api.exception.NotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
 import java.io.ByteArrayInputStream;
 import java.net.InetSocketAddress;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 import java.util.Optional;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 
 /**
  * Represents an elasticsearch docker instance which exposes by default port 9200 and 9300 (transport.tcp.port)
@@ -47,8 +49,13 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
     /**
      * Elasticsearch Docker base image
      */
-    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("docker.elastic.co/elasticsearch/elasticsearch");
-    private static final DockerImageName DEFAULT_OSS_IMAGE_NAME = DockerImageName.parse("docker.elastic.co/elasticsearch/elasticsearch-oss");
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse(
+        "docker.elastic.co/elasticsearch/elasticsearch"
+    );
+
+    private static final DockerImageName DEFAULT_OSS_IMAGE_NAME = DockerImageName.parse(
+        "docker.elastic.co/elasticsearch/elasticsearch-oss"
+    );
 
     /**
      * Elasticsearch Default version
@@ -57,8 +64,11 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
     protected static final String DEFAULT_TAG = "7.9.2";
 
     private final boolean isOss;
+
     private final boolean isAtLeastMajorVersion8;
+
     private Optional<byte[]> caCertAsBytes = Optional.empty();
+
     private String certPath = "/usr/share/elasticsearch/config/certs/http_ca.crt";
 
     /**
@@ -83,20 +93,27 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
      */
     public ElasticsearchContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, DEFAULT_OSS_IMAGE_NAME);
         this.isOss = dockerImageName.isCompatibleWith(DEFAULT_OSS_IMAGE_NAME);
 
-        logger().info("Starting an elasticsearch container using [{}]", dockerImageName);
         withNetworkAliases("elasticsearch-" + Base58.randomString(6));
         withEnv("discovery.type", "single-node");
+        // Sets default memory of elasticsearch instance to 2GB
+        // Spaces are deliberate to allow user to define additional jvm options as elasticsearch resolves option files lexicographically
+        withClasspathResourceMapping(
+            "elasticsearch-default-memory-vm.options",
+            "/usr/share/elasticsearch/config/jvm.options.d/ elasticsearch-default-memory-vm.options",
+            BindMode.READ_ONLY
+        );
         addExposedPorts(ELASTICSEARCH_DEFAULT_PORT, ELASTICSEARCH_DEFAULT_TCP_PORT);
-        this.isAtLeastMajorVersion8 = new ComparableVersion(dockerImageName.getVersionPart()).isGreaterThanOrEqualTo("8.0.0");
+        this.isAtLeastMajorVersion8 =
+            new ComparableVersion(dockerImageName.getVersionPart()).isGreaterThanOrEqualTo("8.0.0");
         // regex that
+        //   matches 8.3 JSON logging with started message and some follow up content within the message field
         //   matches 8.0 JSON logging with no whitespace between message field and content
         //   matches 7.x JSON logging with whitespace between message field and content
         //   matches 6.x text logging with node name in brackets and just a 'started' message till the end of the line
-        String regex = ".*(\"message\":\\s?\"started\".*|] started\n$)";
+        String regex = ".*(\"message\":\\s?\"started[\\s?|\"].*|] started\n$)";
         setWaitStrategy(new LogMessageWaitStrategy().withRegEx(regex));
         if (isAtLeastMajorVersion8) {
             withPassword(ELASTICSEARCH_DEFAULT_PASSWORD);
@@ -159,8 +176,9 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
      */
     public ElasticsearchContainer withPassword(String password) {
         if (isOss) {
-            throw new IllegalArgumentException("You can not activate security on Elastic OSS Image. " +
-                "Please switch to the default distribution");
+            throw new IllegalArgumentException(
+                "You can not activate security on Elastic OSS Image. " + "Please switch to the default distribution"
+            );
         }
         withEnv("ELASTIC_PASSWORD", password);
         if (!isAtLeastMajorVersion8) {

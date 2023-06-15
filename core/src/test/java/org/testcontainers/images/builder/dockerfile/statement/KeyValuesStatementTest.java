@@ -9,11 +9,12 @@ public class KeyValuesStatementTest extends AbstractStatementTest {
 
     @Test
     public void multilineTest() throws Exception {
-        ImmutableMap<String, String> pairs = ImmutableMap.<String, String>builder()
-                .put("line1", "1")
-                .put("line2", "2")
-                .put("line3", "3")
-                .build();
+        ImmutableMap<String, String> pairs = ImmutableMap
+            .<String, String>builder()
+            .put("line1", "1")
+            .put("line2", "2")
+            .put("line3", "3")
+            .build();
 
         assertStatement(new KeyValuesStatement("TEST", pairs));
     }
@@ -35,11 +36,12 @@ public class KeyValuesStatementTest extends AbstractStatementTest {
 
     @Test
     public void valueIsEscapedTest() throws Exception {
-        ImmutableMap<String, String> pairs = ImmutableMap.<String, String>builder()
-                .put("1", "value with spaces")
-                .put("2", "value\nwith\nnewlines")
-                .put("3", "value\twith\ttab")
-                .build();
+        ImmutableMap<String, String> pairs = ImmutableMap
+            .<String, String>builder()
+            .put("1", "value with spaces")
+            .put("2", "value\nwith\nnewlines")
+            .put("3", "value\twith\ttab")
+            .build();
 
         assertStatement(new KeyValuesStatement("TEST", pairs));
     }

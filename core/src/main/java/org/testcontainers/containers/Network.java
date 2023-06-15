@@ -18,7 +18,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 public interface Network extends AutoCloseable, TestRule {
-
     Network SHARED = new NetworkImpl(false, null, Collections.emptySet(), null) {
         @Override
         public void close() {
@@ -60,9 +59,16 @@ public interface Network extends AutoCloseable, TestRule {
         @Override
         public synchronized String getId() {
             if (initialized.compareAndSet(false, true)) {
-                id = create();
+                boolean success = false;
+                try {
+                    id = create();
+                    success = true;
+                } finally {
+                    if (!success) {
+                        initialized.set(false);
+                    }
+                }
             }
-
             return id;
         }
 

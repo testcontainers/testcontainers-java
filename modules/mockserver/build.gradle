@@ -3,6 +3,6 @@ description = "Testcontainers :: MockServer"
 dependencies {
     api project(':testcontainers')
 
-    testImplementation 'org.mock-server:mockserver-client-java:5.5.4'
-    testImplementation 'org.rnorth.visible-assertions:visible-assertions:2.1.2'
+    testImplementation 'org.mock-server:mockserver-client-java:5.15.0'
+    testImplementation 'org.assertj:assertj-core:3.24.2'
 }

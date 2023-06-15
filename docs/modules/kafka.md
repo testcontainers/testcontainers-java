@@ -32,6 +32,15 @@ If for some reason you want to use an externally running Zookeeper, then just pa
 [External Zookeeper](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:withExternalZookeeper
 <!--/codeinclude-->
 
+### Using Kraft mode
+
+KRaft mode was declared production ready in 3.3.1 (confluentinc/cp-kafka:7.3.x)" 
+
+<!--codeinclude-->
+[Kraft mode](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:withKraftMode
+<!--/codeinclude-->
+
+See the [versions interoperability matrix](https://docs.confluent.io/platform/current/installation/versions-interoperability.html) for more details. 
 
 ## Multi-container usage
 

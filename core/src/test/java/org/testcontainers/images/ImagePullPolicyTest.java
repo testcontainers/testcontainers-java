@@ -4,7 +4,6 @@ import com.github.dockerjava.api.exception.NotFoundException;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.rnorth.visibleassertions.VisibleAssertions;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.DockerRegistryContainer;
 import org.testcontainers.containers.ContainerLaunchException;
@@ -12,7 +11,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 import org.testcontainers.utility.DockerImageName;
 
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 
 public class ImagePullPolicyTest {
@@ -24,29 +23,20 @@ public class ImagePullPolicyTest {
 
     @Test
     public void pullsByDefault() {
-        try (
-            GenericContainer<?> container = new GenericContainer<>(imageName)
-                .withExposedPorts(8080)
-        ) {
+        try (GenericContainer<?> container = new GenericContainer<>(imageName).withExposedPorts(8080)) {
             container.start();
         }
     }
 
     @Test
     public void shouldAlwaysPull() {
-        try (
-            GenericContainer<?> container = new GenericContainer<>(imageName)
-                .withExposedPorts(8080)
-        ) {
+        try (GenericContainer<?> container = new GenericContainer<>(imageName).withExposedPorts(8080)) {
             container.start();
         }
 
         removeImage();
 
-        try (
-            GenericContainer<?> container = new GenericContainer<>(imageName)
-                .withExposedPorts(8080)
-        ) {
+        try (GenericContainer<?> container = new GenericContainer<>(imageName).withExposedPorts(8080)) {
             expectToFailWithNotFoundException(container);
         }
 
@@ -66,12 +56,14 @@ public class ImagePullPolicyTest {
         try (
             // custom_image_pull_policy {
             GenericContainer<?> container = new GenericContainer<>(imageName)
-                .withImagePullPolicy(new AbstractImagePullPolicy() {
-                    @Override
-                    protected boolean shouldPullCached(DockerImageName imageName, ImageData localImageData) {
-                        return System.getenv("ALWAYS_PULL_IMAGE") != null;
+                .withImagePullPolicy(
+                    new AbstractImagePullPolicy() {
+                        @Override
+                        protected boolean shouldPullCached(DockerImageName imageName, ImageData localImageData) {
+                            return System.getenv("ALWAYS_PULL_IMAGE") != null;
+                        }
                     }
-                })
+                )
             // }
         ) {
             container.withExposedPorts(8080);
@@ -81,12 +73,14 @@ public class ImagePullPolicyTest {
 
     @Test
     public void shouldCheckPolicy() {
-        ImagePullPolicy policy = Mockito.spy(new AbstractImagePullPolicy() {
-            @Override
-            protected boolean shouldPullCached(DockerImageName imageName, ImageData localImageData) {
-                return false;
+        ImagePullPolicy policy = Mockito.spy(
+            new AbstractImagePullPolicy() {
+                @Override
+                protected boolean shouldPullCached(DockerImageName imageName, ImageData localImageData) {
+                    return false;
+                }
             }
-        });
+        );
         try (
             GenericContainer<?> container = new GenericContainer<>(imageName)
                 .withImagePullPolicy(policy)
@@ -118,21 +112,21 @@ public class ImagePullPolicyTest {
             while (throwable.getCause() != null) {
                 throwable = throwable.getCause();
                 if (throwable.getCause() instanceof NotFoundException) {
-                    VisibleAssertions.pass("Caused by NotFoundException");
                     return;
                 }
             }
-            VisibleAssertions.fail("Caused by NotFoundException");
+            fail("Caused by NotFoundException");
         }
     }
 
     private void removeImage() {
         try {
-            DockerClientFactory.instance().client()
+            DockerClientFactory
+                .instance()
+                .client()
                 .removeImageCmd(imageName.asCanonicalNameString())
                 .withForce(true)
                 .exec();
-        } catch (NotFoundException ignored) {
-        }
+        } catch (NotFoundException ignored) {}
     }
 }

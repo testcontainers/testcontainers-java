@@ -8,9 +8,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertNotNull;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertNull;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * This test belongs in the jdbc module, as it is focused on testing the behaviour of {@link org.testcontainers.containers.JdbcDatabaseContainer}.
@@ -19,6 +17,7 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
  * TODO: Move to the jdbc module and either (a) implement a barebones {@link org.testcontainers.containers.JdbcDatabaseContainerProvider} for testing, or (b) refactor into a unit test.
  */
 public class DatabaseDriverShutdownTest {
+
     @AfterClass
     public static void testCleanup() {
         ContainerDatabaseDriver.killContainers();
@@ -31,7 +30,7 @@ public class DatabaseDriverShutdownTest {
         getConnectionAndClose(jdbcUrl);
 
         JdbcDatabaseContainer<?> container = ContainerDatabaseDriver.getContainer(jdbcUrl);
-        assertNull("Database container instance is null as expected", container);
+        assertThat(container).as("Database container instance is null as expected").isNull();
     }
 
     @Test
@@ -41,13 +40,13 @@ public class DatabaseDriverShutdownTest {
         getConnectionAndClose(jdbcUrl);
 
         JdbcDatabaseContainer<?> container = ContainerDatabaseDriver.getContainer(jdbcUrl);
-        assertNotNull("Database container instance is not null as expected", container);
-        assertTrue("Database container is running as expected", container.isRunning());
+        assertThat(container).as("Database container instance is not null as expected").isNotNull();
+        assertThat(container.isRunning()).as("Database container is running as expected").isTrue();
     }
 
     private void getConnectionAndClose(String jdbcUrl) throws SQLException {
         try (Connection connection = DriverManager.getConnection(jdbcUrl)) {
-            assertNotNull("Obtained connection as expected", connection);
+            assertThat(connection).as("Obtained connection as expected").isNotNull();
         }
     }
 }

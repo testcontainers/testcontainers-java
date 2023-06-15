@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
 
 public class ResourceReaperTest {
 
@@ -42,25 +41,27 @@ public class ResourceReaperTest {
 
     private void assertCleanup(Map<String, String> labels) {
         DockerClient client = DockerClientFactory.instance().client();
-        ConditionFactory awaitFactory = Awaitility.await().atMost(Duration.ofMinutes(1)).pollInterval(Duration.ofSeconds(1));
+        ConditionFactory awaitFactory = Awaitility
+            .await()
+            .atMost(Duration.ofMinutes(1))
+            .pollInterval(Duration.ofSeconds(1));
 
-        List<String> labelValues = labels.entrySet().stream()
+        List<String> labelValues = labels
+            .entrySet()
+            .stream()
             .map(it -> it.getKey() + "=" + it.getValue())
             .collect(Collectors.toList());
 
         awaitFactory.untilAsserted(() -> {
-            assertThat(client.listContainersCmd().withFilter("label", labelValues).withShowAll(true).exec())
-                .isEmpty();
+            assertThat(client.listContainersCmd().withFilter("label", labelValues).withShowAll(true).exec()).isEmpty();
         });
 
         awaitFactory.untilAsserted(() -> {
-            assertThat(client.listNetworksCmd().withFilter("label", labelValues).exec())
-                .isEmpty();
+            assertThat(client.listNetworksCmd().withFilter("label", labelValues).exec()).isEmpty();
         });
 
         awaitFactory.untilAsserted(() -> {
-            assertThat(client.listVolumesCmd().withFilter("label", labelValues).exec().getVolumes())
-                .isEmpty();
+            assertThat(client.listVolumesCmd().withFilter("label", labelValues).exec().getVolumes()).isEmpty();
         });
     }
 
@@ -79,9 +80,10 @@ public class ResourceReaperTest {
         processExecutorConsumer.accept(processExecutor);
 
         ProcessResult result = processExecutor.execute();
-        assertEquals(0, result.getExitValue());
+        assertThat(result.getExitValue()).isEqualTo(0);
 
-        String labelsJson = Stream.of(result.outputUTF8().split("\n"))
+        String labelsJson = Stream
+            .of(result.outputUTF8().split("\n"))
             .filter(it -> it.startsWith(SimpleUsage.LABELS_MARKER))
             .map(it -> it.substring(SimpleUsage.LABELS_MARKER.length()))
             .findFirst()
@@ -97,7 +99,9 @@ public class ResourceReaperTest {
         @SneakyThrows
         @SuppressWarnings("deprecation")
         public static void main(String[] args) {
-            System.out.println(LABELS_MARKER + new ObjectMapper().writeValueAsString(ResourceReaper.instance().getLabels()));
+            System.out.println(
+                LABELS_MARKER + new ObjectMapper().writeValueAsString(ResourceReaper.instance().getLabels())
+            );
 
             GenericContainer<?> container = new GenericContainer<>("testcontainers/helloworld:1.1.0")
                 .withNetwork(org.testcontainers.containers.Network.newNetwork())

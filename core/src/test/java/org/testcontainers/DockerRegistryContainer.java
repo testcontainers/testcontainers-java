@@ -51,22 +51,30 @@ public class DockerRegistryContainer extends GenericContainer<DockerRegistryCont
             WaitingConsumer waitingConsumer = new WaitingConsumer();
             resultCallback.addConsumer(OutputFrame.OutputType.STDERR, waitingConsumer);
 
-            dockerClient.logContainerCmd(containerInfo.getId())
+            dockerClient
+                .logContainerCmd(containerInfo.getId())
                 .withStdErr(true)
                 .withFollowStream(true)
                 .exec(resultCallback);
 
-            Pattern pattern = Pattern.compile(".*listening on .*:(\\d+).*", Pattern.DOTALL | Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
-            waitingConsumer.waitUntil(it -> {
-                String s = it.getUtf8String();
-                Matcher matcher = pattern.matcher(s);
-                if (matcher.matches()) {
-                    port.set(Integer.parseInt(matcher.group(1)));
-                    return true;
-                } else {
-                    return false;
-                }
-            }, 10, TimeUnit.SECONDS);
+            Pattern pattern = Pattern.compile(
+                ".*listening on .*:(\\d+).*",
+                Pattern.DOTALL | Pattern.CASE_INSENSITIVE | Pattern.MULTILINE
+            );
+            waitingConsumer.waitUntil(
+                it -> {
+                    String s = it.getUtf8String();
+                    Matcher matcher = pattern.matcher(s);
+                    if (matcher.matches()) {
+                        port.set(Integer.parseInt(matcher.group(1)));
+                        return true;
+                    } else {
+                        return false;
+                    }
+                },
+                10,
+                TimeUnit.SECONDS
+            );
         }
 
         endpoint = getHost() + ":" + port.get();
@@ -87,12 +95,15 @@ public class DockerRegistryContainer extends GenericContainer<DockerRegistryCont
 
         String dummyImageId = client.inspectImageCmd(originalImage).exec().getId();
 
-        DockerImageName imageName = DockerImageName.parse(getEndpoint() + "/" + Base58.randomString(6).toLowerCase()).withTag(tag);
+        DockerImageName imageName = DockerImageName
+            .parse(getEndpoint() + "/" + Base58.randomString(6).toLowerCase())
+            .withTag(tag);
 
         // push the image to the registry
-        client.tagImageCmd(dummyImageId, imageName.asCanonicalNameString(), tag).exec();
+        client.tagImageCmd(dummyImageId, imageName.getUnversionedPart(), tag).exec();
 
-        client.pushImageCmd(imageName.asCanonicalNameString())
+        client
+            .pushImageCmd(imageName.asCanonicalNameString())
             .exec(new ResultCallback.Adapter<>())
             .awaitCompletion(1, TimeUnit.MINUTES);
 

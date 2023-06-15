@@ -1,8 +1,5 @@
 package org.testcontainers.junit.oracle;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
 import org.junit.Test;
 import org.testcontainers.containers.OracleContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
@@ -11,42 +8,43 @@ import org.testcontainers.utility.DockerImageName;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+
 public class SimpleOracleTest extends AbstractContainerDatabaseTest {
 
-    public static final DockerImageName ORACLE_DOCKER_IMAGE_NAME = DockerImageName.parse("gvenzl/oracle-xe:18.4.0-slim");
+    public static final DockerImageName ORACLE_DOCKER_IMAGE_NAME = DockerImageName.parse(
+        "gvenzl/oracle-xe:21-slim-faststart"
+    );
 
-    private void runTest(OracleContainer container, String databaseName, String username, String password) throws SQLException {
+    private void runTest(OracleContainer container, String databaseName, String username, String password)
+        throws SQLException {
         //Test config was honored
-        assertEquals(databaseName, container.getDatabaseName());
-        assertEquals(username, container.getUsername());
-        assertEquals(password, container.getPassword());
-        
+        assertThat(container.getDatabaseName()).isEqualTo(databaseName);
+        assertThat(container.getUsername()).isEqualTo(username);
+        assertThat(container.getPassword()).isEqualTo(password);
+
         //Test we can get a connection
         container.start();
         ResultSet resultSet = performQuery(container, "SELECT 1 FROM dual");
         int resultSetInt = resultSet.getInt(1);
-        assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+        assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
     }
 
     @Test
     public void testDefaultSettings() throws SQLException {
-        try (
-            OracleContainer oracle = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME);
-        ) {
+        try (OracleContainer oracle = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME);) {
             runTest(oracle, "xepdb1", "test", "test");
 
             // Match against the last '/'
             String urlSuffix = oracle.getJdbcUrl().split("(\\/)(?!.*\\/)", 2)[1];
-            assertEquals("xepdb1", urlSuffix);
+            assertThat(urlSuffix).isEqualTo("xepdb1");
         }
     }
 
     @Test
     public void testPluggableDatabase() throws SQLException {
-        try (
-            OracleContainer oracle = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME)
-                .withDatabaseName("testDB")
-        ) {
+        try (OracleContainer oracle = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME).withDatabaseName("testDB")) {
             runTest(oracle, "testDB", "test", "test");
         }
     }
@@ -54,10 +52,12 @@ public class SimpleOracleTest extends AbstractContainerDatabaseTest {
     @Test
     public void testPluggableDatabaseAndCustomUser() throws SQLException {
         try (
-            OracleContainer oracle = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME)
+            // constructor {
+            OracleContainer oracle = new OracleContainer("gvenzl/oracle-xe:21-slim-faststart")
                 .withDatabaseName("testDB")
                 .withUsername("testUser")
                 .withPassword("testPassword")
+            // }
         ) {
             runTest(oracle, "testDB", "testUser", "testPassword");
         }
@@ -76,15 +76,12 @@ public class SimpleOracleTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSID() throws SQLException {
-        try (
-            OracleContainer oracle = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME)
-                .usingSid();
-        ) {
+        try (OracleContainer oracle = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME).usingSid();) {
             runTest(oracle, "xepdb1", "system", "test");
 
             // Match against the last ':'
             String urlSuffix = oracle.getJdbcUrl().split("(\\:)(?!.*\\:)", 2)[1];
-            assertEquals("xe", urlSuffix);
+            assertThat(urlSuffix).isEqualTo("xe");
         }
     }
 
