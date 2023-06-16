@@ -1,4 +1,4 @@
-description = "Testcontainers :: Dynalite"
+description = "Testcontainers :: Dynalite (deprecated)"
 
 dependencies {
     api project(':testcontainers')
