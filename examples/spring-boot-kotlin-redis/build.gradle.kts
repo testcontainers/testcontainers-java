@@ -20,8 +20,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation(platform("org.testcontainers:testcontainers-bom:1.18.3"))
-    testImplementation("org.testcontainers:testcontainers:1.18.3")
+    testImplementation("org.testcontainers:testcontainers")
 
 
 }
