@@ -4,7 +4,6 @@ import lombok.NonNull;
 import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
 
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Future;
@@ -43,7 +42,8 @@ public class ApplicationServerContainerTest {
         expected = Arrays.asList(8080, 9080, 9443);
 
         // Test expose ports, then add httpPort
-        testContainer = new ApplicationServerContainerStub(DockerImageName.parse("open-liberty:kernel-slim-java11-openj9"));
+        testContainer =
+            new ApplicationServerContainerStub(DockerImageName.parse("open-liberty:kernel-slim-java11-openj9"));
         testContainer.withExposedPorts(9080, 9443);
         testContainer.withHttpPort(8080);
 
@@ -51,7 +51,8 @@ public class ApplicationServerContainerTest {
         assertThat(actual).containsExactlyElementsOf(expected);
 
         // Test httpPort then expose ports
-        testContainer = new ApplicationServerContainerStub(DockerImageName.parse("open-liberty:kernel-slim-java11-openj9"));
+        testContainer =
+            new ApplicationServerContainerStub(DockerImageName.parse("open-liberty:kernel-slim-java11-openj9"));
         testContainer.withHttpPort(8080);
         testContainer.withExposedPorts(9080, 9443);
 
@@ -59,7 +60,8 @@ public class ApplicationServerContainerTest {
         assertThat(actual).containsExactlyElementsOf(expected);
 
         //Test httpPort then set exposed ports
-        testContainer = new ApplicationServerContainerStub(DockerImageName.parse("open-liberty:kernel-slim-java11-openj9"));
+        testContainer =
+            new ApplicationServerContainerStub(DockerImageName.parse("open-liberty:kernel-slim-java11-openj9"));
         testContainer.withHttpPort(8080);
         testContainer.setExposedPorts(Arrays.asList(9080, 9443));
 

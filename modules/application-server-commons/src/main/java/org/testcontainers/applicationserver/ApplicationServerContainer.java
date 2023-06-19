@@ -80,31 +80,32 @@ public abstract class ApplicationServerContainer extends GenericContainer<Applic
 
         // Setup default wait strategy
         waitingFor(
-            Wait.forHttp(readinessPath != null ? readinessPath : appContextRoot)
+            Wait
+                .forHttp(readinessPath != null ? readinessPath : appContextRoot)
                 .forPort(readinessPort != null ? readinessPort : httpPort)
                 .withStartupTimeout(httpWaitTimeout)
         );
 
         // Copy applications
-        for(MountableFile archive : archives) {
+        for (MountableFile archive : archives) {
             withCopyFileToContainer(archive, getApplicationInstallDirectory() + extractApplicationName(archive));
         }
 
         // Add lazy env variables
-        for(Map.Entry<String, Supplier<String>> entry : lazyEnvVars.entrySet()) {
+        for (Map.Entry<String, Supplier<String>> entry : lazyEnvVars.entrySet()) {
             withEnv(entry.getKey(), entry.getValue().get());
         }
     }
 
     @Override
     protected void containerIsCreated(String containerId) {
-        if( Objects.isNull(tempDirectory) ) {
+        if (Objects.isNull(tempDirectory)) {
             return;
         }
 
         try {
             //Delete files in temp directory
-            for(String file : tempDirectory.toFile().list()) {
+            for (String file : tempDirectory.toFile().list()) {
                 Files.deleteIfExists(Paths.get(tempDirectory.toString(), file));
             }
             //Delete temp directory
@@ -112,12 +113,11 @@ public abstract class ApplicationServerContainer extends GenericContainer<Applic
         } catch (IOException e) {
             logger().info("Unable to delete temporary directory " + tempDirectory.toString(), e);
         }
-
     }
 
     @Override
     public void setExposedPorts(List<Integer> exposedPorts) {
-        if( Objects.isNull(this.httpPort) ) {
+        if (Objects.isNull(this.httpPort)) {
             super.setExposedPorts(exposedPorts);
             return;
         }
@@ -136,12 +136,14 @@ public abstract class ApplicationServerContainer extends GenericContainer<Applic
      * @return self
      */
     public ApplicationServerContainer withArchives(@NonNull Archive<?>... archives) {
-        Stream.of(archives).forEach(archive -> {
-            String name = archive.getName();
-            Path target = Paths.get(createTempDirectory().toString(), name);
-            archive.as(ZipExporter.class).exportTo(target.toFile(), true);
-            this.archives.add(MountableFile.forHostPath(target));
-        });
+        Stream
+            .of(archives)
+            .forEach(archive -> {
+                String name = archive.getName();
+                Path target = Paths.get(createTempDirectory().toString(), name);
+                archive.as(ZipExporter.class).exportTo(target.toFile(), true);
+                this.archives.add(MountableFile.forHostPath(target));
+            });
 
         return this;
     }
@@ -169,7 +171,7 @@ public abstract class ApplicationServerContainer extends GenericContainer<Applic
      * @return self
      */
     public ApplicationServerContainer withHttpPort(int httpPort) {
-        if( Objects.nonNull(this.httpPort) && this.httpPort == this.readinessPort ) {
+        if (Objects.nonNull(this.httpPort) && this.httpPort == this.readinessPort) {
             int oldPort = this.httpPort;
             this.readinessPort = this.httpPort = httpPort;
             super.setExposedPorts(replacePort(getExposedPorts(), oldPort, this.httpPort));
@@ -190,7 +192,7 @@ public abstract class ApplicationServerContainer extends GenericContainer<Applic
      * @return self
      */
     public ApplicationServerContainer withAppContextRoot(@NonNull String appContextRoot) {
-        if( Objects.nonNull(this.appContextRoot) && this.appContextRoot == this.readinessPath ) {
+        if (Objects.nonNull(this.appContextRoot) && this.appContextRoot == this.readinessPath) {
             this.readinessPath = this.appContextRoot = normalizePath(appContextRoot);
         } else {
             this.appContextRoot = normalizePath(appContextRoot);
@@ -258,7 +260,7 @@ public abstract class ApplicationServerContainer extends GenericContainer<Applic
      *       .withLazyEnv( "oracle.url", () -&gt; db.getJdbcUrl() ) // Need to wait until 'db' container is configured
      *       .dependsOn(db);
      * </pre>
-	 *
+     *
      * @param key   - the key
      * @param valueSupplier - the function that supplies the value
      * @return self
@@ -278,7 +280,7 @@ public abstract class ApplicationServerContainer extends GenericContainer<Applic
      * @return - The readiness URL
      */
     public String getReadinessURL() {
-        if ( Objects.isNull(this.readinessPath) || Objects.isNull(this.readinessPort) ) {
+        if (Objects.isNull(this.readinessPath) || Objects.isNull(this.readinessPort)) {
             return getApplicationURL();
         }
 
@@ -326,7 +328,7 @@ public abstract class ApplicationServerContainer extends GenericContainer<Applic
      * @return - The temporary directory path
      */
     protected static Path createTempDirectory() {
-        if( Objects.nonNull(tempDirectory) ) {
+        if (Objects.nonNull(tempDirectory)) {
             return tempDirectory;
         }
 
@@ -346,7 +348,7 @@ public abstract class ApplicationServerContainer extends GenericContainer<Applic
     private static String extractApplicationName(MountableFile file) throws IllegalArgumentException {
         String path = file.getFilesystemPath();
         //TODO would any application servers support .zip?
-        if( path.matches(".*\\.jar|.*\\.war|.*\\.ear|.*\\.rar") ) {
+        if (path.matches(".*\\.jar|.*\\.war|.*\\.ear|.*\\.rar")) {
             return path.substring(path.lastIndexOf("/"));
         }
         throw new IllegalArgumentException("File did not contain an application archive");
@@ -365,7 +367,6 @@ public abstract class ApplicationServerContainer extends GenericContainer<Applic
         portList.add(0, appendingPort);
         return portList.stream().distinct().collect(Collectors.toList());
     }
-
 
     /**
      * Replaces a port in a list of ports putting the new port at position 0 and ensures port
@@ -393,10 +394,10 @@ public abstract class ApplicationServerContainer extends GenericContainer<Applic
      * @return The normalized path
      */
     protected static String normalizePath(String... paths) {
-        return Stream.of(paths)
+        return Stream
+            .of(paths)
             .flatMap(path -> Stream.of(path.split("/")))
             .filter(part -> !part.isEmpty())
             .collect(Collectors.joining("/", "/", ""));
     }
-
 }
