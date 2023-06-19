@@ -1,13 +1,12 @@
 buildscript {
     repositories {
         mavenCentral()
-        maven { url 'https://jitpack.io' }
     }
 
     dependencies {
         // https://github.com/melix/japicmp-gradle-plugin/issues/36
         classpath 'com.google.guava:guava:30.1.1-jre'
-        classpath 'com.github.kiview:captain-hook:76a1c11a16'
+        classpath 'com.github.tjni.captainhook:captain-hook:0.1.5'
     }
 }
 
