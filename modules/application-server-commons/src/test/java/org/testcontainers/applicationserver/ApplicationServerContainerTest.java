@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Future;
 
@@ -39,7 +40,7 @@ public class ApplicationServerContainerTest {
     public void httpPortMapping() {
         List<Integer> expected, actual;
 
-        expected = List.of(8080, 9080, 9443);
+        expected = Arrays.asList(8080, 9080, 9443);
 
         // Test expose ports, then add httpPort
         testContainer = new ApplicationServerContainerStub(DockerImageName.parse("open-liberty:kernel-slim-java11-openj9"));
@@ -60,7 +61,7 @@ public class ApplicationServerContainerTest {
         //Test httpPort then set exposed ports
         testContainer = new ApplicationServerContainerStub(DockerImageName.parse("open-liberty:kernel-slim-java11-openj9"));
         testContainer.withHttpPort(8080);
-        testContainer.setExposedPorts(List.of(9080, 9443));
+        testContainer.setExposedPorts(Arrays.asList(9080, 9443));
 
         actual = testContainer.getExposedPorts();
         assertThat(actual).containsExactlyElementsOf(expected);

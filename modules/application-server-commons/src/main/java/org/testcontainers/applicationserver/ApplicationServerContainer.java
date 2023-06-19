@@ -23,8 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Future;
-import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -137,10 +135,10 @@ public abstract class ApplicationServerContainer extends GenericContainer<Applic
      * @param archives - An archive created using shrinkwrap and test runtime
      * @return self
      */
-    public ApplicationServerContainer withArchvies(@NonNull Archive<?>... archives) {
+    public ApplicationServerContainer withArchives(@NonNull Archive<?>... archives) {
         Stream.of(archives).forEach(archive -> {
             String name = archive.getName();
-            Path target = Paths.get(getTempDirectory().toString(), name);
+            Path target = Paths.get(createTempDirectory().toString(), name);
             archive.as(ZipExporter.class).exportTo(target.toFile(), true);
             this.archives.add(MountableFile.forHostPath(target));
         });
@@ -310,17 +308,6 @@ public abstract class ApplicationServerContainer extends GenericContainer<Applic
         return "http://" + getHost() + ':' + getMappedPort(this.httpPort);
     }
 
-    /**
-     * Gets the current state of the HTTP port.
-     * Helpful during the configure step for implementations to set a default port
-     * if none was configured by the user.
-     *
-     * @return true if an httpPort was set, false otherwise.
-     */
-    protected boolean isHttpPortSet() {
-        return Objects.nonNull(httpPort);
-    }
-
     // Abstract
 
     /**
@@ -329,7 +316,7 @@ public abstract class ApplicationServerContainer extends GenericContainer<Applic
      *
      * @return - the application install directory
      */
-    abstract protected String getApplicationInstallDirectory();
+    protected abstract String getApplicationInstallDirectory();
 
     // Helpers
 
@@ -338,7 +325,7 @@ public abstract class ApplicationServerContainer extends GenericContainer<Applic
      *
      * @return - The temporary directory path
      */
-    protected static Path getTempDirectory() {
+    protected static Path createTempDirectory() {
         if( Objects.nonNull(tempDirectory) ) {
             return tempDirectory;
         }

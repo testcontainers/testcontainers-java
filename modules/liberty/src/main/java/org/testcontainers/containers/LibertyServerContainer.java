@@ -1,16 +1,11 @@
 package org.testcontainers.containers;
 
 import lombok.NonNull;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 import org.testcontainers.applicationserver.ApplicationServerContainer;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,19 +17,17 @@ import java.util.Objects;
  */
 public class LibertyServerContainer extends ApplicationServerContainer {
 
-    public static final String NAME = "Liberty";
-
     // About the image
-    public static final String IMAGE = "open-liberty";
+    static final String IMAGE = "open-liberty";
 
-    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse(IMAGE);
+    static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse(IMAGE);
 
     // Container defaults
-    public static final int DEFAULT_HTTP_PORT = 9080;
+    static final int DEFAULT_HTTP_PORT = 9080;
 
-    public static final int DEFAULT_HTTPS_PORT = 9443;
+    static final int DEFAULT_HTTPS_PORT = 9443;
 
-    private static final Duration DEFAULT_WAIT_TIMEOUT = Duration.ofSeconds(30);
+    static final Duration DEFAULT_WAIT_TIMEOUT = Duration.ofSeconds(30);
 
     private static final String SERVER_CONFIG_DIR = "/config/";
 
@@ -43,7 +36,7 @@ public class LibertyServerContainer extends ApplicationServerContainer {
     private static final List<String> DEFAULT_FEATURES = Arrays.asList("webProfile-10.0");
 
     // Container fields
-    private MountableFile serverConfiguration;
+    private Transferable serverConfiguration;
 
     private List<String> features = new ArrayList<>();
 
@@ -74,16 +67,16 @@ public class LibertyServerContainer extends ApplicationServerContainer {
 
         // Copy server configuration
         if( Objects.nonNull(serverConfiguration) ) {
-            withCopyFileToContainer(serverConfiguration, SERVER_CONFIG_DIR + "server.xml");
+            withCopyToContainer(serverConfiguration, SERVER_CONFIG_DIR + "server.xml");
             return;
         }
 
         if ( ! features.isEmpty() ) {
-            withCopyFileToContainer(generateServerConfiguration(features), SERVER_CONFIG_DIR + "server.xml");
+            withCopyToContainer(generateServerConfiguration(features), SERVER_CONFIG_DIR + "server.xml");
             return;
         }
 
-        withCopyFileToContainer(generateServerConfiguration(DEFAULT_FEATURES), SERVER_CONFIG_DIR + "server.xml");
+        withCopyToContainer(generateServerConfiguration(DEFAULT_FEATURES), SERVER_CONFIG_DIR + "server.xml");
 
     }
 
@@ -122,7 +115,7 @@ public class LibertyServerContainer extends ApplicationServerContainer {
 
     // Helpers
 
-    private static final MountableFile generateServerConfiguration(List<String> features) {
+    private static final Transferable generateServerConfiguration(List<String> features) {
         String configContents = "";
         configContents += "<server><featureManager>";
         for(String feature : features) {
@@ -131,15 +124,6 @@ public class LibertyServerContainer extends ApplicationServerContainer {
         configContents += "</featureManager></server>";
         configContents += System.lineSeparator();
 
-        Path generatedConfigPath = Paths.get(getTempDirectory().toString(), "generatedServer.xml");
-
-        try {
-            Files.write(generatedConfigPath, configContents.getBytes(StandardCharsets.UTF_8),
-                StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-        } catch (IOException ioe) {
-            throw new RuntimeException("Unable to generate server configuration at runtime", ioe);
-        }
-
-        return MountableFile.forHostPath(generatedConfigPath);
+        return Transferable.of(configContents);
     }
 }

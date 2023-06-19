@@ -33,7 +33,7 @@ public class LibertyContainerTest {
         .withTag("23.0.0.3-full-java17-openj9");
 
     private static ApplicationServerContainer testContainer = new LibertyServerContainer(libertyImage)
-        .withArchvies(createDeployment())
+        .withArchives(createDeployment())
         .withAppContextRoot("test/app/service/")
         .withLazyEnv("mock.port", () ->  "" + dependantService.getMappedPort(80))
         .dependsOn(dependantService);
