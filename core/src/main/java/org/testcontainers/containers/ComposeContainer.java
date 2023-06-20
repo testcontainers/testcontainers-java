@@ -28,7 +28,7 @@ import java.util.function.Consumer;
 
 /**
  * Testcontainers implementation for Docker Compose V2. <br>
- * It uses docker binary.
+ * It uses either Compose V2 contained within the Docker binary, or a containerised version of Compose V2.
  */
 @Slf4j
 public class ComposeContainer extends FailureDetectingExternalResource implements Startable {
