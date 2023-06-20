@@ -57,6 +57,14 @@ import javax.net.SocketFactory;
 
 /**
  * Mechanism to find a viable Docker client configuration according to the host system environment.
+ * <p>
+ * The order is:
+ * <ul>
+ *     <li>{@code TestcontainersHostPropertyClientProviderStrategy}</li>
+ *     <li>{@code EnvironmentAndSystemPropertyClientProviderStrategy}</li>
+ *     <li>Persistable {@code DockerClientProviderStrategy} in <code>~/.testcontainers.properties</code></li>
+ *     <li>Other strategies order by priority</li>
+ * </ul>
  */
 @Slf4j
 public abstract class DockerClientProviderStrategy {
@@ -88,6 +96,17 @@ public abstract class DockerClientProviderStrategy {
 
     protected boolean isPersistable() {
         return true;
+    }
+
+    public boolean allowUserOverrides() {
+        return true;
+    }
+
+    /**
+   /* @return the path under which the Docker unix socket is reachable relative to the Docker daemon
+    */
+    public String getRemoteDockerUnixSocketPath() {
+        return null;
     }
 
     /**
@@ -217,7 +236,8 @@ public abstract class DockerClientProviderStrategy {
         List<String> configurationFailures = new ArrayList<>();
         List<DockerClientProviderStrategy> allStrategies = new ArrayList<>();
 
-        // The environment has the highest priority
+        // Manually enforce priority independent of priority property of strategy
+        allStrategies.add(new TestcontainersHostPropertyClientProviderStrategy());
         allStrategies.add(new EnvironmentAndSystemPropertyClientProviderStrategy());
 
         // Next strategy to try out is the one configured using the Testcontainers configuration mechanism
@@ -249,7 +269,7 @@ public abstract class DockerClientProviderStrategy {
                     "Could not find a valid Docker environment. Please check configuration. Attempted configurations were:\n" +
                     configurationFailures.stream().map(it -> "\t" + it).collect(Collectors.joining("\n")) +
                     "As no valid configuration was found, execution cannot continue.\n" +
-                    "See https://www.testcontainers.org/on_failure.html for more details."
+                    "See https://java.testcontainers.org/on_failure.html for more details."
                 );
 
                 FAIL_FAST_ALWAYS.set(true);
@@ -401,16 +421,23 @@ public abstract class DockerClientProviderStrategy {
 
     public synchronized String getDockerHostIpAddress() {
         if (dockerHostIpAddress == null) {
-            dockerHostIpAddress = resolveDockerHostIpAddress(getDockerClient(), getTransportConfig().getDockerHost());
+            dockerHostIpAddress =
+                resolveDockerHostIpAddress(
+                    getDockerClient(),
+                    getTransportConfig().getDockerHost(),
+                    allowUserOverrides()
+                );
         }
         return dockerHostIpAddress;
     }
 
     @VisibleForTesting
-    static String resolveDockerHostIpAddress(DockerClient client, URI dockerHost) {
-        String hostOverride = System.getenv("TESTCONTAINERS_HOST_OVERRIDE");
-        if (!StringUtils.isBlank(hostOverride)) {
-            return hostOverride;
+    static String resolveDockerHostIpAddress(DockerClient client, URI dockerHost, boolean allowUserOverrides) {
+        if (allowUserOverrides) {
+            String hostOverride = System.getenv("TESTCONTAINERS_HOST_OVERRIDE");
+            if (!StringUtils.isBlank(hostOverride)) {
+                return hostOverride;
+            }
         }
 
         switch (dockerHost.getScheme()) {

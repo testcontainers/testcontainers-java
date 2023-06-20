@@ -1,4 +1,5 @@
 site_name: Testcontainers for Java
+site_url: https://java.testcontainers.org
 plugins:
     - search
     - codeinclude
@@ -119,4 +120,4 @@ nav:
           - bounty.md
 edit_uri: edit/main/docs/
 extra:
-    latest_version: 1.18.1
+    latest_version: 1.18.3
