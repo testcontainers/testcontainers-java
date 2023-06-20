@@ -132,6 +132,9 @@ public static ComposeContainer environment =
             .waitingFor("db-1", Wait.forLogMessage("started", 1));
 ```
 
+!!! note
+    Make sure the service name use a `-` instead of `_` as separator using `ComposeContainer`.
+
 ## Using private repositories in Docker compose
 When Docker Compose is used in container mode (not local), it's needs to be made aware of Docker settings for private repositories. 
 By default, those setting are located in `$HOME/.docker/config.json`. 
