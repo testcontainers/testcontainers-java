@@ -61,7 +61,7 @@ public class ComposeContainer extends FailureDetectingExternalResource implement
 
     public static final String COMPOSE_EXECUTABLE = SystemUtils.IS_OS_WINDOWS ? "docker.exe" : "docker";
 
-    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("docker:20.10.17");
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("docker:24.0.2");
 
     private final ComposeDelegate composeDelegate;
 
