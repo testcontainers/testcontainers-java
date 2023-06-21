@@ -1,6 +1,7 @@
-package org.testcontainers.containers;
+package org.testcontainers;
 
 import com.google.common.util.concurrent.Uninterruptibles;
+import org.apache.commons.lang3.SystemUtils;
 import org.assertj.core.api.Assumptions;
 import org.junit.Before;
 import org.junit.Test;
@@ -8,6 +9,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.rnorth.ducttape.unreliables.Unreliables;
+import org.testcontainers.containers.ComposeContainer;
 import org.testcontainers.utility.CommandLine;
 
 import java.io.BufferedReader;
@@ -18,7 +20,9 @@ import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 @RunWith(Parameterized.class)
-public class DockerComposeOverridesTest {
+public class ComposeOverridesTest {
+
+    private static final String DOCKER_EXECUTABLE = SystemUtils.IS_OS_WINDOWS ? "docker.exe" : "docker";
 
     private static final File BASE_COMPOSE_FILE = new File("src/test/resources/docker-compose-base.yml");
 
@@ -32,7 +36,7 @@ public class DockerComposeOverridesTest {
 
     private static final int SERVICE_PORT = 3000;
 
-    private static final String SERVICE_NAME = "alpine_1";
+    private static final String SERVICE_NAME = "alpine-1";
 
     private final boolean localMode;
 
@@ -40,7 +44,7 @@ public class DockerComposeOverridesTest {
 
     private final File[] composeFiles;
 
-    public DockerComposeOverridesTest(boolean localMode, String expectedEnvVar, File... composeFiles) {
+    public ComposeOverridesTest(boolean localMode, String expectedEnvVar, File... composeFiles) {
         this.localMode = localMode;
         this.expectedEnvVar = expectedEnvVar;
         this.composeFiles = composeFiles;
@@ -62,8 +66,8 @@ public class DockerComposeOverridesTest {
     public void setUp() {
         if (localMode) {
             Assumptions
-                .assumeThat(CommandLine.executableExists(DockerComposeContainer.COMPOSE_EXECUTABLE))
-                .as("docker-compose executable exists")
+                .assumeThat(CommandLine.executableExists(DOCKER_EXECUTABLE))
+                .as("docker executable exists")
                 .isTrue();
         }
     }
@@ -71,7 +75,7 @@ public class DockerComposeOverridesTest {
     @Test
     public void test() {
         try (
-            DockerComposeContainer compose = new DockerComposeContainer(composeFiles)
+            ComposeContainer compose = new ComposeContainer(composeFiles)
                 .withLocalCompose(localMode)
                 .withExposedService(SERVICE_NAME, SERVICE_PORT)
         ) {

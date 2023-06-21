@@ -27,12 +27,11 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 /**
- * Container which launches Docker Compose, for the purposes of launching a defined set of containers.
+ * Testcontainers implementation for Docker Compose V2. <br>
+ * It uses either Compose V2 contained within the Docker binary, or a containerised version of Compose V2.
  */
 @Slf4j
-public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
-    extends FailureDetectingExternalResource
-    implements Startable {
+public class ComposeContainer extends FailureDetectingExternalResource implements Startable {
 
     private final Map<String, Integer> scalingPreferences = new HashMap<>();
 
@@ -60,35 +59,30 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
 
     private boolean removeVolumes = true;
 
-    public static final String COMPOSE_EXECUTABLE = SystemUtils.IS_OS_WINDOWS ? "docker-compose.exe" : "docker-compose";
+    public static final String COMPOSE_EXECUTABLE = SystemUtils.IS_OS_WINDOWS ? "docker.exe" : "docker";
 
-    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("docker/compose:1.29.2");
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("docker:24.0.2");
 
     private final ComposeDelegate composeDelegate;
 
     private String project;
 
-    @Deprecated
-    public DockerComposeContainer(File composeFile, String identifier) {
-        this(identifier, composeFile);
-    }
-
-    public DockerComposeContainer(File... composeFiles) {
+    public ComposeContainer(File... composeFiles) {
         this(Arrays.asList(composeFiles));
     }
 
-    public DockerComposeContainer(List<File> composeFiles) {
+    public ComposeContainer(List<File> composeFiles) {
         this(Base58.randomString(6).toLowerCase(), composeFiles);
     }
 
-    public DockerComposeContainer(String identifier, File... composeFiles) {
+    public ComposeContainer(String identifier, File... composeFiles) {
         this(identifier, Arrays.asList(composeFiles));
     }
 
-    public DockerComposeContainer(String identifier, List<File> composeFiles) {
+    public ComposeContainer(String identifier, List<File> composeFiles) {
         this.composeDelegate =
             new ComposeDelegate(
-                ComposeDelegate.ComposeVersion.V1,
+                ComposeDelegate.ComposeVersion.V2,
                 composeFiles,
                 identifier,
                 COMPOSE_EXECUTABLE,
@@ -152,9 +146,9 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
         return this.composeDelegate.listChildContainers();
     }
 
-    public SELF withServices(@NonNull String... services) {
+    public ComposeContainer withServices(@NonNull String... services) {
         this.services = Arrays.asList(services);
-        return self();
+        return this;
     }
 
     @Override
@@ -163,9 +157,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
             try {
                 this.composeDelegate.getAmbassadorContainer().stop();
 
-                // Kill the services using docker-compose
-                String cmd = "down";
-
+                // Kill the services using docker
+                String cmd = "compose down";
                 if (removeVolumes) {
                     cmd += " -v";
                 }
@@ -179,28 +172,32 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
         }
     }
 
-    public SELF withExposedService(String serviceName, int servicePort) {
+    public ComposeContainer withExposedService(String serviceName, int servicePort) {
         this.composeDelegate.withExposedService(serviceName, servicePort, Wait.defaultWaitStrategy());
-        return self();
+        return this;
     }
 
-    public DockerComposeContainer withExposedService(String serviceName, int instance, int servicePort) {
-        return withExposedService(serviceName + "_" + instance, servicePort);
+    public ComposeContainer withExposedService(String serviceName, int instance, int servicePort) {
+        return withExposedService(serviceName + "-" + instance, servicePort);
     }
 
-    public DockerComposeContainer withExposedService(
+    public ComposeContainer withExposedService(
         String serviceName,
         int instance,
         int servicePort,
         WaitStrategy waitStrategy
     ) {
-        this.composeDelegate.withExposedService(serviceName + "_" + instance, servicePort, waitStrategy);
-        return self();
+        this.composeDelegate.withExposedService(serviceName + "-" + instance, servicePort, waitStrategy);
+        return this;
     }
 
-    public SELF withExposedService(String serviceName, int servicePort, @NonNull WaitStrategy waitStrategy) {
+    public ComposeContainer withExposedService(
+        String serviceName,
+        int servicePort,
+        @NonNull WaitStrategy waitStrategy
+    ) {
         this.composeDelegate.withExposedService(serviceName, servicePort, waitStrategy);
-        return self();
+        return this;
     }
 
     /**
@@ -211,17 +208,17 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
      * @return this
      * @see org.testcontainers.containers.wait.strategy.Wait#defaultWaitStrategy()
      */
-    public SELF waitingFor(String serviceName, @NonNull WaitStrategy waitStrategy) {
+    public ComposeContainer waitingFor(String serviceName, @NonNull WaitStrategy waitStrategy) {
         String serviceInstanceName = this.composeDelegate.getServiceInstanceName(serviceName);
         this.composeDelegate.addWaitStrategy(serviceInstanceName, waitStrategy);
-        return self();
+        return this;
     }
 
     /**
      * Get the host (e.g. IP address or hostname) that an exposed service can be found at, from the host machine
      * (i.e. should be the machine that's running this Java process).
      * <p>
-     * The service must have been declared using DockerComposeContainer#withExposedService.
+     * The service must have been declared using ComposeContainer#withExposedService.
      *
      * @param serviceName the name of the service as set in the docker-compose.yml file.
      * @param servicePort the port exposed by the service container.
@@ -235,7 +232,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
      * Get the port that an exposed service can be found at, from the host machine
      * (i.e. should be the machine that's running this Java process).
      * <p>
-     * The service must have been declared using DockerComposeContainer#withExposedService.
+     * The service must have been declared using ComposeContainer#withExposedService.
      *
      * @param serviceName the name of the service as set in the docker-compose.yml file.
      * @param servicePort the port exposed by the service container.
@@ -245,19 +242,19 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
         return this.composeDelegate.getServicePort(serviceName, servicePort);
     }
 
-    public SELF withScaledService(String serviceBaseName, int numInstances) {
+    public ComposeContainer withScaledService(String serviceBaseName, int numInstances) {
         scalingPreferences.put(serviceBaseName, numInstances);
-        return self();
+        return this;
     }
 
-    public SELF withEnv(String key, String value) {
+    public ComposeContainer withEnv(String key, String value) {
         env.put(key, value);
-        return self();
+        return this;
     }
 
-    public SELF withEnv(Map<String, String> env) {
+    public ComposeContainer withEnv(Map<String, String> env) {
         env.forEach(this.env::put);
-        return self();
+        return this;
     }
 
     /**
@@ -265,9 +262,9 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
      *
      * @return this instance, for chaining
      */
-    public SELF withLocalCompose(boolean localCompose) {
+    public ComposeContainer withLocalCompose(boolean localCompose) {
         this.localCompose = localCompose;
-        return self();
+        return this;
     }
 
     /**
@@ -275,9 +272,9 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
      *
      * @return this instance, for chaining
      */
-    public SELF withPull(boolean pull) {
+    public ComposeContainer withPull(boolean pull) {
         this.pull = pull;
-        return self();
+        return this;
     }
 
     /**
@@ -285,9 +282,9 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
      *
      * @return this instance, for chaining
      */
-    public SELF withTailChildContainers(boolean tailChildContainers) {
+    public ComposeContainer withTailChildContainers(boolean tailChildContainers) {
         this.tailChildContainers = tailChildContainers;
-        return self();
+        return this;
     }
 
     /**
@@ -299,9 +296,9 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
      * @param consumer    consumer that output frames should be sent to
      * @return this instance, for chaining
      */
-    public SELF withLogConsumer(String serviceName, Consumer<OutputFrame> consumer) {
+    public ComposeContainer withLogConsumer(String serviceName, Consumer<OutputFrame> consumer) {
         this.composeDelegate.withLogConsumer(serviceName, consumer);
-        return self();
+        return this;
     }
 
     /**
@@ -309,19 +306,19 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
      *
      * @return this instance, for chaining
      */
-    public SELF withBuild(boolean build) {
+    public ComposeContainer withBuild(boolean build) {
         this.build = build;
-        return self();
+        return this;
     }
 
     /**
-     * Adds options to the docker-compose command, e.g. docker-compose --compatibility.
+     * Adds options to the docker command, e.g. docker --compatibility.
      *
      * @return this instance, for chaining
      */
-    public SELF withOptions(String... options) {
+    public ComposeContainer withOptions(String... options) {
         this.options = new HashSet<>(Arrays.asList(options));
-        return self();
+        return this;
     }
 
     /**
@@ -329,9 +326,9 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
      *
      * @return this instance, for chaining
      */
-    public SELF withRemoveImages(RemoveImages removeImages) {
+    public ComposeContainer withRemoveImages(ComposeContainer.RemoveImages removeImages) {
         this.removeImages = removeImages;
-        return self();
+        return this;
     }
 
     /**
@@ -340,9 +337,9 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
      * @param removeVolumes whether volumes are to be removed.
      * @return this instance, for chaining.
      */
-    public SELF withRemoveVolumes(boolean removeVolumes) {
+    public ComposeContainer withRemoveVolumes(boolean removeVolumes) {
         this.removeVolumes = removeVolumes;
-        return self();
+        return this;
     }
 
     /**
@@ -350,9 +347,9 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
      *
      * @return this instance. for chaining
      */
-    public SELF withStartupTimeout(Duration startupTimeout) {
+    public ComposeContainer withStartupTimeout(Duration startupTimeout) {
         this.composeDelegate.setStartupTimeout(startupTimeout);
-        return self();
+        return this;
     }
 
     public Optional<ContainerState> getContainerByServiceName(String serviceName) {
@@ -361,10 +358,6 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
 
     private void followLogs(String containerId, Consumer<OutputFrame> consumer) {
         this.followLogs(containerId, consumer);
-    }
-
-    private SELF self() {
-        return (SELF) this;
     }
 
     public enum RemoveImages {
