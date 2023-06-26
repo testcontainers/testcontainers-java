@@ -33,7 +33,6 @@ public class Fabric8K3sContainerTest {
             // }
         ) {
             k3s.start();
-            // }
 
             // connecting_with_fabric8 {
             // obtain a kubeconfig file which allows us to connect to k3s
