@@ -35,6 +35,9 @@ This may be used with Kubernetes clients - e.g. for the [official Java client](c
 
     * k3s containers may be unable to run on host machines where `/var/lib/docker` is on a BTRFS filesystem. See [k3s-io/k3s#4863](https://github.com/k3s-io/k3s/issues/4863) for an example.
 
+    * You may experience PKIX exceptions when trying to use a configured Fabric8 client. This is down to newer distributions of k3s issuing elliptic curve keys.
+    This can be fixed by adding [BouncyCastle PKI library](https://mvnrepository.com/artifact/org.bouncycastle/bcpkix-jdk15on) to your classpath.
+
 ## Adding this module to your project dependencies
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
