@@ -32,7 +32,6 @@ public class Fabric8K3sContainerTest {
                 .withLogConsumer(new Slf4jLogConsumer(log))
             // }
         ) {
-            // starting_k3s {
             k3s.start();
             // }
 
