@@ -9,7 +9,10 @@ import org.testcontainers.utility.DockerImageName;
  */
 public class QuestDBContainer extends JdbcDatabaseContainer<QuestDBContainer> {
 
-    static final String DATABASE_PROVIDER = "postgresql";
+    @Deprecated
+    static final String LEGACY_DATABASE_PROVIDER = "postgresql";
+
+    static final String DATABASE_PROVIDER = "questdb";
 
     private static final String DEFAULT_DATABASE_NAME = "qdb";
 

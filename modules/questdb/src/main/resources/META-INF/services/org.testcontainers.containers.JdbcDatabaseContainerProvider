@@ -1,1 +1,2 @@
+org.testcontainers.containers.LegacyQuestDBProvider
 org.testcontainers.containers.QuestDBProvider
