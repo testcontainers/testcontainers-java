@@ -1,2 +1,3 @@
 -Xms2147483648
 -Xmx2147483648
+-Dingest.geoip.downloader.enabled.default=false
