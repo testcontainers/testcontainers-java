@@ -1,4 +1,4 @@
-description = "TestContainers :: RabbitMQ"
+description = "Testcontainers :: RabbitMQ"
 
 dependencies {
     api project(":testcontainers")

@@ -1,4 +1,4 @@
-description = "TestContainers :: elasticsearch"
+description = "Testcontainers :: elasticsearch"
 
 dependencies {
     api project(':testcontainers')

@@ -1,4 +1,4 @@
-description = "TestContainers :: HiveMQ"
+description = "Testcontainers :: HiveMQ"
 
 dependencies {
     api(project(":testcontainers"))

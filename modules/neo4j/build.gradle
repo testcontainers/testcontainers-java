@@ -1,4 +1,4 @@
-description = "TestContainers :: Neo4j"
+description = "Testcontainers :: Neo4j"
 
 def generatedResourcesDir = new File(project.buildDir, "generated-resources")
 def customNeo4jPluginDestinationDir = new File(generatedResourcesDir, "custom-plugins")
