@@ -69,7 +69,7 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 
 #### Using QuestDB
 
-`jdbc:tc:postgresql:6.5.3:///databasename`
+`jdbc:tc:questdb:6.5.3:///databasename`
 
 #### Using TimescaleDB
 
