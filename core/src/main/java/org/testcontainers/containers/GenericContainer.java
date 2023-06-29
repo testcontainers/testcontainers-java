@@ -12,8 +12,6 @@ import com.github.dockerjava.api.model.ContainerNetwork;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Link;
-import com.github.dockerjava.api.model.PortBinding;
-import com.github.dockerjava.api.model.Ports;
 import com.github.dockerjava.api.model.Volume;
 import com.github.dockerjava.api.model.VolumesFrom;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
@@ -48,6 +46,7 @@ import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
+import org.testcontainers.core.ContainerDef;
 import org.testcontainers.images.ImagePullPolicy;
 import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.images.builder.Transferable;
@@ -238,12 +237,15 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private boolean hostAccessible = false;
 
+    private ContainerDef containerDef;
+
     public GenericContainer(@NonNull final DockerImageName dockerImageName) {
-        this.image = new RemoteDockerImage(dockerImageName);
+        this(new RemoteDockerImage(dockerImageName));
     }
 
     public GenericContainer(@NonNull final RemoteDockerImage image) {
         this.image = image;
+        this.containerDef = ContainerDef.from(image);
     }
 
     /**
@@ -255,25 +257,30 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     public GenericContainer(@NonNull final String dockerImageName) {
-        this.setDockerImageName(dockerImageName);
+        this(new RemoteDockerImage(DockerImageName.parse(dockerImageName)));
     }
 
     public GenericContainer(@NonNull final Future<String> image) {
-        setImage(image);
+        this(new RemoteDockerImage(image));
+    }
+
+    public GenericContainer(@NonNull final ContainerDef containerDef) {
+        this(containerDef.getImage());
+        this.containerDef = containerDef;
     }
 
     public void setImage(Future<String> image) {
-        this.image = new RemoteDockerImage(image);
+        this.containerDef = ContainerDef.from(new RemoteDockerImage(image));
     }
 
     @Override
     public List<Integer> getExposedPorts() {
-        return new ArrayList<>(exposedPorts);
+        return this.containerDef.getExposedPorts().stream().map(ExposedPort::getPort).collect(Collectors.toList());
     }
 
     @Override
     public void setExposedPorts(List<Integer> exposedPorts) {
-        this.exposedPorts = new LinkedHashSet<>(exposedPorts);
+        this.containerDef.withExposedPorts(exposedPorts.stream().map(ExposedPort::tcp).collect(Collectors.toSet()));
     }
 
     /**
@@ -455,7 +462,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                     .until(
                         () -> dockerClient.inspectContainerCmd(containerId).exec(),
                         inspectContainerResponse -> {
-                            Set<Integer> exposedAndMappedPorts = inspectContainerResponse
+                            Set<ExposedPort> exposedAndMappedPorts = inspectContainerResponse
                                 .getNetworkSettings()
                                 .getPorts()
                                 .getBindings()
@@ -463,10 +470,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                                 .stream()
                                 .filter(it -> Objects.nonNull(it.getValue())) // filter out exposed but not yet mapped
                                 .map(Entry::getKey)
-                                .map(ExposedPort::getPort)
                                 .collect(Collectors.toSet());
 
-                            return exposedAndMappedPorts.containsAll(exposedPorts);
+                            return exposedAndMappedPorts.containsAll(this.containerDef.getExposedPorts());
                         }
                     );
 
@@ -604,8 +610,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     /**
      * Set any custom settings for the create command such as shared memory size.
      */
-    private HostConfig buildHostConfig() {
-        HostConfig config = new HostConfig();
+    private HostConfig buildHostConfig(HostConfig config) {
         if (shmSize != null) {
             config.withShmSize(shmSize);
         }
@@ -735,11 +740,13 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Deprecated
     protected Integer getLivenessCheckPort() {
         // legacy implementation for backwards compatibility
-        Iterator<Integer> exposedPortsIterator = exposedPorts.iterator();
+        Iterator<ExposedPort> exposedPortsIterator = this.containerDef.getExposedPorts().iterator();
         if (exposedPortsIterator.hasNext()) {
-            return getMappedPort(exposedPortsIterator.next());
-        } else if (portBindings.size() > 0) {
-            return Integer.valueOf(PortBinding.parse(portBindings.get(0)).getBinding().getHostPortSpec());
+            return getMappedPort(exposedPortsIterator.next().getPort());
+        } else if (!this.containerDef.getPortBindings().isEmpty()) {
+            return Integer.valueOf(
+                this.containerDef.getPortBindings().iterator().next().getBinding().getHostPortSpec()
+            );
         } else {
             return null;
         }
@@ -769,41 +776,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     private void applyConfiguration(CreateContainerCmd createCommand) {
-        HostConfig hostConfig = buildHostConfig();
-
-        // PortBindings must contain:
-        //  * all exposed ports with a randomized host port (equivalent to -p CONTAINER_PORT)
-        //  * all exposed ports with a fixed host port (equivalent to -p HOST_PORT:CONTAINER_PORT)
-        Map<ExposedPort, PortBinding> allPortBindings = new HashMap<>();
-        // First collect all the randomized host ports from our 'exposedPorts' field
-        for (final Integer tcpPort : exposedPorts) {
-            ExposedPort exposedPort = ExposedPort.tcp(tcpPort);
-            allPortBindings.put(exposedPort, new PortBinding(Ports.Binding.empty(), exposedPort));
-        }
-        // Next collect all the fixed host ports from our 'portBindings' field, overwriting any randomized ports so that
-        // we don't create two bindings for the same container port.
-        for (final String portBinding : portBindings) {
-            PortBinding parsedBinding = PortBinding.parse(portBinding);
-            allPortBindings.put(parsedBinding.getExposedPort(), parsedBinding);
-        }
-        hostConfig.withPortBindings(new ArrayList<>(allPortBindings.values()));
-
-        // Next, ExposedPorts must be set up to publish all of the above ports, both randomized and fixed.
-        createCommand.withExposedPorts(new ArrayList<>(allPortBindings.keySet()));
-
-        createCommand.withHostConfig(hostConfig);
-
-        if (commandParts != null) {
-            createCommand.withCmd(commandParts);
-        }
-
-        String[] envArray = env
-            .entrySet()
-            .stream()
-            .filter(it -> it.getValue() != null)
-            .map(it -> it.getKey() + "=" + it.getValue())
-            .toArray(String[]::new);
-        createCommand.withEnv(envArray);
+        this.containerDef.applyTo(createCommand);
+        buildHostConfig(createCommand.getHostConfig());
 
         boolean shouldCheckFileMountingSupport =
             binds.size() > 0 && !TestcontainersConfiguration.getInstance().isDisableChecks();
@@ -996,7 +970,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public void setCommand(@NonNull String command) {
-        this.commandParts = command.split(" ");
+        this.containerDef.withCommand(command.split(" "));
     }
 
     /**
@@ -1004,12 +978,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public void setCommand(@NonNull String... commandParts) {
-        this.commandParts = commandParts;
+        this.containerDef.withCommand(commandParts);
     }
 
     @Override
     public Map<String, String> getEnvMap() {
-        return env;
+        return this.containerDef.getEnvVars();
     }
 
     /**
@@ -1017,12 +991,18 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public List<String> getEnv() {
-        return env.entrySet().stream().map(it -> it.getKey() + "=" + it.getValue()).collect(Collectors.toList());
+        return this.containerDef.getEnvVars()
+            .entrySet()
+            .stream()
+            .map(it -> it.getKey() + "=" + it.getValue())
+            .collect(Collectors.toList());
     }
 
     @Override
     public void setEnv(List<String> env) {
-        this.env = env.stream().map(it -> it.split("=")).collect(Collectors.toMap(it -> it[0], it -> it[1]));
+        this.containerDef.withEnvVars(
+                env.stream().map(it -> it.split("=")).collect(Collectors.toMap(it -> it[0], it -> it[1]))
+            );
     }
 
     /**
@@ -1030,7 +1010,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public void addEnv(String key, String value) {
-        env.put(key, value);
+        this.containerDef.withEnvVar(key, value);
     }
 
     /**
@@ -1092,13 +1072,13 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @Override
     public void addExposedPort(Integer port) {
-        exposedPorts.add(port);
+        this.containerDef.withExposedPort(port);
     }
 
     @Override
     public void addExposedPorts(int... ports) {
         for (int port : ports) {
-            exposedPorts.add(port);
+            this.containerDef.withExposedPort(port);
         }
     }
 
@@ -1205,7 +1185,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public SELF withEnv(Map<String, String> env) {
-        env.forEach(this::addEnv);
+        env.forEach(this.containerDef::withEnvVar);
         return self();
     }
 
@@ -1546,5 +1526,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public String getContainerName() {
         return getContainerInfo().getName();
+    }
+
+    public static GenericContainer<?> with(ContainerDef containerDef) {
+        return new GenericContainer<>(containerDef);
     }
 }

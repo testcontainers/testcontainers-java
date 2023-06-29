@@ -9,6 +9,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.testcontainers.TestImages;
 import org.testcontainers.Testcontainers;
+import org.testcontainers.core.ContainerDef;
 
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -50,8 +51,8 @@ public class ExposedHostTest {
     @Test
     public void testExposedHostAfterContainerIsStarted() {
         try (
-            GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
-                .withCommand("top")
+            GenericContainer<?> container = GenericContainer
+                .with(ContainerDef.from(TestImages.TINY_IMAGE).withCommand("top"))
                 .withAccessToHost(true)
         ) {
             container.start();
@@ -61,29 +62,32 @@ public class ExposedHostTest {
     }
 
     @Test
-    public void testExposedHost() throws Exception {
+    public void testExposedHost() {
         Testcontainers.exposeHostPorts(server.getAddress().getPort());
-        assertResponse(new GenericContainer<>(TestImages.TINY_IMAGE).withCommand("top"), server.getAddress().getPort());
+        assertResponse(
+            GenericContainer.with(ContainerDef.from(TestImages.TINY_IMAGE).withCommand("top")),
+            server.getAddress().getPort()
+        );
     }
 
     @Test
-    public void testExposedHostWithNetwork() throws Exception {
+    public void testExposedHostWithNetwork() {
         Testcontainers.exposeHostPorts(server.getAddress().getPort());
         try (Network network = Network.newNetwork()) {
             assertResponse(
-                new GenericContainer<>(TestImages.TINY_IMAGE).withNetwork(network).withCommand("top"),
+                GenericContainer.with(ContainerDef.from(TestImages.TINY_IMAGE).withCommand("top")).withNetwork(network),
                 server.getAddress().getPort()
             );
         }
     }
 
     @Test
-    public void testExposedHostPortOnFixedInternalPorts() throws Exception {
+    public void testExposedHostPortOnFixedInternalPorts() {
         Testcontainers.exposeHostPorts(ImmutableMap.of(server.getAddress().getPort(), 80));
         Testcontainers.exposeHostPorts(ImmutableMap.of(server.getAddress().getPort(), 81));
 
-        assertResponse(new GenericContainer<>(TestImages.TINY_IMAGE).withCommand("top"), 80);
-        assertResponse(new GenericContainer<>(TestImages.TINY_IMAGE).withCommand("top"), 81);
+        assertResponse(GenericContainer.with(ContainerDef.from(TestImages.TINY_IMAGE).withCommand("top")), 80);
+        assertResponse(GenericContainer.with(ContainerDef.from(TestImages.TINY_IMAGE).withCommand("top")), 81);
     }
 
     @SneakyThrows
