@@ -2,6 +2,8 @@ package org.testcontainers.containers;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.core.ContainerDef;
+import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
@@ -52,45 +54,53 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         this(DEFAULT_IMAGE_NAME.withTag(confluentPlatformVersion));
     }
 
-    public KafkaContainer(final DockerImageName dockerImageName) {
-        super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+    static KafkaContainer from(String image) {
+        return with(KafkaServiceContainer.from(image));
+    }
 
-        // Use two listeners with different names, it will force Kafka to communicate with itself via internal
-        // listener when KAFKA_INTER_BROKER_LISTENER_NAME is set, otherwise Kafka will try to use the advertised listener
-        withEnv("KAFKA_LISTENERS", "PLAINTEXT://0.0.0.0:" + KAFKA_PORT + ",BROKER://0.0.0.0:9092");
-        withEnv("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", "BROKER:PLAINTEXT,PLAINTEXT:PLAINTEXT");
-        withEnv("KAFKA_INTER_BROKER_LISTENER_NAME", "BROKER");
+    static KafkaContainer from(DockerImageName image) {
+        return with(KafkaServiceContainer.from(image));
+    }
 
-        withEnv("KAFKA_BROKER_ID", "1");
-        withEnv("KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", DEFAULT_INTERNAL_TOPIC_RF);
-        withEnv("KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS", DEFAULT_INTERNAL_TOPIC_RF);
-        withEnv("KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR", DEFAULT_INTERNAL_TOPIC_RF);
-        withEnv("KAFKA_TRANSACTION_STATE_LOG_MIN_ISR", DEFAULT_INTERNAL_TOPIC_RF);
-        withEnv("KAFKA_LOG_FLUSH_INTERVAL_MESSAGES", Long.MAX_VALUE + "");
-        withEnv("KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS", "0");
+    static KafkaContainer with(KafkaServiceContainer serviceContainer) {
+        ContainerDef containerDef = serviceContainer.getContainerDef();
+        KafkaContainer container = new KafkaContainer(containerDef.getImage());
+        container.withServiceContainer(serviceContainer);
+        return container;
+    }
 
-        withExposedPorts(KAFKA_PORT);
-
+    private KafkaContainer(RemoteDockerImage image) {
+        super(image);
+        withServiceContainer(KafkaServiceContainer.from(image.get()));
         withCreateContainerCmdModifier(cmd -> {
             cmd.withEntrypoint("sh");
         });
-        withCommand("-c", "while [ ! -f " + STARTER_SCRIPT + " ]; do sleep 0.1; done; " + STARTER_SCRIPT);
+    }
+
+    private KafkaServiceContainer kafkaServiceContainer;
+
+    private void withServiceContainer(KafkaServiceContainer kafkaServiceContainer) {
+        this.kafkaServiceContainer = kafkaServiceContainer;
+        setContainerDef(kafkaServiceContainer.getContainerDef());
+    }
+
+    public KafkaContainer(final DockerImageName dockerImageName) {
+        this(new RemoteDockerImage(dockerImageName));
     }
 
     public KafkaContainer withEmbeddedZookeeper() {
-        if (this.kraftEnabled) {
+        if (this.kafkaServiceContainer.isRaftMode()) {
             throw new IllegalStateException("Cannot configure Zookeeper when using Kraft mode");
         }
-        externalZookeeperConnect = null;
+        this.kafkaServiceContainer.withExternalZookeeperConnect(null);
         return self();
     }
 
     public KafkaContainer withExternalZookeeper(String connectString) {
-        if (this.kraftEnabled) {
+        if (this.kafkaServiceContainer.isRaftMode()) {
             throw new IllegalStateException("Cannot configure Zookeeper when using Kraft mode");
         }
-        externalZookeeperConnect = connectString;
+        this.kafkaServiceContainer.withExternalZookeeperConnect(connectString);
         return self();
     }
 
@@ -133,7 +143,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     @Override
     protected void configure() {
-        if (this.kraftEnabled) {
+        if (this.kafkaServiceContainer.isRaftMode()) {
             waitingFor(Wait.forLogMessage(".*Transitioning from RECOVERY to RUNNING.*", 1));
             configureKraft();
         } else {
@@ -168,6 +178,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     }
 
     protected void configureZookeeper() {
+        String externalZookeeperConnect = this.kafkaServiceContainer.getExternalZookeeperConnect();
         if (externalZookeeperConnect != null) {
             withEnv("KAFKA_ZOOKEEPER_CONNECT", externalZookeeperConnect);
         } else {
@@ -189,13 +200,13 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
                 brokerAdvertisedListener(containerInfo)
             );
 
-        if (this.kraftEnabled && isLessThanCP740()) {
+        if (this.kafkaServiceContainer.isRaftMode() && isLessThanCP740()) {
             // Optimization: skip the checks
             command += "echo '' > /etc/confluent/docker/ensure \n";
             command += commandKraft();
         }
 
-        if (!this.kraftEnabled) {
+        if (!this.kafkaServiceContainer.isRaftMode()) {
             // Optimization: skip the checks
             command += "echo '' > /etc/confluent/docker/ensure \n";
             command += commandZookeeper();

@@ -39,7 +39,7 @@ public class KafkaContainerTest {
 
     @Test
     public void testUsage() throws Exception {
-        try (KafkaContainer kafka = new KafkaContainer(KAFKA_TEST_IMAGE)) {
+        try (KafkaContainer kafka = KafkaContainer.from(KAFKA_TEST_IMAGE)) {
             kafka.start();
             testKafkaFunctionality(kafka.getBootstrapServers());
         }
