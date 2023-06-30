@@ -1,4 +1,4 @@
-package org.testcontainers.containers.app;
+package org.testcontainers.liberty.app;
 
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -17,6 +17,7 @@ import java.util.List;
 @Produces(MediaType.TEXT_PLAIN)
 @Consumes(MediaType.TEXT_PLAIN)
 public class TestService {
+
     private static final List<String> cache = new ArrayList<>();
 
     @GET

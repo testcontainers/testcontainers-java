@@ -1,10 +1,10 @@
-package org.testcontainers.containers;
+package org.testcontainers.liberty;
 
 import lombok.NonNull;
+import org.testcontainers.applicationserver.ApplicationServerContainer;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
-import org.testcontainers.applicationserver.ApplicationServerContainer;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -66,18 +66,17 @@ public class LibertyServerContainer extends ApplicationServerContainer {
         super.configure();
 
         // Copy server configuration
-        if( Objects.nonNull(serverConfiguration) ) {
+        if (Objects.nonNull(serverConfiguration)) {
             withCopyToContainer(serverConfiguration, SERVER_CONFIG_DIR + "server.xml");
             return;
         }
 
-        if ( ! features.isEmpty() ) {
+        if (!features.isEmpty()) {
             withCopyToContainer(generateServerConfiguration(features), SERVER_CONFIG_DIR + "server.xml");
             return;
         }
 
         withCopyToContainer(generateServerConfiguration(DEFAULT_FEATURES), SERVER_CONFIG_DIR + "server.xml");
-
     }
 
     @Override
@@ -118,7 +117,7 @@ public class LibertyServerContainer extends ApplicationServerContainer {
     private static final Transferable generateServerConfiguration(List<String> features) {
         String configContents = "";
         configContents += "<server><featureManager>";
-        for(String feature : features) {
+        for (String feature : features) {
             configContents += "<feature>" + feature + "</feature>";
         }
         configContents += "</featureManager></server>";
