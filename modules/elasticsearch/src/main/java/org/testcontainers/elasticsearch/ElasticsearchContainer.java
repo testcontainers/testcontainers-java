@@ -98,6 +98,8 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 
         withNetworkAliases("elasticsearch-" + Base58.randomString(6));
         withEnv("discovery.type", "single-node");
+        // disable disk threshold checks
+        withEnv("cluster.routing.allocation.disk.threshold_enabled", "false");
         // Sets default memory of elasticsearch instance to 2GB
         // Spaces are deliberate to allow user to define additional jvm options as elasticsearch resolves option files lexicographically
         withClasspathResourceMapping(

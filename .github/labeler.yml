@@ -1,4 +1,6 @@
 "area/docker-compose":
+  - core/src/main/java/org/testcontainers/containers/ComposeContainer.java
+  - core/src/main/java/org/testcontainers/containers/ComposeDelegate.java
   - core/src/main/java/org/testcontainers/containers/DockerComposeContainer.java
   - core/src/main/java/org/testcontainers/containers/DockerComposeFiles.java
 "github_actions":
@@ -19,6 +21,8 @@
   - modules/consul/**/*
 "modules/couchbase":
   - modules/couchbase/**/*
+"modules/cratedb":
+  - modules/cratedb/**/*
 "modules/db2":
   - modules/db2/**/*
 "modules/dynalite":
@@ -32,7 +36,7 @@
 "modules/influx":
   - modules/influxdb/**/*
 "modules/jdbc":
-  - modules/jdbc/*
+  - modules/jdbc/**/*
 "modules/jupiter":
   - modules/junit-jupiter/**/*
 "modules/k3s":
@@ -75,6 +79,8 @@
   - modules/redpanda/**/*
 "modules/selenium":
   - modules/selenium/**/*
+"modules/solace":
+  - modules/solace/**/*
 "modules/solr":
   - modules/solr/**/*
 "modules/spock":

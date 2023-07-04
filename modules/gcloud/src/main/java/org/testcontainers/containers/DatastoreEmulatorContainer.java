@@ -7,12 +7,14 @@ import org.testcontainers.utility.DockerImageName;
  * A Datastore container that relies in google cloud sdk.
  *
  * Default port is 8081.
- *
- * @author Eddú Meléndez
  */
 public class DatastoreEmulatorContainer extends GenericContainer<DatastoreEmulatorContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse(
+        "gcr.io/google.com/cloudsdktool/google-cloud-cli"
+    );
+
+    private static final DockerImageName CLOUD_SDK_IMAGE_NAME = DockerImageName.parse(
         "gcr.io/google.com/cloudsdktool/cloud-sdk"
     );
 
@@ -29,7 +31,7 @@ public class DatastoreEmulatorContainer extends GenericContainer<DatastoreEmulat
 
     public DatastoreEmulatorContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, CLOUD_SDK_IMAGE_NAME);
 
         withExposedPorts(HTTP_PORT);
         setWaitStrategy(Wait.forHttp("/").forStatusCode(200));

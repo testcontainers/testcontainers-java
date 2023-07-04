@@ -59,9 +59,16 @@ public interface Network extends AutoCloseable, TestRule {
         @Override
         public synchronized String getId() {
             if (initialized.compareAndSet(false, true)) {
-                id = create();
+                boolean success = false;
+                try {
+                    id = create();
+                    success = true;
+                } finally {
+                    if (!success) {
+                        initialized.set(false);
+                    }
+                }
             }
-
             return id;
         }
 

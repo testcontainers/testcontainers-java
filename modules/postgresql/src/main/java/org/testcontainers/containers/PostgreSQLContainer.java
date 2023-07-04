@@ -8,9 +8,6 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Set;
 
-/**
- * @author richardnorth
- */
 public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
 
     public static final String NAME = "postgresql";

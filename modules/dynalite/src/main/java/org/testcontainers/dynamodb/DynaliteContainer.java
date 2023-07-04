@@ -11,6 +11,8 @@ import org.testcontainers.utility.DockerImageName;
 
 /**
  * Container for Dynalite, a DynamoDB clone.
+ *
+ * @deprecated use localstack module instead
  */
 public class DynaliteContainer extends GenericContainer<DynaliteContainer> {
 

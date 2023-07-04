@@ -346,7 +346,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 }
             );
         } catch (Exception e) {
-            throw new ContainerLaunchException("Container startup failed", e);
+            throw new ContainerLaunchException("Container startup failed for image " + getDockerImageName(), e);
         }
     }
 
@@ -469,6 +469,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                             return exposedAndMappedPorts.containsAll(exposedPorts);
                         }
                     );
+
+            String emulationWarning = checkForEmulation();
+            if (emulationWarning != null) {
+                logger().warn(emulationWarning);
+            }
 
             // Tell subclasses that we're starting
             containerIsStarting(containerInfo, reused);
@@ -960,6 +965,32 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         }
     }
 
+    private String checkForEmulation() {
+        try {
+            DockerClient dockerClient = DockerClientFactory.instance().client();
+            String imageId = getContainerInfo().getImageId();
+            String imageArch = dockerClient.inspectImageCmd(imageId).exec().getArch();
+            String serverArch = dockerClient.versionCmd().exec().getArch();
+
+            if (!serverArch.equals(imageArch)) {
+                return (
+                    "The architecture '" +
+                    imageArch +
+                    "' for image '" +
+                    getDockerImageName() +
+                    "' (ID " +
+                    imageId +
+                    ") does not match the Docker server architecture '" +
+                    serverArch +
+                    "'. This will cause the container to execute much more slowly due to emulation and may lead to timeout failures."
+                );
+            }
+        } catch (Exception archCheckException) {
+            // ignore any exceptions since this is just used for a log message
+        }
+        return null;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -1259,7 +1290,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         final String containerPath,
         final BindMode mode
     ) {
-        return withClasspathResourceMapping(resourcePath, containerPath, mode, SelinuxContext.NONE);
+        return withClasspathResourceMapping(resourcePath, containerPath, mode, SelinuxContext.SHARED);
     }
 
     /**
@@ -1274,10 +1305,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     ) {
         final MountableFile mountableFile = MountableFile.forClasspathResource(resourcePath);
 
-        if (mode == BindMode.READ_ONLY && selinuxContext == SelinuxContext.NONE) {
-            withCopyFileToContainer(mountableFile, containerPath);
-        } else {
+        if (mode == BindMode.READ_WRITE) {
             addFileSystemBind(mountableFile.getResolvedPath(), containerPath, mode, selinuxContext);
+        } else {
+            withCopyFileToContainer(mountableFile, containerPath);
         }
 
         return self();
