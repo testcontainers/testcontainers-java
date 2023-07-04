@@ -2,16 +2,11 @@ package org.testcontainers.containers;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
+import lombok.SneakyThrows;
 import org.junit.Test;
-import org.yaml.snakeyaml.LoaderOptions;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.Constructor;
 
 import java.io.File;
-import java.io.FileReader;
-import java.io.Reader;
 import java.util.Collections;
-import lombok.SneakyThrows;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -75,17 +70,12 @@ public class ParsedDockerComposeFileValidationTest {
 
         File file = new File("src/test/resources/docker-compose-deserialization.yml");
 
-        // SnakeYaml can deserialize ParsedDockerComposeFileBean when using permissive options
-        try (Reader reader = new FileReader(file)) {
-            new Yaml(new Constructor(new LoaderOptions())).load(reader);
-        }
-
         // ParsedDockerComposeFile should reject deserialization of ParsedDockerComposeFileBean
         assertThatThrownBy(() -> {
-            new ParsedDockerComposeFile(file);
-        })
-        .hasMessageContaining(file.getAbsolutePath())
-        .hasMessageContaining("Unable to parse YAML file");
+                new ParsedDockerComposeFile(file);
+            })
+            .hasMessageContaining(file.getAbsolutePath())
+            .hasMessageContaining("Unable to parse YAML file");
     }
 
     @Test
