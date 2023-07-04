@@ -7,12 +7,14 @@ import org.testcontainers.utility.DockerImageName;
  * A PubSub container that relies in google cloud sdk.
  *
  * Default port is 8085.
- *
- * @author Eddú Meléndez
  */
 public class PubSubEmulatorContainer extends GenericContainer<PubSubEmulatorContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse(
+        "gcr.io/google.com/cloudsdktool/google-cloud-cli"
+    );
+
+    private static final DockerImageName CLOUD_SDK_IMAGE_NAME = DockerImageName.parse(
         "gcr.io/google.com/cloudsdktool/cloud-sdk"
     );
 
@@ -22,7 +24,7 @@ public class PubSubEmulatorContainer extends GenericContainer<PubSubEmulatorCont
 
     public PubSubEmulatorContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, CLOUD_SDK_IMAGE_NAME);
 
         withExposedPorts(8085);
         setWaitStrategy(new LogMessageWaitStrategy().withRegEx("(?s).*started.*$"));

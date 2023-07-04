@@ -1,0 +1,10 @@
+description = "Testcontainers :: JDBC :: CrateDB"
+
+dependencies {
+    api project(':jdbc')
+
+    testImplementation project(':jdbc-test')
+    testRuntimeOnly 'org.postgresql:postgresql:42.6.0'
+
+    compileOnly 'org.jetbrains:annotations:24.0.1'
+}

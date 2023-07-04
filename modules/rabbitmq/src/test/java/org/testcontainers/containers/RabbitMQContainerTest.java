@@ -27,9 +27,6 @@ import javax.net.ssl.TrustManagerFactory;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
-/**
- * @author Martin Greber
- */
 public class RabbitMQContainerTest {
 
     public static final int DEFAULT_AMQPS_PORT = 5671;

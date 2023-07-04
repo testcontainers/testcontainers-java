@@ -1,6 +1,8 @@
 package org.testcontainers.redpanda;
 
 import com.google.common.collect.ImmutableMap;
+import io.restassured.RestAssured;
+import io.restassured.response.Response;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -29,7 +31,7 @@ import static org.assertj.core.api.Assertions.tuple;
 
 public class RedpandaContainerTest {
 
-    private static final String REDPANDA_IMAGE = "docker.redpanda.com/vectorized/redpanda:v22.2.1";
+    private static final String REDPANDA_IMAGE = "docker.redpanda.com/redpandadata/redpanda:v22.2.1";
 
     private static final DockerImageName REDPANDA_DOCKER_IMAGE = DockerImageName.parse(REDPANDA_IMAGE);
 
@@ -45,7 +47,7 @@ public class RedpandaContainerTest {
     public void testUsageWithStringImage() throws Exception {
         try (
             // constructorWithVersion {
-            RedpandaContainer container = new RedpandaContainer("docker.redpanda.com/vectorized/redpanda:v22.2.1")
+            RedpandaContainer container = new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v23.1.2")
             // }
         ) {
             container.start();
@@ -59,9 +61,39 @@ public class RedpandaContainerTest {
 
     @Test
     public void testNotCompatibleVersion() {
-        assertThatThrownBy(() -> new RedpandaContainer("docker.redpanda.com/vectorized/redpanda:v21.11.19"))
+        assertThatThrownBy(() -> new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v21.11.19"))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("Redpanda version must be >= v22.2.1");
+    }
+
+    @Test
+    public void testSchemaRegistry() {
+        try (RedpandaContainer container = new RedpandaContainer(REDPANDA_DOCKER_IMAGE)) {
+            container.start();
+
+            String subjectsEndpoint = String.format(
+                "%s/subjects",
+                // getSchemaRegistryAddress {
+                container.getSchemaRegistryAddress()
+                // }
+            );
+
+            String subjectName = String.format("test-%s-value", UUID.randomUUID());
+
+            Response createSubject = RestAssured
+                .given()
+                .contentType("application/vnd.schemaregistry.v1+json")
+                .pathParam("subject", subjectName)
+                .body("{\"schema\": \"{\\\"type\\\": \\\"string\\\"}\"}")
+                .when()
+                .post(subjectsEndpoint + "/{subject}/versions")
+                .thenReturn();
+            assertThat(createSubject.getStatusCode()).isEqualTo(200);
+
+            Response allSubjects = RestAssured.given().when().get(subjectsEndpoint).thenReturn();
+            assertThat(allSubjects.getStatusCode()).isEqualTo(200);
+            assertThat(allSubjects.jsonPath().getList("$")).contains(subjectName);
+        }
     }
 
     private void testKafkaFunctionality(String bootstrapServers) throws Exception {

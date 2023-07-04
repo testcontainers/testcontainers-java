@@ -5,6 +5,7 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.delegate.DatabaseDelegate;
 import org.testcontainers.ext.ScriptUtils;
@@ -24,8 +25,6 @@ import java.util.stream.Collectors;
 
 /**
  * Base class for containers that expose a JDBC connection
- *
- * @author richardnorth
  */
 public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<SELF>>
     extends GenericContainer<SELF>
@@ -159,7 +158,6 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
                 try (Connection connection = createConnection(""); Statement statement = connection.createStatement()) {
                     boolean testQuerySucceeded = statement.execute(this.getTestQueryString());
                     if (testQuerySucceeded) {
-                        logger().info("Container is started (JDBC URL: {})", this.getJdbcUrl());
                         return;
                     }
                 } catch (NoDriverFoundException e) {
@@ -185,6 +183,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
 
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
+        logger().info("Container is started (JDBC URL: {})", this.getJdbcUrl());
         runInitScriptIfRequired();
     }
 
@@ -216,9 +215,23 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
      * @throws SQLException if there is a repeated failure to create the connection
      */
     public Connection createConnection(String queryString) throws SQLException, NoDriverFoundException {
-        final Properties info = new Properties();
-        info.put("user", this.getUsername());
-        info.put("password", this.getPassword());
+        return createConnection(queryString, new Properties());
+    }
+
+    /**
+     * Creates a connection to the underlying containerized database instance.
+     *
+     * @param queryString query string parameters that should be appended to the JDBC connection URL.
+     *                    The '?' character must be included
+     * @param info  additional properties to be passed to the JDBC driver
+     * @return a Connection
+     * @throws SQLException if there is a repeated failure to create the connection
+     */
+    public Connection createConnection(String queryString, Properties info)
+        throws SQLException, NoDriverFoundException {
+        Properties properties = new Properties(info);
+        properties.put("user", this.getUsername());
+        properties.put("password", this.getPassword());
         final String url = constructUrlForConnection(queryString);
 
         final Driver jdbcDriverInstance = getJdbcDriverInstance();
@@ -234,10 +247,10 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
                             "Trying to create JDBC connection using {} to {} with properties: {}",
                             jdbcDriverInstance.getClass().getName(),
                             url,
-                            info
+                            properties
                         );
 
-                    return jdbcDriverInstance.connect(url, info);
+                    return jdbcDriverInstance.connect(url, properties);
                 } catch (SQLException e) {
                     lastException = e;
                     Thread.sleep(100L);
@@ -288,15 +301,25 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
         return urlParameters;
     }
 
+    @Deprecated
     protected void optionallyMapResourceParameterAsVolume(
         @NotNull String paramName,
         @NotNull String pathNameInContainer,
         @NotNull String defaultResource
     ) {
+        optionallyMapResourceParameterAsVolume(paramName, pathNameInContainer, defaultResource, null);
+    }
+
+    protected void optionallyMapResourceParameterAsVolume(
+        @NotNull String paramName,
+        @NotNull String pathNameInContainer,
+        @NotNull String defaultResource,
+        @Nullable Integer fileMode
+    ) {
         String resourceName = parameters.getOrDefault(paramName, defaultResource);
 
         if (resourceName != null) {
-            final MountableFile mountableFile = MountableFile.forClasspathResource(resourceName);
+            final MountableFile mountableFile = MountableFile.forClasspathResource(resourceName, fileMode);
             withCopyFileToContainer(mountableFile, pathNameInContainer);
         }
     }

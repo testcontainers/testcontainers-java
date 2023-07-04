@@ -19,8 +19,6 @@ import java.util.stream.Stream;
  * This is an Immutable class holding JDBC Connection Url and its parsed components, used by {@link ContainerDatabaseDriver}.
  * <p>
  * {@link ConnectionUrl#parseUrl()} method must be called after instantiating this class.
- *
- * @author manikmagar
  */
 @EqualsAndHashCode(of = "url")
 @Getter
@@ -181,7 +179,7 @@ public class ConnectionUrl {
     }
 
     /**
-     * Get the TestContainers Parameters such as Init Function, Init Script path etc.
+     * Get the Testcontainers Parameters such as Init Function, Init Script path etc.
      *
      * @return {@link Map}
      */
@@ -199,7 +197,7 @@ public class ConnectionUrl {
     }
 
     /**
-     * Get all Query parameters specified in the Connection URL after ?. This DOES NOT include TestContainers (TC_*) parameters.
+     * Get all Query parameters specified in the Connection URL after ?. This DOES NOT include Testcontainers (TC_*) parameters.
      *
      * @return {@link Map}
      */
@@ -223,8 +221,6 @@ public class ConnectionUrl {
 
     /**
      * This interface defines the Regex Patterns used by {@link ConnectionUrl}.
-     *
-     * @author manikmagar
      */
     public interface Patterns {
         Pattern URL_MATCHING_PATTERN = Pattern.compile(

@@ -3,10 +3,10 @@ description = "Testcontainers :: Localstack"
 dependencies {
     api project(':testcontainers')
 
-    compileOnly 'com.amazonaws:aws-java-sdk-s3:1.12.295'
-    testImplementation 'com.amazonaws:aws-java-sdk-s3:1.12.285'
-    testImplementation 'com.amazonaws:aws-java-sdk-sqs:1.12.295'
-    testImplementation 'com.amazonaws:aws-java-sdk-logs:1.12.295'
-    testImplementation 'software.amazon.awssdk:s3:2.17.266'
-    testImplementation 'org.assertj:assertj-core:3.23.1'
+    testImplementation platform("com.amazonaws:aws-java-sdk-bom:1.12.500")
+    testImplementation 'com.amazonaws:aws-java-sdk-s3'
+    testImplementation 'com.amazonaws:aws-java-sdk-sqs'
+    testImplementation 'com.amazonaws:aws-java-sdk-logs'
+    testImplementation 'software.amazon.awssdk:s3:2.20.97'
+    testImplementation 'org.assertj:assertj-core:3.24.2'
 }

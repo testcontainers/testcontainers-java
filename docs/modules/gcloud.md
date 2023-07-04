@@ -53,7 +53,7 @@ And test against the Emulator:
 
 See more examples:
 
- * [Full sample code](https://github.com/testcontainers/testcontainers-java/tree/master/modules/gcloud/src/test/java/org/testcontainers/containers/DatastoreEmulatorContainerTest.java)
+ * [Full sample code](https://github.com/testcontainers/testcontainers-java/tree/main/modules/gcloud/src/test/java/org/testcontainers/containers/DatastoreEmulatorContainerTest.java)
  * [With Spring Boot](https://github.com/saturnism/testcontainers-gcloud-examples/tree/main/springboot/datastore-example/src/test/java/com/example/springboot/datastore) 
 
 ### Firestore 
@@ -72,7 +72,7 @@ And test against the Emulator:
 
 See more examples:
 
- * [Full sample code](https://github.com/testcontainers/testcontainers-java/tree/master/modules/gcloud/src/test/java/org/testcontainers/containers/FirestoreEmulatorContainerTest.java)
+ * [Full sample code](https://github.com/testcontainers/testcontainers-java/tree/main/modules/gcloud/src/test/java/org/testcontainers/containers/FirestoreEmulatorContainerTest.java)
  * [With Spring Boot](https://github.com/saturnism/testcontainers-gcloud-examples/tree/main/springboot/firestore-example/src/test/java/com/example/springboot/firestore/FirestoreIntegrationTests.java)
 
 ### Spanner 
@@ -103,7 +103,7 @@ And test against the Emulator:
 
 See more examples:
 
- * [Full sample code](https://github.com/testcontainers/testcontainers-java/tree/master/modules/gcloud/src/test/java/org/testcontainers/containers/SpannerEmulatorContainerTest.java)
+ * [Full sample code](https://github.com/testcontainers/testcontainers-java/tree/main/modules/gcloud/src/test/java/org/testcontainers/containers/SpannerEmulatorContainerTest.java)
  * [With Spring Boot](https://github.com/saturnism/testcontainers-gcloud-examples/tree/main/springboot/spanner-example/src/test/java/com/example/springboot/spanner/SpannerIntegrationTests.java)
 
 ### Pub/Sub 
@@ -134,7 +134,7 @@ And test against the Emulator:
 
 See more examples:
 
- * [Full sample code](https://github.com/testcontainers/testcontainers-java/tree/master/modules/gcloud/src/test/java/org/testcontainers/containers/PubSubEmulatorContainerTest.java)
+ * [Full sample code](https://github.com/testcontainers/testcontainers-java/tree/main/modules/gcloud/src/test/java/org/testcontainers/containers/PubSubEmulatorContainerTest.java)
  * [With Spring Boot](https://github.com/saturnism/testcontainers-gcloud-examples/tree/main/springboot/pubsub-example/src/test/java/com/example/springboot/pubsub/PubSubIntegrationTests.java)
 
 ## Adding this module to your project dependencies

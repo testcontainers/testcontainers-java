@@ -6,7 +6,6 @@ import org.testcontainers.utility.LicenseAcceptance;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-import java.util.HashSet;
 import java.util.Set;
 
 public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
@@ -54,9 +53,14 @@ public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
         addExposedPort(DB2_PORT);
     }
 
+    /**
+     * @return the ports on which to check if the container is ready
+     * @deprecated use {@link #getLivenessCheckPortNumbers()} instead
+     */
     @Override
+    @Deprecated
     protected Set<Integer> getLivenessCheckPorts() {
-        return new HashSet<>(getMappedPort(DB2_PORT));
+        return super.getLivenessCheckPorts();
     }
 
     @Override

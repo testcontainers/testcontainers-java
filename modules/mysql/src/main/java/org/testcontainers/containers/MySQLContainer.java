@@ -1,14 +1,11 @@
 package org.testcontainers.containers;
 
 import org.jetbrains.annotations.NotNull;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 
-import java.util.HashSet;
 import java.util.Set;
 
-/**
- * @author richardnorth
- */
 public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
 
     public static final String NAME = "mysql";
@@ -56,10 +53,15 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
         addExposedPort(MYSQL_PORT);
     }
 
+    /**
+     * @return the ports on which to check if the container is ready
+     * @deprecated use {@link #getLivenessCheckPortNumbers()} instead
+     */
     @NotNull
     @Override
+    @Deprecated
     protected Set<Integer> getLivenessCheckPorts() {
-        return new HashSet<>(getMappedPort(MYSQL_PORT));
+        return super.getLivenessCheckPorts();
     }
 
     @Override
@@ -67,7 +69,8 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
         optionallyMapResourceParameterAsVolume(
             MY_CNF_CONFIG_OVERRIDE_PARAM_NAME,
             "/etc/mysql/conf.d",
-            "mysql-default-conf"
+            "mysql-default-conf",
+            Transferable.DEFAULT_DIR_MODE
         );
 
         addEnv("MYSQL_DATABASE", databaseName);
