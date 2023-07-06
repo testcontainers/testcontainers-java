@@ -88,8 +88,10 @@ public class Startables {
                 // avoid a recursive update in `computeIfAbsent`
                 CompletableFuture<Void> future = started.computeIfAbsent(
                     it,
-                    startable -> deepStart(started, startable.getDependencies().stream())
-                        .thenRunAsync(startable::start, EXECUTOR)
+                    startable -> {
+                        return deepStart(started, startable.getDependencies().stream())
+                            .thenRunAsync(startable::start, EXECUTOR);
+                    }
                 );
                 return future;
             })
