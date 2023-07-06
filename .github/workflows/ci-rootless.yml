@@ -12,6 +12,7 @@ on:
       - 'mkdocs.yml'
       - 'README.md'
       - 'RELEASING.md'
+      - '.sdkmanrc'
   push:
     branches: [ main ]
     paths-ignore:
@@ -24,6 +25,7 @@ on:
       - 'mkdocs.yml'
       - 'README.md'
       - 'RELEASING.md'
+      - '.sdkmanrc'
 
 concurrency:
   group: "${{ github.workflow }}-${{ github.head_ref || github.sha }}"
