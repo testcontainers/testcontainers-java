@@ -15,7 +15,7 @@ import org.testcontainers.utility.MountableFile;
 import java.util.concurrent.TimeUnit;
 
 @Testcontainers
-public class DemoFilesIT {
+class DemoFilesIT {
 
     // hivemqHome {
     final HiveMQContainer hivemqFileInHome = new HiveMQContainer(
@@ -60,7 +60,7 @@ public class DemoFilesIT {
 
     @Test
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
-    public void test() throws Exception {
+    void test() throws Exception {
         // mqtt5client {
         final Mqtt5BlockingClient client = Mqtt5Client
             .builder()

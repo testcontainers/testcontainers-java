@@ -9,7 +9,7 @@ import org.testcontainers.utility.MountableFile;
 
 import java.util.concurrent.TimeUnit;
 
-public class ContainerWithExtensionFromDirectoryIT {
+class ContainerWithExtensionFromDirectoryIT {
 
     @Test
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
