@@ -259,7 +259,33 @@ public interface ContainerState {
      */
     default Container.ExecResult execInContainer(Charset outputCharset, String... command)
         throws UnsupportedOperationException, IOException, InterruptedException {
-        return ExecInContainerPattern.execInContainer(getDockerClient(), getContainerInfo(), outputCharset, command);
+        return execInContainerWithUser(outputCharset, null, command);
+    }
+
+    /**
+     * Run a command inside a running container as a given user, as using "docker exec -u user".
+     * <p>
+     * @see ExecInContainerPattern#execInContainerWithUser(DockerClient, com.github.dockerjava.api.command.InspectContainerResponse, String, String...)
+     */
+    default Container.ExecResult execInContainerWithUser(String user, String... command)
+        throws UnsupportedOperationException, IOException, InterruptedException {
+        return ExecInContainerPattern.execInContainerWithUser(getDockerClient(), getContainerInfo(), user, command);
+    }
+
+    /**
+     * Run a command inside a running container as a given user, as using "docker exec -u user".
+     * <p>
+     * @see ExecInContainerPattern#execInContainerWithUser(DockerClient, com.github.dockerjava.api.command.InspectContainerResponse, Charset, String, String...)
+     */
+    default Container.ExecResult execInContainerWithUser(Charset outputCharset, String user, String... command)
+        throws UnsupportedOperationException, IOException, InterruptedException {
+        return ExecInContainerPattern.execInContainerWithUser(
+            getDockerClient(),
+            getContainerInfo(),
+            outputCharset,
+            user,
+            command
+        );
     }
 
     /**

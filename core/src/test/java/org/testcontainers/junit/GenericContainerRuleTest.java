@@ -370,6 +370,19 @@ public class GenericContainerRuleTest {
     }
 
     @Test
+    public void testExecInContainerWithUser() throws Exception {
+        // The older "lxc" execution driver doesn't support "exec". At the time of writing (2016/03/29),
+        // that's the case for CircleCI.
+        // Once they resolve the issue, this clause can be removed.
+        Assume.assumeTrue(TestEnvironment.dockerExecutionDriverSupportsExec());
+
+        final GenericContainer.ExecResult result = redis.execInContainerWithUser("redis", "whoami");
+        assertThat(result.getStdout()).as("Output for \"whoami\" command should start with \"redis\"").startsWith("redis");
+        assertThat(result.getStderr()).as("Stderr for \"whoami\" command should be empty").isEmpty();
+        // We expect to reach this point for modern Docker versions.
+    }
+
+    @Test
     public void extraHostTest() throws IOException {
         BufferedReader br = getReaderForContainerPort80(alpineExtrahost);
 
