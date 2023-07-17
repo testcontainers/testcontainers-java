@@ -4,6 +4,7 @@ import org.junit.Test;
 import org.testcontainers.PostgreSQLTestImages;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
+import org.testcontainers.utility.DockerImageName;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -11,6 +12,7 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 
 public class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
     static {
@@ -20,7 +22,23 @@ public class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSimple() throws SQLException {
-        try (PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(PostgreSQLTestImages.POSTGRES_TEST_IMAGE)) {
+        try (PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(DockerImageName.parse("postgres:14"))) {
+            postgres.start();
+
+            ResultSet resultSet = performQuery(postgres, "SELECT 1");
+            int resultSetInt = resultSet.getInt(1);
+            assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+        }
+    }
+
+    @Test
+    public void testSimpleWithData() throws SQLException {
+        DockerImageName IMAGE = DockerImageName.parse("tomcools/postgres:main")
+            .asCompatibleSubstituteFor("postgres");
+        try (PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(IMAGE)
+            .withDatabaseName("testcontainer")
+            .withUsername("sa")
+            .withPassword("sa")) {
             postgres.start();
 
             ResultSet resultSet = performQuery(postgres, "SELECT 1");

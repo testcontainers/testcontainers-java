@@ -51,7 +51,6 @@ public class MultiLogMessageWaitStrategy extends AbstractLogMessageWaitStrategy 
     }
 
     public MultiLogMessageWaitStrategy withRegex(String... regEx) {
-        // TODO, add validation that we have at least one regex. :-)
         this.regEx = new LinkedBlockingDeque<>(Arrays.asList(regEx));
         return this;
     }
