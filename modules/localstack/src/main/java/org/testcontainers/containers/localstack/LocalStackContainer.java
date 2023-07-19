@@ -72,7 +72,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
     private final boolean isVersion2;
 
     /**
-     * @deprecated use {@link LocalStackContainer(DockerImageName)} instead
+     * @deprecated use {@link #LocalStackContainer(DockerImageName)} instead
      */
     @Deprecated
     public LocalStackContainer() {
@@ -80,7 +80,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
     }
 
     /**
-     * @deprecated use {@link LocalStackContainer(DockerImageName)} instead
+     * @deprecated use {@link #LocalStackContainer(DockerImageName)} instead
      */
     @Deprecated
     public LocalStackContainer(String version) {
@@ -97,7 +97,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
     /**
      * @param dockerImageName    image name to use for Localstack
      * @param useLegacyMode      if true, each AWS service is exposed on a different port
-     * @deprecated use {@link LocalStackContainer(DockerImageName)} instead
+     * @deprecated use {@link #LocalStackContainer(DockerImageName)} instead
      */
     @Deprecated
     public LocalStackContainer(final DockerImageName dockerImageName, boolean useLegacyMode) {

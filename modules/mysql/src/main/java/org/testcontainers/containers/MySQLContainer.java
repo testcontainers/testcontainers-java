@@ -35,7 +35,7 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
     private static final String MYSQL_ROOT_USER = "root";
 
     /**
-     * @deprecated use {@link MySQLContainer(DockerImageName)} instead
+     * @deprecated use {@link #MySQLContainer(DockerImageName)} instead
      */
     @Deprecated
     public MySQLContainer() {

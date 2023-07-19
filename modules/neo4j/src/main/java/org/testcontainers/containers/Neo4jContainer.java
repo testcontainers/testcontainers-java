@@ -78,7 +78,7 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
 
     /**
      * Creates a Neo4jContainer using the official Neo4j docker image.
-     * @deprecated use {@link Neo4jContainer(DockerImageName)} instead
+     * @deprecated use {@link #Neo4jContainer(DockerImageName)} instead
      */
     @Deprecated
     public Neo4jContainer() {

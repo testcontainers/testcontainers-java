@@ -39,7 +39,7 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
     private boolean transactionsEnabled = false;
 
     /**
-     * @deprecated use {@link PulsarContainer(DockerImageName)} instead
+     * @deprecated use {@link #PulsarContainer(DockerImageName)} instead
      */
     @Deprecated
     public PulsarContainer() {
@@ -47,7 +47,7 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
     }
 
     /**
-     * @deprecated use {@link PulsarContainer(DockerImageName)} instead
+     * @deprecated use {@link #PulsarContainer(DockerImageName)} instead
      */
     @Deprecated
     public PulsarContainer(String pulsarVersion) {

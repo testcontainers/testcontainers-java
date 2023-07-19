@@ -72,7 +72,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
     private String certPath = "/usr/share/elasticsearch/config/certs/http_ca.crt";
 
     /**
-     * @deprecated use {@link ElasticsearchContainer(DockerImageName)} instead
+     * @deprecated use {@link #ElasticsearchContainer(DockerImageName)} instead
      */
     @Deprecated
     public ElasticsearchContainer() {

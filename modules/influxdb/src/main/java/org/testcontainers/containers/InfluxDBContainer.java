@@ -63,7 +63,7 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Gen
     private final boolean isAtLeastMajorVersion2;
 
     /**
-     * @deprecated use {@link InfluxDBContainer(DockerImageName)} instead
+     * @deprecated use {@link #InfluxDBContainer(DockerImageName)} instead
      */
     @Deprecated
     public InfluxDBContainer() {
@@ -71,7 +71,7 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Gen
     }
 
     /**
-     * @deprecated use {@link InfluxDBContainer(DockerImageName)} instead
+     * @deprecated use {@link #InfluxDBContainer(DockerImageName)} instead
      */
     @Deprecated
     public InfluxDBContainer(final String version) {

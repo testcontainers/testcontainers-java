@@ -32,7 +32,7 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
     private SolrContainerConfiguration configuration;
 
     /**
-     * @deprecated use {@link SolrContainer(DockerImageName)} instead
+     * @deprecated use {@link #SolrContainer(DockerImageName)} instead
      */
     @Deprecated
     public SolrContainer() {
@@ -40,7 +40,7 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
     }
 
     /**
-     * @deprecated use {@link SolrContainer(DockerImageName)} instead
+     * @deprecated use {@link #SolrContainer(DockerImageName)} instead
      */
     public SolrContainer(final String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));

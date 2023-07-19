@@ -35,7 +35,7 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
     private boolean shardingEnabled;
 
     /**
-     * @deprecated use {@link MongoDBContainer(DockerImageName)} instead
+     * @deprecated use {@link #MongoDBContainer(DockerImageName)} instead
      */
     @Deprecated
     public MongoDBContainer() {
