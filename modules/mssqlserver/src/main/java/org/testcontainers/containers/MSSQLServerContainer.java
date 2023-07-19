@@ -38,7 +38,7 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
     };
 
     /**
-     * @deprecated use {@link MSSQLServerContainer(DockerImageName)} instead
+     * @deprecated use {@link #MSSQLServerContainer(DockerImageName)} instead
      */
     @Deprecated
     public MSSQLServerContainer() {

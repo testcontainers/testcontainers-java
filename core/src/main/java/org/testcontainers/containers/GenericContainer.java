@@ -247,7 +247,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     /**
-     * @deprecated use {@link GenericContainer(DockerImageName)} instead
+     * @deprecated use {@link #GenericContainer(DockerImageName)} instead
      */
     @Deprecated
     public GenericContainer() {

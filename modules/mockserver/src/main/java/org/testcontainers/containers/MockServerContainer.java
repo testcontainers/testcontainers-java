@@ -17,7 +17,7 @@ public class MockServerContainer extends GenericContainer<MockServerContainer> {
     public static final int PORT = 1080;
 
     /**
-     * @deprecated use {@link MockServerContainer(DockerImageName)} instead
+     * @deprecated use {@link #MockServerContainer(DockerImageName)} instead
      */
     @Deprecated
     public MockServerContainer() {
@@ -25,7 +25,7 @@ public class MockServerContainer extends GenericContainer<MockServerContainer> {
     }
 
     /**
-     * @deprecated use {@link MockServerContainer(DockerImageName)} instead
+     * @deprecated use {@link #MockServerContainer(DockerImageName)} instead
      */
     @Deprecated
     public MockServerContainer(String version) {
