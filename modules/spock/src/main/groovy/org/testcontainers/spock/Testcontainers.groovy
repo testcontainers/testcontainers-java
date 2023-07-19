@@ -12,7 +12,7 @@ import java.lang.annotation.Target
  * {@code @Testcontainers} is a Spock extension to activate automatic
  * startup and stop of containers used in a test case.
  *
- * <p>The test containers extension finds all fields that extend
+ * <p>The Testcontainers extension finds all fields that extend
  * {@link org.testcontainers.containers.GenericContainer} or
  * {@link org.testcontainers.containers.DockerComposeContainer} and calls their
  * container lifecycle methods. Containers annotated with {@link spock.lang.Shared}
