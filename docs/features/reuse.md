@@ -4,10 +4,10 @@
     Reusable Containers is still an experimental feature and the behavior can change.
     Those containers won't stop after all tests are finished.
 
-The *Reusable Containers* feature keeps the containers running between test sessions. In order
-to use it, manual container lifecycle instrumentation should be used by calling the `start()` method
-and it needs to be manually enabled through an opt-in mechanism. In order to reuse a container, the
-configuration of the container *must not change*.
+The *Reusable* feature keeps the containers running and next executions with the same container configuration
+will reuse it. To use it, start the container manually by calling `start()` method, do not call `stop()` method
+directly or indirectly via `try-with-resources` or `JUnit integration`, and enable it manually through an
+opt-in mechanism per environment. To reuse a container, the container configuration **must be the same**.
 
 !!! note
     Reusable containers are not suited for CI usage and as an experimental feature
@@ -16,7 +16,8 @@ configuration of the container *must not change*.
 
 ## How to use it
 
-* Define a container with `withReuse(true)`
+* Enable `Reusable Containers` in `~/.testcontainers.properties`, by adding `testcontainers.reuse.enable=true`
+* Define a container and subscribe to reuse the container using `withReuse(true)`
 
 ```java
 GenericContainer container = new GenericContainer("redis:6-alpine")
@@ -24,10 +25,10 @@ GenericContainer container = new GenericContainer("redis:6-alpine")
     .withReuse(true)
 ```
 
-* Opt-in to Reusable Containers in `~/.testcontainers.properties`, by adding `testcontainers.reuse.enable=true`
-* Containers need to be started manually using `container.start()`. See [docs](../../test_framework_integration/manual_lifecycle_control)
+* Start the container manually by using `container.start()`
 
 ### Reusable Container with Testcontainers JDBC URL
 
 If using the [Testcontainers JDBC URL support](../../modules/databases/jdbc#database-containers-launched-via-jdbc-url-scheme)
-the URL **must** follow the pattern of `jdbc:tc:mysql:5.7.34:///databasename?TC_REUSABLE=true`. `TC_REUSABLE=true` is set as a parameter of the JDBC URL.
+the URL **must** follow the pattern of `jdbc:tc:mysql:5.7.34:///databasename?TC_REUSABLE=true`.
+`TC_REUSABLE=true` is set as a parameter of the JDBC URL.
