@@ -3,6 +3,7 @@ package org.testcontainers.redpanda;
 import com.google.common.collect.ImmutableMap;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
+import lombok.SneakyThrows;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -13,8 +14,12 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.config.SaslConfigs;
+import org.apache.kafka.common.errors.SaslAuthenticationException;
+import org.apache.kafka.common.errors.TopicAuthorizationException;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.utility.DockerImageName;
@@ -96,6 +101,100 @@ public class RedpandaContainerTest {
         }
     }
 
+    @SneakyThrows
+    @Test
+    public void enableSaslWithSuccessfulTopicCreation() {
+        try (
+            RedpandaContainer redpanda = new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v23.1.7")
+                .enableAuthorization()
+                .enableSasl()
+                .withSuperuser("superuser-1")
+        ) {
+            redpanda.start();
+
+            createSuperUser(redpanda);
+
+            AdminClient adminClient = getAdminClient(redpanda);
+            String topicName = "messages-" + UUID.randomUUID();
+            Collection<NewTopic> topics = Collections.singletonList(new NewTopic(topicName, 1, (short) 1));
+            adminClient.createTopics(topics).all().get(30, TimeUnit.SECONDS);
+
+            assertThat(adminClient.listTopics().names().get()).contains(topicName);
+        }
+    }
+
+    @Test
+    public void enableSaslWithUnsuccessfulTopicCreation() {
+        try (
+            RedpandaContainer redpanda = new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v23.1.7")
+                .enableAuthorization()
+                .enableSasl()
+        ) {
+            redpanda.start();
+
+            createSuperUser(redpanda);
+
+            AdminClient adminClient = getAdminClient(redpanda);
+            String topicName = "messages-" + UUID.randomUUID();
+            Collection<NewTopic> topics = Collections.singletonList(new NewTopic(topicName, 1, (short) 1));
+
+            Awaitility
+                .await()
+                .untilAsserted(() ->
+                    assertThatThrownBy(() -> adminClient.createTopics(topics).all().get(30, TimeUnit.SECONDS))
+                        .hasCauseInstanceOf(TopicAuthorizationException.class)
+                );
+        }
+    }
+
+    @Test
+    public void enableSaslAndWithAuthenticationError() {
+        try (
+            RedpandaContainer redpanda = new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v23.1.7")
+                .enableAuthorization()
+                .enableSasl()
+        ) {
+            redpanda.start();
+
+            AdminClient adminClient = getAdminClient(redpanda);
+            String topicName = "messages-" + UUID.randomUUID();
+            Collection<NewTopic> topics = Collections.singletonList(new NewTopic(topicName, 1, (short) 1));
+
+            Awaitility
+                .await()
+                .untilAsserted(() ->
+                    assertThatThrownBy(() -> adminClient.createTopics(topics).all().get(30, TimeUnit.SECONDS))
+                        .hasCauseInstanceOf(SaslAuthenticationException.class)
+                );
+        }
+    }
+
+    @Test
+    public void schemaRegistryWithHttpBasic() {
+        try (
+            RedpandaContainer redpanda = new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v23.1.7")
+                .enableSchemaRegistryHttpBasicAuth()
+                .withSuperuser("superuser-1")
+        ) {
+            redpanda.start();
+
+            createSuperUser(redpanda);
+
+            String subjectsEndpoint = String.format("%s/subjects", redpanda.getSchemaRegistryAddress());
+
+            RestAssured.when().get(subjectsEndpoint).then().statusCode(401);
+
+            RestAssured
+                .given()
+                .auth()
+                .preemptive()
+                .basic("superuser-1", "test")
+                .get(subjectsEndpoint)
+                .then()
+                .statusCode(200);
+        }
+    }
+
     private void testKafkaFunctionality(String bootstrapServers) throws Exception {
         testKafkaFunctionality(bootstrapServers, 1, 1);
     }
@@ -158,5 +257,32 @@ public class RedpandaContainerTest {
 
             consumer.unsubscribe();
         }
+    }
+
+    private AdminClient getAdminClient(RedpandaContainer redpanda) {
+        String bootstrapServer = String.format("%s:%s", redpanda.getHost(), redpanda.getMappedPort(9092));
+        return AdminClient.create(
+            ImmutableMap.of(
+                AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG,
+                bootstrapServer,
+                AdminClientConfig.SECURITY_PROTOCOL_CONFIG,
+                "SASL_PLAINTEXT",
+                SaslConfigs.SASL_MECHANISM,
+                "SCRAM-SHA-256",
+                SaslConfigs.SASL_JAAS_CONFIG,
+                "org.apache.kafka.common.security.scram.ScramLoginModule required username=\"superuser-1\" password=\"test\";"
+            )
+        );
+    }
+
+    private void createSuperUser(RedpandaContainer redpanda) {
+        String adminUrl = String.format("%s/v1/security/users", redpanda.getAdminAddress());
+        RestAssured
+            .given()
+            .contentType("application/json")
+            .body("{\"username\": \"superuser-1\", \"password\": \"test\", \"algorithm\": \"SCRAM-SHA-256\"}")
+            .post(adminUrl)
+            .then()
+            .statusCode(200);
     }
 }
