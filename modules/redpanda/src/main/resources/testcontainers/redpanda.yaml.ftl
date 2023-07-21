@@ -21,6 +21,12 @@ redpanda:
       port: 9093
       authentication_method: <#if kafkaApi.enableAuthorization >sasl<#else>none</#if>
 
+<#list kafkaApi.listeners as listener>
+    - address: 0.0.0.0
+      name: ${listener.address}
+      port: ${listener.port}
+</#list>
+
   advertised_kafka_api:
     - address: ${ kafkaApi.advertisedHost }
       name: external
@@ -28,6 +34,11 @@ redpanda:
     - address: 127.0.0.1
       name: internal
       port: 9093
+<#list kafkaApi.listeners as listener>
+    - address: ${listener.address}
+      name: ${listener.address}
+      port: ${listener.port}
+</#list>
 
 schema_registry:
   schema_registry_api:

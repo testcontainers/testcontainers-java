@@ -3,7 +3,9 @@ package org.testcontainers.redpanda;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
+import lombok.AllArgsConstructor;
 import lombok.Cleanup;
+import lombok.Data;
 import lombok.SneakyThrows;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -18,8 +20,12 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * Testcontainers implementation for Redpanda.
@@ -50,6 +56,8 @@ public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
 
     private final List<String> superusers = new ArrayList<>();
 
+    private final Set<Supplier<Listener>> listenersValueSupplier = new HashSet<>();
+
     public RedpandaContainer(String image) {
         this(DockerImageName.parse(image));
     }
@@ -74,6 +82,14 @@ public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
             "/entrypoint-tc.sh"
         );
         withCommand("/entrypoint-tc.sh", "redpanda", "start", "--mode=dev-container", "--smp=1", "--memory=1G");
+    }
+
+    @Override
+    protected void configure() {
+        this.listenersValueSupplier.stream()
+            .map(Supplier::get)
+            .map(Listener::getAddress)
+            .forEach(this::withNetworkAliases);
     }
 
     @SneakyThrows
@@ -121,6 +137,12 @@ public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
         return this;
     }
 
+    public RedpandaContainer withListener(Supplier<String> listenerSupplier) {
+        String[] parts = listenerSupplier.get().split(":");
+        this.listenersValueSupplier.add(() -> new Listener(parts[0], Integer.parseInt(parts[1])));
+        return this;
+    }
+
     private Transferable getBootstrapFile(Configuration cfg) {
         Map<String, Object> kafkaApi = new HashMap<>();
         kafkaApi.put("enableAuthorization", this.enableAuthorization);
@@ -135,11 +157,23 @@ public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
     }
 
     private Transferable getRedpandaFile(Configuration cfg) {
+        List<Map<String, Object>> listeners =
+            this.listenersValueSupplier.stream()
+                .map(Supplier::get)
+                .map(listener -> {
+                    Map<String, Object> listenerMap = new HashMap<>();
+                    listenerMap.put("address", listener.getAddress());
+                    listenerMap.put("port", listener.getPort());
+                    return listenerMap;
+                })
+                .collect(Collectors.toList());
+
         Map<String, Object> kafkaApi = new HashMap<>();
         kafkaApi.put("authenticationMethod", this.authenticationMethod);
         kafkaApi.put("enableAuthorization", this.enableAuthorization);
         kafkaApi.put("advertisedHost", getHost());
         kafkaApi.put("advertisedPort", getMappedPort(9092));
+        kafkaApi.put("listeners", listeners);
 
         Map<String, Object> schemaRegistry = new HashMap<>();
         schemaRegistry.put("authenticationMethod", this.schemaRegistryAuthenticationMethod);
@@ -164,5 +198,14 @@ public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
         temp.process(data, out);
 
         return new String(byteArrayOutputStream.toByteArray(), StandardCharsets.UTF_8);
+    }
+
+    @Data
+    @AllArgsConstructor
+    private static class Listener {
+
+        private String address;
+
+        private int port;
     }
 }

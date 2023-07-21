@@ -101,6 +101,17 @@ public class RedpandaContainerTest {
         }
     }
 
+    @Test
+    public void testUsageWithListener() throws Exception {
+        try (
+            RedpandaContainer container = new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v23.1.7")
+                .withListener(() -> "redpanda:19092")
+        ) {
+            container.start();
+            testKafkaFunctionality(container.getBootstrapServers());
+        }
+    }
+
     @SneakyThrows
     @Test
     public void enableSaslWithSuccessfulTopicCreation() {
