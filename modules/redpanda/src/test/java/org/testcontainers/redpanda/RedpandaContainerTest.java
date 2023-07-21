@@ -140,10 +140,10 @@ public class RedpandaContainerTest {
 
             Awaitility
                 .await()
-                .untilAsserted(() ->
+                .untilAsserted(() -> {
                     assertThatThrownBy(() -> adminClient.createTopics(topics).all().get(30, TimeUnit.SECONDS))
-                        .hasCauseInstanceOf(TopicAuthorizationException.class)
-                );
+                        .hasCauseInstanceOf(TopicAuthorizationException.class);
+                });
         }
     }
 
@@ -162,10 +162,10 @@ public class RedpandaContainerTest {
 
             Awaitility
                 .await()
-                .untilAsserted(() ->
+                .untilAsserted(() -> {
                     assertThatThrownBy(() -> adminClient.createTopics(topics).all().get(30, TimeUnit.SECONDS))
-                        .hasCauseInstanceOf(SaslAuthenticationException.class)
-                );
+                        .hasCauseInstanceOf(SaslAuthenticationException.class);
+                });
         }
     }
 

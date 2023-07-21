@@ -13,7 +13,6 @@ import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
@@ -83,7 +82,7 @@ public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
         super.containerIsStarting(containerInfo);
 
         Configuration cfg = new Configuration(Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
-        cfg.setDirectoryForTemplateLoading(new File(getClass().getResource("/testcontainers").getFile()));
+        cfg.setClassLoaderForTemplateLoading(getClass().getClassLoader(), "testcontainers");
         cfg.setDefaultEncoding("UTF-8");
 
         copyFileToContainer(getBootstrapFile(cfg), "/etc/redpanda/.bootstrap.yaml");
