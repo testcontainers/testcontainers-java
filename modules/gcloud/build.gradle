@@ -4,6 +4,7 @@ dependencies {
     api project(':testcontainers')
 
     testImplementation platform("com.google.cloud:libraries-bom:26.18.0")
+    testImplementation 'com.google.cloud:google-cloud-bigquery'
     testImplementation 'com.google.cloud:google-cloud-datastore'
     testImplementation 'com.google.cloud:google-cloud-firestore'
     testImplementation 'com.google.cloud:google-cloud-pubsub'
