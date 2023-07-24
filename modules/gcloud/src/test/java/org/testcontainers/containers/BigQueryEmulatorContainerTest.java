@@ -18,7 +18,9 @@ public class BigQueryEmulatorContainerTest {
     @Test
     public void test() throws Exception {
         try (
+            // emulatorContainer {
             BigQueryEmulatorContainer container = new BigQueryEmulatorContainer("ghcr.io/goccy/bigquery-emulator:0.4.3")
+            // }
         ) {
             container.start();
 
