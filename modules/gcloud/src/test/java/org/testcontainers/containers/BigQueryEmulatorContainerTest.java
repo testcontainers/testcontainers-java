@@ -2,7 +2,6 @@ package org.testcontainers.containers;
 
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
-import com.google.cloud.bigquery.DatasetInfo;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.TableResult;
 import org.junit.Test;
@@ -33,16 +32,13 @@ public class BigQueryEmulatorContainerTest {
                 .build();
             BigQuery bigQuery = options.getService();
 
-            DatasetInfo datasetInfo = DatasetInfo.newBuilder("testds").build();
-            bigQuery.create(datasetInfo);
-
             String fn =
-                "CREATE FUNCTION test.testds.testr(arr ARRAY<STRUCT<name STRING, val INT64>>) AS ((SELECT SUM(IF(elem.name = \"foo\",elem.val,null)) FROM UNNEST(arr) AS elem))";
+                "CREATE FUNCTION testr(arr ARRAY<STRUCT<name STRING, val INT64>>) AS ((SELECT SUM(IF(elem.name = \"foo\",elem.val,null)) FROM UNNEST(arr) AS elem))";
 
             bigQuery.query(QueryJobConfiguration.newBuilder(fn).build());
 
             String sql =
-                "SELECT test.testds.testr([STRUCT<name STRING, val INT64>(\"foo\", 10), STRUCT<name STRING, val INT64>(\"bar\", 40), STRUCT<name STRING, val INT64>(\"foo\", 20)])";
+                "SELECT testr([STRUCT<name STRING, val INT64>(\"foo\", 10), STRUCT<name STRING, val INT64>(\"bar\", 40), STRUCT<name STRING, val INT64>(\"foo\", 20)])";
             TableResult result = bigQuery.query(QueryJobConfiguration.newBuilder(sql).build());
             List<BigDecimal> values = result
                 .streamValues()
