@@ -22,10 +22,10 @@ public class BigQueryEmulatorContainerTest {
         ) {
             container.start();
 
-            String url = String.format("http://%s", container.getEmulatorHttpEndpoint());
+            String url = container.getEmulatorHttpEndpoint();
             BigQueryOptions options = BigQueryOptions
                 .newBuilder()
-                .setProjectId("test")
+                .setProjectId(container.getProjectId())
                 .setHost(url)
                 .setLocation(url)
                 .build();

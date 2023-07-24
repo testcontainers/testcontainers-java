@@ -13,6 +13,8 @@ public class BigQueryEmulatorContainer extends GenericContainer<BigQueryEmulator
 
     private static final int GRPC_PORT = 9060;
 
+    private static final String PROJECT_ID = "test";
+
     public BigQueryEmulatorContainer(String image) {
         this(DockerImageName.parse(image));
     }
@@ -21,10 +23,14 @@ public class BigQueryEmulatorContainer extends GenericContainer<BigQueryEmulator
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
         addExposedPorts(HTTP_PORT, GRPC_PORT);
-        withCommand("--project", "test");
+        withCommand("--project", PROJECT_ID);
     }
 
     public String getEmulatorHttpEndpoint() {
-        return getHost() + ":" + getMappedPort(HTTP_PORT);
+        return String.format("http://%s:%d", getHost(), getMappedPort(HTTP_PORT));
+    }
+
+    public String getProjectId() {
+        return PROJECT_ID;
     }
 }
