@@ -16,6 +16,10 @@ public class SpannerEmulatorContainer extends GenericContainer<SpannerEmulatorCo
 
     private static final int HTTP_PORT = 9020;
 
+    public SpannerEmulatorContainer(String image) {
+        this(DockerImageName.parse(image));
+    }
+
     public SpannerEmulatorContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
