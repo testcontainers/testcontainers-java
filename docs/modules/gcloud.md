@@ -5,10 +5,11 @@
 
 Testcontainers module for the Google Cloud Platform's [Cloud SDK](https://cloud.google.com/sdk/).
 
-Currently, the module supports `Bigtable`, `Datastore`, `Firestore`, `Spanner`, and `Pub/Sub` emulators. In order to use it, you should use the following classes:
+Currently, the module supports `BigQuery`, `Bigtable`, `Datastore`, `Firestore`, `Spanner`, and `Pub/Sub` emulators. In order to use it, you should use the following classes:
 
 Class | Container Image
 -|-
+BigQueryEmulatorContainer | ["ghcr.io/goccy/bigquery-emulator"]("ghcr.io/goccy/bigquery-emulator")
 BigtableEmulatorContainer | [gcr.io/google.com/cloudsdktool/cloud-sdk:emulators](https://gcr.io/google.com/cloudsdktool/cloud-sdk)
 DatastoreEmulatorContainer | [gcr.io/google.com/cloudsdktool/cloud-sdk:emulators](https://gcr.io/google.com/cloudsdktool/cloud-sdk)
 FirestoreEmulatorContainer | [gcr.io/google.com/cloudsdktool/cloud-sdk:emulators](https://gcr.io/google.com/cloudsdktool/cloud-sdk)
@@ -16,6 +17,14 @@ SpannerEmulatorContainer | [gcr.io/cloud-spanner-emulator/emulator](https://gcr.
 PubSubEmulatorContainer | [gcr.io/google.com/cloudsdktool/cloud-sdk:emulators](https://gcr.io/google.com/cloudsdktool/cloud-sdk)
 
 ## Usage example
+
+### BigQuery
+
+Start BigQuery Emulator during a test:
+
+<!--codeinclude-->
+[Starting a BigQuery Emulator container](../../modules/gcloud/src/test/java/org/testcontainers/containers/BigQueryEmulatorContainerTest.java) inside_block:emulatorContainer
+<!--/codeinclude-->
 
 ### Bigtable
 
