@@ -32,7 +32,7 @@ public class DatastoreEmulatorContainerTest {
             .setHost(emulator.getEmulatorEndpoint())
             .setCredentials(NoCredentials.getInstance())
             .setRetrySettings(ServiceOptions.getNoRetrySettings())
-            .setProjectId("test-project")
+            .setProjectId(emulator.getProjectId())
             .build();
         Datastore datastore = options.getService();
 
