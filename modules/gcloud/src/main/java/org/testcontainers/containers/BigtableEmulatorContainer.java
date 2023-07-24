@@ -22,6 +22,10 @@ public class BigtableEmulatorContainer extends GenericContainer<BigtableEmulator
 
     private static final int PORT = 9000;
 
+    public BigtableEmulatorContainer(String image) {
+        this(DockerImageName.parse(image));
+    }
+
     public BigtableEmulatorContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, CLOUD_SDK_IMAGE_NAME);

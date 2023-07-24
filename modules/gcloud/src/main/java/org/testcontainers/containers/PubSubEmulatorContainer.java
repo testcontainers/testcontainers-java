@@ -22,6 +22,10 @@ public class PubSubEmulatorContainer extends GenericContainer<PubSubEmulatorCont
 
     private static final int PORT = 8085;
 
+    public PubSubEmulatorContainer(String image) {
+        this(DockerImageName.parse(image));
+    }
+
     public PubSubEmulatorContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, CLOUD_SDK_IMAGE_NAME);
