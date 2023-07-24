@@ -13,7 +13,7 @@ public class BigQueryEmulatorContainer extends GenericContainer<BigQueryEmulator
 
     private static final int GRPC_PORT = 9060;
 
-    private static final String PROJECT_ID = "test";
+    private static final String PROJECT_ID = "test-project";
 
     public BigQueryEmulatorContainer(String image) {
         this(DockerImageName.parse(image));
