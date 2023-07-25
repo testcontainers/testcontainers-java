@@ -227,7 +227,6 @@ public class RedpandaContainerTest {
                     "{\"records\":[{\"value\":\"jsmith\",\"partition\":0},{\"value\":\"htanaka\",\"partition\":1},{\"value\":\"awalther\",\"partition\":2}]}"
                 )
                 .post(String.format("%s/topics/test_topic", restProxy))
-                .prettyPeek()
                 .then()
                 .statusCode(200);
 
@@ -236,7 +235,6 @@ public class RedpandaContainerTest {
                 .contentType("application/vnd.kafka.v2+json")
                 .body("{\"name\": \"test_consumer\", \"format\": \"json\", \"auto.offset.reset\": \"earliest\"}")
                 .post(String.format("%s/consumers/test_group", restProxy))
-                .prettyPeek()
                 .then()
                 .statusCode(200);
             RestAssured
@@ -244,7 +242,6 @@ public class RedpandaContainerTest {
                 .contentType("application/vnd.kafka.v2+json")
                 .body("{\"topics\":[\"test_topic\"]}")
                 .post(String.format("%s/consumers/test_group/instances/test_consumer/subscription", restProxy))
-                .prettyPeek()
                 .then()
                 .statusCode(204);
 
