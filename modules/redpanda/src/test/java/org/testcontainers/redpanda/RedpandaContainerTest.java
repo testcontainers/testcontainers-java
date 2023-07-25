@@ -2,6 +2,7 @@ package org.testcontainers.redpanda;
 
 import com.google.common.collect.ImmutableMap;
 import io.restassured.RestAssured;
+import io.restassured.common.mapper.TypeRef;
 import io.restassured.response.Response;
 import lombok.SneakyThrows;
 import org.apache.kafka.clients.admin.AdminClient;
@@ -27,6 +28,8 @@ import org.testcontainers.utility.DockerImageName;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -203,6 +206,60 @@ public class RedpandaContainerTest {
                 .get(subjectsEndpoint)
                 .then()
                 .statusCode(200);
+        }
+    }
+
+    @SneakyThrows
+    @Test
+    public void testRestProxy() {
+        try (RedpandaContainer redpanda = new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v23.1.7")) {
+            redpanda.start();
+
+            AdminClient adminClient = AdminClient.create(
+                ImmutableMap.of(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, redpanda.getBootstrapServers())
+            );
+            String topicName = "test_topic";
+            Collection<NewTopic> topics = Collections.singletonList(new NewTopic(topicName, 3, (short) 1));
+            adminClient.createTopics(topics).all().get(30, TimeUnit.SECONDS);
+
+            String applicationKafkaJson = "application/vnd.kafka.json.v2+json";
+
+            String restProxy = redpanda.getRestProxyAddress();
+            RestAssured
+                .given()
+                .contentType(applicationKafkaJson)
+                .body(
+                    "{\"records\":[{\"value\":\"jsmith\",\"partition\":0},{\"value\":\"htanaka\",\"partition\":1},{\"value\":\"awalther\",\"partition\":2}]}"
+                )
+                .post(String.format("%s/topics/test_topic", restProxy))
+                .prettyPeek()
+                .then()
+                .statusCode(200);
+
+            RestAssured
+                .given()
+                .contentType("application/vnd.kafka.v2+json")
+                .body("{\"name\": \"test_consumer\", \"format\": \"json\", \"auto.offset.reset\": \"earliest\"}")
+                .post(String.format("%s/consumers/test_group", restProxy))
+                .prettyPeek()
+                .then()
+                .statusCode(200);
+            RestAssured
+                .given()
+                .contentType("application/vnd.kafka.v2+json")
+                .body("{\"topics\":[\"test_topic\"]}")
+                .post(String.format("%s/consumers/test_group/instances/test_consumer/subscription", restProxy))
+                .prettyPeek()
+                .then()
+                .statusCode(204);
+
+            List<Map<String, String>> response = RestAssured
+                .given()
+                .accept(applicationKafkaJson)
+                .get(String.format("%s/consumers/test_group/instances/test_consumer/records", restProxy))
+                .getBody()
+                .as(new TypeRef<List<Map<String, String>>>() {});
+            assertThat(response).hasSize(3).extracting("value").containsExactly("jsmith", "htanaka", "awalther");
         }
     }
 

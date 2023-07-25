@@ -51,3 +51,18 @@ schema_registry_client:
   brokers:
     - address: localhost
       port: 9093
+
+pandaproxy:
+  pandaproxy_api:
+    - address: 0.0.0.0
+      port: 8082
+      name: proxy-internal
+  advertised_pandaproxy_api:
+    - address: 127.0.0.1
+      port: 8082
+      name: proxy-internal
+
+pandaproxy_client:
+  brokers:
+    - address: localhost
+      port: 9093

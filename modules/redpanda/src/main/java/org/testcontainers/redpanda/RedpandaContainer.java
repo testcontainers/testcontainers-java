@@ -48,6 +48,8 @@ public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
 
     private static final int SCHEMA_REGISTRY_PORT = 8081;
 
+    private static final int REST_PROXY_PORT = 8082;
+
     private boolean enableAuthorization;
 
     private String authenticationMethod = "none";
@@ -71,7 +73,7 @@ public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
             throw new IllegalArgumentException("Redpanda version must be >= v22.2.1");
         }
 
-        withExposedPorts(REDPANDA_PORT, REDPANDA_ADMIN_PORT, SCHEMA_REGISTRY_PORT);
+        withExposedPorts(REDPANDA_PORT, REDPANDA_ADMIN_PORT, SCHEMA_REGISTRY_PORT, REST_PROXY_PORT);
         withCreateContainerCmdModifier(cmd -> {
             cmd.withEntrypoint();
             cmd.withUser("root:root");
@@ -115,6 +117,10 @@ public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
 
     public String getAdminAddress() {
         return String.format("http://%s:%s", getHost(), getMappedPort(REDPANDA_ADMIN_PORT));
+    }
+
+    public String getRestProxyAddress() {
+        return String.format("http://%s:%s", getHost(), getMappedPort(REST_PROXY_PORT));
     }
 
     public RedpandaContainer enableAuthorization() {
