@@ -66,3 +66,8 @@ pandaproxy_client:
   brokers:
     - address: localhost
       port: 9093
+
+rpk:
+  kafka_api:
+    brokers:
+    - localhost:9093

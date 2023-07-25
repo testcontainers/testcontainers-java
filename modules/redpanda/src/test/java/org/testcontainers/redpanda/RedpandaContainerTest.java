@@ -215,12 +215,7 @@ public class RedpandaContainerTest {
         try (RedpandaContainer redpanda = new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v23.1.7")) {
             redpanda.start();
 
-            AdminClient adminClient = AdminClient.create(
-                ImmutableMap.of(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, redpanda.getBootstrapServers())
-            );
-            String topicName = "test_topic";
-            Collection<NewTopic> topics = Collections.singletonList(new NewTopic(topicName, 3, (short) 1));
-            adminClient.createTopics(topics).all().get(30, TimeUnit.SECONDS);
+            redpanda.execInContainer("rpk", "topic", "create", "test_topic", "-p", "3");
 
             String applicationKafkaJson = "application/vnd.kafka.json.v2+json";
 
