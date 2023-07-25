@@ -14,3 +14,5 @@ superusers:
 <#if kafkaApi.enableAuthorization >
 kafka_enable_authorization: true
 </#if>
+
+auto_create_topics_enabled: true
