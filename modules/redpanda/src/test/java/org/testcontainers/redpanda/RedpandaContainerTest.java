@@ -23,6 +23,9 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.rnorth.ducttape.unreliables.Unreliables;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.Network;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
@@ -107,11 +110,25 @@ public class RedpandaContainerTest {
     @Test
     public void testUsageWithListener() throws Exception {
         try (
-            RedpandaContainer container = new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v23.1.7")
+            Network network = Network.newNetwork();
+            RedpandaContainer redpanda = new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v23.1.7")
                 .withListener(() -> "redpanda:19092")
+                .withNetwork(network);
+            GenericContainer<?> kcat = new GenericContainer<>("confluentinc/cp-kcat:7.4.1")
+                .withCreateContainerCmdModifier(cmd -> {
+                    cmd.withEntrypoint("sh");
+                })
+                .withCopyToContainer(Transferable.of("Message produced by kcat"), "/data/msgs.txt")
+                .withNetwork(network)
+                .withCommand("-c", "tail -f /dev/null")
         ) {
-            container.start();
-            testKafkaFunctionality(container.getBootstrapServers());
+            redpanda.start();
+            kcat.start();
+            kcat.execInContainer("kcat", "-b", "redpanda:19092", "-t", "msgs", "-P", "-l", "/data/msgs.txt");
+            String stdout = kcat
+                .execInContainer("kcat", "-b", "redpanda:19092", "-C", "-t", "msgs", "-c", "1")
+                .getStdout();
+            assertThat(stdout).contains("Message produced by kcat");
         }
     }
 
