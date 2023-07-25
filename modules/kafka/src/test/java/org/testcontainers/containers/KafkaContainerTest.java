@@ -16,6 +16,7 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.Test;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.Testcontainers;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
@@ -192,6 +193,31 @@ public class KafkaContainerTest {
         try (KafkaContainer kafka = new KafkaContainer(KAFKA_KRAFT_TEST_IMAGE).withEmbeddedZookeeper().withKraft()) {
             kafka.start();
             testKafkaFunctionality(kafka.getBootstrapServers());
+        }
+    }
+
+    @Test
+    public void testUsageWithListener() throws Exception {
+        try (
+            Network network = Network.newNetwork();
+            KafkaContainer kafka = new KafkaContainer(KAFKA_KRAFT_TEST_IMAGE)
+                .withListener(() -> "kafka:19092")
+                .withNetwork(network);
+            GenericContainer<?> kcat = new GenericContainer<>("confluentinc/cp-kcat:7.4.1")
+                .withCreateContainerCmdModifier(cmd -> {
+                    cmd.withEntrypoint("sh");
+                })
+                .withCopyToContainer(Transferable.of("Message produced by kcat"), "/data/msgs.txt")
+                .withNetwork(network)
+                .withCommand("-c", "tail -f /dev/null")
+        ) {
+            kafka.start();
+            kcat.start();
+            kcat.execInContainer("kcat", "-b", "kafka:19092", "-t", "msgs", "-P", "-l", "/data/msgs.txt");
+            String stdout = kcat
+                .execInContainer("kcat", "-b", "kafka:19092", "-C", "-t", "msgs", "-c", "1")
+                .getStdout();
+            assertThat(stdout).contains("Message produced by kcat");
         }
     }
 
