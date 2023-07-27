@@ -29,6 +29,8 @@ public class YugabyteDBYSQLContainer extends JdbcDatabaseContainer<YugabyteDBYSQ
 
     private static final String ENTRYPOINT = "bin/yugabyted start --background=false";
 
+    private boolean extendedStartupProbe = true;
+
     private String database = "yugabyte";
 
     private String username = "yugabyte";
@@ -49,7 +51,7 @@ public class YugabyteDBYSQLContainer extends JdbcDatabaseContainer<YugabyteDBYSQ
         super(imageName);
         imageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
         withExposedPorts(YSQL_PORT, MASTER_DASHBOARD_PORT, TSERVER_DASHBOARD_PORT);
-        waitingFor(new YugabyteDBYSQLWaitStrategy(this).withStartupTimeout(Duration.ofSeconds(60)));
+        waitingFor(new YugabyteDBYSQLWaitStrategy().withStartupTimeout(Duration.ofSeconds(60)));
         withCommand(ENTRYPOINT);
     }
 
@@ -96,6 +98,10 @@ public class YugabyteDBYSQLContainer extends JdbcDatabaseContainer<YugabyteDBYSQ
         return database;
     }
 
+    public boolean isExtendedStartupProbe() {
+        return extendedStartupProbe;
+    }
+
     @Override
     public String getUsername() {
         return username;
@@ -123,6 +129,11 @@ public class YugabyteDBYSQLContainer extends JdbcDatabaseContainer<YugabyteDBYSQ
         return this;
     }
 
+    public YugabyteDBYSQLContainer withExtendedStartupProbe(final boolean startupProbe) {
+        this.extendedStartupProbe = startupProbe;
+        return this;
+    }
+
     /**
      * Setting this would create the custom user role
      * @param username user name
@@ -145,5 +156,10 @@ public class YugabyteDBYSQLContainer extends JdbcDatabaseContainer<YugabyteDBYSQ
     public YugabyteDBYSQLContainer withPassword(final String password) {
         this.password = password;
         return this;
+    }
+
+    @Override
+    protected void waitUntilContainerStarted() {
+        getWaitStrategy().waitUntilReady(this);
     }
 }
