@@ -40,7 +40,7 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
     private final AtomicInteger nextPort = new AtomicInteger(FIRST_PROXIED_PORT);
 
     /**
-     * @deprecated use {@link ToxiproxyContainer(DockerImageName)} instead
+     * @deprecated use {@link #ToxiproxyContainer(DockerImageName)} instead
      */
     @Deprecated
     public ToxiproxyContainer() {

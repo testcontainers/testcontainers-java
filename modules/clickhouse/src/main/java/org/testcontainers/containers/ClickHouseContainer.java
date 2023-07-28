@@ -43,7 +43,7 @@ public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContain
     private boolean supportsNewDriver;
 
     /**
-     * @deprecated use {@link ClickHouseContainer(DockerImageName)} instead
+     * @deprecated use {@link #ClickHouseContainer(DockerImageName)} instead
      */
     @Deprecated
     public ClickHouseContainer() {

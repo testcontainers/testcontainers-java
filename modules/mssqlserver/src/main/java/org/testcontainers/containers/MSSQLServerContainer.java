@@ -20,7 +20,7 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
 
     public static final Integer MS_SQL_SERVER_PORT = 1433;
 
-    static final String DEFAULT_USER = "SA";
+    static final String DEFAULT_USER = "sa";
 
     static final String DEFAULT_PASSWORD = "A_Str0ng_Required_Password";
 
@@ -38,7 +38,7 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
     };
 
     /**
-     * @deprecated use {@link MSSQLServerContainer(DockerImageName)} instead
+     * @deprecated use {@link #MSSQLServerContainer(DockerImageName)} instead
      */
     @Deprecated
     public MSSQLServerContainer() {

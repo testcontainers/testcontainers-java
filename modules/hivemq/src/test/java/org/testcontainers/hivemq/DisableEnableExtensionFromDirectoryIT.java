@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
-public class DisableEnableExtensionFromDirectoryIT {
+class DisableEnableExtensionFromDirectoryIT {
 
     @Test
     @Timeout(value = 3, unit = TimeUnit.MINUTES)

@@ -37,7 +37,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     private String clusterId = DEFAULT_CLUSTER_ID;
 
     /**
-     * @deprecated use {@link KafkaContainer(DockerImageName)} instead
+     * @deprecated use {@link #KafkaContainer(DockerImageName)} instead
      */
     @Deprecated
     public KafkaContainer() {
@@ -45,7 +45,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     }
 
     /**
-     * @deprecated use {@link KafkaContainer(DockerImageName)} instead
+     * @deprecated use {@link #KafkaContainer(DockerImageName)} instead
      */
     @Deprecated
     public KafkaContainer(String confluentPlatformVersion) {

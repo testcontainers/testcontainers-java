@@ -1,3 +1,3 @@
-FROM redis:2.6.17
+FROM redis:6.0-alpine
 
 CMD ["redis-server"]

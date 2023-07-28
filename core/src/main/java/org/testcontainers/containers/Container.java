@@ -80,7 +80,7 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @param mode          the bind mode
      */
     default void addFileSystemBind(final String hostPath, final String containerPath, final BindMode mode) {
-        addFileSystemBind(hostPath, containerPath, mode, SelinuxContext.NONE);
+        addFileSystemBind(hostPath, containerPath, mode, SelinuxContext.SHARED);
     }
 
     /**
@@ -310,7 +310,7 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
         final String containerPath,
         final BindMode mode
     ) {
-        withClasspathResourceMapping(resourcePath, containerPath, mode, SelinuxContext.NONE);
+        withClasspathResourceMapping(resourcePath, containerPath, mode, SelinuxContext.SHARED);
         return self();
     }
 

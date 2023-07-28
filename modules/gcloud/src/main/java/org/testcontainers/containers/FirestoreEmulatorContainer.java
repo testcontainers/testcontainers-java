@@ -22,6 +22,10 @@ public class FirestoreEmulatorContainer extends GenericContainer<FirestoreEmulat
 
     private static final int PORT = 8080;
 
+    public FirestoreEmulatorContainer(String image) {
+        this(DockerImageName.parse(image));
+    }
+
     public FirestoreEmulatorContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, CLOUD_SDK_IMAGE_NAME);

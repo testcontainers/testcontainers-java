@@ -118,7 +118,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     /**
      * Creates a new couchbase container with the default image and version.
-     * @deprecated use {@link CouchbaseContainer(DockerImageName)} instead
+     * @deprecated use {@link #CouchbaseContainer(DockerImageName)} instead
      */
     @Deprecated
     public CouchbaseContainer() {

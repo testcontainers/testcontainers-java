@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ContainerWithoutPlatformExtensionsIT {
+class ContainerWithoutPlatformExtensionsIT {
 
     @NotNull
     private final HiveMQExtension hiveMQExtension = HiveMQExtension
@@ -39,7 +39,7 @@ public class ContainerWithoutPlatformExtensionsIT {
 
     @Test
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
-    public void removeAllPlatformExtensions() throws InterruptedException {
+    void removeAllPlatformExtensions() throws InterruptedException {
         try (
             final HiveMQContainer hivemq = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq4").withTag("4.7.4"))
                 .withExtension(hiveMQExtension)
@@ -74,7 +74,7 @@ public class ContainerWithoutPlatformExtensionsIT {
 
     @Test
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
-    public void removeKafkaExtension() throws InterruptedException {
+    void removeKafkaExtension() throws InterruptedException {
         try (
             final HiveMQContainer hivemq = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq4").withTag("4.7.4"))
                 .withExtension(hiveMQExtension)

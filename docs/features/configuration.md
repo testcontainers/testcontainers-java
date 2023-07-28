@@ -76,7 +76,7 @@ Some companies disallow the usage of Docker Hub, but you can override `*.image` 
 > **ryuk.container.image = testcontainers/ryuk:0.3.3**
 > The resource reaper is responsible for container removal and automatic cleanup of dead containers at JVM shutdown
 
-> **ryuk.container.privileged = false**
+> **ryuk.container.privileged = true**
 > In some environments ryuk must be started in privileged mode to work properly (--privileged flag)
 
 ### Disabling Ryuk

@@ -44,7 +44,7 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
 
     /**
      * Creates a RabbitMQ container using the official RabbitMQ docker image.
-     * @deprecated use {@link RabbitMQContainer(DockerImageName)} instead
+     * @deprecated use {@link #RabbitMQContainer(DockerImageName)} instead
      */
     @Deprecated
     public RabbitMQContainer() {

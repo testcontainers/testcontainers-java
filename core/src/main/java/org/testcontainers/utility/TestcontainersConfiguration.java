@@ -138,7 +138,7 @@ public class TestcontainersConfiguration {
     }
 
     public boolean isRyukPrivileged() {
-        return Boolean.parseBoolean(getEnvVarOrProperty("ryuk.container.privileged", "false"));
+        return Boolean.parseBoolean(getEnvVarOrProperty("ryuk.container.privileged", "true"));
     }
 
     @Deprecated

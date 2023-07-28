@@ -248,7 +248,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     /**
-     * @deprecated use {@link GenericContainer(DockerImageName)} instead
+     * @deprecated use {@link #GenericContainer(DockerImageName)} instead
      */
     @Deprecated
     public GenericContainer() {
@@ -1297,7 +1297,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         final String containerPath,
         final BindMode mode
     ) {
-        return withClasspathResourceMapping(resourcePath, containerPath, mode, SelinuxContext.NONE);
+        return withClasspathResourceMapping(resourcePath, containerPath, mode, SelinuxContext.SHARED);
     }
 
     /**
@@ -1312,10 +1312,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     ) {
         final MountableFile mountableFile = MountableFile.forClasspathResource(resourcePath);
 
-        if (mode == BindMode.READ_ONLY && selinuxContext == SelinuxContext.NONE) {
-            withCopyFileToContainer(mountableFile, containerPath);
-        } else {
+        if (mode == BindMode.READ_WRITE) {
             addFileSystemBind(mountableFile.getResolvedPath(), containerPath, mode, selinuxContext);
+        } else {
+            withCopyFileToContainer(mountableFile, containerPath);
         }
 
         return self();

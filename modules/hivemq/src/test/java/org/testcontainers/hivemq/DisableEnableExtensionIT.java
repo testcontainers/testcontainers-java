@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
-public class DisableEnableExtensionIT {
+class DisableEnableExtensionIT {
 
     @NotNull
     private final HiveMQExtension hiveMQExtension = HiveMQExtension

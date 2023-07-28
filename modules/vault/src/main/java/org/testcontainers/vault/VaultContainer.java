@@ -39,7 +39,7 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
     private int port = VAULT_PORT;
 
     /**
-     * @deprecated use {@link VaultContainer(DockerImageName)} instead
+     * @deprecated use {@link #VaultContainer(DockerImageName)} instead
      */
     @Deprecated
     public VaultContainer() {
