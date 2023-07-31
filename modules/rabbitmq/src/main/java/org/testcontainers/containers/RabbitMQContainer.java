@@ -17,12 +17,12 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Testcontainer for RabbitMQ.
+ * Testcontainers implementation for RabbitMQ.
  */
 public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
 
     /**
-     * The image defaults to the official RabbitmQ image: <a href="https://hub.docker.com/_/rabbitmq/">RabbitMQ</a>.
+     * The image defaults to the official RabbitMQ image: <a href="https://hub.docker.com/_/rabbitmq/">RabbitMQ</a>.
      */
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("rabbitmq");
 
