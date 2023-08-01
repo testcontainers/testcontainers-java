@@ -120,8 +120,7 @@ public class RabbitMQContainerTest {
             container.start();
 
             assertThat(container.execInContainer("rabbitmqctl", "list_queues", "name", "arguments").getStdout())
-                .containsPattern("queue-one");
-            assertThat(container.execInContainer("rabbitmqctl", "list_queues", "name", "arguments").getStdout())
+                .containsPattern("queue-one")
                 .containsPattern("queue-two\\s.*x-message-ttl");
         }
     }
