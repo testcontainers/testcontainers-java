@@ -27,8 +27,6 @@ import static org.rnorth.ducttape.unreliables.Unreliables.retryUntilSuccess;
 @Slf4j
 public final class YugabyteDBYSQLWaitStrategy extends AbstractWaitStrategy {
 
-    private static final String YSQL_TEST_QUERY = "SELECT 1";
-
     private static final String YSQL_EXTENDED_PROBE = "CREATE TEMP TABLE IF NOT EXISTS YB_SAMPLE(k int, v int, primary key(k, v))";
 
     @Override
@@ -41,7 +39,7 @@ public final class YugabyteDBYSQLWaitStrategy extends AbstractWaitStrategy {
                 getRateLimiter()
                     .doWhenReady(() -> {
                         try (Connection con = container.createConnection(""); Statement stmt = con.createStatement()) {
-                            stmt.execute(container.isExtendedStartupProbe() ? YSQL_EXTENDED_PROBE : YSQL_TEST_QUERY);
+                            stmt.execute(YSQL_EXTENDED_PROBE);
                         }
                         catch (SQLException ex) {
                             throw new RuntimeException(ex);

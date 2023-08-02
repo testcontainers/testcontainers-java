@@ -95,18 +95,4 @@ public class YugabyteDBYSQLTest extends AbstractContainerDatabaseTest {
                 .isEqualTo(1);
         }
     }
-
-    @Test
-    public void testExtendedProbe() throws SQLException {
-        try (
-            final YugabyteDBYSQLContainer ysqlContainer = new YugabyteDBYSQLContainer(YBDB_TEST_IMAGE)
-                .withExtendedStartupProbe(false)
-                .withInitScript("init/init_yql.sql")
-        ) {
-            ysqlContainer.start();
-            assertThat(performQuery(ysqlContainer, "SELECT greet FROM dsql").getString(1))
-                .as("A record match succeeds")
-                .isEqualTo("Hello DSQL");
-        }
-    }
 }
