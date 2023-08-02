@@ -29,8 +29,6 @@ public class YugabyteDBYSQLContainer extends JdbcDatabaseContainer<YugabyteDBYSQ
 
     private static final String ENTRYPOINT = "bin/yugabyted start --background=false";
 
-    private boolean extendedStartupProbe = true;
-
     private String database = "yugabyte";
 
     private String username = "yugabyte";
@@ -98,10 +96,6 @@ public class YugabyteDBYSQLContainer extends JdbcDatabaseContainer<YugabyteDBYSQ
         return database;
     }
 
-    public boolean isExtendedStartupProbe() {
-        return extendedStartupProbe;
-    }
-
     @Override
     public String getUsername() {
         return username;
@@ -126,11 +120,6 @@ public class YugabyteDBYSQLContainer extends JdbcDatabaseContainer<YugabyteDBYSQ
     @Override
     public YugabyteDBYSQLContainer withDatabaseName(final String database) {
         this.database = database;
-        return this;
-    }
-
-    public YugabyteDBYSQLContainer withExtendedStartupProbe(final boolean startupProbe) {
-        this.extendedStartupProbe = startupProbe;
         return this;
     }
 
