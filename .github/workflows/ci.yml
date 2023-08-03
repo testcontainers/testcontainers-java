@@ -45,20 +45,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-java@v3
-        with:
-          java-version: '8'
-          distribution: temurin
-      - name: Clear existing docker image cache
-        run: docker image prune -af
-      - name: Setup Gradle Build Action
-        uses: gradle/gradle-build-action@v2
-        with:
-          gradle-home-cache-includes: |
-            caches
-            notifications
-            jdks
-          gradle-home-cache-cleanup: true
+      - uses: ./.github/actions/setup-build
       - name: Build and test with Gradle
         run: |
           ./gradlew :testcontainers:check --no-daemon --continue --scan
@@ -70,10 +57,7 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-java@v3
-        with:
-          java-version: '8'
-          distribution: temurin
+      - uses: ./.github/actions/setup-java
       - name: Setup Gradle Build Action
         uses: gradle/gradle-build-action@v2
       - id: set-matrix
@@ -93,20 +77,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-java@v3
-        with:
-          java-version: '8'
-          distribution: temurin
-      - name: Clear existing docker image cache
-        run: docker image prune -af
-      - name: Setup Gradle Build Action
-        uses: gradle/gradle-build-action@v2
-        with:
-          gradle-home-cache-includes: |
-            caches
-            notifications
-            jdks
-          gradle-home-cache-cleanup: true
+      - uses: ./.github/actions/setup-build
       - name: Build and test with Gradle (${{matrix.gradle_args}})
         run: |
           ./gradlew --no-daemon --continue --scan ${{matrix.gradle_args}}
@@ -118,10 +89,7 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-java@v3
-        with:
-          java-version: '8'
-          distribution: temurin
+      - uses: ./.github/actions/setup-java
       - name: Setup Gradle Build Action
         uses: gradle/gradle-build-action@v2
       - id: set-matrix
@@ -142,16 +110,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-java@v3
-        with:
-          java-version: '8'
-          distribution: temurin
-      - name: Clear existing docker image cache
-        run: docker image prune -af
-      - name: Setup Gradle Build Action
-        uses: gradle/gradle-build-action@v2
-        with:
-          gradle-home-cache-cleanup: true
+      - uses: ./.github/actions/setup-build
       - name: Build and test Examples with Gradle (${{matrix.gradle_args}})
         working-directory: ./examples/
         run: |
@@ -164,10 +123,7 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-java@v3
-        with:
-          java-version: '8'
-          distribution: temurin
+      - uses: ./.github/actions/setup-java
       - name: Setup Gradle Build Action
         uses: gradle/gradle-build-action@v2
       - id: set-matrix
@@ -187,20 +143,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-java@v3
-        with:
-          java-version: '8'
-          distribution: temurin
-      - name: Clear existing docker image cache
-        run: docker image prune -af
-      - name: Setup Gradle Build Action
-        uses: gradle/gradle-build-action@v2
-        with:
-          gradle-home-cache-includes: |
-            caches
-            notifications
-            jdks
-          gradle-home-cache-cleanup: true
+      - uses: ./.github/actions/setup-build
       - name: Build and test with Gradle (${{matrix.gradle_args}})
         run: |
           ./gradlew --no-daemon --continue --scan ${{matrix.gradle_args}}
