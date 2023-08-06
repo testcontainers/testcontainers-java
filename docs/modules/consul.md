@@ -33,6 +33,3 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
         <scope>test</scope>
     </dependency>
     ```
-
-See [AUTHORS](https://raw.githubusercontent.com/testcontainers/testcontainers-java/main/modules/consul/AUTHORS) for contributors.
-
