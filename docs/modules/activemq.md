@@ -20,7 +20,7 @@ Testcontainers module for [ActiveMQ](https://hub.docker.com/r/apache/activemq-cl
 <!--/codeinclude-->
 
 <!--codeinclude-->
-[Allow anonymous login](../../modules/activemq/src/test/java/org/testcontainers/activemq/ArtemisContainerTest.java) inside_block:anonymousLogin
+[Allow anonymous login](../../modules/activemq/src/test/java/org/testcontainers/activemq/ArtemisContainerTest.java) inside_block:enableAnonymousLogin
 <!--/codeinclude-->
 
 ## Adding this module to your project dependencies

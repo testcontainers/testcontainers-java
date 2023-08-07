@@ -16,54 +16,56 @@ public class ArtemisContainerTest {
 
     @Test
     public void defaultCredentials() {
-        try ( // container {
-            ArtemisContainer container = new ArtemisContainer("apache/activemq-artemis:2.30.0-alpine")
+        try (
+            // container {
+            ArtemisContainer artemis = new ArtemisContainer("apache/activemq-artemis:2.30.0-alpine")
             // }
         ) {
-            container.start();
+            artemis.start();
 
-            assertThat(container.getUser()).isEqualTo("artemis");
-            assertThat(container.getPassword()).isEqualTo("artemis");
-            assertFunctionality(container, false);
+            assertThat(artemis.getUser()).isEqualTo("artemis");
+            assertThat(artemis.getPassword()).isEqualTo("artemis");
+            assertFunctionality(artemis, false);
         }
     }
 
     @Test
     public void customCredentials() {
-        try ( // settingCredentials {
-            ArtemisContainer container = new ArtemisContainer("apache/activemq-artemis:2.30.0-alpine")
+        try (
+            // settingCredentials {
+            ArtemisContainer artemis = new ArtemisContainer("apache/activemq-artemis:2.30.0-alpine")
                 .withUser("testcontainers")
                 .withPassword("testcontainers")
             // }
         ) {
-            container.start();
+            artemis.start();
 
-            assertThat(container.getUser()).isEqualTo("testcontainers");
-            assertThat(container.getPassword()).isEqualTo("testcontainers");
-            assertFunctionality(container, false);
+            assertThat(artemis.getUser()).isEqualTo("testcontainers");
+            assertThat(artemis.getPassword()).isEqualTo("testcontainers");
+            assertFunctionality(artemis, false);
         }
     }
 
     @Test
     public void allowAnonymousLogin() {
         try (
-            // anonymousLogin {
-            ArtemisContainer container = new ArtemisContainer("apache/activemq-artemis:2.30.0-alpine")
+            // enableAnonymousLogin {
+            ArtemisContainer artemis = new ArtemisContainer("apache/activemq-artemis:2.30.0-alpine")
                 .withEnv("ANONYMOUS_LOGIN", "true")
             // }
         ) {
-            container.start();
+            artemis.start();
 
-            assertFunctionality(container, true);
+            assertFunctionality(artemis, true);
         }
     }
 
     @SneakyThrows
-    private void assertFunctionality(ArtemisContainer container, boolean anonymousLogin) {
-        ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(container.getBrokerUrl());
+    private void assertFunctionality(ArtemisContainer artemis, boolean anonymousLogin) {
+        ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(artemis.getBrokerUrl());
         if (!anonymousLogin) {
-            connectionFactory.setUser(container.getUser());
-            connectionFactory.setPassword(container.getPassword());
+            connectionFactory.setUser(artemis.getUser());
+            connectionFactory.setPassword(artemis.getPassword());
         }
         Connection connection = connectionFactory.createConnection();
         connection.start();

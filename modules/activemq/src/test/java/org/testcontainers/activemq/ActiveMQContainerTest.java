@@ -18,12 +18,12 @@ public class ActiveMQContainerTest {
     @Test
     public void test() throws JMSException {
         try ( // container {
-            ActiveMQContainer container = new ActiveMQContainer("apache/activemq-classic:5.17.5")
+            ActiveMQContainer activemq = new ActiveMQContainer("apache/activemq-classic:5.17.5")
             // }
         ) {
-            container.start();
+            activemq.start();
 
-            ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(container.getBrokerUrl());
+            ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(activemq.getBrokerUrl());
             Connection connection = connectionFactory.createConnection();
             connection.start();
 
