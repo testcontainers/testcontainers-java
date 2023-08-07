@@ -9,6 +9,8 @@
   - gradle/wrapper/*
   - gradlew
   - gradlew.bat
+"modules/activemq":
+  - modules/activemq/**/*
 "modules/azure":
   - modules/azure/**/*
 "modules/cassandra":
