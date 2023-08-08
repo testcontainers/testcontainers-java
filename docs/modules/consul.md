@@ -19,18 +19,17 @@ test how your application behaves with Consul by writing different test scenario
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
-```groovy tab='Gradle'
-testImplementation "org.testcontainers:consul:{{latest_version}}"
-```
+=== "Gradle"
+    ```groovy
+    testImplementation "org.testcontainers:consul:{{latest_version}}"
+    ```
 
-```xml tab='Maven'
-<dependency>
-    <groupId>org.testcontainers</groupId>
-    <artifactId>consul</artifactId>
-    <version>{{latest_version}}</version>
-    <scope>test</scope>
-</dependency>
-```
-
-See [AUTHORS](https://raw.githubusercontent.com/testcontainers/testcontainers-java/main/modules/consul/AUTHORS) for contributors.
-
+=== "Maven"
+    ```xml
+    <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>consul</artifactId>
+        <version>{{latest_version}}</version>
+        <scope>test</scope>
+    </dependency>
+    ```
