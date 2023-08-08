@@ -54,7 +54,6 @@ public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContain
         withEnv("CLICKHOUSE_DB", this.databaseName);
         withEnv("CLICKHOUSE_USER", this.username);
         withEnv("CLICKHOUSE_PASSWORD", this.password);
-        withEnv("CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT", "1");
     }
 
     @Override
