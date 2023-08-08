@@ -200,10 +200,12 @@ body #site-header .menu-item .menu-dropdown {
     font-family: 'Rubik', Arial, Helvetica, sans-serif;
 }
 
-.md-header__title.md-header__title--active .md-header__topic {
+.md-header__title.md-header__title--active .md-header__topic,
+.md-header__title[data-md-state=active] .md-header__topic {
     opacity: 1;
     pointer-events: all;
     transform: translateX(0);
+    transition: none;
     z-index: 0;
 }
 

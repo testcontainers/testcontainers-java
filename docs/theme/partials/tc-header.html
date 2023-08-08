@@ -1,6 +1,10 @@
 {% set header = ({
     "siteUrl": "https://testcontainers.com/",
-    "menuItmes": [
+    "menuItems": [
+        {
+            "label": "Desktop",
+            "url": "https://testcontainers.com/desktop/"
+        },
         {
             "label": "Cloud",
             "url": "https://testcontainers.com/cloud/"
@@ -108,7 +112,7 @@
     </div>
     <nav>
         <ul class="menu">
-            {% for menuItem in header["menuItmes"] %}
+            {% for menuItem in header["menuItems"] %}
                 {% if menuItem.children %}
                     <li class="menu-item has-children">
                         <button>
