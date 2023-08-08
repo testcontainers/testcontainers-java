@@ -16,6 +16,7 @@ theme:
     favicon: 'favicon.ico'
 extra_css:
     - 'css/extra.css'
+    - 'css/tc-header.css'
 repo_name: 'testcontainers-java'
 repo_url: 'https://github.com/testcontainers/testcontainers-java'
 markdown_extensions:
