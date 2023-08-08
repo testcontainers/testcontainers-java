@@ -31,7 +31,7 @@ public class Wait {
      * @param port the port to check
      * @return the WaitStrategy
      */
-    public static HostPortWaitStrategy forListeningPort(int port) {
+    public static HostPortWaitStrategy forListeningPort(int... port) {
         return new HostPortWaitStrategy().forPort(port);
     }
 

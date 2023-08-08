@@ -10,8 +10,6 @@ import org.testcontainers.containers.wait.internal.InternalCommandPortListeningC
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -28,7 +26,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class HostPortWaitStrategy extends AbstractWaitStrategy {
 
-    private Integer port;
+    private int[] port;
 
     @Override
     @SneakyThrows(InterruptedException.class)
@@ -46,8 +44,11 @@ public class HostPortWaitStrategy extends AbstractWaitStrategy {
                 return;
             }
         } else {
-            Integer mappedPort = waitStrategyTarget.getMappedPort(this.port);
-            externalLivenessCheckPorts = new HashSet<>(Collections.singletonList(mappedPort));
+            externalLivenessCheckPorts =
+                Arrays
+                    .stream(this.port)
+                    .mapToObj(port -> waitStrategyTarget.getMappedPort(port))
+                    .collect(Collectors.toSet());
         }
 
         List<Integer> exposedPorts = waitStrategyTarget.getExposedPorts();
@@ -123,7 +124,7 @@ public class HostPortWaitStrategy extends AbstractWaitStrategy {
             .collect(Collectors.toSet());
     }
 
-    public HostPortWaitStrategy forPort(int port) {
+    public HostPortWaitStrategy forPort(int... port) {
         this.port = port;
         return this;
     }
