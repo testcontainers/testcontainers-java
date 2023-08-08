@@ -26,6 +26,16 @@ public class Wait {
     }
 
     /**
+     * Convenience method to return a WaitStrategy for an exposed or mapped port.
+     *
+     * @param port the port to check
+     * @return the WaitStrategy
+     */
+    public static HostPortWaitStrategy forListeningPort(int port) {
+        return new HostPortWaitStrategy().forPort(port);
+    }
+
+    /**
      * Convenience method to return a WaitStrategy for an HTTP endpoint.
      *
      * @param path the path to check
