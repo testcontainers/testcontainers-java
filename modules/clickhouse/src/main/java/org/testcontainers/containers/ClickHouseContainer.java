@@ -8,6 +8,11 @@ import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Testcontainers implementation for ClickHouse.
+ *
+ * @deprecated use {@link org.testcontainers.clickhouse.ClickHouseContainer} instead
+ */
 public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContainer> {
 
     public static final String NAME = "clickhouse";
