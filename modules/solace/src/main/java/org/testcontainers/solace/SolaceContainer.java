@@ -16,7 +16,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Testcontainers implementation of Solace PubSub+
+ * Testcontainers implementation of Solace PubSub+.
+ * <p>
+ * Exposed ports:
+ * <ul>
+ *     <li>AMQP: 5672</li>
+ *     <li>MQTT: 1883</li>
+ *     <li>HTTP: 9000</li>
+ *     <li>SMF: 55555</li>
+ *     <li>SMF SSL: 55443</li>
+ * </ul>
  */
 public class SolaceContainer extends GenericContainer<SolaceContainer> {
 

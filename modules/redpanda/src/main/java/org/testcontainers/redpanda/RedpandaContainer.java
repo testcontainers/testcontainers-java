@@ -9,6 +9,12 @@ import org.testcontainers.utility.DockerImageName;
 
 /**
  * Testcontainers implementation for Redpanda.
+ * <p>
+ * Exposed ports:
+ * <ul>
+ *     <li>Broker: 9092</li>
+ *     <li>Schema Registry: 8081</li>
+ * </ul>
  */
 public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
 

@@ -5,7 +5,13 @@ import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.utility.DockerImageName;
 
 /**
- * This container wraps Apache Pulsar running in standalone mode
+ * Testcontainers implementation for Apache Pulsar.
+ * <p>
+ * Exposed ports:
+ * <ul>
+ *     <li>Pulsar: 6650</li>
+ *     <li>HTTP: 8080</li>
+ * </ul>
  */
 public class PulsarContainer extends GenericContainer<PulsarContainer> {
 

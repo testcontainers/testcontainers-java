@@ -18,6 +18,14 @@ import java.util.Set;
 
 /**
  * Testcontainers implementation for RabbitMQ.
+ * <p>
+ * Exposed ports:
+ * <ul>
+ *     <li>5671 (AMQPS)</li>
+ *     <li>5672 (AMQP)</li>
+ *     <li>15671 (HTTPS)</li>
+ *     <li>15672 (HTTP)</li>
+ * </ul>
  */
 public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
 

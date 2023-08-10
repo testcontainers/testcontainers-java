@@ -8,6 +8,14 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Set;
 
+/**
+ * Testcontainers implementation for IBM DB2.
+ * <p>
+ * Exposed ports:
+ * <ul>
+ *     <li>Database: 50000</li>
+ * </ul>
+ */
 public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
 
     public static final String NAME = "db2";

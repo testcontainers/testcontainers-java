@@ -10,6 +10,12 @@ import java.util.Set;
 
 /**
  * Testcontainers implementation for ClickHouse.
+ * <p>
+ * Exposed ports:
+ * <ul>
+ *     <li>Database: 8123</li>
+ *     <li>Console: 9000</li>
+ * </ul>
  */
 public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContainer> {
 

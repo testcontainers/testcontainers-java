@@ -19,9 +19,9 @@ import java.util.Optional;
 import javax.script.ScriptException;
 
 /**
- * Cassandra container
- *
  * Testcontainers implementation for Apache Cassandra.
+ * <p>
+ * Exposed ports: 9042
  */
 public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends GenericContainer<SELF> {
 
