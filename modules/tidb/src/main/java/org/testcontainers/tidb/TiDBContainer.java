@@ -10,6 +10,12 @@ import java.util.Set;
 
 /**
  * Testcontainers implementation for TiDB.
+ * <p>
+ * Exposed ports:
+ * <ul>
+ *     <li>Database: 4000</li>
+ *     <li>HTTP: 10080</li>
+ * </ul>
  */
 public class TiDBContainer extends JdbcDatabaseContainer<TiDBContainer> {
 
