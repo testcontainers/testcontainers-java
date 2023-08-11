@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
  * <ul>
  *     <li>Broker: 9092</li>
  *     <li>Schema Registry: 8081</li>
+ *     <li>Proxy: 8082</li>
  * </ul>
  */
 public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
