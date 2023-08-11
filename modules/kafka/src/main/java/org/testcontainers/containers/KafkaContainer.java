@@ -14,7 +14,14 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 /**
- * This container wraps Confluent Kafka and Zookeeper (optionally)
+ * Testcontainers implementation for Apache Kafka.
+ * Zookeeper can be optionally configured.
+ * <p>
+ * Exposed ports:
+ * <ul>
+ *     <li>Kafka: 9093</li>
+ *     <li>Zookeeper: 2181</li>
+ * </ul>
  */
 public class KafkaContainer extends GenericContainer<KafkaContainer> {
 

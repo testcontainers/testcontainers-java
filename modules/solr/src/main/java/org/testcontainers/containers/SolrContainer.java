@@ -13,7 +13,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * SolrContainer allows a solr container to be launched and controlled.
+ * Testcontainers implementation for Solr.
+ * <p>
+ * Exposed ports:
+ * <ul>
+ *     <li>Solr: 8983</li>
+ *     <li>Zookeeper: 9983</li>
+ * </ul>
  */
 public class SolrContainer extends GenericContainer<SolrContainer> {
 

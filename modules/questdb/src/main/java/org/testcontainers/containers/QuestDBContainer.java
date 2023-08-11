@@ -6,6 +6,13 @@ import org.testcontainers.utility.DockerImageName;
 
 /**
  * Testcontainers implementation for QuestDB.
+ * <p>
+ * Exposed ports:
+ * <ul>
+ *     <li>Postgres: 8812</li>
+ *     <li>HTTP: 9000</li>
+ *     <li>ILP: 9009</li>
+ * </ul>
  */
 public class QuestDBContainer extends JdbcDatabaseContainer<QuestDBContainer> {
 
