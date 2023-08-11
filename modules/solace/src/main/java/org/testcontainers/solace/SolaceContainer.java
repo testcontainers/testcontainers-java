@@ -20,6 +20,7 @@ import java.util.List;
  * <p>
  * Exposed ports:
  * <ul>
+ *     <li>Console: 8080</li>
  *     <li>AMQP: 5672</li>
  *     <li>MQTT: 1883</li>
  *     <li>HTTP: 9000</li>
@@ -69,6 +70,9 @@ public class SolaceContainer extends GenericContainer<SolaceContainer> {
             cmd.getHostConfig().withShmSize(SHM_SIZE).withUlimits(new Ulimit[] { new Ulimit("nofile", 2448L, 6592L) });
         });
         this.waitStrategy = Wait.forLogMessage(SOLACE_READY_MESSAGE, 1).withStartupTimeout(Duration.ofSeconds(60));
+        withExposedPorts(8080);
+        withEnv("username_admin_globalaccesslevel", "admin");
+        withEnv("username_admin_password", "admin");
     }
 
     @Override
