@@ -7,6 +7,15 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.util.Set;
 
+/**
+ * Testcontainers implementation for CrateDB.
+ * <p>
+ * Exposed ports:
+ * <ul>
+ *     <li>Database: 5432</li>
+ *     <li>Console: 4200</li>
+ * </ul>
+ */
 public class CrateDBContainer extends JdbcDatabaseContainer<CrateDBContainer> {
 
     static final String NAME = "cratedb";

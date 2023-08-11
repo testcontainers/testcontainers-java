@@ -9,6 +9,11 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Set;
 
+/**
+ * Testcontainers implementation for TrinoDB.
+ * <p>
+ * Exposed ports: 8080
+ */
 public class TrinoContainer extends JdbcDatabaseContainer<TrinoContainer> {
 
     static final String NAME = "trino";
