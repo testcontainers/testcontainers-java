@@ -195,7 +195,7 @@ public class ResourceReaper {
         if (running) {
             try {
                 LOGGER.trace("Stopping container: {}", containerId);
-                dockerClient.killContainerCmd(containerId).exec();
+                dockerClient.stopContainerCmd(containerId).exec();
                 LOGGER.trace("Stopped container: {}", imageName);
             } catch (Exception e) {
                 LOGGER.trace(
