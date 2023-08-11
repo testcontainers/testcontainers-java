@@ -62,11 +62,13 @@ public class DockerClientFactory {
 
     public static final String SESSION_ID = UUID.randomUUID().toString();
 
+    public static final String TESTCONTAINERS_VERSION =
+        DockerClientFactory.class.getPackage().getImplementationVersion();
+
     public static final Map<String, String> DEFAULT_LABELS = markerLabels();
 
     static Map<String, String> markerLabels() {
-        String implementationVersion = DockerClientFactory.class.getPackage().getImplementationVersion();
-        String testcontainersVersion = implementationVersion == null ? "unspecified" : implementationVersion;
+        String testcontainersVersion = TESTCONTAINERS_VERSION == null ? "unspecified" : TESTCONTAINERS_VERSION;
 
         Map<String, String> labels = new HashMap<>();
         labels.put(TESTCONTAINERS_LABEL, "true");
