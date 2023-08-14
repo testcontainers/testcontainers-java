@@ -50,6 +50,8 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     private static final String PROTOCOL_PREFIX = "TC";
 
+    private final Set<Supplier<String>> listeners = new HashSet<>();
+
     /**
      * @deprecated use {@link #KafkaContainer(DockerImageName)} instead
      */
@@ -274,8 +276,26 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         return command;
     }
 
-    private final Set<Supplier<String>> listeners = new HashSet<>();
-
+    /**
+     * Add a {@link Supplier} that will provide a listener with format {@code host:port}.
+     * Host will be added as a network alias.
+     * <p>
+     * The listener will be added to the existing listeners.
+     * <p>
+     * Existing listeners:
+     * <ul>
+     *     <li>0.0.0.0:9092</li>
+     *     <li>0.0.0.0:9093</li>
+     * </ul>
+     * <p>
+     * Existing advertised listeners:
+     * <ul>
+     *      <li>{@code container.getHost():container.getMappedPort(9093)}</li>
+     *      <li>{@code container.getConfig().getHostName():9092}</li>
+     * </ul>
+     * @param listenerSupplier a supplier that will provide a listener
+     * @return this {@link KafkaContainer} instance
+     */
     public KafkaContainer withListener(Supplier<String> listenerSupplier) {
         this.listeners.add(listenerSupplier);
         return this;
