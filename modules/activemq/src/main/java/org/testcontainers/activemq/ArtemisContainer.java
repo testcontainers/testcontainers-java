@@ -8,6 +8,17 @@ import java.time.Duration;
 
 /**
  * Testcontainers implementation for Apache ActiveMQ Artemis.
+ * <p>
+ * Exposed ports:
+ * <ul>
+ *     <li>Console: 8161</li>
+ *     <li>TCP: 61616</li>
+ *     <li>HORNETQ: 5445</li>
+ *     <li>AMQP: 5672</li>
+ *     <li>STOMP: 61613</li>
+ *     <li>MQTT: 1883</li>
+ *     <li>WS: 61614</li>
+ * </ul>
  */
 public class ArtemisContainer extends GenericContainer<ArtemisContainer> {
 
