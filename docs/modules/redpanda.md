@@ -25,6 +25,43 @@ Redpanda also provides a schema registry implementation. Like the Redpanda broke
 [Schema Registry](../../modules/redpanda/src/test/java/org/testcontainers/redpanda/RedpandaContainerTest.java) inside_block:getSchemaRegistryAddress
 <!--/codeinclude-->
 
+It is also possible to enable security capabilities of Redpanda by using:
+
+<!--codeinclude-->
+[Enable security](../../modules/redpanda/src/test/java/org/testcontainers/redpanda/RedpandaContainerTest.java) inside_block:security
+<!--/codeinclude-->
+
+Superusers can be created by using:
+
+<!--codeinclude-->
+[Register Superuser](../../modules/redpanda/src/test/java/org/testcontainers/redpanda/RedpandaContainerTest.java) inside_block:createSuperUser
+<!--/codeinclude-->
+
+Below is an example of how to create the `AdminClient`:
+
+<!--codeinclude-->
+[Create Admin Client](../../modules/redpanda/src/test/java/org/testcontainers/redpanda/RedpandaContainerTest.java) inside_block:createAdminClient
+<!--/codeinclude-->
+
+There are scenarios where connecting to the broker is needed. The consumer/producer can be another container
+in the same network or a different process where port to connect to is different from the exposed port `9092`. E.g [Toxiproxy](../../docs/modules/toxiproxy.md).
+
+<!--codeinclude-->
+[Register listener](../../modules/redpanda/src/test/java/org/testcontainers/redpanda/RedpandaContainerTest.java) inside_block:registerListener
+<!--/codeinclude-->
+
+Container defined in the same network:
+
+<!--codeinclude-->
+[Create kcat container](../../modules/redpanda/src/test/java/org/testcontainers/redpanda/RedpandaContainerTest.java) inside_block:createKCatContainer
+<!--/codeinclude-->
+
+Client using the new listener registered:
+
+<!--codeinclude-->
+[Produce/Consume via new listener](../../modules/redpanda/src/test/java/org/testcontainers/redpanda/RedpandaContainerTest.java) inside_block:produceConsumeMessage
+<!--/codeinclude-->
+
 ## Adding this module to your project dependencies
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:

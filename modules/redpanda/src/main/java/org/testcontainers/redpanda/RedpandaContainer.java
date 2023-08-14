@@ -114,42 +114,95 @@ public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
         copyFileToContainer(getRedpandaFile(cfg), "/etc/redpanda/redpanda.yaml");
     }
 
+    /**
+     * Returns the bootstrap servers address.
+     * @return the bootstrap servers address
+     */
     public String getBootstrapServers() {
         return String.format("PLAINTEXT://%s:%s", getHost(), getMappedPort(REDPANDA_PORT));
     }
 
+    /**
+     * Returns the schema registry address.
+     * @return the schema registry address
+     */
     public String getSchemaRegistryAddress() {
         return String.format("http://%s:%s", getHost(), getMappedPort(SCHEMA_REGISTRY_PORT));
     }
 
+    /**
+     * Returns the admin address.
+     * @return the admin address
+     */
     public String getAdminAddress() {
         return String.format("http://%s:%s", getHost(), getMappedPort(REDPANDA_ADMIN_PORT));
     }
 
+    /**
+     * Returns the rest proxy address.
+     * @return the rest proxy address
+     */
     public String getRestProxyAddress() {
         return String.format("http://%s:%s", getHost(), getMappedPort(REST_PROXY_PORT));
     }
 
+    /**
+     * Enables authorization.
+     * @return this {@link RedpandaContainer} instance
+     */
     public RedpandaContainer enableAuthorization() {
         this.enableAuthorization = true;
         return this;
     }
 
+    /**
+     * Enables SASL.
+     * @return this {@link RedpandaContainer} instance
+     */
     public RedpandaContainer enableSasl() {
         this.authenticationMethod = "sasl";
         return this;
     }
 
+    /**
+     * Enables Http Basic Auth for Schema Registry.
+     * @return this {@link RedpandaContainer} instance
+     */
     public RedpandaContainer enableSchemaRegistryHttpBasicAuth() {
         this.schemaRegistryAuthenticationMethod = "http_basic";
         return this;
     }
 
+    /**
+     * Register username as a superuser.
+     * @param username username to register as a superuser
+     * @return this {@link RedpandaContainer} instance
+     */
     public RedpandaContainer withSuperuser(String username) {
         this.superusers.add(username);
         return this;
     }
 
+    /**
+     * Add a {@link Supplier} that will provide a listener with format {@code host:port}.
+     * Host will be added as a network alias.
+     * <p>
+     * The listener will be added to the existing listeners.
+     * <p>
+     * Existing listeners:
+     * <ul>
+     *     <li>0.0.0.0:9092</li>
+     *     <li>0.0.0.0:9093</li>
+     * </ul>
+     * <p>
+     * Existing advertised listeners:
+     * <ul>
+     *      <li>{@code container.getHost():container.getMappedPort(9092)}</li>
+     *      <li>127.0.0.1:9093</li>
+     * </ul>
+     * @param listenerSupplier a supplier that will provide a listener
+     * @return this {@link RedpandaContainer} instance
+     */
     public RedpandaContainer withListener(Supplier<String> listenerSupplier) {
         String[] parts = listenerSupplier.get().split(":");
         this.listenersValueSupplier.add(() -> new Listener(parts[0], Integer.parseInt(parts[1])));

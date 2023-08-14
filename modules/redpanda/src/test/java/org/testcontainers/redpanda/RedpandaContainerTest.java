@@ -111,9 +111,12 @@ public class RedpandaContainerTest {
     public void testUsageWithListener() throws Exception {
         try (
             Network network = Network.newNetwork();
+            // registerListener {
             RedpandaContainer redpanda = new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v23.1.7")
                 .withListener(() -> "redpanda:19092")
                 .withNetwork(network);
+            // }
+            // createKCatContainer {
             GenericContainer<?> kcat = new GenericContainer<>("confluentinc/cp-kcat:7.4.1")
                 .withCreateContainerCmdModifier(cmd -> {
                     cmd.withEntrypoint("sh");
@@ -121,13 +124,16 @@ public class RedpandaContainerTest {
                 .withCopyToContainer(Transferable.of("Message produced by kcat"), "/data/msgs.txt")
                 .withNetwork(network)
                 .withCommand("-c", "tail -f /dev/null")
+            // }
         ) {
             redpanda.start();
             kcat.start();
+            // produceConsumeMessage {
             kcat.execInContainer("kcat", "-b", "redpanda:19092", "-t", "msgs", "-P", "-l", "/data/msgs.txt");
             String stdout = kcat
                 .execInContainer("kcat", "-b", "redpanda:19092", "-C", "-t", "msgs", "-c", "1")
                 .getStdout();
+            // }
             assertThat(stdout).contains("Message produced by kcat");
         }
     }
@@ -136,10 +142,12 @@ public class RedpandaContainerTest {
     @Test
     public void enableSaslWithSuccessfulTopicCreation() {
         try (
+            // security {
             RedpandaContainer redpanda = new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v23.1.7")
                 .enableAuthorization()
                 .enableSasl()
                 .withSuperuser("superuser-1")
+            // }
         ) {
             redpanda.start();
 
@@ -338,7 +346,8 @@ public class RedpandaContainerTest {
 
     private AdminClient getAdminClient(RedpandaContainer redpanda) {
         String bootstrapServer = String.format("%s:%s", redpanda.getHost(), redpanda.getMappedPort(9092));
-        return AdminClient.create(
+        // createAdminClient {
+        AdminClient adminClient = AdminClient.create(
             ImmutableMap.of(
                 AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG,
                 bootstrapServer,
@@ -350,6 +359,8 @@ public class RedpandaContainerTest {
                 "org.apache.kafka.common.security.scram.ScramLoginModule required username=\"superuser-1\" password=\"test\";"
             )
         );
+        // }
+        return adminClient;
     }
 
     private void createSuperUser(RedpandaContainer redpanda) {
