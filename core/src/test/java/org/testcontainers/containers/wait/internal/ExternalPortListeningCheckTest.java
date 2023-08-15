@@ -1,9 +1,9 @@
 package org.testcontainers.containers.wait.internal;
 
 import com.google.common.collect.ImmutableSet;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 
 import java.net.ServerSocket;
@@ -23,7 +23,7 @@ public class ExternalPortListeningCheckTest {
 
     private WaitStrategyTarget mockContainer;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         listeningSocket1 = new ServerSocket(0);
         listeningSocket2 = new ServerSocket(0);
@@ -71,7 +71,7 @@ public class ExternalPortListeningCheckTest {
             .isInstanceOf(IllegalStateException.class);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         listeningSocket1.close();
         listeningSocket2.close();

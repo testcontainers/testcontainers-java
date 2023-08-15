@@ -1,6 +1,6 @@
 package org.testcontainers.images.builder.dockerfile.statement;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class SingleArgumentStatementTest extends AbstractStatementTest {
 
@@ -10,7 +10,7 @@ public class SingleArgumentStatementTest extends AbstractStatementTest {
     }
 
     @Test
-    public void multilineTest() throws Exception {
+    public void multilineTest() {
         assertStatement(new SingleArgumentStatement("TEST", "hello\nworld"));
     }
 }

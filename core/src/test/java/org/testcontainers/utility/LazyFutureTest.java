@@ -2,7 +2,8 @@ package org.testcontainers.utility;
 
 import com.google.common.util.concurrent.Futures;
 import lombok.SneakyThrows;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.util.Collections;
 import java.util.List;
@@ -39,7 +40,8 @@ public class LazyFutureTest {
         assertThat(lazyFuture.get()).as("result of resolve() must be cached").isEqualTo(1);
     }
 
-    @Test(timeout = 5_000)
+    @Test
+    @Timeout(value = 5, unit = TimeUnit.SECONDS)
     public void timeoutWorks() {
         Future<Void> lazyFuture = new LazyFuture<Void>() {
             @Override
@@ -55,7 +57,8 @@ public class LazyFutureTest {
             .isInstanceOf(TimeoutException.class);
     }
 
-    @Test(timeout = 5_000)
+    @Test
+    @Timeout(value = 5, unit = TimeUnit.SECONDS)
     public void testThreadSafety() throws Exception {
         final int numOfThreads = 3;
         CountDownLatch latch = new CountDownLatch(numOfThreads);

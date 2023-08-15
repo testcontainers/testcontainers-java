@@ -1,7 +1,7 @@
 package org.testcontainers.utility;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,7 +18,7 @@ public class TestcontainersConfigurationTest {
 
     private Map<String, String> environment;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         userProperties = new Properties();
         classpathProperties = new Properties();

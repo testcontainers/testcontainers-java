@@ -1,6 +1,6 @@
 package org.testcontainers.junit;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.TestImages;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;

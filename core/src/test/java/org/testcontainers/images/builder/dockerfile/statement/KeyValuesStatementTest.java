@@ -1,14 +1,14 @@
 package org.testcontainers.images.builder.dockerfile.statement;
 
 import com.google.common.collect.ImmutableMap;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 
 public class KeyValuesStatementTest extends AbstractStatementTest {
 
     @Test
-    public void multilineTest() throws Exception {
+    public void multilineTest() {
         ImmutableMap<String, String> pairs = ImmutableMap
             .<String, String>builder()
             .put("line1", "1")
@@ -20,22 +20,22 @@ public class KeyValuesStatementTest extends AbstractStatementTest {
     }
 
     @Test
-    public void keyWithSpacesTest() throws Exception {
+    public void keyWithSpacesTest() {
         assertStatement(new KeyValuesStatement("TEST", Collections.singletonMap("key with spaces", "1")));
     }
 
     @Test
-    public void keyWithNewLinesTest() throws Exception {
+    public void keyWithNewLinesTest() {
         assertStatement(new KeyValuesStatement("TEST", Collections.singletonMap("key\nwith\nnewlines", "1")));
     }
 
     @Test
-    public void keyWithTabsTest() throws Exception {
+    public void keyWithTabsTest() {
         assertStatement(new KeyValuesStatement("TEST", Collections.singletonMap("key\twith\ttab", "1")));
     }
 
     @Test
-    public void valueIsEscapedTest() throws Exception {
+    public void valueIsEscapedTest() {
         ImmutableMap<String, String> pairs = ImmutableMap
             .<String, String>builder()
             .put("1", "value with spaces")

@@ -1,68 +1,47 @@
 package org.testcontainers.images.builder;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(Parameterized.class)
 public class DockerfileBuildTest {
 
     static final Path RESOURCE_PATH = Paths.get("src/test/resources/dockerfile-build-test");
 
-    public String expectedFileContent;
-
-    public ImageFromDockerfile image;
-
-    @Parameterized.Parameters
-    public static Object[][] parameters() {
-        return new Object[][] {
-            // Dockerfile build without explicit per-file inclusion
-            new Object[] {
-                "test1234",
-                // spotless:off
-                // docsShowRecursiveFileInclusion {
-                new ImageFromDockerfile()
-                    .withFileFromPath(".", RESOURCE_PATH),
-                // }
-                // spotless:on
-            },
-            // Dockerfile build using a non-standard Dockerfile
-            new Object[] {
+    public static Stream<Arguments> provideExpectedFileContentAndImage() {
+        return Stream.of(
+            Arguments.of("test1234", new ImageFromDockerfile().withFileFromPath(".", RESOURCE_PATH)),
+            Arguments.of(
                 "test4567",
-                new ImageFromDockerfile().withFileFromPath(".", RESOURCE_PATH).withDockerfilePath("./Dockerfile-alt"),
-            },
-            // Dockerfile build using build args
-            new Object[] {
+                new ImageFromDockerfile().withFileFromPath(".", RESOURCE_PATH).withDockerfilePath("./Dockerfile-alt")
+            ),
+            Arguments.of(
                 "test7890",
                 new ImageFromDockerfile()
                     .withFileFromPath(".", RESOURCE_PATH)
                     .withDockerfilePath("./Dockerfile-buildarg")
-                    .withBuildArg("CUSTOM_ARG", "test7890"),
-            },
-            // Dockerfile build using withDockerfile(File)
-            new Object[] {
+                    .withBuildArg("CUSTOM_ARG", "test7890")
+            ),
+            Arguments.of(
                 "test4567",
                 new ImageFromDockerfile()
                     .withFileFromPath(".", RESOURCE_PATH)
-                    .withDockerfile(RESOURCE_PATH.resolve("Dockerfile-alt")),
-            },
-        };
+                    .withDockerfile(RESOURCE_PATH.resolve("Dockerfile-alt"))
+            )
+        );
     }
 
-    public DockerfileBuildTest(String expectedFileContent, ImageFromDockerfile image) {
-        this.expectedFileContent = expectedFileContent;
-        this.image = image;
-    }
-
-    @Test
-    public void performTest() {
+    @ParameterizedTest
+    @MethodSource("provideExpectedFileContentAndImage")
+    public void performTest(String expectedFileContent, ImageFromDockerfile image) {
         try (
             final GenericContainer container = new GenericContainer(image)
                 .withStartupCheckStrategy(new OneShotStartupCheckStrategy())

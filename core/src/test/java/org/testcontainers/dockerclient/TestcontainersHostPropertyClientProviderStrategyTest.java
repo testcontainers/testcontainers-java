@@ -1,26 +1,18 @@
 package org.testcontainers.dockerclient;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.testcontainers.utility.MockTestcontainersConfigurationRule;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.testcontainers.utility.MockTestcontainersConfigurationExtension;
 import org.testcontainers.utility.TestcontainersConfiguration;
-
-import java.net.URI;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith({ MockitoExtension.class, MockTestcontainersConfigurationExtension.class })
 public class TestcontainersHostPropertyClientProviderStrategyTest {
-
-    @Rule
-    public MockTestcontainersConfigurationRule mockConfig = new MockTestcontainersConfigurationRule();
-
-    private URI defaultDockerHost;
 
     @Test
     public void tcHostPropertyIsProvided() {

@@ -1,7 +1,7 @@
 package org.testcontainers.junit.wait.strategy;
 
 import org.jetbrains.annotations.NotNull;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.wait.strategy.ShellStrategy;
 
 import java.util.concurrent.atomic.AtomicBoolean;

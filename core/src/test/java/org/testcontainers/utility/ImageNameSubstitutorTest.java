@@ -1,24 +1,22 @@
 package org.testcontainers.utility;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 
+@ExtendWith(MockTestcontainersConfigurationExtension.class)
 public class ImageNameSubstitutorTest {
-
-    @Rule
-    public MockTestcontainersConfigurationRule config = new MockTestcontainersConfigurationRule();
 
     private ImageNameSubstitutor originalInstance;
 
     private ImageNameSubstitutor originalDefaultImplementation;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         originalInstance = ImageNameSubstitutor.instance;
         originalDefaultImplementation = ImageNameSubstitutor.defaultImplementation;
@@ -32,7 +30,7 @@ public class ImageNameSubstitutorTest {
         Mockito.doReturn("default implementation").when(ImageNameSubstitutor.defaultImplementation).getDescription();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         ImageNameSubstitutor.instance = originalInstance;
         ImageNameSubstitutor.defaultImplementation = originalDefaultImplementation;

@@ -15,10 +15,9 @@ import com.rabbitmq.client.Envelope;
 import org.apache.commons.io.FileUtils;
 import org.bson.Document;
 import org.junit.Assume;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.rnorth.ducttape.RetryCountExceededException;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.TestImages;
@@ -27,6 +26,7 @@ import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.SelinuxContext;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.TestEnvironment;
 
@@ -53,6 +53,7 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 /**
  * Tests for GenericContainerRules
  */
+@Testcontainers
 public class GenericContainerRuleTest {
 
     private static final int REDIS_PORT = 6379;
@@ -70,7 +71,7 @@ public class GenericContainerRuleTest {
     /*
      * Test data setup
      */
-    @BeforeClass
+    @BeforeAll
     public static void setupContent() throws FileNotFoundException {
         File contentFolder = new File(System.getProperty("user.home") + "/.tmp-test-container");
         contentFolder.mkdir();
@@ -80,21 +81,21 @@ public class GenericContainerRuleTest {
     /**
      * Redis
      */
-    @ClassRule
+    @org.testcontainers.junit.jupiter.Container
     public static GenericContainer<?> redis = new GenericContainer<>(TestImages.REDIS_IMAGE)
         .withExposedPorts(REDIS_PORT);
 
     /**
      * RabbitMQ
      */
-    @ClassRule
+    @org.testcontainers.junit.jupiter.Container
     public static GenericContainer<?> rabbitMq = new GenericContainer<>(TestImages.RABBITMQ_IMAGE)
         .withExposedPorts(RABBITMQ_PORT);
 
     /**
      * MongoDB
      */
-    @ClassRule
+    @org.testcontainers.junit.jupiter.Container
     public static GenericContainer<?> mongo = new GenericContainer<>(TestImages.MONGODB_IMAGE)
         .withExposedPorts(MONGO_PORT);
 
@@ -102,7 +103,7 @@ public class GenericContainerRuleTest {
      * Pass an environment variable to the container, then run a shell script that exposes the variable in a quick and
      * dirty way for testing.
      */
-    @ClassRule
+    @org.testcontainers.junit.jupiter.Container
     public static GenericContainer<?> alpineEnvVar = new GenericContainer<>(TestImages.ALPINE_IMAGE)
         .withExposedPorts(80)
         .withEnv("MAGIC_NUMBER", "4")
@@ -113,7 +114,7 @@ public class GenericContainerRuleTest {
      * Pass environment variables to the container, then run a shell script that exposes the variables in a quick and
      * dirty way for testing.
      */
-    @ClassRule
+    @org.testcontainers.junit.jupiter.Container
     public static GenericContainer<?> alpineEnvVarFromMap = new GenericContainer<>(TestImages.ALPINE_IMAGE)
         .withExposedPorts(80)
         .withEnv(ImmutableMap.of("FIRST", "42", "SECOND", "50"))
@@ -122,7 +123,7 @@ public class GenericContainerRuleTest {
     /**
      * Map a file on the classpath to a file in the container, and then expose the content for testing.
      */
-    @ClassRule
+    @org.testcontainers.junit.jupiter.Container
     public static GenericContainer<?> alpineClasspathResource = new GenericContainer<>(TestImages.ALPINE_IMAGE)
         .withExposedPorts(80)
         .withClasspathResourceMapping("mappable-resource/test-resource.txt", "/content.txt", BindMode.READ_ONLY)
@@ -131,7 +132,7 @@ public class GenericContainerRuleTest {
     /**
      * Map a file on the classpath to a file in the container, and then expose the content for testing.
      */
-    @ClassRule
+    @org.testcontainers.junit.jupiter.Container
     public static GenericContainer<?> alpineClasspathResourceSelinux = new GenericContainer<>(TestImages.ALPINE_IMAGE)
         .withExposedPorts(80)
         .withClasspathResourceMapping(
@@ -145,7 +146,7 @@ public class GenericContainerRuleTest {
     /**
      * Create a container with an extra host entry and expose the content of /etc/hosts for testing.
      */
-    @ClassRule
+    @org.testcontainers.junit.jupiter.Container
     public static GenericContainer<?> alpineExtrahost = new GenericContainer<>(TestImages.ALPINE_IMAGE)
         .withExposedPorts(80)
         .withExtraHost("somehost", "192.168.1.10")
@@ -328,7 +329,7 @@ public class GenericContainerRuleTest {
     }
 
     @Test
-    @Ignore //TODO investigate intermittent failures
+    @Disabled //TODO investigate intermittent failures
     public void failFastWhenContainerHaltsImmediately() {
         long startingTimeMs = System.currentTimeMillis();
         final GenericContainer failsImmediately = new GenericContainer<>(TestImages.ALPINE_IMAGE)

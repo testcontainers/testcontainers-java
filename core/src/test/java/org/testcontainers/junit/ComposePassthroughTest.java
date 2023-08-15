@@ -1,12 +1,13 @@
 package org.testcontainers.junit;
 
 import org.junit.Assume;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.ComposeContainer;
 import org.testcontainers.containers.ContainerState;
 import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.TestEnvironment;
 
 import java.io.File;
@@ -15,16 +16,17 @@ import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Testcontainers
 public class ComposePassthroughTest {
 
     private final TestWaitStrategy waitStrategy = new TestWaitStrategy();
 
-    @BeforeClass
+    @BeforeAll
     public static void checkVersion() {
         Assume.assumeTrue(TestEnvironment.dockerApiAtLeast("1.22"));
     }
 
-    @Rule
+    @Container
     public ComposeContainer compose = new ComposeContainer(
         new File("src/test/resources/v2-compose-test-passthrough.yml")
     )

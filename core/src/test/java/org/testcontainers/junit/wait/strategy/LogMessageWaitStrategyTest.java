@@ -1,38 +1,37 @@
 package org.testcontainers.junit.wait.strategy;
 
 import org.jetbrains.annotations.NotNull;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Stream;
 
 /**
  * Tests for {@link LogMessageWaitStrategy}.
  */
-@RunWith(Parameterized.class)
 public class LogMessageWaitStrategyTest extends AbstractWaitStrategyTest<LogMessageWaitStrategy> {
 
-    private final String pattern;
+    private String pattern;
 
-    @Parameterized.Parameters(name = "{0}")
-    public static Object[] parameters() {
-        return new String[] {
-            ".*ready.*\\s", // previous recommended style (explicit line ending)
-            ".*ready!\\s", // explicit line ending without wildcard after expected text
-            ".*ready.*", // new style (line ending matched by wildcard)
-        };
-    }
-
-    public LogMessageWaitStrategyTest(String pattern) {
-        this.pattern = pattern;
+    public static Stream<Arguments> providePatterns() {
+        return Stream.of(
+            Arguments.of(".*ready.*\\s"), // previous recommended style (explicit line ending)
+            Arguments.of(".*ready!\\s"), // explicit line ending without wildcard after expected text
+            Arguments.of(".*ready.*") // new style (line ending matched by wildcard)
+        );
     }
 
     private static final String READY_MESSAGE = "I'm ready!";
 
-    @Test
-    public void testWaitUntilReady_Success() {
+    @ParameterizedTest
+    @MethodSource("providePatterns")
+    public void testWaitUntilReady_Success(String pattern) {
+        this.pattern = pattern;
+
         waitUntilReadyAndSucceed(
             "echo -e \"" +
             READY_MESSAGE +

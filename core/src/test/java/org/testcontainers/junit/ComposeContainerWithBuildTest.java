@@ -1,9 +1,9 @@
 package org.testcontainers.junit;
 
 import com.github.dockerjava.api.model.Container;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ComposeContainer;
@@ -15,36 +15,23 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(Parameterized.class)
 public class ComposeContainerWithBuildTest {
 
-    public ComposeContainerWithBuildTest(
-        final ComposeContainer.RemoveImages removeMode,
-        final boolean shouldBuiltImageBePresentAfterRunning,
-        final boolean shouldPulledImageBePresentAfterRunning
+    public static Stream<Arguments> provideParameters() {
+        return Stream.of(
+            Arguments.of(null, true, true),
+            Arguments.of(ComposeContainer.RemoveImages.LOCAL, false, true),
+            Arguments.of(ComposeContainer.RemoveImages.ALL, false, false)
+        );
+    }
+
+    @ParameterizedTest(name = "removeMode = {0}")
+    @MethodSource("provideParameters")
+    public void performTest(
+        ComposeContainer.RemoveImages removeMode,
+        boolean shouldBuiltImageBePresentAfterRunning,
+        boolean shouldPulledImageBePresentAfterRunning
     ) {
-        this.removeMode = removeMode;
-        this.shouldBuiltImageBePresentAfterRunning = shouldBuiltImageBePresentAfterRunning;
-        this.shouldPulledImageBePresentAfterRunning = shouldPulledImageBePresentAfterRunning;
-    }
-
-    public final ComposeContainer.RemoveImages removeMode;
-
-    public final boolean shouldBuiltImageBePresentAfterRunning;
-
-    public final boolean shouldPulledImageBePresentAfterRunning;
-
-    @Parameterized.Parameters(name = "removeMode = {0}")
-    public static Object[][] params() {
-        return new Object[][] {
-            { null, true, true },
-            { ComposeContainer.RemoveImages.LOCAL, false, true },
-            { ComposeContainer.RemoveImages.ALL, false, false },
-        };
-    }
-
-    @Test
-    public void performTest() {
         final File composeFile = new File("src/test/resources/compose-v2-build-test/docker-compose.yml");
 
         final AtomicReference<String> builtImageName = new AtomicReference<>("");

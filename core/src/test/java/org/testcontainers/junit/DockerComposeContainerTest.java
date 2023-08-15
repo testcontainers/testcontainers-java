@@ -1,9 +1,9 @@
 package org.testcontainers.junit;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.ContainerState;
 import org.testcontainers.containers.DockerComposeContainer;
+import org.testcontainers.junit.jupiter.Container;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class DockerComposeContainerTest extends BaseDockerComposeTest {
 
-    @Rule
+    @Container
     public DockerComposeContainer environment = new DockerComposeContainer(
         new File("src/test/resources/compose-test.yml")
     )

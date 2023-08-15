@@ -1,13 +1,14 @@
 package org.testcontainers.junit;
 
 import com.github.dockerjava.api.model.Network;
-import org.junit.After;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.DockerComposeContainer;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.TestEnvironment;
 import redis.clients.jedis.Jedis;
 
@@ -20,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Created by rnorth on 21/05/2016.
  */
+@Testcontainers
 public abstract class BaseDockerComposeTest {
 
     protected static final int REDIS_PORT = 6379;
@@ -28,9 +30,9 @@ public abstract class BaseDockerComposeTest {
 
     private List<String> existingNetworks = new ArrayList<>();
 
-    @BeforeClass
+    @BeforeAll
     public static void checkVersion() {
-        Assume.assumeTrue(TestEnvironment.dockerApiAtLeast("1.22"));
+        Assumptions.assumeTrue(TestEnvironment.dockerApiAtLeast("1.22"));
     }
 
     @Test
@@ -64,12 +66,12 @@ public abstract class BaseDockerComposeTest {
         // However, @Rule creates a separate DockerComposeContainer instance per test, so this just shouldn't happen
     }
 
-    @Before
+    @BeforeEach
     public void captureNetworks() {
         existingNetworks.addAll(findAllNetworks());
     }
 
-    @After
+    @AfterEach
     public void verifyNoNetworks() {
         assertThat(findAllNetworks()).as("The networks").isEqualTo(existingNetworks);
     }
