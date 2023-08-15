@@ -5,7 +5,6 @@ import com.github.dockerjava.api.command.ExecCreateCmd;
 import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.DockerException;
-import com.google.common.base.Strings;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.DockerClientFactory;
@@ -150,7 +149,7 @@ public class ExecInContainerPattern {
             .withAttachStdout(true)
             .withAttachStderr(true)
             .withCmd(command);
-        if (!Strings.isNullOrEmpty(user)) {
+        if (user != null && !user.isEmpty()) {
             log.debug("{}: Running \"exec\" command with user: {}", containerName, user);
             execCreateCmd.withUser(user);
         }
@@ -166,11 +165,7 @@ public class ExecInContainerPattern {
 
             dockerClient.execStartCmd(execCreateCmdResponse.getId()).exec(callback).awaitCompletion();
         }
-        Integer exitCode = dockerClient
-            .inspectExecCmd(execCreateCmdResponse.getId())
-            .exec()
-            .getExitCodeLong()
-            .intValue();
+        int exitCode = dockerClient.inspectExecCmd(execCreateCmdResponse.getId()).exec().getExitCodeLong().intValue();
 
         final Container.ExecResult result = new Container.ExecResult(
             exitCode,

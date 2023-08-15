@@ -377,7 +377,9 @@ public class GenericContainerRuleTest {
         Assume.assumeTrue(TestEnvironment.dockerExecutionDriverSupportsExec());
 
         final GenericContainer.ExecResult result = redis.execInContainerWithUser("redis", "whoami");
-        assertThat(result.getStdout()).as("Output for \"whoami\" command should start with \"redis\"").startsWith("redis");
+        assertThat(result.getStdout())
+            .as("Output for \"whoami\" command should start with \"redis\"")
+            .startsWith("redis");
         assertThat(result.getStderr()).as("Stderr for \"whoami\" command should be empty").isEmpty();
         // We expect to reach this point for modern Docker versions.
     }

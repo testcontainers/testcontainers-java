@@ -245,7 +245,7 @@ public interface ContainerState {
      * Run a command inside a running container, as though using "docker exec", and interpreting
      * the output as UTF8.
      * <p>
-     * @see ExecInContainerPattern#execInContainer(com.github.dockerjava.api.command.InspectContainerResponse, String...)
+     * @see #execInContainer(Charset, String...)
      */
     default Container.ExecResult execInContainer(String... command)
         throws UnsupportedOperationException, IOException, InterruptedException {
@@ -255,17 +255,17 @@ public interface ContainerState {
     /**
      * Run a command inside a running container, as though using "docker exec".
      * <p>
-     * @see ExecInContainerPattern#execInContainer(com.github.dockerjava.api.command.InspectContainerResponse, Charset, String...)
+     * @see ExecInContainerPattern#execInContainer(DockerClient, InspectContainerResponse, Charset, String...)
      */
     default Container.ExecResult execInContainer(Charset outputCharset, String... command)
         throws UnsupportedOperationException, IOException, InterruptedException {
-        return execInContainerWithUser(outputCharset, null, command);
+        return ExecInContainerPattern.execInContainer(getDockerClient(), getContainerInfo(), outputCharset, command);
     }
 
     /**
      * Run a command inside a running container as a given user, as using "docker exec -u user".
      * <p>
-     * @see ExecInContainerPattern#execInContainerWithUser(DockerClient, com.github.dockerjava.api.command.InspectContainerResponse, String, String...)
+     * @see ExecInContainerPattern#execInContainerWithUser(DockerClient, InspectContainerResponse, String, String...)
      */
     default Container.ExecResult execInContainerWithUser(String user, String... command)
         throws UnsupportedOperationException, IOException, InterruptedException {
@@ -275,7 +275,7 @@ public interface ContainerState {
     /**
      * Run a command inside a running container as a given user, as using "docker exec -u user".
      * <p>
-     * @see ExecInContainerPattern#execInContainerWithUser(DockerClient, com.github.dockerjava.api.command.InspectContainerResponse, Charset, String, String...)
+     * @see ExecInContainerPattern#execInContainerWithUser(DockerClient, InspectContainerResponse, Charset, String, String...)
      */
     default Container.ExecResult execInContainerWithUser(Charset outputCharset, String user, String... command)
         throws UnsupportedOperationException, IOException, InterruptedException {
