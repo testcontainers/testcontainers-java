@@ -1,7 +1,6 @@
 import com.example.DemoApplication;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -13,10 +12,11 @@ import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.Testcontainers;
 import org.testcontainers.containers.BrowserWebDriverContainer;
 import org.testcontainers.containers.BrowserWebDriverContainer.VncRecordingMode;
+import org.testcontainers.junit.jupiter.Container;
 
 import java.io.File;
 import java.time.Duration;
@@ -27,7 +27,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Simple example of plain Selenium usage.
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@org.testcontainers.junit.jupiter.Testcontainers
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = DemoApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ContextConfiguration(initializers = SeleniumContainerTest.Initializer.class)
 public class SeleniumContainerTest {
@@ -35,7 +36,7 @@ public class SeleniumContainerTest {
     @LocalServerPort
     private int port;
 
-    @Rule
+    @Container
     public BrowserWebDriverContainer chrome = new BrowserWebDriverContainer()
         .withCapabilities(new ChromeOptions())
         .withRecordingMode(VncRecordingMode.RECORD_ALL, new File("build"));
