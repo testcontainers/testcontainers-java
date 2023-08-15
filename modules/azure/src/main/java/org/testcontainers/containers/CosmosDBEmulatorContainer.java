@@ -6,7 +6,9 @@ import org.testcontainers.utility.DockerImageName;
 import java.security.KeyStore;
 
 /**
- * An Azure CosmosDB container
+ * Testcontainers implementation for CosmosDB Emulator.
+ * <p>
+ * Exposed ports: 8081
  */
 public class CosmosDBEmulatorContainer extends GenericContainer<CosmosDBEmulatorContainer> {
 

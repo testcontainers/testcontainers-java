@@ -14,6 +14,12 @@ import java.util.stream.Collectors;
 
 /**
  * Testcontainers implementation for Consul.
+ * <p>
+ * Exposed ports:
+ * <ul>
+ *     <li>HTTP: 8500</li>
+ *     <li>gRPC: 8502</li>
+ * </ul>
  */
 public class ConsulContainer extends GenericContainer<ConsulContainer> {
 

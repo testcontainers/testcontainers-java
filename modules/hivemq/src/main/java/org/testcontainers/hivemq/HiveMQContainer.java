@@ -29,6 +29,16 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+/**
+ * Testcontainers implementation for HiveMQ.
+ * <p>
+ * Exposed ports:
+ * <ul>
+ *     <li>MQTT: 1883</li>
+ *     <li>Control Center: 8080</li>
+ *     <li>Debug: 9000</li>
+ * </ul>
+ */
 public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HiveMQContainer.class);
