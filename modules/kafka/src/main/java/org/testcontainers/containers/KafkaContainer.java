@@ -288,7 +288,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
      *     <li>0.0.0.0:9093</li>
      * </ul>
      * <p>
-     * Existing advertised listeners:
+     * Default advertised listeners:
      * <ul>
      *      <li>{@code container.getHost():container.getMappedPort(9093)}</li>
      *      <li>{@code container.getConfig().getHostName():9092}</li>
