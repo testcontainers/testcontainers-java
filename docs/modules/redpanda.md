@@ -47,7 +47,7 @@ There are scenarios where connecting to the broker is needed. The consumer/produ
 in the same network or a different process where port to connect to differs from the default exposed port `9092`. E.g [Toxiproxy](../../docs/modules/toxiproxy.md).
 
 <!--codeinclude-->
-[Register listener](../../modules/redpanda/src/test/java/org/testcontainers/redpanda/RedpandaContainerTest.java) inside_block:registerListener
+[Register additional listener](../../modules/redpanda/src/test/java/org/testcontainers/redpanda/RedpandaContainerTest.java) inside_block:registerListener
 <!--/codeinclude-->
 
 Container defined in the same network:
