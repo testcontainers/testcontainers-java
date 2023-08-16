@@ -45,7 +45,7 @@ See the [versions interoperability matrix](https://docs.confluent.io/platform/cu
 ## Register listeners
 
 There are scenarios where connecting to the broker is needed. The consumer/producer can be another container
-in the same network or a different process where port to connect to is different from the exposed port `9093`.
+in the same network or a different process where the port to connect differs from the default exposed port `9093`.
 E.g [Toxiproxy](../../docs/modules/toxiproxy.md).
 
 <!--codeinclude-->
