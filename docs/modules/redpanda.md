@@ -56,7 +56,7 @@ Container defined in the same network:
 [Create kcat container](../../modules/redpanda/src/test/java/org/testcontainers/redpanda/RedpandaContainerTest.java) inside_block:createKCatContainer
 <!--/codeinclude-->
 
-Client using the new listener registered:
+Client using the new registered listener:
 
 <!--codeinclude-->
 [Produce/Consume via new listener](../../modules/redpanda/src/test/java/org/testcontainers/redpanda/RedpandaContainerTest.java) inside_block:produceConsumeMessage
