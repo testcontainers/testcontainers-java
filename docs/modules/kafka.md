@@ -49,7 +49,7 @@ in the same network or a different process where the port to connect differs fro
 E.g [Toxiproxy](../../docs/modules/toxiproxy.md).
 
 <!--codeinclude-->
-[Register listener](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:registerListener
+[Register additional listener](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:registerListener
 <!--/codeinclude-->
 
 Container defined in the same network:
