@@ -282,7 +282,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
      * <p>
      * The listener will be added to the list of default listeners.
      * <p>
-     * Existing listeners:
+     * Default listeners:
      * <ul>
      *     <li>0.0.0.0:9092</li>
      *     <li>0.0.0.0:9093</li>
