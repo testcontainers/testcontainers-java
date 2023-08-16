@@ -58,7 +58,7 @@ Container defined in the same network:
 [Create kcat container](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:createKCatContainer
 <!--/codeinclude-->
 
-Client using the new listener registered:
+Client using the new registered listener:
 
 <!--codeinclude-->
 [Produce/Consume via new listener](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:produceConsumeMessage
