@@ -2,10 +2,6 @@ plugins {
     id 'java'
 }
 
-repositories {
-    mavenCentral()
-}
-
 dependencies {
     testImplementation 'org.testcontainers:testcontainers'
     testImplementation('org.junit.jupiter:junit-jupiter:5.10.0')
