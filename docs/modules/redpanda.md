@@ -44,7 +44,7 @@ Below is an example of how to create the `AdminClient`:
 <!--/codeinclude-->
 
 There are scenarios where connecting to the broker is needed. The consumer/producer can be another container
-in the same network or a different process where port to connect to is different from the exposed port `9092`. E.g [Toxiproxy](../../docs/modules/toxiproxy.md).
+in the same network or a different process where port to connect to differs from the default exposed port `9092`. E.g [Toxiproxy](../../docs/modules/toxiproxy.md).
 
 <!--codeinclude-->
 [Register listener](../../modules/redpanda/src/test/java/org/testcontainers/redpanda/RedpandaContainerTest.java) inside_block:registerListener
