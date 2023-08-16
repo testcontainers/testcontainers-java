@@ -187,7 +187,7 @@ public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
      * Add a {@link Supplier} that will provide a listener with format {@code host:port}.
      * Host will be added as a network alias.
      * <p>
-     * The listener will be added to the existing listeners.
+     * The listener will be added to the default listeners.
      * <p>
      * Existing listeners:
      * <ul>
