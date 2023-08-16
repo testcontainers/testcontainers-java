@@ -195,7 +195,7 @@ public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
      *     <li>0.0.0.0:9093</li>
      * </ul>
      * <p>
-     * Existing advertised listeners:
+     * Default advertised listeners:
      * <ul>
      *      <li>{@code container.getHost():container.getMappedPort(9092)}</li>
      *      <li>127.0.0.1:9093</li>
