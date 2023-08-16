@@ -6,6 +6,6 @@ class RedisContainer4Test extends AbstractRedisContainer {
 
     @Test
     void testSimple() {
-        imageIsNotAvailableBeforeToRun();
+        runRedisContainer();
     }
 }
