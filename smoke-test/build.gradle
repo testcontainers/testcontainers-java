@@ -6,7 +6,7 @@ plugins {
 apply from: "$rootDir/../gradle/ci-support.gradle"
 
 subprojects {
-    apply plugin:"java"
+    apply plugin: "java"
     apply from: "$rootDir/../gradle/spotless.gradle"
     apply plugin: 'checkstyle'
 
