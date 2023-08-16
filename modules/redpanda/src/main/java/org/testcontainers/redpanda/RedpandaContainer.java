@@ -189,7 +189,7 @@ public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
      * <p>
      * The listener will be added to the default listeners.
      * <p>
-     * Existing listeners:
+     * Default listeners:
      * <ul>
      *     <li>0.0.0.0:9092</li>
      *     <li>0.0.0.0:9093</li>
