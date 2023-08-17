@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class YugabyteDBYSQLTest extends AbstractContainerDatabaseTest {
 
-    private static final String IMAGE_NAME = "yugabytedb/yugabyte:2.18.1.0-b84";
+    private static final String IMAGE_NAME = "yugabytedb/yugabyte:2.14.4.0-b26";
 
     private static final DockerImageName YBDB_TEST_IMAGE = DockerImageName.parse(IMAGE_NAME);
 
@@ -23,7 +23,7 @@ public class YugabyteDBYSQLTest extends AbstractContainerDatabaseTest {
         try (
             // creatingYSQLContainer {
             final YugabyteDBYSQLContainer ysqlContainer = new YugabyteDBYSQLContainer(
-                "yugabytedb/yugabyte:2.18.1.0-b84"
+                "yugabytedb/yugabyte:2.14.4.0-b26"
             )
             // }
         ) {
