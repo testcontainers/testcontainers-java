@@ -48,6 +48,7 @@ import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
+import org.testcontainers.core.CreateContainerCmdCustomizer;
 import org.testcontainers.images.ImagePullPolicy;
 import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.images.builder.Transferable;
@@ -88,6 +89,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
@@ -238,6 +240,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private boolean hostAccessible = false;
 
+    private final ServiceLoader<CreateContainerCmdCustomizer> globalCreateContainerCustomizers = ServiceLoader.load(
+        CreateContainerCmdCustomizer.class
+    );
+
+    private final Set<CreateContainerCmdCustomizer> localCreateContainerCustomizers = new LinkedHashSet<>();
+
     public GenericContainer(@NonNull final DockerImageName dockerImageName) {
         this.image = new RemoteDockerImage(dockerImageName);
     }
@@ -376,6 +384,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             logger().info("Creating container for image: {}", dockerImageName);
             CreateContainerCmd createCommand = dockerClient.createContainerCmd(dockerImageName);
             applyConfiguration(createCommand);
+
+            customizeCreateContainerCmd(createCommand);
 
             createCommand.getLabels().putAll(DockerClientFactory.DEFAULT_LABELS);
 
@@ -552,6 +562,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
             throw new ContainerLaunchException("Could not create/start container", e);
         }
+    }
+
+    private void customizeCreateContainerCmd(CreateContainerCmd createCommand) {
+        this.globalCreateContainerCustomizers.forEach(customizer -> customizer.customize(createCommand));
+        this.localCreateContainerCustomizers.forEach(customizer -> customizer.customize(createCommand));
     }
 
     @VisibleForTesting
@@ -1492,6 +1507,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     public SELF withCreateContainerCmdModifier(Consumer<CreateContainerCmd> modifier) {
         createContainerCmdModifiers.add(modifier);
+        return self();
+    }
+
+    public SELF withCreateContainerCmdCustomizer(CreateContainerCmdCustomizer customizer) {
+        this.localCreateContainerCustomizers.add(customizer);
         return self();
     }
 

@@ -33,6 +33,8 @@ It is possible to specify an Image Pull Policy to determine at runtime whether a
 
 ## Customizing the container
 
+### Using docker-java
+
 It is possible to use the [`docker-java`](https://github.com/docker-java/docker-java) API directly to customize containers before creation. This is useful if there is a need to use advanced Docker features that are not exposed by the Testcontainers API. Any customizations you make using `withCreateContainerCmdModifier` will be applied _on top_ of the container definition that Testcontainers creates, but before it is created.
 
 For example, this can be used to change the container hostname:
@@ -52,6 +54,23 @@ For example, this can be used to change the container hostname:
     It is typically quite stable, though.
 
 For what is possible, consult the [`docker-java CreateContainerCmd` source code](https://github.com/docker-java/docker-java/blob/3.2.1/docker-java-api/src/main/java/com/github/dockerjava/api/command/CreateContainerCmd.java).
+
+### Using CreateContainerCmdCustomizer
+
+Testcontainers provides a `CreateContainerCmdCustomizer` to customize [`docker-java CreateContainerCmd`](https://github.com/docker-java/docker-java/blob/3.2.1/docker-java-api/src/main/java/com/github/dockerjava/api/command/CreateContainerCmd.java)
+whether via Service Provider Interface (SPI) mechanism **(global)** or `withCreateContainerCmdCustomizer` **(local)**.
+
+<!--codeinclude-->
+[CreateContainerCmd example implementation](../../core/src/test/java/org/testcontainers/custom/TestCreateContainerCmdCustomizer.java)
+<!--/codeinclude-->
+
+The previous implementation should be registered in `META-INF/services/org.testcontainers.core.CreateContainerCmdCustomizer` file.
+
+!!! note
+    Local customizations will override global ones.
+
+!!! warning
+    `CreateContainerCmdCustomizer` implementation will apply to all containers created by Testcontainers.
 
 ## Parallel Container Startup
 

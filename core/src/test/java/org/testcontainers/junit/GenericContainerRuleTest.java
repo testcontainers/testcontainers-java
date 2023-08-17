@@ -264,6 +264,7 @@ public class GenericContainerRuleTest {
             final GenericContainer alpineCustomLabel = new GenericContainer<>(TestImages.ALPINE_IMAGE)
                 .withLabel("our.custom", "label")
                 .withCommand("top")
+                .withCreateContainerCmdCustomizer(cmd -> cmd.getLabels().put("scope", "local"))
         ) {
             alpineCustomLabel.start();
 
@@ -278,6 +279,10 @@ public class GenericContainerRuleTest {
                 .containsKey("org.testcontainers.version");
             assertThat(labels).as("our.custom label is present").containsKey("our.custom");
             assertThat(labels).as("our.custom label value is label").containsEntry("our.custom", "label");
+            assertThat(labels)
+                .as("project label value is testcontainers-java")
+                .containsEntry("project", "testcontainers-java");
+            assertThat(labels).as("scope label value is local").containsEntry("scope", "local");
         }
     }
 
