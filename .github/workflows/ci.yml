@@ -50,6 +50,21 @@ jobs:
         run: |
           ./gradlew :testcontainers:check --no-daemon --continue --scan
 
+  turbo-mode:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/setup-build
+      - name: Setup Testcontainers Cloud Client
+        uses: atomicjar/testcontainers-cloud-setup-action@main
+        with:
+          token: ${{ secrets.TC_CLOUD_TOKEN }}
+          args: --max-concurrency=4
+      - name: Test using Testcontainers Cloud with Turbo Mode enabled
+        working-directory: ./smoke-test/
+        run: |
+          ./gradlew --no-daemon --continue --scan --info ${{matrix.gradle_args}}
+
   find_gradle_jobs:
     needs: [core]
     runs-on: ubuntu-22.04

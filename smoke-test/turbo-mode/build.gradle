@@ -1,0 +1,16 @@
+plugins {
+    id 'java'
+}
+
+dependencies {
+    testImplementation 'org.testcontainers:testcontainers'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+    testImplementation 'ch.qos.logback:logback-classic:1.3.8'
+    testImplementation 'org.assertj:assertj-core:3.24.2'
+}
+
+test {
+    useJUnitPlatform()
+    forkEvery = 1
+    maxParallelForks = 4
+}
