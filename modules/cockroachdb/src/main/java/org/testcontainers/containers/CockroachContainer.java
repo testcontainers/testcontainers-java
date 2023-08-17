@@ -9,6 +9,8 @@ import java.time.Duration;
 /**
  * Testcontainers implementation for CockroachDB.
  * <p>
+ * Supported image: {@code cockroachdb/cockroach}
+ * <p>
  * Exposed ports:
  * <ul>
  *     <li>Database: 26257</li>

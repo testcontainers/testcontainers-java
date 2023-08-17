@@ -50,6 +50,8 @@ import java.util.stream.Collectors;
 /**
  * Testcontainers implementation for Couchbase.
  * <p>
+ * Supported image: {@code couchbase/server}
+ * <p>
  * Exposed ports:
  * <ul>
  *     <li>Console: 8091</li>

@@ -11,6 +11,8 @@ import java.util.Set;
 /**
  * Testcontainers implementation for PostgreSQL.
  * <p>
+ * Supported image: {@code postgres}
+ * <p>
  * Exposed ports: 5432
  */
 public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends JdbcDatabaseContainer<SELF> {

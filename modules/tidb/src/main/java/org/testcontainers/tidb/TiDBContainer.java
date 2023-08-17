@@ -11,6 +11,8 @@ import java.util.Set;
 /**
  * Testcontainers implementation for TiDB.
  * <p>
+ * Supported image: {@code pingcap/tidb}
+ * <p>
  * Exposed ports:
  * <ul>
  *     <li>Database: 4000</li>

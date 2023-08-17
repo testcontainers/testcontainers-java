@@ -18,6 +18,8 @@ import java.util.stream.Collectors;
 /**
  * Testcontainers implementation for Vault.
  * <p>
+ * Supported image: {@code hashicorp/vault}, {@code vault}
+ * <p>
  * Exposure ports: 8200
  */
 public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericContainer<SELF> {

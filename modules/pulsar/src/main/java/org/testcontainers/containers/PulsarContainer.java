@@ -7,6 +7,8 @@ import org.testcontainers.utility.DockerImageName;
 /**
  * Testcontainers implementation for Apache Pulsar.
  * <p>
+ * Supported image: {@code apachepulsar/pulsar}
+ * <p>
  * Exposed ports:
  * <ul>
  *     <li>Pulsar: 6650</li>

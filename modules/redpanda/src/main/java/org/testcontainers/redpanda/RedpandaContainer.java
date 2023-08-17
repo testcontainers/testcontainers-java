@@ -30,6 +30,8 @@ import java.util.stream.Collectors;
 /**
  * Testcontainers implementation for Redpanda.
  * <p>
+ * Supported images: {@code docker.redpanda.com/redpandadata/redpanda}, {@code docker.redpanda.com/vectorized/redpanda}
+ * <p>
  * Exposed ports:
  * <ul>
  *     <li>Broker: 9092</li>

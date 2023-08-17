@@ -17,6 +17,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Testcontainers implementation for K3S
+ * <p>
+ * Supported image: {@code rancher/k3s}
+ */
 public class K3sContainer extends GenericContainer<K3sContainer> {
 
     public static int KUBE_SECURE_PORT = 6443;

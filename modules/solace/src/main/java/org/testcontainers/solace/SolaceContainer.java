@@ -18,6 +18,8 @@ import java.util.List;
 /**
  * Testcontainers implementation of Solace PubSub+.
  * <p>
+ * Supported image: {@code solace/solace-pubsub-standard}
+ * <p>
  * Exposed ports:
  * <ul>
  *     <li>Console: 8080</li>

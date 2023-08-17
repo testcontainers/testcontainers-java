@@ -17,6 +17,8 @@ import java.util.function.Supplier;
  * Testcontainers implementation for Apache Kafka.
  * Zookeeper can be optionally configured.
  * <p>
+ * Supported image: {@code confluentinc/cp-kafka}
+ * <p>
  * Exposed ports:
  * <ul>
  *     <li>Kafka: 9093</li>

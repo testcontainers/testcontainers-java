@@ -9,6 +9,8 @@ import java.util.Set;
 /**
  * Testcontainers implementation for MariaDB.
  * <p>
+ * Supported image: {@code mariadb}
+ * <p>
  * Exposed ports: 3306
  */
 public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
