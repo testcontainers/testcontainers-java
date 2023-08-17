@@ -1,14 +1,1 @@
-# Each line is a file pattern followed by one or more owners.
-
-# These owners will be the default reviewers for everything in
-# the repo.
-
-*                       @testcontainers/java-team
-
-# The last matching pattern takes the most
-# precedence.
-
-# Contributed modules can have different reviewers
-
-modules/mssqlserver/    @StefanHufschmidt @rnorth @bsideup @kiview
-modules/vault/          @mikeoswald @rnorth @bsideup @kiview
+* @testcontainers/java-team
