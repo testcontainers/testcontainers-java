@@ -26,13 +26,13 @@ import java.util.stream.Collectors;
 @Slf4j
 public class HostPortWaitStrategy extends AbstractWaitStrategy {
 
-    private int[] port;
+    private int[] ports;
 
     @Override
     @SneakyThrows(InterruptedException.class)
     protected void waitUntilReady() {
         final Set<Integer> externalLivenessCheckPorts;
-        if (this.port == null) {
+        if (this.ports == null || this.ports.length == 0) {
             externalLivenessCheckPorts = getLivenessCheckPorts();
             if (externalLivenessCheckPorts.isEmpty()) {
                 if (log.isDebugEnabled()) {
@@ -46,7 +46,7 @@ public class HostPortWaitStrategy extends AbstractWaitStrategy {
         } else {
             externalLivenessCheckPorts =
                 Arrays
-                    .stream(this.port)
+                    .stream(this.ports)
                     .mapToObj(port -> waitStrategyTarget.getMappedPort(port))
                     .collect(Collectors.toSet());
         }
@@ -124,8 +124,8 @@ public class HostPortWaitStrategy extends AbstractWaitStrategy {
             .collect(Collectors.toSet());
     }
 
-    public HostPortWaitStrategy forPort(int... port) {
-        this.port = port;
+    public HostPortWaitStrategy forPorts(int... ports) {
+        this.ports = ports;
         return this;
     }
 }
