@@ -240,11 +240,18 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private boolean hostAccessible = false;
 
-    private final ServiceLoader<CreateContainerCmdCustomizer> globalCreateContainerCustomizers = ServiceLoader.load(
-        CreateContainerCmdCustomizer.class
-    );
+    private final Set<CreateContainerCmdCustomizer> createContainerCmdCustomizers = loadCreateContainerCmdCustomizers();
 
-    private final Set<CreateContainerCmdCustomizer> localCreateContainerCustomizers = new LinkedHashSet<>();
+    private Set<CreateContainerCmdCustomizer> loadCreateContainerCmdCustomizers() {
+        ServiceLoader<CreateContainerCmdCustomizer> containerCmdCustomizers = ServiceLoader.load(
+            CreateContainerCmdCustomizer.class
+        );
+        Set<CreateContainerCmdCustomizer> loadedCustomizers = new HashSet<>();
+        for (CreateContainerCmdCustomizer customizer : containerCmdCustomizers) {
+            loadedCustomizers.add(customizer);
+        }
+        return loadedCustomizers;
+    }
 
     public GenericContainer(@NonNull final DockerImageName dockerImageName) {
         this.image = new RemoteDockerImage(dockerImageName);
@@ -565,8 +572,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     private void customizeCreateContainerCmd(CreateContainerCmd createCommand) {
-        this.globalCreateContainerCustomizers.forEach(customizer -> customizer.customize(createCommand));
-        this.localCreateContainerCustomizers.forEach(customizer -> customizer.customize(createCommand));
+        this.createContainerCmdCustomizers.forEach(customizer -> customizer.customize(createCommand));
     }
 
     @VisibleForTesting
@@ -1511,7 +1517,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     public SELF withCreateContainerCmdCustomizer(CreateContainerCmdCustomizer customizer) {
-        this.localCreateContainerCustomizers.add(customizer);
+        this.createContainerCmdCustomizers.add(customizer);
         return self();
     }
 
