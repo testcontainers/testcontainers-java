@@ -37,7 +37,7 @@ public class HostPortWaitStrategyTest {
             .withExposedPorts()
             .withCommand("sh", "-c", "while true; do nc -lp 8080; done")
             .withExposedPorts(8080)
-            .waitingFor(Wait.forListeningPort(8080).withStartupTimeout(Duration.ofSeconds(10)));
+            .waitingFor(Wait.forListeningPorts(8080).withStartupTimeout(Duration.ofSeconds(10)));
 
         @Test
         public void testWaiting() {}

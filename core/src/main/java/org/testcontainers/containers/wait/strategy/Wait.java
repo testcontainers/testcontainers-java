@@ -26,13 +26,13 @@ public class Wait {
     }
 
     /**
-     * Convenience method to return a WaitStrategy for an exposed or mapped port.
+     * Convenience method to return a WaitStrategy for exposed or mapped ports.
      *
-     * @param port the port to check
+     * @param ports the port to check
      * @return the WaitStrategy
      */
-    public static HostPortWaitStrategy forListeningPort(int... port) {
-        return new HostPortWaitStrategy().forPort(port);
+    public static HostPortWaitStrategy forListeningPorts(int... ports) {
+        return new HostPortWaitStrategy().forPorts(ports);
     }
 
     /**
