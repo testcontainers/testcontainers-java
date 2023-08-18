@@ -13,6 +13,8 @@ import java.io.IOException;
 /**
  * Testcontainers implementation for MongoDB.
  * <p>
+ * Supported image: {@code mongo}
+ * <p>
  * Exposed ports: 27017
  */
 @Slf4j

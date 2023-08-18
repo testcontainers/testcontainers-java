@@ -7,6 +7,8 @@ import org.testcontainers.utility.DockerImageName;
 /**
  * Testcontainers implementation for QuestDB.
  * <p>
+ * Supported image: {@code questdb/questdb}
+ * <p>
  * Exposed ports:
  * <ul>
  *     <li>Postgres: 8812</li>

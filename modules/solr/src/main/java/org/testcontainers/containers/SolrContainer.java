@@ -15,6 +15,8 @@ import java.util.Set;
 /**
  * Testcontainers implementation for Solr.
  * <p>
+ * Supported image: {@code solr}
+ * <p>
  * Exposed ports:
  * <ul>
  *     <li>Solr: 8983</li>

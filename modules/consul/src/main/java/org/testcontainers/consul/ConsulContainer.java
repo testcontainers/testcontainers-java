@@ -15,6 +15,8 @@ import java.util.stream.Collectors;
 /**
  * Testcontainers implementation for Consul.
  * <p>
+ * Supported images: {@code hashicorp/consul}, {@code consul}
+ * <p>
  * Exposed ports:
  * <ul>
  *     <li>HTTP: 8500</li>

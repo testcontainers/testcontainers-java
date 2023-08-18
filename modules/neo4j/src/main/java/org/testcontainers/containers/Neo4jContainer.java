@@ -22,6 +22,8 @@ import java.util.stream.Stream;
 /**
  * Testcontainers implementation for Neo4j.
  * <p>
+ * Supported image: {@code neo4j}
+ * <p>
  * Exposed ports:
  * <ul>
  *     <li>Bolt: 7687</li>

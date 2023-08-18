@@ -22,6 +22,8 @@ import java.util.Optional;
 /**
  * Testcontainers implementation for OrientDB.
  * <p>
+ * Supported image: {@code orientdb}
+ * <p>
  * Exposed ports:
  * <ul>
  *     <li>Database: 2424</li>

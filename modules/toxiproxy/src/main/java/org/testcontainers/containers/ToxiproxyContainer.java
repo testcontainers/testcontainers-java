@@ -19,6 +19,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Testcontainers implementation for Toxiproxy.
  * <p>
+ * Supported images: {@code ghcr.io/shopify/toxiproxy}, {@code shopify/toxiproxy}
+ * <p>
  * Exposed ports:
  * <ul>
  *     <li>HTTP: 8474</li>

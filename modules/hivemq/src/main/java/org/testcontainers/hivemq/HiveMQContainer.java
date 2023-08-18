@@ -32,6 +32,8 @@ import java.util.stream.Collectors;
 /**
  * Testcontainers implementation for HiveMQ.
  * <p>
+ * Supported images: {@code hivemq/hivemq4}, {@code hivemq/hivemq-ce}
+ * <p>
  * Exposed ports:
  * <ul>
  *     <li>MQTT: 1883</li>

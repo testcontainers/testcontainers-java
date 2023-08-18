@@ -10,6 +10,8 @@ import java.util.Set;
 /**
  * Testcontainers implementation for CrateDB.
  * <p>
+ * Supported image: {@code crate}
+ * <p>
  * Exposed ports:
  * <ul>
  *     <li>Database: 5432</li>

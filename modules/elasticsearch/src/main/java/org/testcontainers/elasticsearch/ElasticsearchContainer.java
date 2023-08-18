@@ -25,6 +25,8 @@ import javax.net.ssl.TrustManagerFactory;
 /**
  * Testcontainers implementation for Elasticsearch.
  * <p>
+ * Supported image: {@code docker.elastic.co/elasticsearch/elasticsearch}
+ * <p>
  * Exposed ports:
  * <ul>
  *     <li>HTTP: 9200</li>

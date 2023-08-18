@@ -19,6 +19,8 @@ import java.util.Set;
 /**
  * Testcontainers implementation for RabbitMQ.
  * <p>
+ * Supported image: {@code rabbitmq}
+ * <p>
  * Exposed ports:
  * <ul>
  *     <li>5671 (AMQPS)</li>

@@ -11,6 +11,8 @@ import java.util.Set;
 /**
  * Testcontainers implementation for IBM DB2.
  * <p>
+ * Supported images: {@code icr.io/db2_community/db2}, {@code ibmcom/db2}
+ * <p>
  * Exposed ports:
  * <ul>
  *     <li>Database: 50000</li>

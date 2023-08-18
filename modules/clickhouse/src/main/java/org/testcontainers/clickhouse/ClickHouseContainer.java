@@ -11,6 +11,8 @@ import java.util.Set;
 /**
  * Testcontainers implementation for ClickHouse.
  * <p>
+ * Supported image: {@code clickhouse/clickhouse-server}
+ * <p>
  * Exposed ports:
  * <ul>
  *     <li>Database: 8123</li>

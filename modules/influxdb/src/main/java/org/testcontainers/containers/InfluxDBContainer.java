@@ -14,6 +14,8 @@ import java.util.Set;
 /**
  * Testcontainers implementation for InfluxDB.
  * <p>
+ * Supported image: {@code influxdb}
+ * <p>
  * Exposed ports: 8086
  */
 public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends GenericContainer<SELF> {

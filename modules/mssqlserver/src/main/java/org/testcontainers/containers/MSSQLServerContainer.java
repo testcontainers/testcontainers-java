@@ -10,6 +10,8 @@ import java.util.stream.Stream;
 /**
  * Testcontainers implementation for Microsoft SQL Server.
  * <p>
+ * Supported image: {@code mcr.microsoft.com/mssql/server}
+ * <p>
  * Exposed ports: 1433
  */
 public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> extends JdbcDatabaseContainer<SELF> {

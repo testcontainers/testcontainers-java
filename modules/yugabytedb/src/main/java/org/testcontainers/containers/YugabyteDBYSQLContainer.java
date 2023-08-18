@@ -10,6 +10,8 @@ import java.util.Set;
 /**
  * Testcontainers implementation for YugabyteDB YSQL API.
  * <p>
+ * Supported image: {@code yugabytedb/yugabyte}
+ * <p>
  * Exposed ports:
  * <ul>
  *     <li>YSQL: 5433</li>

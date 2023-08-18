@@ -12,6 +12,8 @@ import java.util.Set;
 /**
  * Testcontainers implementation for TrinoDB.
  * <p>
+ * Supported image: {@code trinodb/trino}
+ * <p>
  * Exposed ports: 8080
  */
 public class TrinoContainer extends JdbcDatabaseContainer<TrinoContainer> {

@@ -16,6 +16,8 @@ import java.util.concurrent.Future;
 /**
  * Testcontainers implementation for Oracle.
  * <p>
+ * Supported image: {@code gvenzl/oracle-xe}
+ * <p>
  * Exposed ports: 1521
  */
 public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
