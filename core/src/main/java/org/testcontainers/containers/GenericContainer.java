@@ -222,8 +222,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private List<Consumer<OutputFrame>> logConsumers = new ArrayList<>();
 
-    private final Set<Consumer<CreateContainerCmd>> createContainerCmdModifiers = new LinkedHashSet<>();
-
     private static final Set<String> AVAILABLE_IMAGE_NAME_CACHE = new HashSet<>();
 
     private static final RateLimiter DOCKER_CLIENT_RATE_LIMITER = RateLimiterBuilder
@@ -240,13 +238,13 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private boolean hostAccessible = false;
 
-    private final Set<CreateContainerCmdModifier> createContainerCmdCustomizers = loadCreateContainerCmdCustomizers();
+    private final Set<CreateContainerCmdModifier> createContainerCmdModifiers = loadCreateContainerCmdCustomizers();
 
     private Set<CreateContainerCmdModifier> loadCreateContainerCmdCustomizers() {
         ServiceLoader<CreateContainerCmdModifier> containerCmdCustomizers = ServiceLoader.load(
             CreateContainerCmdModifier.class
         );
-        Set<CreateContainerCmdModifier> loadedCustomizers = new HashSet<>();
+        Set<CreateContainerCmdModifier> loadedCustomizers = new LinkedHashSet<>();
         for (CreateContainerCmdModifier customizer : containerCmdCustomizers) {
             loadedCustomizers.add(customizer);
         }
@@ -391,8 +389,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             logger().info("Creating container for image: {}", dockerImageName);
             CreateContainerCmd createCommand = dockerClient.createContainerCmd(dockerImageName);
             applyConfiguration(createCommand);
-
-            customizeCreateContainerCmd(createCommand);
 
             createCommand.getLabels().putAll(DockerClientFactory.DEFAULT_LABELS);
 
@@ -569,10 +565,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
             throw new ContainerLaunchException("Could not create/start container", e);
         }
-    }
-
-    private void customizeCreateContainerCmd(CreateContainerCmd createCommand) {
-        this.createContainerCmdCustomizers.forEach(customizer -> customizer.modify(createCommand));
     }
 
     @VisibleForTesting
@@ -911,7 +903,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             createCommand.withPrivileged(privilegedMode);
         }
 
-        createContainerCmdModifiers.forEach(hook -> hook.accept(createCommand));
+        this.createContainerCmdModifiers.forEach(customizer -> customizer.modify(createCommand));
 
         Map<String, String> combinedLabels = new HashMap<>();
         combinedLabels.putAll(labels);
@@ -1512,7 +1504,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * @return this
      */
     public SELF withCreateContainerCmdModifier(Consumer<CreateContainerCmd> modifier) {
-        this.createContainerCmdCustomizers.add(modifier::accept);
+        this.createContainerCmdModifiers.add(modifier::accept);
         return self();
     }
 

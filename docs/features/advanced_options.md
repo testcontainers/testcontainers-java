@@ -57,7 +57,7 @@ For what is possible, consult the [`docker-java CreateContainerCmd` source code]
 
 ### Using CreateContainerCmdModifier
 
-Testcontainers provides a `CreateContainerCmdCustomizer` to customize [`docker-java CreateContainerCmd`](https://github.com/docker-java/docker-java/blob/3.2.1/docker-java-api/src/main/java/com/github/dockerjava/api/command/CreateContainerCmd.java)
+Testcontainers provides a `CreateContainerCmdModifier` to customize [`docker-java CreateContainerCmd`](https://github.com/docker-java/docker-java/blob/3.2.1/docker-java-api/src/main/java/com/github/dockerjava/api/command/CreateContainerCmd.java)
 via Service Provider Interface (SPI) mechanism.
 
 <!--codeinclude-->
@@ -66,11 +66,8 @@ via Service Provider Interface (SPI) mechanism.
 
 The previous implementation should be registered in `META-INF/services/org.testcontainers.core.CreateContainerCmdModifier` file.
 
-!!! note
-    Local customizations will override global ones.
-
 !!! warning
-    `CreateContainerCmdCustomizer` implementation will apply to all containers created by Testcontainers.
+    `CreateContainerCmdModifier` implementation will apply to all containers created by Testcontainers.
 
 ## Parallel Container Startup
 
