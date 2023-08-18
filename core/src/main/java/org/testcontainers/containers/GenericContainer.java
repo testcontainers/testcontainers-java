@@ -205,7 +205,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     /**
      * Set during container startup
-     *
      */
     @Setter(AccessLevel.NONE)
     @VisibleForTesting
@@ -903,7 +902,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             createCommand.withPrivileged(privilegedMode);
         }
 
-        this.createContainerCmdModifiers.forEach(customizer -> customizer.modify(createCommand));
+        this.createContainerCmdModifiers.forEach(createContainerCmdModifier -> {
+                createContainerCmdModifier.modify().apply(createCommand);
+            });
 
         Map<String, String> combinedLabels = new HashMap<>();
         combinedLabels.putAll(labels);
@@ -1504,12 +1505,18 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * @return this
      */
     public SELF withCreateContainerCmdModifier(Consumer<CreateContainerCmd> modifier) {
-        this.createContainerCmdModifiers.add(modifier::accept);
+        this.createContainerCmdModifiers.add(() -> {
+                return cmd -> {
+                    modifier.accept(cmd);
+                    return cmd;
+                };
+            });
         return self();
     }
 
     /**
      * Size of /dev/shm
+     *
      * @param bytes The number of bytes to assign the shared memory. If null, it will apply the Docker default which is 64 MB.
      * @return this
      */
@@ -1520,6 +1527,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     /**
      * First class support for configuring tmpfs
+     *
      * @param mapping path and params of tmpfs/mount flag for container
      * @return this
      */
