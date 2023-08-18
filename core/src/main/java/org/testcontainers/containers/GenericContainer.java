@@ -48,7 +48,7 @@ import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
-import org.testcontainers.core.CreateContainerCmdCustomizer;
+import org.testcontainers.core.CreateContainerCmdModifier;
 import org.testcontainers.images.ImagePullPolicy;
 import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.images.builder.Transferable;
@@ -240,14 +240,14 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private boolean hostAccessible = false;
 
-    private final Set<CreateContainerCmdCustomizer> createContainerCmdCustomizers = loadCreateContainerCmdCustomizers();
+    private final Set<CreateContainerCmdModifier> createContainerCmdCustomizers = loadCreateContainerCmdCustomizers();
 
-    private Set<CreateContainerCmdCustomizer> loadCreateContainerCmdCustomizers() {
-        ServiceLoader<CreateContainerCmdCustomizer> containerCmdCustomizers = ServiceLoader.load(
-            CreateContainerCmdCustomizer.class
+    private Set<CreateContainerCmdModifier> loadCreateContainerCmdCustomizers() {
+        ServiceLoader<CreateContainerCmdModifier> containerCmdCustomizers = ServiceLoader.load(
+            CreateContainerCmdModifier.class
         );
-        Set<CreateContainerCmdCustomizer> loadedCustomizers = new HashSet<>();
-        for (CreateContainerCmdCustomizer customizer : containerCmdCustomizers) {
+        Set<CreateContainerCmdModifier> loadedCustomizers = new HashSet<>();
+        for (CreateContainerCmdModifier customizer : containerCmdCustomizers) {
             loadedCustomizers.add(customizer);
         }
         return loadedCustomizers;
@@ -572,7 +572,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     private void customizeCreateContainerCmd(CreateContainerCmd createCommand) {
-        this.createContainerCmdCustomizers.forEach(customizer -> customizer.customize(createCommand));
+        this.createContainerCmdCustomizers.forEach(customizer -> customizer.modify(createCommand));
     }
 
     @VisibleForTesting
@@ -1512,12 +1512,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * @return this
      */
     public SELF withCreateContainerCmdModifier(Consumer<CreateContainerCmd> modifier) {
-        createContainerCmdModifiers.add(modifier);
-        return self();
-    }
-
-    public SELF withCreateContainerCmdCustomizer(CreateContainerCmdCustomizer customizer) {
-        this.createContainerCmdCustomizers.add(customizer);
+        this.createContainerCmdCustomizers.add(modifier::accept);
         return self();
     }
 

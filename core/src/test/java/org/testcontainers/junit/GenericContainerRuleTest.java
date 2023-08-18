@@ -264,7 +264,7 @@ public class GenericContainerRuleTest {
             final GenericContainer alpineCustomLabel = new GenericContainer<>(TestImages.ALPINE_IMAGE)
                 .withLabel("our.custom", "label")
                 .withCommand("top")
-                .withCreateContainerCmdCustomizer(cmd -> cmd.getLabels().put("scope", "local"))
+                .withCreateContainerCmdModifier(cmd -> cmd.getLabels().put("scope", "local"))
         ) {
             alpineCustomLabel.start();
 

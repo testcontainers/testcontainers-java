@@ -55,16 +55,16 @@ For example, this can be used to change the container hostname:
 
 For what is possible, consult the [`docker-java CreateContainerCmd` source code](https://github.com/docker-java/docker-java/blob/3.2.1/docker-java-api/src/main/java/com/github/dockerjava/api/command/CreateContainerCmd.java).
 
-### Using CreateContainerCmdCustomizer
+### Using CreateContainerCmdModifier
 
 Testcontainers provides a `CreateContainerCmdCustomizer` to customize [`docker-java CreateContainerCmd`](https://github.com/docker-java/docker-java/blob/3.2.1/docker-java-api/src/main/java/com/github/dockerjava/api/command/CreateContainerCmd.java)
-whether via Service Provider Interface (SPI) mechanism **(global)** or `withCreateContainerCmdCustomizer` **(local)**.
+via Service Provider Interface (SPI) mechanism.
 
 <!--codeinclude-->
 [CreateContainerCmd example implementation](../../core/src/test/java/org/testcontainers/custom/TestCreateContainerCmdCustomizer.java)
 <!--/codeinclude-->
 
-The previous implementation should be registered in `META-INF/services/org.testcontainers.core.CreateContainerCmdCustomizer` file.
+The previous implementation should be registered in `META-INF/services/org.testcontainers.core.CreateContainerCmdModifier` file.
 
 !!! note
     Local customizations will override global ones.
