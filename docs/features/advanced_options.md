@@ -61,7 +61,7 @@ Testcontainers provides a `CreateContainerCmdModifier` to customize [`docker-jav
 via Service Provider Interface (SPI) mechanism.
 
 <!--codeinclude-->
-[CreateContainerCmd example implementation](../../core/src/test/java/org/testcontainers/custom/TestCreateContainerCmdCustomizer.java)
+[CreateContainerCmd example implementation](../../core/src/test/java/org/testcontainers/custom/TestCreateContainerCmdModifier.java)
 <!--/codeinclude-->
 
 The previous implementation should be registered in `META-INF/services/org.testcontainers.core.CreateContainerCmdModifier` file.
