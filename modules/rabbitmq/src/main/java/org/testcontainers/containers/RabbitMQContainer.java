@@ -603,4 +603,29 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
             throw new RuntimeException("Failed to convert arguments into json: " + e.getMessage(), e);
         }
     }
+
+    private String createAdvancedConfigFileContent(
+        final SslVerification verify,
+        boolean failIfNoCert,
+        int verificationDepth
+    ) {
+        return String.format(
+            "[\n" +
+            "  {rabbit, [{ssl_listeners, [%d]},\n" +
+            "            {ssl_options,   [{cacertfile,           \"%s\"},\n" +
+            "                             {certfile,             \"%s\"},\n" +
+            "                             {keyfile,              \"%s\"},\n" +
+            "                             {verify,               %s},\n" +
+            "                             {fail_if_no_peer_cert, %b},\n" +
+            "                             {depth,                %d}]}]}\n" +
+            "].",
+            DEFAULT_AMQPS_PORT,
+            null,
+            null,
+            null,
+            verify.value,
+            failIfNoCert,
+            verificationDepth
+        );
+    }
 }
