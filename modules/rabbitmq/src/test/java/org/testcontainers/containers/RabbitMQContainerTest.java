@@ -14,6 +14,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.testcontainers.containers.RabbitMQContainer.SslVerification;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 import javax.net.ssl.KeyManagerFactory;
@@ -272,6 +273,12 @@ public class RabbitMQContainerTest {
         }
     }
 
+    /**
+     * Example of how to enable SSL with environment variable.
+     * <p>
+     * ⚠️ This is incompatible with RabbitMQ 3.9+ because of the deprecation of the `RABBITMQ_SSL_*` variables.
+     * </p>
+     */
     @Test
     public void shouldWorkWithSSL_Legacy() {
         try (RabbitMQContainer container = new RabbitMQContainer(imageName)) {
@@ -297,6 +304,44 @@ public class RabbitMQContainerTest {
                     .contains("error: deprecated environment variables detected")
                     .contains("Please use a configuration file instead; visit https://www.rabbitmq.com/configure.html to learn more");
             }
+        }
+    }
+
+    /**
+     * Example of how to enable SSL with advanced configuration.
+     */
+    @Test
+    public void shouldEnableSSLWithAdvancedConfiguration() {
+        try (RabbitMQContainer container = new RabbitMQContainer(imageName)) {
+            String advancedConfig = String.format(
+                "[\n" +
+                    "  {rabbit, [{ssl_listeners, [%d]},\n" +
+                    "            {ssl_options,   [{cacertfile,           \"%s\"},\n" +
+                    "                             {certfile,             \"%s\"},\n" +
+                    "                             {keyfile,              \"%s\"},\n" +
+                    "                             {verify,               %s},\n" +
+                    "                             {fail_if_no_peer_cert, %b},\n" +
+                    "                             {depth,                %d}]}]}\n" +
+                    "].",
+                DEFAULT_AMQPS_PORT,
+                "/etc/rabbitmq/ca_cert.pem",
+                "/etc/rabbitmq/rabbitmq_cert.pem",
+                "/etc/rabbitmq/rabbitmq_key.pem",
+                "verify_peer",
+                true,
+                1
+            );
+
+            container
+                .withCopyToContainer(Transferable.of(advancedConfig), "/etc/rabbitmq/advanced-custom.config")
+                .withCopyFileToContainer(MountableFile.forClasspathResource("/certs/ca_certificate.pem", 0644), "/etc/rabbitmq/ca_cert.pem")
+                .withCopyFileToContainer(MountableFile.forClasspathResource("/certs/server_certificate.pem", 0644), "/etc/rabbitmq/rabbitmq_cert.pem")
+                .withCopyFileToContainer(MountableFile.forClasspathResource("/certs/server_key.pem", 0644), "/etc/rabbitmq/rabbitmq_key.pem")
+                .withEnv("RABBITMQ_ADVANCED_CONFIG_FILE", "/etc/rabbitmq/advanced-custom.config");
+
+
+            container.start();
+            assertThatCode(() -> connectThroughSsl(container)).doesNotThrowAnyException();
         }
     }
 
