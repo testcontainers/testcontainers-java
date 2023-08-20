@@ -17,6 +17,7 @@ import java.net.InetSocketAddress;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
+import java.time.Duration;
 import java.util.Optional;
 
 import javax.net.ssl.SSLContext;
@@ -63,6 +64,15 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
     private static final DockerImageName DEFAULT_OSS_IMAGE_NAME = DockerImageName.parse(
         "docker.elastic.co/elasticsearch/elasticsearch-oss"
     );
+
+    /**
+     * Regex that matches logs when Elasticsearch is started. Considers the following requirements:
+     * <p>8.3 - JSON logging with started message and some follow-up content within the message field.
+     * <p>8.0 - JSON logging with no whitespace between message field and content.
+     * <p>7.x - JSON logging with whitespace between message field and content.
+     * <p>6.x - text logging with node name in brackets and just a 'started' message.
+     */
+    public static final String WAIT_REGEX = ".*(\"message\":\\s?\"started[\\s?|\"].*|] started\n$)";
 
     /**
      * Elasticsearch Default version
@@ -117,13 +127,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
         addExposedPorts(ELASTICSEARCH_DEFAULT_PORT, ELASTICSEARCH_DEFAULT_TCP_PORT);
         this.isAtLeastMajorVersion8 =
             new ComparableVersion(dockerImageName.getVersionPart()).isGreaterThanOrEqualTo("8.0.0");
-        // regex that
-        //   matches 8.3 JSON logging with started message and some follow up content within the message field
-        //   matches 8.0 JSON logging with no whitespace between message field and content
-        //   matches 7.x JSON logging with whitespace between message field and content
-        //   matches 6.x text logging with node name in brackets and just a 'started' message till the end of the line
-        String regex = ".*(\"message\":\\s?\"started[\\s?|\"].*|] started\n$)";
-        setWaitStrategy(new LogMessageWaitStrategy().withRegEx(regex));
+        withStartupTimeout(Duration.ofMinutes(2));
         if (isAtLeastMajorVersion8) {
             withPassword(ELASTICSEARCH_DEFAULT_PASSWORD);
         }
@@ -194,6 +198,17 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
             // major version 8 is secure by default and does not need this to enable authentication
             withEnv("xpack.security.enabled", "true");
         }
+        return this;
+    }
+
+    /**
+     * Define how long startup should wait for the container to come up.
+     *
+     * @param timeout time limit to wait for before failing startup.
+     * @return this
+     */
+    public ElasticsearchContainer withStartupTimeout(Duration timeout) {
+        setWaitStrategy(new LogMessageWaitStrategy().withRegEx(WAIT_REGEX).withStartupTimeout(timeout));
         return this;
     }
 
