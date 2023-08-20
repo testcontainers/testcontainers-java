@@ -903,7 +903,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         }
 
         this.createContainerCmdModifiers.forEach(createContainerCmdModifier -> {
-                createContainerCmdModifier.modify().apply(createCommand);
+                createContainerCmdModifier.modify(createCommand);
             });
 
         Map<String, String> combinedLabels = new HashMap<>();
@@ -1505,11 +1505,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * @return this
      */
     public SELF withCreateContainerCmdModifier(Consumer<CreateContainerCmd> modifier) {
-        this.createContainerCmdModifiers.add(() -> {
-                return cmd -> {
-                    modifier.accept(cmd);
-                    return cmd;
-                };
+        this.createContainerCmdModifiers.add(cmd -> {
+                modifier.accept(cmd);
+                return cmd;
             });
         return self();
     }
