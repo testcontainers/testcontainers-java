@@ -345,6 +345,49 @@ public class RabbitMQContainerTest {
         }
     }
 
+    /**
+     * Example of how to enable SSL with regular configuration.
+     * <p>
+     * ⚠️ This is incompatible with RabbitMQ 3.7 because it doesn't allow loading multiple configuration files from a directory.
+     * </p>
+     */
+    @Test
+    public void shouldEnableSSLWitRegularConfiguration() {
+        try (RabbitMQContainer container = new RabbitMQContainer(imageName)) {
+            String tlsConfig = String.format(
+                "listeners.ssl.1 = %d\n" +
+                "ssl_options.cacertfile = %s\n" +
+                "ssl_options.certfile = %s\n" +
+                "ssl_options.keyfile = %s\n" +
+                "ssl_options.verify = %s\n"+
+                "ssl_options.fail_if_no_peer_cert = %s\n",
+
+                DEFAULT_AMQPS_PORT,
+                "/etc/rabbitmq/ca_cert.pem",
+                "/etc/rabbitmq/rabbitmq_cert.pem",
+                "/etc/rabbitmq/rabbitmq_key.pem",
+                "verify_peer",
+                true
+            );
+
+            container
+                .withCopyToContainer(Transferable.of(tlsConfig), "/etc/rabbitmq/conf.d/20-tls.conf")
+                .withCopyFileToContainer(MountableFile.forClasspathResource("/certs/ca_certificate.pem", 0644), "/etc/rabbitmq/ca_cert.pem")
+                .withCopyFileToContainer(MountableFile.forClasspathResource("/certs/server_certificate.pem", 0644), "/etc/rabbitmq/rabbitmq_cert.pem")
+                .withCopyFileToContainer(MountableFile.forClasspathResource("/certs/server_key.pem", 0644), "/etc/rabbitmq/rabbitmq_key.pem")
+                .withEnv("RABBITMQ_CONFIG_FILES", "/etc/rabbitmq/conf.d");
+
+
+            container.start();
+
+            if(imageName.equals(RabbitMQTestImages.RABBITMQ_IMAGE_3_7)) {
+                assertThatCode(() -> connectThroughSsl(container)).hasMessage("Remote host terminated the handshake");
+            } else {
+                assertThatCode(() -> connectThroughSsl(container)).doesNotThrowAnyException();
+            }
+        }
+    }
+
     @SneakyThrows
     private void connectThroughSsl(RabbitMQContainer container) {
         ConnectionFactory connectionFactory = new ConnectionFactory();
