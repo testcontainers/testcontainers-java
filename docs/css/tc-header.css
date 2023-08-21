@@ -43,7 +43,7 @@ body.tc-header-active #site-header {
 }
 
 #site-header .logo {
-    display: flex; 
+    display: flex;
 }
 
 #site-header .logo img,
@@ -102,6 +102,20 @@ body.mobile-menu #site-header #mobile-menu-toggle {
     white-space: nowrap;
 }
 
+#site-header .menu-item .badge {
+    color: white;
+    font-size: 10px;
+    padding: 2px 6px;
+    background-color: #0FD5C6; // somehow $topaz is too dark for me.
+text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    border-radius: 6px;
+    &:hover {
+
+    }
+}
+
 #site-header .menu-item button:hover,
 #site-header .menu-item a:hover {
     color: var(--color-topaz);
@@ -152,7 +166,7 @@ body #site-header .menu-item .menu-dropdown {
     font-weight: 500;
     color: var(--color-eggplant);
     text-decoration: none;
-    transition: 
+    transition:
         color 0.2s ease,
         background 0.2s ease;
 }
@@ -265,7 +279,7 @@ div.md-source__repository {
     #site-header .menu-item a .icon-caret {
         height: 10px;
     }
-    
+
     #site-header .menu-item button .icon-slack,
     #site-header .menu-item a .icon-slack,
     #site-header .menu-item button .icon-github,
