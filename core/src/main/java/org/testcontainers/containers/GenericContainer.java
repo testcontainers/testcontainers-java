@@ -902,9 +902,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             createCommand.withPrivileged(privilegedMode);
         }
 
-        this.createContainerCmdModifiers.forEach(createContainerCmdModifier -> {
-                createContainerCmdModifier.modify(createCommand);
-            });
+        for (CreateContainerCmdModifier createContainerCmdModifier : this.createContainerCmdModifiers) {
+            createCommand = createContainerCmdModifier.modify(createCommand);
+        }
 
         Map<String, String> combinedLabels = new HashMap<>();
         combinedLabels.putAll(labels);
