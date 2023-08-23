@@ -63,7 +63,7 @@ jobs:
       - name: Test using Testcontainers Cloud with Turbo Mode enabled
         working-directory: ./smoke-test/
         run: |
-          ./gradlew --no-daemon --continue --scan --info ${{matrix.gradle_args}}
+          ./gradlew check --no-daemon --continue --scan --info
 
   find_gradle_jobs:
     needs: [core]
