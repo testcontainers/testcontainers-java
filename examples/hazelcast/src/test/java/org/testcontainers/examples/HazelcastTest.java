@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Examples with Hazelcast using both a single container and a cluster with two containers.
  */
-public class HazelcastTest {
+class HazelcastTest {
 
     // Hazelcast values
     private static final String HZ_IMAGE_NAME = "hazelcast/hazelcast:5.2.0";
@@ -47,12 +47,12 @@ public class HazelcastTest {
     private static final String TRUE_VALUE = "true";
 
     @AfterEach
-    public void cleanUp() {
+    void cleanUp() {
         HazelcastClient.shutdownAll();
     }
 
     @Test
-    public void singleHazelcastContainer() {
+    void singleHazelcastContainer() {
         try (
             GenericContainer<?> container = new GenericContainer<>(DockerImageName.parse(HZ_IMAGE_NAME))
                 .withExposedPorts(DEFAULT_EXPOSED_PORT)
@@ -76,7 +76,7 @@ public class HazelcastTest {
     }
 
     @Test
-    public void hazelcastCluster() {
+    void hazelcastCluster() {
         Network network = Network.newNetwork();
         try (
             GenericContainer<?> container1 = new GenericContainer<>(DockerImageName.parse(HZ_IMAGE_NAME))

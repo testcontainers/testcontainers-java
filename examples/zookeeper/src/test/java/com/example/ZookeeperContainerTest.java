@@ -10,12 +10,12 @@ import java.nio.charset.StandardCharsets;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ZookeeperContainerTest {
+class ZookeeperContainerTest {
 
     private static final int ZOOKEEPER_PORT = 2181;
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         String path = "/messages/zk-tc";
         String content = "Running Zookeeper with Testcontainers";
         try (

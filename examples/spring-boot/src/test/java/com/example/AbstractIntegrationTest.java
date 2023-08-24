@@ -17,7 +17,7 @@ import org.testcontainers.utility.DockerImageName;
     properties = { "spring.datasource.url=jdbc:tc:postgresql:11-alpine:///databasename" }
 )
 @ActiveProfiles("test")
-public abstract class AbstractIntegrationTest {
+abstract class AbstractIntegrationTest {
 
     static GenericContainer<?> redis = new GenericContainer<>(DockerImageName.parse("redis:3-alpine"))
         .withExposedPorts(6379);

@@ -14,10 +14,10 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class SftpContainerTest {
+class SftpContainerTest {
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         try (
             GenericContainer<?> sftp = new GenericContainer<>("atmoz/sftp:alpine-3.7")
                 .withCopyFileToContainer(

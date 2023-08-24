@@ -17,7 +17,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class SolrQueryTest {
+class SolrQueryTest {
 
     private static final DockerImageName SOLR_IMAGE = DockerImageName.parse("solr:8.3.0");
 
@@ -27,7 +27,7 @@ public class SolrQueryTest {
     private static SolrClient solrClient;
 
     @BeforeAll
-    public static void setUp() throws IOException, SolrServerException {
+    static void setUp() throws IOException, SolrServerException {
         solrContainer.start();
         solrClient =
             new Http2SolrClient.Builder(
@@ -63,7 +63,7 @@ public class SolrQueryTest {
     }
 
     @Test
-    public void testQueryForShoes() {
+    void testQueryForShoes() {
         SolrSearchEngine searchEngine = new SolrSearchEngine(solrClient);
 
         SearchResult result = searchEngine.search("shoes");
@@ -72,7 +72,7 @@ public class SolrQueryTest {
     }
 
     @Test
-    public void testQueryForTShirt() {
+    void testQueryForTShirt() {
         SolrSearchEngine searchEngine = new SolrSearchEngine(solrClient);
 
         SearchResult result = searchEngine.search("t-shirt");
@@ -81,7 +81,7 @@ public class SolrQueryTest {
     }
 
     @Test
-    public void testQueryForAsterisk() {
+    void testQueryForAsterisk() {
         SolrSearchEngine searchEngine = new SolrSearchEngine(solrClient);
 
         SearchResult result = searchEngine.search("*");

@@ -31,7 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = DemoApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ContextConfiguration(initializers = SeleniumContainerTest.Initializer.class)
-public class SeleniumContainerTest {
+class SeleniumContainerTest {
 
     @LocalServerPort
     private int port;
@@ -42,7 +42,7 @@ public class SeleniumContainerTest {
         .withRecordingMode(VncRecordingMode.RECORD_ALL, new File("build"));
 
     @Test
-    public void simplePlainSeleniumTest() {
+    void simplePlainSeleniumTest() {
         RemoteWebDriver driver = new RemoteWebDriver(chrome.getSeleniumAddress(), new ChromeOptions());
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(30));
 
@@ -52,7 +52,7 @@ public class SeleniumContainerTest {
         assertThat(hElement).as("The h element is found").isNotEmpty();
     }
 
-    public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+    static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
         @Override
         public void initialize(ConfigurableApplicationContext applicationContext) {

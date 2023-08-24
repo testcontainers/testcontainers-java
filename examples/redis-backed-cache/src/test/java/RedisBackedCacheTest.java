@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Integration test for Redis-backed cache implementation.
  */
 @Testcontainers
-public class RedisBackedCacheTest {
+class RedisBackedCacheTest {
 
     @Container
     public GenericContainer<?> redis = new GenericContainer<>(DockerImageName.parse("redis:3.0.6"))
@@ -25,14 +25,14 @@ public class RedisBackedCacheTest {
     private Cache cache;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         Jedis jedis = new Jedis(redis.getHost(), redis.getMappedPort(6379));
 
         cache = new RedisBackedCache(jedis, "test");
     }
 
     @Test
-    public void testFindingAnInsertedValue() {
+    void testFindingAnInsertedValue() {
         cache.put("foo", "FOO");
         Optional<String> foundObject = cache.get("foo", String.class);
 
@@ -43,7 +43,7 @@ public class RedisBackedCacheTest {
     }
 
     @Test
-    public void testNotFindingAValueThatWasNotInserted() {
+    void testNotFindingAValueThatWasNotInserted() {
         Optional<String> foundObject = cache.get("bar", String.class);
 
         assertThat(foundObject.isPresent())

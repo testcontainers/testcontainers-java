@@ -10,19 +10,19 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class FooConcreteTestClass extends AbstractIntegrationTest {
+class FooConcreteTestClass extends AbstractIntegrationTest {
 
     private Cache cache;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Jedis jedis = new Jedis(redis.getHost(), redis.getMappedPort(6379));
 
         cache = new RedisBackedCache(jedis, "foo");
     }
 
     @Test
-    public void testInsertValue() {
+    void testInsertValue() {
         cache.put("foo", "FOO");
         Optional<String> foundObject = cache.get("foo", String.class);
 

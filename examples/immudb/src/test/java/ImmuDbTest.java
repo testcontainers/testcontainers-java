@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Test class for the ImmuDbClient.
  */
 @Testcontainers
-public class ImmuDbTest {
+class ImmuDbTest {
 
     // Default port for the ImmuDb server
     private static final int IMMUDB_PORT = 3322;
@@ -40,7 +40,7 @@ public class ImmuDbTest {
     private ImmuClient immuClient;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         this.immuClient =
             ImmuClient
                 .newBuilder()
@@ -51,12 +51,12 @@ public class ImmuDbTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         this.immuClient.closeSession();
     }
 
     @Test
-    public void testGetValue() {
+    void testGetValue() {
         try {
             immuClient.set("test1", "test2".getBytes());
 
