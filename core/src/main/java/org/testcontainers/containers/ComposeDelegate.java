@@ -220,7 +220,7 @@ class ComposeDelegate {
         logConsumers
             .getOrDefault(serviceName, Collections.emptyList())
             .forEach(consumer -> followLogs(containerId, consumer));
-        serviceInstanceMap.putIfAbsent(serviceName, containerInstance);
+        serviceInstanceMap.put(serviceName, containerInstance);
     }
 
     private void waitUntilServiceStarted(String serviceName, ComposeServiceWaitStrategyTarget serviceInstance) {
