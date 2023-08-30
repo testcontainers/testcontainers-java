@@ -10,7 +10,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 
-@ExtendWith(SpringExtension.class)
 @SpringBootTest(
     classes = DemoApplication.class,
     webEnvironment = WebEnvironment.RANDOM_PORT,
