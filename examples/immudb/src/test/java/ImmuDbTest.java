@@ -1,20 +1,22 @@
 import io.codenotary.immudb4j.Entry;
 import io.codenotary.immudb4j.ImmuClient;
 import io.codenotary.immudb4j.exceptions.VerificationException;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Test class for the ImmuDbClient.
  */
-public class ImmuDbTest {
+@Testcontainers
+class ImmuDbTest {
 
     // Default port for the ImmuDb server
     private static final int IMMUDB_PORT = 3322;
@@ -29,7 +31,7 @@ public class ImmuDbTest {
     private final String IMMUDB_DATABASE = "defaultdb";
 
     // Test container for the ImmuDb database, with the latest version of the image and exposed port
-    @ClassRule
+    @Container
     public static final GenericContainer<?> immuDbContainer = new GenericContainer<>("codenotary/immudb:1.3")
         .withExposedPorts(IMMUDB_PORT)
         .waitingFor(Wait.forLogMessage(".*Web API server enabled.*", 1));
@@ -37,8 +39,8 @@ public class ImmuDbTest {
     // ImmuClient used to interact with the DB
     private ImmuClient immuClient;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         this.immuClient =
             ImmuClient
                 .newBuilder()
@@ -48,13 +50,13 @@ public class ImmuDbTest {
         this.immuClient.openSession(IMMUDB_DATABASE, IMMUDB_USER, IMMUDB_PASSWORD);
     }
 
-    @After
-    public void tearDown() {
+    @AfterEach
+    void tearDown() {
         this.immuClient.closeSession();
     }
 
     @Test
-    public void testGetValue() {
+    void testGetValue() {
         try {
             immuClient.set("test1", "test2".getBytes());
 
@@ -64,10 +66,10 @@ public class ImmuDbTest {
                 byte[] value = entry.getValue();
                 assertThat(new String(value)).isEqualTo("test2");
             } else {
-                Assert.fail();
+                Assertions.fail();
             }
         } catch (VerificationException e) {
-            Assert.fail();
+            Assertions.fail();
         }
     }
 }

@@ -1,16 +1,15 @@
 package com.example.redis
 
-import org.junit.runner.RunWith
+import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.util.TestPropertyValues
 import org.springframework.context.ApplicationContextInitializer
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.test.context.ContextConfiguration
-import org.springframework.test.context.junit4.SpringRunner
+import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.testcontainers.containers.GenericContainer
 
-@RunWith(SpringRunner::class)
 @SpringBootTest
 @ContextConfiguration(initializers = [AbstractIntegrationTest.Initializer::class])
 @AutoConfigureMockMvc

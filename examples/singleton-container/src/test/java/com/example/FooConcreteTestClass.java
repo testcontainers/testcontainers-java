@@ -2,27 +2,27 @@ package com.example;
 
 import com.example.cache.Cache;
 import com.example.cache.RedisBackedCache;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.Jedis;
 
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class FooConcreteTestClass extends AbstractIntegrationTest {
+class FooConcreteTestClass extends AbstractIntegrationTest {
 
     private Cache cache;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         Jedis jedis = new Jedis(redis.getHost(), redis.getMappedPort(6379));
 
         cache = new RedisBackedCache(jedis, "foo");
     }
 
     @Test
-    public void testInsertValue() {
+    void testInsertValue() {
         cache.put("foo", "FOO");
         Optional<String> foundObject = cache.get("foo", String.class);
 

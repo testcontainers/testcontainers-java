@@ -8,21 +8,21 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 
 import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class NatsContainerTest {
+class NatsContainerTest {
 
     public static final Integer NATS_PORT = 4222;
 
     public static final Integer NATS_MGMT_PORT = 8222;
 
     @Test
-    public void test() throws IOException, InterruptedException {
+    void test() throws IOException, InterruptedException {
         try (
             GenericContainer<?> nats = new GenericContainer<>("nats:2.9.8-alpine3.16")
                 .withExposedPorts(NATS_PORT, NATS_MGMT_PORT)
@@ -38,7 +38,7 @@ public class NatsContainerTest {
     }
 
     @Test
-    public void testServerStatus() throws IOException {
+    void testServerStatus() throws IOException {
         try (
             GenericContainer<?> nats = new GenericContainer<>("nats:2.9.8-alpine3.16")
                 .withExposedPorts(NATS_PORT, NATS_MGMT_PORT)

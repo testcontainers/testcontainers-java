@@ -1,12 +1,12 @@
 package com.example;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class DemoControllerTest extends AbstractIntegrationTest {
+class DemoControllerTest extends AbstractIntegrationTest {
 
     @Autowired
     TestRestTemplate restTemplate;
@@ -15,7 +15,7 @@ public class DemoControllerTest extends AbstractIntegrationTest {
     DemoRepository demoRepository;
 
     @Test
-    public void simpleTest() {
+    void simpleTest() {
         String fooResource = "/foo";
 
         restTemplate.put(fooResource, "bar");
@@ -24,7 +24,7 @@ public class DemoControllerTest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void simpleJPATest() {
+    void simpleJPATest() {
         DemoEntity demoEntity = new DemoEntity();
         demoEntity.setValue("Some value");
         demoRepository.save(demoEntity);
