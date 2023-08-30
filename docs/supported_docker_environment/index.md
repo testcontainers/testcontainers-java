@@ -31,6 +31,35 @@ export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock
 export DOCKER_HOST="unix://${HOME}/.colima/default/docker.sock"
 ```
 
+## Podman
+
+In order to run testcontainers against [podman](https://podman.io/) the env vars bellow should be set
+
+MacOS:
+
+```bash
+{% raw %}
+export DOCKER_HOST=unix://$(podman machine inspect --format '{{.ConnectionInfo.PodmanSocket.Path}}')
+export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock
+{% endraw %}
+```
+
+Linux:
+
+```bash
+export DOCKER_HOST=unix://${XDG_RUNTIME_DIR}/podman/podman.sock
+```
+
+If you're running Podman in rootless mode, ensure to include the following line to disable Ryuk:
+
+```bash
+export TESTCONTAINERS_RYUK_DISABLED=true
+```
+
+!!! note
+    Previous to version 1.19.0, `export TESTCONTAINERS_RYUK_PRIVILEGED=true`
+    was required for rootful mode. Starting with 1.19.0, this is no longer required.
+
 ## Docker environment discovery
 
 Testcontainers will try to connect to a Docker daemon using the following strategies in order:
