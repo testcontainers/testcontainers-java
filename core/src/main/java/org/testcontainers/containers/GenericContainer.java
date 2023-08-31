@@ -338,8 +338,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         try {
             configure();
 
-            Instant startedAt = Instant.now();
-
             logger().debug("Starting container: {}", getDockerImageName());
 
             AtomicInteger attempt = new AtomicInteger(0);
@@ -353,7 +351,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                             attempt.incrementAndGet(),
                             startupAttempts
                         );
-                    tryStart(startedAt);
+                    tryStart();
                     return true;
                 }
             );
@@ -380,11 +378,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         return true;
     }
 
-    private void tryStart(Instant startedAt) {
+    private void tryStart() {
         try {
             String dockerImageName = getDockerImageName();
             logger().debug("Starting container: {}", dockerImageName);
 
+            Instant createdAt = Instant.now();
             logger().info("Creating container for image: {}", dockerImageName);
             CreateContainerCmd createCommand = dockerClient.createContainerCmd(dockerImageName);
             applyConfiguration(createCommand);
@@ -540,7 +539,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 throw e;
             }
 
-            logger().info("Container {} started in {}", dockerImageName, Duration.between(startedAt, Instant.now()));
+            logger().info("Container {} started in {}", dockerImageName, Duration.between(createdAt, Instant.now()));
             containerIsStarted(containerInfo, reused);
         } catch (Exception e) {
             if (e instanceof UndeclaredThrowableException && e.getCause() instanceof Exception) {
