@@ -20,8 +20,6 @@ public class MinIOContainer extends GenericContainer<MinIOContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("minio/minio");
 
-    private static final String DEFAULT_TAG = "latest";
-
     private static final int MINIO_S3_PORT = 9000;
 
     private static final int MINIO_UI_PORT = 9001;
@@ -33,13 +31,6 @@ public class MinIOContainer extends GenericContainer<MinIOContainer> {
     private String userName = DEFAULT_USER;
 
     private String password = DEFAULT_PASSWORD;
-
-    /**
-     * Constructs a MinIO container with the latest tag
-     */
-    public MinIOContainer() {
-        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
-    }
 
     /**
      * Constructs a MinIO container from the dockerImageName
@@ -55,6 +46,7 @@ public class MinIOContainer extends GenericContainer<MinIOContainer> {
      */
     public MinIOContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
     }
 
     /**
@@ -82,8 +74,7 @@ public class MinIOContainer extends GenericContainer<MinIOContainer> {
      */
     @Override
     public void configure() {
-        addFixedExposedPort(MinIOContainer.MINIO_S3_PORT, MinIOContainer.MINIO_S3_PORT);
-        addFixedExposedPort(MinIOContainer.MINIO_UI_PORT, MinIOContainer.MINIO_UI_PORT);
+        withExposedPorts(MinIOContainer.MINIO_S3_PORT, MinIOContainer.MINIO_UI_PORT);
 
         addEnv("MINIO_ROOT_USER", this.userName);
         addEnv("MINIO_ROOT_PASSWORD", this.password);
@@ -101,14 +92,7 @@ public class MinIOContainer extends GenericContainer<MinIOContainer> {
      * @return the URL to upload/download objects from
      */
     public String getS3URL() {
-        return String.format("http://%s:%s", this.getHost(), MINIO_S3_PORT);
-    }
-
-    /**
-     * @return the URL to the Web Admin portal
-     */
-    public String getUIURL() {
-        return String.format("http://%s:%s", this.getHost(), MINIO_UI_PORT);
+        return String.format("http://%s:%s", this.getHost(), getMappedPort(MINIO_S3_PORT));
     }
 
     /**

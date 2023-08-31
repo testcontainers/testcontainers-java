@@ -17,7 +17,7 @@ public class MinIOContainerTest {
 
     @Test
     public void testBasicUsage() throws Exception {
-        MinIOContainer container = new MinIOContainer();
+        MinIOContainer container = new MinIOContainer("minio/minio:latest");
         container.start();
 
         MinioClient minioClient = MinioClient
