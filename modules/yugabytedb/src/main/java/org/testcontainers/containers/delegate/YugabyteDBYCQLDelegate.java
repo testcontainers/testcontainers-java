@@ -33,7 +33,16 @@ public final class YugabyteDBYCQLDelegate extends AbstractYCQLDelegate {
         boolean continueOnError,
         boolean ignoreFailedDrops
     ) {
-        final String containerInterfaceIP = container.getContainerInfo().getNetworkSettings().getNetworks().entrySet().stream().findFirst().get().getValue().getIpAddress();
+        final String containerInterfaceIP = container
+            .getContainerInfo()
+            .getNetworkSettings()
+            .getNetworks()
+            .entrySet()
+            .stream()
+            .findFirst()
+            .get()
+            .getValue()
+            .getIpAddress();
         try {
             ExecResult result = container.execInContainer(
                 BIN_PATH,

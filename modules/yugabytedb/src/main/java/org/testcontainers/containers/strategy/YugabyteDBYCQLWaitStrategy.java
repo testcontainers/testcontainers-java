@@ -37,7 +37,16 @@ public final class YugabyteDBYCQLWaitStrategy extends AbstractWaitStrategy {
     public void waitUntilReady(WaitStrategyTarget target) {
         YugabyteDBYCQLContainer container = (YugabyteDBYCQLContainer) target;
         AtomicBoolean status = new AtomicBoolean(true);
-        final String containerInterfaceIP = container.getContainerInfo().getNetworkSettings().getNetworks().entrySet().stream().findFirst().get().getValue().getIpAddress();
+        final String containerInterfaceIP = container
+            .getContainerInfo()
+            .getNetworkSettings()
+            .getNetworks()
+            .entrySet()
+            .stream()
+            .findFirst()
+            .get()
+            .getValue()
+            .getIpAddress();
         retryUntilSuccess(
             (int) startupTimeout.getSeconds(),
             TimeUnit.SECONDS,
