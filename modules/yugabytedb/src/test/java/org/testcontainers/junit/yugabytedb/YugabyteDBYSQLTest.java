@@ -95,4 +95,20 @@ public class YugabyteDBYSQLTest extends AbstractContainerDatabaseTest {
                 .isEqualTo(1);
         }
     }
+
+    @Test
+    public void testWaitStrategy() throws SQLException {
+        try (
+            final YugabyteDBYSQLContainer ysqlContainer = new YugabyteDBYSQLContainer(YBDB_TEST_IMAGE)
+        ) {
+            ysqlContainer.start();
+            assertThat(performQuery(ysqlContainer, "SELECT 1").getInt(1))
+                .as("A sample test query succeeds")
+                .isEqualTo(1);
+            assertThat(performQuery(ysqlContainer, "SELECT EXISTS (SELECT FROM pg_tables WHERE tablename = 'YB_SAMPLE')")
+                .getBoolean(1))
+                .as("Checking if yb_sample table exists")
+                .isEqualTo(false);
+        }
+    }
 }
