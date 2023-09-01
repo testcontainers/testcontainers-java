@@ -81,7 +81,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
             final Instant lastRetryAllowed = Instant.now().plus(PULL_RETRY_TIME_LIMIT);
 
             Instant startedAt = Instant.now();
-            while (startedAt.isBefore(lastRetryAllowed)) {
+            while (Instant.now().isBefore(lastRetryAllowed)) {
                 try {
                     PullImageCmd pullImageCmd = dockerClient
                         .pullImageCmd(imageName.getUnversionedPart())

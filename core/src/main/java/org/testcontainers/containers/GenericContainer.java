@@ -383,7 +383,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             String dockerImageName = getDockerImageName();
             logger().debug("Starting container: {}", dockerImageName);
 
-            Instant createdAt = Instant.now();
+            Instant startedAt = Instant.now();
             logger().info("Creating container for image: {}", dockerImageName);
             CreateContainerCmd createCommand = dockerClient.createContainerCmd(dockerImageName);
             applyConfiguration(createCommand);
@@ -539,7 +539,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 throw e;
             }
 
-            logger().info("Container {} started in {}", dockerImageName, Duration.between(createdAt, Instant.now()));
+            logger().info("Container {} started in {}", dockerImageName, Duration.between(startedAt, Instant.now()));
             containerIsStarted(containerInfo, reused);
         } catch (Exception e) {
             if (e instanceof UndeclaredThrowableException && e.getCause() instanceof Exception) {
