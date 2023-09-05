@@ -3,7 +3,6 @@ package org.testcontainers.containers;
 import io.minio.BucketExistsArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
-import io.minio.ObjectWriteResponse;
 import io.minio.StatObjectArgs;
 import io.minio.StatObjectResponse;
 import io.minio.UploadObjectArgs;
@@ -17,7 +16,7 @@ public class MinIOContainerTest {
 
     @Test
     public void testBasicUsage() throws Exception {
-        MinIOContainer container = new MinIOContainer("minio/minio:latest");
+        MinIOContainer container = new MinIOContainer("minio/minio:RELEASE.2023-09-04T19-57-37Z");
         container.start();
 
         MinioClient minioClient = MinioClient
@@ -34,7 +33,7 @@ public class MinIOContainerTest {
 
         URL file = this.getClass().getResource("/object_to_upload.txt");
         assertThat(file).isNotNull();
-        ObjectWriteResponse upload = minioClient.uploadObject(
+        minioClient.uploadObject(
             UploadObjectArgs.builder().bucket("test-bucket").object("my-objectname").filename(file.getPath()).build()
         );
 
@@ -43,5 +42,15 @@ public class MinIOContainerTest {
         );
 
         assertThat(objectStat.object()).isEqualTo("my-objectname");
+    }
+
+    @Test
+    public void testOverwriteUserPassword() throws Exception {
+        MinIOContainer container = new MinIOContainer("minio/minio:RELEASE.2023-09-04T19-57-37Z")
+            .withUserName("testuser")
+            .withPassword("testpassword");
+
+        assertThat(container.getUserName()).isEqualTo("testuser");
+        assertThat(container.getPassword()).isEqualTo("testpassword");
     }
 }

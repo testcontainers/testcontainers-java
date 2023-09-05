@@ -1,7 +1,5 @@
 package org.testcontainers.containers;
 
-import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
@@ -15,7 +13,6 @@ import java.time.temporal.ChronoUnit;
  * <p>
  * Exposed ports: 9000,9001
  */
-@Slf4j
 public class MinIOContainer extends GenericContainer<MinIOContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("minio/minio");
@@ -36,7 +33,7 @@ public class MinIOContainer extends GenericContainer<MinIOContainer> {
      * Constructs a MinIO container from the dockerImageName
      * @param dockerImageName the full image name to use
      */
-    public MinIOContainer(@NonNull final String dockerImageName) {
+    public MinIOContainer(final String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
     }
 
@@ -54,7 +51,7 @@ public class MinIOContainer extends GenericContainer<MinIOContainer> {
      * @param userName the Root user to override
      * @return this
      */
-    public MinIOContainer withUser(String userName) {
+    public MinIOContainer withUserName(String userName) {
         this.userName = userName;
         return this;
     }
