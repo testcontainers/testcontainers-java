@@ -16,15 +16,19 @@ public class MinIOContainerTest {
 
     @Test
     public void testBasicUsage() throws Exception {
+        // minioContainer {
         MinIOContainer container = new MinIOContainer("minio/minio:RELEASE.2023-09-04T19-57-37Z");
+        // }
         container.start();
 
+        // configuringClient {
         MinioClient minioClient = MinioClient
             .builder()
             .endpoint(container.getS3URL())
             .credentials(container.getUserName(), container.getPassword())
             .build();
 
+        // }
         minioClient.makeBucket(MakeBucketArgs.builder().bucket("test-bucket").region("us-west-2").build());
 
         BucketExistsArgs existsArgs = BucketExistsArgs.builder().bucket("test-bucket").build();
@@ -46,9 +50,11 @@ public class MinIOContainerTest {
 
     @Test
     public void testOverwriteUserPassword() throws Exception {
+        // minioOverrides {
         MinIOContainer container = new MinIOContainer("minio/minio:RELEASE.2023-09-04T19-57-37Z")
             .withUserName("testuser")
             .withPassword("testpassword");
+        // }
 
         assertThat(container.getUserName()).isEqualTo("testuser");
         assertThat(container.getPassword()).isEqualTo("testpassword");

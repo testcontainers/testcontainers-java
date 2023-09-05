@@ -5,28 +5,19 @@ Test containers can be used to automatically instantiate and manage [MinIO](http
 ## Usage example
 
 Create a `MinIOContainer` to use it in your tests:
-```java
-import org.testcontainers.containers.MinIOContainer;
-MinIOContainer container = new MinIOContainer("minio/minio:latest");
-```
+<!--codeinclude-->
+[Starting a MinIO container](../../modules/minio/src/test/java/org/testcontainers/containers/MinIOContainerTest.java) inside_block:minioContainer
+<!--/codeinclude-->
 
 The [MinIO Java client](https://min.io/docs/minio/linux/developers/java/API.html) can be configured with the container as such:
-```java
-import io.minio.MinioClient;
-MinioClient minioClient = MinioClient
-    .builder()
-    .endpoint(container.getS3URL())
-    .credentials(container.getUserName(), container.getPassword())
-    .build();
-```
+<!--codeinclude-->
+[Configuring a MinIO client](../../modules/minio/src/test/java/org/testcontainers/containers/MinIOContainerTest.java) inside_block:configuringClient
+<!--/codeinclude-->
 
-If needed the username and password can be overridden with
-```java
-import org.testcontainers.containers.MinIOContainer;
-MinIOContainer container = new MinIOContainer("minio/minio:latest")
-        .withUserName("testuser")
-        .withPassword("testpassword");
-```
+If needed the username and password can be overridden as such:
+<!--codeinclude-->
+[Overriding a MinIO container](../../modules/minio/src/test/java/org/testcontainers/containers/MinIOContainerTest.java) inside_block:minioOverrides
+<!--/codeinclude-->
 
 ## Adding this module to your project dependencies
 
