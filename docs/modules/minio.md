@@ -24,16 +24,16 @@ If needed the username and password can be overridden as such:
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 === "Gradle"
-```groovy
-testImplementation "org.testcontainers:minio:{{latest_version}}"
-```
+    ```groovy
+     testImplementation "org.testcontainers:minio:{{latest_version}}"
+    ```
 
 === "Maven"
-```xml
-<dependency>
-<groupId>org.testcontainers</groupId>
-<artifactId>minio</artifactId>
-<version>{{latest_version}}</version>
-<scope>test</scope>
-</dependency>
-```
+    ```xml
+    <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>minio</artifactId>
+        <version>{{latest_version}}</version>
+        <scope>test</scope>
+    </dependency>
+    ```
