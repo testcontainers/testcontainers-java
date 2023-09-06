@@ -338,8 +338,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         try {
             configure();
 
-            Instant startedAt = Instant.now();
-
             logger().debug("Starting container: {}", getDockerImageName());
 
             AtomicInteger attempt = new AtomicInteger(0);
@@ -353,7 +351,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                             attempt.incrementAndGet(),
                             startupAttempts
                         );
-                    tryStart(startedAt);
+                    tryStart();
                     return true;
                 }
             );
@@ -380,11 +378,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         return true;
     }
 
-    private void tryStart(Instant startedAt) {
+    private void tryStart() {
         try {
             String dockerImageName = getDockerImageName();
             logger().debug("Starting container: {}", dockerImageName);
 
+            Instant startedAt = Instant.now();
             logger().info("Creating container for image: {}", dockerImageName);
             CreateContainerCmd createCommand = dockerClient.createContainerCmd(dockerImageName);
             applyConfiguration(createCommand);
@@ -1497,7 +1496,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     /**
-     * Allow low level modifications of {@link CreateContainerCmd} after it was pre-configured in {@link #tryStart(Instant)}.
+     * Allow low level modifications of {@link CreateContainerCmd} after it was pre-configured in {@link #tryStart()}.
      * Invocation happens eagerly on a moment when container is created.
      * Warning: this does expose the underlying docker-java API so might change outside of our control.
      *
