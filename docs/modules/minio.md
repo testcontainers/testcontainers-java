@@ -1,6 +1,6 @@
 # MinIO Containers
 
-Test containers can be used to automatically instantiate and manage [MinIO](https://min.io) containers.
+Testcontainers can be used to automatically instantiate and manage [MinIO](https://min.io) containers.
 
 ## Usage example
 
