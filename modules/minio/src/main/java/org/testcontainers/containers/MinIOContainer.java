@@ -9,9 +9,13 @@ import java.time.temporal.ChronoUnit;
 /**
  * Testcontainers implementation for MinIO.
  * <p>
- * Supported image: {@code MinIO}
+ * Supported image: {@code minio/minio}
  * <p>
- * Exposed ports: 9000,9001
+ * Exposed ports:
+ * <ul>
+ *     <li>S3: 9000</li>
+ *     <li>Console: 9001</li>
+ * </ul>
  */
 public class MinIOContainer extends GenericContainer<MinIOContainer> {
 
@@ -21,13 +25,13 @@ public class MinIOContainer extends GenericContainer<MinIOContainer> {
 
     private static final int MINIO_UI_PORT = 9001;
 
-    private static final String DEFAULT_USER = "miniouser";
+    private static final String DEFAULT_USER = "minioadmin";
 
-    private static final String DEFAULT_PASSWORD = "miniopassword";
+    private static final String DEFAULT_PASSWORD = "minioadmin";
 
-    private String userName = DEFAULT_USER;
+    private String userName;
 
-    private String password = DEFAULT_PASSWORD;
+    private String password;
 
     /**
      * Constructs a MinIO container from the dockerImageName
@@ -73,8 +77,16 @@ public class MinIOContainer extends GenericContainer<MinIOContainer> {
     public void configure() {
         withExposedPorts(MinIOContainer.MINIO_S3_PORT, MinIOContainer.MINIO_UI_PORT);
 
-        addEnv("MINIO_ROOT_USER", this.userName);
-        addEnv("MINIO_ROOT_PASSWORD", this.password);
+        if (this.userName != null) {
+            addEnv("MINIO_ROOT_USER", this.userName);
+        } else {
+            this.userName = DEFAULT_USER;
+        }
+        if (this.password != null) {
+            addEnv("MINIO_ROOT_PASSWORD", this.password);
+        } else {
+            this.password = DEFAULT_PASSWORD;
+        }
 
         withCommand("server", "--console-address", ":" + MINIO_UI_PORT, "/data");
 
