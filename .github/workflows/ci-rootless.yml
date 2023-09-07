@@ -38,7 +38,7 @@ jobs:
   test:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Setup rootless Docker
         uses: ScribeMD/rootless-docker@0.2.2
       - name: Remove Docket root socket
