@@ -9,10 +9,18 @@ import java.util.Set;
 
 /**
  * Testcontainers implementation for YugabyteDB YSQL API.
+ * <p>
+ * Supported image: {@code yugabytedb/yugabyte}
+ * <p>
+ * Exposed ports:
+ * <ul>
+ *     <li>YSQL: 5433</li>
+ *     <li>Master dashboard: 7000</li>
+ *     <li>Tserver dashboard: 9000</li>
+ * </ul>
  *
  * @see <a href="https://docs.yugabyte.com/stable/api/ysql/">YSQL API</a>
  */
-
 public class YugabyteDBYSQLContainer extends JdbcDatabaseContainer<YugabyteDBYSQLContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("yugabytedb/yugabyte");

@@ -11,9 +11,11 @@ import org.testcontainers.utility.MountableFile;
 import java.io.IOException;
 
 /**
- * Constructs a single node MongoDB replica set for testing transactions.
- * <p>To construct a multi-node MongoDB cluster, consider the <a href="https://github.com/silaev/mongodb-replica-set/">mongodb-replica-set project on GitHub</a>
- * <p>Tested on a MongoDB version 4.0.10+ (that is the default version if not specified).
+ * Testcontainers implementation for MongoDB.
+ * <p>
+ * Supported image: {@code mongo}
+ * <p>
+ * Exposed ports: 27017
  */
 @Slf4j
 public class MongoDBContainer extends GenericContainer<MongoDBContainer> {

@@ -53,6 +53,8 @@ tasks.japicmp {
     methodExcludes = [
         "org.testcontainers.containers.Container#getDockerClient()",
         "org.testcontainers.containers.ContainerState#getDockerClient()",
+        "org.testcontainers.containers.ContainerState#execInContainerWithUser(java.lang.String,java.lang.String[])",
+        "org.testcontainers.containers.ContainerState#execInContainerWithUser(java.nio.charset.Charset,java.lang.String,java.lang.String[])",
     ]
 
     fieldExcludes = []
@@ -86,8 +88,8 @@ dependencies {
 
     shaded 'org.awaitility:awaitility:4.2.0'
 
-    api platform('com.github.docker-java:docker-java-bom:3.3.2')
-    shaded platform('com.github.docker-java:docker-java-bom:3.3.2')
+    api platform('com.github.docker-java:docker-java-bom:3.3.3')
+    shaded platform('com.github.docker-java:docker-java-bom:3.3.3')
 
     api "com.github.docker-java:docker-java-api"
 

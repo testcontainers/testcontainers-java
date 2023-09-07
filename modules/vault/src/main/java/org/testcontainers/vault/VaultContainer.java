@@ -16,11 +16,11 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
- * GenericContainer subclass for Vault specific configuration and features. The main feature is the
- * withSecretInVault method, where users can specify which secrets to be pre-loaded into Vault for
- * their specific test scenario.
+ * Testcontainers implementation for Vault.
  * <p>
- * Other helpful features include the withVaultPort, and withVaultToken methods for convenience.
+ * Supported image: {@code hashicorp/vault}, {@code vault}
+ * <p>
+ * Exposure ports: 8200
  */
 public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericContainer<SELF> {
 

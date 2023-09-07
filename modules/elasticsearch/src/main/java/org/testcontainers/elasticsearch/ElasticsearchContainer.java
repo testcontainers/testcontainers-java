@@ -23,8 +23,15 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
 /**
- * Represents an elasticsearch docker instance which exposes by default port 9200 and 9300 (transport.tcp.port)
- * The docker image is by default fetched from docker.elastic.co/elasticsearch/elasticsearch
+ * Testcontainers implementation for Elasticsearch.
+ * <p>
+ * Supported image: {@code docker.elastic.co/elasticsearch/elasticsearch}
+ * <p>
+ * Exposed ports:
+ * <ul>
+ *     <li>HTTP: 9200</li>
+ *     <li>TCP Transport: 9300</li>
+ * </ul>
  */
 @Slf4j
 public class ElasticsearchContainer extends GenericContainer<ElasticsearchContainer> {

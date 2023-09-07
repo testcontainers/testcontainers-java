@@ -16,6 +16,7 @@ theme:
     favicon: 'favicon.ico'
 extra_css:
     - 'css/extra.css'
+    - 'css/tc-header.css'
 repo_name: 'testcontainers-java'
 repo_url: 'https://github.com/testcontainers/testcontainers-java'
 markdown_extensions:
@@ -80,6 +81,7 @@ nav:
           - modules/k3s.md
           - modules/kafka.md
           - modules/localstack.md
+          - modules/minio.md
           - modules/mockserver.md
           - modules/nginx.md
           - modules/pulsar.md
@@ -120,4 +122,4 @@ nav:
           - bounty.md
 edit_uri: edit/main/docs/
 extra:
-    latest_version: 1.18.3
+    latest_version: 1.19.0

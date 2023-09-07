@@ -20,9 +20,16 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Testcontainer for Neo4j.
- *
- * @param <S> "SELF" to be used in the <code>withXXX</code> methods.
+ * Testcontainers implementation for Neo4j.
+ * <p>
+ * Supported image: {@code neo4j}
+ * <p>
+ * Exposed ports:
+ * <ul>
+ *     <li>Bolt: 7687</li>
+ *     <li>HTTP: 7474</li>
+ *     <li>HTTPS: 7473</li>
+ * </ul>
  */
 public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContainer<S> {
 

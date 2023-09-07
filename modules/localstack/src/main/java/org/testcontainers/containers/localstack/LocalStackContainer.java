@@ -22,6 +22,10 @@ import java.util.stream.Collectors;
 
 /**
  * Testcontainers implementation for LocalStack.
+ * <p>
+ * Supported images: {@code localstack/localstack}, {@code localstack/localstack-pro}
+ * <p>
+ * Exposed ports: 4566
  */
 @Slf4j
 public class LocalStackContainer extends GenericContainer<LocalStackContainer> {

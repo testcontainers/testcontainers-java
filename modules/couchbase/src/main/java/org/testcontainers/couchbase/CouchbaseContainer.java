@@ -48,7 +48,14 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
- * The couchbase container initializes and configures a Couchbase Server single node cluster.
+ * Testcontainers implementation for Couchbase.
+ * <p>
+ * Supported image: {@code couchbase/server}
+ * <p>
+ * Exposed ports:
+ * <ul>
+ *     <li>Console: 8091</li>
+ * </ul>
  * <p>
  * Note that it does not depend on a specific couchbase SDK, so it can be used with both the Java SDK 2 and 3 as well
  * as the Scala SDK 1 or newer. We recommend using the latest and greatest SDKs for the best experience.
