@@ -3,6 +3,7 @@ package org.testcontainers.utility;
 import com.google.common.annotations.VisibleForTesting;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.UnstableAPI;
+import org.testcontainers.core.DefaultTestcontainersConfiguration;
 
 import java.util.function.Function;
 
@@ -26,7 +27,9 @@ public abstract class ImageNameSubstitutor implements Function<DockerImageName, 
 
     public static synchronized ImageNameSubstitutor instance() {
         if (instance == null) {
-            final String configuredClassName = TestcontainersConfiguration.getInstance().getImageSubstitutorClassName();
+            final String configuredClassName = DefaultTestcontainersConfiguration
+                .getInstance()
+                .getImageSubstitutorClassName();
 
             if (configuredClassName != null) {
                 log.debug("Attempting to instantiate an ImageNameSubstitutor with class: {}", configuredClassName);

@@ -25,7 +25,7 @@ import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.UnstableAPI;
-import org.testcontainers.utility.TestcontainersConfiguration;
+import org.testcontainers.core.DefaultTestcontainersConfiguration;
 
 import java.io.File;
 import java.net.InetSocketAddress;
@@ -210,7 +210,7 @@ public abstract class DockerClientProviderStrategy {
             Duration timeout = Duration.ofMillis(200);
             Awaitility
                 .await()
-                .atMost(TestcontainersConfiguration.getInstance().getClientPingTimeout(), TimeUnit.SECONDS)
+                .atMost(DefaultTestcontainersConfiguration.getInstance().getClientPingTimeout())
                 .pollInterval(timeout)
                 .pollDelay(Duration.ofSeconds(0)) // start checking immediately
                 .ignoreExceptionsInstanceOf(SocketTimeoutException.class)
@@ -293,7 +293,7 @@ public abstract class DockerClientProviderStrategy {
             log.info("Found Docker environment with {}", strategy.getDescription());
             log.debug(
                 "Transport type: '{}', Docker host: '{}'",
-                TestcontainersConfiguration.getInstance().getTransportType(),
+                DefaultTestcontainersConfiguration.getInstance().getTransportType(),
                 strategy.getTransportConfig().getDockerHost()
             );
 
@@ -307,7 +307,7 @@ public abstract class DockerClientProviderStrategy {
             }
 
             if (strategy.isPersistable()) {
-                TestcontainersConfiguration
+                org.testcontainers.utility.TestcontainersConfiguration
                     .getInstance()
                     .updateUserConfig("docker.client.strategy", strategy.getClass().getName());
             }
@@ -349,7 +349,7 @@ public abstract class DockerClientProviderStrategy {
     }
 
     private static Optional<? extends DockerClientProviderStrategy> loadConfiguredStrategy() {
-        String configuredDockerClientStrategyClassName = TestcontainersConfiguration
+        String configuredDockerClientStrategyClassName = DefaultTestcontainersConfiguration
             .getInstance()
             .getDockerClientStrategyClassName();
 
@@ -391,7 +391,7 @@ public abstract class DockerClientProviderStrategy {
     public static DockerClient getClientForConfig(TransportConfig transportConfig) {
         final DockerHttpClient dockerHttpClient;
 
-        String transportType = TestcontainersConfiguration.getInstance().getTransportType();
+        String transportType = DefaultTestcontainersConfiguration.getInstance().getTransportType();
         switch (transportType) {
             case "httpclient5":
                 dockerHttpClient =

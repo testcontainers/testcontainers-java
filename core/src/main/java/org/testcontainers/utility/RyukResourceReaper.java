@@ -7,6 +7,7 @@ import org.rnorth.ducttape.ratelimits.RateLimiter;
 import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.core.DefaultTestcontainersConfiguration;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -37,7 +38,7 @@ class RyukResourceReaper extends ResourceReaper {
 
     @Override
     public void init() {
-        if (!TestcontainersConfiguration.getInstance().environmentSupportsReuse()) {
+        if (!DefaultTestcontainersConfiguration.getInstance().environmentSupportsReuse()) {
             log.debug("Ryuk is enabled");
             maybeStart();
             log.info("Ryuk started - will monitor and terminate Testcontainers containers on JVM exit");
@@ -127,7 +128,12 @@ class RyukResourceReaper extends ResourceReaper {
         kiraThread.setDaemon(true);
         kiraThread.start();
         // We need to wait before we can start any containers to make sure that we delete them
-        if (!ryukScheduledLatch.await(TestcontainersConfiguration.getInstance().getRyukTimeout(), TimeUnit.SECONDS)) {
+        if (
+            !ryukScheduledLatch.await(
+                DefaultTestcontainersConfiguration.getInstance().getRyukTimeout().getSeconds(),
+                TimeUnit.SECONDS
+            )
+        ) {
             log.error("Timed out waiting for Ryuk container to start. Ryuk's logs:\n{}", ryukContainer.getLogs());
             throw new IllegalStateException(String.format("Could not connect to Ryuk at %s:%s", host, ryukPort));
         }

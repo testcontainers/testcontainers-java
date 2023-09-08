@@ -4,7 +4,7 @@ import com.github.dockerjava.api.command.PullImageResultCallback;
 import com.github.dockerjava.api.model.PullResponseItem;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
-import org.testcontainers.utility.TestcontainersConfiguration;
+import org.testcontainers.core.DefaultTestcontainersConfiguration;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -35,9 +35,9 @@ public class TimeLimitedLoggedPullImageResultCallback extends LoggedPullImageRes
         }
     );
 
-    private static final Duration PULL_PAUSE_TOLERANCE = Duration.ofSeconds(
-        TestcontainersConfiguration.getInstance().getImagePullPauseTimeout()
-    );
+    private static final Duration PULL_PAUSE_TOLERANCE = DefaultTestcontainersConfiguration
+        .getInstance()
+        .getImagePullPauseTimeout();
 
     private final Logger logger;
 

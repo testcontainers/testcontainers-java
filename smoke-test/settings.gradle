@@ -20,6 +20,7 @@ includeBuild '..'
 
 // explicit include to allow Dependabot to autodiscover subprojects
 include 'turbo-mode'
+include 'config'
 
 ext.isCI = System.getenv("CI") != null
 

@@ -14,6 +14,7 @@ import lombok.With;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ContainerFetchException;
+import org.testcontainers.core.DefaultTestcontainersConfiguration;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.DockerLoggerFactory;
 import org.testcontainers.utility.ImageNameSubstitutor;
@@ -35,7 +36,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
     private Future<DockerImageName> imageNameFuture;
 
     @With
-    private ImagePullPolicy imagePullPolicy = PullPolicy.defaultPolicy();
+    private ImagePullPolicy imagePullPolicy = DefaultTestcontainersConfiguration.getInstance().getImagePullPolicy();
 
     @With
     private ImageNameSubstitutor imageNameSubstitutor = ImageNameSubstitutor.instance();
@@ -67,7 +68,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
         final DockerImageName imageName = getImageName();
         Logger logger = DockerLoggerFactory.getLogger(imageName.toString());
         try {
-            if (!imagePullPolicy.shouldPull(imageName)) {
+            if (!this.imagePullPolicy.shouldPull(imageName)) {
                 return imageName.asCanonicalNameString();
             }
 
