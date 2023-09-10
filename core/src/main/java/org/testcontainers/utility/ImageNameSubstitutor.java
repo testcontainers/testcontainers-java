@@ -155,6 +155,11 @@ public abstract class ImageNameSubstitutor implements Function<DockerImageName, 
                 configuredInstance.getDescription()
             );
         }
+
+        @Override
+        public String toString() {
+            return getDescription();
+        }
     }
 
     private static class NoopImageNameSubstitutor extends ImageNameSubstitutor {
