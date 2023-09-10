@@ -2,6 +2,7 @@ package org.testcontainers.images;
 
 import com.github.dockerjava.api.exception.NotFoundException;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.testcontainers.DockerClientFactory;
@@ -10,11 +11,18 @@ import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.FakeImagePullPolicy;
+import org.testcontainers.utility.MockTestcontainersConfigurationRule;
+import org.testcontainers.utility.TestcontainersConfiguration;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 
 public class ImagePullPolicyTest {
+
+    @Rule
+    public MockTestcontainersConfigurationRule config = new MockTestcontainersConfigurationRule();
 
     @ClassRule
     public static DockerRegistryContainer registry = new DockerRegistryContainer();
@@ -100,6 +108,21 @@ public class ImagePullPolicyTest {
                 .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
         ) {
             expectToFailWithNotFoundException(container);
+        }
+    }
+
+    @Test
+    public void simpleConfigurationTest() {
+        Mockito
+            .doReturn(FakeImagePullPolicy.class.getCanonicalName())
+            .when(TestcontainersConfiguration.getInstance())
+            .getImagePullPolicy();
+
+        try (GenericContainer<?> container = new GenericContainer<>(imageName).withExposedPorts(8080)) {
+            container.start();
+            assertThat(container.getImage())
+                .asString()
+                .contains("imagePullPolicy=org.testcontainers.utility.FakeImagePullPolicy");
         }
     }
 
