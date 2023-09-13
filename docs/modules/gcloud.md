@@ -34,6 +34,10 @@ Spring Cloud GCP usage:
     private static final BigQueryEmulatorContainer bigQueryContainer =
             new BigQueryEmulatorContainer("ghcr.io/goccy/bigquery-emulator:0.4.3");
 
+    static {
+        bigQueryContainer.start();
+    }
+
     @TestConfiguration
     static class BigQueryConfiguration {
 
