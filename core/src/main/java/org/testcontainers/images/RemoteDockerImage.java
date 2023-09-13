@@ -11,7 +11,6 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.With;
-import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ContainerFetchException;
@@ -19,7 +18,6 @@ import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.DockerLoggerFactory;
 import org.testcontainers.utility.ImageNameSubstitutor;
 import org.testcontainers.utility.LazyFuture;
-import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -27,7 +25,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-@Slf4j
 @ToString
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 public class RemoteDockerImage extends LazyFuture<String> {
@@ -38,35 +35,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
     private Future<DockerImageName> imageNameFuture;
 
     @With
-    private ImagePullPolicy imagePullPolicy = getImagePullPolicy();
-
-    private ImagePullPolicy getImagePullPolicy() {
-        String imagePullPolicyClassName = TestcontainersConfiguration.getInstance().getImagePullPolicy();
-        if (imagePullPolicyClassName != null) {
-            log.debug("Attempting to instantiate an ImagePullPolicy with class: {}", imagePullPolicyClassName);
-            ImagePullPolicy configuredInstance;
-            try {
-                configuredInstance =
-                    (ImagePullPolicy) Thread
-                        .currentThread()
-                        .getContextClassLoader()
-                        .loadClass(imagePullPolicyClassName)
-                        .getConstructor()
-                        .newInstance();
-            } catch (Exception e) {
-                throw new IllegalArgumentException(
-                    "Configured Pull Policy could not be loaded: " + imagePullPolicyClassName,
-                    e
-                );
-            }
-
-            log.info("Found configured Pull Policy: {}", configuredInstance.getClass());
-
-            return configuredInstance;
-        } else {
-            return PullPolicy.defaultPolicy();
-        }
-    }
+    private ImagePullPolicy imagePullPolicy = PullPolicy.defaultPolicy();
 
     @With
     private ImageNameSubstitutor imageNameSubstitutor = ImageNameSubstitutor.instance();

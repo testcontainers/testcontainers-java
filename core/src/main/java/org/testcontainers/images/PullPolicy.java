@@ -1,6 +1,8 @@
 package org.testcontainers.images;
 
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
+import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.time.Duration;
 
@@ -8,6 +10,7 @@ import java.time.Duration;
  * Convenience class with logic for building common {@link ImagePullPolicy} instances.
  *
  */
+@Slf4j
 @UtilityClass
 public class PullPolicy {
 
@@ -16,7 +19,31 @@ public class PullPolicy {
      * @return {@link ImagePullPolicy}
      */
     public static ImagePullPolicy defaultPolicy() {
-        return new DefaultPullPolicy();
+        String imagePullPolicyClassName = TestcontainersConfiguration.getInstance().getImagePullPolicy();
+        if (imagePullPolicyClassName != null) {
+            log.debug("Attempting to instantiate an ImagePullPolicy with class: {}", imagePullPolicyClassName);
+            ImagePullPolicy configuredInstance;
+            try {
+                configuredInstance =
+                    (ImagePullPolicy) Thread
+                        .currentThread()
+                        .getContextClassLoader()
+                        .loadClass(imagePullPolicyClassName)
+                        .getConstructor()
+                        .newInstance();
+            } catch (Exception e) {
+                throw new IllegalArgumentException(
+                    "Configured Pull Policy could not be loaded: " + imagePullPolicyClassName,
+                    e
+                );
+            }
+
+            log.info("Found configured Pull Policy: {}", configuredInstance.getClass());
+
+            return configuredInstance;
+        } else {
+            return new DefaultPullPolicy();
+        }
     }
 
     /**
