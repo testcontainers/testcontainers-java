@@ -26,6 +26,56 @@ Start BigQuery Emulator during a test:
 [Starting a BigQuery Emulator container](../../modules/gcloud/src/test/java/org/testcontainers/containers/BigQueryEmulatorContainerTest.java) inside_block:emulatorContainer
 <!--/codeinclude-->
 
+Spring Cloud GCP usage:
+
+=== "Java"
+    ```java
+    @Container
+    private static final BigQueryEmulatorContainer bigQueryContainer =
+            new BigQueryEmulatorContainer("ghcr.io/goccy/bigquery-emulator:0.4.3");
+
+    @TestConfiguration
+    static class BigQueryConfiguration {
+
+        @Bean
+        public BigQuery bigQuery() {
+            return BigQueryOptions.newBuilder()
+                .setProjectId(bigQueryContainer.getProjectId())
+                .setHost(bigQueryContainer.getEmulatorHttpEndpoint())
+                .setLocation(bigQueryContainer.getEmulatorHttpEndpoint())
+                .setCredentials(NoCredentials.getInstance())
+                .build().getService();
+        }
+    }
+    ```
+=== "Kotlin"
+    ```kotlin
+    companion object {
+
+        @Container
+        private val bigQueryContainer = BigQueryEmulatorContainer("ghcr.io/goccy/bigquery-emulator:0.4.3")
+
+        init {
+            bigQueryContainer.start()
+        }
+
+    }
+
+    @TestConfiguration
+    class BigQueryConfiguration {
+
+        @Bean
+        fun bigQuery(): BigQuery {
+            return BigQueryOptions.newBuilder()
+                .setProjectId(bigQueryContainer.projectId)
+                .setHost(bigQueryContainer.emulatorHttpEndpoint)
+                .setLocation(bigQueryContainer.emulatorHttpEndpoint)
+                .setCredentials(NoCredentials.getInstance())
+                .build().service
+        }
+    }
+    ```
+
 ### Bigtable
 
 Start Bigtable Emulator during a test:
