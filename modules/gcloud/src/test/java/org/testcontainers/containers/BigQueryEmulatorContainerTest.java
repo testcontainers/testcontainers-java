@@ -1,5 +1,6 @@
 package org.testcontainers.containers;
 
+import com.google.cloud.NoCredentials;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.QueryJobConfiguration;
@@ -23,14 +24,17 @@ public class BigQueryEmulatorContainerTest {
         ) {
             container.start();
 
+            // bigQueryClient {
             String url = container.getEmulatorHttpEndpoint();
             BigQueryOptions options = BigQueryOptions
                 .newBuilder()
                 .setProjectId(container.getProjectId())
                 .setHost(url)
                 .setLocation(url)
+                .setCredentials(NoCredentials.getInstance())
                 .build();
             BigQuery bigQuery = options.getService();
+            // }
 
             String fn =
                 "CREATE FUNCTION testr(arr ARRAY<STRUCT<name STRING, val INT64>>) AS ((SELECT SUM(IF(elem.name = \"foo\",elem.val,null)) FROM UNNEST(arr) AS elem))";
