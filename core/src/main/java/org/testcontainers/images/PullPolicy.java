@@ -14,36 +14,42 @@ import java.time.Duration;
 @UtilityClass
 public class PullPolicy {
 
+    private static ImagePullPolicy IMAGE_PULL_POLICY;
+
     /**
      * Convenience method for returning the {@link DefaultPullPolicy} default image pull policy
      * @return {@link ImagePullPolicy}
      */
     public static ImagePullPolicy defaultPolicy() {
-        String imagePullPolicyClassName = TestcontainersConfiguration.getInstance().getImagePullPolicy();
-        if (imagePullPolicyClassName != null) {
-            log.debug("Attempting to instantiate an ImagePullPolicy with class: {}", imagePullPolicyClassName);
-            ImagePullPolicy configuredInstance;
-            try {
-                configuredInstance =
-                    (ImagePullPolicy) Thread
-                        .currentThread()
-                        .getContextClassLoader()
-                        .loadClass(imagePullPolicyClassName)
-                        .getConstructor()
-                        .newInstance();
-            } catch (Exception e) {
-                throw new IllegalArgumentException(
-                    "Configured Pull Policy could not be loaded: " + imagePullPolicyClassName,
-                    e
-                );
+        if (IMAGE_PULL_POLICY == null) {
+            String imagePullPolicyClassName = TestcontainersConfiguration.getInstance().getImagePullPolicy();
+            if (imagePullPolicyClassName != null) {
+                log.debug("Attempting to instantiate an ImagePullPolicy with class: {}", imagePullPolicyClassName);
+                ImagePullPolicy configuredInstance;
+                try {
+                    configuredInstance =
+                        (ImagePullPolicy) Thread
+                            .currentThread()
+                            .getContextClassLoader()
+                            .loadClass(imagePullPolicyClassName)
+                            .getConstructor()
+                            .newInstance();
+                } catch (Exception e) {
+                    throw new IllegalArgumentException(
+                        "Configured Pull Policy could not be loaded: " + imagePullPolicyClassName,
+                        e
+                    );
+                }
+
+                log.info("Found configured Pull Policy: {}", configuredInstance.getClass());
+
+                IMAGE_PULL_POLICY = configuredInstance;
+            } else {
+                IMAGE_PULL_POLICY = new DefaultPullPolicy();
             }
-
-            log.info("Found configured Pull Policy: {}", configuredInstance.getClass());
-
-            return configuredInstance;
-        } else {
-            return new DefaultPullPolicy();
         }
+
+        return IMAGE_PULL_POLICY;
     }
 
     /**
