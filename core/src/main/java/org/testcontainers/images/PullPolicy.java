@@ -1,5 +1,6 @@
 package org.testcontainers.images;
 
+import com.google.common.annotations.VisibleForTesting;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.utility.TestcontainersConfiguration;
@@ -14,14 +15,18 @@ import java.time.Duration;
 @UtilityClass
 public class PullPolicy {
 
-    private static ImagePullPolicy IMAGE_PULL_POLICY;
+    @VisibleForTesting
+    static ImagePullPolicy instance;
+
+    @VisibleForTesting
+    static ImagePullPolicy defaultImplementation = new DefaultPullPolicy();
 
     /**
      * Convenience method for returning the {@link DefaultPullPolicy} default image pull policy
      * @return {@link ImagePullPolicy}
      */
     public static ImagePullPolicy defaultPolicy() {
-        if (IMAGE_PULL_POLICY == null) {
+        if (instance == null) {
             String imagePullPolicyClassName = TestcontainersConfiguration.getInstance().getImagePullPolicy();
             if (imagePullPolicyClassName != null) {
                 log.debug("Attempting to instantiate an ImagePullPolicy with class: {}", imagePullPolicyClassName);
@@ -43,13 +48,13 @@ public class PullPolicy {
 
                 log.info("Found configured Pull Policy: {}", configuredInstance.getClass());
 
-                IMAGE_PULL_POLICY = configuredInstance;
+                instance = configuredInstance;
             } else {
-                IMAGE_PULL_POLICY = new DefaultPullPolicy();
+                instance = defaultImplementation;
             }
         }
 
-        return IMAGE_PULL_POLICY;
+        return instance;
     }
 
     /**

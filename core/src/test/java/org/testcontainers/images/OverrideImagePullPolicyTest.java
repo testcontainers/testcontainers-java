@@ -1,5 +1,7 @@
 package org.testcontainers.images;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -15,6 +17,24 @@ public class OverrideImagePullPolicyTest {
 
     @Rule
     public MockTestcontainersConfigurationRule config = new MockTestcontainersConfigurationRule();
+
+    private ImagePullPolicy originalInstance;
+
+    private ImagePullPolicy originalDefaultImplementation;
+
+    @Before
+    public void setUp() {
+        this.originalInstance = PullPolicy.instance;
+        this.originalDefaultImplementation = PullPolicy.defaultImplementation;
+        PullPolicy.instance = null;
+        PullPolicy.defaultImplementation = Mockito.mock(ImagePullPolicy.class);
+    }
+
+    @After
+    public void tearDown() {
+        PullPolicy.instance = originalInstance;
+        PullPolicy.defaultImplementation = originalDefaultImplementation;
+    }
 
     @Test
     public void simpleConfigurationTest() {
