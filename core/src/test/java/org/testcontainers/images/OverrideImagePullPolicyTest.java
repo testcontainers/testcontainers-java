@@ -47,9 +47,7 @@ public class OverrideImagePullPolicyTest {
             registry.start();
             GenericContainer<?> container = new GenericContainer<>(registry.createImage()).withExposedPorts(8080);
             container.start();
-            assertThat(container.getImage())
-                .asString()
-                .contains("imagePullPolicy=org.testcontainers.utility.FakeImagePullPolicy");
+            assertThat(container.getImage().imagePullPolicy).isInstanceOf(FakeImagePullPolicy.class);
             container.stop();
         }
     }

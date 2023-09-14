@@ -41,17 +41,19 @@ public class PullPolicy {
                             .newInstance();
                 } catch (Exception e) {
                     throw new IllegalArgumentException(
-                        "Configured Pull Policy could not be loaded: " + imagePullPolicyClassName,
+                        "Configured ImagePullPolicy could not be loaded: " + imagePullPolicyClassName,
                         e
                     );
                 }
 
-                log.info("Found configured Pull Policy: {}", configuredInstance.getClass());
+                log.info("Found configured Image Pull Policy: {}", configuredInstance.getClass());
 
                 instance = configuredInstance;
             } else {
                 instance = defaultImplementation;
             }
+
+            log.info("Image pull policy will be performed by: {}", instance);
         }
 
         return instance;
