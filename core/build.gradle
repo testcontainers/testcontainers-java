@@ -106,7 +106,9 @@ dependencies {
 
     shaded 'org.zeroturnaround:zt-exec:1.12'
 
-    testImplementation 'com.google.cloud.tools:jib-core:0.23.0'
+    testImplementation('com.google.cloud.tools:jib-core:0.23.0')  {
+        exclude group: 'com.google.guava', module: 'guava'
+    }
     testImplementation 'org.apache.httpcomponents:httpclient:4.5.9'
     testImplementation 'redis.clients:jedis:5.0.0'
     testImplementation 'com.rabbitmq:amqp-client:5.18.0'
