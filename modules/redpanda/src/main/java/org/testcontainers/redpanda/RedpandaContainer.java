@@ -232,6 +232,7 @@ public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
                     Map<String, Object> listenerMap = new HashMap<>();
                     listenerMap.put("address", listener.getAddress());
                     listenerMap.put("port", listener.getPort());
+                    listenerMap.put("authentication_method", authenticationMethod);
                     return listenerMap;
                 })
                 .collect(Collectors.toList());
