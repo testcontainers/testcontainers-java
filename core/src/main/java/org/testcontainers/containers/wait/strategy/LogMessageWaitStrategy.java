@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
+import java.time.Duration;
 
 public class LogMessageWaitStrategy extends AbstractWaitStrategy {
 
@@ -56,6 +57,11 @@ public class LogMessageWaitStrategy extends AbstractWaitStrategy {
 
     public LogMessageWaitStrategy withTimes(int times) {
         this.times = times;
+        return this;
+    }
+
+    public LogMessageWaitStrategy withTimeout(Duration timeout) {
+        this.startupTimeout = timeout;
         return this;
     }
 }
