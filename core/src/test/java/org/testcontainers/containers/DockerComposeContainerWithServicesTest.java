@@ -19,6 +19,10 @@ public class DockerComposeContainerWithServicesTest {
         "src/test/resources/compose-scaling-multiple-containers.yml"
     );
 
+    public static final File COMPOSE_FILE_WITH_HEALTHCHECK = new File(
+        "src/test/resources/docker-compose-healthcheck.yml"
+    );
+
     public static final File COMPOSE_FILE_WITH_INLINE_SCALE = new File(
         "src/test/resources/compose-with-inline-scale-test.yml"
     );
@@ -111,6 +115,32 @@ public class DockerComposeContainerWithServicesTest {
         )
             .as("We expect a timeout from the startup timeout")
             .isInstanceOf(TimeoutException.class);
+    }
+
+    @Test
+    public void testWaitingForHealthcheck() {
+        try (
+            DockerComposeContainer<?> compose = new DockerComposeContainer<>(COMPOSE_FILE_WITH_HEALTHCHECK)
+                .waitingFor("redis", Wait.forHealthcheck().withStartupTimeout(Duration.ofMinutes(2)))
+        ) {
+            compose.start();
+
+            verifyStartedContainers(compose, "redis_1");
+        }
+    }
+
+    @Test
+    public void testWaitingForHealthcheckWithRestartDoesNotCrash() {
+        try (
+            DockerComposeContainer<?> compose = new DockerComposeContainer<>(COMPOSE_FILE_WITH_HEALTHCHECK)
+                .waitingFor("redis", Wait.forHealthcheck().withStartupTimeout(Duration.ofMinutes(1)))
+        ) {
+            compose.start();
+            compose.stop();
+            compose.start();
+
+            verifyStartedContainers(compose, "redis_1");
+        }
     }
 
     private void verifyStartedContainers(final DockerComposeContainer<?> compose, final String... names) {
