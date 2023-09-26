@@ -82,7 +82,7 @@ public class GenericContainerTest {
     @Test
     public void shouldCopyTransferableAsFile() {
         try (
-            // transferable {
+            // transferableFile {
             GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
                 .withStartupCheckStrategy(new NoopStartupCheckStrategy())
                 .withCopyToContainer(Transferable.of("test"), "/tmp/test")

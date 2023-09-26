@@ -16,7 +16,7 @@ Files can be copied into the container before startup, or can be copied from the
 Using `Transferable`, file content will be placed in the specified location.
 
 <!--codeinclude-->
-[Copying files using Transferable](../../core/src/test/java/org/testcontainers/containers/GenericContainerTest.java) inside_block:transferable
+[Copying files using Transferable](../../core/src/test/java/org/testcontainers/containers/GenericContainerTest.java) inside_block:transferableFile
 <!--/codeinclude-->
 
 Setting file mode is also possible. 
