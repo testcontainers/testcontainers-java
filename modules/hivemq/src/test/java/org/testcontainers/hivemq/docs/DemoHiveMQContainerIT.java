@@ -14,42 +14,45 @@ import org.testcontainers.utility.MountableFile;
 import java.util.concurrent.TimeUnit;
 
 @Testcontainers
-public class DemoHiveMQContainerIT {
+class DemoHiveMQContainerIT {
 
     // ceVersion {
     @Container
-    final HiveMQContainer hivemqCe =
-        new HiveMQContainer(DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3"))
-            .withLogLevel(Level.DEBUG);
+    final HiveMQContainer hivemqCe = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3"))
+        .withLogLevel(Level.DEBUG);
+
     // }
 
-    // eeVersion {
+    // hiveEEVersion {
     @Container
-    final HiveMQContainer hivemqEe =
-        new HiveMQContainer(DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3"))
-            .withLogLevel(Level.DEBUG);
+    final HiveMQContainer hivemqEe = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq4").withTag("4.7.4"))
+        .withLogLevel(Level.DEBUG);
+
     // }
 
     // eeVersionWithControlCenter {
     @Container
-    final HiveMQContainer hivemqEeWithControLCenter =
-        new HiveMQContainer(DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3"))
-            .withLogLevel(Level.DEBUG)
-            .withHiveMQConfig(MountableFile.forClasspathResource("/inMemoryConfig.xml"))
-            .withControlCenter();
+    final HiveMQContainer hivemqEeWithControlCenter = new HiveMQContainer(
+        DockerImageName.parse("hivemq/hivemq4").withTag("4.7.4")
+    )
+        .withLogLevel(Level.DEBUG)
+        .withHiveMQConfig(MountableFile.forClasspathResource("/inMemoryConfig.xml"))
+        .withControlCenter();
+
     // }
 
     // specificVersion {
     @Container
     final HiveMQContainer hivemqSpecificVersion = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq-ce:2021.3"));
+
     // }
 
     @Test
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
-    public void test() throws Exception {
-
+    void test() throws Exception {
         // mqtt5client {
-        final Mqtt5BlockingClient client = Mqtt5Client.builder()
+        final Mqtt5BlockingClient client = Mqtt5Client
+            .builder()
             .serverPort(hivemqCe.getMqttPort())
             .serverHost(hivemqCe.getHost())
             .buildBlocking();

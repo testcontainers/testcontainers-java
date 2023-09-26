@@ -50,18 +50,29 @@ public class TestcontainersConfiguration {
     private static File USER_CONFIG_FILE = new File(System.getProperty("user.home"), "." + PROPERTIES_FILE_NAME);
 
     private static final String AMBASSADOR_IMAGE = "richnorth/ambassador";
+
     private static final String SOCAT_IMAGE = "alpine/socat";
+
     private static final String VNC_RECORDER_IMAGE = "testcontainers/vnc-recorder";
+
     private static final String COMPOSE_IMAGE = "docker/compose";
+
     private static final String ALPINE_IMAGE = "alpine";
+
     private static final String RYUK_IMAGE = "testcontainers/ryuk";
+
     private static final String KAFKA_IMAGE = "confluentinc/cp-kafka";
+
     private static final String PULSAR_IMAGE = "apachepulsar/pulsar";
+
     private static final String LOCALSTACK_IMAGE = "localstack/localstack";
+
     private static final String SSHD_IMAGE = "testcontainers/sshd";
+
     private static final String ORACLE_IMAGE = "gvenzl/oracle-xe";
 
-    private static final ImmutableMap<DockerImageName, String> CONTAINER_MAPPING = ImmutableMap.<DockerImageName, String>builder()
+    private static final ImmutableMap<DockerImageName, String> CONTAINER_MAPPING = ImmutableMap
+        .<DockerImageName, String>builder()
         .put(DockerImageName.parse(AMBASSADOR_IMAGE), "ambassador.container.image")
         .put(DockerImageName.parse(SOCAT_IMAGE), "socat.container.image")
         .put(DockerImageName.parse(VNC_RECORDER_IMAGE), "vncrecorder.container.image")
@@ -78,7 +89,7 @@ public class TestcontainersConfiguration {
     @Getter(lazy = true)
     private static final TestcontainersConfiguration instance = loadConfiguration();
 
-    @SuppressWarnings({"ConstantConditions", "unchecked", "rawtypes"})
+    @SuppressWarnings({ "ConstantConditions", "unchecked", "rawtypes" })
     @VisibleForTesting
     static AtomicReference<TestcontainersConfiguration> getInstanceField() {
         // Lazy Getter from Lombok changes the field's type to AtomicReference
@@ -86,10 +97,16 @@ public class TestcontainersConfiguration {
     }
 
     private final Properties userProperties;
+
     private final Properties classpathProperties;
+
     private final Map<String, String> environment;
 
-    TestcontainersConfiguration(Properties userProperties, Properties classpathProperties, final Map<String, String> environment) {
+    TestcontainersConfiguration(
+        Properties userProperties,
+        Properties classpathProperties,
+        final Map<String, String> environment
+    ) {
         this.userProperties = userProperties;
         this.classpathProperties = classpathProperties;
         this.environment = environment;
@@ -121,8 +138,7 @@ public class TestcontainersConfiguration {
     }
 
     public boolean isRyukPrivileged() {
-        return Boolean
-            .parseBoolean(getEnvVarOrProperty("ryuk.container.privileged", "false"));
+        return Boolean.parseBoolean(getEnvVarOrProperty("ryuk.container.privileged", "true"));
     }
 
     @Deprecated
@@ -203,14 +219,21 @@ public class TestcontainersConfiguration {
 
     @Nullable
     @Contract("_, !null, _ -> !null")
-    private String getConfigurable(@NotNull final String propertyName, @Nullable final String defaultValue, Properties... propertiesSources) {
+    private String getConfigurable(
+        @NotNull final String propertyName,
+        @Nullable final String defaultValue,
+        Properties... propertiesSources
+    ) {
         String envVarName = propertyName.replaceAll("\\.", "_").toUpperCase();
         if (!envVarName.startsWith("TESTCONTAINERS_") && !envVarName.startsWith("DOCKER_")) {
             envVarName = "TESTCONTAINERS_" + envVarName;
         }
 
         if (environment.containsKey(envVarName)) {
-            return environment.get(envVarName);
+            String value = environment.get(envVarName);
+            if (!value.isEmpty()) {
+                return value;
+            }
         }
 
         for (final Properties properties : propertiesSources) {
@@ -256,18 +279,16 @@ public class TestcontainersConfiguration {
     }
 
     /**
-     * Gets a configured setting from an environment variable.
-     * <p>
-     * Note that when searching environment variables, the prefix `TESTCONTAINERS_` will usually be applied to the
-     * property name, which will be converted to upper-case with underscore separators. This prefix will not be added
-     * if the property name begins `docker.`.
+     * Gets a configured setting from <code>~/.testcontainers.properties</code>.
      *
      * @param propertyName name of configuration file property (dot-separated lower case)
      * @return the found value, or null if not set
      */
     @Contract("_, !null -> !null")
     public String getUserProperty(@NotNull final String propertyName, @Nullable final String defaultValue) {
-        return getConfigurable(propertyName, defaultValue);
+        return this.userProperties.get(propertyName) != null
+            ? (String) this.userProperties.get(propertyName)
+            : defaultValue;
     }
 
     /**
@@ -279,11 +300,15 @@ public class TestcontainersConfiguration {
      */
     @Deprecated
     public Properties getProperties() {
-        return Stream.of(userProperties, classpathProperties)
-            .reduce(new Properties(), (a, b) -> {
-                a.putAll(b);
-                return a;
-            });
+        return Stream
+            .of(userProperties, classpathProperties)
+            .reduce(
+                new Properties(),
+                (a, b) -> {
+                    a.putAll(b);
+                    return a;
+                }
+            );
     }
 
     @Deprecated
@@ -318,15 +343,20 @@ public class TestcontainersConfiguration {
     private static TestcontainersConfiguration loadConfiguration() {
         return new TestcontainersConfiguration(
             readProperties(USER_CONFIG_FILE.toURI().toURL()),
-            ClasspathScanner.scanFor(PROPERTIES_FILE_NAME)
+            ClasspathScanner
+                .scanFor(PROPERTIES_FILE_NAME)
                 .map(TestcontainersConfiguration::readProperties)
-                .reduce(new Properties(), (a, b) -> {
-                    // first-write-wins merging - URLs appearing first on the classpath alphabetically will take priority.
-                    // Note that this means that file: URLs will always take priority over jar: URLs.
-                    b.putAll(a);
-                    return b;
-                }),
-            System.getenv());
+                .reduce(
+                    new Properties(),
+                    (a, b) -> {
+                        // first-write-wins merging - URLs appearing first on the classpath alphabetically will take priority.
+                        // Note that this means that file: URLs will always take priority over jar: URLs.
+                        b.putAll(a);
+                        return b;
+                    }
+                ),
+            System.getenv()
+        );
     }
 
     private static Properties readProperties(URL url) {
@@ -335,9 +365,17 @@ public class TestcontainersConfiguration {
         try (InputStream inputStream = url.openStream()) {
             properties.load(inputStream);
         } catch (FileNotFoundException e) {
-            log.warn("Attempted to read Testcontainers configuration file at {} but the file was not found. Exception message: {}", url, ExceptionUtils.getRootCauseMessage(e));
+            log.debug(
+                "Attempted to read Testcontainers configuration file at {} but the file was not found. Exception message: {}",
+                url,
+                ExceptionUtils.getRootCauseMessage(e)
+            );
         } catch (IOException e) {
-            log.warn("Attempted to read Testcontainers configuration file at {} but could it not be loaded. Exception message: {}", url, ExceptionUtils.getRootCauseMessage(e));
+            log.debug(
+                "Attempted to read Testcontainers configuration file at {} but could it not be loaded. Exception message: {}",
+                url,
+                ExceptionUtils.getRootCauseMessage(e)
+            );
         }
         return properties;
     }
@@ -349,14 +387,14 @@ public class TestcontainersConfiguration {
     DockerImageName getConfiguredSubstituteImage(DockerImageName original) {
         for (final Map.Entry<DockerImageName, String> entry : CONTAINER_MAPPING.entrySet()) {
             if (original.isCompatibleWith(entry.getKey())) {
-                return
-                    Optional.ofNullable(entry.getValue())
-                        .map(propertyName -> getEnvVarOrProperty(propertyName, null))
-                        .map(String::valueOf)
-                        .map(String::trim)
-                        .map(DockerImageName::parse)
-                        .orElse(original)
-                        .asCompatibleSubstituteFor(original);
+                return Optional
+                    .ofNullable(entry.getValue())
+                    .map(propertyName -> getEnvVarOrProperty(propertyName, null))
+                    .map(String::valueOf)
+                    .map(String::trim)
+                    .map(DockerImageName::parse)
+                    .orElse(original)
+                    .asCompatibleSubstituteFor(original);
             }
         }
         return original;

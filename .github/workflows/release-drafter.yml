@@ -3,15 +3,21 @@ name: Release Drafter
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
     types: [opened, reopened, synchronize]
 
+permissions:
+  contents: read
+
 jobs:
   update_release_draft:
+    permissions:
+      contents: write  # for release-drafter/release-drafter to create a github release
+      pull-requests: write  # for release-drafter/release-drafter to add label to PR
     if: github.repository == 'testcontainers/testcontainers-java'
     runs-on: ubuntu-latest
     steps:
-      - uses: release-drafter/release-drafter@e9ee02fbac03d922bac6212003695e8358dd88b0 # v5.19.0
+      - uses: release-drafter/release-drafter@65c5fb495d1e69aa8c08a3317bc44ff8aabe9772 # v5.19.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

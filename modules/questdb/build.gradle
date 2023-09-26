@@ -1,0 +1,26 @@
+description = "Testcontainers :: QuestDB"
+
+dependencies {
+    api project(':testcontainers')
+    api project(':jdbc')
+
+    testRuntimeOnly 'org.postgresql:postgresql:42.6.0'
+    testImplementation project(':jdbc-test')
+    testImplementation 'org.assertj:assertj-core:3.24.2'
+    testImplementation 'org.questdb:questdb:7.3.2'
+    testImplementation 'org.awaitility:awaitility:4.2.0'
+    testImplementation 'org.apache.httpcomponents:httpclient:4.5.14'
+}
+
+test {
+    javaLauncher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
+}
+
+compileTestJava {
+    javaCompiler = javaToolchains.compilerFor {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
+    options.release.set(11)
+}

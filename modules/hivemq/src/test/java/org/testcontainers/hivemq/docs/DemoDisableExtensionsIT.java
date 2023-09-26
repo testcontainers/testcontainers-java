@@ -10,47 +10,58 @@ import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 @Testcontainers
-public class DemoDisableExtensionsIT {
+class DemoDisableExtensionsIT {
 
     // noExtensions {
     @Container
-    final HiveMQContainer hivemqNoExtensions = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq4").withTag("4.7.4"))
+    final HiveMQContainer hivemqNoExtensions = new HiveMQContainer(
+        DockerImageName.parse("hivemq/hivemq4").withTag("4.7.4")
+    )
         .withoutPrepackagedExtensions();
+
     // }
 
     // noKafkaExtension {
     @Container
-    final HiveMQContainer hivemqNoKafkaExtension = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq4").withTag("4.7.4"))
+    final HiveMQContainer hivemqNoKafkaExtension = new HiveMQContainer(
+        DockerImageName.parse("hivemq/hivemq4").withTag("4.7.4")
+    )
         .withoutPrepackagedExtensions("hivemq-kafka-extension");
+
     // }
 
     // startDisabled {
-    private final HiveMQExtension hiveMQExtension = HiveMQExtension.builder()
+    private final HiveMQExtension hiveMQExtension = HiveMQExtension
+        .builder()
         .id("extension-1")
         .name("my-extension")
         .version("1.0")
         .disabledOnStartup(true)
-        .mainClass(MyExtension.class).build();
+        .mainClass(MyExtension.class)
+        .build();
 
     @Container
     final HiveMQContainer hivemq = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq4").withTag("4.7.4"))
         .withExtension(hiveMQExtension);
-    // }
 
+    // }
 
     // startFromFilesystem {
     @Container
-    final HiveMQContainer hivemqExtensionFromFilesystem = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq4").withTag("4.7.4"))
+    final HiveMQContainer hivemqExtensionFromFilesystem = new HiveMQContainer(
+        DockerImageName.parse("hivemq/hivemq4").withTag("4.7.4")
+    )
         .withExtension(MountableFile.forHostPath("src/test/resources/modifier-extension"));
+
     // }
 
-
-    // runtimeEnable {
+    // hiveRuntimeEnable {
     @Test
     void test_disable_enable_extension() throws Exception {
         hivemq.enableExtension(hiveMQExtension);
         hivemq.disableExtension(hiveMQExtension);
     }
+
     // }
 
     // runtimeEnableFilesystem {

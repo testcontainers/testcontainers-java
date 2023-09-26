@@ -15,27 +15,39 @@ import org.testcontainers.utility.MountableFile;
 import java.util.concurrent.TimeUnit;
 
 @Testcontainers
-public class DemoFilesIT {
+class DemoFilesIT {
 
     // hivemqHome {
-    final HiveMQContainer hivemqFileInHome = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3"))
+    final HiveMQContainer hivemqFileInHome = new HiveMQContainer(
+        DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3")
+    )
         .withFileInHomeFolder(
             MountableFile.forHostPath("src/test/resources/additionalFile.txt"),
-            "/path/in/home/folder");
+            "/path/in/home/folder"
+        );
+
     // }
 
     // extensionHome {
     @Container
-    final HiveMQContainer hivemqFileInExtensionHome = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3"))
-        .withExtension(HiveMQExtension.builder()
-            .id("extension-1")
-            .name("my-extension")
-            .version("1.0")
-            .mainClass(MyExtension.class).build())
+    final HiveMQContainer hivemqFileInExtensionHome = new HiveMQContainer(
+        DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3")
+    )
+        .withExtension(
+            HiveMQExtension
+                .builder()
+                .id("extension-1")
+                .name("my-extension")
+                .version("1.0")
+                .mainClass(MyExtension.class)
+                .build()
+        )
         .withFileInExtensionHomeFolder(
             MountableFile.forHostPath("src/test/resources/additionalFile.txt"),
             "extension-1",
-            "/path/in/extension/home");
+            "/path/in/extension/home"
+        );
+
     // }
 
     // withLicenses {
@@ -43,14 +55,15 @@ public class DemoFilesIT {
     final HiveMQContainer hivemq = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3"))
         .withLicense(MountableFile.forHostPath("src/test/resources/myLicense.lic"))
         .withLicense(MountableFile.forHostPath("src/test/resources/myExtensionLicense.elic"));
+
     // }
 
     @Test
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
-    public void test() throws Exception {
-
+    void test() throws Exception {
         // mqtt5client {
-        final Mqtt5BlockingClient client = Mqtt5Client.builder()
+        final Mqtt5BlockingClient client = Mqtt5Client
+            .builder()
             .serverPort(hivemq.getMqttPort())
             .serverHost(hivemq.getHost())
             .buildBlocking();

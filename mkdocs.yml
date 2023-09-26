@@ -1,4 +1,5 @@
-site_name: Testcontainers
+site_name: Testcontainers for Java
+site_url: https://java.testcontainers.org
 plugins:
     - search
     - codeinclude
@@ -15,6 +16,7 @@ theme:
     favicon: 'favicon.ico'
 extra_css:
     - 'css/extra.css'
+    - 'css/tc-header.css'
 repo_name: 'testcontainers-java'
 repo_url: 'https://github.com/testcontainers/testcontainers-java'
 markdown_extensions:
@@ -39,9 +41,11 @@ nav:
           - features/startup_and_waits.md
           - features/container_logs.md
           - features/creating_images.md
+          - features/jib.md
           - features/configuration.md
           - features/image_name_substitution.md
           - features/advanced_options.md
+          - features/reuse.md
     - Modules:
           - Databases:
                 - modules/databases/index.md
@@ -51,6 +55,7 @@ nav:
                 - modules/databases/cockroachdb.md
                 - modules/databases/couchbase.md
                 - modules/databases/clickhouse.md
+                - modules/databases/cratedb.md
                 - modules/databases/db2.md
                 - modules/databases/dynalite.md
                 - modules/databases/influxdb.md
@@ -63,8 +68,12 @@ nav:
                 - modules/databases/orientdb.md
                 - modules/databases/postgres.md
                 - modules/databases/presto.md
+                - modules/databases/questdb.md
+                - modules/databases/tidb.md
                 - modules/databases/trino.md
+                - modules/databases/yugabytedb.md
           - modules/azure.md
+          - modules/consul.md
           - modules/docker_compose.md
           - modules/elasticsearch.md
           - modules/gcloud.md
@@ -72,10 +81,13 @@ nav:
           - modules/k3s.md
           - modules/kafka.md
           - modules/localstack.md
+          - modules/minio.md
           - modules/mockserver.md
           - modules/nginx.md
           - modules/pulsar.md
           - modules/rabbitmq.md
+          - modules/redpanda.md
+          - modules/solace.md
           - modules/solr.md
           - modules/toxiproxy.md
           - modules/vault.md
@@ -85,14 +97,21 @@ nav:
           - test_framework_integration/junit_5.md
           - test_framework_integration/spock.md
           - test_framework_integration/manual_lifecycle_control.md
+          - test_framework_integration/external.md
+    - Examples: examples.md
     - System Requirements:
           - supported_docker_environment/index.md
+          - error_missing_container_runtime_environment.md
           - Continuous Integration:
+                - supported_docker_environment/continuous_integration/aws_codebuild.md
                 - supported_docker_environment/continuous_integration/dind_patterns.md
                 - supported_docker_environment/continuous_integration/circle_ci.md
+                - supported_docker_environment/continuous_integration/concourse_ci.md
                 - supported_docker_environment/continuous_integration/drone.md
                 - supported_docker_environment/continuous_integration/gitlab_ci.md
                 - supported_docker_environment/continuous_integration/bitbucket_pipelines.md
+                - supported_docker_environment/continuous_integration/tekton.md
+                - supported_docker_environment/continuous_integration/travis.md
           - supported_docker_environment/windows.md
           - supported_docker_environment/logging_config.md
           - supported_docker_environment/image_registry_rate_limiting.md
@@ -101,5 +120,6 @@ nav:
           - contributing.md
           - contributing_docs.md
           - bounty.md
+edit_uri: edit/main/docs/
 extra:
-    latest_version: 1.16.3
+    latest_version: 1.19.0

@@ -9,9 +9,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class RemoteDockerImageTest {
 
@@ -19,37 +17,37 @@ public class RemoteDockerImageTest {
     public void toStringContainsOnlyImageName() {
         String imageName = Base58.randomString(8).toLowerCase();
         RemoteDockerImage remoteDockerImage = new RemoteDockerImage(DockerImageName.parse(imageName));
-        assertThat(remoteDockerImage.toString(), containsString("imageName=" + imageName));
+        assertThat(remoteDockerImage.toString()).contains("imageName=" + imageName);
     }
 
     @Test
-    public void toStringWithExceptionContainsOnlyImageNameFuture()  {
+    public void toStringWithExceptionContainsOnlyImageNameFuture() {
         CompletableFuture<String> imageNameFuture = new CompletableFuture<>();
         imageNameFuture.completeExceptionally(new RuntimeException("arbitrary"));
 
         RemoteDockerImage remoteDockerImage = new RemoteDockerImage(imageNameFuture);
-        assertThat(remoteDockerImage.toString(), containsString("imageName=java.lang.RuntimeException: arbitrary"));
+        assertThat(remoteDockerImage.toString()).contains("imageName=java.lang.RuntimeException: arbitrary");
     }
 
-    @Test(timeout=5000L)
-    public void toStringDoesntResolveImageNameFuture()  {
+    @Test(timeout = 5000L)
+    public void toStringDoesntResolveImageNameFuture() {
         CompletableFuture<String> imageNameFuture = new CompletableFuture<>();
 
         // verify that we've set up the test properly
-        assertFalse(imageNameFuture.isDone());
+        assertThat(imageNameFuture).isNotDone();
 
         RemoteDockerImage remoteDockerImage = new RemoteDockerImage(imageNameFuture);
-        assertThat(remoteDockerImage.toString(), containsString("imageName=<resolving>"));
+        assertThat(remoteDockerImage.toString()).contains("imageName=<resolving>");
 
         // Make sure the act of calling toString doesn't resolve the imageNameFuture
-        assertFalse(imageNameFuture.isDone());
+        assertThat(imageNameFuture).isNotDone();
 
         String imageName = Base58.randomString(8).toLowerCase();
         imageNameFuture.complete(imageName);
-        assertThat(remoteDockerImage.toString(), containsString("imageName=" + imageName));
+        assertThat(remoteDockerImage.toString()).contains("imageName=" + imageName);
     }
 
-    @Test(timeout=5000L)
+    @Test(timeout = 5000L)
     public void toStringDoesntResolveLazyFuture() throws Exception {
         String imageName = Base58.randomString(8).toLowerCase();
         AtomicBoolean resolved = new AtomicBoolean(false);
@@ -62,17 +60,17 @@ public class RemoteDockerImageTest {
         };
 
         // verify that we've set up the test properly
-        assertFalse(imageNameFuture.isDone());
+        assertThat(imageNameFuture).isNotDone();
 
         RemoteDockerImage remoteDockerImage = new RemoteDockerImage(imageNameFuture);
-        assertThat(remoteDockerImage.toString(), containsString("imageName=<resolving>"));
+        assertThat(remoteDockerImage.toString()).contains("imageName=<resolving>");
 
         // Make sure the act of calling toString doesn't resolve the imageNameFuture
-        assertFalse(imageNameFuture.isDone());
-        assertFalse(resolved.get());
+        assertThat(imageNameFuture).isNotDone();
+        assertThat(resolved).isFalse();
 
         // Trigger resolve
         imageNameFuture.get();
-        assertThat(remoteDockerImage.toString(), containsString("imageName=" + imageName));
+        assertThat(remoteDockerImage.toString()).contains("imageName=" + imageName);
     }
 }

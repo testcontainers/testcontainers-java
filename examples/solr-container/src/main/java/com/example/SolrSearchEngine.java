@@ -1,15 +1,14 @@
 package com.example;
 
-import java.util.stream.Collectors;
-
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrDocument;
+
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public class SolrSearchEngine implements SearchEngine {
@@ -20,7 +19,6 @@ public class SolrSearchEngine implements SearchEngine {
 
     @SneakyThrows
     public SearchResult search(String term) {
-
         SolrQuery query = new SolrQuery();
         query.setQuery("title:" + ClientUtils.escapeQueryChars(term));
         QueryResponse response = client.query(COLLECTION_NAME, query);
@@ -28,12 +26,10 @@ public class SolrSearchEngine implements SearchEngine {
     }
 
     private SearchResult createResult(QueryResponse response) {
-        return SearchResult.builder()
+        return SearchResult
+            .builder()
             .totalHits(response.getResults().getNumFound())
-            .results(response.getResults()
-                .stream()
-                .map(SolrDocument::getFieldValueMap)
-                .collect(Collectors.toList()))
+            .results(response.getResults().stream().map(SolrDocument::getFieldValueMap).collect(Collectors.toList()))
             .build();
     }
 }

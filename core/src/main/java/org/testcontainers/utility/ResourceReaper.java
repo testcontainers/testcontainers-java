@@ -1,6 +1,7 @@
 package org.testcontainers.utility;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.Network;
@@ -11,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.containers.GenericContainer;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -47,35 +49,45 @@ public class ResourceReaper {
     static final List<List<Map.Entry<String, String>>> DEATH_NOTE = new ArrayList<>(
         Arrays.asList(
             Stream
-                .concat(
-                    DockerClientFactory.DEFAULT_LABELS.entrySet().stream(),
-                    MARKER_LABELS.entrySet().stream()
-                )
+                .concat(DockerClientFactory.DEFAULT_LABELS.entrySet().stream(), MARKER_LABELS.entrySet().stream())
                 .<Map.Entry<String, String>>map(it -> new SimpleEntry<>("label", it.getKey() + "=" + it.getValue()))
                 .collect(Collectors.toList())
         )
     );
 
     private static ResourceReaper instance;
+
     final DockerClient dockerClient = DockerClientFactory.lazyClient();
+
     private Map<String, String> registeredContainers = new ConcurrentHashMap<>();
+
     private Set<String> registeredNetworks = Sets.newConcurrentHashSet();
+
     private Set<String> registeredImages = Sets.newConcurrentHashSet();
+
     private AtomicBoolean hookIsSet = new AtomicBoolean(false);
 
     /**
      * Internal constructor to avoid custom implementations
      */
-    ResourceReaper() {
-    }
+    ResourceReaper() {}
 
-    public synchronized static ResourceReaper instance() {
+    public static synchronized ResourceReaper instance() {
         if (instance == null) {
             boolean useRyuk = !Boolean.parseBoolean(System.getenv("TESTCONTAINERS_RYUK_DISABLED"));
             if (useRyuk) {
                 //noinspection deprecation
                 instance = new RyukResourceReaper();
             } else {
+                String ryukDisabledMessage =
+                    "\n" +
+                    "********************************************************************************" +
+                    "\n" +
+                    "Ryuk has been disabled. This can cause unexpected behavior in your environment." +
+                    "\n" +
+                    "********************************************************************************";
+                LOGGER.warn(ryukDisabledMessage);
+
                 instance = new JVMHookResourceReaper();
             }
         }
@@ -115,7 +127,9 @@ public class ResourceReaper {
      */
     public void registerLabelsFilterForCleanup(Map<String, String> labels) {
         registerFilterForCleanup(
-            labels.entrySet().stream()
+            labels
+                .entrySet()
+                .stream()
                 .map(it -> new SimpleEntry<>("label", it.getKey() + "=" + it.getValue()))
                 .collect(Collectors.toList())
         );
@@ -170,9 +184,11 @@ public class ResourceReaper {
             LOGGER.trace("Was going to stop container but it apparently no longer exists: {}", containerId);
             return;
         } catch (Exception e) {
-            LOGGER.trace("Error encountered when checking container for shutdown (ID: {}) - it may not have been stopped, or may already be stopped. Root cause: {}",
+            LOGGER.trace(
+                "Error encountered when checking container for shutdown (ID: {}) - it may not have been stopped, or may already be stopped. Root cause: {}",
                 containerId,
-                Throwables.getRootCause(e).getMessage());
+                Throwables.getRootCause(e).getMessage()
+            );
             return;
         }
 
@@ -182,9 +198,11 @@ public class ResourceReaper {
                 dockerClient.killContainerCmd(containerId).exec();
                 LOGGER.trace("Stopped container: {}", imageName);
             } catch (Exception e) {
-                LOGGER.trace("Error encountered shutting down container (ID: {}) - it may not have been stopped, or may already be stopped. Root cause: {}",
+                LOGGER.trace(
+                    "Error encountered shutting down container (ID: {}) - it may not have been stopped, or may already be stopped. Root cause: {}",
                     containerId,
-                    Throwables.getRootCause(e).getMessage());
+                    Throwables.getRootCause(e).getMessage()
+                );
             }
         }
 
@@ -200,9 +218,11 @@ public class ResourceReaper {
             dockerClient.removeContainerCmd(containerId).withRemoveVolumes(true).withForce(true).exec();
             LOGGER.debug("Removed container and associated volume(s): {}", imageName);
         } catch (Exception e) {
-            LOGGER.trace("Error encountered shutting down container (ID: {}) - it may not have been stopped, or may already be stopped. Root cause: {}",
+            LOGGER.trace(
+                "Error encountered shutting down container (ID: {}) - it may not have been stopped, or may already be stopped. Root cause: {}",
                 containerId,
-                Throwables.getRootCause(e).getMessage());
+                Throwables.getRootCause(e).getMessage()
+            );
         }
     }
 
@@ -225,9 +245,8 @@ public class ResourceReaper {
      */
     @Deprecated
     public void removeNetworkById(String id) {
-      removeNetwork(id);
+        removeNetwork(id);
     }
-
 
     private void removeNetwork(String id) {
         try {
@@ -237,7 +256,10 @@ public class ResourceReaper {
                 // Listing by ID first prevents docker-java logging an error if we just go blindly into removeNetworkCmd
                 networks = dockerClient.listNetworksCmd().withIdFilter(id).exec();
             } catch (Exception e) {
-                LOGGER.trace("Error encountered when looking up network for removal (name: {}) - it may not have been removed", id);
+                LOGGER.trace(
+                    "Error encountered when looking up network for removal (name: {}) - it may not have been removed",
+                    id
+                );
                 return;
             }
 
@@ -249,7 +271,10 @@ public class ResourceReaper {
                     registeredNetworks.remove(network.getId());
                     LOGGER.debug("Removed network: {}", id);
                 } catch (Exception e) {
-                    LOGGER.trace("Error encountered removing network (name: {}) - it may not have been removed", network.getName());
+                    LOGGER.trace(
+                        "Error encountered removing network (name: {}) - it may not have been removed",
+                        network.getName()
+                    );
                 }
             }
         } finally {
@@ -294,7 +319,9 @@ public class ResourceReaper {
     void setHook() {
         if (hookIsSet.compareAndSet(false, true)) {
             // If the JVM stops without containers being stopped, try and stop the container.
-            Runtime.getRuntime().addShutdownHook(new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP, this::performCleanup));
+            Runtime
+                .getRuntime()
+                .addShutdownHook(new Thread(DockerClientFactory.TESTCONTAINERS_THREAD_GROUP, this::performCleanup));
         }
     }
 
@@ -308,11 +335,20 @@ public class ResourceReaper {
     }
 
     /**
+     *
      * @deprecated internal API
      */
     @Deprecated
-    public void init() {
+    public CreateContainerCmd register(GenericContainer<?> container, CreateContainerCmd cmd) {
+        cmd.getLabels().putAll(getLabels());
+        return cmd;
     }
+
+    /**
+     * @deprecated internal API
+     */
+    @Deprecated
+    public void init() {}
 
     static class FilterRegistry {
 
@@ -320,6 +356,7 @@ public class ResourceReaper {
         static final String ACKNOWLEDGMENT = "ACK";
 
         private final BufferedReader in;
+
         private final OutputStream out;
 
         FilterRegistry(InputStream ryukInputStream, OutputStream ryukOutputStream) {
@@ -335,10 +372,13 @@ public class ResourceReaper {
          * @throws IOException if communication with Ryuk fails
          */
         protected boolean register(List<Map.Entry<String, String>> filters) throws IOException {
-            String query = filters.stream()
+            String query = filters
+                .stream()
                 .map(it -> {
                     try {
-                        return URLEncoder.encode(it.getKey(), "UTF-8") + "=" + URLEncoder.encode(it.getValue(), "UTF-8");
+                        return (
+                            URLEncoder.encode(it.getKey(), "UTF-8") + "=" + URLEncoder.encode(it.getValue(), "UTF-8")
+                        );
                     } catch (UnsupportedEncodingException e) {
                         throw new RuntimeException(e);
                     }
@@ -360,6 +400,5 @@ public class ResourceReaper {
             }
             return ACKNOWLEDGMENT.equalsIgnoreCase(line);
         }
-
     }
 }

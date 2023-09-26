@@ -12,32 +12,17 @@ DockerImageName localstackImage = DockerImageName.parse("localstack/localstack:0
 @Rule
 public LocalStackContainer localstack = new LocalStackContainer(localstackImage)
         .withServices(S3);
-
-@Test
-public void someTestMethod() {
-    // AWS SDK v1
-    AmazonS3 s3 = AmazonS3ClientBuilder
-                    .standard()
-                    .withEndpointConfiguration(localstack.getEndpointConfiguration(S3))
-                    .withCredentials(localstack.getDefaultCredentialsProvider())
-                    .build();
-    
-            s3.createBucket("foo");
-            s3.putObject("foo", "bar", "baz");
-
-    // AWS SDK v2
-    S3Client s3 = S3Client
-                .builder()
-                .endpointOverride(localstack.getEndpointOverride(LocalStackContainer.Service.S3))
-                .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(
-                    localstack.getAccessKey(), localstack.getSecretKey()
-                )))
-                .region(Region.of(localstack.getRegion()))
-                .build();
-
-            s3.createBucket(b -> b.bucket("foo"));
-            s3.putObject(b -> b.bucket("foo").key("bar"), RequestBody.fromBytes("baz".getBytes()));
 ```
+
+## Creating a client using AWS SDK
+
+<!--codeinclude-->
+[AWS SDK V1](../../modules/localstack/src/test/java/org/testcontainers/containers/localstack/LocalstackContainerTest.java) inside_block:with_aws_sdk_v1
+<!--/codeinclude-->
+
+<!--codeinclude-->
+[AWS SDK V2](../../modules/localstack/src/test/java/org/testcontainers/containers/localstack/LocalstackContainerTest.java) inside_block:with_aws_sdk_v2
+<!--/codeinclude-->
 
 Environment variables listed in [Localstack's README](https://github.com/localstack/localstack#configurations) may be used to customize Localstack's configuration. 
 Use the `.withEnv(key, value)` method on `LocalStackContainer` to apply configuration settings.
@@ -57,7 +42,7 @@ Testcontainers will inform Localstack of the best hostname automatically, using 
 * when running the Localstack container [with a custom network defined](/features/networking/#advanced-networking), it is expected that all calls to the container will be **from other containers on that network**. `HOSTNAME_EXTERNAL` will be set to the *last* network alias that has been configured for the Localstack container.
 
     <!--codeinclude-->
-    [Localstack container running without a custom network](../../modules/localstack/src/test/java/org/testcontainers/containers/localstack/LocalstackContainerTest.java) inside_block:with_network
+    [Localstack container running with a custom network](../../modules/localstack/src/test/java/org/testcontainers/containers/localstack/LocalstackContainerTest.java) inside_block:with_network
     <!--/codeinclude-->
 
 * Other usage scenarios, such as where the Localstack container is used from both the test host and containers on a custom network are not automatically supported. If you have this use case, you should set `HOSTNAME_EXTERNAL` manually.

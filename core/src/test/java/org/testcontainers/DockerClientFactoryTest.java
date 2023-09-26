@@ -2,8 +2,6 @@ package org.testcontainers;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.rnorth.visibleassertions.VisibleAssertions;
-import org.testcontainers.DockerClientFactory.DiskSpaceUsage;
 import org.testcontainers.dockerclient.LogToStringContainerCallback;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MockTestcontainersConfigurationRule;
@@ -30,22 +28,15 @@ public class DockerClientFactoryTest {
             dockFactory.runInsideDocker(
                 imageName,
                 cmd -> cmd.withCmd("sh", "-c", "echo 'SUCCESS'"),
-                (client, id) ->
-                    client.logContainerCmd(id)
+                (client, id) -> {
+                    return client
+                        .logContainerCmd(id)
                         .withStdOut(true)
                         .exec(new LogToStringContainerCallback())
-                        .toString()
+                        .toString();
+                }
             );
         }
-    }
-
-    @Test
-    public void shouldHandleBigDiskSize() throws Exception {
-        String dfOutput = "/dev/disk1     2982480572 1491240286 2982480572    31%    /";
-        DiskSpaceUsage usage = DockerClientFactory.instance().parseAvailableDiskSpace(dfOutput);
-
-        VisibleAssertions.assertEquals("Available MB is correct", 2982480572L / 1024L, usage.availableMB.orElse(0L));
-        VisibleAssertions.assertEquals("Available percentage is correct", 31, usage.usedPercent.orElse(0));
     }
 
     @Test

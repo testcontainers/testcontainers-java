@@ -1,6 +1,5 @@
 package org.testcontainers.utility;
 
-
 import com.google.common.net.HostAndPort;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -20,16 +19,31 @@ public final class DockerImageName {
 
     /* Regex patterns used for validation */
     private static final String ALPHA_NUMERIC = "[a-z0-9]+";
+
     private static final String SEPARATOR = "([.]|_{1,2}|-+)";
+
     private static final String REPO_NAME_PART = ALPHA_NUMERIC + "(" + SEPARATOR + ALPHA_NUMERIC + ")*";
+
     private static final Pattern REPO_NAME = Pattern.compile(REPO_NAME_PART + "(/" + REPO_NAME_PART + ")*");
 
+    private static final String LIBRARY_PREFIX = "library/";
+
     private final String rawName;
-    @With @Getter private final String registry;
-    @With @Getter private final String repository;
-    @NotNull @With(AccessLevel.PRIVATE)
+
+    @With
+    @Getter
+    private final String registry;
+
+    @With
+    @Getter
+    private final String repository;
+
+    @NotNull
+    @With(AccessLevel.PRIVATE)
     private final Versioning versioning;
-    @Nullable @With(AccessLevel.PRIVATE)
+
+    @Nullable
+    @With(AccessLevel.PRIVATE)
     private final DockerImageName compatibleSubstituteFor;
 
     /**
@@ -57,10 +71,14 @@ public final class DockerImageName {
         final int slashIndex = fullImageName.indexOf('/');
 
         String remoteName;
-        if (slashIndex == -1 ||
-            (!fullImageName.substring(0, slashIndex).contains(".") &&
+        if (
+            slashIndex == -1 ||
+            (
+                !fullImageName.substring(0, slashIndex).contains(".") &&
                 !fullImageName.substring(0, slashIndex).contains(":") &&
-                !fullImageName.substring(0, slashIndex).equals("localhost"))) {
+                !fullImageName.substring(0, slashIndex).equals("localhost")
+            )
+        ) {
             registry = "";
             remoteName = fullImageName;
         } else {
@@ -99,10 +117,14 @@ public final class DockerImageName {
         final int slashIndex = nameWithoutTag.indexOf('/');
 
         String remoteName;
-        if (slashIndex == -1 ||
-            (!nameWithoutTag.substring(0, slashIndex).contains(".") &&
+        if (
+            slashIndex == -1 ||
+            (
+                !nameWithoutTag.substring(0, slashIndex).contains(".") &&
                 !nameWithoutTag.substring(0, slashIndex).contains(":") &&
-                !nameWithoutTag.substring(0, slashIndex).equals("localhost"))) {
+                !nameWithoutTag.substring(0, slashIndex).equals("localhost")
+            )
+        ) {
             registry = "";
             remoteName = nameWithoutTag;
         } else {
@@ -163,7 +185,9 @@ public final class DockerImageName {
             throw new IllegalArgumentException(repository + " is not a valid Docker image name (in " + rawName + ")");
         }
         if (!versioning.isValid()) {
-            throw new IllegalArgumentException(versioning + " is not a valid image versioning identifier (in " + rawName + ")");
+            throw new IllegalArgumentException(
+                versioning + " is not a valid image versioning identifier (in " + rawName + ")"
+            );
         }
     }
 
@@ -209,8 +233,15 @@ public final class DockerImageName {
      * @return whether this image has declared compatibility.
      */
     public boolean isCompatibleWith(DockerImageName other) {
-        // is this image already the same or equivalent?
-        if (other.equals(this)) {
+        // Make sure we always compare against a version of the image name containing the LIBRARY_PREFIX
+        String finalImageName;
+        if (this.repository.startsWith(LIBRARY_PREFIX)) {
+            finalImageName = this.repository;
+        } else {
+            finalImageName = LIBRARY_PREFIX + this.repository;
+        }
+        DockerImageName imageWithLibraryPrefix = DockerImageName.parse(finalImageName);
+        if (other.equals(this) || imageWithLibraryPrefix.equals(this)) {
             return true;
         }
 
@@ -246,18 +277,16 @@ public final class DockerImageName {
 
         throw new IllegalStateException(
             String.format(
-                "Failed to verify that image '%s' is a compatible substitute for '%s'. This generally means that "
-                    +
-                    "you are trying to use an image that Testcontainers has not been designed to use. If this is "
-                    +
-                    "deliberate, and if you are confident that the image is compatible, you should declare "
-                    +
-                    "compatibility in code using the `asCompatibleSubstituteFor` method. For example:\n"
-                    +
-                    "   DockerImageName myImage = DockerImageName.parse(\"%s\").asCompatibleSubstituteFor(\"%s\");\n"
-                    +
-                    "and then use `myImage` instead.",
-                this.rawName, exampleOther.rawName, this.rawName, exampleOther.rawName
+                "Failed to verify that image '%s' is a compatible substitute for '%s'. This generally means that " +
+                "you are trying to use an image that Testcontainers has not been designed to use. If this is " +
+                "deliberate, and if you are confident that the image is compatible, you should declare " +
+                "compatibility in code using the `asCompatibleSubstituteFor` method. For example:\n" +
+                "   DockerImageName myImage = DockerImageName.parse(\"%s\").asCompatibleSubstituteFor(\"%s\");\n" +
+                "and then use `myImage` instead.",
+                this.rawName,
+                exampleOther.rawName,
+                this.rawName,
+                exampleOther.rawName
             )
         );
     }

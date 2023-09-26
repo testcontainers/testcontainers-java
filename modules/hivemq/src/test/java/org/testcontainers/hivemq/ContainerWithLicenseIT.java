@@ -20,26 +20,29 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
-public class ContainerWithLicenseIT {
+class ContainerWithLicenseIT {
 
     @Test
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
     void test() throws Exception {
-        final HiveMQExtension hiveMQExtension = HiveMQExtension.builder()
+        final HiveMQExtension hiveMQExtension = HiveMQExtension
+            .builder()
             .id("extension-1")
             .name("my-extension")
             .version("1.0")
-            .mainClass(LicenceCheckerExtension.class).build();
+            .mainClass(LicenceCheckerExtension.class)
+            .build();
 
-        try (final HiveMQContainer hivemq =
-                 new HiveMQContainer(DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3"))
-                     .withHiveMQConfig(MountableFile.forClasspathResource("/inMemoryConfig.xml"))
-                     .withExtension(hiveMQExtension)
-                     .waitForExtension(hiveMQExtension)
-                     .withLicense(MountableFile.forClasspathResource("/myLicense.lic"))
-                     .withLicense(MountableFile.forClasspathResource("/myExtensionLicense.elic"))) {
-
-
+        try (
+            final HiveMQContainer hivemq = new HiveMQContainer(
+                DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3")
+            )
+                .withHiveMQConfig(MountableFile.forClasspathResource("/inMemoryConfig.xml"))
+                .withExtension(hiveMQExtension)
+                .waitForExtension(hiveMQExtension)
+                .withLicense(MountableFile.forClasspathResource("/myLicense.lic"))
+                .withLicense(MountableFile.forClasspathResource("/myExtensionLicense.elic"))
+        ) {
             hivemq.start();
             TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort(), hivemq.getHost());
         }
@@ -49,16 +52,19 @@ public class ContainerWithLicenseIT {
     public static class LicenceCheckerExtension implements ExtensionMain {
 
         @Override
-        public void extensionStart(@NotNull ExtensionStartInput extensionStartInput, @NotNull ExtensionStartOutput extensionStartOutput) {
-
+        public void extensionStart(
+            @NotNull ExtensionStartInput extensionStartInput,
+            @NotNull ExtensionStartOutput extensionStartOutput
+        ) {
             final PublishInboundInterceptor publishInboundInterceptor = (publishInboundInput, publishInboundOutput) -> {
-
                 final File homeFolder = extensionStartInput.getServerInformation().getHomeFolder();
                 final File myLicence = new File(homeFolder, "license/myLicense.lic");
                 final File myExtensionLicence = new File(homeFolder, "license/myExtensionLicense.elic");
 
                 if (myLicence.exists() && myExtensionLicence.exists()) {
-                    publishInboundOutput.getPublishPacket().setPayload(ByteBuffer.wrap("modified".getBytes(StandardCharsets.UTF_8)));
+                    publishInboundOutput
+                        .getPublishPacket()
+                        .setPayload(ByteBuffer.wrap("modified".getBytes(StandardCharsets.UTF_8)));
                 }
             };
 
@@ -70,9 +76,9 @@ public class ContainerWithLicenseIT {
         }
 
         @Override
-        public void extensionStop(@NotNull ExtensionStopInput extensionStopInput, @NotNull ExtensionStopOutput extensionStopOutput) {
-
-        }
+        public void extensionStop(
+            @NotNull ExtensionStopInput extensionStopInput,
+            @NotNull ExtensionStopOutput extensionStopOutput
+        ) {}
     }
-
 }

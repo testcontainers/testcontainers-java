@@ -1,18 +1,10 @@
 package org.testcontainers.junit.jupiter;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.containers.wait.strategy.Wait;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
+import static org.assertj.core.api.Assertions.assertThat;
 
 // testClass {
 @Testcontainers
@@ -31,8 +23,8 @@ class MixedLifecycleTests {
 
     @Test
     void test() {
-        assertTrue(MY_SQL_CONTAINER.isRunning());
-        assertTrue(postgresqlContainer.isRunning());
+        assertThat(MY_SQL_CONTAINER.isRunning()).isTrue();
+        assertThat(postgresqlContainer.isRunning()).isTrue();
     }
 }
 // }

@@ -9,23 +9,22 @@ import spock.lang.Stepwise
 @Testcontainers
 class TestcontainersRestartBetweenTestsIT extends Specification {
 
-    GenericContainer genericContainer = new GenericContainer(SpockTestImages.HTTPD_IMAGE)
-            .withExposedPorts(80)
+	GenericContainer genericContainer = new GenericContainer(SpockTestImages.HTTPD_IMAGE)
+	.withExposedPorts(80)
 
-    @Shared
-    String lastContainerId
+	@Shared
+	String lastContainerId
 
-    def "retrieving first id"() {
-        when:
-        lastContainerId = genericContainer.containerId
+	def "retrieving first id"() {
+		when:
+		lastContainerId = genericContainer.containerId
 
-        then:
-        true
-    }
+		then:
+		true
+	}
 
-    def "containers is recreated between tests"() {
-        expect:
-        genericContainer.containerId != lastContainerId
-    }
-
+	def "containers is recreated between tests"() {
+		expect:
+		genericContainer.containerId != lastContainerId
+	}
 }

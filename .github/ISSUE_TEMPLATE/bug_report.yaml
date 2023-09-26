@@ -1,0 +1,121 @@
+name: Bug Report
+description: File a bug report
+title: "[Bug]: "
+labels: ["type/bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report! Before submitting a `bug`, please make sure there is no existing issue for the one you encountered and it has been discussed with the team via [discussions](https://github.com/testcontainers/testcontainers-java/discussions) or Slack.
+  - type: dropdown
+    id: module
+    attributes:
+      label: Module
+      description: Which Testcontainers module are you using?
+      options:
+        - Core
+        - Azure
+        - Cassandra
+        - Clickhouse
+        - CockroachDB
+        - Consul
+        - Couchbase
+        - CrateDB
+        - DB2
+        - Dynalite
+        - Elasticsearch
+        - GCloud
+        - HiveMQ
+        - InfluxDB
+        - K3S
+        - Kafka
+        - LocalStack
+        - MariaDB
+        - MinIO
+        - MockServer
+        - MongoDB
+        - MSSQLServer
+        - MySQL
+        - Neo4j
+        - NGINX
+        - Oracle-XE
+        - OrientDB
+        - PostgreSQL
+        - Presto
+        - Pulsar
+        - QuestDB
+        - RabbitMQ
+        - Redpanda
+        - Selenium
+        - Solace
+        - Solr
+        - TiDB
+        - ToxiProxy
+        - Trino
+        - Vault
+        - YugabyteDB
+    validations:
+      required: true
+  - type: input
+    id: tc-version
+    attributes:
+      label: Testcontainers version
+      description: Which Testcontainers version are you using?
+      placeholder: ex. 1.17.2
+    validations:
+      required: true
+  - type: dropdown
+    id: latest-version
+    attributes:
+      label: Using the latest Testcontainers version?
+      description: If you are not using the latest version, can you update your project and try to reproduce the issue? Is it still happening?
+      options:
+        - 'Yes'
+        - 'No'
+    validations:
+      required: true
+  - type: input
+    id: host-os
+    attributes:
+      label: Host OS
+      description: Which Operating System are you using?
+      placeholder: e.g. Linux, Windows
+    validations:
+      required: true
+  - type: input
+    id: host-arch
+    attributes:
+      label: Host Arch
+      description: Which architecture are you using?
+      placeholder: e.g. x86, ARM
+    validations:
+      required: true
+  - type: textarea
+    id: docker-version
+    attributes:
+      label: Docker version
+      description: Please run `docker version` and copy and paste the output into this field.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Provide the context and the expected result.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant log output. The content will be automatically formatted as code, so no need for backticks.
+      render: shell
+  - type: textarea
+    id: additional-information
+    attributes:
+      label: Additional Information
+      description: |
+        Any links or references to have more context about the issue.
+
+        Tip: You can attach a minimal sample project to reproduce the issue or provide further log files by clicking into this area to focus it and then dragging files in.

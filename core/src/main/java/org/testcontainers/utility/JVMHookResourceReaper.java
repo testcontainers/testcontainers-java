@@ -30,24 +30,29 @@ class JVMHookResourceReaper extends ResourceReaper {
     }
 
     private void prune(PruneType pruneType, List<Map.Entry<String, String>> filters) {
-        String[] labels = filters.stream()
+        String[] labels = filters
+            .stream()
             .filter(it -> "label".equals(it.getKey()))
             .map(Map.Entry::getValue)
             .toArray(String[]::new);
         switch (pruneType) {
             // Docker only prunes stopped containers, so we have to do it manually
             case CONTAINERS:
-                List<Container> containers = dockerClient.listContainersCmd()
+                List<Container> containers = dockerClient
+                    .listContainersCmd()
                     .withFilter("label", Arrays.asList(labels))
                     .withShowAll(true)
                     .exec();
 
-                containers.parallelStream().forEach(container -> {
-                    dockerClient.removeContainerCmd(container.getId())
-                        .withForce(true)
-                        .withRemoveVolumes(true)
-                        .exec();
-                });
+                containers
+                    .parallelStream()
+                    .forEach(container -> {
+                        dockerClient
+                            .removeContainerCmd(container.getId())
+                            .withForce(true)
+                            .withRemoveVolumes(true)
+                            .exec();
+                    });
                 break;
             default:
                 dockerClient.pruneCmd(pruneType).withLabelFilter(labels).exec();

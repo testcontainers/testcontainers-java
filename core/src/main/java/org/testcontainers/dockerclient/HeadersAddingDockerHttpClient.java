@@ -19,9 +19,7 @@ class HeadersAddingDockerHttpClient implements DockerHttpClient {
 
     @Override
     public Response execute(Request request) {
-        request = Request.builder().from(request)
-            .putAllHeaders(headers)
-            .build();
+        request = Request.builder().from(request).putAllHeaders(headers).build();
         return delegate.execute(request);
     }
 }

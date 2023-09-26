@@ -14,13 +14,11 @@ import spock.lang.Specification
 @Testcontainers
 class MySqlContainerIT extends Specification {
 
-    @Shared
-    MySQLContainer mySQLContainer = new MySQLContainer(SpockTestImages.MYSQL_IMAGE)
+	@Shared
+	MySQLContainer mySQLContainer = new MySQLContainer(SpockTestImages.MYSQL_IMAGE)
 
-    def "dummy test"() {
-        expect:
-        mySQLContainer.isRunning()
-    }
-
-
+	def "dummy test"() {
+		expect:
+		mySQLContainer.isRunning()
+	}
 }

@@ -3,6 +3,7 @@ package org.testcontainers.containers;
 import org.testcontainers.utility.DockerImageName;
 
 public class Db2ContainerProvider extends JdbcDatabaseContainerProvider {
+
     @Override
     public boolean supports(String databaseType) {
         return databaseType.equals(Db2Container.NAME);

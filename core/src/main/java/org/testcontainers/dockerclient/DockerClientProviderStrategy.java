@@ -27,7 +27,6 @@ import org.testcontainers.DockerClientFactory;
 import org.testcontainers.UnstableAPI;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
-import javax.net.SocketFactory;
 import java.io.File;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -40,10 +39,11 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -54,8 +54,18 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.net.SocketFactory;
+
 /**
  * Mechanism to find a viable Docker client configuration according to the host system environment.
+ * <p>
+ * The order is:
+ * <ul>
+ *     <li>{@code TestcontainersHostPropertyClientProviderStrategy}</li>
+ *     <li>{@code EnvironmentAndSystemPropertyClientProviderStrategy}</li>
+ *     <li>Persistable {@code DockerClientProviderStrategy} in <code>~/.testcontainers.properties</code></li>
+ *     <li>Other strategies order by priority</li>
+ * </ul>
  */
 @Slf4j
 public abstract class DockerClientProviderStrategy {
@@ -68,10 +78,11 @@ public abstract class DockerClientProviderStrategy {
     @Getter
     private Info info;
 
-    private final RateLimiter PING_RATE_LIMITER = RateLimiterBuilder.newBuilder()
-            .withRate(10, TimeUnit.SECONDS)
-            .withConstantThroughput()
-            .build();
+    private final RateLimiter PING_RATE_LIMITER = RateLimiterBuilder
+        .newBuilder()
+        .withRate(10, TimeUnit.SECONDS)
+        .withConstantThroughput()
+        .build();
 
     private static final AtomicBoolean FAIL_FAST_ALWAYS = new AtomicBoolean(false);
 
@@ -86,6 +97,17 @@ public abstract class DockerClientProviderStrategy {
 
     protected boolean isPersistable() {
         return true;
+    }
+
+    public boolean allowUserOverrides() {
+        return true;
+    }
+
+    /**
+   /* @return the path under which the Docker unix socket is reachable relative to the Docker daemon
+    */
+    public String getRemoteDockerUnixSocketPath() {
+        return null;
     }
 
     /**
@@ -109,14 +131,18 @@ public abstract class DockerClientProviderStrategy {
     public DockerClient getClient() {
         DockerClient dockerClient = getDockerClient();
         try {
-            Unreliables.retryUntilSuccess(30, TimeUnit.SECONDS, () -> {
-                return PING_RATE_LIMITER.getWhenReady(() -> {
-                    log.debug("Pinging docker daemon...");
-                    dockerClient.pingCmd().exec();
-                    log.debug("Pinged");
-                    return true;
-                });
-            });
+            Unreliables.retryUntilSuccess(
+                30,
+                TimeUnit.SECONDS,
+                () -> {
+                    return PING_RATE_LIMITER.getWhenReady(() -> {
+                        log.debug("Pinging docker daemon...");
+                        dockerClient.pingCmd().exec();
+                        log.debug("Pinged");
+                        return true;
+                    });
+                }
+            );
         } catch (TimeoutException e) {
             IOUtils.closeQuietly(dockerClient);
             throw e;
@@ -143,7 +169,12 @@ public abstract class DockerClientProviderStrategy {
                 if (sslConfig != null) {
                     try {
                         socketFactory = sslConfig.getSSLContext().getSocketFactory();
-                    } catch (KeyManagementException | UnrecoverableKeyException | NoSuchAlgorithmException | KeyStoreException e) {
+                    } catch (
+                        KeyManagementException
+                        | UnrecoverableKeyException
+                        | NoSuchAlgorithmException
+                        | KeyStoreException e
+                    ) {
                         log.warn("Exception while creating SSLSocketFactory", e);
                         return false;
                     }
@@ -157,16 +188,17 @@ public abstract class DockerClientProviderStrategy {
                     log.debug("DOCKER_HOST socket file '{}' does not exist", dockerHost.getPath());
                     return false;
                 }
-                socketProvider = () -> {
-                    switch (dockerHost.getScheme()) {
-                        case "unix":
-                            return UnixSocket.get(dockerHost.getPath());
-                        case "npipe":
-                            return new NamedPipeSocket(dockerHost.getPath());
-                        default:
-                            throw new IllegalStateException("Unexpected scheme " + dockerHost.getScheme());
-                    }
-                };
+                socketProvider =
+                    () -> {
+                        switch (dockerHost.getScheme()) {
+                            case "unix":
+                                return UnixSocket.get(dockerHost.getPath());
+                            case "npipe":
+                                return new NamedPipeSocket(dockerHost.getPath());
+                            default:
+                                throw new IllegalStateException("Unexpected scheme " + dockerHost.getScheme());
+                        }
+                    };
                 socketAddress = new InetSocketAddress("localhost", 2375);
                 break;
             default:
@@ -176,7 +208,8 @@ public abstract class DockerClientProviderStrategy {
 
         try (Socket socket = socketProvider.call()) {
             Duration timeout = Duration.ofMillis(200);
-            Awaitility.await()
+            Awaitility
+                .await()
                 .atMost(TestcontainersConfiguration.getInstance().getClientPingTimeout(), TimeUnit.SECONDS)
                 .pollInterval(timeout)
                 .pollDelay(Duration.ofSeconds(0)) // start checking immediately
@@ -195,15 +228,17 @@ public abstract class DockerClientProviderStrategy {
      * @return a working DockerClientConfig, as determined by successful execution of a ping command
      */
     public static DockerClientProviderStrategy getFirstValidStrategy(List<DockerClientProviderStrategy> strategies) {
-
         if (FAIL_FAST_ALWAYS.get()) {
-            throw new IllegalStateException("Previous attempts to find a Docker environment failed. Will not retry. Please see logs and check configuration");
+            throw new IllegalStateException(
+                "Previous attempts to find a Docker environment failed. Will not retry. Please see logs and check configuration"
+            );
         }
 
         List<String> configurationFailures = new ArrayList<>();
         List<DockerClientProviderStrategy> allStrategies = new ArrayList<>();
 
-        // The environment has the highest priority
+        // Manually enforce priority independent of priority property of strategy
+        allStrategies.add(new TestcontainersHostPropertyClientProviderStrategy());
         allStrategies.add(new EnvironmentAndSystemPropertyClientProviderStrategy());
 
         // Next strategy to try out is the one configured using the Testcontainers configuration mechanism
@@ -214,7 +249,6 @@ public abstract class DockerClientProviderStrategy {
             .stream()
             .sorted(Comparator.comparing(DockerClientProviderStrategy::getPriority).reversed())
             .collect(Collectors.toCollection(() -> allStrategies));
-
 
         Predicate<DockerClientProviderStrategy> distinctStrategyClassPredicate = new Predicate<DockerClientProviderStrategy>() {
             final Set<Class<? extends DockerClientProviderStrategy>> classes = new HashSet<>();
@@ -232,14 +266,17 @@ public abstract class DockerClientProviderStrategy {
             .filter(strategy -> tryOutStrategy(configurationFailures, strategy))
             .findFirst()
             .orElseThrow(() -> {
-                log.error("Could not find a valid Docker environment. Please check configuration. Attempted configurations were:");
-                for (String failureMessage : configurationFailures) {
-                    log.error("    " + failureMessage);
-                }
-                log.error("As no valid configuration was found, execution cannot continue");
+                log.error(
+                    "Could not find a valid Docker environment. Please check configuration. Attempted configurations were:\n" +
+                    configurationFailures.stream().map(it -> "\t" + it).collect(Collectors.joining("\n")) +
+                    "As no valid configuration was found, execution cannot continue.\n" +
+                    "See https://java.testcontainers.org/on_failure.html for more details."
+                );
 
                 FAIL_FAST_ALWAYS.set(true);
-                return new IllegalStateException("Could not find a valid Docker environment. Please see logs and check configuration");
+                return new IllegalStateException(
+                    "Could not find a valid Docker environment. Please see logs and check configuration"
+                );
             });
     }
 
@@ -270,30 +307,39 @@ public abstract class DockerClientProviderStrategy {
             }
 
             if (strategy.isPersistable()) {
-                TestcontainersConfiguration.getInstance().updateUserConfig("docker.client.strategy", strategy.getClass().getName());
+                TestcontainersConfiguration
+                    .getInstance()
+                    .updateUserConfig("docker.client.strategy", strategy.getClass().getName());
             }
 
             return true;
         } catch (Exception | ExceptionInInitializerError | NoClassDefFoundError e) {
-            @Nullable String throwableMessage = e.getMessage();
+            @Nullable
+            String throwableMessage = e.getMessage();
             @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
             Throwable rootCause = Throwables.getRootCause(e);
-            @Nullable String rootCauseMessage = rootCause.getMessage();
+            @Nullable
+            String rootCauseMessage = rootCause.getMessage();
 
             String failureDescription;
             if (throwableMessage != null && throwableMessage.equals(rootCauseMessage)) {
-                failureDescription = String.format("%s: failed with exception %s (%s)",
+                failureDescription =
+                    String.format(
+                        "%s: failed with exception %s (%s)",
                         strategy.getClass().getSimpleName(),
                         e.getClass().getSimpleName(),
-                        throwableMessage);
+                        throwableMessage
+                    );
             } else {
-                failureDescription = String.format("%s: failed with exception %s (%s). Root cause %s (%s)",
+                failureDescription =
+                    String.format(
+                        "%s: failed with exception %s (%s). Root cause %s (%s)",
                         strategy.getClass().getSimpleName(),
                         e.getClass().getSimpleName(),
                         throwableMessage,
                         rootCause.getClass().getSimpleName(),
                         rootCauseMessage
-                );
+                    );
             }
             configurationFailures.add(failureDescription);
 
@@ -303,20 +349,28 @@ public abstract class DockerClientProviderStrategy {
     }
 
     private static Optional<? extends DockerClientProviderStrategy> loadConfiguredStrategy() {
-        String configuredDockerClientStrategyClassName = TestcontainersConfiguration.getInstance().getDockerClientStrategyClassName();
+        String configuredDockerClientStrategyClassName = TestcontainersConfiguration
+            .getInstance()
+            .getDockerClientStrategyClassName();
 
         return Stream
             .of(configuredDockerClientStrategyClassName)
             .filter(Objects::nonNull)
             .flatMap(it -> {
                 try {
-                    Class<? extends DockerClientProviderStrategy> strategyClass = (Class) Thread.currentThread().getContextClassLoader().loadClass(it);
+                    Class<? extends DockerClientProviderStrategy> strategyClass = (Class) Thread
+                        .currentThread()
+                        .getContextClassLoader()
+                        .loadClass(it);
                     return Stream.of(strategyClass.newInstance());
                 } catch (ClassNotFoundException e) {
-                    log.warn("Can't instantiate a strategy from {} (ClassNotFoundException). " +
+                    log.warn(
+                        "Can't instantiate a strategy from {} (ClassNotFoundException). " +
                         "This probably means that cached configuration refers to a client provider " +
                         "class that is not available in this version of Testcontainers. Other " +
-                        "strategies will be tried instead.", it);
+                        "strategies will be tried instead.",
+                        it
+                    );
                     return Stream.empty();
                 } catch (InstantiationException | IllegalAccessException e) {
                     log.warn("Can't instantiate a strategy from {}", it, e);
@@ -325,7 +379,12 @@ public abstract class DockerClientProviderStrategy {
             })
             // Ignore persisted strategy if it's not persistable anymore
             .filter(DockerClientProviderStrategy::isPersistable)
-            .peek(strategy -> log.info("Loaded {} from ~/.testcontainers.properties, will try it first", strategy.getClass().getName()))
+            .peek(strategy -> {
+                log.info(
+                    "Loaded {} from ~/.testcontainers.properties, will try it first",
+                    strategy.getClass().getName()
+                );
+            })
             .findFirst();
     }
 
@@ -335,10 +394,11 @@ public abstract class DockerClientProviderStrategy {
         String transportType = TestcontainersConfiguration.getInstance().getTransportType();
         switch (transportType) {
             case "httpclient5":
-                dockerHttpClient = new ZerodepDockerHttpClient.Builder()
-                    .dockerHost(transportConfig.getDockerHost())
-                    .sslConfig(transportConfig.getSslConfig())
-                    .build();
+                dockerHttpClient =
+                    new ZerodepDockerHttpClient.Builder()
+                        .dockerHost(transportConfig.getDockerHost())
+                        .sslConfig(transportConfig.getSslConfig())
+                        .build();
                 break;
             default:
                 throw new IllegalArgumentException("Unknown transport type '" + transportType + "'");
@@ -349,31 +409,37 @@ public abstract class DockerClientProviderStrategy {
         if (configBuilder.build().getApiVersion() == RemoteApiVersion.UNKNOWN_VERSION) {
             configBuilder.withApiVersion(RemoteApiVersion.VERSION_1_32);
         }
+        Map<String, String> headers = new HashMap<>();
+        headers.put("x-tc-sid", DockerClientFactory.SESSION_ID);
+        headers.put("User-Agent", String.format("tc-java/%s", DockerClientFactory.TESTCONTAINERS_VERSION));
+
         return DockerClientImpl.getInstance(
             new AuthDelegatingDockerClientConfig(
-                configBuilder
-                    .withDockerHost(transportConfig.getDockerHost().toString())
-                    .build()
+                configBuilder.withDockerHost(transportConfig.getDockerHost().toString()).build()
             ),
-            new HeadersAddingDockerHttpClient(
-                dockerHttpClient,
-                Collections.singletonMap("x-tc-sid", DockerClientFactory.SESSION_ID)
-            )
+            new HeadersAddingDockerHttpClient(dockerHttpClient, headers)
         );
     }
 
     public synchronized String getDockerHostIpAddress() {
         if (dockerHostIpAddress == null) {
-            dockerHostIpAddress = resolveDockerHostIpAddress(getDockerClient(), getTransportConfig().getDockerHost());
+            dockerHostIpAddress =
+                resolveDockerHostIpAddress(
+                    getDockerClient(),
+                    getTransportConfig().getDockerHost(),
+                    allowUserOverrides()
+                );
         }
         return dockerHostIpAddress;
     }
 
     @VisibleForTesting
-    static String resolveDockerHostIpAddress(DockerClient client, URI dockerHost) {
-        String hostOverride = System.getenv("TESTCONTAINERS_HOST_OVERRIDE");
-        if (!StringUtils.isBlank(hostOverride)) {
-            return hostOverride;
+    static String resolveDockerHostIpAddress(DockerClient client, URI dockerHost, boolean allowUserOverrides) {
+        if (allowUserOverrides) {
+            String hostOverride = System.getenv("TESTCONTAINERS_HOST_OVERRIDE");
+            if (!StringUtils.isBlank(hostOverride)) {
+                return hostOverride;
+            }
         }
 
         switch (dockerHost.getScheme()) {
@@ -384,7 +450,8 @@ public abstract class DockerClientProviderStrategy {
             case "unix":
             case "npipe":
                 if (DockerClientConfigUtils.IN_A_CONTAINER) {
-                    return client.inspectNetworkCmd()
+                    return client
+                        .inspectNetworkCmd()
                         .withNetworkId("bridge")
                         .exec()
                         .getIpam()

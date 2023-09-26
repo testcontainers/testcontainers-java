@@ -6,7 +6,6 @@ import java.util.Optional;
  * Cache, for storing data associated with keys.
  */
 public interface Cache {
-
     /**
      * Store a value object in the cache with no specific expiry time. The object may be evicted by the cache any time,
      * if necessary.

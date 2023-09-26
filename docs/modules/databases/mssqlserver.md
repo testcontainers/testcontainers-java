@@ -49,10 +49,10 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 ## License
 
-See [LICENSE](https://raw.githubusercontent.com/testcontainers/testcontainers-java/master/modules/mssqlserver/LICENSE).
+See [LICENSE](https://raw.githubusercontent.com/testcontainers/testcontainers-java/main/modules/mssqlserver/LICENSE).
 
 ## Copyright
 
 Copyright (c) 2017 - 2019 G DATA Software AG and other authors.
 
-See [AUTHORS](https://raw.githubusercontent.com/testcontainers/testcontainers-java/master/modules/mssqlserver/AUTHORS) for contributors.
+See [AUTHORS](https://raw.githubusercontent.com/testcontainers/testcontainers-java/main/modules/mssqlserver/AUTHORS) for contributors.

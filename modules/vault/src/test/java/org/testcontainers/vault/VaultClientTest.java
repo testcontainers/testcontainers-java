@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.testcontainers.vault.VaultTestImages.VAULT_IMAGE;
 
 public class VaultClientTest {
 
@@ -18,11 +17,7 @@ public class VaultClientTest {
 
     @Test
     public void writeAndReadMultipleValues() throws VaultException {
-        try (
-            VaultContainer<?> vaultContainer = new VaultContainer<>(VAULT_IMAGE)
-                    .withVaultToken(VAULT_TOKEN)
-        ) {
-
+        try (VaultContainer<?> vaultContainer = new VaultContainer<>("vault:1.1.3").withVaultToken(VAULT_TOKEN)) {
             vaultContainer.start();
 
             final VaultConfig config = new VaultConfig()
@@ -37,22 +32,14 @@ public class VaultClientTest {
             secrets.put("other_value", "another world");
 
             // Write operation
-            final LogicalResponse writeResponse = vault.logical()
-                .write("secret/hello", secrets);
+            final LogicalResponse writeResponse = vault.logical().write("secret/hello", secrets);
 
             assertThat(writeResponse.getRestResponse().getStatus()).isEqualTo(200);
 
             // Read operation
-            final Map<String, String> value = vault.logical()
-                .read("secret/hello")
-                .getData();
+            final Map<String, String> value = vault.logical().read("secret/hello").getData();
 
-
-            assertThat(value)
-                .containsEntry("value", "world")
-                .containsEntry("other_value", "another world");
-
+            assertThat(value).containsEntry("value", "world").containsEntry("other_value", "another world");
         }
-
     }
 }

@@ -1,54 +1,70 @@
 package org.testcontainers.containers;
 
-import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
 
-import static java.time.temporal.ChronoUnit.SECONDS;
-import static java.util.Collections.singleton;
-
+/**
+ * Testcontainers implementation for Oracle.
+ * <p>
+ * Supported image: {@code gvenzl/oracle-xe}
+ * <p>
+ * Exposed ports: 1521
+ */
 public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     public static final String NAME = "oracle";
+
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("gvenzl/oracle-xe");
 
     static final String DEFAULT_TAG = "18.4.0-slim";
+
     static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
 
-    private static final int ORACLE_PORT = 1521;
+    static final int ORACLE_PORT = 1521;
+
     private static final int APEX_HTTP_PORT = 8080;
 
     private static final int DEFAULT_STARTUP_TIMEOUT_SECONDS = 240;
+
     private static final int DEFAULT_CONNECT_TIMEOUT_SECONDS = 120;
 
     // Container defaults
     static final String DEFAULT_DATABASE_NAME = "xepdb1";
+
     static final String DEFAULT_SID = "xe";
+
     static final String DEFAULT_SYSTEM_USER = "system";
+
     static final String DEFAULT_SYS_USER = "sys";
 
     // Test container defaults
     static final String APP_USER = "test";
+
     static final String APP_USER_PASSWORD = "test";
 
     // Restricted user and database names
     private static final List<String> ORACLE_SYSTEM_USERS = Arrays.asList(DEFAULT_SYSTEM_USER, DEFAULT_SYS_USER);
 
     private String databaseName = DEFAULT_DATABASE_NAME;
+
     private String username = APP_USER;
+
     private String password = APP_USER_PASSWORD;
+
     private boolean usingSid = false;
 
     /**
-     * @deprecated use {@link OracleContainer(DockerImageName)} instead
+     * @deprecated use {@link #OracleContainer(DockerImageName)} instead
      */
     @Deprecated
     public OracleContainer() {
@@ -71,10 +87,11 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     }
 
     private void preconfigure() {
-        this.waitStrategy = new LogMessageWaitStrategy()
-            .withRegEx(".*DATABASE IS READY TO USE!.*\\s")
-            .withTimes(1)
-            .withStartupTimeout(Duration.of(DEFAULT_STARTUP_TIMEOUT_SECONDS, SECONDS));
+        this.waitStrategy =
+            new LogMessageWaitStrategy()
+                .withRegEx(".*DATABASE IS READY TO USE!.*\\s")
+                .withTimes(1)
+                .withStartupTimeout(Duration.of(DEFAULT_STARTUP_TIMEOUT_SECONDS, ChronoUnit.SECONDS));
 
         withConnectTimeoutSeconds(DEFAULT_CONNECT_TIMEOUT_SECONDS);
         addExposedPorts(ORACLE_PORT, APEX_HTTP_PORT);
@@ -88,19 +105,19 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     @NotNull
     @Override
     public Set<Integer> getLivenessCheckPortNumbers() {
-        return singleton(getMappedPort(ORACLE_PORT));
+        return Collections.singleton(getMappedPort(ORACLE_PORT));
     }
 
     @Override
     public String getDriverClassName() {
-        return "oracle.jdbc.OracleDriver";
+        return "oracle.jdbc.driver.OracleDriver";
     }
 
     @Override
     public String getJdbcUrl() {
-        return isUsingSid() ?
-            "jdbc:oracle:thin:" + "@" + getHost() + ":" + getOraclePort() + ":" + getSid() :
-            "jdbc:oracle:thin:" + "@" + getHost() + ":" + getOraclePort() + "/" + getDatabaseName();
+        return isUsingSid()
+            ? "jdbc:oracle:thin:" + "@" + getHost() + ":" + getOraclePort() + ":" + getSid()
+            : "jdbc:oracle:thin:" + "@" + getHost() + ":" + getOraclePort() + "/" + getDatabaseName();
     }
 
     @Override
@@ -192,7 +209,7 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
         withEnv("ORACLE_PASSWORD", password);
 
         // Only set ORACLE_DATABASE if different than the default.
-        if(databaseName != DEFAULT_DATABASE_NAME) {
+        if (databaseName != DEFAULT_DATABASE_NAME) {
             withEnv("ORACLE_DATABASE", databaseName);
         }
 

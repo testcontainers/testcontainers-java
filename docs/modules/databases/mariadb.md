@@ -2,22 +2,11 @@
 
 See [Database containers](./index.md) for documentation and usage that is common to all relational database container types.
 
-## Usage example
+## MariaDB `root` user password
 
-Running MariaDB as a stand-in for in a test:
-
-```java
-public class SomeTest {
-
-    @Rule
-    public MariaDBContainer mariaDB = new MariaDBContainer();
-    
-    @Test
-    public void someTestMethod() {
-        String url = mariaDB.getJdbcUrl();
-
-        ... create a connection and run test as normal
-```
+If no custom password is specified, the container will use the default user password `test` for the `root` user as well.
+When you specify a custom password for the database user,
+this will also act as the password of the MariaDB `root` user automatically.
 
 ## Adding this module to your project dependencies
 

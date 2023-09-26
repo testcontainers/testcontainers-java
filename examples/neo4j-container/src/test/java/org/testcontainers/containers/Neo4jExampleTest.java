@@ -1,5 +1,14 @@
 package org.testcontainers.containers;
 
+import org.junit.jupiter.api.Test;
+import org.neo4j.driver.AuthTokens;
+import org.neo4j.driver.Driver;
+import org.neo4j.driver.GraphDatabase;
+import org.neo4j.driver.Session;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -10,36 +19,22 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
-import org.junit.jupiter.api.Test;
-import org.neo4j.driver.AuthTokens;
-import org.neo4j.driver.Driver;
-import org.neo4j.driver.GraphDatabase;
-import org.neo4j.driver.Session;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
-
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.fail;
 
 // junitExample {
 @Testcontainers
-public class Neo4jExampleTest {
+class Neo4jExampleTest {
 
     @Container
-    private static Neo4jContainer<?> neo4jContainer =
-        new Neo4jContainer<>(DockerImageName.parse("neo4j:4.4"))
-        .withAdminPassword(null); // Disable password
+    private static Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>(DockerImageName.parse("neo4j:4.4"))
+        .withoutAuthentication(); // Disable password
 
     @Test
     void testSomethingUsingBolt() {
-
         // Retrieve the Bolt URL from the container
         String boltUrl = neo4jContainer.getBoltUrl();
-        try (
-            Driver driver = GraphDatabase.driver(boltUrl, AuthTokens.none());
-            Session session = driver.session()
-        ) {
+        try (Driver driver = GraphDatabase.driver(boltUrl, AuthTokens.none()); Session session = driver.session()) {
             long one = session.run("RETURN 1", Collections.emptyMap()).next().get(0).asLong();
             assertThat(one).isEqualTo(1L);
         } catch (Exception e) {
@@ -49,7 +44,6 @@ public class Neo4jExampleTest {
 
     @Test
     void testSomethingUsingHttp() throws IOException {
-
         // Retrieve the HTTP URL from the container
         String httpUrl = neo4jContainer.getHttpUrl();
 

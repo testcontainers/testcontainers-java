@@ -8,13 +8,20 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.net.URL;
 import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import java.util.Set;
 
-import static java.time.temporal.ChronoUnit.SECONDS;
-
 /**
- * SolrContainer allows a solr container to be launched and controlled.
+ * Testcontainers implementation for Solr.
+ * <p>
+ * Supported image: {@code solr}
+ * <p>
+ * Exposed ports:
+ * <ul>
+ *     <li>Solr: 8983</li>
+ *     <li>Zookeeper: 9983</li>
+ * </ul>
  */
 public class SolrContainer extends GenericContainer<SolrContainer> {
 
@@ -27,12 +34,13 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
     public static final String DEFAULT_TAG = "8.3.0";
 
     public static final Integer ZOOKEEPER_PORT = 9983;
+
     public static final Integer SOLR_PORT = 8983;
 
     private SolrContainerConfiguration configuration;
 
     /**
-     * @deprecated use {@link SolrContainer(DockerImageName)} instead
+     * @deprecated use {@link #SolrContainer(DockerImageName)} instead
      */
     @Deprecated
     public SolrContainer() {
@@ -40,7 +48,7 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
     }
 
     /**
-     * @deprecated use {@link SolrContainer(DockerImageName)} instead
+     * @deprecated use {@link #SolrContainer(DockerImageName)} instead
      */
     public SolrContainer(final String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
@@ -48,12 +56,12 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
 
     public SolrContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
-        this.waitStrategy = new LogMessageWaitStrategy()
-            .withRegEx(".*o\\.e\\.j\\.s\\.Server Started.*")
-            .withStartupTimeout(Duration.of(60, SECONDS));
+        this.waitStrategy =
+            new LogMessageWaitStrategy()
+                .withRegEx(".*o\\.e\\.j\\.s\\.Server Started.*")
+                .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS));
         this.configuration = new SolrContainerConfiguration();
     }
 
@@ -129,7 +137,9 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
         if (!configuration.isZookeeper()) {
             ExecResult result = execInContainer("solr", "create_core", "-c", configuration.getCollectionName());
             if (result.getExitCode() != 0) {
-                throw new IllegalStateException("Unable to create solr core:\nStdout: " + result.getStdout() + "\nStderr:" + result.getStderr());
+                throw new IllegalStateException(
+                    "Unable to create solr core:\nStdout: " + result.getStdout() + "\nStderr:" + result.getStderr()
+                );
             }
             return;
         }
@@ -140,14 +150,15 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
                 getSolrPort(),
                 configuration.getConfigurationName(),
                 configuration.getSolrConfiguration(),
-                configuration.getSolrSchema());
+                configuration.getSolrSchema()
+            );
         }
 
         SolrClientUtils.createCollection(
             getHost(),
             getSolrPort(),
             configuration.getCollectionName(),
-            configuration.getConfigurationName());
+            configuration.getConfigurationName()
+        );
     }
 }
-

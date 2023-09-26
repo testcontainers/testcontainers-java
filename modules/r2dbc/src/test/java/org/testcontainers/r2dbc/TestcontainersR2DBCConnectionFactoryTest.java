@@ -6,7 +6,6 @@ import io.r2dbc.spi.Connection;
 import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.Result;
-import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -14,14 +13,14 @@ import reactor.core.publisher.Mono;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class TestcontainersR2DBCConnectionFactoryTest {
 
     @Test
     public void failsOnUnknownProvider() {
         String nonExistingProvider = UUID.randomUUID().toString();
-        Assertions
-            .assertThatThrownBy(() -> {
+        assertThatThrownBy(() -> {
                 ConnectionFactories.get(String.format("r2dbc:tc:%s:///db", nonExistingProvider));
             })
             .hasMessageContaining("Missing provider")
@@ -48,16 +47,15 @@ public class TestcontainersR2DBCConnectionFactoryTest {
 
         assertThat(updated).isEqualTo(1);
 
-        Flux<Long> select = Flux
-            .usingWhen(
-                Flux.defer(connectionFactory::create),
-                connection -> {
-                    return Flux
-                        .from(connection.createStatement("SELECT COUNT(*) FROM test").execute())
-                        .flatMap(it -> it.map((row, meta) -> (Long) row.get(0)));
-                },
-                Connection::close
-            );
+        Flux<Long> select = Flux.usingWhen(
+            Flux.defer(connectionFactory::create),
+            connection -> {
+                return Flux
+                    .from(connection.createStatement("SELECT COUNT(*) FROM test").execute())
+                    .flatMap(it -> it.map((row, meta) -> (Long) row.get(0)));
+            },
+            Connection::close
+        );
 
         Long rows = select.blockFirst();
 
@@ -65,8 +63,7 @@ public class TestcontainersR2DBCConnectionFactoryTest {
 
         close(connectionFactory);
 
-        Assertions
-            .assertThatThrownBy(select::blockFirst)
+        assertThatThrownBy(select::blockFirst)
             .isInstanceOf(PostgresqlException.class)
             // relation "X" does not exists
             // https://github.com/postgres/postgres/blob/REL_10_0/src/backend/utils/errcodes.txt#L349

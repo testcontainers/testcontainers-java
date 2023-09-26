@@ -15,37 +15,43 @@ import org.testcontainers.utility.MountableFile;
 import java.util.concurrent.TimeUnit;
 
 @Testcontainers
-public class DemoExtensionTestsIT {
+class DemoExtensionTestsIT {
 
     // waitStrategy {
     @Container
-    final HiveMQContainer hivemqWithWaitStrategy =
-        new HiveMQContainer(DockerImageName.parse("hivemq/hivemq4").withTag("4.7.4"))
-            .withExtension(MountableFile.forClasspathResource("/modifier-extension"))
-            .waitForExtension("Modifier Extension");
+    final HiveMQContainer hivemqWithWaitStrategy = new HiveMQContainer(
+        DockerImageName.parse("hivemq/hivemq4").withTag("4.7.4")
+    )
+        .withExtension(MountableFile.forClasspathResource("/modifier-extension"))
+        .waitForExtension("Modifier Extension");
+
     // }
 
     // extensionClasspath {
-    final HiveMQExtension hiveMQEClasspathxtension = HiveMQExtension.builder()
+    final HiveMQExtension hiveMQEClasspathxtension = HiveMQExtension
+        .builder()
         .id("extension-1")
         .name("my-extension")
         .version("1.0")
-        .mainClass(MyExtensionWithSubclasses.class).build();
+        .mainClass(MyExtensionWithSubclasses.class)
+        .build();
 
     @Container
-    final HiveMQContainer hivemqWithClasspathExtension =
-        new HiveMQContainer(DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3"))
-            .waitForExtension(hiveMQEClasspathxtension)
-            .withExtension(hiveMQEClasspathxtension)
-            .withHiveMQConfig(MountableFile.forClasspathResource("/inMemoryConfig.xml"));
+    final HiveMQContainer hivemqWithClasspathExtension = new HiveMQContainer(
+        DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3")
+    )
+        .waitForExtension(hiveMQEClasspathxtension)
+        .withExtension(hiveMQEClasspathxtension)
+        .withHiveMQConfig(MountableFile.forClasspathResource("/inMemoryConfig.xml"));
+
     // }
 
     @Test
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
-    public void test() throws Exception {
-
+    void test() throws Exception {
         // mqtt5client {
-        final Mqtt5BlockingClient client = Mqtt5Client.builder()
+        final Mqtt5BlockingClient client = Mqtt5Client
+            .builder()
             .serverPort(hivemqWithClasspathExtension.getMqttPort())
             .serverHost(hivemqWithClasspathExtension.getHost())
             .buildBlocking();

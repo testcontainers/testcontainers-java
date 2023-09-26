@@ -22,34 +22,38 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public class CreateFileInCopiedDirectoryIT {
+class CreateFileInCopiedDirectoryIT {
 
     private @NotNull MountableFile createDirectory() throws IOException {
         final File directory = new File(Files.createTempDirectory("").toFile(), "directory");
-        assertTrue(directory.mkdir());
+        assertThat(directory.mkdir()).isTrue();
         final File subdirectory = new File(directory, "sub-directory");
-        assertTrue(subdirectory.mkdir());
+        assertThat(subdirectory.mkdir()).isTrue();
         return MountableFile.forHostPath(directory.getPath());
     }
 
     @Test
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
     void test() throws Exception {
-        final HiveMQExtension extension = HiveMQExtension.builder()
+        final HiveMQExtension extension = HiveMQExtension
+            .builder()
             .id("extension-1")
             .name("my-extension")
             .version("1.0")
-            .mainClass(FileCreatorExtension.class).build();
+            .mainClass(FileCreatorExtension.class)
+            .build();
 
-        try (final HiveMQContainer hivemq =
-                 new HiveMQContainer(DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3"))
-                     .withHiveMQConfig(MountableFile.forClasspathResource("/inMemoryConfig.xml"))
-                     .withExtension(extension)
-                     .waitForExtension(extension)
-                     .withFileInHomeFolder(createDirectory(), "directory")) {
-
+        try (
+            final HiveMQContainer hivemq = new HiveMQContainer(
+                DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3")
+            )
+                .withHiveMQConfig(MountableFile.forClasspathResource("/inMemoryConfig.xml"))
+                .withExtension(extension)
+                .waitForExtension(extension)
+                .withFileInHomeFolder(createDirectory(), "directory")
+        ) {
             hivemq.start();
             TestPublishModifiedUtil.testPublishModified(hivemq.getMqttPort(), hivemq.getHost());
         }
@@ -58,10 +62,11 @@ public class CreateFileInCopiedDirectoryIT {
     public static class FileCreatorExtension implements ExtensionMain {
 
         @Override
-        public void extensionStart(@NotNull ExtensionStartInput extensionStartInput, @NotNull ExtensionStartOutput extensionStartOutput) {
-
+        public void extensionStart(
+            @NotNull ExtensionStartInput extensionStartInput,
+            @NotNull ExtensionStartOutput extensionStartOutput
+        ) {
             final PublishInboundInterceptor publishInboundInterceptor = (publishInboundInput, publishInboundOutput) -> {
-
                 final File homeFolder = extensionStartInput.getServerInformation().getHomeFolder();
 
                 final File dir = new File(homeFolder, "directory");
@@ -71,22 +76,26 @@ public class CreateFileInCopiedDirectoryIT {
 
                 try {
                     if (dirFile.createNewFile() && subDirFile.createNewFile()) {
-                        publishInboundOutput.getPublishPacket().setPayload(ByteBuffer.wrap("modified".getBytes(StandardCharsets.UTF_8)));
+                        publishInboundOutput
+                            .getPublishPacket()
+                            .setPayload(ByteBuffer.wrap("modified".getBytes(StandardCharsets.UTF_8)));
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             };
 
-            final ClientInitializer clientInitializer = (initializerInput, clientContext) -> clientContext.addPublishInboundInterceptor(publishInboundInterceptor);
+            final ClientInitializer clientInitializer = (initializerInput, clientContext) -> {
+                clientContext.addPublishInboundInterceptor(publishInboundInterceptor);
+            };
 
             Services.initializerRegistry().setClientInitializer(clientInitializer);
         }
 
         @Override
-        public void extensionStop(@NotNull ExtensionStopInput extensionStopInput, @NotNull ExtensionStopOutput extensionStopOutput) {
-
-        }
+        public void extensionStop(
+            @NotNull ExtensionStopInput extensionStopInput,
+            @NotNull ExtensionStopOutput extensionStopOutput
+        ) {}
     }
-
 }

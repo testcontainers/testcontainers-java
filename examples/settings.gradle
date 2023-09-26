@@ -6,8 +6,8 @@ buildscript {
     }
     dependencies {
         classpath "gradle.plugin.ch.myniva.gradle:s3-build-cache:0.10.0"
-        classpath "com.gradle.enterprise:com.gradle.enterprise.gradle.plugin:3.8.1"
-        classpath "com.gradle:common-custom-user-data-gradle-plugin:1.6.2"
+        classpath "com.gradle.enterprise:com.gradle.enterprise.gradle.plugin:3.15"
+        classpath "com.gradle:common-custom-user-data-gradle-plugin:1.11.2"
     }
 }
 
@@ -19,10 +19,8 @@ rootProject.name = 'testcontainers-examples'
 includeBuild '..'
 
 // explicit include to allow Dependabot to autodiscover subprojects
-include 'disque-job-queue'
 include 'kafka-cluster'
 include 'linked-container'
-include 'mongodb-container'
 include 'neo4j-container'
 include 'redis-backed-cache'
 include 'redis-backed-cache-testng'
@@ -32,7 +30,11 @@ include 'solr-container'
 include 'spring-boot'
 include 'cucumber'
 include 'spring-boot-kotlin-redis'
-include 'spock'
+include 'immudb'
+include 'zookeeper'
+include 'hazelcast'
+include 'nats'
+include 'sftp'
 
 ext.isCI = System.getenv("CI") != null
 

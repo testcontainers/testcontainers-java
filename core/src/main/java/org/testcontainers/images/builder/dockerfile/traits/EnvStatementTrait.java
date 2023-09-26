@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.Map;
 
 public interface EnvStatementTrait<SELF extends EnvStatementTrait<SELF> & DockerfileBuilderTrait<SELF>> {
-
     default SELF env(String key, String value) {
         return env(Collections.singletonMap(key, value));
     }

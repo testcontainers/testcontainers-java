@@ -1,8 +1,8 @@
 package org.testcontainers.images;
 
-import java.time.Duration;
-
 import lombok.experimental.UtilityClass;
+
+import java.time.Duration;
 
 /**
  * Convenience class with logic for building common {@link ImagePullPolicy} instances.
@@ -34,5 +34,4 @@ public class PullPolicy {
     public static ImagePullPolicy ageBased(Duration maxAge) {
         return new AgeBasedPullPolicy(maxAge);
     }
-
 }

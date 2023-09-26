@@ -4,20 +4,23 @@ import com.google.common.collect.ImmutableSet;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.rnorth.visibleassertions.VisibleAssertions;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 
 import java.net.ServerSocket;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertThrows;
 
 public class ExternalPortListeningCheckTest {
 
     private ServerSocket listeningSocket1;
+
     private ServerSocket listeningSocket2;
+
     private ServerSocket nonListeningSocket;
+
     private WaitStrategyTarget mockContainer;
 
     @Before
@@ -34,33 +37,38 @@ public class ExternalPortListeningCheckTest {
 
     @Test
     public void singleListening() {
-
-        final ExternalPortListeningCheck check = new ExternalPortListeningCheck(mockContainer, ImmutableSet.of(listeningSocket1.getLocalPort()));
+        final ExternalPortListeningCheck check = new ExternalPortListeningCheck(
+            mockContainer,
+            ImmutableSet.of(listeningSocket1.getLocalPort())
+        );
 
         final Boolean result = check.call();
 
-        VisibleAssertions.assertTrue("ExternalPortListeningCheck identifies a single listening port", result);
+        assertThat(result).as("ExternalPortListeningCheck identifies a single listening port").isTrue();
     }
 
     @Test
     public void multipleListening() {
-
-        final ExternalPortListeningCheck check = new ExternalPortListeningCheck(mockContainer, ImmutableSet.of(listeningSocket1.getLocalPort(), listeningSocket2.getLocalPort()));
+        final ExternalPortListeningCheck check = new ExternalPortListeningCheck(
+            mockContainer,
+            ImmutableSet.of(listeningSocket1.getLocalPort(), listeningSocket2.getLocalPort())
+        );
 
         final Boolean result = check.call();
 
-        VisibleAssertions.assertTrue("ExternalPortListeningCheck identifies multiple listening port", result);
+        assertThat(result).as("ExternalPortListeningCheck identifies multiple listening port").isTrue();
     }
 
     @Test
     public void oneNotListening() {
+        final ExternalPortListeningCheck check = new ExternalPortListeningCheck(
+            mockContainer,
+            ImmutableSet.of(listeningSocket1.getLocalPort(), nonListeningSocket.getLocalPort())
+        );
 
-        final ExternalPortListeningCheck check = new ExternalPortListeningCheck(mockContainer, ImmutableSet.of(listeningSocket1.getLocalPort(), nonListeningSocket.getLocalPort()));
-
-        assertThrows("ExternalPortListeningCheck detects a non-listening port among many",
-                IllegalStateException.class,
-                (Runnable) check::call);
-
+        assertThat(catchThrowable(check::call))
+            .as("ExternalPortListeningCheck detects a non-listening port among many")
+            .isInstanceOf(IllegalStateException.class);
     }
 
     @After

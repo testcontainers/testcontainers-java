@@ -8,8 +8,7 @@ import org.testcontainers.DockerClientFactory;
 import java.io.File;
 import java.net.URI;
 import java.util.Optional;
-
-import static java.util.concurrent.TimeUnit.SECONDS;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class DockerClientConfigUtils {
@@ -19,25 +18,31 @@ public class DockerClientConfigUtils {
 
     @Getter(lazy = true)
     private static final Optional<String> defaultGateway = Optional
-            .ofNullable(DockerClientFactory.instance().runInsideDocker(
+        .ofNullable(
+            DockerClientFactory
+                .instance()
+                .runInsideDocker(
                     cmd -> cmd.withCmd("sh", "-c", "ip route|awk '/default/ { print $3 }'"),
                     (client, id) -> {
                         try {
                             LogToStringContainerCallback loggingCallback = new LogToStringContainerCallback();
-                            client.logContainerCmd(id).withStdOut(true)
-                                                      .withFollowStream(true)
-                                                      .exec(loggingCallback)
-                                                      .awaitStarted();
-                            loggingCallback.awaitCompletion(3, SECONDS);
+                            client
+                                .logContainerCmd(id)
+                                .withStdOut(true)
+                                .withFollowStream(true)
+                                .exec(loggingCallback)
+                                .awaitStarted();
+                            loggingCallback.awaitCompletion(3, TimeUnit.SECONDS);
                             return loggingCallback.toString();
                         } catch (Exception e) {
                             log.warn("Can't parse the default gateway IP", e);
                             return null;
                         }
                     }
-            ))
-            .map(StringUtils::trimToEmpty)
-            .filter(StringUtils::isNotBlank);
+                )
+        )
+        .map(StringUtils::trimToEmpty)
+        .filter(StringUtils::isNotBlank);
 
     /**
      * @deprecated use {@link DockerClientProviderStrategy#getDockerHostIpAddress()}

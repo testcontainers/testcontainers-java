@@ -1,0 +1,9 @@
+FROM alpine:3.14 AS builder
+
+WORKDIR /my-files
+
+RUN echo 'Hello World' > hello.txt
+
+FROM alpine:3.14
+
+COPY --from=builder /my-files/hello.txt hello.txt

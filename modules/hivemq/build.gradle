@@ -1,23 +1,24 @@
-description = "TestContainers :: HiveMQ"
+description = "Testcontainers :: HiveMQ"
 
 dependencies {
     api(project(":testcontainers"))
-    api("org.jetbrains:annotations:23.0.0")
+    api("org.jetbrains:annotations:24.0.1")
 
-    shaded("org.apache.commons:commons-lang3:3.12.0")
-    shaded("commons-io:commons-io:2.11.0")
-    shaded("org.javassist:javassist:3.28.0-GA")
+    shaded("org.apache.commons:commons-lang3:3.13.0")
+    shaded("commons-io:commons-io:2.13.0")
+    shaded("org.javassist:javassist:3.29.2-GA")
     shaded("org.jboss.shrinkwrap:shrinkwrap-api:1.2.6")
     shaded("org.jboss.shrinkwrap:shrinkwrap-impl-base:1.2.6")
-    shaded("net.lingala.zip4j:zip4j:2.10.0")
+    shaded("net.lingala.zip4j:zip4j:2.11.5")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
     testImplementation(project(":junit-jupiter"))
-    testImplementation("com.hivemq:hivemq-extension-sdk:4.7.5")
-    testImplementation("com.hivemq:hivemq-mqtt-client:1.3.0")
-    testImplementation("org.apache.httpcomponents:httpclient:4.5.13")
-    testImplementation("ch.qos.logback:logback-classic:1.2.10")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.2")
+    testImplementation("com.hivemq:hivemq-extension-sdk:4.20.0")
+    testImplementation("com.hivemq:hivemq-mqtt-client:1.3.2")
+    testImplementation("org.apache.httpcomponents:httpclient:4.5.14")
+    testImplementation("ch.qos.logback:logback-classic:1.4.11")
+    testImplementation 'org.assertj:assertj-core:3.24.2'
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.0")
 }
 
 test {
@@ -34,4 +35,5 @@ compileTestJava {
     javaCompiler = javaToolchains.compilerFor {
         languageVersion = JavaLanguageVersion.of(11)
     }
+    options.release.set(11)
 }

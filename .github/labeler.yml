@@ -1,0 +1,101 @@
+"area/docker-compose":
+  - core/src/main/java/org/testcontainers/containers/ComposeContainer.java
+  - core/src/main/java/org/testcontainers/containers/ComposeDelegate.java
+  - core/src/main/java/org/testcontainers/containers/DockerComposeContainer.java
+  - core/src/main/java/org/testcontainers/containers/DockerComposeFiles.java
+"github_actions":
+  - .github/workflows/*
+"gradle-wrapper":
+  - gradle/wrapper/*
+  - gradlew
+  - gradlew.bat
+"modules/azure":
+  - modules/azure/**/*
+"modules/cassandra":
+  - modules/cassandra/**/*
+"modules/clickhouse":
+  - modules/clickhouse/**/*
+"modules/cockroachdb":
+  - modules/cockroachdb/**/*
+"modules/consul":
+  - modules/consul/**/*
+"modules/couchbase":
+  - modules/couchbase/**/*
+"modules/cratedb":
+  - modules/cratedb/**/*
+"modules/db2":
+  - modules/db2/**/*
+"modules/dynalite":
+  - modules/dynalite/**/*
+"modules/elasticsearch":
+  - modules/elasticsearch/**/*
+"modules/gcloud":
+  - modules/gcloud/**/*
+"modules/hivemq":
+  - modules/hivemq/**/*
+"modules/influx":
+  - modules/influxdb/**/*
+"modules/jdbc":
+  - modules/jdbc/**/*
+"modules/jupiter":
+  - modules/junit-jupiter/**/*
+"modules/k3s":
+  - modules/k3s/**/*
+"modules/kafka":
+  - modules/kafka/**/*
+"modules/localstack":
+  - modules/localstack/**/*
+"modules/mariadb":
+  - modules/mariadb/**/*
+"modules/minio":
+  - modules/minio/**/*
+"modules/mockserver":
+  - modules/mockserver/**/*
+"modules/mongodb":
+  - modules/mongodb/**/*
+"modules/sql-server":
+  - modules/mssqlserver/**/*
+"modules/mysql":
+  - modules/mysql/**/*
+"modules/neo4j":
+  - modules/neo4j/**/*
+"modules/nginx":
+  - modules/nginx/**/*
+"modules/oracle":
+  - modules/oracle-xe/**/*
+"modules/orientdb":
+  - modules/orientdb/**/*
+"modules/postgres":
+  - modules/postgresql/**/*
+"modules/presto":
+  - modules/presto/**/*
+"modules/pulsar":
+  - modules/pulsar/**/*
+"modules/questdb":
+  - modules/questdb/**/*
+"modules/r2dbc":
+  - modules/r2dbc/**/*
+"modules/rabbitmq":
+  - modules/rabbitmq/**/*
+"modules/redpanda":
+  - modules/redpanda/**/*
+"modules/selenium":
+  - modules/selenium/**/*
+"modules/solace":
+  - modules/solace/**/*
+"modules/solr":
+  - modules/solr/**/*
+"modules/spock":
+  - modules/spock/**/*
+"modules/tidb":
+  - modules/tidb/**/*
+"modules/toxiproxy":
+  - modules/toxiproxy/**/*
+"modules/trino":
+  - modules/trino/**/*
+"modules/vault":
+  - modules/vault/**/*
+"modules/yugabytedb":
+  - modules/yugabytedb/**/*
+"type/docs":
+  - docs/**/*.md

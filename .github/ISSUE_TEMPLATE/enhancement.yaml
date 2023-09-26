@@ -1,0 +1,65 @@
+name: Enhancement
+description: Suggest an enhancement
+title: "[Enhancement]: "
+labels: ["type/enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before submitting an `enhancement`, please make sure there is no existing enhancement for the one you are requesting and it has been discussed with the team via [discussions](https://github.com/testcontainers/testcontainers-java/discussions) or Slack. If so, please provide the following information:
+  - type: dropdown
+    id: module
+    attributes:
+      label: Module
+      description: For which Testcontainers module does the enhancement proposal apply?
+      options:
+        - Core
+        - Azure
+        - Cassandra
+        - Clickhouse
+        - CockroachDB
+        - Consul
+        - Couchbase
+        - CrateDB
+        - DB2
+        - Dynalite
+        - Elasticsearch
+        - GCloud
+        - HiveMQ
+        - InfluxDB
+        - K3S
+        - Kafka
+        - LocalStack
+        - MariaDB
+        - MinIO
+        - MockServer
+        - MongoDB
+        - MSSQLServer
+        - MySQL
+        - Neo4j
+        - NGINX
+        - Oracle-XE
+        - OrientDB
+        - PostgreSQL
+        - Presto
+        - Pulsar
+        - QuestDB
+        - RabbitMQ
+        - Redpanda
+        - Selenium
+        - Solace
+        - Solr
+        - TiDB
+        - ToxiProxy
+        - Trino
+        - Vault
+        - YugabyteDB
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: What should be improved? What are the limitations of the current implications that would be solved by the proposal?
+    validations:
+      required: true

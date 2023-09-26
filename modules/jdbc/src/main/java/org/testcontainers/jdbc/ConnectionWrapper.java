@@ -17,7 +17,7 @@ public class ConnectionWrapper extends ConnectionDelegate {
         super.close();
         try {
             closeCallback.run();
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

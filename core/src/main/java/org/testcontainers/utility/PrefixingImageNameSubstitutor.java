@@ -38,11 +38,7 @@ final class PrefixingImageNameSubstitutor extends ImageNameSubstitutor {
             return original;
         }
 
-        log.debug(
-            "Applying changes to image name {}: applying prefix '{}'",
-            original,
-            configuredPrefix
-        );
+        log.debug("Applying changes to image name {}: applying prefix '{}'", original, configuredPrefix);
 
         DockerImageName prefixAsImage = DockerImageName.parse(configuredPrefix);
 

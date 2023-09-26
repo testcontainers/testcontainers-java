@@ -1,19 +1,17 @@
 package org.testcontainers.testsupport;
 
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
  * Annotation for test methods that should be retried in the event of failure. See {@link FlakyTestJUnit4RetryRule} for
  * more details.
  */
-@Retention(RUNTIME)
-@Target({METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ ElementType.METHOD })
 public @interface Flaky {
-
     /**
      * @return a URL for a GitHub issue where this flaky test can be discussed, and where actions to resolve it can be
      * coordinated.

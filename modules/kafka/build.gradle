@@ -1,18 +1,9 @@
 description = "Testcontainers :: Kafka"
 
-tasks.japicmp {
-    // TODO clean after 1.17.0 is released
-    methodExcludes = [
-        // Overrides removed, not a breaking change per se
-        "org.testcontainers.containers.KafkaContainer#containerIsStarting(com.github.dockerjava.api.command.InspectContainerResponse,boolean)",
-        "org.testcontainers.containers.KafkaContainer#doStart()",
-    ]
-}
-
 dependencies {
     api project(':testcontainers')
 
-    testImplementation 'org.apache.kafka:kafka-clients:3.0.0'
-    testImplementation 'org.assertj:assertj-core:3.22.0'
+    testImplementation 'org.apache.kafka:kafka-clients:3.5.1'
+    testImplementation 'org.assertj:assertj-core:3.24.2'
     testImplementation 'com.google.guava:guava:23.0'
 }

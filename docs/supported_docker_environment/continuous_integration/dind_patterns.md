@@ -32,6 +32,12 @@ Where:
 * `-w $PWD` will set the current directory to this volume
 * `-v /var/run/docker.sock:/var/run/docker.sock` will map the Docker socket
 
+
+!!! note
+    If you are using Docker Desktop, you need to configure the `TESTCONTAINERS_HOST_OVERRIDE` environment variable to use the special DNS name
+    `host.docker.internal` for accessing the host from within a container, which is provided by Docker Desktop:
+    `-e TESTCONTAINERS_HOST_OVERRIDE=host.docker.internal`
+
 ### Docker Compose example
 The same can be achieved with Docker Compose:
 ```yaml
