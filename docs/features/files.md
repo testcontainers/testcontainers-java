@@ -1,6 +1,9 @@
 # Files and volumes
 
-## Copying files to and from containers
+## Copying files
+
+!!! note
+    This is the recommended approach for portability cross docker environments.
 
 Files can be copied into the container before startup, or can be copied from the container after the container has started.
 
@@ -18,9 +21,6 @@ Files can be copied into the container before startup, or can be copied from the
 
 ## File mapping
 
-!!! warning
-    This feature is not supported for all Docker environments (e.g., when using the _Docker Wormhole Pattern_ through Docker socket mounting). Consider using the `copy` APIs instead.
-
 It is possible to map a file or directory from your FileSystem into the container as a volume using `withFileSystemBind`:
 ```java
 String pathToFile = System.getProperty("user.home") + "/.aws";
@@ -29,9 +29,6 @@ new GenericContainer(...)
 ```
 
 ## Volume mapping
-
-!!! warning
-    This feature is not supported for all Docker environments (e.g., when using the _Docker Wormhole Pattern_ through Docker socket mounting). Consider using the `copy` APIs instead.
 
 It is possible to map a file or directory **on the classpath** into the container as a volume using `withClasspathResourceMapping`:
 ```java
