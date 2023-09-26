@@ -81,6 +81,7 @@ nav:
           - modules/k3s.md
           - modules/kafka.md
           - modules/localstack.md
+          - modules/minio.md
           - modules/mockserver.md
           - modules/nginx.md
           - modules/pulsar.md

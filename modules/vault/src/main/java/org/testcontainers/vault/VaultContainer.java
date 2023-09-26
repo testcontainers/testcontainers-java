@@ -174,7 +174,9 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
      * @param firstSecret      first secret to add to specifed path
      * @param remainingSecrets var args list of secrets to add to specified path
      * @return this
+     * @deprecated use {@link #withInitCommand(String...)} instead
      */
+    @Deprecated
     public SELF withSecretInVault(String path, String firstSecret, String... remainingSecrets) {
         List<String> list = new ArrayList<>();
         list.add(firstSecret);

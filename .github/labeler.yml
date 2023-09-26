@@ -47,6 +47,8 @@
   - modules/localstack/**/*
 "modules/mariadb":
   - modules/mariadb/**/*
+"modules/minio":
+  - modules/minio/**/*
 "modules/mockserver":
   - modules/mockserver/**/*
 "modules/mongodb":
