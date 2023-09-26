@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class CreateFileInCopiedDirectoryIT {
+class CreateFileInCopiedDirectoryIT {
 
     private @NotNull MountableFile createDirectory() throws IOException {
         final File directory = new File(Files.createTempDirectory("").toFile(), "directory");

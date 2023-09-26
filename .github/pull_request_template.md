@@ -6,7 +6,12 @@ New Modules:
 Make sure to add it to `bug_report.yaml`, `enhancement.yaml` and `feature.yaml`.
 Also, add it to `dependabot.yml` and `labeler.yml`.
 
-Before comitting, run `./gradlew checkstyleMain checkstyleTest spotlessApply` and fix any issues that occur.
+Before committing, please run `./gradlew checkstyleMain checkstyleTest spotlessApply` and fix any issues that occur.
+
+Dependency Upgrades:
+Please do not open a pull request to update only a version dependency. Existing process will perform
+the upgrade every week. However, if the upgrade involves more changes (changes for deprecated API) then
+your pull request is very welcome.
 
 Describing Your Changes:
 

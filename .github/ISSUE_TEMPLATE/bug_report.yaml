@@ -20,6 +20,7 @@ body:
         - CockroachDB
         - Consul
         - Couchbase
+        - CrateDB
         - DB2
         - Dynalite
         - Elasticsearch
@@ -30,6 +31,7 @@ body:
         - Kafka
         - LocalStack
         - MariaDB
+        - MinIO
         - MockServer
         - MongoDB
         - MSSQLServer

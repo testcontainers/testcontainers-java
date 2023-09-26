@@ -23,8 +23,15 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
 /**
- * Represents an elasticsearch docker instance which exposes by default port 9200 and 9300 (transport.tcp.port)
- * The docker image is by default fetched from docker.elastic.co/elasticsearch/elasticsearch
+ * Testcontainers implementation for Elasticsearch.
+ * <p>
+ * Supported image: {@code docker.elastic.co/elasticsearch/elasticsearch}
+ * <p>
+ * Exposed ports:
+ * <ul>
+ *     <li>HTTP: 9200</li>
+ *     <li>TCP Transport: 9300</li>
+ * </ul>
  */
 @Slf4j
 public class ElasticsearchContainer extends GenericContainer<ElasticsearchContainer> {
@@ -72,7 +79,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
     private String certPath = "/usr/share/elasticsearch/config/certs/http_ca.crt";
 
     /**
-     * @deprecated use {@link ElasticsearchContainer(DockerImageName)} instead
+     * @deprecated use {@link #ElasticsearchContainer(DockerImageName)} instead
      */
     @Deprecated
     public ElasticsearchContainer() {
@@ -98,6 +105,8 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 
         withNetworkAliases("elasticsearch-" + Base58.randomString(6));
         withEnv("discovery.type", "single-node");
+        // disable disk threshold checks
+        withEnv("cluster.routing.allocation.disk.threshold_enabled", "false");
         // Sets default memory of elasticsearch instance to 2GB
         // Spaces are deliberate to allow user to define additional jvm options as elasticsearch resolves option files lexicographically
         withClasspathResourceMapping(

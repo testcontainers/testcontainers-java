@@ -1,5 +1,6 @@
 package org.testcontainers.containers;
 
+import org.apache.pulsar.client.admin.ListTopicsOptions;
 import org.apache.pulsar.client.admin.PulsarAdmin;
 import org.apache.pulsar.client.admin.PulsarAdminException;
 import org.apache.pulsar.client.api.Consumer;
@@ -13,6 +14,7 @@ import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -23,14 +25,14 @@ public class PulsarContainerTest {
 
     public static final String TEST_TOPIC = "test_topic";
 
-    private static final DockerImageName PULSAR_IMAGE = DockerImageName.parse("apachepulsar/pulsar:2.10.0");
+    private static final DockerImageName PULSAR_IMAGE = DockerImageName.parse("apachepulsar/pulsar:3.0.0");
 
     @Test
     public void testUsage() throws Exception {
         try (
             // do not use PULSAR_IMAGE to make the doc looks easier
             // constructorWithVersion {
-            PulsarContainer pulsar = new PulsarContainer(DockerImageName.parse("apachepulsar/pulsar:2.10.0"));
+            PulsarContainer pulsar = new PulsarContainer(DockerImageName.parse("apachepulsar/pulsar:3.0.0"));
             // }
         ) {
             pulsar.start();
@@ -103,16 +105,17 @@ public class PulsarContainerTest {
             pulsar.start();
 
             try (PulsarAdmin pulsarAdmin = PulsarAdmin.builder().serviceHttpUrl(pulsar.getHttpServiceUrl()).build()) {
-                assertThat(
-                    pulsarAdmin
-                        .topics()
-                        .getList("pulsar/system")
-                        .contains("persistent://pulsar/system/transaction_coordinator_assign-partition-0")
-                )
-                    .isTrue();
+                assertTransactionsTopicCreated(pulsarAdmin);
             }
             testTransactionFunctionality(pulsar.getPulsarBrokerUrl());
         }
+    }
+
+    private void assertTransactionsTopicCreated(PulsarAdmin pulsarAdmin) throws PulsarAdminException {
+        final List<String> topics = pulsarAdmin
+            .topics()
+            .getPartitionedTopicList("pulsar/system", ListTopicsOptions.builder().includeSystemTopic(true).build());
+        assertThat(topics).contains("persistent://pulsar/system/transaction_coordinator_assign");
     }
 
     @Test
@@ -121,13 +124,7 @@ public class PulsarContainerTest {
             pulsar.start();
 
             try (PulsarAdmin pulsarAdmin = PulsarAdmin.builder().serviceHttpUrl(pulsar.getHttpServiceUrl()).build();) {
-                assertThat(
-                    pulsarAdmin
-                        .topics()
-                        .getList("pulsar/system")
-                        .contains("persistent://pulsar/system/transaction_coordinator_assign-partition-0")
-                )
-                    .isTrue();
+                assertTransactionsTopicCreated(pulsarAdmin);
                 assertThat(pulsarAdmin.functions().getFunctions("public", "default")).hasSize(0);
             }
             testTransactionFunctionality(pulsar.getPulsarBrokerUrl());

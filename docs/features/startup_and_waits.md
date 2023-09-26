@@ -116,7 +116,7 @@ Checks that the container is running and has been running for a defined minimum 
 [Using minimum duration strategy](../examples/junit4/generic/src/test/java/org/testcontainers/containers/startupcheck/StartupCheckStrategyTest.java) inside_block:withMinimumDurationStrategy
 <!--/codeinclude-->
 
-### Other startup  strategies
+### Other startup strategies
 
 If none of these options meet your requirements, you can create your own subclass of 
 [`StartupCheckStrategy`](http://static.javadoc.io/org.testcontainers/testcontainers/{{ latest_version }}/org/testcontainers/containers

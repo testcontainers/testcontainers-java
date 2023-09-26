@@ -1,17 +1,15 @@
-# Testcontainers
-
-<!-- allow aspect ratio computation to reduce layout shift. CSS enforces max-width: 100% -->
-<img src="logo.png" alt="Testcontainers logo" width="1024" height="512"/>
+# Testcontainers for Java
 
 <p align=center><strong>Not using Java? Here are other supported languages!</strong></p>
 <div class="card-grid">
     <a class="card-grid-item"><img src="language-logos/java.svg"/>Java</a>
     <a href="https://golang.testcontainers.org/" class="card-grid-item"><img src="language-logos/go.svg"/>Go</a>
     <a href="https://dotnet.testcontainers.org/" class="card-grid-item"><img src="language-logos/dotnet.svg"/>.NET</a>
-    <a href="https://testcontainers-python.readthedocs.io/en/latest/" class="card-grid-item"><img src="language-logos/python.svg"/>Python</a>
     <a href="https://node.testcontainers.org/" class="card-grid-item"><img src="language-logos/nodejs.svg"/>Node.js</a>
+    <a href="https://testcontainers-python.readthedocs.io/en/latest/" class="card-grid-item"><img src="language-logos/python.svg"/>Python</a>
     <a href="https://docs.rs/testcontainers/latest/testcontainers/" class="card-grid-item"><img src="language-logos/rust.svg"/>Rust</a>
     <a href="https://github.com/testcontainers/testcontainers-hs/" class="card-grid-item" ><img src="language-logos/haskell.svg"/>Haskell</a>
+    <a href="https://github.com/testcontainers/testcontainers-ruby/" class="card-grid-item" ><img src="language-logos/ruby.svg"/>Ruby</a>
 </div>
 
 ## About Testcontainers for Java
@@ -187,7 +185,7 @@ A huge thank you to our sponsors:
 * [Playtika](https://github.com/Playtika/testcontainers-spring-boot) - Kafka, Couchbase, MariaDB, Redis, Neo4j, Aerospike, MemSQL
 * [JetBrains](https://www.jetbrains.com/) - Testing of the TeamCity plugin for HashiCorp Vault
 * [Plumbr](https://plumbr.io) - Integration testing of data processing pipeline micro-services
-* [Streamlio](https://streaml.io/) - Integration and Chaos Testing of our fast data platform based on Apache Puslar, Apache Bookeeper and Apache Heron.
+* [Streamlio](https://streaml.io/) - Integration and Chaos Testing of our fast data platform based on Apache Pulsar, Apache BookKeeper and Apache Heron.
 * [Spring Session](https://projects.spring.io/spring-session/) - Redis, PostgreSQL, MySQL and MariaDB integration testing
 * [Apache Camel](https://camel.apache.org) - Testing Camel against native services such as Consul, Etcd and so on
 * [Infinispan](https://infinispan.org) - Testing the Infinispan Server as well as integration tests with databases, LDAP and KeyCloak
@@ -221,6 +219,8 @@ A huge thank you to our sponsors:
 * [Apache SeaTunnel](https://github.com/apache/incubator-seatunnel) - Integration testing with different datasource.
 * [Bucket4j](https://github.com/bucket4j/bucket4j) - Java rate-limiting library based on the token-bucket algorithm.
 * [Spark ClickHouse Connector](https://github.com/housepower/spark-clickhouse-connector) - Integration tests for Apache Spark with both single node ClickHouse instance and multi-node ClickHouse cluster.
+* [Quarkus](https://github.com/quarkusio/quarkus) - Testcontainers is used extensively for Quarkus' [DevServices](https://quarkus.io/guides/dev-services) feature.
+* [Apache Kyuubi](https://kyuubi.apache.org) - Integration testing with Trino as data source engine, Kafka, etc.
 
 ## License
 

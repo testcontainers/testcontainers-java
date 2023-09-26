@@ -14,7 +14,7 @@ import org.testcontainers.utility.MountableFile;
 import java.util.concurrent.TimeUnit;
 
 @Testcontainers
-public class DemoHiveMQContainerIT {
+class DemoHiveMQContainerIT {
 
     // ceVersion {
     @Container
@@ -49,7 +49,7 @@ public class DemoHiveMQContainerIT {
 
     @Test
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
-    public void test() throws Exception {
+    void test() throws Exception {
         // mqtt5client {
         final Mqtt5BlockingClient client = Mqtt5Client
             .builder()

@@ -18,6 +18,7 @@ body:
         - Cassandra
         - Clickhouse
         - CockroachDB
+        - CrateDB
         - Consul
         - Couchbase
         - DB2
@@ -30,6 +31,7 @@ body:
         - Kafka
         - LocalStack
         - MariaDB
+        - MinIO
         - MockServer
         - MongoDB
         - MSSQLServer

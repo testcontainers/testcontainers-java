@@ -8,7 +8,7 @@
 
 ![Testcontainers logo](docs/logo.png)
 
-# [Read the documentation here](http://www.testcontainers.org)
+# [Read the documentation here](https://java.testcontainers.org)
 
 ## License
 

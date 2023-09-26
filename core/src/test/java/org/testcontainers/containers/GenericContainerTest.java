@@ -1,5 +1,7 @@
 package org.testcontainers.containers;
 
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse.ContainerState;
@@ -32,6 +34,7 @@ import java.util.stream.Collectors;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.assertj.core.api.Assumptions.assumeThat;
 
 public class GenericContainerTest {
 
@@ -177,6 +180,41 @@ public class GenericContainerTest {
 
             assertThat(container.getExposedPorts()).as("Only withExposedPort should be exposed").hasSize(1);
             assertThat(container.getExposedPorts()).as("withExposedPort should be exposed").contains(8080);
+        }
+    }
+
+    @Test
+    public void testArchitectureCheck() {
+        assumeThat(DockerClientFactory.instance().client().versionCmd().exec().getArch()).isNotEqualTo("amd64");
+        // Choose an image that is *different* from the server architecture--this ensures we always get a warning.
+        final String image;
+        if (DockerClientFactory.instance().client().versionCmd().exec().getArch().equals("amd64")) {
+            // arm64 image
+            image = "testcontainers/sshd@sha256:f701fa4ae2cd25ad2b2ea2df1aad00980f67bacdd03958a2d7d52ee63d7fb3e8";
+        } else {
+            // amd64 image
+            image = "testcontainers/sshd@sha256:7879c6c99eeab01f1c6beb2c240d49a70430ef2d52f454765ec9707f547ef6f1";
+        }
+
+        try (GenericContainer container = new GenericContainer<>(image)) {
+            // Grab a copy of everything that is logged when we start the container
+            ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) container.logger();
+            ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
+            listAppender.start();
+            logger.addAppender(listAppender);
+
+            container.start();
+
+            String regexMatch = "The architecture '\\S+' for image .*";
+            assertThat(listAppender.list)
+                .describedAs(
+                    "Received log list does not have a message matching '" +
+                    regexMatch +
+                    "': " +
+                    listAppender.list.toString()
+                )
+                .filteredOn(event -> event.getMessage().matches(regexMatch))
+                .isNotEmpty();
         }
     }
 

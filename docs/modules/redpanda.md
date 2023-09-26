@@ -1,10 +1,10 @@
 # Redpanda
 
 Testcontainers can be used to automatically instantiate and manage [Redpanda](https://redpanda.com/) containers.
-More precisely Testcontainers uses the official Docker images for [Redpanda](https://hub.docker.com/r/vectorized/redpanda/)
+More precisely Testcontainers uses the official Docker images for [Redpanda](https://hub.docker.com/r/redpandadata/redpanda)
 
 !!! note
-    This module uses features provided in `docker.redpanda.com/vectorized/redpanda`.
+    This module uses features provided in `docker.redpanda.com/redpandadata/redpanda`.
 
 ## Example
 
@@ -23,6 +23,44 @@ Redpanda also provides a schema registry implementation. Like the Redpanda broke
 
 <!--codeinclude-->
 [Schema Registry](../../modules/redpanda/src/test/java/org/testcontainers/redpanda/RedpandaContainerTest.java) inside_block:getSchemaRegistryAddress
+<!--/codeinclude-->
+
+It is also possible to enable security capabilities of Redpanda by using:
+
+<!--codeinclude-->
+[Enable security](../../modules/redpanda/src/test/java/org/testcontainers/redpanda/RedpandaContainerTest.java) inside_block:security
+<!--/codeinclude-->
+
+Superusers can be created by using:
+
+<!--codeinclude-->
+[Register Superuser](../../modules/redpanda/src/test/java/org/testcontainers/redpanda/RedpandaContainerTest.java) inside_block:createSuperUser
+<!--/codeinclude-->
+
+Below is an example of how to create the `AdminClient`:
+
+<!--codeinclude-->
+[Create Admin Client](../../modules/redpanda/src/test/java/org/testcontainers/redpanda/RedpandaContainerTest.java) inside_block:createAdminClient
+<!--/codeinclude-->
+
+There are scenarios where additional listeners are needed because the consumer/producer can be another
+container in the same network or a different process where the port to connect differs from the default
+exposed port `9092`. E.g [Toxiproxy](../../docs/modules/toxiproxy.md).
+
+<!--codeinclude-->
+[Register additional listener](../../modules/redpanda/src/test/java/org/testcontainers/redpanda/RedpandaContainerTest.java) inside_block:registerListener
+<!--/codeinclude-->
+
+Container defined in the same network:
+
+<!--codeinclude-->
+[Create kcat container](../../modules/redpanda/src/test/java/org/testcontainers/redpanda/RedpandaContainerTest.java) inside_block:createKCatContainer
+<!--/codeinclude-->
+
+Client using the new registered listener:
+
+<!--codeinclude-->
+[Produce/Consume via new listener](../../modules/redpanda/src/test/java/org/testcontainers/redpanda/RedpandaContainerTest.java) inside_block:produceConsumeMessage
 <!--/codeinclude-->
 
 ## Adding this module to your project dependencies

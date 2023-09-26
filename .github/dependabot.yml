@@ -9,7 +9,7 @@ updates:
   - package-ecosystem: "gradle"
     directory: "/core"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
     ignore:
       - dependency-name: "org.slf4j:slf4j-api"
@@ -18,6 +18,8 @@ updates:
         update-types: [ "version-update:semver-major" ]
       - dependency-name: "org.yaml:snakeyaml"
         update-types: [ "version-update:semver-major" ]
+      - dependency-name: "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
+        update-types: [ "version-update:semver-minor", "version-update:semver-patch" ]
   - package-ecosystem: "gradle"
     directory: "/"
     allow:
@@ -25,19 +27,19 @@ updates:
     registries:
       - gradle-plugin-portal
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
 
 # Explicit entry for each module
   - package-ecosystem: "gradle"
     directory: "/modules/azure"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/cassandra"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
     ignore:
       - dependency-name: "io.dropwizard.metrics:metrics-core"
@@ -45,62 +47,67 @@ updates:
   - package-ecosystem: "gradle"
     directory: "/modules/clickhouse"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/cockroachdb"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/consul"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/couchbase"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
+    directory: "/modules/cratedb"
+    schedule:
+      interval: "weekly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/database-commons"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/db2"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/dynalite"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/elasticsearch"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/gcloud"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/hivemq"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/influxdb"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/jdbc"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
     ignore:
       - dependency-name: "org.mockito:mockito-core"
@@ -108,7 +115,7 @@ updates:
   - package-ecosystem: "gradle"
     directory: "/modules/jdbc-test"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
     ignore:
       - dependency-name: "org.apache.tomcat:tomcat-jdbc"
@@ -116,7 +123,7 @@ updates:
   - package-ecosystem: "gradle"
     directory: "/modules/junit-jupiter"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
     ignore:
       - dependency-name: "org.mockito:mockito-core"
@@ -124,7 +131,7 @@ updates:
   - package-ecosystem: "gradle"
     directory: "/modules/k3s"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
     ignore:
       - dependency-name: "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml"
@@ -132,45 +139,50 @@ updates:
   - package-ecosystem: "gradle"
     directory: "/modules/kafka"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/localstack"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/mariadb"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
     ignore:
       - dependency-name: "org.mariadb:r2dbc-mariadb"
         update-types: [ "version-update:semver-minor" ]
   - package-ecosystem: "gradle"
+    directory: "/modules/minio"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
     directory: "/modules/mockserver"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/mongodb"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/mssqlserver"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/mysql"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/neo4j"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
     ignore:
       - dependency-name: "org.neo4j.driver:neo4j-java-driver"
@@ -180,42 +192,42 @@ updates:
   - package-ecosystem: "gradle"
     directory: "/modules/nginx"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/oracle-xe"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/orientdb"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/postgresql"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/presto"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/pulsar"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/questdb"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/r2dbc"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
     ignore:
       - dependency-name: "io.r2dbc:r2dbc-spi"
@@ -223,22 +235,22 @@ updates:
   - package-ecosystem: "gradle"
     directory: "/modules/rabbitmq"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/redpanda"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/selenium"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/solace"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
     ignore:
       - dependency-name: "org.apache.qpid:qpid-jms-client"
@@ -246,7 +258,7 @@ updates:
   - package-ecosystem: "gradle"
     directory: "/modules/solr"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
     ignore:
       - dependency-name: "org.apache.solr:solr-solrj"
@@ -254,39 +266,39 @@ updates:
   - package-ecosystem: "gradle"
     directory: "/modules/spock"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/tidb"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/toxiproxy"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/trino"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/vault"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/yugabytedb"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
 
 # Examples
   - package-ecosystem: "gradle"
     directory: "/examples"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10
     ignore:
       - dependency-name: "ch.qos.logback:logback-classic"
@@ -308,5 +320,5 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     open-pull-requests-limit: 10

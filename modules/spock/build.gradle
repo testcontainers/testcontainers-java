@@ -15,18 +15,24 @@ dependencies {
     testImplementation 'com.zaxxer:HikariCP:4.0.3'
     testImplementation 'org.apache.httpcomponents:httpclient:4.5.14'
 
-    testRuntimeOnly 'org.postgresql:postgresql:42.5.4'
-    testRuntimeOnly 'mysql:mysql-connector-java:8.0.32'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.9.2'
-    testRuntimeOnly 'org.junit.platform:junit-platform-testkit:1.9.2'
+    testRuntimeOnly 'org.postgresql:postgresql:42.6.0'
+    testRuntimeOnly 'mysql:mysql-connector-java:8.0.33'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.0'
+    testRuntimeOnly 'org.junit.platform:junit-platform-testkit:1.10.0'
 
-    testCompileOnly 'org.jetbrains:annotations:24.0.0'
+    testCompileOnly 'org.jetbrains:annotations:24.0.1'
 }
 
 sourceJar {
     /* allJava is default (see gradle/publishing.gradle:sourceJar)
        allSource contains both .java and .groovy files */
     from sourceSets.main.allSource
+}
+
+javadocJar {
+    dependsOn groovydoc
+    archiveClassifier = 'javadoc'
+    from groovydoc.destinationDir
 }
 
 test {

@@ -17,12 +17,22 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Testcontainer for RabbitMQ.
+ * Testcontainers implementation for RabbitMQ.
+ * <p>
+ * Supported image: {@code rabbitmq}
+ * <p>
+ * Exposed ports:
+ * <ul>
+ *     <li>5671 (AMQPS)</li>
+ *     <li>5672 (AMQP)</li>
+ *     <li>15671 (HTTPS)</li>
+ *     <li>15672 (HTTP)</li>
+ * </ul>
  */
 public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
 
     /**
-     * The image defaults to the official RabbitmQ image: <a href="https://hub.docker.com/_/rabbitmq/">RabbitMQ</a>.
+     * The image defaults to the official RabbitMQ image: <a href="https://hub.docker.com/_/rabbitmq/">RabbitMQ</a>.
      */
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("rabbitmq");
 
@@ -44,7 +54,7 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
 
     /**
      * Creates a RabbitMQ container using the official RabbitMQ docker image.
-     * @deprecated use {@link RabbitMQContainer(DockerImageName)} instead
+     * @deprecated use {@link #RabbitMQContainer(DockerImageName)} instead
      */
     @Deprecated
     public RabbitMQContainer() {

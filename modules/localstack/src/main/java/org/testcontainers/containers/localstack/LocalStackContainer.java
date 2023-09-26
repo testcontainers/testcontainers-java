@@ -21,20 +21,27 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * <p>Container for LocalStack, 'A fully functional local AWS cloud stack'.</p>
- * <p>{@link LocalStackContainer#withServices(Service...)} should be used to select which services
- * are to be launched. See {@link Service} for available choices.
+ * Testcontainers implementation for LocalStack.
+ * <p>
+ * Supported images: {@code localstack/localstack}, {@code localstack/localstack-pro}
+ * <p>
+ * Exposed ports: 4566
  */
 @Slf4j
 public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
 
     static final int PORT = 4566;
 
+    @Deprecated
     private static final String HOSTNAME_EXTERNAL_ENV_VAR = "HOSTNAME_EXTERNAL";
+
+    private static final String LOCALSTACK_HOST_ENV_VAR = "LOCALSTACK_HOST";
 
     private final List<EnabledService> services = new ArrayList<>();
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("localstack/localstack");
+
+    private static final DockerImageName LOCALSTACK_PRO_IMAGE_NAME = DockerImageName.parse("localstack/localstack-pro");
 
     private static final String DEFAULT_TAG = "0.11.2";
 
@@ -66,8 +73,10 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
      */
     private final boolean servicesEnvVarRequired;
 
+    private final boolean isVersion2;
+
     /**
-     * @deprecated use {@link LocalStackContainer(DockerImageName)} instead
+     * @deprecated use {@link #LocalStackContainer(DockerImageName)} instead
      */
     @Deprecated
     public LocalStackContainer() {
@@ -75,7 +84,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
     }
 
     /**
-     * @deprecated use {@link LocalStackContainer(DockerImageName)} instead
+     * @deprecated use {@link #LocalStackContainer(DockerImageName)} instead
      */
     @Deprecated
     public LocalStackContainer(String version) {
@@ -92,16 +101,29 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
     /**
      * @param dockerImageName    image name to use for Localstack
      * @param useLegacyMode      if true, each AWS service is exposed on a different port
+     * @deprecated use {@link #LocalStackContainer(DockerImageName)} instead
      */
+    @Deprecated
     public LocalStackContainer(final DockerImageName dockerImageName, boolean useLegacyMode) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, LOCALSTACK_PRO_IMAGE_NAME);
 
         this.legacyMode = useLegacyMode;
-        this.servicesEnvVarRequired = isServicesEnvVarRequired(dockerImageName.getVersionPart());
+        String version = dockerImageName.getVersionPart();
+        this.servicesEnvVarRequired = isServicesEnvVarRequired(version);
+        this.isVersion2 = isVersion2(version);
 
         withFileSystemBind(DockerClientFactory.instance().getRemoteDockerUnixSocketPath(), "/var/run/docker.sock");
         waitingFor(Wait.forLogMessage(".*Ready\\.\n", 1));
+    }
+
+    private static boolean isVersion2(String version) {
+        if (version.equals("latest")) {
+            return true;
+        }
+
+        ComparableVersion comparableVersion = new ComparableVersion(version);
+        return comparableVersion.isGreaterThanOrEqualTo("2.0.0");
     }
 
     private static boolean isServicesEnvVarRequired(String version) {
@@ -141,7 +163,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
     protected void configure() {
         super.configure();
 
-        if (servicesEnvVarRequired) {
+        if (this.servicesEnvVarRequired) {
             Preconditions.check("services list must not be empty", !services.isEmpty());
         }
 
@@ -152,26 +174,30 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
             }
         }
 
+        if (this.isVersion2) {
+            resolveHostname(LOCALSTACK_HOST_ENV_VAR);
+        } else {
+            resolveHostname(HOSTNAME_EXTERNAL_ENV_VAR);
+        }
+
+        exposePorts();
+    }
+
+    private void resolveHostname(String envVar) {
         String hostnameExternalReason;
-        if (getEnvMap().containsKey(HOSTNAME_EXTERNAL_ENV_VAR)) {
+        if (getEnvMap().containsKey(envVar)) {
             // do nothing
             hostnameExternalReason = "explicitly as environment variable";
         } else if (getNetwork() != null && getNetworkAliases() != null && getNetworkAliases().size() >= 1) {
-            withEnv(HOSTNAME_EXTERNAL_ENV_VAR, getNetworkAliases().get(getNetworkAliases().size() - 1)); // use the last network alias set
+            withEnv(envVar, getNetworkAliases().get(getNetworkAliases().size() - 1)); // use the last network alias set
             hostnameExternalReason = "to match last network alias on container with non-default network";
         } else {
-            withEnv(HOSTNAME_EXTERNAL_ENV_VAR, getHost());
+            withEnv(envVar, getHost());
             hostnameExternalReason = "to match host-routable address for container";
         }
-        logger()
-            .info(
-                "{} environment variable set to {} ({})",
-                HOSTNAME_EXTERNAL_ENV_VAR,
-                getEnvMap().get(HOSTNAME_EXTERNAL_ENV_VAR),
-                hostnameExternalReason
-            );
 
-        exposePorts();
+        logger()
+            .info("{} environment variable set to {} ({})", envVar, getEnvMap().get(envVar), hostnameExternalReason);
     }
 
     private void exposePorts() {
@@ -227,6 +253,35 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
             // resolve IP address and use that as the endpoint so that path-style access is automatically used for S3
             ipAddress = InetAddress.getByName(address).getHostAddress();
             return new URI("http://" + ipAddress + ":" + getMappedPort(getServicePort(service)));
+        } catch (UnknownHostException | URISyntaxException e) {
+            throw new IllegalStateException("Cannot obtain endpoint URL", e);
+        }
+    }
+
+    /**
+     * Provides an endpoint to communicate with LocalStack service.
+     * The provided endpoint should be set in the AWS Java SDK v2 when building a client, e.g.:
+     * <pre><code>S3Client s3 = S3Client
+             .builder()
+             .endpointOverride(localstack.getEndpoint())
+             .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(
+             localstack.getAccessKey(), localstack.getSecretKey()
+             )))
+             .region(Region.of(localstack.getRegion()))
+             .build()
+             </code></pre>
+     * <p><strong>Please note that this method is only intended to be used for configuring AWS SDK clients
+     * that are running on the test host. If other containers need to call this one, they should be configured
+     * specifically to do so using a Docker network and appropriate addressing.</strong></p>
+     *
+     * @return an {@link URI} endpoint
+     */
+    public URI getEndpoint() {
+        try {
+            final String address = getHost();
+            // resolve IP address and use that as the endpoint so that path-style access is automatically used for S3
+            String ipAddress = InetAddress.getByName(address).getHostAddress();
+            return new URI("http://" + ipAddress + ":" + getMappedPort(PORT));
         } catch (UnknownHostException | URISyntaxException e) {
             throw new IllegalStateException("Cannot obtain endpoint URL", e);
         }
