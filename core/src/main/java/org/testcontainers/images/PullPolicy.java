@@ -25,36 +25,38 @@ public class PullPolicy {
      * Convenience method for returning the {@link DefaultPullPolicy} default image pull policy
      * @return {@link ImagePullPolicy}
      */
-    public static ImagePullPolicy defaultPolicy() {
-        if (instance == null) {
-            String imagePullPolicyClassName = TestcontainersConfiguration.getInstance().getImagePullPolicy();
-            if (imagePullPolicyClassName != null) {
-                log.debug("Attempting to instantiate an ImagePullPolicy with class: {}", imagePullPolicyClassName);
-                ImagePullPolicy configuredInstance;
-                try {
-                    configuredInstance =
-                        (ImagePullPolicy) Thread
-                            .currentThread()
-                            .getContextClassLoader()
-                            .loadClass(imagePullPolicyClassName)
-                            .getConstructor()
-                            .newInstance();
-                } catch (Exception e) {
-                    throw new IllegalArgumentException(
-                        "Configured ImagePullPolicy could not be loaded: " + imagePullPolicyClassName,
-                        e
-                    );
-                }
+    public static synchronized ImagePullPolicy defaultPolicy() {
+        if (instance != null) {
+            return instance;
+        }
 
-                log.info("Found configured Image Pull Policy: {}", configuredInstance.getClass());
-
-                instance = configuredInstance;
-            } else {
-                instance = defaultImplementation;
+        String imagePullPolicyClassName = TestcontainersConfiguration.getInstance().getImagePullPolicy();
+        if (imagePullPolicyClassName != null) {
+            log.debug("Attempting to instantiate an ImagePullPolicy with class: {}", imagePullPolicyClassName);
+            ImagePullPolicy configuredInstance;
+            try {
+                configuredInstance =
+                    (ImagePullPolicy) Thread
+                        .currentThread()
+                        .getContextClassLoader()
+                        .loadClass(imagePullPolicyClassName)
+                        .getConstructor()
+                        .newInstance();
+            } catch (Exception e) {
+                throw new IllegalArgumentException(
+                    "Configured ImagePullPolicy could not be loaded: " + imagePullPolicyClassName,
+                    e
+                );
             }
 
-            log.info("Image pull policy will be performed by: {}", instance);
+            log.info("Found configured Image Pull Policy: {}", configuredInstance.getClass());
+
+            instance = configuredInstance;
+        } else {
+            instance = defaultImplementation;
         }
+
+        log.info("Image pull policy will be performed by: {}", instance);
 
         return instance;
     }
