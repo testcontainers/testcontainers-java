@@ -153,8 +153,6 @@ public class RedpandaContainerTest {
                 .withSuperuser("panda")
                 .withListener(() -> "my-panda:29092")
                 .withNetwork(network);
-            // }
-            // createKCatContainer {
             GenericContainer<?> kcat = new GenericContainer<>("confluentinc/cp-kcat:7.4.1")
                 .withCreateContainerCmdModifier(cmd -> {
                     cmd.withEntrypoint("sh");
