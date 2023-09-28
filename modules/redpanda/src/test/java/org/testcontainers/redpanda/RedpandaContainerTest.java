@@ -162,7 +162,6 @@ public class RedpandaContainerTest {
                 .withCopyToContainer(Transferable.of("Message produced by kcat"), "/data/msgs.txt")
                 .withNetwork(network)
                 .withCommand("-c", "tail -f /dev/null")
-            // }
         ) {
             redpanda.start();
 
