@@ -147,7 +147,6 @@ public class RedpandaContainerTest {
 
         try (
             Network network = Network.newNetwork();
-            // registerListener {
             RedpandaContainer redpanda = new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v23.1.7")
                 .enableAuthorization()
                 .enableSasl()
