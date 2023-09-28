@@ -213,6 +213,10 @@ public class TestcontainersConfiguration {
         return getEnvVarOrProperty("image.substitutor", null);
     }
 
+    public String getImagePullPolicy() {
+        return getEnvVarOrProperty("pull.policy", null);
+    }
+
     public Integer getClientPingTimeout() {
         return Integer.parseInt(getEnvVarOrProperty("client.ping.timeout", "10"));
     }

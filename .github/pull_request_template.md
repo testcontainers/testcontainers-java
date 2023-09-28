@@ -8,6 +8,11 @@ Also, add it to `dependabot.yml` and `labeler.yml`.
 
 Before committing, please run `./gradlew checkstyleMain checkstyleTest spotlessApply` and fix any issues that occur.
 
+Dependency Upgrades:
+Please do not open a pull request to update only a version dependency. Existing process will perform
+the upgrade every week. However, if the upgrade involves more changes (changes for deprecated API) then
+your pull request is very welcome.
+
 Describing Your Changes:
 
 If, after having reviewed the notes above, you're ready to submit your pull request, please

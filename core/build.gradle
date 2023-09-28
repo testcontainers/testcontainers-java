@@ -73,7 +73,7 @@ dependencies {
     api 'org.slf4j:slf4j-api:1.7.36'
     compileOnly 'org.jetbrains:annotations:24.0.1'
     testCompileOnly 'org.jetbrains:annotations:24.0.1'
-    api 'org.apache.commons:commons-compress:1.23.0'
+    api 'org.apache.commons:commons-compress:1.24.0'
     api ('org.rnorth.duct-tape:duct-tape:1.0.8') {
         exclude(group: 'org.jetbrains', module: 'annotations')
     }
@@ -93,17 +93,22 @@ dependencies {
 
     api "com.github.docker-java:docker-java-api"
 
-    shaded 'com.github.docker-java:docker-java-core'
+    shaded('com.github.docker-java:docker-java-core') {
+        exclude group: 'com.google.guava', module: 'guava'
+    }
 
     api 'com.github.docker-java:docker-java-transport-zerodep'
 
+    shaded 'com.google.guava:guava:32.1.2-jre'
     shaded "org.yaml:snakeyaml:1.33"
 
     shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
 
     shaded 'org.zeroturnaround:zt-exec:1.12'
 
-    testImplementation 'com.google.cloud.tools:jib-core:0.23.0'
+    testImplementation('com.google.cloud.tools:jib-core:0.23.0')  {
+        exclude group: 'com.google.guava', module: 'guava'
+    }
     testImplementation 'org.apache.httpcomponents:httpclient:4.5.9'
     testImplementation 'redis.clients:jedis:5.0.0'
     testImplementation 'com.rabbitmq:amqp-client:5.18.0'

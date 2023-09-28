@@ -3,6 +3,9 @@ name: CI-Docker-Wormhole
 on:
   pull_request:
     paths-ignore:
+      - '.github/ISSUE_TEMPLATE/*.yaml'
+      - '.github/CODEOWNERS'
+      - '.github/pull_request_template.md'
       - 'docs/**/*.css'
       - 'docs/**/*.html'
       - 'docs/**/*.ico'
@@ -16,6 +19,9 @@ on:
   push:
     branches: [ main ]
     paths-ignore:
+      - '.github/ISSUE_TEMPLATE/*.yaml'
+      - '.github/CODEOWNERS'
+      - '.github/pull_request_template.md'
       - 'docs/**/*.css'
       - 'docs/**/*.html'
       - 'docs/**/*.ico'
