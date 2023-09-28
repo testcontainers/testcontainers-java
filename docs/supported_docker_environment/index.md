@@ -62,7 +62,7 @@ export TESTCONTAINERS_RYUK_DISABLED=true
 
 ## Rancher Desktop
 
-In order to run testcontainers against [Rancher Desktop](https://rancherdesktop.io/) the env vars below should be set
+In order to run testcontainers against [Rancher Desktop](https://rancherdesktop.io/) the env vars below should be set.
 
 If you're running Rancher Desktop as an administrator in a MacOS (M1) machine:
 
