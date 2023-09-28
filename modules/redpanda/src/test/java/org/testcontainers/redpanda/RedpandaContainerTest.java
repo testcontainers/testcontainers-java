@@ -173,7 +173,6 @@ public class RedpandaContainerTest {
 
             kcat.start();
 
-            // produceConsumeMessage {
             kcat.execInContainer(
                 "kcat",
                 "-b",
