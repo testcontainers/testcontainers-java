@@ -213,7 +213,6 @@ public class RedpandaContainerTest {
                     "1"
                 )
                 .getStdout();
-            // }
 
             assertThat(stdout).contains("Message produced by kcat");
         }
