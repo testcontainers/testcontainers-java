@@ -15,15 +15,24 @@ public class YugabyteDBYCQLTest {
 
     private static final String IMAGE_NAME = "yugabytedb/yugabyte:2.14.4.0-b26";
 
+    private static final String IMAGE_NAME_2_18 = "yugabytedb/yugabyte:2.18.3.0-b75";
+
     private static final DockerImageName YBDB_TEST_IMAGE = DockerImageName.parse(IMAGE_NAME);
 
     @Test
     public void testSmoke() {
+        doTestSmoke(IMAGE_NAME);
+    }
+
+    @Test
+    public void testSmoke2_18() {
+        doTestSmoke(IMAGE_NAME_2_18);
+    }
+
+    private void doTestSmoke(String image) {
         try (
             // creatingYCQLContainer {
-            final YugabyteDBYCQLContainer ycqlContainer = new YugabyteDBYCQLContainer(
-                "yugabytedb/yugabyte:2.14.4.0-b26"
-            )
+            final YugabyteDBYCQLContainer ycqlContainer = new YugabyteDBYCQLContainer(image)
             // }
         ) {
             // startingYCQLContainer {

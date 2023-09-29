@@ -98,15 +98,15 @@ public class YugabyteDBYSQLTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testWaitStrategy() throws SQLException {
-        try (
-            final YugabyteDBYSQLContainer ysqlContainer = new YugabyteDBYSQLContainer(YBDB_TEST_IMAGE)
-        ) {
+        try (final YugabyteDBYSQLContainer ysqlContainer = new YugabyteDBYSQLContainer(YBDB_TEST_IMAGE)) {
             ysqlContainer.start();
             assertThat(performQuery(ysqlContainer, "SELECT 1").getInt(1))
                 .as("A sample test query succeeds")
                 .isEqualTo(1);
-            assertThat(performQuery(ysqlContainer, "SELECT EXISTS (SELECT FROM pg_tables WHERE tablename = 'YB_SAMPLE')")
-                .getBoolean(1))
+            assertThat(
+                performQuery(ysqlContainer, "SELECT EXISTS (SELECT FROM pg_tables WHERE tablename = 'YB_SAMPLE')")
+                    .getBoolean(1)
+            )
                 .as("yb_sample table does not exists")
                 .isEqualTo(false);
         }
