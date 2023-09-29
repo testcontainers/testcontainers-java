@@ -21,18 +21,11 @@ public class YugabyteDBYCQLTest {
 
     @Test
     public void testSmoke() {
-        doTestSmoke(IMAGE_NAME);
-    }
-
-    @Test
-    public void testSmoke2_18() {
-        doTestSmoke(IMAGE_NAME_2_18);
-    }
-
-    private void doTestSmoke(String image) {
         try (
             // creatingYCQLContainer {
-            final YugabyteDBYCQLContainer ycqlContainer = new YugabyteDBYCQLContainer(image)
+            final YugabyteDBYCQLContainer ycqlContainer = new YugabyteDBYCQLContainer(
+                "yugabytedb/yugabyte:2.14.4.0-b26"
+            )
             // }
         ) {
             // startingYCQLContainer {
@@ -112,6 +105,14 @@ public class YugabyteDBYCQLTest {
             ResultSet output = performQuery(ycqlContainer, "SELECT greet FROM random.dsql");
             assertThat(output.wasApplied()).as("Statements from a custom script execution succeeds").isTrue();
             assertThat(output.one().getString(0)).as("A record match succeeds").isEqualTo("Hello DSQL");
+        }
+    }
+
+    @Test
+    public void shouldStartWhenContainerIpIsUsedInWaitStrategy() {
+        try (final YugabyteDBYCQLContainer ycqlContainer = new YugabyteDBYCQLContainer(IMAGE_NAME_2_18)) {
+            ycqlContainer.start();
+            assertThat(performQuery(ycqlContainer, "SELECT release_version FROM system.local").wasApplied()).isTrue();
         }
     }
 
