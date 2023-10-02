@@ -26,6 +26,10 @@ Start BigQuery Emulator during a test:
 [Starting a BigQuery Emulator container](../../modules/gcloud/src/test/java/org/testcontainers/containers/BigQueryEmulatorContainerTest.java) inside_block:emulatorContainer
 <!--/codeinclude-->
 
+<!--codeinclude-->
+[Creating BigQuery Client](../../modules/gcloud/src/test/java/org/testcontainers/containers/BigQueryEmulatorContainerTest.java) inside_block:bigQueryClient
+<!--/codeinclude-->
+
 ### Bigtable
 
 Start Bigtable Emulator during a test:

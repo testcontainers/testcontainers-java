@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class HazelcastTest {
 
     // Hazelcast values
-    private static final String HZ_IMAGE_NAME = "hazelcast/hazelcast:5.2.0";
+    private static final String HZ_IMAGE_NAME = "hazelcast/hazelcast:5.2.0-slim";
 
     private static final String HZ_CLUSTERNAME_ENV_NAME = "HZ_CLUSTERNAME";
 
@@ -77,8 +77,8 @@ class HazelcastTest {
 
     @Test
     void hazelcastCluster() {
-        Network network = Network.newNetwork();
         try (
+            Network network = Network.newNetwork();
             GenericContainer<?> container1 = new GenericContainer<>(DockerImageName.parse(HZ_IMAGE_NAME))
                 .withExposedPorts(DEFAULT_EXPOSED_PORT)
                 .withEnv(HZ_CLUSTERNAME_ENV_NAME, TEST_CLUSTER_NAME)

@@ -35,7 +35,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
     private Future<DockerImageName> imageNameFuture;
 
     @With
-    private ImagePullPolicy imagePullPolicy = PullPolicy.defaultPolicy();
+    ImagePullPolicy imagePullPolicy = PullPolicy.defaultPolicy();
 
     @With
     private ImageNameSubstitutor imageNameSubstitutor = ImageNameSubstitutor.instance();

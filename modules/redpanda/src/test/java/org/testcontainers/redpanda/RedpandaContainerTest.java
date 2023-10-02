@@ -31,6 +31,7 @@ import org.testcontainers.utility.DockerImageName;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -134,6 +135,84 @@ public class RedpandaContainerTest {
                 .execInContainer("kcat", "-b", "redpanda:19092", "-C", "-t", "msgs", "-c", "1")
                 .getStdout();
             // }
+            assertThat(stdout).contains("Message produced by kcat");
+        }
+    }
+
+    @Test
+    public void testUsageWithListenerAndSasl() throws Exception {
+        final String username = "panda";
+        final String password = "pandapass";
+        final String algorithm = "SCRAM-SHA-256";
+
+        try (
+            Network network = Network.newNetwork();
+            RedpandaContainer redpanda = new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v23.1.7")
+                .enableAuthorization()
+                .enableSasl()
+                .withSuperuser("panda")
+                .withListener(() -> "my-panda:29092")
+                .withNetwork(network);
+            GenericContainer<?> kcat = new GenericContainer<>("confluentinc/cp-kcat:7.4.1")
+                .withCreateContainerCmdModifier(cmd -> {
+                    cmd.withEntrypoint("sh");
+                })
+                .withCopyToContainer(Transferable.of("Message produced by kcat"), "/data/msgs.txt")
+                .withNetwork(network)
+                .withCommand("-c", "tail -f /dev/null")
+        ) {
+            redpanda.start();
+
+            String adminUrl = String.format("%s/v1/security/users", redpanda.getAdminAddress());
+            Map<String, String> params = new HashMap<>();
+            params.put("username", username);
+            params.put("password", password);
+            params.put("algorithm", algorithm);
+
+            RestAssured.given().contentType("application/json").body(params).post(adminUrl).then().statusCode(200);
+
+            kcat.start();
+
+            kcat.execInContainer(
+                "kcat",
+                "-b",
+                "my-panda:29092",
+                "-X",
+                "security.protocol=SASL_PLAINTEXT",
+                "-X",
+                "sasl.mechanisms=" + algorithm,
+                "-X",
+                "sasl.username=" + username,
+                "-X",
+                "sasl.password=" + password,
+                "-t",
+                "msgs",
+                "-P",
+                "-l",
+                "/data/msgs.txt"
+            );
+
+            String stdout = kcat
+                .execInContainer(
+                    "kcat",
+                    "-b",
+                    "my-panda:29092",
+                    "-X",
+                    "security.protocol=SASL_PLAINTEXT",
+                    "-X",
+                    "sasl.mechanisms=" + algorithm,
+                    "-X",
+                    "sasl.username=" + username,
+                    "-X",
+                    "sasl.password=" + password,
+                    "-C",
+                    "-t",
+                    "msgs",
+                    "-c",
+                    "1"
+                )
+                .getStdout();
+
             assertThat(stdout).contains("Message produced by kcat");
         }
     }
