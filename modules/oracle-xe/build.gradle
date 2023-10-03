@@ -10,7 +10,7 @@ dependencies {
     compileOnly 'com.oracle.database.r2dbc:oracle-r2dbc:1.1.1'
 
     testImplementation project(':jdbc-test')
-    testImplementation 'com.oracle.database.jdbc:ojdbc11:23.2.0.0'
+    testImplementation 'com.oracle.database.jdbc:ojdbc11:23.3.0.23.09'
 
     compileOnly 'org.jetbrains:annotations:24.0.1'
 
