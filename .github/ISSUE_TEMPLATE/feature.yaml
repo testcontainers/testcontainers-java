@@ -32,6 +32,7 @@ body:
         - LocalStack
         - MariaDB
         - MinIO
+        - Ceph
         - MockServer
         - MongoDB
         - MSSQLServer

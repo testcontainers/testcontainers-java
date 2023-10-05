@@ -49,6 +49,8 @@
   - modules/mariadb/**/*
 "modules/minio":
   - modules/minio/**/*
+"modules/ceph":
+  - modules/ceph/**/*
 "modules/mockserver":
   - modules/mockserver/**/*
 "modules/mongodb":

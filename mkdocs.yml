@@ -82,6 +82,7 @@ nav:
           - modules/kafka.md
           - modules/localstack.md
           - modules/minio.md
+          - modules/ceph.md
           - modules/mockserver.md
           - modules/nginx.md
           - modules/pulsar.md

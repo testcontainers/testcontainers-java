@@ -1,0 +1,8 @@
+description = "Testcontainers :: Ceph"
+
+dependencies {
+    api project(':testcontainers')
+
+    testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.24.2'
+    testImplementation group: 'com.amazonaws', name: 'aws-java-sdk-s3', version: '1.12.562'
+}
