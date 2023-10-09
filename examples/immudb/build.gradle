@@ -7,7 +7,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'io.codenotary:immudb4j:1.0.0'
+    implementation 'io.codenotary:immudb4j:1.0.1'
     testImplementation 'org.testcontainers:testcontainers'
     testImplementation 'org.testcontainers:junit-jupiter'
     testImplementation 'org.assertj:assertj-core:3.24.2'
