@@ -4,6 +4,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -258,7 +259,7 @@ public class ScriptSplittingTest {
         String script = "SELECT 'foo `bar`'; /*";
 
         try {
-            doSplit(script);
+            doSplit(script, ScriptUtils.DEFAULT_STATEMENT_SEPARATOR);
             fail("Should have thrown!");
         } catch (ScriptUtils.ScriptParseException expected) {
             // ignore expected exception
@@ -281,17 +282,67 @@ public class ScriptSplittingTest {
         splitAndCompare(script, expected);
     }
 
+    @Test
+    public void testIfLoopBlocks() {
+        String script = "BEGIN\n" +
+            "    rec_loop: LOOP\n" +
+            "        FETCH blah;\n" +
+            "        IF something_wrong THEN LEAVE rec_loop; END IF;\n" +
+            "        do_something_else;\n" +
+            "    END LOOP;\n" +
+            "END /* final comment */;";
+        List<String> expected = Collections.singletonList(
+            "BEGIN\n" +
+                "    rec_loop: LOOP\n" +
+                "        FETCH blah;\n" +
+                "        IF something_wrong THEN LEAVE rec_loop; END IF;\n" +
+                "        do_something_else;\n" +
+                "    END LOOP;\n" +
+                "END"
+        );
+        splitAndCompare(script, expected);
+    }
+
+    @Test
+    public void testIfLoopBlocksSpecificSeparator() {
+        String script = "BEGIN\n" +
+            "    rec_loop: LOOP\n" +
+            "        FETCH blah;\n" +
+            "        IF something_wrong THEN LEAVE rec_loop; END IF;\n" +
+            "        do_something_else;\n" +
+            "    END LOOP;\n" +
+            "END;\n" +
+            "@\n" +
+            "CALL something();\n" +
+            "@\n";
+        List<String> expected = Arrays.asList(
+            "BEGIN\n" +
+                "    rec_loop: LOOP\n" +
+                "        FETCH blah;\n" +
+                "        IF something_wrong THEN LEAVE rec_loop; END IF;\n" +
+                "        do_something_else;\n" +
+                "    END LOOP;\n" +
+                "END",
+            "CALL something();"
+        );
+        splitAndCompare(script, expected, "@");
+    }
+
     private void splitAndCompare(String script, List<String> expected) {
-        final List<String> statements = doSplit(script);
+        splitAndCompare(script, expected, ScriptUtils.DEFAULT_STATEMENT_SEPARATOR);
+    }
+
+    private void splitAndCompare(String script, List<String> expected, String separator) {
+        final List<String> statements = doSplit(script, separator);
         assertThat(statements).isEqualTo(expected);
     }
 
-    private List<String> doSplit(String script) {
+    private List<String> doSplit(String script, String separator) {
         final List<String> statements = new ArrayList<>();
         ScriptUtils.splitSqlScript(
             "ignored",
             script,
-            ScriptUtils.DEFAULT_STATEMENT_SEPARATOR,
+            separator,
             ScriptUtils.DEFAULT_COMMENT_PREFIX,
             ScriptUtils.DEFAULT_BLOCK_COMMENT_START_DELIMITER,
             ScriptUtils.DEFAULT_BLOCK_COMMENT_END_DELIMITER,
