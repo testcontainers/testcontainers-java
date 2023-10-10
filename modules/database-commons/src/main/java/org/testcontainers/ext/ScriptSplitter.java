@@ -23,7 +23,7 @@ class ScriptSplitter {
      * 2. Shrink whitespace and eols
      * 3. Split on separator
      */
-    public void split() {
+    void split() {
         Lexem l;
         while ((l = scanner.next()) != Lexem.EOF) {
             switch (l) {
