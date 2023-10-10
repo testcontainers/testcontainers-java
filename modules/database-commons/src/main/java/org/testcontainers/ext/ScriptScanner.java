@@ -28,7 +28,7 @@ class ScriptScanner {
     @Getter
     private String currentMatch;
 
-    private boolean nextIs(String substring) {
+    private boolean matches(String substring) {
         if (script.startsWith(substring, offset)) {
             currentMatch = substring;
             offset += currentMatch.length();
@@ -39,7 +39,7 @@ class ScriptScanner {
         }
     }
 
-    private boolean nextIs(Pattern regexp) {
+    private boolean matches(Pattern regexp) {
         Matcher m = regexp.matcher(script);
         if (m.find(offset) && m.start() == offset) {
             currentMatch = m.group();
@@ -53,7 +53,7 @@ class ScriptScanner {
 
     private boolean matchesSingleLineComment() {
         /* Matches from commentPrefix to the EOL or end of script */
-        if (nextIs(commentPrefix)) {
+        if (matches(commentPrefix)) {
             Matcher m = eol.matcher(script);
             if (m.find(offset)) {
                 currentMatch = commentPrefix + script.substring(offset, m.end());
@@ -70,7 +70,7 @@ class ScriptScanner {
     private boolean matchesMultilineComment() {
         /* Matches from blockCommentStartDelimiter to the next blockCommentEndDelimiter.
          * Error, if blockCommentEndDelimiter is not found. */
-        if (nextIs(blockCommentStartDelimiter)) {
+        if (matches(blockCommentStartDelimiter)) {
             int end = script.indexOf(blockCommentEndDelimiter, offset);
             if (end < 0) {
                 throw new ScriptUtils.ScriptParseException(
@@ -86,44 +86,20 @@ class ScriptScanner {
         return false;
     }
 
-    private boolean matchesIdentifier() {
-        return nextIs(identifier);
-    }
-
-    private boolean matchesSingleQuotedString() {
-        return nextIs(singleQuotedString);
-    }
-
-    private boolean matchesAnsiQuotedString() {
-        return nextIs(ansiQuotedString);
-    }
-
-    private boolean matchesWhitespase() {
-        return nextIs(whitespace);
-    }
-
-    private boolean matchesSeparator() {
-        return nextIs(separator);
-    }
-
-    private void nextChar() {
-        currentMatch = String.valueOf(script.charAt(offset++));
-    }
-
     Lexem next() {
         if (offset < script.length()) {
-            if (matchesSeparator()) {
+            if (matches(separator)) {
                 return Lexem.SEPARATOR;
             } else if (matchesSingleLineComment() || matchesMultilineComment()) {
                 return Lexem.COMMENT;
-            } else if (matchesSingleQuotedString() || matchesAnsiQuotedString()) {
+            } else if (matches(singleQuotedString) || matches(ansiQuotedString)) {
                 return Lexem.QUOTED_STRING;
-            } else if (matchesIdentifier()) {
+            } else if (matches(identifier)) {
                 return Lexem.IDENTIFIER;
-            } else if (matchesWhitespase()) {
+            } else if (matches(whitespace)) {
                 return Lexem.WHITESPACE;
             } else {
-                nextChar();
+                currentMatch = String.valueOf(script.charAt(offset++));
                 return Lexem.OTHER;
             }
         } else {
