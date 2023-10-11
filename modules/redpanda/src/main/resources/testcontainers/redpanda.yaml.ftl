@@ -25,6 +25,7 @@ redpanda:
     - address: 0.0.0.0
       name: ${listener.address}
       port: ${listener.port}
+      authentication_method: ${listener.authentication_method}
 </#list>
 
   advertised_kafka_api:

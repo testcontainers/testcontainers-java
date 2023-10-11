@@ -31,6 +31,15 @@ It is possible to specify an Image Pull Policy to determine at runtime whether a
 [Custom image pull policy](../../core/src/test/java/org/testcontainers/images/ImagePullPolicyTest.java) inside_block:custom_image_pull_policy
 <!--/codeinclude-->
 
+You can also configure Testcontainers to use your custom implementation by using `pull.policy`
+
+=== "`src/test/resources/testcontainers.properties`"
+    ```text
+    pull.policy=com.mycompany.testcontainers.ExampleImagePullPolicy
+    ```
+
+Please see [the documentation on configuration mechanisms](./configuration.md) for more information.
+
 ## Customizing the container
 
 ### Using docker-java
