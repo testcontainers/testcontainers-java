@@ -142,13 +142,37 @@ public abstract class ScriptUtils {
      * @param delim String delimiting each statement - typically a ';' character
      */
     public static boolean containsSqlScriptDelimiters(String script, String delim) {
-        boolean inLiteral = false;
-        char[] content = script.toCharArray();
-        for (int i = 0; i < script.length(); i++) {
-            if (content[i] == '\'') {
-                inLiteral = !inLiteral;
-            }
-            if (!inLiteral && script.startsWith(delim, i)) {
+        return containsSqlScriptDelimiters("",
+            script,
+            DEFAULT_COMMENT_PREFIX,
+            delim,
+            DEFAULT_BLOCK_COMMENT_START_DELIMITER,
+            DEFAULT_BLOCK_COMMENT_END_DELIMITER);
+    }
+
+    /**
+     * Does the provided SQL script contain the specified delimiter?
+     *
+     * @param script                     the SQL script
+     * @param delim                      String delimiting each statement - typically a ';' character
+     * @param commentPrefix              the prefix that identifies comments in the SQL script,
+     *                                   typically "--"
+     * @param blockCommentStartDelimiter block comment start delimiter
+     * @param blockCommentEndDelimiter   block comment end delimiter
+     */
+    public static boolean containsSqlScriptDelimiters(String scriptPath,
+                                                      String script,
+                                                      String commentPrefix,
+                                                      String delim,
+                                                      String blockCommentStartDelimiter,
+                                                      String blockCommentEndDelimiter) {
+        ScriptScanner scanner = new ScriptScanner(
+            scriptPath, script, delim, commentPrefix,
+            blockCommentStartDelimiter, blockCommentEndDelimiter
+        );
+        ScriptScanner.Lexem l;
+        while ((l = scanner.next()) != ScriptScanner.Lexem.EOF) {
+            if (ScriptScanner.Lexem.SEPARATOR.equals(l)) {
                 return true;
             }
         }
@@ -244,7 +268,8 @@ public abstract class ScriptUtils {
             if (separator == null) {
                 separator = DEFAULT_STATEMENT_SEPARATOR;
             }
-            if (!containsSqlScriptDelimiters(script, separator)) {
+            if (!containsSqlScriptDelimiters(scriptPath, script, commentPrefix,
+                separator, blockCommentStartDelimiter, blockCommentEndDelimiter)) {
                 separator = FALLBACK_STATEMENT_SEPARATOR;
             }
 

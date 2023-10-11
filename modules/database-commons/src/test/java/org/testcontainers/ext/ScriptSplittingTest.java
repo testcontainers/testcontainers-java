@@ -350,4 +350,15 @@ public class ScriptSplittingTest {
         );
         return statements;
     }
+
+    @Test
+    public void testIgnoreDelimitersInLiteralsAndComments() {
+        assertThat(ScriptUtils.containsSqlScriptDelimiters("'@' /*@*/ \"@\" --@", "@")).isFalse();
+    }
+
+    @Test
+    public void testContainsDelimiters() {
+        assertThat(ScriptUtils.containsSqlScriptDelimiters("'@' /*@*/ @ \"@\" --@", "@")).isTrue();
+    }
+
 }
