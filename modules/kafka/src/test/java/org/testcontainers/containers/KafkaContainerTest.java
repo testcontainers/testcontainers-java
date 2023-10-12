@@ -16,6 +16,7 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.Test;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.Testcontainers;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
@@ -83,16 +84,9 @@ public class KafkaContainerTest {
                 .withNetwork(network)
                 .withNetworkAliases("zookeeper")
                 .withEnv("ZOOKEEPER_CLIENT_PORT", "2181");
-            // withKafkaNetwork {
-            GenericContainer<?> application = new GenericContainer<>(DockerImageName.parse("alpine"))
-                .withNetwork(network)
-                // }
-                .withNetworkAliases("dummy")
-                .withCommand("sleep 10000")
         ) {
             zookeeper.start();
             kafka.start();
-            application.start();
 
             testKafkaFunctionality(kafka.getBootstrapServers());
         }
@@ -192,6 +186,37 @@ public class KafkaContainerTest {
         try (KafkaContainer kafka = new KafkaContainer(KAFKA_KRAFT_TEST_IMAGE).withEmbeddedZookeeper().withKraft()) {
             kafka.start();
             testKafkaFunctionality(kafka.getBootstrapServers());
+        }
+    }
+
+    @Test
+    public void testUsageWithListener() throws Exception {
+        try (
+            Network network = Network.newNetwork();
+            // registerListener {
+            KafkaContainer kafka = new KafkaContainer(KAFKA_KRAFT_TEST_IMAGE)
+                .withListener(() -> "kafka:19092")
+                .withNetwork(network);
+            // }
+            // createKCatContainer {
+            GenericContainer<?> kcat = new GenericContainer<>("confluentinc/cp-kcat:7.4.1")
+                .withCreateContainerCmdModifier(cmd -> {
+                    cmd.withEntrypoint("sh");
+                })
+                .withCopyToContainer(Transferable.of("Message produced by kcat"), "/data/msgs.txt")
+                .withNetwork(network)
+                .withCommand("-c", "tail -f /dev/null")
+            // }
+        ) {
+            kafka.start();
+            kcat.start();
+            // produceConsumeMessage {
+            kcat.execInContainer("kcat", "-b", "kafka:19092", "-t", "msgs", "-P", "-l", "/data/msgs.txt");
+            String stdout = kcat
+                .execInContainer("kcat", "-b", "kafka:19092", "-C", "-t", "msgs", "-c", "1")
+                .getStdout();
+            // }
+            assertThat(stdout).contains("Message produced by kcat");
         }
     }
 

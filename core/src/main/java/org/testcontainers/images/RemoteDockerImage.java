@@ -32,7 +32,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
     private Future<DockerImageName> imageNameFuture;
 
     @With
-    private ImagePullPolicy imagePullPolicy = PullPolicy.defaultPolicy();
+    ImagePullPolicy imagePullPolicy = PullPolicy.defaultPolicy();
 
     @With
     private ImagePullRetryPolicy imagePullRetryPolicy = PullRetryPolicy.defaultRetryPolicy();
@@ -81,6 +81,8 @@ public class RemoteDockerImage extends LazyFuture<String> {
             boolean pull = true;
             imagePullRetryPolicy.pullStarted();
 
+            Instant startedAt = Instant.now();
+
             do {
                 try {
                     PullImageCmd pullImageCmd = dockerClient
@@ -96,10 +98,12 @@ public class RemoteDockerImage extends LazyFuture<String> {
                             .exec(new TimeLimitedLoggedPullImageResultCallback(logger))
                             .awaitCompletion();
                     }
+                    String dockerImageName = imageName.asCanonicalNameString();
+                    logger.info("Image {} pull took {}", dockerImageName, Duration.between(startedAt, Instant.now()));
 
                     LocalImagesCache.INSTANCE.refreshCache(imageName);
 
-                    return imageName.asCanonicalNameString();
+                    return dockerImageName;
                 } catch (Exception e) {
                     lastFailure = e;
                     pull = imagePullRetryPolicy.shouldRetry(imageName, e);

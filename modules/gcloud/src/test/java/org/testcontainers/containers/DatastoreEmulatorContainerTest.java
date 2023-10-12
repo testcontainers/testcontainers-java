@@ -19,7 +19,7 @@ public class DatastoreEmulatorContainerTest {
     @Rule
     // creatingDatastoreEmulatorContainer {
     public DatastoreEmulatorContainer emulator = new DatastoreEmulatorContainer(
-        DockerImageName.parse("gcr.io/google.com/cloudsdktool/google-cloud-cli:380.0.0-emulators")
+        DockerImageName.parse("gcr.io/google.com/cloudsdktool/google-cloud-cli:441.0.0-emulators")
     );
 
     // }
@@ -49,7 +49,7 @@ public class DatastoreEmulatorContainerTest {
     public void testWithFlags() throws IOException, InterruptedException {
         try (
             DatastoreEmulatorContainer emulator = new DatastoreEmulatorContainer(
-                "gcr.io/google.com/cloudsdktool/google-cloud-cli:380.0.0-emulators"
+                "gcr.io/google.com/cloudsdktool/google-cloud-cli:441.0.0-emulators"
             )
                 .withFlags("--consistency 1.0")
         ) {
@@ -64,7 +64,7 @@ public class DatastoreEmulatorContainerTest {
     public void testWithMultipleFlags() throws IOException, InterruptedException {
         try (
             DatastoreEmulatorContainer emulator = new DatastoreEmulatorContainer(
-                "gcr.io/google.com/cloudsdktool/google-cloud-cli:380.0.0-emulators"
+                "gcr.io/google.com/cloudsdktool/google-cloud-cli:441.0.0-emulators"
             )
                 .withFlags("--consistency 1.0 --data-dir /root/.config/test-gcloud")
         ) {

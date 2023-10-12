@@ -48,6 +48,7 @@ import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
+import org.testcontainers.core.CreateContainerCmdModifier;
 import org.testcontainers.images.ImagePullPolicy;
 import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.images.builder.Transferable;
@@ -89,6 +90,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
@@ -204,7 +206,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     /**
      * Set during container startup
-     *
      */
     @Setter(AccessLevel.NONE)
     @VisibleForTesting
@@ -221,8 +222,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private List<Consumer<OutputFrame>> logConsumers = new ArrayList<>();
 
-    private final Set<Consumer<CreateContainerCmd>> createContainerCmdModifiers = new LinkedHashSet<>();
-
     private static final Set<String> AVAILABLE_IMAGE_NAME_CACHE = new HashSet<>();
 
     private static final RateLimiter DOCKER_CLIENT_RATE_LIMITER = RateLimiterBuilder
@@ -238,6 +237,19 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private boolean shouldBeReused = false;
 
     private boolean hostAccessible = false;
+
+    private final Set<CreateContainerCmdModifier> createContainerCmdModifiers = loadCreateContainerCmdCustomizers();
+
+    private Set<CreateContainerCmdModifier> loadCreateContainerCmdCustomizers() {
+        ServiceLoader<CreateContainerCmdModifier> containerCmdCustomizers = ServiceLoader.load(
+            CreateContainerCmdModifier.class
+        );
+        Set<CreateContainerCmdModifier> loadedCustomizers = new LinkedHashSet<>();
+        for (CreateContainerCmdModifier customizer : containerCmdCustomizers) {
+            loadedCustomizers.add(customizer);
+        }
+        return loadedCustomizers;
+    }
 
     public GenericContainer(@NonNull final DockerImageName dockerImageName) {
         this.image = new RemoteDockerImage(dockerImageName);
@@ -327,8 +339,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         try {
             configure();
 
-            Instant startedAt = Instant.now();
-
             logger().debug("Starting container: {}", getDockerImageName());
 
             AtomicInteger attempt = new AtomicInteger(0);
@@ -342,7 +352,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                             attempt.incrementAndGet(),
                             startupAttempts
                         );
-                    tryStart(startedAt);
+                    tryStart();
                     return true;
                 }
             );
@@ -369,11 +379,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         return true;
     }
 
-    private void tryStart(Instant startedAt) {
+    private void tryStart() {
         try {
             String dockerImageName = getDockerImageName();
             logger().debug("Starting container: {}", dockerImageName);
 
+            Instant startedAt = Instant.now();
             logger().info("Creating container for image: {}", dockerImageName);
             CreateContainerCmd createCommand = dockerClient.createContainerCmd(dockerImageName);
             applyConfiguration(createCommand);
@@ -891,7 +902,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             createCommand.withPrivileged(privilegedMode);
         }
 
-        createContainerCmdModifiers.forEach(hook -> hook.accept(createCommand));
+        for (CreateContainerCmdModifier createContainerCmdModifier : this.createContainerCmdModifiers) {
+            createCommand = createContainerCmdModifier.modify(createCommand);
+        }
 
         Map<String, String> combinedLabels = new HashMap<>();
         combinedLabels.putAll(labels);
@@ -1490,7 +1503,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     /**
-     * Allow low level modifications of {@link CreateContainerCmd} after it was pre-configured in {@link #tryStart(Instant)}.
+     * Allow low level modifications of {@link CreateContainerCmd} after it was pre-configured in {@link #tryStart()}.
      * Invocation happens eagerly on a moment when container is created.
      * Warning: this does expose the underlying docker-java API so might change outside of our control.
      *
@@ -1498,12 +1511,16 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * @return this
      */
     public SELF withCreateContainerCmdModifier(Consumer<CreateContainerCmd> modifier) {
-        createContainerCmdModifiers.add(modifier);
+        this.createContainerCmdModifiers.add(cmd -> {
+                modifier.accept(cmd);
+                return cmd;
+            });
         return self();
     }
 
     /**
      * Size of /dev/shm
+     *
      * @param bytes The number of bytes to assign the shared memory. If null, it will apply the Docker default which is 64 MB.
      * @return this
      */
@@ -1514,6 +1531,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     /**
      * First class support for configuring tmpfs
+     *
      * @param mapping path and params of tmpfs/mount flag for container
      * @return this
      */

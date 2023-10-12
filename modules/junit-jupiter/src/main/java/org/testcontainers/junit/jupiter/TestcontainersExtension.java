@@ -71,7 +71,13 @@ public class TestcontainersExtension
         }
 
         if (isParallelExecutionEnabled(context)) {
-            Startables.deepStart(storeAdapters.stream().map(storeAdapter -> storeAdapter.container)).join();
+            Stream<Startable> startables = storeAdapters
+                .stream()
+                .map(storeAdapter -> {
+                    store.getOrComputeIfAbsent(storeAdapter.getKey(), k -> storeAdapter);
+                    return storeAdapter.container;
+                });
+            Startables.deepStart(startables).join();
         } else {
             storeAdapters.forEach(adapter -> store.getOrComputeIfAbsent(adapter.getKey(), k -> adapter.start()));
         }

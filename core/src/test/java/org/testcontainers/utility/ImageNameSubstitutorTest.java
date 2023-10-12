@@ -5,8 +5,10 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.testcontainers.containers.GenericContainer;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.eq;
 
 public class ImageNameSubstitutorTest {
@@ -63,5 +65,20 @@ public class ImageNameSubstitutorTest {
         assertThat(result.asCanonicalNameString())
             .as("the image has been substituted by default then configured implementations")
             .isEqualTo("substituted-image:latest");
+    }
+
+    @Test
+    public void testImageNameSubstitutorToString() {
+        Mockito
+            .doReturn(FakeImageSubstitutor.class.getCanonicalName())
+            .when(TestcontainersConfiguration.getInstance())
+            .getImageSubstitutorClassName();
+
+        try (GenericContainer<?> container = new GenericContainer<>(DockerImageName.parse("original"))) {
+            assertThatThrownBy(container::start)
+                .hasMessageContaining(
+                    "imageNameSubstitutor=Chained substitutor of 'default implementation' and then 'test implementation'"
+                );
+        }
     }
 }

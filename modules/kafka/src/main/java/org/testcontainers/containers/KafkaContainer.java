@@ -6,10 +6,24 @@ import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.function.Supplier;
 
 /**
- * This container wraps Confluent Kafka and Zookeeper (optionally)
+ * Testcontainers implementation for Apache Kafka.
+ * Zookeeper can be optionally configured.
+ * <p>
+ * Supported image: {@code confluentinc/cp-kafka}
+ * <p>
+ * Exposed ports:
+ * <ul>
+ *     <li>Kafka: 9093</li>
+ *     <li>Zookeeper: 2181</li>
+ * </ul>
  */
 public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
@@ -36,6 +50,10 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     private String clusterId = DEFAULT_CLUSTER_ID;
 
+    private static final String PROTOCOL_PREFIX = "TC";
+
+    private final Set<Supplier<String>> listeners = new HashSet<>();
+
     /**
      * @deprecated use {@link #KafkaContainer(DockerImageName)} instead
      */
@@ -56,10 +74,6 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
-        // Use two listeners with different names, it will force Kafka to communicate with itself via internal
-        // listener when KAFKA_INTER_BROKER_LISTENER_NAME is set, otherwise Kafka will try to use the advertised listener
-        withEnv("KAFKA_LISTENERS", "PLAINTEXT://0.0.0.0:" + KAFKA_PORT + ",BROKER://0.0.0.0:9092");
-        withEnv("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", "BROKER:PLAINTEXT,PLAINTEXT:PLAINTEXT");
         withEnv("KAFKA_INTER_BROKER_LISTENER_NAME", "BROKER");
 
         withEnv("KAFKA_BROKER_ID", "1");
@@ -133,6 +147,37 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     @Override
     protected void configure() {
+        // Use two listeners with different names, it will force Kafka to communicate with itself via internal
+        // listener when KAFKA_INTER_BROKER_LISTENER_NAME is set, otherwise Kafka will try to use the advertised listener
+        Set<String> listeners = new HashSet<>();
+        listeners.add("PLAINTEXT://0.0.0.0:" + KAFKA_PORT);
+        listeners.add("BROKER://0.0.0.0:9092");
+
+        Set<String> listenerSecurityProtocolMap = new HashSet<>();
+        listenerSecurityProtocolMap.add("BROKER:PLAINTEXT");
+        listenerSecurityProtocolMap.add("PLAINTEXT:PLAINTEXT");
+
+        List<Supplier<String>> listenersToTransform = new ArrayList<>(this.listeners);
+        for (int i = 0; i < listenersToTransform.size(); i++) {
+            Supplier<String> listenerSupplier = listenersToTransform.get(i);
+            String protocol = String.format("%s-%d", PROTOCOL_PREFIX, i);
+            String listener = listenerSupplier.get();
+            String listenerPort = listener.split(":")[1];
+            String listenerProtocol = String.format("%s://0.0.0.0:%s", protocol, listenerPort);
+            String protocolMap = String.format("%s:PLAINTEXT", protocol);
+            listeners.add(listenerProtocol);
+            listenerSecurityProtocolMap.add(protocolMap);
+
+            String host = listener.split(":")[0];
+            withNetworkAliases(host);
+        }
+
+        String kafkaListeners = String.join(",", listeners);
+        String kafkaListenerSecurityProtocolMap = String.join(",", listenerSecurityProtocolMap);
+
+        withEnv("KAFKA_LISTENERS", kafkaListeners);
+        withEnv("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", kafkaListenerSecurityProtocolMap);
+
         if (this.kraftEnabled) {
             waitingFor(Wait.forLogMessage(".*Transitioning from RECOVERY to RUNNING.*", 1));
             configureKraft();
@@ -180,14 +225,24 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     protected void containerIsStarting(InspectContainerResponse containerInfo) {
         super.containerIsStarting(containerInfo);
 
+        List<String> advertisedListeners = new ArrayList<>();
+        advertisedListeners.add(getBootstrapServers());
+        advertisedListeners.add(brokerAdvertisedListener(containerInfo));
+
+        List<Supplier<String>> listenersToTransform = new ArrayList<>(this.listeners);
+        for (int i = 0; i < listenersToTransform.size(); i++) {
+            Supplier<String> listenerSupplier = listenersToTransform.get(i);
+            String protocol = String.format("%s-%d", PROTOCOL_PREFIX, i);
+            String listener = listenerSupplier.get();
+            String listenerProtocol = String.format("%s://%s", protocol, listener);
+            advertisedListeners.add(listenerProtocol);
+        }
+
+        String kafkaAdvertisedListeners = String.join(",", advertisedListeners);
+
         String command = "#!/bin/bash\n";
         // exporting KAFKA_ADVERTISED_LISTENERS with the container hostname
-        command +=
-            String.format(
-                "export KAFKA_ADVERTISED_LISTENERS=%s,%s\n",
-                getBootstrapServers(),
-                brokerAdvertisedListener(containerInfo)
-            );
+        command += String.format("export KAFKA_ADVERTISED_LISTENERS=%s\n", kafkaAdvertisedListeners);
 
         if (this.kraftEnabled && isLessThanCP740()) {
             // Optimization: skip the checks
@@ -221,6 +276,31 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         command += "echo 'dataLogDir=/var/lib/zookeeper/log' >> zookeeper.properties\n";
         command += "zookeeper-server-start zookeeper.properties &\n";
         return command;
+    }
+
+    /**
+     * Add a {@link Supplier} that will provide a listener with format {@code host:port}.
+     * Host will be added as a network alias.
+     * <p>
+     * The listener will be added to the list of default listeners.
+     * <p>
+     * Default listeners:
+     * <ul>
+     *     <li>0.0.0.0:9092</li>
+     *     <li>0.0.0.0:9093</li>
+     * </ul>
+     * <p>
+     * Default advertised listeners:
+     * <ul>
+     *      <li>{@code container.getHost():container.getMappedPort(9093)}</li>
+     *      <li>{@code container.getConfig().getHostName():9092}</li>
+     * </ul>
+     * @param listenerSupplier a supplier that will provide a listener
+     * @return this {@link KafkaContainer} instance
+     */
+    public KafkaContainer withListener(Supplier<String> listenerSupplier) {
+        this.listeners.add(listenerSupplier);
+        return this;
     }
 
     protected String brokerAdvertisedListener(InspectContainerResponse containerInfo) {

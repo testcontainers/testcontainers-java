@@ -39,10 +39,11 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -408,14 +409,15 @@ public abstract class DockerClientProviderStrategy {
         if (configBuilder.build().getApiVersion() == RemoteApiVersion.UNKNOWN_VERSION) {
             configBuilder.withApiVersion(RemoteApiVersion.VERSION_1_32);
         }
+        Map<String, String> headers = new HashMap<>();
+        headers.put("x-tc-sid", DockerClientFactory.SESSION_ID);
+        headers.put("User-Agent", String.format("tc-java/%s", DockerClientFactory.TESTCONTAINERS_VERSION));
+
         return DockerClientImpl.getInstance(
             new AuthDelegatingDockerClientConfig(
                 configBuilder.withDockerHost(transportConfig.getDockerHost().toString()).build()
             ),
-            new HeadersAddingDockerHttpClient(
-                dockerHttpClient,
-                Collections.singletonMap("x-tc-sid", DockerClientFactory.SESSION_ID)
-            )
+            new HeadersAddingDockerHttpClient(dockerHttpClient, headers)
         );
     }
 

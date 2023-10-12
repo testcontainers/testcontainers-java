@@ -28,7 +28,64 @@ In order to run testcontainers against [colima](https://github.com/abiosoft/coli
 
 ```bash
 export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock
-export DOCKER_HOST="unix://${HOME}/.colima/docker.sock"
+export DOCKER_HOST="unix://${HOME}/.colima/default/docker.sock"
+```
+
+## Podman
+
+In order to run testcontainers against [podman](https://podman.io/) the env vars bellow should be set
+
+MacOS:
+
+```bash
+{% raw %}
+export DOCKER_HOST=unix://$(podman machine inspect --format '{{.ConnectionInfo.PodmanSocket.Path}}')
+export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock
+{% endraw %}
+```
+
+Linux:
+
+```bash
+export DOCKER_HOST=unix://${XDG_RUNTIME_DIR}/podman/podman.sock
+```
+
+If you're running Podman in rootless mode, ensure to include the following line to disable Ryuk:
+
+```bash
+export TESTCONTAINERS_RYUK_DISABLED=true
+```
+
+!!! note
+    Previous to version 1.19.0, `export TESTCONTAINERS_RYUK_PRIVILEGED=true`
+    was required for rootful mode. Starting with 1.19.0, this is no longer required.
+
+## Rancher Desktop
+
+In order to run testcontainers against [Rancher Desktop](https://rancherdesktop.io/) the env vars below should be set.
+
+If you're running Rancher Desktop as an administrator in a MacOS (M1) machine:
+
+Using QEMU emulation
+
+```bash
+export TESTCONTAINERS_HOST_OVERRIDE=$(rdctl shell ip a show rd0 | awk '/inet / {sub("/.*",""); print $2}')
+```
+
+Using VZ emulation
+
+```bash
+export TESTCONTAINERS_HOST_OVERRIDE=$(rdctl shell ip a show vznat | awk '/inet / {sub("/.*",""); print $2}')
+```
+
+If you're not running Rancher Desktop as an administrator in a MacOS (M1) machine:
+
+Using VZ emulation
+
+```bash
+export DOCKER_HOST=unix://$HOME/.rd/docker.sock
+export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock
+export TESTCONTAINERS_HOST_OVERRIDE=$(rdctl shell ip a show vznat | awk '/inet / {sub("/.*",""); print $2}')
 ```
 
 ## Docker environment discovery

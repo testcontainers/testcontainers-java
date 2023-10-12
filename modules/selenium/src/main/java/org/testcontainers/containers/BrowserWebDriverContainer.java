@@ -42,7 +42,10 @@ import java.util.concurrent.TimeUnit;
 /**
  * A chrome/firefox/custom container based on SeleniumHQ's standalone container sets.
  * <p>
- * The container should expose Selenium remote control protocol and VNC.
+ * Supported images: {@code selenium/standalone-chrome}, {@code selenium/standalone-firefox},
+ * {@code selenium/standalone-edge}, {@code selenium/standalone-chrome-debug}, {@code selenium/standalone-firefox-debug}
+ * <p>
+ * Exposed ports: 4444
  */
 public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SELF>>
     extends GenericContainer<SELF>

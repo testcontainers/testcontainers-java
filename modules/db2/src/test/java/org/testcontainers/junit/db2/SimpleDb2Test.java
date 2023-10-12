@@ -26,6 +26,19 @@ public class SimpleDb2Test extends AbstractContainerDatabaseTest {
     }
 
     @Test
+    public void testSimpleWithNewImage() throws SQLException {
+        try (Db2Container db2 = new Db2Container("icr.io/db2_community/db2:11.5.8.0").acceptLicense()) {
+            db2.start();
+
+            ResultSet resultSet = performQuery(db2, "SELECT 1 FROM SYSIBM.SYSDUMMY1");
+
+            int resultSetInt = resultSet.getInt(1);
+            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+            assertHasCorrectExposedAndLivenessCheckPorts(db2);
+        }
+    }
+
+    @Test
     public void testWithAdditionalUrlParamInJdbcUrl() {
         try (
             Db2Container db2 = new Db2Container(Db2TestImages.DB2_IMAGE)

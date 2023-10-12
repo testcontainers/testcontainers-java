@@ -82,11 +82,13 @@ public class GenericContainerTest {
     @Test
     public void shouldCopyTransferableAsFile() {
         try (
+            // transferableFile {
             GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
                 .withStartupCheckStrategy(new NoopStartupCheckStrategy())
                 .withCopyToContainer(Transferable.of("test"), "/tmp/test")
                 .waitingFor(new WaitForExitedState(state -> state.getExitCodeLong() > 0))
                 .withCommand("sh", "-c", "grep -q test /tmp/test && exit 100")
+            // }
         ) {
             assertThatThrownBy(container::start)
                 .hasStackTraceContaining("Wait strategy failed. Container exited with code 100")
@@ -97,11 +99,13 @@ public class GenericContainerTest {
     @Test
     public void shouldCopyTransferableAsFileWithFileMode() {
         try (
+            // transferableWithFileMode {
             GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
                 .withStartupCheckStrategy(new NoopStartupCheckStrategy())
                 .withCopyToContainer(Transferable.of("test", 0777), "/tmp/test")
                 .waitingFor(new WaitForExitedState(state -> state.getExitCodeLong() > 0))
                 .withCommand("sh", "-c", "ls -ll /tmp | grep '\\-rwxrwxrwx\\|test' && exit 100")
+            // }
         ) {
             assertThatThrownBy(container::start)
                 .hasStackTraceContaining("Wait strategy failed. Container exited with code 100")

@@ -3,6 +3,9 @@ name: CI-Docker-Rootless
 on:
   pull_request:
     paths-ignore:
+      - '.github/ISSUE_TEMPLATE/*.yaml'
+      - '.github/CODEOWNERS'
+      - '.github/pull_request_template.md'
       - 'docs/**/*.css'
       - 'docs/**/*.html'
       - 'docs/**/*.ico'
@@ -16,6 +19,9 @@ on:
   push:
     branches: [ main ]
     paths-ignore:
+      - '.github/ISSUE_TEMPLATE/*.yaml'
+      - '.github/CODEOWNERS'
+      - '.github/pull_request_template.md'
       - 'docs/**/*.css'
       - 'docs/**/*.html'
       - 'docs/**/*.ico'
@@ -38,7 +44,7 @@ jobs:
   test:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Setup rootless Docker
         uses: ScribeMD/rootless-docker@0.2.2
       - name: Remove Docket root socket
