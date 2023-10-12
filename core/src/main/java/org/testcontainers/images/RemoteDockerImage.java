@@ -20,6 +20,8 @@ import org.testcontainers.utility.DockerLoggerFactory;
 import org.testcontainers.utility.ImageNameSubstitutor;
 import org.testcontainers.utility.LazyFuture;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
