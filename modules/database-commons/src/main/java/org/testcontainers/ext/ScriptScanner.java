@@ -11,19 +11,31 @@ import java.util.regex.Pattern;
  */
 @RequiredArgsConstructor
 class ScriptScanner {
+
     private final String resource;
+
     private final String script;
+
     private final String separator;
+
     private final String commentPrefix;
+
     private final String blockCommentStartDelimiter;
+
     private final String blockCommentEndDelimiter;
 
     private final Pattern eol = Pattern.compile("[\n\r]+");
+
     private final Pattern whitespace = Pattern.compile("\\s+");
+
     private final Pattern identifier = Pattern.compile("[a-z][a-z0-9_]*", Pattern.CASE_INSENSITIVE);
+
     private final Pattern singleQuotedString = Pattern.compile("'(\\\\'|[^'])*'");
+
     private final Pattern ansiQuotedString = Pattern.compile("\"(\\\\\"|[^\"])*\"");
+
     private final Pattern dollarQuotedStringDelimiter = Pattern.compile("\\$\\w*\\$");
+
     private int offset;
 
     @Getter
@@ -126,6 +138,7 @@ class ScriptScanner {
             return Lexem.EOF;
         }
     }
+
     enum Lexem {
         SEPARATOR,
         COMMENT,

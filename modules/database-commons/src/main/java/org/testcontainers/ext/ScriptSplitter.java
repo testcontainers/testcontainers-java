@@ -12,7 +12,9 @@ import java.util.List;
  */
 @RequiredArgsConstructor
 class ScriptSplitter {
+
     private final ScriptScanner scanner;
+
     private final List<String> statements;
 
     private final StringBuilder sb = new StringBuilder();

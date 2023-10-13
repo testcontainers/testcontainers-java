@@ -120,14 +120,17 @@ public abstract class ScriptUtils {
         );
 
         new ScriptSplitter(
-            new ScriptScanner(resource,
+            new ScriptScanner(
+                resource,
                 script,
                 separator,
                 commentPrefix,
                 blockCommentStartDelimiter,
-                blockCommentEndDelimiter),
+                blockCommentEndDelimiter
+            ),
             statements
-        ).split();
+        )
+            .split();
     }
 
     private static void checkArgument(boolean expression, String errorMessage) {
@@ -142,12 +145,14 @@ public abstract class ScriptUtils {
      * @param delim String delimiting each statement - typically a ';' character
      */
     public static boolean containsSqlScriptDelimiters(String script, String delim) {
-        return containsSqlScriptDelimiters("",
+        return containsSqlScriptDelimiters(
+            "",
             script,
             DEFAULT_COMMENT_PREFIX,
             delim,
             DEFAULT_BLOCK_COMMENT_START_DELIMITER,
-            DEFAULT_BLOCK_COMMENT_END_DELIMITER);
+            DEFAULT_BLOCK_COMMENT_END_DELIMITER
+        );
     }
 
     /**
@@ -160,15 +165,21 @@ public abstract class ScriptUtils {
      * @param blockCommentStartDelimiter block comment start delimiter
      * @param blockCommentEndDelimiter   block comment end delimiter
      */
-    public static boolean containsSqlScriptDelimiters(String scriptPath,
-                                                      String script,
-                                                      String commentPrefix,
-                                                      String delim,
-                                                      String blockCommentStartDelimiter,
-                                                      String blockCommentEndDelimiter) {
+    public static boolean containsSqlScriptDelimiters(
+        String scriptPath,
+        String script,
+        String commentPrefix,
+        String delim,
+        String blockCommentStartDelimiter,
+        String blockCommentEndDelimiter
+    ) {
         ScriptScanner scanner = new ScriptScanner(
-            scriptPath, script, delim, commentPrefix,
-            blockCommentStartDelimiter, blockCommentEndDelimiter
+            scriptPath,
+            script,
+            delim,
+            commentPrefix,
+            blockCommentStartDelimiter,
+            blockCommentEndDelimiter
         );
         ScriptScanner.Lexem l;
         while ((l = scanner.next()) != ScriptScanner.Lexem.EOF) {
@@ -268,8 +279,16 @@ public abstract class ScriptUtils {
             if (separator == null) {
                 separator = DEFAULT_STATEMENT_SEPARATOR;
             }
-            if (!containsSqlScriptDelimiters(scriptPath, script, commentPrefix,
-                separator, blockCommentStartDelimiter, blockCommentEndDelimiter)) {
+            if (
+                !containsSqlScriptDelimiters(
+                    scriptPath,
+                    script,
+                    commentPrefix,
+                    separator,
+                    blockCommentStartDelimiter,
+                    blockCommentEndDelimiter
+                )
+            ) {
                 separator = FALLBACK_STATEMENT_SEPARATOR;
             }
 
