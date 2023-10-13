@@ -328,6 +328,60 @@ public class ScriptSplittingTest {
         splitAndCompare(script, expected, "@");
     }
 
+    @Test
+    public void testMultiProcedureMySQLScript() {
+        String script = "CREATE PROCEDURE doiterate(p1 INT)\n" +
+            "  BEGIN\n" +
+            "    label1: LOOP\n" +
+            "      SET p1 = p1 + 1;\n" +
+            "      IF p1 < 10 THEN\n" +
+            "        ITERATE label1;\n" +
+            "      END IF;\n" +
+            "      LEAVE label1;\n" +
+            "    END LOOP label1;\n" +
+            "  END;\n" +
+            "\n" +
+            "CREATE PROCEDURE dowhile()\n" +
+            "  BEGIN\n" +
+            "    DECLARE v1 INT DEFAULT 5;\n" +
+            "    WHILE v1 > 0 DO\n" +
+            "      SET v1 = v1 - 1;\n" +
+            "    END WHILE;\n" +
+            "  END;\n" +
+            "\n" +
+            "CREATE PROCEDURE dorepeat(p1 INT)\n" +
+            "  BEGIN\n" +
+            "    SET @x = 0;\n" +
+            "    REPEAT\n" +
+            "      SET @x = @x + 1;\n" +
+            "    UNTIL @x > p1 END REPEAT;\n" +
+            "  END;";
+        List<String> expected = Arrays.asList(
+            "CREATE PROCEDURE doiterate(p1 INT) BEGIN\n" +
+                "    label1: LOOP\n" +
+                "      SET p1 = p1 + 1;\n" +
+                "      IF p1 < 10 THEN\n" +
+                "        ITERATE label1;\n" +
+                "      END IF;\n" +
+                "      LEAVE label1;\n" +
+                "    END LOOP label1;\n" +
+                "  END",
+            "CREATE PROCEDURE dowhile() BEGIN\n" +
+                "    DECLARE v1 INT DEFAULT 5;\n" +
+                "    WHILE v1 > 0 DO\n" +
+                "      SET v1 = v1 - 1;\n" +
+                "    END WHILE;\n" +
+                "  END",
+            "CREATE PROCEDURE dorepeat(p1 INT) BEGIN\n" +
+                "    SET @x = 0;\n" +
+                "    REPEAT\n" +
+                "      SET @x = @x + 1;\n" +
+                "    UNTIL @x > p1 END REPEAT;\n" +
+                "  END"
+        );
+        splitAndCompare(script, expected);
+    }
+
     private void splitAndCompare(String script, List<String> expected) {
         splitAndCompare(script, expected, ScriptUtils.DEFAULT_STATEMENT_SEPARATOR);
     }
