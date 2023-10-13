@@ -23,6 +23,7 @@ class ScriptScanner {
     private final Pattern identifier = Pattern.compile("[a-z][a-z0-9_]*", Pattern.CASE_INSENSITIVE);
     private final Pattern singleQuotedString = Pattern.compile("'(\\\\'|[^'])*'");
     private final Pattern ansiQuotedString = Pattern.compile("\"(\\\\\"|[^\"])*\"");
+    private final Pattern dollarQuotedStringDelimiter = Pattern.compile("\\$\\w*\\$");
     private int offset;
 
     @Getter
@@ -86,13 +87,32 @@ class ScriptScanner {
         return false;
     }
 
+    boolean matchesDollarQuotedString() {
+        //Matches $<tag>$ .... $<tag>$
+        if (matches(dollarQuotedStringDelimiter)) {
+            String delimiter = currentMatch;
+            int end = script.indexOf(delimiter, offset);
+            if (end < 0) {
+                throw new ScriptUtils.ScriptParseException(
+                    String.format("Unclosed dollar quoted string [%s].", delimiter),
+                    resource
+                );
+            }
+            end += delimiter.length();
+            currentMatch = delimiter + script.substring(offset, end);
+            offset = end;
+            return true;
+        }
+        return false;
+    }
+
     Lexem next() {
         if (offset < script.length()) {
             if (matches(separator)) {
                 return Lexem.SEPARATOR;
             } else if (matchesSingleLineComment() || matchesMultilineComment()) {
                 return Lexem.COMMENT;
-            } else if (matches(singleQuotedString) || matches(ansiQuotedString)) {
+            } else if (matches(singleQuotedString) || matches(ansiQuotedString) || matchesDollarQuotedString()) {
                 return Lexem.QUOTED_STRING;
             } else if (matches(identifier)) {
                 return Lexem.IDENTIFIER;

@@ -8,7 +8,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class ScriptSplittingTest {
 
@@ -257,13 +257,10 @@ public class ScriptSplittingTest {
     @Test
     public void testUnclosedBlockComment() {
         String script = "SELECT 'foo `bar`'; /*";
-
-        try {
-            doSplit(script, ScriptUtils.DEFAULT_STATEMENT_SEPARATOR);
-            fail("Should have thrown!");
-        } catch (ScriptUtils.ScriptParseException expected) {
-            // ignore expected exception
-        }
+        assertThatThrownBy(()->
+            doSplit(script, ScriptUtils.DEFAULT_STATEMENT_SEPARATOR)
+        ).isInstanceOf(ScriptUtils.ScriptParseException.class)
+            .hasMessageContaining("*/");
     }
 
     @Test
@@ -382,6 +379,51 @@ public class ScriptSplittingTest {
         splitAndCompare(script, expected);
     }
 
+    @Test
+    public void testDollarQuotedStrings() {
+        String script = "CREATE FUNCTION f ()\n" +
+            "RETURNS INT\n" +
+            "AS $$\n" +
+            "BEGIN\n" +
+            "    RETURN 1;\n" +
+            "END;\n" +
+            "$$ LANGUAGE plpgsql;";
+        List<String> expected = Collections.singletonList("CREATE FUNCTION f () RETURNS INT AS $$\n" +
+            "BEGIN\n" +
+            "    RETURN 1;\n" +
+            "END;\n" +
+            "$$ LANGUAGE plpgsql");
+        splitAndCompare(script, expected);
+    }
+
+    @Test
+    public void testNestedDollarQuotedString() {
+        //see https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-DOLLAR-QUOTING
+        String script = "CREATE FUNCTION f() AS $function$\n" +
+            "BEGIN\n" +
+            "    RETURN ($1 ~ $q$[\\t\\r\\n\\v\\\\]$q$);\n" +
+            "END;\n" +
+            "$function$;" +
+            "create table foo ();";
+        List<String> expected = Arrays.asList(
+            "CREATE FUNCTION f() AS $function$\n" +
+                "BEGIN\n" +
+                "    RETURN ($1 ~ $q$[\\t\\r\\n\\v\\\\]$q$);\n" +
+                "END;\n" +
+                "$function$",
+            "create table foo ()");
+        splitAndCompare(script, expected);
+    }
+
+    @Test
+    public void testUnclosedDollarQuotedString() {
+        String script = "SELECT $tag$ ..... $";
+        assertThatThrownBy(()->
+                doSplit(script, ScriptUtils.DEFAULT_STATEMENT_SEPARATOR)
+            ).isInstanceOf(ScriptUtils.ScriptParseException.class)
+            .hasMessageContaining("$tag$");
+    }
+
     private void splitAndCompare(String script, List<String> expected) {
         splitAndCompare(script, expected, ScriptUtils.DEFAULT_STATEMENT_SEPARATOR);
     }
@@ -407,7 +449,9 @@ public class ScriptSplittingTest {
 
     @Test
     public void testIgnoreDelimitersInLiteralsAndComments() {
-        assertThat(ScriptUtils.containsSqlScriptDelimiters("'@' /*@*/ \"@\" --@", "@")).isFalse();
+        assertThat(
+            ScriptUtils.containsSqlScriptDelimiters("'@' /*@*/ \"@\" $tag$@$tag$ --@", "@")
+        ).isFalse();
     }
 
     @Test
