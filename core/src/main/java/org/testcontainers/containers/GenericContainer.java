@@ -13,7 +13,6 @@ import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Link;
 import com.github.dockerjava.api.model.PortBinding;
-import com.github.dockerjava.api.model.Ports;
 import com.github.dockerjava.api.model.Volume;
 import com.github.dockerjava.api.model.VolumesFrom;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
@@ -251,10 +250,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     public GenericContainer(@NonNull final DockerImageName dockerImageName) {
+        this.containerDefinitionBuilder = ContainerDefinition.builder();
         this.image = new RemoteDockerImage(dockerImageName);
     }
 
     public GenericContainer(@NonNull final RemoteDockerImage image) {
+        this.containerDefinitionBuilder = ContainerDefinition.builder();
         this.image = image;
     }
 
@@ -266,11 +267,15 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         this(TestcontainersConfiguration.getInstance().getTinyImage());
     }
 
+    private ContainerDefinition.Builder containerDefinitionBuilder;
+
     public GenericContainer(@NonNull final String dockerImageName) {
+        this.containerDefinitionBuilder = ContainerDefinition.builder();
         this.setDockerImageName(dockerImageName);
     }
 
     public GenericContainer(@NonNull final Future<String> image) {
+        this.containerDefinitionBuilder = ContainerDefinition.builder();
         setImage(image);
     }
 
@@ -286,6 +291,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public void setExposedPorts(List<Integer> exposedPorts) {
         this.exposedPorts = new LinkedHashSet<>(exposedPorts);
+        exposedPorts.stream().mapToInt(Integer::intValue).forEach(this.containerDefinitionBuilder::exposeTcpPort);
     }
 
     /**
@@ -386,6 +392,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             Instant startedAt = Instant.now();
             logger().info("Creating container for image: {}", dockerImageName);
             CreateContainerCmd createCommand = dockerClient.createContainerCmd(dockerImageName);
+
+            ContainerDefinition containerDefinition = this.containerDefinitionBuilder.build();
+            containerDefinition.apply(createCommand);
             applyConfiguration(createCommand);
 
             createCommand.getLabels().putAll(DockerClientFactory.DEFAULT_LABELS);
@@ -612,20 +621,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             .map(it -> it.getId());
     }
 
-    /**
-     * Set any custom settings for the create command such as shared memory size.
-     */
-    private HostConfig buildHostConfig() {
-        HostConfig config = new HostConfig();
-        if (shmSize != null) {
-            config.withShmSize(shmSize);
-        }
-        if (tmpFsMapping != null) {
-            config.withTmpFs(tmpFsMapping);
-        }
-        return config;
-    }
-
     private void connectToPortForwardingNetwork(String networkMode) {
         PortForwardingContainer.INSTANCE
             .getNetwork()
@@ -780,57 +775,13 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     private void applyConfiguration(CreateContainerCmd createCommand) {
-        HostConfig hostConfig = buildHostConfig();
-
-        // PortBindings must contain:
-        //  * all exposed ports with a randomized host port (equivalent to -p CONTAINER_PORT)
-        //  * all exposed ports with a fixed host port (equivalent to -p HOST_PORT:CONTAINER_PORT)
-        Map<ExposedPort, PortBinding> allPortBindings = new HashMap<>();
-        // First collect all the randomized host ports from our 'exposedPorts' field
-        for (final Integer tcpPort : exposedPorts) {
-            ExposedPort exposedPort = ExposedPort.tcp(tcpPort);
-            allPortBindings.put(exposedPort, new PortBinding(Ports.Binding.empty(), exposedPort));
+        HostConfig hostConfig = createCommand.getHostConfig();
+        if (shmSize != null) {
+            hostConfig.withShmSize(shmSize);
         }
-        // Next collect all the fixed host ports from our 'portBindings' field, overwriting any randomized ports so that
-        // we don't create two bindings for the same container port.
-        for (final String portBinding : portBindings) {
-            PortBinding parsedBinding = PortBinding.parse(portBinding);
-            allPortBindings.put(parsedBinding.getExposedPort(), parsedBinding);
+        if (tmpFsMapping != null) {
+            hostConfig.withTmpFs(tmpFsMapping);
         }
-        hostConfig.withPortBindings(new ArrayList<>(allPortBindings.values()));
-
-        // Next, ExposedPorts must be set up to publish all of the above ports, both randomized and fixed.
-        createCommand.withExposedPorts(new ArrayList<>(allPortBindings.keySet()));
-
-        createCommand.withHostConfig(hostConfig);
-
-        if (commandParts != null) {
-            createCommand.withCmd(commandParts);
-        }
-
-        String[] envArray = env
-            .entrySet()
-            .stream()
-            .filter(it -> it.getValue() != null)
-            .map(it -> it.getKey() + "=" + it.getValue())
-            .toArray(String[]::new);
-        createCommand.withEnv(envArray);
-
-        boolean shouldCheckFileMountingSupport =
-            binds.size() > 0 && !TestcontainersConfiguration.getInstance().isDisableChecks();
-        if (shouldCheckFileMountingSupport) {
-            if (!DockerClientFactory.instance().isFileMountingSupported()) {
-                logger()
-                    .warn(
-                        "Unable to mount a file from test host into a running container. " +
-                        "This may be a misconfiguration or limitation of your Docker environment. " +
-                        "Some features might not work."
-                    );
-            }
-        }
-
-        Bind[] bindsArray = binds.stream().toArray(Bind[]::new);
-        createCommand.withBinds(bindsArray);
 
         VolumesFrom[] volumesFromsArray = volumesFroms.stream().toArray(VolumesFrom[]::new);
         createCommand.withVolumesFrom(volumesFromsArray);
@@ -886,32 +837,13 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         String[] extraHostsArray = extraHosts.stream().toArray(String[]::new);
         createCommand.withExtraHosts(extraHostsArray);
 
-        if (network != null) {
-            createCommand.withNetworkMode(network.getId());
-            createCommand.withAliases(this.networkAliases);
-        } else if (networkMode != null) {
-            createCommand.withNetworkMode(networkMode);
-        }
-
         if (workingDirectory != null) {
             createCommand.withWorkingDir(workingDirectory);
-        }
-
-        if (privilegedMode) {
-            createCommand.withPrivileged(privilegedMode);
         }
 
         for (CreateContainerCmdModifier createContainerCmdModifier : this.createContainerCmdModifiers) {
             createCommand = createContainerCmdModifier.modify(createCommand);
         }
-
-        Map<String, String> combinedLabels = new HashMap<>();
-        combinedLabels.putAll(labels);
-        if (createCommand.getLabels() != null) {
-            combinedLabels.putAll(createCommand.getLabels());
-        }
-
-        createCommand.withLabels(combinedLabels);
     }
 
     private Set<Link> findLinksFromThisContainer(String alias, LinkableContainer linkableContainer) {
@@ -1009,6 +941,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public void setCommand(@NonNull String command) {
+        this.containerDefinitionBuilder.command(command.split(" "));
         this.commandParts = command.split(" ");
     }
 
@@ -1017,6 +950,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public void setCommand(@NonNull String... commandParts) {
+        this.containerDefinitionBuilder.command(commandParts);
         this.commandParts = commandParts;
     }
 
@@ -1035,7 +969,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @Override
     public void setEnv(List<String> env) {
-        this.env = env.stream().map(it -> it.split("=")).collect(Collectors.toMap(it -> it[0], it -> it[1]));
+        Map<String, String> environmentVariables = env
+            .stream()
+            .map(it -> it.split("="))
+            .collect(Collectors.toMap(it -> it[0], it -> it[1]));
+        this.env = environmentVariables;
+        this.containerDefinitionBuilder.environmentVariables(environmentVariables);
     }
 
     /**
@@ -1044,6 +983,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public void addEnv(String key, String value) {
         env.put(key, value);
+        this.containerDefinitionBuilder.environmentVariable(key, value);
     }
 
     /**
@@ -1058,17 +998,19 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     ) {
         if (SystemUtils.IS_OS_WINDOWS && hostPath.startsWith("/")) {
             // e.g. Docker socket mount
-            binds.add(new Bind(hostPath, new Volume(containerPath), mode.accessMode, selinuxContext.selContext));
+            Bind bind = new Bind(hostPath, new Volume(containerPath), mode.accessMode, selinuxContext.selContext);
+            binds.add(bind);
+            this.containerDefinitionBuilder.binds(bind);
         } else {
             final MountableFile mountableFile = MountableFile.forHostPath(hostPath);
-            binds.add(
-                new Bind(
-                    mountableFile.getResolvedPath(),
-                    new Volume(containerPath),
-                    mode.accessMode,
-                    selinuxContext.selContext
-                )
+            Bind bind = new Bind(
+                mountableFile.getResolvedPath(),
+                new Volume(containerPath),
+                mode.accessMode,
+                selinuxContext.selContext
             );
+            binds.add(bind);
+            this.containerDefinitionBuilder.binds(bind);
         }
     }
 
@@ -1106,12 +1048,14 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public void addExposedPort(Integer port) {
         exposedPorts.add(port);
+        this.containerDefinitionBuilder.exposeTcpPort(port);
     }
 
     @Override
     public void addExposedPorts(int... ports) {
         for (int port : ports) {
             exposedPorts.add(port);
+            this.containerDefinitionBuilder.exposeTcpPort(port);
         }
     }
 
@@ -1231,6 +1175,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             throw new IllegalArgumentException("The org.testcontainers namespace is reserved for interal use");
         }
         labels.put(key, value);
+        this.containerDefinitionBuilder.label(key, value);
         return self();
     }
 
@@ -1273,18 +1218,21 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public SELF withNetworkMode(String networkMode) {
         this.networkMode = networkMode;
+        this.containerDefinitionBuilder.networkMode(networkMode);
         return self();
     }
 
     @Override
     public SELF withNetwork(Network network) {
         this.network = network;
+        this.containerDefinitionBuilder.network(network);
         return self();
     }
 
     @Override
     public SELF withNetworkAliases(String... aliases) {
         Collections.addAll(this.networkAliases, aliases);
+        this.containerDefinitionBuilder.networkAliases(aliases);
         return self();
     }
 
@@ -1338,6 +1286,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @Override
     public SELF withPrivilegedMode(boolean mode) {
+        this.containerDefinitionBuilder.privilegedMode(mode);
         this.privilegedMode = mode;
         return self();
     }
@@ -1406,6 +1355,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public void setDockerImageName(@NonNull String dockerImageName) {
+        this.containerDefinitionBuilder.image(dockerImageName);
         this.image = new RemoteDockerImage(dockerImageName);
     }
 
