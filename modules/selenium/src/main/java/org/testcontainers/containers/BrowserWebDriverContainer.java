@@ -196,16 +196,6 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
                     throw new ContainerLaunchException("Exception while trying to create temp directory", e);
                 }
             }
-
-            if (getNetwork() == null) {
-                withNetwork(Network.SHARED);
-            }
-
-            vncRecordingContainer =
-                new VncRecordingContainer(this)
-                    .withVncPassword(DEFAULT_PASSWORD)
-                    .withVncPort(VNC_PORT)
-                    .withVideoFormat(recordingFormat);
         }
 
         if (customImageName != null) {
@@ -318,8 +308,14 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
-        if (vncRecordingContainer != null) {
+        if (recordingMode != VncRecordingMode.SKIP) {
             LOGGER.debug("Starting VNC recording");
+            vncRecordingContainer =
+                new VncRecordingContainer(Network.ofContainer(containerInfo.getId()), "localhost")
+                    .withVncPassword(DEFAULT_PASSWORD)
+                    .withVncPort(VNC_PORT)
+                    .withVideoFormat(recordingFormat);
+
             vncRecordingContainer.start();
         }
     }

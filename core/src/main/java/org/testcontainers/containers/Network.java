@@ -3,6 +3,7 @@ package org.testcontainers.containers;
 import com.github.dockerjava.api.command.CreateNetworkCmd;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Singular;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TestRule;
@@ -36,6 +37,21 @@ public interface Network extends AutoCloseable, TestRule {
 
     static NetworkImpl.NetworkImplBuilder builder() {
         return NetworkImpl.builder();
+    }
+
+    static Network ofContainer(@NonNull String containerId) {
+        class ContainerNetwork extends ExternalResource implements Network {
+
+            @Override
+            public String getId() {
+                return "container:" + containerId;
+            }
+
+            @Override
+            public void close() {}
+        }
+
+        return new ContainerNetwork();
     }
 
     @Builder
