@@ -9,7 +9,7 @@ import lombok.NonNull;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 
@@ -79,7 +79,7 @@ public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
         serverPassword = DEFAULT_SERVER_PASSWORD;
         databaseName = DEFAULT_DATABASE_NAME;
 
-        waitStrategy = new LogMessageWaitStrategy().withRegEx(".*OrientDB Studio available.*");
+        waitStrategy = Wait.forLogMessage(".*OrientDB Studio available.*", 1);
 
         addExposedPorts(DEFAULT_BINARY_PORT, DEFAULT_HTTP_PORT);
     }

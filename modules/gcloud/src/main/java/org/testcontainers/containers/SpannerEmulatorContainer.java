@@ -1,6 +1,6 @@
 package org.testcontainers.containers;
 
-import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 /**
@@ -27,7 +27,7 @@ public class SpannerEmulatorContainer extends GenericContainer<SpannerEmulatorCo
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         withExposedPorts(GRPC_PORT, HTTP_PORT);
-        setWaitStrategy(new LogMessageWaitStrategy().withRegEx(".*Cloud Spanner emulator running\\..*"));
+        setWaitStrategy(Wait.forLogMessage(".*Cloud Spanner emulator running\\..*", 1));
     }
 
     /**
