@@ -75,6 +75,27 @@ public class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
+    public void testExplicitInitScripts() throws SQLException {
+        try (
+            PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(PostgreSQLTestImages.POSTGRES_TEST_IMAGE)
+                .withInitScripts("somepath/init_postgresql.sql", "somepath/init_postgresql_2.sql")
+        ) {
+            postgres.start();
+
+            ResultSet resultSet = performQuery(
+                postgres,
+                "SELECT foo AS value FROM bar UNION SELECT bar AS value FROM foo"
+            );
+
+            String columnValue1 = resultSet.getString(1);
+            resultSet.next();
+            String columnValue2 = resultSet.getString(1);
+            assertThat(columnValue1).as("Value from init script 1 should equal real value").isEqualTo("hello world");
+            assertThat(columnValue2).as("Value from init script 2 should equal real value").isEqualTo("hello world 2");
+        }
+    }
+
+    @Test
     public void testWithAdditionalUrlParamInJdbcUrl() {
         try (
             PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(PostgreSQLTestImages.POSTGRES_TEST_IMAGE)
