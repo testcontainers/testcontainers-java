@@ -9,7 +9,7 @@ Currently, the module supports `BigQuery`, `Bigtable`, `Datastore`, `Firestore`,
 
 Class | Container Image
 -|-
-BigQueryEmulatorContainer | ["ghcr.io/goccy/bigquery-emulator"]("ghcr.io/goccy/bigquery-emulator")
+BigQueryEmulatorContainer | [ghcr.io/goccy/bigquery-emulator](https://ghcr.io/goccy/bigquery-emulator)
 BigtableEmulatorContainer | [gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators](https://gcr.io/google.com/cloudsdktool/google-cloud-cli)
 DatastoreEmulatorContainer | [gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators](https://gcr.io/google.com/cloudsdktool/google-cloud-cli)
 FirestoreEmulatorContainer | [gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators](https://gcr.io/google.com/cloudsdktool/google-cloud-cli)
