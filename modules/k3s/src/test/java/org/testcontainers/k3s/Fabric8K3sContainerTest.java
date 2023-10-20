@@ -26,18 +26,9 @@ public class Fabric8K3sContainerTest {
 
     @Test
     public void shouldStartAndHaveListableNode() {
-        runK3s(DockerImageName.parse("rancher/k3s:v1.21.3-k3s1"));
-    }
-
-    @Test
-    public void shouldStartAndHaveListableNode_backwardsCompat() {
-        runK3s(DockerImageName.parse("rancher/k3s:v1.17.17-k3s1"));
-    }
-
-    private void runK3s(DockerImageName k3sDockerImage) {
         try (
             // starting_k3s {
-            K3sContainer k3s = new K3sContainer(k3sDockerImage)
+            K3sContainer k3s = new K3sContainer(DockerImageName.parse("rancher/k3s:v1.21.3-k3s1"))
                 .withLogConsumer(new Slf4jLogConsumer(log))
             // }
         ) {

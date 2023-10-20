@@ -24,7 +24,7 @@ public class OfficialClientK3sContainerTest {
     }
 
     @Test
-    public void shouldStartAndHaveListableNode_backwardsCompat() throws IOException, ApiException {
+    public void shouldStartAndHaveListableNodeUsingLowerVersion() throws IOException, ApiException {
         runK3s(DockerImageName.parse("rancher/k3s:v1.17.17-k3s1"));
     }
 
