@@ -29,12 +29,7 @@ public class OfficialClientK3sContainerTest {
     }
 
     private void runK3s(DockerImageName k3sDockerImage) throws IOException, ApiException {
-        try (
-            // starting_k3s {
-            K3sContainer k3s = new K3sContainer(k3sDockerImage)
-                .withLogConsumer(new Slf4jLogConsumer(log))
-            // }
-        ) {
+        try (K3sContainer k3s = new K3sContainer(k3sDockerImage).withLogConsumer(new Slf4jLogConsumer(log))) {
             k3s.start();
 
             // connecting_with_k8sio {
