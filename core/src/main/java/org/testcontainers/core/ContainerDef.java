@@ -31,25 +31,41 @@ public class ContainerDef {
 
     private RemoteDockerImage image;
 
-    private final Set<ExposedPort> exposedPorts = new HashSet<>();
+    private Set<ExposedPort> exposedPorts = new HashSet<>();
 
-    private final Set<PortBinding> portBindings = new HashSet<>();
+    private Set<PortBinding> portBindings = new HashSet<>();
 
-    private final Map<String, String> labels = new HashMap<>();
+    private Map<String, String> labels = new HashMap<>();
 
-    private final Map<String, String> environmentVariables = new HashMap<>();
+    private Map<String, String> environmentVariables = new HashMap<>();
 
     private String[] command = new String[0];
 
     private Network network;
 
-    private final Set<String> networkAliases = new HashSet<>();
+    private Set<String> networkAliases = new HashSet<>();
 
     private String networkMode;
 
-    private final List<Bind> binds = new ArrayList<>();
+    private List<Bind> binds = new ArrayList<>();
 
     private boolean privilegedMode;
+
+    private ContainerDef() {}
+
+    private ContainerDef(ContainerDef other) {
+        this.image = other.image;
+        this.exposedPorts = other.exposedPorts;
+        this.portBindings = other.portBindings;
+        this.labels = other.labels;
+        this.environmentVariables = other.environmentVariables;
+        this.command = other.command;
+        this.network = other.network;
+        this.networkAliases = other.networkAliases;
+        this.networkMode = other.networkMode;
+        this.binds = other.binds;
+        this.privilegedMode = other.privilegedMode;
+    }
 
     public static ContainerDef from(RemoteDockerImage image) {
         return new ContainerDef().withImage(image);
@@ -210,6 +226,10 @@ public class ContainerDef {
     public ContainerDef withPrivilegedMode(boolean privilegedMode) {
         this.privilegedMode = privilegedMode;
         return this;
+    }
+
+    public ContainerDef mutate() {
+        return new ContainerDef(this);
     }
 
     public void applyTo(CreateContainerCmd createCommand) {
