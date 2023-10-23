@@ -247,6 +247,9 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "org.seleniumhq.selenium:selenium-bom"
+        update-types: [ "version-update:semver-minor" ]
   - package-ecosystem: "gradle"
     directory: "/modules/solace"
     schedule:
