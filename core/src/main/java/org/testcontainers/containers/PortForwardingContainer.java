@@ -5,7 +5,6 @@ import com.trilead.ssh2.Connection;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.SneakyThrows;
-import org.testcontainers.core.ContainerDef;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
@@ -31,22 +30,20 @@ public enum PortForwardingContainer {
     @SneakyThrows
     private Connection createSSHSession() {
         String password = UUID.randomUUID().toString();
-        container =
-            GenericContainer.with(
-                ContainerDef
-                    .from(DockerImageName.parse("testcontainers/sshd:1.1.0"))
-                    .withExposedPort(22)
-                    .withEnvVar("PASSWORD", password)
-                    .withCommand(
-                        "sh",
-                        "-c",
-                        // Disable ipv6 & Make it listen on all interfaces, not just localhost
-                        // Enable algorithms supported by our ssh client library
-                        "echo \"root:$PASSWORD\" | chpasswd && /usr/sbin/sshd -D -o PermitRootLogin=yes " +
-                        "-o AddressFamily=inet -o GatewayPorts=yes -o AllowAgentForwarding=yes -o AllowTcpForwarding=yes " +
-                        "-o KexAlgorithms=+diffie-hellman-group1-sha1 -o HostkeyAlgorithms=+ssh-rsa "
-                    )
-            );
+        ContainerDef socatContainerDefinition = new ContainerDef();
+        socatContainerDefinition.setImage(DockerImageName.parse("testcontainers/sshd:1.1.0"));
+        socatContainerDefinition.addExposedTcpPort(22);
+        socatContainerDefinition.addEnvVar("PASSWORD", password);
+        socatContainerDefinition.setCommand(
+            "sh",
+            "-c",
+            // Disable ipv6 & Make it listen on all interfaces, not just localhost
+            // Enable algorithms supported by our ssh client library
+            "echo \"root:$PASSWORD\" | chpasswd && /usr/sbin/sshd -D -o PermitRootLogin=yes " +
+            "-o AddressFamily=inet -o GatewayPorts=yes -o AllowAgentForwarding=yes -o AllowTcpForwarding=yes " +
+            "-o KexAlgorithms=+diffie-hellman-group1-sha1 -o HostkeyAlgorithms=+ssh-rsa "
+        );
+        container = new GenericContainer<>(socatContainerDefinition);
         container.start();
 
         Connection connection = new Connection(container.getHost(), container.getMappedPort(22));

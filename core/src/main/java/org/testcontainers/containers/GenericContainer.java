@@ -46,7 +46,6 @@ import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
-import org.testcontainers.core.ContainerDef;
 import org.testcontainers.core.CreateContainerCmdModifier;
 import org.testcontainers.images.ImagePullPolicy;
 import org.testcontainers.images.RemoteDockerImage;
@@ -55,7 +54,6 @@ import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.lifecycle.Startables;
 import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
-import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.CommandLine;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.DockerLoggerFactory;
@@ -131,16 +129,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private List<String> extraHosts = new ArrayList<>();
 
     @NonNull
-    private List<String> networkAliases = new ArrayList<>(Arrays.asList("tc-" + Base58.randomString(8)));
-
-    @NonNull
     private RemoteDockerImage image;
-
-    @NonNull
-    private String[] commandParts = new String[0];
-
-    @NonNull
-    private List<Bind> binds = new ArrayList<>();
 
     @NonNull
     private List<VolumesFrom> volumesFroms = new ArrayList<>();
@@ -221,7 +210,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private final Set<CreateContainerCmdModifier> createContainerCmdModifiers = loadCreateContainerCmdCustomizers();
 
-    private ContainerDef containerDef;
+    private ContainerDef containerDef = new ContainerDef();
 
     private Set<CreateContainerCmdModifier> loadCreateContainerCmdCustomizers() {
         ServiceLoader<CreateContainerCmdModifier> containerCmdCustomizers = ServiceLoader.load(
@@ -240,7 +229,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     public GenericContainer(@NonNull final RemoteDockerImage image) {
         this.image = image;
-        this.containerDef = ContainerDef.from(image);
+        this.containerDef.setImage(image);
     }
 
     /**
@@ -265,7 +254,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     public void setImage(Future<String> image) {
-        this.containerDef = ContainerDef.from(new RemoteDockerImage(image));
+        this.containerDef.setImage(new RemoteDockerImage(image));
     }
 
     @Override
@@ -275,7 +264,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @Override
     public void setExposedPorts(List<Integer> exposedPorts) {
-        this.containerDef.withExposedPorts(exposedPorts.stream().map(ExposedPort::tcp).collect(Collectors.toSet()));
+        this.containerDef.setExposedPorts(exposedPorts.stream().map(ExposedPort::tcp).collect(Collectors.toSet()));
     }
 
     /**
@@ -931,7 +920,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public void setCommand(@NonNull String command) {
-        this.containerDef.withCommand(command.split(" "));
+        this.containerDef.setCommand(command.split(" "));
     }
 
     /**
@@ -939,7 +928,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public void setCommand(@NonNull String... commandParts) {
-        this.containerDef.withCommand(commandParts);
+        this.containerDef.setCommand(commandParts);
     }
 
     @Override
@@ -961,7 +950,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @Override
     public void setEnv(List<String> env) {
-        this.containerDef.withEnvVars(
+        this.containerDef.setEnvVars(
                 env.stream().map(it -> it.split("=")).collect(Collectors.toMap(it -> it[0], it -> it[1]))
             );
     }
@@ -971,7 +960,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public void addEnv(String key, String value) {
-        this.containerDef.withEnvVar(key, value);
+        this.containerDef.addEnvVar(key, value);
     }
 
     /**
@@ -984,6 +973,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         final BindMode mode,
         final SelinuxContext selinuxContext
     ) {
+        List<Bind> binds = this.containerDef.getBinds();
         if (SystemUtils.IS_OS_WINDOWS && hostPath.startsWith("/")) {
             // e.g. Docker socket mount
             binds.add(new Bind(hostPath, new Volume(containerPath), mode.accessMode, selinuxContext.selContext));
@@ -1033,13 +1023,13 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @Override
     public void addExposedPort(Integer port) {
-        this.containerDef.withExposedPort(port);
+        this.containerDef.addExposedTcpPort(port);
     }
 
     @Override
     public void addExposedPorts(int... ports) {
         for (int port : ports) {
-            this.containerDef.withExposedPort(port);
+            this.containerDef.addExposedTcpPort(port);
         }
     }
 
@@ -1146,7 +1136,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public SELF withEnv(Map<String, String> env) {
-        env.forEach(this.containerDef::withEnvVar);
+        env.forEach(this.containerDef::addEnvVar);
         return self();
     }
 
@@ -1200,19 +1190,19 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @Override
     public SELF withNetworkMode(String networkMode) {
-        this.containerDef.withNetworkMode(networkMode);
+        this.containerDef.setNetworkMode(networkMode);
         return self();
     }
 
     @Override
     public SELF withNetwork(Network network) {
-        this.containerDef.withNetwork(network);
+        this.containerDef.setNetwork(network);
         return self();
     }
 
     @Override
     public SELF withNetworkAliases(String... aliases) {
-        this.containerDef.withNetworkAliases(aliases);
+        this.containerDef.setNetworkAliases(aliases);
         return self();
     }
 
@@ -1266,7 +1256,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @Override
     public SELF withPrivilegedMode(boolean mode) {
-        this.containerDef.withPrivilegedMode(mode);
+        this.containerDef.setPrivilegedMode(mode);
         return self();
     }
 
@@ -1494,11 +1484,31 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         return getContainerInfo().getName();
     }
 
-    public static GenericContainer<?> with(ContainerDef containerDef) {
-        return new GenericContainer<>(containerDef);
-    }
-
     public Network getNetwork() {
         return this.containerDef.getNetwork();
+    }
+
+    @Override
+    public List<Bind> getBinds() {
+        return this.containerDef.getBinds();
+    }
+
+    @Override
+    public void setBinds(List<Bind> binds) {
+        this.containerDef.setBinds(binds);
+    }
+
+    @Override
+    public String[] getCommandParts() {
+        return this.containerDef.getCommand();
+    }
+
+    @Override
+    public void setCommandParts(String[] commandParts) {
+        this.containerDef.setCommand(commandParts);
+    }
+
+    public Set<String> getNetworkAliases() {
+        return this.containerDef.getNetworkAliases();
     }
 }
