@@ -37,7 +37,11 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 
 import java.io.IOException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -449,6 +453,55 @@ public class LocalstackContainerTest {
             final String logs = execResult.getStdout() + execResult.getStderr();
             log.info(logs);
             return logs;
+        }
+    }
+
+    public static class WithEnvironmentVariables {
+
+        @ClassRule
+        public static LocalStackContainer localstack = new LocalStackContainer(LocalstackTestImages.LOCALSTACK_LATEST)
+            .withServices(Service.S3)
+            .withEnv("S3_SKIP_SIGNATURE_VALIDATION", "0");
+
+        @Test
+        public void s3TestWithPresignedURL() throws IOException {
+            AmazonS3 s3 = AmazonS3ClientBuilder
+                .standard()
+                .withEndpointConfiguration(
+                    new AwsClientBuilder.EndpointConfiguration(
+                        localstack.getEndpoint().toString(),
+                        localstack.getRegion()
+                    )
+                )
+                .withCredentials(
+                    new AWSStaticCredentialsProvider(
+                        new BasicAWSCredentials(localstack.getAccessKey(), localstack.getSecretKey())
+                    )
+                )
+                .build();
+
+            final String bucketName = "foo";
+
+            s3.createBucket(bucketName);
+
+            s3.putObject(bucketName, "bar", "baz");
+
+            final List<Bucket> buckets = s3.listBuckets();
+            final Optional<Bucket> maybeBucket = buckets
+                .stream()
+                .filter(b -> b.getName().equals(bucketName))
+                .findFirst();
+            assertThat(maybeBucket).as("The created bucket is present").isPresent();
+
+            URL presignedUrl = s3.generatePresignedUrl(
+                bucketName,
+                "bar",
+                Date.from(Instant.now().plus(5, ChronoUnit.MINUTES))
+            );
+
+            assertThat(presignedUrl).as("The presigned url is valid").isNotNull();
+            final String content = IOUtils.toString(presignedUrl, StandardCharsets.UTF_8);
+            assertThat(content).as("The object can be retrieved").isEqualTo("baz");
         }
     }
 }
