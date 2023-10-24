@@ -12,6 +12,8 @@ import com.github.dockerjava.api.model.ContainerNetwork;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Link;
+import com.github.dockerjava.api.model.PortBinding;
+import com.github.dockerjava.api.model.Ports;
 import com.github.dockerjava.api.model.Volume;
 import com.github.dockerjava.api.model.VolumesFrom;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
@@ -122,9 +124,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     /*
      * Default settings
      */
-    @NonNull
-    private List<String> portBindings = new ArrayList<>();
-
     @NonNull
     private List<String> extraHosts = new ArrayList<>();
 
@@ -1128,7 +1127,15 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * @param protocol
      */
     protected void addFixedExposedPort(int hostPort, int containerPort, InternetProtocol protocol) {
-        portBindings.add(String.format("%d:%d/%s", hostPort, containerPort, protocol.toDockerNotation()));
+        this.containerDef.addPortBindings(
+                new PortBinding(
+                    Ports.Binding.bindPort(hostPort),
+                    new ExposedPort(
+                        containerPort,
+                        com.github.dockerjava.api.model.InternetProtocol.parse(protocol.name())
+                    )
+                )
+            );
     }
 
     /**
@@ -1519,5 +1526,18 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     public Set<String> getNetworkAliases() {
         return this.containerDef.getNetworkAliases();
+    }
+
+    @Override
+    public List<String> getPortBindings() {
+        return this.containerDef.getPortBindings()
+            .stream()
+            .map(it -> String.format("%s:%s", it.getBinding(), it.getExposedPort()))
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    public void setPortBindings(List<String> portBindings) {
+        this.containerDef.setPortBindings(portBindings.stream().map(PortBinding::parse).collect(Collectors.toSet()));
     }
 }
