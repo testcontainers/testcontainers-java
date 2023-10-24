@@ -1127,15 +1127,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * @param protocol
      */
     protected void addFixedExposedPort(int hostPort, int containerPort, InternetProtocol protocol) {
-        this.containerDef.addPortBindings(
-                new PortBinding(
-                    Ports.Binding.bindPort(hostPort),
-                    new ExposedPort(
-                        containerPort,
-                        com.github.dockerjava.api.model.InternetProtocol.parse(protocol.name())
-                    )
-                )
-            );
+        ExposedPort exposedPort = new ExposedPort(
+            containerPort,
+            com.github.dockerjava.api.model.InternetProtocol.parse(protocol.name())
+        );
+        PortBinding portBinding = new PortBinding(Ports.Binding.bindPort(hostPort), exposedPort);
+        this.containerDef.addPortBindings(portBinding);
     }
 
     /**
