@@ -1,10 +1,13 @@
 package org.testcontainers.containers;
 
+import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
@@ -34,7 +37,7 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
 
     private static final String STARTER_SCRIPT = "/testcontainers_start.sh";
 
-    private boolean shardingEnabled;
+    private final MongoDBContainerDef containerDef = new MongoDBContainerDef();
 
     /**
      * @deprecated use {@link #MongoDBContainer(DockerImageName)} instead
@@ -52,26 +55,18 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
-        withExposedPorts(MONGODB_INTERNAL_PORT);
+        addExposedPort(MONGODB_INTERNAL_PORT);
     }
 
     @Override
     public void configure() {
-        if (shardingEnabled) {
-            withCreateContainerCmdModifier(cmd -> {
-                cmd.withEntrypoint("sh");
-            });
-            withCommand("-c", "while [ ! -f " + STARTER_SCRIPT + " ]; do sleep 0.1; done; " + STARTER_SCRIPT);
-            waitingFor(Wait.forLogMessage("(?i).*mongos ready.*", 1));
-        } else {
-            withCommand("--replSet", "docker-rs");
-            waitingFor(Wait.forLogMessage("(?i).*waiting for connections.*", 1));
-        }
+        setCommand(this.containerDef.getCommand());
+        setWaitStrategy(this.containerDef.getWaitStrategy());
     }
 
     @Override
     protected void containerIsStarting(InspectContainerResponse containerInfo) {
-        if (shardingEnabled) {
+        if (this.containerDef.isShardingEnabled()) {
             copyFileToContainer(MountableFile.forClasspathResource("/sharding.sh", 0777), STARTER_SCRIPT);
         }
     }
@@ -82,13 +77,13 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
      * @return this
      */
     public MongoDBContainer withSharding() {
-        this.shardingEnabled = true;
+        this.containerDef.withSharding();
         return this;
     }
 
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo, boolean reused) {
-        if (!shardingEnabled) {
+        if (!this.containerDef.isShardingEnabled()) {
             initReplicaSet(reused);
         }
     }
@@ -201,5 +196,36 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
             buildMongoEvalCommand("if(db.adminCommand({replSetGetStatus: 1})['myState'] != 1) quit(900)")
         );
         return execCheckRsInit.getExitCode() == CONTAINER_EXIT_CODE_OK;
+    }
+
+    private static class MongoDBContainerDef extends ContainerDef {
+
+        @Getter
+        private boolean shardingEnabled;
+
+        @Getter
+        private WaitStrategy waitStrategy;
+
+        MongoDBContainerDef() {
+            addExposedTcpPort(MONGODB_INTERNAL_PORT);
+            setCommand("--replSet", "docker-rs");
+            this.waitStrategy = Wait.forLogMessage("(?i).*waiting for connections.*", 1);
+        }
+
+        void withSharding() {
+            this.shardingEnabled = true;
+            setCommand("sh", "-c", "while [ ! -f " + STARTER_SCRIPT + " ]; do sleep 0.1; done; " + STARTER_SCRIPT);
+            this.waitStrategy = Wait.forLogMessage("(?i).*mongos ready.*", 1);
+        }
+
+        // FIXME: applyTo is not called and sh should be removed from command
+        @Override
+        public void applyTo(CreateContainerCmd createCommand) {
+            super.applyTo(createCommand);
+
+            if (this.shardingEnabled) {
+                createCommand.withEntrypoint("sh");
+            }
+        }
     }
 }
