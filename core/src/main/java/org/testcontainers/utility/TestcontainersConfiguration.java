@@ -182,7 +182,7 @@ public class TestcontainersConfiguration {
     @UnstableAPI
     public boolean environmentSupportsReuse() {
         // specifically not supported as an environment variable or classpath property
-        return Boolean.parseBoolean(getEnvVarOrUserProperty("testcontainers.reuse.enable", "false"));
+        return Boolean.parseBoolean(getEnvVarOrProperty("testcontainers.reuse.enable", "false"));
     }
 
     public String getDockerClientStrategyClassName() {
