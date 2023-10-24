@@ -210,7 +210,15 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private final Set<CreateContainerCmdModifier> createContainerCmdModifiers = loadCreateContainerCmdCustomizers();
 
-    private ContainerDef containerDef = new ContainerDef();
+    private ContainerDef containerDef;
+
+    ContainerDef createContainerDef() {
+        return new ContainerDef();
+    }
+
+    ContainerDef getContainerDef() {
+        return this.containerDef;
+    }
 
     private Set<CreateContainerCmdModifier> loadCreateContainerCmdCustomizers() {
         ServiceLoader<CreateContainerCmdModifier> containerCmdCustomizers = ServiceLoader.load(
@@ -229,6 +237,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     public GenericContainer(@NonNull final RemoteDockerImage image) {
         this.image = image;
+        this.containerDef = createContainerDef();
         this.containerDef.setImage(image);
     }
 

@@ -37,8 +37,6 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
 
     private static final String STARTER_SCRIPT = "/testcontainers_start.sh";
 
-    private final MongoDBContainerDef containerDef = new MongoDBContainerDef();
-
     /**
      * @deprecated use {@link #MongoDBContainer(DockerImageName)} instead
      */
@@ -59,14 +57,24 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
     }
 
     @Override
+    MongoDBContainerDef createContainerDef() {
+        return new MongoDBContainerDef();
+    }
+
+    @Override
+    MongoDBContainerDef getContainerDef() {
+        return (MongoDBContainerDef) super.getContainerDef();
+    }
+
+    @Override
     public void configure() {
-        setCommand(this.containerDef.getCommand());
-        setWaitStrategy(this.containerDef.getWaitStrategy());
+        setCommand(getContainerDef().getCommand());
+        setWaitStrategy(getContainerDef().getWaitStrategy());
     }
 
     @Override
     protected void containerIsStarting(InspectContainerResponse containerInfo) {
-        if (this.containerDef.isShardingEnabled()) {
+        if (getContainerDef().isShardingEnabled()) {
             copyFileToContainer(MountableFile.forClasspathResource("/sharding.sh", 0777), STARTER_SCRIPT);
         }
     }
@@ -77,13 +85,13 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
      * @return this
      */
     public MongoDBContainer withSharding() {
-        this.containerDef.withSharding();
+        getContainerDef().withSharding();
         return this;
     }
 
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo, boolean reused) {
-        if (!this.containerDef.isShardingEnabled()) {
+        if (!getContainerDef().isShardingEnabled()) {
             initReplicaSet(reused);
         }
     }
@@ -214,11 +222,10 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
 
         void withSharding() {
             this.shardingEnabled = true;
-            setCommand("sh", "-c", "while [ ! -f " + STARTER_SCRIPT + " ]; do sleep 0.1; done; " + STARTER_SCRIPT);
+            setCommand("-c", "while [ ! -f " + STARTER_SCRIPT + " ]; do sleep 0.1; done; " + STARTER_SCRIPT);
             this.waitStrategy = Wait.forLogMessage("(?i).*mongos ready.*", 1);
         }
 
-        // FIXME: applyTo is not called and sh should be removed from command
         @Override
         public void applyTo(CreateContainerCmd createCommand) {
             super.applyTo(createCommand);
