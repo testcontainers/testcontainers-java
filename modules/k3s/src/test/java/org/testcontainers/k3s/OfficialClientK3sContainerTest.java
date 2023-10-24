@@ -35,7 +35,7 @@ public class OfficialClientK3sContainerTest {
             CoreV1Api api = new CoreV1Api(client);
 
             // interact with the running K3s server, e.g.:
-            V1NodeList nodes = api.listNode(null, null, null, null, null, null, null, null, null, null);
+            V1NodeList nodes = api.listNode(null, null, null, null, null, null, null, null, null, null, null);
             // }
 
             assertThat(nodes.getItems()).hasSize(1);
