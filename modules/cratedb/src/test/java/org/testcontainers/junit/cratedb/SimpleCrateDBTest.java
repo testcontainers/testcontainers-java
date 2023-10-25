@@ -60,7 +60,7 @@ public class SimpleCrateDBTest extends AbstractContainerDatabaseTest {
     }
 
     private void assertHasCorrectExposedAndLivenessCheckPorts(CrateDBContainer cratedb) {
-        assertThat(cratedb.getExposedPorts()).containsExactly(5432, 4200);
+        assertThat(cratedb.getExposedPorts()).containsExactlyInAnyOrder(5432, 4200);
         assertThat(cratedb.getLivenessCheckPortNumbers())
             .containsExactlyInAnyOrder(cratedb.getMappedPort(5432), cratedb.getMappedPort(4200));
     }
