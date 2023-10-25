@@ -50,11 +50,12 @@ public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContain
         dockerImageName.assertCompatibleWith(CLICKHOUSE_IMAGE_NAME);
 
         addExposedPorts(HTTP_PORT, NATIVE_PORT);
-        this.waitStrategy =
+        setWaitStrategy(
             new HttpWaitStrategy()
                 .forStatusCode(200)
                 .forResponsePredicate("Ok."::equals)
-                .withStartupTimeout(Duration.ofMinutes(1));
+                .withStartupTimeout(Duration.ofMinutes(1))
+        );
     }
 
     @Override

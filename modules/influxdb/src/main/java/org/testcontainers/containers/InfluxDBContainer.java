@@ -86,11 +86,12 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Gen
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
-        this.waitStrategy =
+        setWaitStrategy(
             new HttpWaitStrategy()
                 .forPath("/ping")
                 .withBasicCredentials(this.username, this.password)
-                .forStatusCode(NO_CONTENT_STATUS_CODE);
+                .forStatusCode(NO_CONTENT_STATUS_CODE)
+        );
 
         this.isAtLeastMajorVersion2 =
             new ComparableVersion(dockerImageName.getVersionPart()).isGreaterThanOrEqualTo("2.0.0");

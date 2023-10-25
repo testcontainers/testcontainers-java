@@ -47,10 +47,11 @@ public class PrestoContainer<SELF extends PrestoContainer<SELF>> extends JdbcDat
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
-        this.waitStrategy =
+        setWaitStrategy(
             new LogMessageWaitStrategy()
                 .withRegEx(".*======== SERVER STARTED ========.*")
-                .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS));
+                .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS))
+        );
 
         addExposedPort(PRESTO_PORT);
     }

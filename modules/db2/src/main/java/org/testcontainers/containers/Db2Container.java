@@ -58,10 +58,11 @@ public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
         dockerImageName.assertCompatibleWith(DEFAULT_NEW_IMAGE_NAME, DEFAULT_IMAGE_NAME);
 
         withPrivilegedMode(true);
-        this.waitStrategy =
+        setWaitStrategy(
             new LogMessageWaitStrategy()
                 .withRegEx(".*Setup has completed\\..*")
-                .withStartupTimeout(Duration.of(10, ChronoUnit.MINUTES));
+                .withStartupTimeout(Duration.of(10, ChronoUnit.MINUTES))
+        );
 
         addExposedPort(DB2_PORT);
     }

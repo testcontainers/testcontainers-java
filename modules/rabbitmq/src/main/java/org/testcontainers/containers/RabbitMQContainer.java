@@ -76,8 +76,9 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
 
         addExposedPorts(DEFAULT_AMQP_PORT, DEFAULT_AMQPS_PORT, DEFAULT_HTTP_PORT, DEFAULT_HTTPS_PORT);
 
-        this.waitStrategy =
-            Wait.forLogMessage(".*Server startup complete.*", 1).withStartupTimeout(Duration.ofSeconds(60));
+        setWaitStrategy(
+            Wait.forLogMessage(".*Server startup complete.*", 1).withStartupTimeout(Duration.ofSeconds(60))
+        );
     }
 
     @Override

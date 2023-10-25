@@ -109,11 +109,12 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
             )
             .withStartupTimeout(Duration.of(15, ChronoUnit.SECONDS));
 
-        this.waitStrategy =
+        setWaitStrategy(
             new WaitAllStrategy()
                 .withStrategy(logWaitStrategy)
                 .withStrategy(new HostPortWaitStrategy())
-                .withStartupTimeout(Duration.of(15, ChronoUnit.SECONDS));
+                .withStartupTimeout(Duration.of(15, ChronoUnit.SECONDS))
+        );
 
         this.withRecordingFileFactory(new DefaultRecordingFileFactory());
     }
@@ -140,11 +141,12 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
             )
             .withStartupTimeout(Duration.of(15, ChronoUnit.SECONDS));
 
-        this.waitStrategy =
+        setWaitStrategy(
             new WaitAllStrategy()
                 .withStrategy(logWaitStrategy)
                 .withStrategy(new HostPortWaitStrategy())
-                .withStartupTimeout(Duration.of(15, ChronoUnit.SECONDS));
+                .withStartupTimeout(Duration.of(15, ChronoUnit.SECONDS))
+        );
 
         this.withRecordingFileFactory(new DefaultRecordingFileFactory());
 

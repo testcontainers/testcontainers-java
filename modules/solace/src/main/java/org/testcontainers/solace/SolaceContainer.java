@@ -71,7 +71,7 @@ public class SolaceContainer extends GenericContainer<SolaceContainer> {
         withCreateContainerCmdModifier(cmd -> {
             cmd.getHostConfig().withShmSize(SHM_SIZE).withUlimits(new Ulimit[] { new Ulimit("nofile", 2448L, 6592L) });
         });
-        this.waitStrategy = Wait.forLogMessage(SOLACE_READY_MESSAGE, 1).withStartupTimeout(Duration.ofSeconds(60));
+        setWaitStrategy(Wait.forLogMessage(SOLACE_READY_MESSAGE, 1).withStartupTimeout(Duration.ofSeconds(60)));
         withExposedPorts(8080);
         withEnv("username_admin_globalaccesslevel", "admin");
         withEnv("username_admin_password", "admin");
