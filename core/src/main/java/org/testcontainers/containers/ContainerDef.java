@@ -13,16 +13,11 @@ import org.testcontainers.DockerClientFactory;
 import org.testcontainers.UnstableAPI;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.images.RemoteDockerImage;
+import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Getter
 @UnstableAPI
@@ -43,7 +38,7 @@ class ContainerDef {
 
     private Network network;
 
-    private Set<String> networkAliases = new HashSet<>();
+    private Set<String> networkAliases = new HashSet<>(Collections.singletonList("tc-" + Base58.randomString(8)));
 
     private String networkMode;
 
