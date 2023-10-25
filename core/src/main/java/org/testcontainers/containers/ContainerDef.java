@@ -224,6 +224,11 @@ class ContainerDef {
         this.networkAliases.addAll(Arrays.asList(aliases));
     }
 
+    protected void setNetworkAliases(Set<String> aliases) {
+        this.networkAliases.clear();
+        this.networkAliases.addAll(aliases);
+    }
+
     protected void setNetworkMode(String networkMode) {
         this.networkMode = networkMode;
     }

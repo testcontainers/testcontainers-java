@@ -1518,8 +1518,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         this.containerDef.setCommand(commandParts);
     }
 
-    public Set<String> getNetworkAliases() {
-        return this.containerDef.getNetworkAliases();
+    public List<String> getNetworkAliases() {
+        return new ArrayList<>(this.containerDef.getNetworkAliases());
+    }
+
+    public void setNetworkAliases(List<String> aliases) {
+        this.containerDef.setNetworkAliases(new HashSet<>(aliases));
     }
 
     @Override
@@ -1533,5 +1537,33 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public void setPortBindings(List<String> portBindings) {
         this.containerDef.setPortBindings(portBindings.stream().map(PortBinding::parse).collect(Collectors.toSet()));
+    }
+
+    public void setPrivilegedMode(boolean mode) {
+        this.containerDef.setPrivilegedMode(mode);
+    }
+
+    public boolean isPrivilegedMode() {
+        return this.containerDef.isPrivilegedMode();
+    }
+
+    public Map<String, String> getLabels() {
+        return this.containerDef.getLabels();
+    }
+
+    public void setLabels(Map<String, String> labels) {
+        this.containerDef.setLabels(labels);
+    }
+
+    public String getNetworkMode() {
+        return this.containerDef.getNetworkMode();
+    }
+
+    public void setNetworkMode(String networkMode) {
+        this.containerDef.setNetworkMode(networkMode);
+    }
+
+    public void setNetwork(Network network) {
+        this.containerDef.setNetwork(network);
     }
 }
