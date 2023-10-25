@@ -186,6 +186,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     /**
      * The approach to determine if the container is ready.
      */
+    @NonNull
+    protected WaitStrategy waitStrategy = Wait.defaultWaitStrategy();
+
     private List<Consumer<OutputFrame>> logConsumers = new ArrayList<>();
 
     private static final Set<String> AVAILABLE_IMAGE_NAME_CACHE = new HashSet<>();
@@ -872,7 +875,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * @return the {@link WaitStrategy} to use
      */
     protected WaitStrategy getWaitStrategy() {
-        return this.containerDef.getWaitStrategy();
+        return this.containerDef.getWaitStrategy() == null ? this.waitStrategy : this.containerDef.getWaitStrategy();
     }
 
     @Override

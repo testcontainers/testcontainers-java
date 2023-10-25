@@ -11,7 +11,6 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.UnstableAPI;
-import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.utility.DockerImageName;
@@ -52,7 +51,7 @@ class ContainerDef {
 
     private boolean privilegedMode;
 
-    private WaitStrategy waitStrategy = Wait.defaultWaitStrategy();
+    private WaitStrategy waitStrategy;
 
     private boolean frozen = false;
 

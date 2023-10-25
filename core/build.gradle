@@ -57,9 +57,7 @@ tasks.japicmp {
         "org.testcontainers.containers.ContainerState#execInContainerWithUser(java.nio.charset.Charset,java.lang.String,java.lang.String[])",
     ]
 
-    fieldExcludes = [
-        "org.testcontainers.containers.GenericContainer#waitStrategy"
-    ]
+    fieldExcludes = []
 }
 
 configurations.all {
