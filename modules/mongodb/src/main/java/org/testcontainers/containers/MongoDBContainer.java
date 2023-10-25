@@ -7,7 +7,6 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
@@ -28,8 +27,6 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
     private static final String DEFAULT_TAG = "4.0.10";
 
     private static final int CONTAINER_EXIT_CODE_OK = 0;
-
-    private static final int MONGODB_INTERNAL_PORT = 27017;
 
     private static final int AWAIT_INIT_REPLICA_SET_ATTEMPTS = 60;
 
@@ -52,8 +49,6 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
     public MongoDBContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
-
-        addExposedPort(MONGODB_INTERNAL_PORT);
     }
 
     @Override
@@ -64,12 +59,6 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
     @Override
     MongoDBContainerDef getContainerDef() {
         return (MongoDBContainerDef) super.getContainerDef();
-    }
-
-    @Override
-    public void configure() {
-        setCommand(getContainerDef().getCommand());
-        setWaitStrategy(getContainerDef().getWaitStrategy());
     }
 
     @Override
@@ -102,7 +91,7 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
      * @return a connection url pointing to a mongodb instance
      */
     public String getConnectionString() {
-        return String.format("mongodb://%s:%d", getHost(), getMappedPort(MONGODB_INTERNAL_PORT));
+        return String.format("mongodb://%s:%d", getHost(), getMappedPort(MongoDBContainerDef.MONGODB_INTERNAL_PORT));
     }
 
     /**
@@ -208,22 +197,21 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
 
     private static class MongoDBContainerDef extends ContainerDef {
 
-        @Getter
-        private boolean shardingEnabled;
+        private static final int MONGODB_INTERNAL_PORT = 27017;
 
         @Getter
-        private WaitStrategy waitStrategy;
+        private boolean shardingEnabled;
 
         MongoDBContainerDef() {
             addExposedTcpPort(MONGODB_INTERNAL_PORT);
             setCommand("--replSet", "docker-rs");
-            this.waitStrategy = Wait.forLogMessage("(?i).*waiting for connections.*", 1);
+            setWaitStrategy(Wait.forLogMessage("(?i).*waiting for connections.*", 1));
         }
 
         void withSharding() {
             this.shardingEnabled = true;
             setCommand("-c", "while [ ! -f " + STARTER_SCRIPT + " ]; do sleep 0.1; done; " + STARTER_SCRIPT);
-            this.waitStrategy = Wait.forLogMessage("(?i).*mongos ready.*", 1);
+            setWaitStrategy(Wait.forLogMessage("(?i).*mongos ready.*", 1));
         }
 
         @Override

@@ -186,9 +186,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     /**
      * The approach to determine if the container is ready.
      */
-    @NonNull
-    protected org.testcontainers.containers.wait.strategy.WaitStrategy waitStrategy = Wait.defaultWaitStrategy();
-
     private List<Consumer<OutputFrame>> logConsumers = new ArrayList<>();
 
     private static final Set<String> AVAILABLE_IMAGE_NAME_CACHE = new HashSet<>();
@@ -863,8 +860,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * {@inheritDoc}
      */
     @Override
-    public SELF waitingFor(@NonNull org.testcontainers.containers.wait.strategy.WaitStrategy waitStrategy) {
-        this.waitStrategy = waitStrategy;
+    public SELF waitingFor(@NonNull WaitStrategy waitStrategy) {
+        this.containerDef.setWaitStrategy(waitStrategy);
         return self();
     }
 
@@ -874,24 +871,24 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      *
      * @return the {@link WaitStrategy} to use
      */
-    protected org.testcontainers.containers.wait.strategy.WaitStrategy getWaitStrategy() {
-        return waitStrategy;
+    protected WaitStrategy getWaitStrategy() {
+        return this.containerDef.getWaitStrategy();
     }
 
     @Override
-    public void setWaitStrategy(org.testcontainers.containers.wait.strategy.WaitStrategy waitStrategy) {
-        this.waitStrategy = waitStrategy;
+    public void setWaitStrategy(WaitStrategy waitStrategy) {
+        this.containerDef.setWaitStrategy(waitStrategy);
     }
 
     /**
      * Wait until the container has started. The default implementation simply
      * waits for a port to start listening; other implementations are available
-     * as implementations of {@link org.testcontainers.containers.wait.strategy.WaitStrategy}
+     * as implementations of {@link WaitStrategy}
      *
-     * @see #waitingFor(org.testcontainers.containers.wait.strategy.WaitStrategy)
+     * @see #waitingFor(WaitStrategy)
      */
     protected void waitUntilContainerStarted() {
-        org.testcontainers.containers.wait.strategy.WaitStrategy waitStrategy = getWaitStrategy();
+        WaitStrategy waitStrategy = getWaitStrategy();
         if (waitStrategy != null) {
             waitStrategy.waitUntilReady(this);
         }

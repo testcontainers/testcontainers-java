@@ -11,6 +11,8 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.UnstableAPI;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.TestcontainersConfiguration;
@@ -49,6 +51,8 @@ class ContainerDef {
     private List<Bind> binds = new ArrayList<>();
 
     private boolean privilegedMode;
+
+    private WaitStrategy waitStrategy = Wait.defaultWaitStrategy();
 
     private boolean frozen = false;
 
@@ -231,6 +235,10 @@ class ContainerDef {
     protected void setBinds(List<Bind> binds) {
         this.binds.clear();
         this.binds.addAll(binds);
+    }
+
+    protected void setWaitStrategy(WaitStrategy waitStrategy) {
+        this.waitStrategy = waitStrategy;
     }
 
     public ContainerDef mutate() {
