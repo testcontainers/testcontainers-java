@@ -79,7 +79,7 @@ public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
         serverPassword = DEFAULT_SERVER_PASSWORD;
         databaseName = DEFAULT_DATABASE_NAME;
 
-        waitStrategy = new LogMessageWaitStrategy().withRegEx(".*OrientDB Studio available.*");
+        setWaitStrategy(new LogMessageWaitStrategy().withRegEx(".*OrientDB Studio available.*"));
 
         addExposedPorts(DEFAULT_BINARY_PORT, DEFAULT_HTTP_PORT);
     }
