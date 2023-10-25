@@ -25,6 +25,7 @@ import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
+import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 
@@ -199,6 +200,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
             if (getNetwork() == null) {
                 withNetwork(Network.SHARED);
+                withNetworkAliases("tc-" + Base58.randomString(8));
             }
 
             vncRecordingContainer =
