@@ -58,11 +58,10 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
-        setWaitStrategy(
+        this.waitStrategy =
             new LogMessageWaitStrategy()
                 .withRegEx(".*o\\.e\\.j\\.s\\.Server Started.*")
-                .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS))
-        );
+                .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS));
         this.configuration = new SolrContainerConfiguration();
     }
 

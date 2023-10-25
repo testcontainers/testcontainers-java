@@ -55,12 +55,11 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
-        setWaitStrategy(
+        this.waitStrategy =
             new LogMessageWaitStrategy()
                 .withRegEx(".*database system is ready to accept connections.*\\s")
                 .withTimes(2)
-                .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS))
-        );
+                .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS));
         this.setCommand("postgres", "-c", FSYNC_OFF_OPTION);
 
         addExposedPort(POSTGRESQL_PORT);

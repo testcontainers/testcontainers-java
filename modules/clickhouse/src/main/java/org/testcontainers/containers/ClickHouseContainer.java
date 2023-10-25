@@ -65,12 +65,11 @@ public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContain
         supportsNewDriver = isNewDriverSupported(dockerImageName);
 
         addExposedPorts(HTTP_PORT, NATIVE_PORT);
-        setWaitStrategy(
+        this.waitStrategy =
             new HttpWaitStrategy()
                 .forStatusCode(200)
                 .forResponsePredicate("Ok."::equals)
-                .withStartupTimeout(Duration.ofMinutes(1))
-        );
+                .withStartupTimeout(Duration.ofMinutes(1));
     }
 
     @Override

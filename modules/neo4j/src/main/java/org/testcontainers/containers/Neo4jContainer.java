@@ -112,12 +112,11 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
 
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
-        setWaitStrategy(
+        this.waitStrategy =
             new WaitAllStrategy()
                 .withStrategy(WAIT_FOR_BOLT)
                 .withStrategy(WAIT_FOR_HTTP)
-                .withStartupTimeout(Duration.ofMinutes(2))
-        );
+                .withStartupTimeout(Duration.ofMinutes(2));
 
         addExposedPorts(DEFAULT_BOLT_PORT, DEFAULT_HTTP_PORT, DEFAULT_HTTPS_PORT);
     }
@@ -177,13 +176,11 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
         boolean onlyHttpExposed = !boltExposed && httpExposed;
 
         if (onlyBoltExposed) {
-            setWaitStrategy(
-                new WaitAllStrategy().withStrategy(WAIT_FOR_BOLT).withStartupTimeout(Duration.ofMinutes(2))
-            );
+            this.waitStrategy =
+                new WaitAllStrategy().withStrategy(WAIT_FOR_BOLT).withStartupTimeout(Duration.ofMinutes(2));
         } else if (onlyHttpExposed) {
-            setWaitStrategy(
-                new WaitAllStrategy().withStrategy(WAIT_FOR_HTTP).withStartupTimeout(Duration.ofMinutes(2))
-            );
+            this.waitStrategy =
+                new WaitAllStrategy().withStrategy(WAIT_FOR_HTTP).withStartupTimeout(Duration.ofMinutes(2));
         }
     }
 

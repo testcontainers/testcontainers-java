@@ -47,7 +47,7 @@ public class CrateDBContainer extends JdbcDatabaseContainer<CrateDBContainer> {
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
         withCommand("crate -C discovery.type=single-node");
 
-        setWaitStrategy(Wait.forHttp("/").forPort(CRATEDB_HTTP_PORT).forStatusCode(200));
+        this.waitStrategy = Wait.forHttp("/").forPort(CRATEDB_HTTP_PORT).forStatusCode(200);
 
         addExposedPort(CRATEDB_PG_PORT);
         addExposedPort(CRATEDB_HTTP_PORT);
