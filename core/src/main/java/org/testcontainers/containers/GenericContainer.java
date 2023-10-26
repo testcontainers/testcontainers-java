@@ -257,7 +257,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     GenericContainer(@NonNull final ContainerDef containerDef) {
-        this(containerDef.getImage());
+        this.image = containerDef.getImage();
+        this.containerDef = containerDef;
     }
 
     public void setImage(Future<String> image) {
