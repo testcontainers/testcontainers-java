@@ -456,7 +456,7 @@ public class LocalstackContainerTest {
         }
     }
 
-    public static class WithEnvironmentVariables {
+    public static class S3SkipSignatureValidation {
 
         @ClassRule
         public static LocalStackContainer localstack = new LocalStackContainer(LocalstackTestImages.LOCALSTACK_2_3_IMAGE)
