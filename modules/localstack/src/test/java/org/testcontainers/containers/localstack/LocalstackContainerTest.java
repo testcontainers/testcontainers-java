@@ -464,7 +464,7 @@ public class LocalstackContainerTest {
             .withEnv("S3_SKIP_SIGNATURE_VALIDATION", "0");
 
         @Test
-        public void s3TestWithPresignedURL() throws IOException {
+        public void shouldBeAccessibleWithCredentials() throws IOException {
             AmazonS3 s3 = AmazonS3ClientBuilder
                 .standard()
                 .withEndpointConfiguration(
