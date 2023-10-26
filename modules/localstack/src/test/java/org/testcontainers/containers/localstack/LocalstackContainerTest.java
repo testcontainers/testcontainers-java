@@ -460,7 +460,6 @@ public class LocalstackContainerTest {
 
         @ClassRule
         public static LocalStackContainer localstack = new LocalStackContainer(LocalstackTestImages.LOCALSTACK_2_3_IMAGE)
-            .withServices(Service.S3)
             .withEnv("S3_SKIP_SIGNATURE_VALIDATION", "0");
 
         @Test
