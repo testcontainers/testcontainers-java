@@ -26,11 +26,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-@Getter
 @UnstableAPI
 @Slf4j
 class ContainerDef {
 
+    @Getter
     private RemoteDockerImage image;
 
     private Set<ExposedPort> exposedPorts = new HashSet<>();
@@ -43,16 +43,20 @@ class ContainerDef {
 
     private String[] command = new String[0];
 
+    @Getter
     private Network network;
 
     private Set<String> networkAliases = new HashSet<>(Collections.singletonList("tc-" + Base58.randomString(8)));
 
+    @Getter
     private String networkMode;
 
     private List<Bind> binds = new ArrayList<>();
 
+    @Getter
     private boolean privilegedMode;
 
+    @Getter
     private WaitStrategy waitStrategy;
 
     private boolean frozen = false;
@@ -157,6 +161,10 @@ class ContainerDef {
         setImage(new RemoteDockerImage(image));
     }
 
+    public Set<ExposedPort> getExposedPorts() {
+        return new HashSet<>(this.exposedPorts);
+    }
+
     protected void setExposedPorts(Set<ExposedPort> exposedPorts) {
         this.exposedPorts.clear();
         this.exposedPorts.addAll(exposedPorts);
@@ -178,6 +186,10 @@ class ContainerDef {
         this.exposedPorts.add(new ExposedPort(port, protocol));
     }
 
+    public Set<PortBinding> getPortBindings() {
+        return new HashSet<>(this.portBindings);
+    }
+
     protected void setPortBindings(Set<PortBinding> portBindings) {
         this.portBindings.clear();
         this.portBindings.addAll(portBindings);
@@ -185,6 +197,10 @@ class ContainerDef {
 
     protected void addPortBindings(PortBinding... portBindings) {
         this.portBindings.addAll(Arrays.asList(portBindings));
+    }
+
+    public Map<String, String> getLabels() {
+        return new HashMap<>(this.labels);
     }
 
     protected void setLabels(Map<String, String> labels) {
@@ -200,6 +216,10 @@ class ContainerDef {
         this.labels.put(key, value);
     }
 
+    public Map<String, String> getEnvVars() {
+        return new HashMap<>(this.envVars);
+    }
+
     protected void setEnvVars(Map<String, String> envVars) {
         this.envVars.clear();
         this.envVars.putAll(envVars);
@@ -213,12 +233,20 @@ class ContainerDef {
         this.envVars.put(key, value);
     }
 
+    public String[] getCommand() {
+        return Arrays.copyOf(this.command, this.command.length);
+    }
+
     protected void setCommand(String... command) {
         this.command = command;
     }
 
     protected void setNetwork(Network network) {
         this.network = network;
+    }
+
+    public Set<String> getNetworkAliases() {
+        return new HashSet<>(this.networkAliases);
     }
 
     protected void setNetworkAliases(String... aliases) {
@@ -237,6 +265,10 @@ class ContainerDef {
 
     protected void setPrivilegedMode(boolean privilegedMode) {
         this.privilegedMode = privilegedMode;
+    }
+
+    public List<Bind> getBinds() {
+        return new ArrayList<>(this.binds);
     }
 
     protected void setBinds(List<Bind> binds) {
