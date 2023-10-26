@@ -459,7 +459,9 @@ public class LocalstackContainerTest {
     public static class S3SkipSignatureValidation {
 
         @ClassRule
-        public static LocalStackContainer localstack = new LocalStackContainer(LocalstackTestImages.LOCALSTACK_2_3_IMAGE)
+        public static LocalStackContainer localstack = new LocalStackContainer(
+            LocalstackTestImages.LOCALSTACK_2_3_IMAGE
+        )
             .withEnv("S3_SKIP_SIGNATURE_VALIDATION", "0");
 
         @Test
