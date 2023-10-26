@@ -996,6 +996,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 )
             );
         }
+        this.containerDef.setBinds(binds);
     }
 
     /**
