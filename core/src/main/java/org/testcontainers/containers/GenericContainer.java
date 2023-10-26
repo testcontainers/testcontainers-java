@@ -187,7 +187,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * The approach to determine if the container is ready.
      */
     @NonNull
-    protected WaitStrategy waitStrategy = Wait.defaultWaitStrategy();
+    protected WaitStrategy waitStrategy = Wait.defaultWaitStrategy(); // It has not been removed to avoid breaking changes
 
     private List<Consumer<OutputFrame>> logConsumers = new ArrayList<>();
 
@@ -256,9 +256,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         this(new RemoteDockerImage(image));
     }
 
-    public GenericContainer(@NonNull final ContainerDef containerDef) {
+    GenericContainer(@NonNull final ContainerDef containerDef) {
         this(containerDef.getImage());
-        this.containerDef = containerDef;
     }
 
     public void setImage(Future<String> image) {
@@ -941,7 +940,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @Override
     public Map<String, String> getEnvMap() {
-        return this.containerDef.getEnvironmentVariables();
+        return this.containerDef.getEnvVars();
     }
 
     /**
@@ -949,7 +948,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public List<String> getEnv() {
-        return this.containerDef.getEnvironmentVariables()
+        return this.containerDef.getEnvVars()
             .entrySet()
             .stream()
             .map(it -> it.getKey() + "=" + it.getValue())

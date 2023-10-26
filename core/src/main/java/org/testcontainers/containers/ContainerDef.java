@@ -39,7 +39,7 @@ class ContainerDef {
 
     private Map<String, String> labels = new HashMap<>();
 
-    private Map<String, String> environmentVariables = new HashMap<>();
+    private Map<String, String> envVars = new HashMap<>();
 
     private String[] command = new String[0];
 
@@ -64,13 +64,14 @@ class ContainerDef {
         this.exposedPorts = other.exposedPorts;
         this.portBindings = other.portBindings;
         this.labels = other.labels;
-        this.environmentVariables = other.environmentVariables;
+        this.envVars = other.envVars;
         this.command = other.command;
         this.network = other.network;
         this.networkAliases = other.networkAliases;
         this.networkMode = other.networkMode;
         this.binds = other.binds;
         this.privilegedMode = other.privilegedMode;
+        this.waitStrategy = other.waitStrategy;
     }
 
     public void applyTo(CreateContainerCmd createCommand) {
@@ -98,7 +99,7 @@ class ContainerDef {
         createCommand.withExposedPorts(new ArrayList<>(allPortBindings.keySet()));
 
         createCommand.withEnv(
-            this.environmentVariables.entrySet()
+            this.envVars.entrySet()
                 .stream()
                 .filter(it -> it.getValue() != null)
                 .map(it -> it.getKey() + "=" + it.getValue())
@@ -200,16 +201,16 @@ class ContainerDef {
     }
 
     protected void setEnvVars(Map<String, String> envVars) {
-        this.environmentVariables.clear();
-        this.environmentVariables.putAll(envVars);
+        this.envVars.clear();
+        this.envVars.putAll(envVars);
     }
 
     protected void addEnvVars(Map<String, String> envVars) {
-        this.environmentVariables.putAll(envVars);
+        this.envVars.putAll(envVars);
     }
 
     protected void addEnvVar(String key, String value) {
-        this.environmentVariables.put(key, value);
+        this.envVars.put(key, value);
     }
 
     protected void setCommand(String... command) {
@@ -245,9 +246,5 @@ class ContainerDef {
 
     protected void setWaitStrategy(WaitStrategy waitStrategy) {
         this.waitStrategy = waitStrategy;
-    }
-
-    public ContainerDef mutate() {
-        return new ContainerDef(this);
     }
 }
