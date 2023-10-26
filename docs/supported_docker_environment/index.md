@@ -21,7 +21,7 @@ please contact the Testcontainers team and other users from the Testcontainers c
 
 ## Colima
 
-In order to run testcontainers against [colima](https://github.com/abiosoft/colima) the env vars bellow should be set
+In order to run testcontainers against [colima](https://github.com/abiosoft/colima) the env vars below should be set
 
 ```bash
 export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock
