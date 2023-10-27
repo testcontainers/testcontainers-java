@@ -13,6 +13,7 @@ it's not necessary to have it installed on all developer/test machines.
 
 ## Example
 
+
 A single class rule, pointing to a `docker-compose.yml` file, should be sufficient to launch any number of services
 required by your tests:
 ```java
@@ -22,6 +23,11 @@ public static DockerComposeContainer environment =
             .withExposedService("redis_1", REDIS_PORT)
             .withExposedService("elasticsearch_1", ELASTICSEARCH_PORT);
 ```
+
+**Be careful**
+Annotations are diffrent for junit versions
+Junit5 -> @Container
+Junit4 -> @ClassRule
 
 In this example, `compose-test.yml` should have content such as:
 ```yaml
