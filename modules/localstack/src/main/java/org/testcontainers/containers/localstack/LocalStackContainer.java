@@ -47,6 +47,10 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
 
     private static final String DEFAULT_REGION = "us-east-1";
 
+    private static final String DEFAULT_AWS_ACCESS_KEY_ID = "test";
+
+    private static final String DEFAULT_AWS_SECRET_ACCESS_KEY = "test";
+
     @Deprecated
     public static final String VERSION = DEFAULT_TAG;
 
@@ -293,6 +297,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
 
     /**
      * Provides a default access key that is preconfigured to communicate with a given simulated service.
+     * <a href="https://github.com/localstack/localstack/blob/master/doc/interaction/README.md?plain=1#L32">AWS Access Key</a>
      * The access key can be used to construct AWS SDK v2 clients:
      * <pre><code>S3Client s3 = S3Client
              .builder()
@@ -306,11 +311,12 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
      * @return a default access key
      */
     public String getAccessKey() {
-        return "accesskey";
+        return this.getEnvMap().getOrDefault("AWS_ACCESS_KEY_ID", DEFAULT_AWS_ACCESS_KEY_ID);
     }
 
     /**
      * Provides a default secret key that is preconfigured to communicate with a given simulated service.
+     * <a href="https://github.com/localstack/localstack/blob/master/doc/interaction/README.md?plain=1#L32">AWS Secret Key</a>
      * The secret key can be used to construct AWS SDK v2 clients:
      * <pre><code>S3Client s3 = S3Client
              .builder()
@@ -324,7 +330,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
      * @return a default secret key
      */
     public String getSecretKey() {
-        return "secretkey";
+        return this.getEnvMap().getOrDefault("AWS_SECRET_ACCESS_KEY", DEFAULT_AWS_SECRET_ACCESS_KEY);
     }
 
     /**
