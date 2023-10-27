@@ -56,6 +56,7 @@ import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.lifecycle.Startables;
 import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
+import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.CommandLine;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.DockerLoggerFactory;
@@ -183,11 +184,13 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Setter(AccessLevel.NONE)
     private InspectContainerResponse containerInfo;
 
+    static WaitStrategy DEFAULT_STRATEGY = Wait.defaultWaitStrategy();
+
     /**
      * The approach to determine if the container is ready.
      */
     @NonNull
-    protected WaitStrategy waitStrategy = Wait.defaultWaitStrategy(); // It has not been removed to avoid breaking changes
+    protected WaitStrategy waitStrategy = DEFAULT_STRATEGY;
 
     private List<Consumer<OutputFrame>> logConsumers = new ArrayList<>();
 
@@ -212,7 +215,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private ContainerDef containerDef;
 
     ContainerDef createContainerDef() {
-        return new ContainerDef();
+        ContainerDef def = new ContainerDef();
+        def.setNetworkAliases("tc-" + Base58.randomString(8));
+        return def;
     }
 
     ContainerDef getContainerDef() {
@@ -323,6 +328,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     protected void doStart() {
         try {
+            if (waitStrategy != DEFAULT_STRATEGY) {
+                containerDef.setWaitStrategy(waitStrategy);
+            }
+
             configure();
 
             logger().debug("Starting container: {}", getDockerImageName());
@@ -875,7 +884,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * @return the {@link WaitStrategy} to use
      */
     protected WaitStrategy getWaitStrategy() {
-        return this.containerDef.getWaitStrategy() == null ? this.waitStrategy : this.containerDef.getWaitStrategy();
+        return this.waitStrategy == DEFAULT_STRATEGY ? this.containerDef.getWaitStrategy() : this.waitStrategy;
     }
 
     @Override
@@ -941,7 +950,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @Override
     public Map<String, String> getEnvMap() {
-        return this.containerDef.getEnvVars();
+        return this.containerDef.envVars;
     }
 
     /**
@@ -981,22 +990,22 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         final BindMode mode,
         final SelinuxContext selinuxContext
     ) {
-        List<Bind> binds = this.containerDef.getBinds();
         if (SystemUtils.IS_OS_WINDOWS && hostPath.startsWith("/")) {
             // e.g. Docker socket mount
-            binds.add(new Bind(hostPath, new Volume(containerPath), mode.accessMode, selinuxContext.selContext));
+            this.containerDef.addBinds(
+                    new Bind(hostPath, new Volume(containerPath), mode.accessMode, selinuxContext.selContext)
+                );
         } else {
             final MountableFile mountableFile = MountableFile.forHostPath(hostPath);
-            binds.add(
-                new Bind(
-                    mountableFile.getResolvedPath(),
-                    new Volume(containerPath),
-                    mode.accessMode,
-                    selinuxContext.selContext
-                )
-            );
+            this.containerDef.addBinds(
+                    new Bind(
+                        mountableFile.getResolvedPath(),
+                        new Volume(containerPath),
+                        mode.accessMode,
+                        selinuxContext.selContext
+                    )
+                );
         }
-        this.containerDef.setBinds(binds);
     }
 
     /**
@@ -1504,7 +1513,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @Override
     public List<Bind> getBinds() {
-        return this.containerDef.getBinds();
+        return this.containerDef.binds;
     }
 
     @Override
@@ -1532,8 +1541,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @Override
     public List<String> getPortBindings() {
-        return this.containerDef.getPortBindings()
-            .stream()
+        return this.containerDef.portBindings.stream()
             .map(it -> String.format("%s:%s", it.getBinding(), it.getExposedPort()))
             .collect(Collectors.toList());
     }
@@ -1552,7 +1560,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     public Map<String, String> getLabels() {
-        return this.containerDef.getLabels();
+        return this.containerDef.labels;
     }
 
     public void setLabels(Map<String, String> labels) {

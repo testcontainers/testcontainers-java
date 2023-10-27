@@ -20,6 +20,25 @@ import java.util.concurrent.atomic.AtomicReference;
 public enum PortForwardingContainer {
     INSTANCE;
 
+    private static String PASSWORD = UUID.randomUUID().toString();
+
+    private static ContainerDef DEFINITION = new ContainerDef() {
+        {
+            setImage(DockerImageName.parse("testcontainers/sshd:1.1.0"));
+            addExposedTcpPort(22);
+            addEnvVar("PASSWORD", PASSWORD);
+            setCommand(
+                "sh",
+                "-c",
+                // Disable ipv6 & Make it listen on all interfaces, not just localhost
+                // Enable algorithms supported by our ssh client library
+                "echo \"root:$PASSWORD\" | chpasswd && /usr/sbin/sshd -D -o PermitRootLogin=yes " +
+                "-o AddressFamily=inet -o GatewayPorts=yes -o AllowAgentForwarding=yes -o AllowTcpForwarding=yes " +
+                "-o KexAlgorithms=+diffie-hellman-group1-sha1 -o HostkeyAlgorithms=+ssh-rsa "
+            );
+        }
+    };
+
     private GenericContainer<?> container;
 
     private final Set<Entry<Integer, Integer>> exposedPorts = Collections.newSetFromMap(new ConcurrentHashMap<>());
@@ -29,21 +48,7 @@ public enum PortForwardingContainer {
 
     @SneakyThrows
     private Connection createSSHSession() {
-        String password = UUID.randomUUID().toString();
-        ContainerDef socatContainerDefinition = new ContainerDef();
-        socatContainerDefinition.setImage(DockerImageName.parse("testcontainers/sshd:1.1.0"));
-        socatContainerDefinition.addExposedTcpPort(22);
-        socatContainerDefinition.addEnvVar("PASSWORD", password);
-        socatContainerDefinition.setCommand(
-            "sh",
-            "-c",
-            // Disable ipv6 & Make it listen on all interfaces, not just localhost
-            // Enable algorithms supported by our ssh client library
-            "echo \"root:$PASSWORD\" | chpasswd && /usr/sbin/sshd -D -o PermitRootLogin=yes " +
-            "-o AddressFamily=inet -o GatewayPorts=yes -o AllowAgentForwarding=yes -o AllowTcpForwarding=yes " +
-            "-o KexAlgorithms=+diffie-hellman-group1-sha1 -o HostkeyAlgorithms=+ssh-rsa "
-        );
-        container = new GenericContainer<>(socatContainerDefinition);
+        container = new GenericContainer<>(DEFINITION);
         container.start();
 
         Connection connection = new Connection(container.getHost(), container.getMappedPort(22));
@@ -55,7 +60,7 @@ public enum PortForwardingContainer {
             (int) Duration.ofSeconds(30).toMillis()
         );
 
-        if (!connection.authenticateWithPassword("root", password)) {
+        if (!connection.authenticateWithPassword("root", PASSWORD)) {
             throw new IllegalStateException("Authentication failed.");
         }
 

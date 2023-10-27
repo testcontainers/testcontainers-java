@@ -13,13 +13,11 @@ import org.testcontainers.DockerClientFactory;
 import org.testcontainers.UnstableAPI;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.images.RemoteDockerImage;
-import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -35,50 +33,35 @@ class ContainerDef {
 
     private Set<ExposedPort> exposedPorts = new HashSet<>();
 
-    private Set<PortBinding> portBindings = new HashSet<>();
+    Set<PortBinding> portBindings = new HashSet<>();
 
-    private Map<String, String> labels = new HashMap<>();
+    Map<String, String> labels = new HashMap<>();
 
-    private Map<String, String> envVars = new HashMap<>();
+    Map<String, String> envVars = new HashMap<>();
+
+    private String[] entrypoint;
 
     private String[] command = new String[0];
 
     @Getter
     private Network network;
 
-    private Set<String> networkAliases = new HashSet<>(Collections.singletonList("tc-" + Base58.randomString(8)));
+    Set<String> networkAliases = new HashSet<>();
 
     @Getter
     private String networkMode;
 
-    private List<Bind> binds = new ArrayList<>();
+    List<Bind> binds = new ArrayList<>();
 
     @Getter
     private boolean privilegedMode;
 
     @Getter
-    private WaitStrategy waitStrategy;
-
-    private boolean frozen = false;
+    private WaitStrategy waitStrategy = GenericContainer.DEFAULT_STRATEGY;
 
     public ContainerDef() {}
 
-    private ContainerDef(ContainerDef other) {
-        this.image = other.image;
-        this.exposedPorts = other.exposedPorts;
-        this.portBindings = other.portBindings;
-        this.labels = other.labels;
-        this.envVars = other.envVars;
-        this.command = other.command;
-        this.network = other.network;
-        this.networkAliases = other.networkAliases;
-        this.networkMode = other.networkMode;
-        this.binds = other.binds;
-        this.privilegedMode = other.privilegedMode;
-        this.waitStrategy = other.waitStrategy;
-    }
-
-    public void applyTo(CreateContainerCmd createCommand) {
+    protected void applyTo(CreateContainerCmd createCommand) {
         HostConfig hostConfig = createCommand.getHostConfig();
         if (hostConfig == null) {
             hostConfig = new HostConfig();
@@ -109,6 +92,10 @@ class ContainerDef {
                 .map(it -> it.getKey() + "=" + it.getValue())
                 .toArray(String[]::new)
         );
+
+        if (this.entrypoint != null) {
+            createCommand.withEntrypoint(this.entrypoint);
+        }
 
         if (this.command != null) {
             createCommand.withCmd(this.command);
@@ -233,6 +220,14 @@ class ContainerDef {
         this.envVars.put(key, value);
     }
 
+    public String[] getEntrypoint() {
+        return Arrays.copyOf(this.entrypoint, this.entrypoint.length);
+    }
+
+    protected void setEntrypoint(String... entrypoint) {
+        this.entrypoint = entrypoint;
+    }
+
     public String[] getCommand() {
         return Arrays.copyOf(this.command, this.command.length);
     }
@@ -274,6 +269,14 @@ class ContainerDef {
     protected void setBinds(List<Bind> binds) {
         this.binds.clear();
         this.binds.addAll(binds);
+    }
+
+    protected void addBinds(Bind... binds) {
+        this.binds.addAll(Arrays.asList(binds));
+    }
+
+    protected void addBind(Bind bind) {
+        this.binds.add(bind);
     }
 
     protected void setWaitStrategy(WaitStrategy waitStrategy) {

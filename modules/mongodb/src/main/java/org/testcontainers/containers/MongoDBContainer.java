@@ -1,6 +1,5 @@
 package org.testcontainers.containers;
 
-import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import lombok.Getter;
 import lombok.NonNull;
@@ -212,15 +211,7 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
             this.shardingEnabled = true;
             setCommand("-c", "while [ ! -f " + STARTER_SCRIPT + " ]; do sleep 0.1; done; " + STARTER_SCRIPT);
             setWaitStrategy(Wait.forLogMessage("(?i).*mongos ready.*", 1));
-        }
-
-        @Override
-        public void applyTo(CreateContainerCmd createCommand) {
-            super.applyTo(createCommand);
-
-            if (this.shardingEnabled) {
-                createCommand.withEntrypoint("sh");
-            }
+            setEntrypoint("sh");
         }
     }
 }
