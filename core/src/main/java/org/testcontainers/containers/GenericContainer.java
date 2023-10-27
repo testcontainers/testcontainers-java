@@ -216,7 +216,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     ContainerDef createContainerDef() {
         ContainerDef def = new ContainerDef();
-        def.setNetworkAliases("tc-" + Base58.randomString(8));
+        def.addNetworkAliases("tc-" + Base58.randomString(8));
         return def;
     }
 
@@ -1046,9 +1046,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @Override
     public void addExposedPorts(int... ports) {
-        for (int port : ports) {
-            this.containerDef.addExposedTcpPort(port);
-        }
+        this.containerDef.addExposedTcpPorts(ports);
     }
 
     private TestDescription toDescription(Description description) {
@@ -1225,7 +1223,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @Override
     public SELF withNetworkAliases(String... aliases) {
-        this.containerDef.setNetworkAliases(aliases);
+        this.containerDef.addNetworkAliases(aliases);
         return self();
     }
 

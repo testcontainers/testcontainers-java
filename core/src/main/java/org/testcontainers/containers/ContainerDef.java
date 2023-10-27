@@ -31,7 +31,7 @@ class ContainerDef {
     @Getter
     private RemoteDockerImage image;
 
-    private Set<ExposedPort> exposedPorts = new HashSet<>();
+    Set<ExposedPort> exposedPorts = new HashSet<>();
 
     Set<PortBinding> portBindings = new HashSet<>();
 
@@ -165,6 +165,17 @@ class ContainerDef {
         this.exposedPorts.add(exposedPort);
     }
 
+    protected void setExposedTcpPorts(Set<Integer> ports) {
+        this.exposedPorts.clear();
+        ports.forEach(port -> this.exposedPorts.add(ExposedPort.tcp(port)));
+    }
+
+    protected void addExposedTcpPorts(int... ports) {
+        for (int port : ports) {
+            this.exposedPorts.add(ExposedPort.tcp(port));
+        }
+    }
+
     protected void addExposedTcpPort(int port) {
         this.exposedPorts.add(ExposedPort.tcp(port));
     }
@@ -184,6 +195,10 @@ class ContainerDef {
 
     protected void addPortBindings(PortBinding... portBindings) {
         this.portBindings.addAll(Arrays.asList(portBindings));
+    }
+
+    protected void addPortBinding(PortBinding portBinding) {
+        this.portBindings.add(portBinding);
     }
 
     public Map<String, String> getLabels() {
@@ -244,14 +259,17 @@ class ContainerDef {
         return new HashSet<>(this.networkAliases);
     }
 
-    protected void setNetworkAliases(String... aliases) {
-        this.networkAliases.clear();
-        this.networkAliases.addAll(Arrays.asList(aliases));
-    }
-
     protected void setNetworkAliases(Set<String> aliases) {
         this.networkAliases.clear();
         this.networkAliases.addAll(aliases);
+    }
+
+    protected void addNetworkAliases(String... aliases) {
+        this.networkAliases.addAll(Arrays.asList(aliases));
+    }
+
+    protected void addNetworkAlias(String alias) {
+        this.networkAliases.add(alias);
     }
 
     protected void setNetworkMode(String networkMode) {
