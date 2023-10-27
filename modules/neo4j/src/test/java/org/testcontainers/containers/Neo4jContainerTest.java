@@ -260,11 +260,13 @@ public class Neo4jContainerTest {
 
     @Test
     public void shouldRespectCustomWaitStrategy() {
-        Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4").waitingFor(new CustomDummyWaitStrategy());
-
-        neo4jContainer.configure();
-
-        assertThat(neo4jContainer.getWaitStrategy()).isInstanceOf(CustomDummyWaitStrategy.class);
+        try (
+            Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4")
+                .waitingFor(new CustomDummyWaitStrategy())
+        ) {
+            neo4jContainer.start();
+            assertThat(neo4jContainer.getWaitStrategy()).isInstanceOf(CustomDummyWaitStrategy.class);
+        }
     }
 
     @Test

@@ -57,7 +57,7 @@ class ContainerDef {
     private boolean privilegedMode;
 
     @Getter
-    private WaitStrategy waitStrategy = GenericContainer.DEFAULT_STRATEGY;
+    private WaitStrategy waitStrategy = GenericContainer.DEFAULT_WAIT_STRATEGY;
 
     public ContainerDef() {}
 

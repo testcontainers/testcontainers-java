@@ -184,13 +184,13 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Setter(AccessLevel.NONE)
     private InspectContainerResponse containerInfo;
 
-    static WaitStrategy DEFAULT_STRATEGY = Wait.defaultWaitStrategy();
+    static WaitStrategy DEFAULT_WAIT_STRATEGY = Wait.defaultWaitStrategy();
 
     /**
      * The approach to determine if the container is ready.
      */
     @NonNull
-    protected WaitStrategy waitStrategy = DEFAULT_STRATEGY;
+    protected WaitStrategy waitStrategy = DEFAULT_WAIT_STRATEGY;
 
     private List<Consumer<OutputFrame>> logConsumers = new ArrayList<>();
 
@@ -328,8 +328,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     protected void doStart() {
         try {
-            if (waitStrategy != DEFAULT_STRATEGY) {
-                containerDef.setWaitStrategy(waitStrategy);
+            if (this.waitStrategy != DEFAULT_WAIT_STRATEGY) {
+                this.containerDef.setWaitStrategy(this.waitStrategy);
             }
 
             configure();
@@ -873,7 +873,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public SELF waitingFor(@NonNull WaitStrategy waitStrategy) {
-        this.containerDef.setWaitStrategy(waitStrategy);
+        this.waitStrategy = waitStrategy;
         return self();
     }
 
@@ -884,7 +884,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * @return the {@link WaitStrategy} to use
      */
     protected WaitStrategy getWaitStrategy() {
-        return this.waitStrategy == DEFAULT_STRATEGY ? this.containerDef.getWaitStrategy() : this.waitStrategy;
+        return this.waitStrategy == DEFAULT_WAIT_STRATEGY ? this.containerDef.getWaitStrategy() : this.waitStrategy;
     }
 
     @Override
