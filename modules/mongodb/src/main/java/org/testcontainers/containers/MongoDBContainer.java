@@ -1,7 +1,6 @@
 package org.testcontainers.containers;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +32,8 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
 
     private static final String STARTER_SCRIPT = "/testcontainers_start.sh";
 
+    private boolean shardingEnabled;
+
     /**
      * @deprecated use {@link #MongoDBContainer(DockerImageName)} instead
      */
@@ -62,7 +63,7 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
 
     @Override
     protected void containerIsStarting(InspectContainerResponse containerInfo) {
-        if (getContainerDef().isShardingEnabled()) {
+        if (this.shardingEnabled) {
             copyFileToContainer(MountableFile.forClasspathResource("/sharding.sh", 0777), STARTER_SCRIPT);
         }
     }
@@ -73,13 +74,14 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
      * @return this
      */
     public MongoDBContainer withSharding() {
+        this.shardingEnabled = true;
         getContainerDef().withSharding();
         return this;
     }
 
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo, boolean reused) {
-        if (!getContainerDef().isShardingEnabled()) {
+        if (!this.shardingEnabled) {
             initReplicaSet(reused);
         }
     }
@@ -198,9 +200,6 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
 
         private static final int MONGODB_INTERNAL_PORT = 27017;
 
-        @Getter
-        private boolean shardingEnabled;
-
         MongoDBContainerDef() {
             addExposedTcpPort(MONGODB_INTERNAL_PORT);
             setCommand("--replSet", "docker-rs");
@@ -208,7 +207,6 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
         }
 
         void withSharding() {
-            this.shardingEnabled = true;
             setCommand("-c", "while [ ! -f " + STARTER_SCRIPT + " ]; do sleep 0.1; done; " + STARTER_SCRIPT);
             setWaitStrategy(Wait.forLogMessage("(?i).*mongos ready.*", 1));
             setEntrypoint("sh");
