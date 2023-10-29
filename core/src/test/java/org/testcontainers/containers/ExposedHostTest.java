@@ -95,9 +95,14 @@ public class ExposedHostTest {
     }
 
     private ContainerDef tinyImage() {
-        ContainerDef containerDef = new ContainerDef();
-        containerDef.setImage(TestImages.TINY_IMAGE);
-        containerDef.setCommand("top");
-        return containerDef;
+        return new TinyContainerDef();
+    }
+
+    private static class TinyContainerDef extends ContainerDef {
+
+        TinyContainerDef() {
+            setImage(TestImages.TINY_IMAGE);
+            setCommand("top");
+        }
     }
 }
