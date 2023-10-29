@@ -1,3 +1,7 @@
+pluginManagement {
+    includeBuild '../commons-build'
+}
+
 buildscript {
     repositories {
         maven {

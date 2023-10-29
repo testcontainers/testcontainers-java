@@ -11,16 +11,21 @@ import org.gradle.process.CommandLineArgumentProvider
  */
 class DelombokArgumentProvider implements CommandLineArgumentProvider {
 
-    @InputFiles
-    @PathSensitive(PathSensitivity.RELATIVE)
-    Set<File> srcDirs
+	@InputFiles
+	@PathSensitive(PathSensitivity.RELATIVE)
+	Set<File> srcDirs
 
-    @OutputDirectory
-    File outputDir
+	@OutputDirectory
+	File outputDir
 
-    @Override
-    Iterable<String> asArguments() {
-        return [srcDirs.collect { it.absolutePath }.join(" "), "-d", outputDir.absolutePath, "-f", "generateDelombokComment:skip"]
-    }
-
+	@Override
+	Iterable<String> asArguments() {
+		return [
+			srcDirs.collect { it.absolutePath }.join(" "),
+			"-d",
+			outputDir.absolutePath,
+			"-f",
+			"generateDelombokComment:skip"
+		]
+	}
 }

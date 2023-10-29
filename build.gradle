@@ -14,7 +14,7 @@ plugins {
     id 'io.franzbecker.gradle-lombok' version '5.0.0'
     id 'com.github.johnrengelman.shadow' version '8.1.1'
     id 'me.champeau.gradle.japicmp' version '0.4.2' apply false
-    id 'com.diffplug.spotless' version '6.13.0' apply false
+    id 'testcontainers.java-conventions'
 }
 
 apply from: "$rootDir/gradle/ci-support.gradle"
@@ -30,8 +30,7 @@ subprojects {
     apply plugin: 'idea'
     apply plugin: 'io.franzbecker.gradle-lombok'
     apply from: "$rootDir/gradle/shading.gradle"
-    apply from: "$rootDir/gradle/spotless.gradle"
-    apply plugin: 'checkstyle'
+    apply plugin: 'testcontainers.java-conventions'
 
     group = "org.testcontainers"
 
@@ -123,10 +122,5 @@ subprojects {
 
     dependencies {
         testImplementation 'ch.qos.logback:logback-classic:1.3.11'
-    }
-
-    checkstyle {
-        toolVersion = "9.3"
-        configFile = rootProject.file('config/checkstyle/checkstyle.xml')
     }
 }
