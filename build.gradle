@@ -13,7 +13,6 @@ buildscript {
 plugins {
     id 'io.franzbecker.gradle-lombok' version '5.0.0'
     id 'com.github.johnrengelman.shadow' version '8.1.1'
-    id 'me.champeau.gradle.japicmp' version '0.4.2' apply false
     id 'testcontainers.java-conventions'
 }
 
@@ -63,12 +62,6 @@ subprojects {
     }
     delombok.onlyIf {
         project.sourceSets.main.java.srcDirs.find { it.exists() }
-    }
-
-    if (it.name != "bom") {
-        apply plugin: "me.champeau.gradle.japicmp"
-        tasks.register('japicmp', me.champeau.gradle.japicmp.JapicmpTask)
-        apply from: "$rootDir/gradle/japicmp.gradle"
     }
 
     test {

@@ -1,5 +1,4 @@
 plugins {
     id 'testcontainers.java-conventions'
-    id 'testcontainers.japicmp'
     id 'testcontainers.publishing'
 }
