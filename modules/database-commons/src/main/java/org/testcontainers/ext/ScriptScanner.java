@@ -99,7 +99,7 @@ class ScriptScanner {
         return false;
     }
 
-    boolean matchesDollarQuotedString() {
+    private boolean matchesDollarQuotedString() {
         //Matches $<tag>$ .... $<tag>$
         if (matches(dollarQuotedStringDelimiter)) {
             String delimiter = currentMatch;
