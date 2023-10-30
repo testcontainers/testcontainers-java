@@ -1,5 +1,6 @@
 package org.testcontainers.build
 
+import groovy.xml.XmlSlurper
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
