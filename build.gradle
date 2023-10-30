@@ -26,7 +26,6 @@ captainHook {
 
 subprojects {
     apply plugin: 'java-library'
-    apply plugin: 'idea'
     apply plugin: 'io.franzbecker.gradle-lombok'
     apply from: "$rootDir/gradle/shading.gradle"
 
