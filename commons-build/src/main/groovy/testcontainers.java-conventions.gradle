@@ -9,7 +9,7 @@ repositories {
 }
 
 checkstyle {
-    toolVersion = "9.3"
+    toolVersion = "10.12.4"
     def rootProjectPath = rootProject.name == 'testcontainers-java' ? "" : "../"
     configFile = rootProject.layout.projectDirectory.file(rootProjectPath + "config/checkstyle/checkstyle.xml").asFile
 }
@@ -33,5 +33,11 @@ spotless {
     groovyGradle {
         target '**/*.groovy'
         greclipse('4.19.0')
+    }
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
     }
 }
