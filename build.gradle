@@ -46,7 +46,7 @@ subprojects {
     }
 
 
-    task delombok(type: io.franzbecker.gradle.lombok.task.DelombokTask) {
+    tasks.register('delombok', io.franzbecker.gradle.lombok.task.DelombokTask) {
         outputs.cacheIf {
             true
         }
