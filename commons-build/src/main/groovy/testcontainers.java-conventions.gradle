@@ -1,42 +1,11 @@
-import com.diffplug.gradle.spotless.SpotlessApply
-import com.diffplug.gradle.spotless.SpotlessCheck
-
 plugins {
     id 'java'
-    id 'checkstyle'
-    id 'com.diffplug.spotless'
+    id 'testcontainers.checkstyle'
+    id 'testcontainers.spotless'
 }
 
 repositories {
     mavenCentral()
-}
-
-checkstyle {
-    toolVersion = "10.12.4"
-    def rootProjectPath = rootProject.name == 'testcontainers-java' ? "" : "../"
-    configFile = rootProject.layout.projectDirectory.file(rootProjectPath + "config/checkstyle/checkstyle.xml").asFile
-}
-
-spotless {
-    java {
-        toggleOffOn()
-        removeUnusedImports()
-        trimTrailingWhitespace()
-        endWithNewline()
-
-        prettier(['prettier': '2.5.1', 'prettier-plugin-java': '1.6.1'])
-            .config([
-                'parser'    : 'java',
-                'tabWidth'  : 4,
-                'printWidth': 120
-            ])
-
-        importOrder('', 'java', 'javax', '\\#')
-    }
-    groovyGradle {
-        target '**/*.groovy'
-        greclipse('4.26')
-    }
 }
 
 java {
@@ -50,10 +19,8 @@ java {
     javadoc.options.encoding = 'UTF-8'
 }
 
-tasks.withType(SpotlessApply).configureEach {
-        notCompatibleWithConfigurationCache("https://github.com/diffplug/spotless/issues/644")
-}
-
-tasks.withType(SpotlessCheck).configureEach {
-    notCompatibleWithConfigurationCache("https://github.com/diffplug/spotless/issues/644")
+jar {
+    manifest {
+        attributes('Implementation-Version': project.getProperty("version"))
+    }
 }
