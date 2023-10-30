@@ -3,18 +3,7 @@ import com.diffplug.gradle.spotless.SpotlessCheck
 
 plugins {
     id 'java'
-    id 'checkstyle'
     id 'com.diffplug.spotless'
-}
-
-repositories {
-    mavenCentral()
-}
-
-checkstyle {
-    toolVersion = "10.12.4"
-    def rootProjectPath = rootProject.name == 'testcontainers-java' ? "" : "../"
-    configFile = rootProject.layout.projectDirectory.file(rootProjectPath + "config/checkstyle/checkstyle.xml").asFile
 }
 
 spotless {
@@ -39,19 +28,8 @@ spotless {
     }
 }
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
-    compileJava.options.encoding = 'UTF-8'
-    compileTestJava.options.encoding = 'UTF-8'
-    javadoc.options.encoding = 'UTF-8'
-}
-
 tasks.withType(SpotlessApply).configureEach {
-        notCompatibleWithConfigurationCache("https://github.com/diffplug/spotless/issues/644")
+    notCompatibleWithConfigurationCache("https://github.com/diffplug/spotless/issues/644")
 }
 
 tasks.withType(SpotlessCheck).configureEach {

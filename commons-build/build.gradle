@@ -8,6 +8,6 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.diffplug.spotless:spotless-plugin-gradle:6.13.0'
+    implementation 'com.diffplug.spotless:spotless-plugin-gradle:6.22.0'
     implementation 'me.champeau.gradle:japicmp-gradle-plugin:0.4.2'
 }
