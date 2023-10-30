@@ -1,5 +1,6 @@
 plugins {
     id "java-test-fixtures"
+    id 'testcontainers.module'
 }
 
 description = "Testcontainers :: R2DBC"

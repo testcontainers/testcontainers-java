@@ -1,0 +1,4 @@
+plugins {
+    id 'testcontainers.java-conventions'
+    id 'testcontainers.publishing'
+}

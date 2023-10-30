@@ -1,3 +1,5 @@
+apply plugin: 'testcontainers.module'
+
 description = "Testcontainers :: HiveMQ"
 
 dependencies {

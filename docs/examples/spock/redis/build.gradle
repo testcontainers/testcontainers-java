@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'groovy'
+    id 'testcontainers.java-conventions'
 }
 
 dependencies {

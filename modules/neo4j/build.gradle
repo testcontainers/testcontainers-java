@@ -1,3 +1,5 @@
+apply plugin: 'testcontainers.module'
+
 description = "Testcontainers :: Neo4j"
 
 def generatedResourcesDir = new File(project.buildDir, "generated-resources")

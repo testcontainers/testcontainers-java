@@ -30,7 +30,6 @@ subprojects {
     apply plugin: 'idea'
     apply plugin: 'io.franzbecker.gradle-lombok'
     apply from: "$rootDir/gradle/shading.gradle"
-    apply plugin: 'testcontainers.java-conventions'
 
     group = "org.testcontainers"
 
@@ -66,15 +65,10 @@ subprojects {
         project.sourceSets.main.java.srcDirs.find { it.exists() }
     }
 
-    // specific modules should be excluded from publication
-    if ( ! ["test-support", "jdbc-test"].contains(it.name) && !it.path.startsWith(":docs:") && it != project(":docs") ) {
-        apply from: "$rootDir/gradle/publishing.gradle"
-
-        if (it.name != "bom") {
-            apply plugin: "me.champeau.gradle.japicmp"
-            tasks.register('japicmp', me.champeau.gradle.japicmp.JapicmpTask)
-            apply from: "$rootDir/gradle/japicmp.gradle"
-        }
+    if (it.name != "bom") {
+        apply plugin: "me.champeau.gradle.japicmp"
+        tasks.register('japicmp', me.champeau.gradle.japicmp.JapicmpTask)
+        apply from: "$rootDir/gradle/japicmp.gradle"
     }
 
     test {

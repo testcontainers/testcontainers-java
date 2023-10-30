@@ -1,4 +1,9 @@
+plugins {
+    id 'testcontainers.module'
+}
+
 apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'testcontainers.module'
 
 description = "Testcontainers Core"
 
