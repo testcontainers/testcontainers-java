@@ -157,6 +157,26 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     @Deprecated
     SELF withFileSystemBind(String hostPath, String containerPath, BindMode mode);
 
+
+    /**
+     * Adds a volume with file system binding.
+     *
+     * @param hostPath the file system path on the host
+     * @param containerPath the file system path inside the container
+     * @param mode the bind mode
+     * @return this
+     */
+    SELF withVolume(String hostPath, String containerPath, BindMode mode);
+
+    /**
+     * Adds a temporary volume.
+     *
+     * @param containerPath the file system path inside the container
+     * @return this
+     */
+    SELF withVolume(String containerPath);
+
+
     /**
      * Adds container volumes.
      *

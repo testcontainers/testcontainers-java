@@ -237,6 +237,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private boolean hostAccessible = false;
 
+    @NonNull
+    private List<Volume> volumes = new ArrayList<>();
+
     private final Set<CreateContainerCmdModifier> createContainerCmdModifiers = loadCreateContainerCmdCustomizers();
 
     private Set<CreateContainerCmdModifier> loadCreateContainerCmdCustomizers() {
@@ -911,6 +914,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             combinedLabels.putAll(createCommand.getLabels());
         }
 
+        createCommand.withVolumes(volumes);
+
         createCommand.withLabels(combinedLabels);
     }
 
@@ -1078,6 +1083,25 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public SELF withFileSystemBind(String hostPath, String containerPath, BindMode mode) {
         addFileSystemBind(hostPath, containerPath, mode);
+        return self();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public SELF withVolume(String hostPath, String containerPath, BindMode mode) {
+        addFileSystemBind(hostPath, containerPath, mode);
+        return self();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public SELF withVolume(String containerPath) {
+        Volume volume = new Volume(containerPath);
+        this.volumes.add(volume);
         return self();
     }
 
