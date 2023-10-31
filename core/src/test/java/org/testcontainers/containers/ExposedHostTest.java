@@ -49,7 +49,7 @@ public class ExposedHostTest {
 
     @Test
     public void testExposedHostAfterContainerIsStarted() {
-        try (GenericContainer<?> container = new GenericContainer<>(tinyImage()).withAccessToHost(true)) {
+        try (GenericContainer<?> container = new GenericContainer<>(tinyContainerDef()).withAccessToHost(true)) {
             container.start();
             Testcontainers.exposeHostPorts(server.getAddress().getPort());
             assertResponse(container, server.getAddress().getPort());
@@ -59,14 +59,17 @@ public class ExposedHostTest {
     @Test
     public void testExposedHost() {
         Testcontainers.exposeHostPorts(server.getAddress().getPort());
-        assertResponse(new GenericContainer<>(tinyImage()), server.getAddress().getPort());
+        assertResponse(new GenericContainer<>(tinyContainerDef()), server.getAddress().getPort());
     }
 
     @Test
     public void testExposedHostWithNetwork() {
         Testcontainers.exposeHostPorts(server.getAddress().getPort());
         try (Network network = Network.newNetwork()) {
-            assertResponse(new GenericContainer<>(tinyImage()).withNetwork(network), server.getAddress().getPort());
+            assertResponse(
+                new GenericContainer<>(tinyContainerDef()).withNetwork(network),
+                server.getAddress().getPort()
+            );
         }
     }
 
@@ -75,8 +78,8 @@ public class ExposedHostTest {
         Testcontainers.exposeHostPorts(ImmutableMap.of(server.getAddress().getPort(), 80));
         Testcontainers.exposeHostPorts(ImmutableMap.of(server.getAddress().getPort(), 81));
 
-        assertResponse(new GenericContainer<>(tinyImage()), 80);
-        assertResponse(new GenericContainer<>(tinyImage()), 81);
+        assertResponse(new GenericContainer<>(tinyContainerDef()), 80);
+        assertResponse(new GenericContainer<>(tinyContainerDef()), 81);
     }
 
     @SneakyThrows
@@ -94,7 +97,7 @@ public class ExposedHostTest {
         }
     }
 
-    private ContainerDef tinyImage() {
+    private ContainerDef tinyContainerDef() {
         return new TinyContainerDef();
     }
 
