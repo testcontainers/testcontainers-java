@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -46,7 +47,7 @@ class ContainerDef {
     @Getter
     private Network network;
 
-    Set<String> networkAliases = new HashSet<>();
+    Set<String> networkAliases = new LinkedHashSet<>();
 
     @Getter
     private String networkMode;
@@ -256,7 +257,7 @@ class ContainerDef {
     }
 
     public Set<String> getNetworkAliases() {
-        return new HashSet<>(this.networkAliases);
+        return new LinkedHashSet<>(this.networkAliases);
     }
 
     protected void setNetworkAliases(Set<String> aliases) {

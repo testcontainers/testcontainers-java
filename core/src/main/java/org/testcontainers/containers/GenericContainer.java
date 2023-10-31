@@ -216,7 +216,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     ContainerDef createContainerDef() {
         ContainerDef def = new ContainerDef();
-        def.addNetworkAliases("tc-" + Base58.randomString(8));
+        def.addNetworkAlias("tc-" + Base58.randomString(8));
         return def;
     }
 
