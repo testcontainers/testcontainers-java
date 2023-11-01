@@ -83,6 +83,11 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         return (KafkaContainerDef) super.getContainerDef();
     }
 
+    @Override
+    StartedKafkaContainer getStartedContainer() {
+        return (StartedKafkaContainer) super.getStartedContainer();
+    }
+
     public KafkaContainer withEmbeddedZookeeper() {
         if (this.kraftEnabled) {
             throw new IllegalStateException("Cannot configure Zookeeper when using Kraft mode");
@@ -133,7 +138,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     }
 
     public String getBootstrapServers() {
-        return String.format("PLAINTEXT://%s:%s", getHost(), getMappedPort(KAFKA_PORT));
+        return getStartedContainer().getBootstrapServers();
     }
 
     @Override
@@ -245,7 +250,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         return String.format("BROKER://%s:%s", containerInfo.getConfig().getHostName(), "9092");
     }
 
-    private static class KafkaContainerDef extends ContainerDef {
+    private static class KafkaContainerDef extends BaseContainerDef {
 
         private final Set<Supplier<String>> listeners = new HashSet<>();
 
@@ -345,6 +350,23 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
             addEnvVar("KAFKA_CONTROLLER_LISTENER_NAMES", "CONTROLLER");
 
             setWaitStrategy(Wait.forLogMessage(".*Transitioning from RECOVERY to RUNNING.*", 1));
+        }
+
+        @Override
+        protected StartedKafkaContainer toStarted(ContainerState containerState) {
+            return new KafkaStarted(containerState);
+        }
+    }
+
+    private static class KafkaStarted extends BaseContainerDef.Started implements StartedKafkaContainer {
+
+        public KafkaStarted(ContainerState containerState) {
+            super(containerState);
+        }
+
+        @Override
+        public String getBootstrapServers() {
+            return String.format("PLAINTEXT://%s:%s", getHost(), getMappedPort(KAFKA_PORT));
         }
     }
 }

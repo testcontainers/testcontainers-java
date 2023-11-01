@@ -196,7 +196,7 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
         return execCheckRsInit.getExitCode() == CONTAINER_EXIT_CODE_OK;
     }
 
-    private static class MongoDBContainerDef extends ContainerDef {
+    private static class MongoDBContainerDef extends BaseContainerDef {
 
         private static final int MONGODB_INTERNAL_PORT = 27017;
 
@@ -210,6 +210,27 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
             setCommand("-c", "while [ ! -f " + STARTER_SCRIPT + " ]; do sleep 0.1; done; " + STARTER_SCRIPT);
             setWaitStrategy(Wait.forLogMessage("(?i).*mongos ready.*", 1));
             setEntrypoint("sh");
+        }
+
+        @Override
+        protected StartedMongoDBContainer toStarted(ContainerState containerState) {
+            return new MongoDBStarted(containerState);
+        }
+    }
+
+    private static class MongoDBStarted extends BaseContainerDef.Started implements StartedMongoDBContainer {
+
+        public MongoDBStarted(ContainerState containerState) {
+            super(containerState);
+        }
+
+        @Override
+        public String getConnectionString() {
+            return String.format(
+                "mongodb://%s:%d",
+                getHost(),
+                getMappedPort(MongoDBContainerDef.MONGODB_INTERNAL_PORT)
+            );
         }
     }
 }

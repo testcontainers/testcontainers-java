@@ -212,16 +212,22 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private final Set<CreateContainerCmdModifier> createContainerCmdModifiers = loadCreateContainerCmdCustomizers();
 
-    private ContainerDef containerDef;
+    private BaseContainerDef containerDef;
 
-    ContainerDef createContainerDef() {
-        ContainerDef def = new ContainerDef();
+    private StartedContainer startedContainer;
+
+    BaseContainerDef createContainerDef() {
+        BaseContainerDef def = new ContainerDef();
         def.addNetworkAlias("tc-" + Base58.randomString(8));
         return def;
     }
 
-    ContainerDef getContainerDef() {
+    BaseContainerDef getContainerDef() {
         return this.containerDef;
+    }
+
+    StartedContainer getStartedContainer() {
+        return this.startedContainer;
     }
 
     private Set<CreateContainerCmdModifier> loadCreateContainerCmdCustomizers() {
@@ -261,7 +267,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         this(new RemoteDockerImage(image));
     }
 
-    GenericContainer(@NonNull final ContainerDef containerDef) {
+    GenericContainer(@NonNull final BaseContainerDef containerDef) {
         this.image = containerDef.getImage();
         this.containerDef = containerDef;
     }
@@ -375,6 +381,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     private void tryStart() {
+        this.startedContainer = this.containerDef.toStarted(this);
         try {
             String dockerImageName = getDockerImageName();
             logger().debug("Starting container: {}", dockerImageName);
