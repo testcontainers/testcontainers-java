@@ -1,8 +1,8 @@
-package org.testcontainers.containers.r2dbc;
+package org.testcontainers.oracle.r2dbc;
 
 import io.r2dbc.spi.ConnectionFactoryOptions;
-import org.testcontainers.containers.OracleContainer;
-import org.testcontainers.containers.OracleR2DBCDatabaseContainer;
+import org.testcontainers.oracle.OracleContainer;
+import org.testcontainers.oracle.OracleR2DBCDatabaseContainer;
 import org.testcontainers.r2dbc.AbstractR2DBCDatabaseContainerTest;
 
 public class OracleR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseContainerTest<OracleContainer> {

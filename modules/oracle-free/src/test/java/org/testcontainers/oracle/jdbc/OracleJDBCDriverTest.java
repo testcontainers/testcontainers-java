@@ -1,4 +1,4 @@
-package org.testcontainers.containers.jdbc;
+package org.testcontainers.oracle.jdbc;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;

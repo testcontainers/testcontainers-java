@@ -1,8 +1,8 @@
 package org.testcontainers.junit.oracle;
 
 import org.junit.Test;
-import org.testcontainers.containers.OracleContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
+import org.testcontainers.oracle.OracleContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import java.sql.ResultSet;

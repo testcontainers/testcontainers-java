@@ -2,6 +2,7 @@ package org.testcontainers.oracle;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
@@ -11,7 +12,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Future;
 
 /**
  * Testcontainers implementation for Oracle Database Free.
@@ -68,17 +68,11 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     public OracleContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
-        preconfigure();
-    }
-
-    public OracleContainer(Future<String> dockerImageName) {
-        super(dockerImageName);
         this.waitStrategy =
             new LogMessageWaitStrategy()
                 .withRegEx(".*DATABASE IS READY TO USE!.*\\s")
                 .withTimes(1)
                 .withStartupTimeout(Duration.of(DEFAULT_STARTUP_TIMEOUT_SECONDS, ChronoUnit.SECONDS));
-
         withConnectTimeoutSeconds(DEFAULT_CONNECT_TIMEOUT_SECONDS);
         addExposedPorts(ORACLE_PORT);
     }

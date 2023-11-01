@@ -1,4 +1,4 @@
-package org.testcontainers.containers;
+package org.testcontainers.oracle;
 
 import com.google.auto.service.AutoService;
 import io.r2dbc.spi.ConnectionFactoryMetadata;

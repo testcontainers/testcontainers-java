@@ -1,4 +1,4 @@
-package org.testcontainers.containers;
+package org.testcontainers.oracle;
 
 import io.r2dbc.spi.ConnectionFactoryOptions;
 import lombok.RequiredArgsConstructor;

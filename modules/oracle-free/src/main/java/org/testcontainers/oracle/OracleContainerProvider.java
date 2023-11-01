@@ -1,5 +1,7 @@
-package org.testcontainers.containers;
+package org.testcontainers.oracle;
 
+import org.testcontainers.containers.JdbcDatabaseContainer;
+import org.testcontainers.containers.JdbcDatabaseContainerProvider;
 import org.testcontainers.utility.DockerImageName;
 
 /**
