@@ -1,4 +1,4 @@
-package org.testcontainers.containers;
+package org.testcontainers.oracle;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -22,7 +22,7 @@ import java.util.concurrent.Future;
  */
 public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
-    public static final String NAME = "oracle";
+    static final String NAME = "oracle";
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("gvenzl/oracle-free");
 
@@ -73,10 +73,6 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     public OracleContainer(Future<String> dockerImageName) {
         super(dockerImageName);
-        preconfigure();
-    }
-
-    private void preconfigure() {
         this.waitStrategy =
             new LogMessageWaitStrategy()
                 .withRegEx(".*DATABASE IS READY TO USE!.*\\s")
