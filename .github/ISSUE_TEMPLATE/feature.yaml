@@ -38,7 +38,8 @@ body:
         - MySQL
         - Neo4j
         - NGINX
-        - Oracle-XE
+        - Oracle Free
+        - Oracle XE
         - OrientDB
         - PostgreSQL
         - QuestDB

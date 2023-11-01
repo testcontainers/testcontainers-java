@@ -62,6 +62,7 @@
 "modules/nginx":
   - modules/nginx/**/*
 "modules/oracle":
+  - modules/oracle-free/**/*
   - modules/oracle-xe/**/*
 "modules/orientdb":
   - modules/orientdb/**/*
