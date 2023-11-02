@@ -3,10 +3,18 @@ Thanks for contributing to Testcontainers. Please review the following notes bef
 submitting a pull request.
 
 New Modules:
-Make sure to add it to `bug_report.yaml`, `enhancement.yaml` and `feature.yaml`.
-Also, add it to `dependabot.yml` and `labeler.yml`.
 
-Before committing, please run `./gradlew checkstyleMain checkstyleTest spotlessApply` and fix any issues that occur.
+If you are contributing a new module, please add your module name to the following files:
+
+* `./.github/ISSUE_TEMPLATE/bug_report.yaml`
+* `./.github/ISSUE_TEMPLATE/enhancement.yaml`
+* `./.github/ISSUE_TEMPLATE/feature.yaml`
+* `./.github/dependabot.yml`
+* `./.github/labeler.yml`
+
+Also make sure that your new module has the appropriate documentation under `./docs/modules/`
+
+Before committing any change, please run `./gradlew checkstyleMain checkstyleTest spotlessApply` and fix any issues that occur.
 
 Dependency Upgrades:
 Please do not open a pull request to update only a version dependency. Existing process will perform
