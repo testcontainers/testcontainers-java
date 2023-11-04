@@ -2,22 +2,9 @@ pluginManagement {
     includeBuild 'commons-build'
 }
 
-buildscript {
-    repositories {
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-    }
-    dependencies {
-        classpath "com.gradle.enterprise:com.gradle.enterprise.gradle.plugin:3.15.1"
-        classpath "com.gradle:common-custom-user-data-gradle-plugin:1.12"
-        classpath "org.gradle.toolchains:foojay-resolver:0.7.0"
-    }
+plugins {
+    id "testcontainers.settings-conventions"
 }
-
-apply plugin: 'com.gradle.enterprise'
-apply plugin: "com.gradle.common-custom-user-data-gradle-plugin"
-apply plugin: "org.gradle.toolchains.foojay-resolver-convention"
 
 rootProject.name = 'testcontainers-java'
 

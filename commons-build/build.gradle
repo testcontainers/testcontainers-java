@@ -10,4 +10,7 @@ repositories {
 dependencies {
     implementation 'com.diffplug.spotless:spotless-plugin-gradle:6.22.0'
     implementation 'me.champeau.gradle:japicmp-gradle-plugin:0.4.2'
+    implementation 'com.gradle:common-custom-user-data-gradle-plugin:1.11.1'
+    implementation 'com.gradle:gradle-enterprise-gradle-plugin:3.15.1'
+    implementation 'org.gradle.toolchains:foojay-resolver:0.7.0'
 }
