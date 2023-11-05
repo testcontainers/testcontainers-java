@@ -3,7 +3,7 @@ apply plugin: 'testcontainers.module'
 description = "Testcontainers :: MinIO"
 
 dependencies {
-    api project(':testcontainers')
+    api projects.testcontainers
 
     testImplementation("io.minio:minio:8.5.6")
     testImplementation 'org.assertj:assertj-core:3.24.2'

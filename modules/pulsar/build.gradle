@@ -3,7 +3,7 @@ apply plugin: 'testcontainers.module'
 description = "Testcontainers :: Pulsar"
 
 dependencies {
-    api project(':testcontainers')
+    api projects.testcontainers
 
     testImplementation group: 'org.apache.pulsar', name: 'pulsar-client', version: '3.1.0'
     testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.24.2'

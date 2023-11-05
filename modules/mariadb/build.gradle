@@ -6,14 +6,14 @@ dependencies {
     annotationProcessor 'com.google.auto.service:auto-service:1.1.1'
     compileOnly 'com.google.auto.service:auto-service:1.1.1'
 
-    api project(':jdbc')
+    api projects.jdbc
 
-    compileOnly project(':r2dbc')
+    compileOnly projects.r2dbc
     compileOnly 'org.mariadb:r2dbc-mariadb:1.0.3'
 
-    testImplementation project(':jdbc-test')
+    testImplementation projects.jdbcTest
     testImplementation 'org.mariadb.jdbc:mariadb-java-client:3.2.0'
 
-    testImplementation testFixtures(project(':r2dbc'))
+    testImplementation testFixtures(projects.r2dbc)
     testRuntimeOnly 'org.mariadb:r2dbc-mariadb:1.0.3'
 }

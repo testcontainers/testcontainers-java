@@ -6,17 +6,17 @@ dependencies {
     annotationProcessor 'com.google.auto.service:auto-service:1.1.1'
     compileOnly 'com.google.auto.service:auto-service:1.1.1'
 
-    api project(':jdbc')
+    api projects.jdbc
 
-    compileOnly project(':r2dbc')
+    compileOnly projects.r2dbc
     compileOnly 'io.r2dbc:r2dbc-mssql:1.0.2.RELEASE'
 
-    testImplementation project(':jdbc-test')
+    testImplementation projects.jdbcTest
     testImplementation 'com.microsoft.sqlserver:mssql-jdbc:12.4.1.jre8'
 
-    testImplementation project(':r2dbc')
+    testImplementation projects.r2dbc
     testRuntimeOnly 'io.r2dbc:r2dbc-mssql:1.0.2.RELEASE'
 
     // MSSQL's wait strategy requires the JDBC driver
-    testImplementation testFixtures(project(':r2dbc'))
+    testImplementation testFixtures(projects.r2dbc)
 }

@@ -3,7 +3,7 @@ apply plugin: 'testcontainers.module'
 description = "Testcontainers :: MockServer"
 
 dependencies {
-    api project(':testcontainers')
+    api projects.testcontainers
 
     testImplementation 'org.mock-server:mockserver-client-java:5.15.0'
     testImplementation 'org.assertj:assertj-core:3.24.2'

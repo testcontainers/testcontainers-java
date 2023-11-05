@@ -3,8 +3,8 @@ apply plugin: 'testcontainers.module'
 description = "Testcontainers :: JDBC :: YugabyteDB"
 
 dependencies {
-    api project(':jdbc')
-    testImplementation project(':jdbc-test')
+    api projects.jdbc
+    testImplementation projects.jdbcTest
     // YCQL driver
     testImplementation 'com.yugabyte:java-driver-core:4.6.0-yb-12'
     // YSQL driver

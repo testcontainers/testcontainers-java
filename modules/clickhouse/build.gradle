@@ -3,10 +3,10 @@ apply plugin: 'testcontainers.module'
 description = "Testcontainers :: JDBC :: ClickHouse"
 
 dependencies {
-    api project(':testcontainers')
-    api project(':jdbc')
+    api projects.testcontainers
+    api projects.jdbc
 
-    testImplementation project(':jdbc-test')
+    testImplementation projects.jdbcTest
     testRuntimeOnly 'ru.yandex.clickhouse:clickhouse-jdbc:0.3.2'
     testImplementation 'org.assertj:assertj-core:3.24.2'
 }

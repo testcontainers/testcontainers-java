@@ -6,15 +6,15 @@ dependencies {
     annotationProcessor 'com.google.auto.service:auto-service:1.1.1'
     compileOnly 'com.google.auto.service:auto-service:1.1.1'
 
-    api project(':jdbc')
+    api projects.jdbc
 
-    compileOnly project(':r2dbc')
+    compileOnly projects.r2dbc
     compileOnly 'io.asyncer:r2dbc-mysql:1.0.5'
 
-    testImplementation project(':jdbc-test')
+    testImplementation projects.jdbcTest
     testRuntimeOnly 'mysql:mysql-connector-java:8.0.33'
 
-    testImplementation testFixtures(project(':r2dbc'))
+    testImplementation testFixtures(projects.r2dbc)
     testRuntimeOnly 'io.asyncer:r2dbc-mysql:1.0.5'
 
     compileOnly 'org.jetbrains:annotations:24.0.1'

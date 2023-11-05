@@ -3,9 +3,9 @@ apply plugin: 'testcontainers.module'
 description = "Testcontainers :: JDBC :: Presto"
 
 dependencies {
-    api project(':jdbc')
+    api projects.jdbc
 
-    testImplementation project(':jdbc-test')
+    testImplementation projects.jdbcTest
     testRuntimeOnly 'io.prestosql:presto-jdbc:350'
     compileOnly 'org.jetbrains:annotations:24.0.1'
 }

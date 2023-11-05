@@ -3,7 +3,7 @@ apply plugin: 'testcontainers.module'
 description = "Testcontainers :: Selenium"
 
 dependencies {
-    api project(':testcontainers')
+    api projects.testcontainers
 
     provided 'org.seleniumhq.selenium:selenium-remote-driver:4.10.0'
     provided 'org.seleniumhq.selenium:selenium-chrome-driver:4.10.0'
@@ -14,7 +14,7 @@ dependencies {
     testImplementation 'org.seleniumhq.selenium:selenium-support'
 
     testImplementation 'org.mortbay.jetty:jetty:6.1.26'
-    testImplementation project(':nginx')
+    testImplementation projects.nginx
     testImplementation 'org.assertj:assertj-core:3.24.2'
 
     compileOnly 'org.jetbrains:annotations:24.0.1'

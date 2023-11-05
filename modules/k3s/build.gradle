@@ -3,7 +3,7 @@ apply plugin: 'testcontainers.module'
 description = "Testcontainers :: K3S"
 
 dependencies {
-    api project(":testcontainers")
+    api projects.testcontainers
 
     // https://youtu.be/otCpCn0l4Wo
     // The core module depends on jackson-databind 2.8.x for backward compatibility.

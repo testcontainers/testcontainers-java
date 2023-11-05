@@ -3,7 +3,7 @@ apply plugin: 'testcontainers.module'
 description = "Testcontainers :: MongoDB"
 
 dependencies {
-    api project(':testcontainers')
+    api projects.testcontainers
 
     testImplementation("org.mongodb:mongodb-driver-sync:4.11.0")
     testImplementation 'org.assertj:assertj-core:3.24.2'

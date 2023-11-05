@@ -3,7 +3,7 @@ apply plugin: 'testcontainers.module'
 description = "Testcontainers :: JDBC"
 
 dependencies {
-    api project(':database-commons')
+    api projects.databaseCommons
 
     compileOnly 'org.jetbrains:annotations:24.0.1'
     testImplementation 'commons-dbutils:commons-dbutils:1.8.1'

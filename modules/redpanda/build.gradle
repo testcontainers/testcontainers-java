@@ -3,7 +3,7 @@ apply plugin: 'testcontainers.module'
 description = "Testcontainers :: Redpanda"
 
 dependencies {
-    api project(':testcontainers')
+    api projects.testcontainers
     shaded 'org.freemarker:freemarker:2.3.32'
 
     testImplementation 'org.apache.kafka:kafka-clients:3.6.0'

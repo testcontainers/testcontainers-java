@@ -3,7 +3,7 @@ apply plugin: 'testcontainers.module'
 description = "Testcontainers :: Solr"
 
 dependencies {
-    api project(':testcontainers')
+    api projects.testcontainers
     // TODO use JDK's HTTP client and/or Apache HttpClient5
     shaded 'com.squareup.okhttp3:okhttp:4.12.0'
 

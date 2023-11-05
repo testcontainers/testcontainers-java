@@ -3,7 +3,7 @@ apply plugin: 'testcontainers.module'
 description = "Testcontainers :: Toxiproxy"
 
 dependencies {
-    api project(':testcontainers')
+    api projects.testcontainers
     api 'eu.rekawek.toxiproxy:toxiproxy-java:2.1.7'
 
     testImplementation 'redis.clients:jedis:3.0.1'

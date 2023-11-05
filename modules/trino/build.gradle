@@ -3,9 +3,9 @@ apply plugin: 'testcontainers.module'
 description = "Testcontainers :: JDBC :: Trino"
 
 dependencies {
-    api project(':jdbc')
+    api projects.jdbc
 
-    testImplementation project(':jdbc-test')
+    testImplementation projects.jdbcTest
     testRuntimeOnly 'io.trino:trino-jdbc:430'
     compileOnly 'org.jetbrains:annotations:24.0.1'
 }

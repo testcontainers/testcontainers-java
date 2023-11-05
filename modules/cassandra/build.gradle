@@ -9,7 +9,7 @@ configurations.all {
 }
 
 dependencies {
-    api project(":database-commons")
+    api projects.databaseCommons
     api "com.datastax.cassandra:cassandra-driver-core:3.10.0"
 
     testImplementation 'com.datastax.oss:java-driver-core:4.17.0'

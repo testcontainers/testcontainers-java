@@ -3,11 +3,11 @@ apply plugin: 'testcontainers.module'
 description = "Testcontainers :: QuestDB"
 
 dependencies {
-    api project(':testcontainers')
-    api project(':jdbc')
+    api projects.testcontainers
+    api projects.jdbc
 
     testRuntimeOnly 'org.postgresql:postgresql:42.6.0'
-    testImplementation project(':jdbc-test')
+    testImplementation projects.jdbcTest
     testImplementation 'org.assertj:assertj-core:3.24.2'
     testImplementation 'org.questdb:questdb:7.3.3'
     testImplementation 'org.awaitility:awaitility:4.2.0'

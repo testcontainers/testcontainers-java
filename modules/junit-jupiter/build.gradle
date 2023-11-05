@@ -3,12 +3,12 @@ apply plugin: 'testcontainers.module'
 description = "Testcontainers :: JUnit Jupiter Extension"
 
 dependencies {
-    api project(':testcontainers')
+    api projects.testcontainers
     implementation platform('org.junit:junit-bom:5.10.0')
     implementation 'org.junit.jupiter:junit-jupiter-api'
 
-    testImplementation project(':mysql')
-    testImplementation project(':postgresql')
+    testImplementation projects.mysql
+    testImplementation projects.postgresql
     testImplementation 'com.zaxxer:HikariCP:4.0.3'
     testImplementation 'redis.clients:jedis:5.0.2'
     testImplementation 'org.apache.httpcomponents:httpclient:4.5.14'

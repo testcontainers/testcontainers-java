@@ -3,7 +3,7 @@ apply plugin: 'testcontainers.module'
 description = "Testcontainers :: Localstack"
 
 dependencies {
-    api project(':testcontainers')
+    api projects.testcontainers
 
     testImplementation platform("com.amazonaws:aws-java-sdk-bom:1.12.572")
     testImplementation 'com.amazonaws:aws-java-sdk-s3'
