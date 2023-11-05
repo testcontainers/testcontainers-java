@@ -38,17 +38,6 @@ subprojects {
         api.extendsFrom(provided)
     }
 
-    def postCheckCommand = properties["postCheckCommand"]
-    if (postCheckCommand) {
-        check.finalizedBy(tasks.create("postCheckExec", Exec) {
-            if (org.gradle.internal.os.OperatingSystem.current().isWindows()) {
-                commandLine('cmd', '/c', postCheckCommand)
-            } else {
-                commandLine('sh', '-c', postCheckCommand)
-            }
-        })
-    }
-
     dependencies {
         testImplementation 'ch.qos.logback:logback-classic:1.3.11'
     }
