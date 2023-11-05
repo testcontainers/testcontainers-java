@@ -1,5 +1,11 @@
 plugins {
     id 'testcontainers.java-conventions'
     id 'testcontainers.japicmp'
+    id 'testcontainers.lombok'
     id 'testcontainers.publishing'
+}
+
+javadoc {
+    dependsOn delombok
+    source = delombok.outputs
 }

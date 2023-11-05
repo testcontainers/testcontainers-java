@@ -11,7 +11,6 @@ buildscript {
 }
 
 plugins {
-    id 'io.franzbecker.gradle-lombok' version '5.0.0'
     id 'com.github.johnrengelman.shadow' version '8.1.1'
     id 'testcontainers.java-conventions'
 }
@@ -26,7 +25,6 @@ captainHook {
 
 subprojects {
     apply plugin: 'java-library'
-    apply plugin: 'io.franzbecker.gradle-lombok'
     apply from: "$rootDir/gradle/shading.gradle"
 
     group = "org.testcontainers"
@@ -38,23 +36,6 @@ subprojects {
     configurations {
         provided
         api.extendsFrom(provided)
-    }
-
-    lombok {
-        version = '1.18.30'
-    }
-
-
-    tasks.register('delombok', io.franzbecker.gradle.lombok.task.DelombokTask) {
-        outputs.cacheIf {
-            true
-        }
-        argumentProviders.addAll(
-            new org.testcontainers.build.DelombokArgumentProvider(srcDirs: project.sourceSets.main.java.srcDirs, outputDir: file("$buildDir/delombok"))
-        )
-    }
-    delombok.onlyIf {
-        project.sourceSets.main.java.srcDirs.find { it.exists() }
     }
 
     test {
@@ -93,11 +74,6 @@ subprojects {
                 commandLine('sh', '-c', postCheckCommand)
             }
         })
-    }
-
-    javadoc {
-        dependsOn delombok
-        source = delombok.outputs
     }
 
     dependencies {

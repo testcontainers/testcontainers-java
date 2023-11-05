@@ -1,0 +1,20 @@
+plugins {
+    id 'io.franzbecker.gradle-lombok'
+}
+
+lombok {
+    version = '1.18.30'
+}
+
+tasks.register('delombok', io.franzbecker.gradle.lombok.task.DelombokTask) {
+    outputs.cacheIf {
+        true
+    }
+    argumentProviders.addAll(
+        new org.testcontainers.build.DelombokArgumentProvider(srcDirs: project.sourceSets.main.java.srcDirs, outputDir: file("$buildDir/delombok"))
+    )
+}
+
+delombok.onlyIf {
+    project.sourceSets.main.java.srcDirs.find { it.exists() }
+}
