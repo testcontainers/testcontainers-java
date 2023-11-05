@@ -38,33 +38,6 @@ subprojects {
         api.extendsFrom(provided)
     }
 
-    test {
-        defaultCharacterEncoding = "UTF-8"
-        testLogging {
-            displayGranularity 1
-            showStackTraces = true
-            exceptionFormat = 'full'
-            events "STARTED", "PASSED", "FAILED", "SKIPPED"
-        }
-        ext.isCI = System.getenv("CI") != null
-        if (isCI) {
-            retry {
-                maxRetries = 2
-                maxFailures = 5
-                failOnPassedAfterRetry = false
-            }
-        }
-    }
-
-    tasks.withType(Test).all {
-        reports {
-            junitXml.outputPerTestCase = true
-        }
-    }
-
-    // Ensure that Javadoc generation is always tested
-    check.dependsOn(javadoc)
-
     def postCheckCommand = properties["postCheckCommand"]
     if (postCheckCommand) {
         check.finalizedBy(tasks.create("postCheckExec", Exec) {
