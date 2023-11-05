@@ -9,3 +9,6 @@ javadoc {
     dependsOn delombok
     source = delombok.outputs
 }
+
+// Ensure that Javadoc generation is always tested
+check.dependsOn(javadoc)
