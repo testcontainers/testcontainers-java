@@ -382,6 +382,13 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private void tryStart() {
         this.startedContainer = this.containerDef.toStarted(this);
+
+        ContainerLifecycleHooks containerLifecycle = this.startedContainer instanceof ContainerLifecycleHooks
+            ? (ContainerLifecycleHooks) this.startedContainer
+            : ContainerLifecycleHooks.EMPTY;
+
+        containerLifecycle.configure();
+
         try {
             String dockerImageName = getDockerImageName();
             logger().debug("Starting container: {}", dockerImageName);
@@ -490,6 +497,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
             // Tell subclasses that we're starting
             containerIsStarting(containerInfo, reused);
+            containerLifecycle.containerIsStarting(reused);
 
             // Wait until the container has reached the desired running state
             if (!this.startupCheckStrategy.waitUntilStartupSuccessful(this)) {
@@ -543,6 +551,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
             logger().info("Container {} started in {}", dockerImageName, Duration.between(startedAt, Instant.now()));
             containerIsStarted(containerInfo, reused);
+            containerLifecycle.containerIsStarted(reused);
         } catch (Exception e) {
             if (e instanceof UndeclaredThrowableException && e.getCause() instanceof Exception) {
                 e = (Exception) e.getCause();
