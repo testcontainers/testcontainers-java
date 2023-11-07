@@ -7,11 +7,13 @@ import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * Testcontainers implementation for Apache Kafka.
@@ -85,7 +87,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         if (this.kraftEnabled) {
             throw new IllegalStateException("Cannot configure Zookeeper when using Kraft mode");
         }
-        getContainerDef().withEmbeddedZookeeper();
+        this.externalZookeeperConnect = null;
         return self();
     }
 
@@ -94,7 +96,6 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
             throw new IllegalStateException("Cannot configure Zookeeper when using Kraft mode");
         }
         this.externalZookeeperConnect = connectString;
-        getContainerDef().withZookeeper(connectString);
         return self();
     }
 
@@ -104,7 +105,6 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         }
         verifyMinKraftVersion();
         this.kraftEnabled = true;
-        getContainerDef().withRaft();
         return self();
     }
 
@@ -140,8 +140,22 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     protected void configure() {
         getContainerDef().resolveListeners();
 
-        if (!this.kraftEnabled && this.externalZookeeperConnect == null) {
+        if (this.kraftEnabled) {
+            configureKraft();
+        } else {
+            configureZookeeper();
+        }
+    }
+
+    protected void configureKraft() {
+        getContainerDef().withRaft();
+    }
+
+    protected void configureZookeeper() {
+        if (this.externalZookeeperConnect == null) {
             getContainerDef().withEmbeddedZookeeper();
+        } else {
+            getContainerDef().withZookeeper(this.externalZookeeperConnect);
         }
     }
 
@@ -261,8 +275,12 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         }
 
         private void resolveListeners() {
-            Set<String> additionalKafkaListeners = new HashSet<>();
-            Set<String> additionalListenerSecurityProtocolMap = new HashSet<>();
+            Set<String> listeners = Arrays
+                .stream(this.envVars.get("KAFKA_LISTENERS").split(","))
+                .collect(Collectors.toSet());
+            Set<String> listenerSecurityProtocolMap = Arrays
+                .stream(this.envVars.get("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP").split(","))
+                .collect(Collectors.toSet());
 
             List<Supplier<String>> listenersToTransform = new ArrayList<>(this.listeners);
             for (int i = 0; i < listenersToTransform.size(); i++) {
@@ -272,21 +290,18 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
                 String listenerPort = listener.split(":")[1];
                 String listenerProtocol = String.format("%s://0.0.0.0:%s", protocol, listenerPort);
                 String protocolMap = String.format("%s:PLAINTEXT", protocol);
-                additionalKafkaListeners.add(listenerProtocol);
-                additionalListenerSecurityProtocolMap.add(protocolMap);
+                listeners.add(listenerProtocol);
+                listenerSecurityProtocolMap.add(protocolMap);
 
                 String host = listener.split(":")[0];
                 addNetworkAlias(host);
             }
 
-            String kafkaListeners = String.join(",", additionalKafkaListeners);
-            String kafkaListenerSecurityProtocolMap = String.join(",", additionalListenerSecurityProtocolMap);
+            String kafkaListeners = String.join(",", listeners);
+            String kafkaListenerSecurityProtocolMap = String.join(",", listenerSecurityProtocolMap);
 
-            this.envVars.computeIfPresent("KAFKA_LISTENERS", (k, v) -> String.join(",", v, kafkaListeners));
-            this.envVars.computeIfPresent(
-                    "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP",
-                    (k, v) -> String.join(",", v, kafkaListenerSecurityProtocolMap)
-                );
+            this.envVars.put("KAFKA_LISTENERS", kafkaListeners);
+            this.envVars.put("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", kafkaListenerSecurityProtocolMap);
         }
 
         void withListener(Supplier<String> listenerSupplier) {
