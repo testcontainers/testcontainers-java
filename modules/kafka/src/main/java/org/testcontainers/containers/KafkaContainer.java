@@ -24,8 +24,17 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     private static final String DEFAULT_TAG = "5.4.3";
 
+    @Deprecated
+    public static final int KAFKA_PORT = KafkaContainerDef.KAFKA_PORT;
+
+    @Deprecated
+    public static final int ZOOKEEPER_PORT = KafkaContainerDef.ZOOKEEPER_PORT;
+
     // https://docs.confluent.io/platform/7.0.0/release-notes/index.html#ak-raft-kraft
     private static final String MIN_KRAFT_TAG = "7.0.0";
+
+    @Deprecated
+    public static final String DEFAULT_CLUSTER_ID = KafkaContainerDef.DEFAULT_CLUSTER_ID;
 
     protected String externalZookeeperConnect = null;
 
@@ -115,6 +124,25 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     public String getBootstrapServers() {
         return getStartedContainer().getBootstrapServers();
+    }
+
+    @Override
+    protected void configure() {
+        getContainerDef().resolveListeners();
+
+        if (this.kraftEnabled) {
+            configureKraft();
+        } else {
+            configureZookeeper();
+        }
+    }
+
+    protected void configureKraft() {
+        getContainerDef().configureKraft();
+    }
+
+    protected void configureZookeeper() {
+        getContainerDef().configureZookeeper();
     }
 
     /**

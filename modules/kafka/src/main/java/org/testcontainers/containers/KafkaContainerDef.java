@@ -16,15 +16,15 @@ import java.util.stream.Collectors;
 
 class KafkaContainerDef extends BaseContainerDef {
 
-    public static final int KAFKA_PORT = 9093;
+    static final int KAFKA_PORT = 9093;
 
-    public static final int ZOOKEEPER_PORT = 2181;
+    static final int ZOOKEEPER_PORT = 2181;
 
     private static final String DEFAULT_INTERNAL_TOPIC_RF = "1";
 
     private static final String STARTER_SCRIPT = "/testcontainers_start.sh";
 
-    public static final String DEFAULT_CLUSTER_ID = "4L6g3nShT-eMCtK--X86sw";
+    static final String DEFAULT_CLUSTER_ID = "4L6g3nShT-eMCtK--X86sw";
 
     private static final String PROTOCOL_PREFIX = "TC";
 
@@ -75,6 +75,67 @@ class KafkaContainerDef extends BaseContainerDef {
         this.externalZookeeperConnect = externalZookeeperConnect;
     }
 
+    protected void configureKraft() {
+        this.envVars.computeIfAbsent("CLUSTER_ID", key -> clusterId);
+        this.envVars.computeIfAbsent("KAFKA_NODE_ID", key -> getEnvVars().get("KAFKA_BROKER_ID"));
+        addEnvVar(
+            "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP",
+            String.format("%s,CONTROLLER:PLAINTEXT", getEnvVars().get("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP"))
+        );
+        addEnvVar(
+            "KAFKA_LISTENERS",
+            String.format("%s,CONTROLLER://0.0.0.0:9094", getEnvVars().get("KAFKA_LISTENERS"))
+        );
+        addEnvVar("KAFKA_PROCESS_ROLES", "broker,controller");
+
+        String firstNetworkAlias = getNetworkAliases().stream().findFirst().orElse(null);
+        String networkAlias = getNetwork() != null ? firstNetworkAlias : "localhost";
+        String controllerQuorumVoters = String.format("%s@%s:9094", getEnvVars().get("KAFKA_NODE_ID"), networkAlias);
+        this.envVars.computeIfAbsent("KAFKA_CONTROLLER_QUORUM_VOTERS", key -> controllerQuorumVoters);
+        addEnvVar("KAFKA_CONTROLLER_LISTENER_NAMES", "CONTROLLER");
+
+        setWaitStrategy(Wait.forLogMessage(".*Transitioning from RECOVERY to RUNNING.*", 1));
+    }
+
+    protected void configureZookeeper() {
+        if (this.externalZookeeperConnect == null) {
+            addExposedTcpPort(ZOOKEEPER_PORT);
+            addEnvVar("KAFKA_ZOOKEEPER_CONNECT", "localhost:" + ZOOKEEPER_PORT);
+        } else {
+            addEnvVar("KAFKA_ZOOKEEPER_CONNECT", this.externalZookeeperConnect);
+        }
+    }
+
+    protected void resolveListeners() {
+        Set<String> allListeners = Arrays
+            .stream(this.envVars.get("KAFKA_LISTENERS").split(","))
+            .collect(Collectors.toSet());
+        Set<String> allListenerSecurityProtocolMap = Arrays
+            .stream(this.envVars.get("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP").split(","))
+            .collect(Collectors.toSet());
+
+        List<Supplier<String>> listenersToTransform = new ArrayList<>(listeners);
+        for (int i = 0; i < listenersToTransform.size(); i++) {
+            Supplier<String> listenerSupplier = listenersToTransform.get(i);
+            String protocol = String.format("%s-%d", PROTOCOL_PREFIX, i);
+            String listener = listenerSupplier.get();
+            String listenerPort = listener.split(":")[1];
+            String listenerProtocol = String.format("%s://0.0.0.0:%s", protocol, listenerPort);
+            String protocolMap = String.format("%s:PLAINTEXT", protocol);
+            allListeners.add(listenerProtocol);
+            allListenerSecurityProtocolMap.add(protocolMap);
+
+            String host = listener.split(":")[0];
+            addNetworkAlias(host);
+        }
+
+        String kafkaListeners = String.join(",", allListeners);
+        String kafkaListenerSecurityProtocolMap = String.join(",", allListenerSecurityProtocolMap);
+
+        this.envVars.put("KAFKA_LISTENERS", kafkaListeners);
+        this.envVars.put("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", kafkaListenerSecurityProtocolMap);
+    }
+
     @Override
     protected StartedKafkaContainer toStarted(ContainerState containerState) {
         return new KafkaStarted(containerState);
@@ -89,82 +150,6 @@ class KafkaContainerDef extends BaseContainerDef {
         @Override
         public String getBootstrapServers() {
             return String.format("PLAINTEXT://%s:%s", getHost(), getMappedPort(KAFKA_PORT));
-        }
-
-        @Override
-        public void configure() {
-            resolveListeners();
-
-            if (kraftEnabled) {
-                configureKraft();
-            } else {
-                configureZookeeper();
-            }
-        }
-
-        protected void configureKraft() {
-            envVars.computeIfAbsent("CLUSTER_ID", key -> clusterId);
-            envVars.computeIfAbsent("KAFKA_NODE_ID", key -> getEnvVars().get("KAFKA_BROKER_ID"));
-            addEnvVar(
-                "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP",
-                String.format("%s,CONTROLLER:PLAINTEXT", getEnvVars().get("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP"))
-            );
-            addEnvVar(
-                "KAFKA_LISTENERS",
-                String.format("%s,CONTROLLER://0.0.0.0:9094", getEnvVars().get("KAFKA_LISTENERS"))
-            );
-            addEnvVar("KAFKA_PROCESS_ROLES", "broker,controller");
-
-            String firstNetworkAlias = getNetworkAliases().stream().findFirst().orElse(null);
-            String networkAlias = getNetwork() != null ? firstNetworkAlias : "localhost";
-            String controllerQuorumVoters = String.format(
-                "%s@%s:9094",
-                getEnvVars().get("KAFKA_NODE_ID"),
-                networkAlias
-            );
-            envVars.computeIfAbsent("KAFKA_CONTROLLER_QUORUM_VOTERS", key -> controllerQuorumVoters);
-            addEnvVar("KAFKA_CONTROLLER_LISTENER_NAMES", "CONTROLLER");
-
-            setWaitStrategy(Wait.forLogMessage(".*Transitioning from RECOVERY to RUNNING.*", 1));
-        }
-
-        protected void configureZookeeper() {
-            if (externalZookeeperConnect == null) {
-                addExposedTcpPort(ZOOKEEPER_PORT);
-                addEnvVar("KAFKA_ZOOKEEPER_CONNECT", "localhost:" + ZOOKEEPER_PORT);
-            } else {
-                addEnvVar("KAFKA_ZOOKEEPER_CONNECT", externalZookeeperConnect);
-            }
-        }
-
-        private void resolveListeners() {
-            Set<String> allListeners = Arrays
-                .stream(envVars.get("KAFKA_LISTENERS").split(","))
-                .collect(Collectors.toSet());
-            Set<String> allListenerSecurityProtocolMap = Arrays
-                .stream(envVars.get("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP").split(","))
-                .collect(Collectors.toSet());
-
-            List<Supplier<String>> listenersToTransform = new ArrayList<>(listeners);
-            for (int i = 0; i < listenersToTransform.size(); i++) {
-                Supplier<String> listenerSupplier = listenersToTransform.get(i);
-                String protocol = String.format("%s-%d", PROTOCOL_PREFIX, i);
-                String listener = listenerSupplier.get();
-                String listenerPort = listener.split(":")[1];
-                String listenerProtocol = String.format("%s://0.0.0.0:%s", protocol, listenerPort);
-                String protocolMap = String.format("%s:PLAINTEXT", protocol);
-                allListeners.add(listenerProtocol);
-                allListenerSecurityProtocolMap.add(protocolMap);
-
-                String host = listener.split(":")[0];
-                addNetworkAlias(host);
-            }
-
-            String kafkaListeners = String.join(",", allListeners);
-            String kafkaListenerSecurityProtocolMap = String.join(",", allListenerSecurityProtocolMap);
-
-            envVars.put("KAFKA_LISTENERS", kafkaListeners);
-            envVars.put("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", kafkaListenerSecurityProtocolMap);
         }
 
         @Override
