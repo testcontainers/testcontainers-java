@@ -9,6 +9,12 @@ dependencies {
 
 tasks.japicmp {
     methodExcludes = [
-        "org.testcontainers.containers.MongoDBContainer#configure()"
+        "org.testcontainers.containers.MongoDBContainer#configure()",
+        "org.testcontainers.containers.MongoDBContainer#containerIsStarted(com.github.dockerjava.api.command.InspectContainerResponse, boolean)",
+        "org.testcontainers.containers.MongoDBContainer#containerIsStarting(com.github.dockerjava.api.command.InspectContainerResponse)"
+    ]
+
+    classExcludes = [
+        "org.testcontainers.containers.MongoDBContainer#ReplicaSetInitializationException",
     ]
 }
