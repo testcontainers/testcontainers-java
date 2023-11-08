@@ -25,7 +25,7 @@ import javax.net.ssl.TrustManagerFactory;
 /**
  * Testcontainers implementation for Elasticsearch.
  * <p>
- * Supported image: {@code docker.elastic.co/elasticsearch/elasticsearch}
+ * Supported image: {@code docker.elastic.co/elasticsearch/elasticsearch}, {@code elasticsearch}
  * <p>
  * Exposed ports:
  * <ul>
@@ -64,6 +64,8 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
         "docker.elastic.co/elasticsearch/elasticsearch-oss"
     );
 
+    private static final DockerImageName ELASTICSEARCH_IMAGE_NAME = DockerImageName.parse("elasticsearch");
+
     /**
      * Elasticsearch Default version
      */
@@ -100,7 +102,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
      */
     public ElasticsearchContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, DEFAULT_OSS_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, DEFAULT_OSS_IMAGE_NAME, ELASTICSEARCH_IMAGE_NAME);
         this.isOss = dockerImageName.isCompatibleWith(DEFAULT_OSS_IMAGE_NAME);
 
         withNetworkAliases("elasticsearch-" + Base58.randomString(6));
