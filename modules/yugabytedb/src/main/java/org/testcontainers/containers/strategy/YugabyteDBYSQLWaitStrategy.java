@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.containers.YugabyteDBYSQLContainer;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
+import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -27,14 +28,16 @@ import static org.rnorth.ducttape.unreliables.Unreliables.retryUntilSuccess;
 @Slf4j
 public final class YugabyteDBYSQLWaitStrategy extends AbstractWaitStrategy {
 
+    private final WaitStrategyTarget target;
+
     private static final String YSQL_EXTENDED_PROBE =
         "CREATE TABLE IF NOT EXISTS YB_SAMPLE(k int, v int, primary key(k, v))";
 
     private static final String YSQL_EXTENDED_PROBE_DROP_TABLE = "DROP TABLE IF EXISTS YB_SAMPLE";
 
     @Override
-    public void waitUntilReady() {
-        YugabyteDBYSQLContainer container = (YugabyteDBYSQLContainer) waitStrategyTarget;
+    public void waitUntilReady(WaitStrategyTarget target) {
+        YugabyteDBYSQLContainer container = (YugabyteDBYSQLContainer) target;
         retryUntilSuccess(
             (int) startupTimeout.getSeconds(),
             TimeUnit.SECONDS,
@@ -51,5 +54,10 @@ public final class YugabyteDBYSQLWaitStrategy extends AbstractWaitStrategy {
                 return true;
             }
         );
+    }
+
+    @Override
+    public void waitUntilReady() {
+        waitUntilReady(target);
     }
 }
