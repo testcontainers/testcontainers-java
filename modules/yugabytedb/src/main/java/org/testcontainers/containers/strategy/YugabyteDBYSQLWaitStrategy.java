@@ -30,8 +30,7 @@ public final class YugabyteDBYSQLWaitStrategy extends AbstractWaitStrategy {
     private static final String YSQL_EXTENDED_PROBE =
         "CREATE TABLE IF NOT EXISTS YB_SAMPLE(k int, v int, primary key(k, v))";
 
-    private static final String YSQL_EXTENDED_PROBE_DROP_TABLE =
-        "DROP TABLE IF EXISTS YB_SAMPLE";
+    private static final String YSQL_EXTENDED_PROBE_DROP_TABLE = "DROP TABLE IF EXISTS YB_SAMPLE";
 
     @Override
     public void waitUntilReady() {
