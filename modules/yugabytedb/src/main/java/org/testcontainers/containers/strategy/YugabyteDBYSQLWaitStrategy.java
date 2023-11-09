@@ -4,10 +4,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.containers.YugabyteDBYSQLContainer;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
-import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.concurrent.TimeUnit;
 
 import static org.rnorth.ducttape.unreliables.Unreliables.retryUntilSuccess;
@@ -27,32 +27,30 @@ import static org.rnorth.ducttape.unreliables.Unreliables.retryUntilSuccess;
 @Slf4j
 public final class YugabyteDBYSQLWaitStrategy extends AbstractWaitStrategy {
 
-    private static final String YSQL_TEST_QUERY = "SELECT 1";
+    private static final String YSQL_EXTENDED_PROBE =
+        "CREATE TABLE IF NOT EXISTS YB_SAMPLE(k int, v int, primary key(k, v))";
 
-    private final WaitStrategyTarget target;
+    private static final String YSQL_EXTENDED_PROBE_DROP_TABLE =
+        "DROP TABLE IF EXISTS YB_SAMPLE";
 
     @Override
-    public void waitUntilReady(WaitStrategyTarget target) {
-        YugabyteDBYSQLContainer container = (YugabyteDBYSQLContainer) target;
+    public void waitUntilReady() {
+        YugabyteDBYSQLContainer container = (YugabyteDBYSQLContainer) waitStrategyTarget;
         retryUntilSuccess(
             (int) startupTimeout.getSeconds(),
             TimeUnit.SECONDS,
             () -> {
                 getRateLimiter()
                     .doWhenReady(() -> {
-                        try (Connection con = container.createConnection(container.getJdbcUrl())) {
-                            con.createStatement().execute(YSQL_TEST_QUERY);
+                        try (Connection con = container.createConnection(""); Statement stmt = con.createStatement()) {
+                            stmt.execute(YSQL_EXTENDED_PROBE);
+                            stmt.execute(YSQL_EXTENDED_PROBE_DROP_TABLE);
                         } catch (SQLException ex) {
-                            log.error("Error connecting to the database", ex);
+                            throw new RuntimeException(ex);
                         }
                     });
                 return true;
             }
         );
-    }
-
-    @Override
-    public void waitUntilReady() {
-        waitUntilReady(target);
     }
 }

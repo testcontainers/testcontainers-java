@@ -57,7 +57,7 @@ public class YugabyteDBYSQLContainer extends JdbcDatabaseContainer<YugabyteDBYSQ
         super(imageName);
         imageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
         withExposedPorts(YSQL_PORT, MASTER_DASHBOARD_PORT, TSERVER_DASHBOARD_PORT);
-        waitingFor(new YugabyteDBYSQLWaitStrategy(this).withStartupTimeout(Duration.ofSeconds(60)));
+        waitingFor(new YugabyteDBYSQLWaitStrategy().withStartupTimeout(Duration.ofSeconds(60)));
         withCommand(ENTRYPOINT);
     }
 
@@ -153,5 +153,10 @@ public class YugabyteDBYSQLContainer extends JdbcDatabaseContainer<YugabyteDBYSQ
     public YugabyteDBYSQLContainer withPassword(final String password) {
         this.password = password;
         return this;
+    }
+
+    @Override
+    protected void waitUntilContainerStarted() {
+        getWaitStrategy().waitUntilReady(this);
     }
 }
