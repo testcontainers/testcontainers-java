@@ -12,11 +12,11 @@ public class BigQueryEmulatorContainer extends GenericContainer<BigQueryEmulator
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("ghcr.io/goccy/bigquery-emulator");
 
-    private static final int HTTP_PORT = 9050;
-
-    private static final int GRPC_PORT = 9060;
-
     private static final String PROJECT_ID = "test-project";
+
+    private int httpPort;
+    
+    private int grpcPort;
 
     public BigQueryEmulatorContainer(String image) {
         this(DockerImageName.parse(image));
@@ -25,15 +25,34 @@ public class BigQueryEmulatorContainer extends GenericContainer<BigQueryEmulator
     public BigQueryEmulatorContainer(DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
-        addExposedPorts(HTTP_PORT, GRPC_PORT);
-        withCommand("--project", PROJECT_ID);
+        httpPort = findFreePort();
+        grpcPort = findFreePort();
+        withCommand("--project="+ PROJECT_ID, "--port="+ httpPort, "--grpc-port="+ grpcPort);
+        addFixedExposedPort(httpPort, httpPort);
+        addFixedExposedPort(grpcPort, grpcPort);
     }
 
     public String getEmulatorHttpEndpoint() {
         return String.format("http://%s:%d", getHost(), getMappedPort(HTTP_PORT));
     }
 
+    public String getEmulatorHttpHostAndPort() {
+        return String.format("%s:%d", getHost(), httpPort);
+    }
+
+    public String getEmulatorGrpcHostAndPort() {
+        return String.format("%s:%d", getHost(), grpcPort);
+    }
+
     public String getProjectId() {
         return PROJECT_ID;
+    }
+
+    private static int findFreePort() {
+      try (ServerSocket serverSocket = new ServerSocket(0)) {
+        return serverSocket.getLocalPort();
+      } catch (IOException ex) {
+        throw new RuntimeException("could not find a free port", ex);
+      }
     }
 }
