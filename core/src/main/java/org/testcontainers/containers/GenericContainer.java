@@ -277,7 +277,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @Override
     public void setExposedPorts(List<Integer> exposedPorts) {
-        this.containerDef.setExposedPorts(exposedPorts.stream().map(ExposedPort::tcp).collect(Collectors.toSet()));
+        this.containerDef.setExposedPorts(exposedPorts.stream().map(ExposedPort::tcp).collect(Collectors.toList()));
     }
 
     /**

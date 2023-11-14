@@ -32,7 +32,7 @@ class ContainerDef {
     @Getter
     private RemoteDockerImage image;
 
-    Set<ExposedPort> exposedPorts = new HashSet<>();
+    List<ExposedPort> exposedPorts = new ArrayList<>();
 
     Set<PortBinding> portBindings = new HashSet<>();
 
@@ -149,11 +149,11 @@ class ContainerDef {
         setImage(new RemoteDockerImage(image));
     }
 
-    public Set<ExposedPort> getExposedPorts() {
-        return new HashSet<>(this.exposedPorts);
+    public List<ExposedPort> getExposedPorts() {
+        return new ArrayList<>(this.exposedPorts);
     }
 
-    protected void setExposedPorts(Set<ExposedPort> exposedPorts) {
+    protected void setExposedPorts(List<ExposedPort> exposedPorts) {
         this.exposedPorts.clear();
         this.exposedPorts.addAll(exposedPorts);
     }
