@@ -112,7 +112,9 @@ public class YugabyteDBYCQLTest {
     public void shouldStartWhenContainerIpIsUsedInWaitStrategy() {
         try (final YugabyteDBYCQLContainer ycqlContainer = new YugabyteDBYCQLContainer(IMAGE_NAME_2_18)) {
             ycqlContainer.start();
-            assertThat(performQuery(ycqlContainer, "SELECT release_version FROM system.local").wasApplied()).isTrue();
+            boolean isQueryExecuted = performQuery(ycqlContainer, "SELECT release_version FROM system.local")
+                .wasApplied();
+            assertThat(isQueryExecuted).isTrue();
         }
     }
 

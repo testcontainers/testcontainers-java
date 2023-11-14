@@ -103,12 +103,12 @@ public class YugabyteDBYSQLTest extends AbstractContainerDatabaseTest {
             assertThat(performQuery(ysqlContainer, "SELECT 1").getInt(1))
                 .as("A sample test query succeeds")
                 .isEqualTo(1);
-            assertThat(
-                performQuery(ysqlContainer, "SELECT EXISTS (SELECT FROM pg_tables WHERE tablename = 'YB_SAMPLE')")
-                    .getBoolean(1)
+            boolean tableExists = performQuery(
+                ysqlContainer,
+                "SELECT EXISTS (SELECT FROM pg_tables WHERE tablename = 'YB_SAMPLE')"
             )
-                .as("yb_sample table does not exists")
-                .isEqualTo(false);
+                .getBoolean(1);
+            assertThat(tableExists).as("yb_sample table does not exists").isFalse();
         }
     }
 }
