@@ -281,6 +281,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @Override
     public void setExposedPorts(List<Integer> exposedPorts) {
+        this.containerDef.exposedPorts.clear();
         for (Integer exposedPort : exposedPorts) {
             this.containerDef.addExposedTcpPort(exposedPort);
         }
