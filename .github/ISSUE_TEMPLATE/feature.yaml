@@ -32,13 +32,15 @@ body:
         - Kafka
         - LocalStack
         - MariaDB
+        - MinIO
         - MockServer
         - MongoDB
         - MSSQLServer
         - MySQL
         - Neo4j
         - NGINX
-        - Oracle-XE
+        - Oracle Free
+        - Oracle XE
         - OrientDB
         - PostgreSQL
         - QuestDB

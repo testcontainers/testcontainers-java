@@ -4,6 +4,9 @@ import org.testcontainers.utility.DockerImageName;
 
 /**
  * Testcontainers implementation for BigQuery.
+ * <p>
+ * Supported image: {@code ghcr.io/goccy/bigquery-emulator}
+ * <p>
  */
 public class BigQueryEmulatorContainer extends GenericContainer<BigQueryEmulatorContainer> {
 

@@ -16,7 +16,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Testcontainers implementation of Solace PubSub+
+ * Testcontainers implementation of Solace PubSub+.
+ * <p>
+ * Supported image: {@code solace/solace-pubsub-standard}
+ * <p>
+ * Exposed ports:
+ * <ul>
+ *     <li>Console: 8080</li>
+ *     <li>AMQP: 5672</li>
+ *     <li>MQTT: 1883</li>
+ *     <li>HTTP: 9000</li>
+ *     <li>SMF: 55555</li>
+ *     <li>SMF SSL: 55443</li>
+ * </ul>
  */
 public class SolaceContainer extends GenericContainer<SolaceContainer> {
 
@@ -60,6 +72,9 @@ public class SolaceContainer extends GenericContainer<SolaceContainer> {
             cmd.getHostConfig().withShmSize(SHM_SIZE).withUlimits(new Ulimit[] { new Ulimit("nofile", 2448L, 6592L) });
         });
         this.waitStrategy = Wait.forLogMessage(SOLACE_READY_MESSAGE, 1).withStartupTimeout(Duration.ofSeconds(60));
+        withExposedPorts(8080);
+        withEnv("username_admin_globalaccesslevel", "admin");
+        withEnv("username_admin_password", "admin");
     }
 
     @Override

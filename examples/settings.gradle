@@ -6,8 +6,8 @@ buildscript {
     }
     dependencies {
         classpath "gradle.plugin.ch.myniva.gradle:s3-build-cache:0.10.0"
-        classpath "com.gradle.enterprise:com.gradle.enterprise.gradle.plugin:3.14.1"
-        classpath "com.gradle:common-custom-user-data-gradle-plugin:1.11.1"
+        classpath "com.gradle.enterprise:com.gradle.enterprise.gradle.plugin:3.15.1"
+        classpath "com.gradle:common-custom-user-data-gradle-plugin:1.12"
     }
 }
 

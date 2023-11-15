@@ -5,7 +5,9 @@ import org.testcontainers.utility.DockerImageName;
 
 /**
  * A Bigtable container that relies in google cloud sdk.
- *
+ * <p>
+ * Supported images: {@code gcr.io/google.com/cloudsdktool/google-cloud-cli}, {@code gcr.io/google.com/cloudsdktool/cloud-sdk}
+ * <p>
  * Default port is 9000.
  */
 public class BigtableEmulatorContainer extends GenericContainer<BigtableEmulatorContainer> {

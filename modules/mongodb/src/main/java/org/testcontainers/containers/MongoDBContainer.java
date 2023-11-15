@@ -11,9 +11,11 @@ import org.testcontainers.utility.MountableFile;
 import java.io.IOException;
 
 /**
- * Constructs a single node MongoDB replica set for testing transactions.
- * <p>To construct a multi-node MongoDB cluster, consider the <a href="https://github.com/silaev/mongodb-replica-set/">mongodb-replica-set project on GitHub</a>
- * <p>Tested on a MongoDB version 4.0.10+ (that is the default version if not specified).
+ * Testcontainers implementation for MongoDB.
+ * <p>
+ * Supported image: {@code mongo}
+ * <p>
+ * Exposed ports: 27017
  */
 @Slf4j
 public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
@@ -23,8 +25,6 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
     private static final String DEFAULT_TAG = "4.0.10";
 
     private static final int CONTAINER_EXIT_CODE_OK = 0;
-
-    private static final int MONGODB_INTERNAL_PORT = 27017;
 
     private static final int AWAIT_INIT_REPLICA_SET_ATTEMPTS = 60;
 
@@ -49,27 +49,21 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
     public MongoDBContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
-
-        withExposedPorts(MONGODB_INTERNAL_PORT);
     }
 
     @Override
-    public void configure() {
-        if (shardingEnabled) {
-            withCreateContainerCmdModifier(cmd -> {
-                cmd.withEntrypoint("sh");
-            });
-            withCommand("-c", "while [ ! -f " + STARTER_SCRIPT + " ]; do sleep 0.1; done; " + STARTER_SCRIPT);
-            waitingFor(Wait.forLogMessage("(?i).*mongos ready.*", 1));
-        } else {
-            withCommand("--replSet", "docker-rs");
-            waitingFor(Wait.forLogMessage("(?i).*waiting for connections.*", 1));
-        }
+    MongoDBContainerDef createContainerDef() {
+        return new MongoDBContainerDef();
+    }
+
+    @Override
+    MongoDBContainerDef getContainerDef() {
+        return (MongoDBContainerDef) super.getContainerDef();
     }
 
     @Override
     protected void containerIsStarting(InspectContainerResponse containerInfo) {
-        if (shardingEnabled) {
+        if (this.shardingEnabled) {
             copyFileToContainer(MountableFile.forClasspathResource("/sharding.sh", 0777), STARTER_SCRIPT);
         }
     }
@@ -81,12 +75,13 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
      */
     public MongoDBContainer withSharding() {
         this.shardingEnabled = true;
+        getContainerDef().withSharding();
         return this;
     }
 
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo, boolean reused) {
-        if (!shardingEnabled) {
+        if (!this.shardingEnabled) {
             initReplicaSet(reused);
         }
     }
@@ -97,7 +92,7 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
      * @return a connection url pointing to a mongodb instance
      */
     public String getConnectionString() {
-        return String.format("mongodb://%s:%d", getHost(), getMappedPort(MONGODB_INTERNAL_PORT));
+        return String.format("mongodb://%s:%d", getHost(), getMappedPort(MongoDBContainerDef.MONGODB_INTERNAL_PORT));
     }
 
     /**
@@ -199,5 +194,22 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
             buildMongoEvalCommand("if(db.adminCommand({replSetGetStatus: 1})['myState'] != 1) quit(900)")
         );
         return execCheckRsInit.getExitCode() == CONTAINER_EXIT_CODE_OK;
+    }
+
+    private static class MongoDBContainerDef extends ContainerDef {
+
+        private static final int MONGODB_INTERNAL_PORT = 27017;
+
+        MongoDBContainerDef() {
+            addExposedTcpPort(MONGODB_INTERNAL_PORT);
+            setCommand("--replSet", "docker-rs");
+            setWaitStrategy(Wait.forLogMessage("(?i).*waiting for connections.*", 1));
+        }
+
+        void withSharding() {
+            setCommand("-c", "while [ ! -f " + STARTER_SCRIPT + " ]; do sleep 0.1; done; " + STARTER_SCRIPT);
+            setWaitStrategy(Wait.forLogMessage("(?i).*mongos ready.*", 1));
+            setEntrypoint("sh");
+        }
     }
 }

@@ -8,8 +8,8 @@ repositories {
 
 dependencies {
     testImplementation 'org.assertj:assertj-core:3.24.2'
-    testImplementation 'org.neo4j.driver:neo4j-java-driver:4.4.11'
+    testImplementation 'org.neo4j.driver:neo4j-java-driver:4.4.12'
     testImplementation 'org.testcontainers:neo4j'
     testImplementation 'org.testcontainers:junit-jupiter'
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.1'
 }

@@ -49,6 +49,8 @@
   - modules/localstack/**/*
 "modules/mariadb":
   - modules/mariadb/**/*
+"modules/minio":
+  - modules/minio/**/*
 "modules/mockserver":
   - modules/mockserver/**/*
 "modules/mongodb":
@@ -62,6 +64,7 @@
 "modules/nginx":
   - modules/nginx/**/*
 "modules/oracle":
+  - modules/oracle-free/**/*
   - modules/oracle-xe/**/*
 "modules/orientdb":
   - modules/orientdb/**/*

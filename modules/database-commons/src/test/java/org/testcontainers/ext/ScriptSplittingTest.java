@@ -4,10 +4,11 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class ScriptSplittingTest {
 
@@ -256,13 +257,9 @@ public class ScriptSplittingTest {
     @Test
     public void testUnclosedBlockComment() {
         String script = "SELECT 'foo `bar`'; /*";
-
-        try {
-            doSplit(script);
-            fail("Should have thrown!");
-        } catch (ScriptUtils.ScriptParseException expected) {
-            // ignore expected exception
-        }
+        assertThatThrownBy(() -> doSplit(script, ScriptUtils.DEFAULT_STATEMENT_SEPARATOR))
+            .isInstanceOf(ScriptUtils.ScriptParseException.class)
+            .hasMessageContaining("*/");
     }
 
     @Test
@@ -281,22 +278,188 @@ public class ScriptSplittingTest {
         splitAndCompare(script, expected);
     }
 
+    @Test
+    public void testIfLoopBlocks() {
+        String script =
+            "BEGIN\n" +
+            "    rec_loop: LOOP\n" +
+            "        FETCH blah;\n" +
+            "        IF something_wrong THEN LEAVE rec_loop; END IF;\n" +
+            "        do_something_else;\n" +
+            "    END LOOP;\n" +
+            "END /* final comment */;";
+        List<String> expected = Collections.singletonList(
+            "BEGIN\n" +
+            "    rec_loop: LOOP\n" +
+            "        FETCH blah;\n" +
+            "        IF something_wrong THEN LEAVE rec_loop; END IF;\n" +
+            "        do_something_else;\n" +
+            "    END LOOP;\n" +
+            "END"
+        );
+        splitAndCompare(script, expected);
+    }
+
+    @Test
+    public void testIfLoopBlocksSpecificSeparator() {
+        String script =
+            "BEGIN\n" +
+            "    rec_loop: LOOP\n" +
+            "        FETCH blah;\n" +
+            "        IF something_wrong THEN LEAVE rec_loop; END IF;\n" +
+            "        do_something_else;\n" +
+            "    END LOOP;\n" +
+            "END;\n" +
+            "@\n" +
+            "CALL something();\n" +
+            "@\n";
+        List<String> expected = Arrays.asList(
+            "BEGIN\n" +
+            "    rec_loop: LOOP\n" +
+            "        FETCH blah;\n" +
+            "        IF something_wrong THEN LEAVE rec_loop; END IF;\n" +
+            "        do_something_else;\n" +
+            "    END LOOP;\n" +
+            "END",
+            "CALL something();"
+        );
+        splitAndCompare(script, expected, "@");
+    }
+
+    @Test
+    public void testMultiProcedureMySQLScript() {
+        String script =
+            "CREATE PROCEDURE doiterate(p1 INT)\n" +
+            "  BEGIN\n" +
+            "    label1: LOOP\n" +
+            "      SET p1 = p1 + 1;\n" +
+            "      IF p1 < 10 THEN\n" +
+            "        ITERATE label1;\n" +
+            "      END IF;\n" +
+            "      LEAVE label1;\n" +
+            "    END LOOP label1;\n" +
+            "  END;\n" +
+            "\n" +
+            "CREATE PROCEDURE dowhile()\n" +
+            "  BEGIN\n" +
+            "    DECLARE v1 INT DEFAULT 5;\n" +
+            "    WHILE v1 > 0 DO\n" +
+            "      SET v1 = v1 - 1;\n" +
+            "    END WHILE;\n" +
+            "  END;\n" +
+            "\n" +
+            "CREATE PROCEDURE dorepeat(p1 INT)\n" +
+            "  BEGIN\n" +
+            "    SET @x = 0;\n" +
+            "    REPEAT\n" +
+            "      SET @x = @x + 1;\n" +
+            "    UNTIL @x > p1 END REPEAT;\n" +
+            "  END;";
+        List<String> expected = Arrays.asList(
+            "CREATE PROCEDURE doiterate(p1 INT) BEGIN\n" +
+            "    label1: LOOP\n" +
+            "      SET p1 = p1 + 1;\n" +
+            "      IF p1 < 10 THEN\n" +
+            "        ITERATE label1;\n" +
+            "      END IF;\n" +
+            "      LEAVE label1;\n" +
+            "    END LOOP label1;\n" +
+            "  END",
+            "CREATE PROCEDURE dowhile() BEGIN\n" +
+            "    DECLARE v1 INT DEFAULT 5;\n" +
+            "    WHILE v1 > 0 DO\n" +
+            "      SET v1 = v1 - 1;\n" +
+            "    END WHILE;\n" +
+            "  END",
+            "CREATE PROCEDURE dorepeat(p1 INT) BEGIN\n" +
+            "    SET @x = 0;\n" +
+            "    REPEAT\n" +
+            "      SET @x = @x + 1;\n" +
+            "    UNTIL @x > p1 END REPEAT;\n" +
+            "  END"
+        );
+        splitAndCompare(script, expected);
+    }
+
+    @Test
+    public void testDollarQuotedStrings() {
+        String script =
+            "CREATE FUNCTION f ()\n" +
+            "RETURNS INT\n" +
+            "AS $$\n" +
+            "BEGIN\n" +
+            "    RETURN 1;\n" +
+            "END;\n" +
+            "$$ LANGUAGE plpgsql;";
+        List<String> expected = Collections.singletonList(
+            "CREATE FUNCTION f () RETURNS INT AS $$\n" +
+            "BEGIN\n" +
+            "    RETURN 1;\n" +
+            "END;\n" +
+            "$$ LANGUAGE plpgsql"
+        );
+        splitAndCompare(script, expected);
+    }
+
+    @Test
+    public void testNestedDollarQuotedString() {
+        //see https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-DOLLAR-QUOTING
+        String script =
+            "CREATE FUNCTION f() AS $function$\n" +
+            "BEGIN\n" +
+            "    RETURN ($1 ~ $q$[\\t\\r\\n\\v\\\\]$q$);\n" +
+            "END;\n" +
+            "$function$;" +
+            "create table foo ();";
+        List<String> expected = Arrays.asList(
+            "CREATE FUNCTION f() AS $function$\n" +
+            "BEGIN\n" +
+            "    RETURN ($1 ~ $q$[\\t\\r\\n\\v\\\\]$q$);\n" +
+            "END;\n" +
+            "$function$",
+            "create table foo ()"
+        );
+        splitAndCompare(script, expected);
+    }
+
+    @Test
+    public void testUnclosedDollarQuotedString() {
+        String script = "SELECT $tag$ ..... $";
+        assertThatThrownBy(() -> doSplit(script, ScriptUtils.DEFAULT_STATEMENT_SEPARATOR))
+            .isInstanceOf(ScriptUtils.ScriptParseException.class)
+            .hasMessageContaining("$tag$");
+    }
+
     private void splitAndCompare(String script, List<String> expected) {
-        final List<String> statements = doSplit(script);
+        splitAndCompare(script, expected, ScriptUtils.DEFAULT_STATEMENT_SEPARATOR);
+    }
+
+    private void splitAndCompare(String script, List<String> expected, String separator) {
+        final List<String> statements = doSplit(script, separator);
         assertThat(statements).isEqualTo(expected);
     }
 
-    private List<String> doSplit(String script) {
+    private List<String> doSplit(String script, String separator) {
         final List<String> statements = new ArrayList<>();
         ScriptUtils.splitSqlScript(
             "ignored",
             script,
-            ScriptUtils.DEFAULT_STATEMENT_SEPARATOR,
+            separator,
             ScriptUtils.DEFAULT_COMMENT_PREFIX,
             ScriptUtils.DEFAULT_BLOCK_COMMENT_START_DELIMITER,
             ScriptUtils.DEFAULT_BLOCK_COMMENT_END_DELIMITER,
             statements
         );
         return statements;
+    }
+
+    @Test
+    public void testIgnoreDelimitersInLiteralsAndComments() {
+        assertThat(ScriptUtils.containsSqlScriptDelimiters("'@' /*@*/ \"@\" $tag$@$tag$ --@", "@")).isFalse();
+    }
+
+    @Test
+    public void testContainsDelimiters() {
+        assertThat(ScriptUtils.containsSqlScriptDelimiters("'@' /*@*/ @ \"@\" --@", "@")).isTrue();
     }
 }

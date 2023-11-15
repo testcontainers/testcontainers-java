@@ -304,9 +304,16 @@ public class ElasticsearchContainerTest {
             // Start the container. This step might take some time...
             container.start();
 
-            Response response = getClusterHealth(container);
-            assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
-            assertThat(EntityUtils.toString(response.getEntity())).contains("cluster_name");
+            assertClusterHealthResponse(container);
+        }
+    }
+
+    @Test
+    public void testDockerHubElasticsearch8ImageSecureByDefault() throws Exception {
+        try (ElasticsearchContainer container = new ElasticsearchContainer("elasticsearch:8.1.2")) {
+            container.start();
+
+            assertClusterHealthResponse(container);
         }
     }
 
@@ -351,9 +358,7 @@ public class ElasticsearchContainerTest {
             // Start the container. This step might take some time...
             container.start();
 
-            Response response = getClusterHealth(container);
-            assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
-            assertThat(EntityUtils.toString(response.getEntity())).contains("cluster_name");
+            assertClusterHealthResponse(container);
         }
     }
 
@@ -487,5 +492,11 @@ public class ElasticsearchContainerTest {
         assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
         assertThat(responseBody).contains("\"heap_init_in_bytes\":" + heapSizeInBytes);
         assertThat(responseBody).contains("\"heap_max_in_bytes\":" + heapSizeInBytes);
+    }
+
+    private void assertClusterHealthResponse(ElasticsearchContainer container) throws IOException {
+        Response response = getClusterHealth(container);
+        assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
+        assertThat(EntityUtils.toString(response.getEntity())).contains("cluster_name");
     }
 }

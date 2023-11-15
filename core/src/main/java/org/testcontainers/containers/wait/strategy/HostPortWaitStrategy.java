@@ -26,18 +26,29 @@ import java.util.stream.Collectors;
 @Slf4j
 public class HostPortWaitStrategy extends AbstractWaitStrategy {
 
+    private int[] ports;
+
     @Override
     @SneakyThrows(InterruptedException.class)
     protected void waitUntilReady() {
-        final Set<Integer> externalLivenessCheckPorts = getLivenessCheckPorts();
-        if (externalLivenessCheckPorts.isEmpty()) {
-            if (log.isDebugEnabled()) {
-                log.debug(
-                    "Liveness check ports of {} is empty. Not waiting.",
-                    waitStrategyTarget.getContainerInfo().getName()
-                );
+        final Set<Integer> externalLivenessCheckPorts;
+        if (this.ports == null || this.ports.length == 0) {
+            externalLivenessCheckPorts = getLivenessCheckPorts();
+            if (externalLivenessCheckPorts.isEmpty()) {
+                if (log.isDebugEnabled()) {
+                    log.debug(
+                        "Liveness check ports of {} is empty. Not waiting.",
+                        waitStrategyTarget.getContainerInfo().getName()
+                    );
+                }
+                return;
             }
-            return;
+        } else {
+            externalLivenessCheckPorts =
+                Arrays
+                    .stream(this.ports)
+                    .mapToObj(port -> waitStrategyTarget.getMappedPort(port))
+                    .collect(Collectors.toSet());
         }
 
         List<Integer> exposedPorts = waitStrategyTarget.getExposedPorts();
@@ -111,5 +122,10 @@ public class HostPortWaitStrategy extends AbstractWaitStrategy {
             .stream()
             .filter(it -> externalLivenessCheckPorts.contains(waitStrategyTarget.getMappedPort(it)))
             .collect(Collectors.toSet());
+    }
+
+    public HostPortWaitStrategy forPorts(int... ports) {
+        this.ports = ports;
+        return this;
     }
 }

@@ -3,6 +3,9 @@ name: CI
 on:
   pull_request:
     paths-ignore:
+      - '.github/ISSUE_TEMPLATE/*.yaml'
+      - '.github/CODEOWNERS'
+      - '.github/pull_request_template.md'
       - 'docs/**/*.css'
       - 'docs/**/*.html'
       - 'docs/**/*.ico'
@@ -16,6 +19,9 @@ on:
   push:
     branches: [ main ]
     paths-ignore:
+      - '.github/ISSUE_TEMPLATE/*.yaml'
+      - '.github/CODEOWNERS'
+      - '.github/pull_request_template.md'
       - 'docs/**/*.css'
       - 'docs/**/*.html'
       - 'docs/**/*.ico'
@@ -44,11 +50,27 @@ jobs:
   core:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-build
       - name: Build and test with Gradle
         run: |
           ./gradlew :testcontainers:check --no-daemon --continue --scan
+
+  turbo-mode:
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-build
+      - name: Setup Testcontainers Cloud Client
+        uses: atomicjar/testcontainers-cloud-setup-action@main
+        with:
+          token: ${{ secrets.TC_CLOUD_TOKEN }}
+          args: --max-concurrency=4
+      - name: Test using Testcontainers Cloud with Turbo Mode enabled
+        working-directory: ./smoke-test/
+        run: |
+          ./gradlew check --no-daemon --continue --scan --info
 
   find_gradle_jobs:
     needs: [core]
@@ -56,7 +78,7 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-java
       - name: Setup Gradle Build Action
         uses: gradle/gradle-build-action@v2
@@ -76,7 +98,7 @@ jobs:
       matrix: ${{ fromJson(needs.find_gradle_jobs.outputs.matrix) }}
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-build
       - name: Build and test with Gradle (${{matrix.gradle_args}})
         run: |
@@ -88,7 +110,7 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-java
       - name: Setup Gradle Build Action
         uses: gradle/gradle-build-action@v2
@@ -109,7 +131,7 @@ jobs:
       matrix: ${{ fromJson(needs.find_examples_jobs.outputs.matrix) }}
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-build
       - name: Build and test Examples with Gradle (${{matrix.gradle_args}})
         working-directory: ./examples/
@@ -122,7 +144,7 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-java
       - name: Setup Gradle Build Action
         uses: gradle/gradle-build-action@v2
@@ -142,7 +164,7 @@ jobs:
       matrix: ${{ fromJson(needs.find_docs_examples_jobs.outputs.matrix) }}
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-build
       - name: Build and test with Gradle (${{matrix.gradle_args}})
         run: |

@@ -19,6 +19,17 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Optional;
 
+/**
+ * Testcontainers implementation for OrientDB.
+ * <p>
+ * Supported image: {@code orientdb}
+ * <p>
+ * Exposed ports:
+ * <ul>
+ *     <li>Database: 2424</li>
+ *     <li>Studio: 2480</li>
+ * </ul>
+ */
 public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrientDBContainer.class);

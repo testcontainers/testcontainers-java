@@ -2,8 +2,9 @@ description = "Testcontainers :: Redpanda"
 
 dependencies {
     api project(':testcontainers')
+    shaded 'org.freemarker:freemarker:2.3.32'
 
-    testImplementation 'org.apache.kafka:kafka-clients:3.5.1'
+    testImplementation 'org.apache.kafka:kafka-clients:3.6.0'
     testImplementation 'org.assertj:assertj-core:3.24.2'
-    testImplementation 'io.rest-assured:rest-assured:5.3.1'
+    testImplementation 'io.rest-assured:rest-assured:5.3.2'
 }
