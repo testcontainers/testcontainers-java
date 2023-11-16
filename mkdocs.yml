@@ -74,6 +74,7 @@ nav:
                 - modules/databases/trino.md
                 - modules/databases/yugabytedb.md
           - modules/azure.md
+          - modules/azurite.md
           - modules/consul.md
           - modules/docker_compose.md
           - modules/elasticsearch.md

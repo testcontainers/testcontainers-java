@@ -11,6 +11,8 @@
   - gradlew.bat
 "modules/azure":
   - modules/azure/**/*
+"modules/azurite":
+  - modules/azurite/**/*
 "modules/cassandra":
   - modules/cassandra/**/*
 "modules/clickhouse":

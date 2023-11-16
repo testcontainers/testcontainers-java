@@ -15,6 +15,7 @@ body:
       options:
         - Core
         - Azure
+        - Azurite
         - Cassandra
         - Clickhouse
         - CockroachDB
