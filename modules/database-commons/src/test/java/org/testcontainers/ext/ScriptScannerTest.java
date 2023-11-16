@@ -11,7 +11,7 @@ public class ScriptScannerTest {
 
     @Test
     public void testHugeStringLiteral() {
-        String script = "/* a comment */    \"" +  StringUtils.repeat('~', 10000) + "\";";
+        String script = "/* a comment */    \"" + StringUtils.repeat('~', 10000) + "\";";
         ScriptScanner scanner = scanner(script);
         assertThat(scanner.next()).isEqualTo(ScriptScanner.Lexem.COMMENT);
         assertThat(scanner.next()).isEqualTo(ScriptScanner.Lexem.WHITESPACE);
