@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ScriptScannerTest {
+
     @Test
     public void testHugeStringLiteral() {
         String script = "/* a comment */    \"" +  StringUtils.repeat('~', 10000) + "\";";

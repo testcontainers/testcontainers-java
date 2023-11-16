@@ -96,7 +96,6 @@ class ScriptScanner {
         return false;
     }
 
-
     private boolean matchesQuotedString(final char quote) {
         if (script.charAt(offset) == quote) {
             boolean escaped = false;
