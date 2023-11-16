@@ -1,7 +1,7 @@
 # Azurite Module
 
 !!! note
-This module is INCUBATING. While it is ready for use and operational in the current version of Testcontainers, it is possible that it may receive breaking changes in the future. See [our contributing guidelines](/contributing/#incubating-modules) for more information on our incubating modules policy.
+    This module is INCUBATING. While it is ready for use and operational in the current version of Testcontainers, it is possible that it may receive breaking changes in the future. See [our contributing guidelines](/contributing/#incubating-modules) for more information on our incubating modules policy.
 
 Testcontainers module for the Microsoft [Azurite](https://github.com/Azure/Azurite).
 
