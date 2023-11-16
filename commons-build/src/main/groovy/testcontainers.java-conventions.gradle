@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'idea'
     id 'testcontainers.checkstyle'
+    id 'testcontainers.lombok'
     id 'testcontainers.spotless'
 }
 

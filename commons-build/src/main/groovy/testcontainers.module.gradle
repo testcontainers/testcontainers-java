@@ -2,7 +2,6 @@ plugins {
     id 'testcontainers.shading'
     id 'testcontainers.java-conventions'
     id 'testcontainers.japicmp'
-    id 'testcontainers.lombok'
     id 'testcontainers.publishing'
 }
 
