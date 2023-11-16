@@ -52,7 +52,8 @@ tasks.japicmp {
 
     methodExcludes = [
         "org.testcontainers.containers.Container#getDockerClient()",
-        "org.testcontainers.containers.ContainerState#getDockerClient()"
+        "org.testcontainers.containers.ContainerState#getDockerClient()",
+        "org.testcontainers.containers.GenericContainer#setContainerDef(org.testcontainers.containers.ContainerDef)"
     ]
 
     fieldExcludes = []

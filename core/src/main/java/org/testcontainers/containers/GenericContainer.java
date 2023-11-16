@@ -212,6 +212,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private final Set<CreateContainerCmdModifier> createContainerCmdModifiers = loadCreateContainerCmdCustomizers();
 
+    @Setter(AccessLevel.NONE)
     private BaseContainerDef containerDef;
 
     private StartedContainer startedContainer;
