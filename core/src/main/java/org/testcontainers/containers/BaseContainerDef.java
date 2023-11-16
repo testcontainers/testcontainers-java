@@ -33,7 +33,7 @@ abstract class BaseContainerDef {
     @Getter
     private RemoteDockerImage image;
 
-    Set<ExposedPort> exposedPorts = new HashSet<>();
+    Set<ExposedPort> exposedPorts = new LinkedHashSet<>();
 
     Set<PortBinding> portBindings = new HashSet<>();
 
@@ -153,7 +153,7 @@ abstract class BaseContainerDef {
     }
 
     public Set<ExposedPort> getExposedPorts() {
-        return new HashSet<>(this.exposedPorts);
+        return new LinkedHashSet<>(this.exposedPorts);
     }
 
     protected void setExposedPorts(Set<ExposedPort> exposedPorts) {

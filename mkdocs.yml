@@ -64,6 +64,7 @@ nav:
                 - modules/databases/mssqlserver.md
                 - modules/databases/mysql.md
                 - modules/databases/neo4j.md
+                - modules/databases/oraclefree.md
                 - modules/databases/oraclexe.md
                 - modules/databases/orientdb.md
                 - modules/databases/postgres.md
@@ -122,4 +123,4 @@ nav:
           - bounty.md
 edit_uri: edit/main/docs/
 extra:
-    latest_version: 1.19.1
+    latest_version: 1.19.2
