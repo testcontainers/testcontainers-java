@@ -155,6 +155,7 @@ jobs:
           # we should not push empty results to the cache
           READ_ONLY_REMOTE_GRADLE_CACHE: true
         run: |
+          ./gradlew --no-daemon --parallel -q testMatrix
           TASKS=$(./gradlew --no-daemon --parallel -q testMatrix | jq 'map(select(startswith(":docs:")))' --compact-output)
           echo $TASKS
           echo "matrix={\"gradle_args\":$TASKS}" >> $GITHUB_OUTPUT
