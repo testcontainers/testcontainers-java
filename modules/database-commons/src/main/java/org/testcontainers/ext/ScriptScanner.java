@@ -28,11 +28,7 @@ class ScriptScanner {
 
     private final Pattern whitespace = Pattern.compile("\\s+");
 
-    private final Pattern identifier = Pattern.compile("[a-z][a-z0-9_]*", Pattern.CASE_INSENSITIVE);
-
-    private final Pattern singleQuotedString = Pattern.compile("'(\\\\'|[^'])*'");
-
-    private final Pattern ansiQuotedString = Pattern.compile("\"(\\\\\"|[^\"])*\"");
+    private final Pattern identifier = Pattern.compile("[a-z][a-z0-9_$]*", Pattern.CASE_INSENSITIVE);
 
     private final Pattern dollarQuotedStringDelimiter = Pattern.compile("\\$\\w*\\$");
 
@@ -54,7 +50,8 @@ class ScriptScanner {
 
     private boolean matches(Pattern regexp) {
         Matcher m = regexp.matcher(script);
-        if (m.find(offset) && m.start() == offset) {
+        m.region(offset, script.length());
+        if (m.lookingAt()) {
             currentMatch = m.group();
             offset = m.end();
             return true;
@@ -99,6 +96,27 @@ class ScriptScanner {
         return false;
     }
 
+
+    private boolean matchesQuotedString(final char quote) {
+        if (script.charAt(offset) == quote) {
+            boolean escaped = false;
+            for (int i = offset + 1; i < script.length(); i++) {
+                char c = script.charAt(i);
+                if (escaped) {
+                    //just skip the escaped character and drop the flag
+                    escaped = false;
+                } else if (c == '\\') {
+                    escaped = true;
+                } else if (c == quote) {
+                    currentMatch = script.substring(offset, i + 1);
+                    offset = i + 1;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private boolean matchesDollarQuotedString() {
         //Matches $<tag>$ .... $<tag>$
         if (matches(dollarQuotedStringDelimiter)) {
@@ -124,7 +142,7 @@ class ScriptScanner {
                 return Lexem.SEPARATOR;
             } else if (matchesSingleLineComment() || matchesMultilineComment()) {
                 return Lexem.COMMENT;
-            } else if (matches(singleQuotedString) || matches(ansiQuotedString) || matchesDollarQuotedString()) {
+            } else if (matchesQuotedString('\'') || matchesQuotedString('"') || matchesDollarQuotedString()) {
                 return Lexem.QUOTED_STRING;
             } else if (matches(identifier)) {
                 return Lexem.IDENTIFIER;
