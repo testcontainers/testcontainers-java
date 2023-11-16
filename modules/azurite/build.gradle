@@ -5,4 +5,5 @@ dependencies {
     shaded 'org.apache.httpcomponents:httpclient:4.5.14'
 
     testImplementation 'org.assertj:assertj-core:3.24.2'
+    testImplementation 'com.azure:azure-storage-blob:12.24.1'
 }

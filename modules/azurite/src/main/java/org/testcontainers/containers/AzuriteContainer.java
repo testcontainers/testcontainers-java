@@ -36,6 +36,9 @@ public class AzuriteContainer extends GenericContainer<AzuriteContainer> {
     @Override
     //@SneakyThrows
     protected void configure() {
+        if (services.isEmpty()) {
+            throw new IllegalStateException("At least one service must be specified");
+        }
         services.forEach(service -> addExposedPort(service.getPort()));
     }
 
@@ -54,7 +57,7 @@ public class AzuriteContainer extends GenericContainer<AzuriteContainer> {
 
     @Override
     public Set<Integer> getLivenessCheckPortNumbers() {
-        return Arrays.stream(AzuriteService.values()).map(AzuriteService::getPort).collect(Collectors.toSet());
+        return services.stream().map(AzuriteService::getPort).collect(Collectors.toSet());
     }
 
     @Override
