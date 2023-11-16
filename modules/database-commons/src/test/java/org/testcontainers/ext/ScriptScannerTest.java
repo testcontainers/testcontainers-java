@@ -21,8 +21,10 @@ public class ScriptScannerTest {
 
     @Test
     public void testPgIdentifierWithDollarSigns() {
-        ScriptScanner scanner = scanner("this$is$a$valid$postgreSQL$identifier  " +
-            "$a$While this is a quoted string$a$$ --just followed by a dollar sign");
+        ScriptScanner scanner = scanner(
+            "this$is$a$valid$postgreSQL$identifier  " +
+            "$a$While this is a quoted string$a$$ --just followed by a dollar sign"
+        );
         assertThat(scanner.next()).isEqualTo(ScriptScanner.Lexem.IDENTIFIER);
         assertThat(scanner.next()).isEqualTo(ScriptScanner.Lexem.WHITESPACE);
         assertThat(scanner.next()).isEqualTo(ScriptScanner.Lexem.QUOTED_STRING);
@@ -30,7 +32,7 @@ public class ScriptScannerTest {
     }
 
     @Test
-    public void testQuotedLiterals(){
+    public void testQuotedLiterals() {
         ScriptScanner scanner = scanner("'this \\'is a literal' \"this \\\" is a literal\"");
         assertThat(scanner.next()).isEqualTo(ScriptScanner.Lexem.QUOTED_STRING);
         assertThat(scanner.getCurrentMatch()).isEqualTo("'this \\'is a literal'");
@@ -40,11 +42,13 @@ public class ScriptScannerTest {
     }
 
     private static ScriptScanner scanner(String script) {
-        return new ScriptScanner("dummy",
+        return new ScriptScanner(
+            "dummy",
             script,
             ScriptUtils.DEFAULT_STATEMENT_SEPARATOR,
             ScriptUtils.DEFAULT_COMMENT_PREFIX,
             ScriptUtils.DEFAULT_BLOCK_COMMENT_START_DELIMITER,
-            ScriptUtils.DEFAULT_BLOCK_COMMENT_END_DELIMITER);
+            ScriptUtils.DEFAULT_BLOCK_COMMENT_END_DELIMITER
+        );
     }
 }
