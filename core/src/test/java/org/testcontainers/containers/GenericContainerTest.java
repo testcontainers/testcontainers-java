@@ -20,6 +20,7 @@ import org.testcontainers.DockerClientFactory;
 import org.testcontainers.TestImages;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
+import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.MountableFile;
@@ -220,6 +221,14 @@ public class GenericContainerTest {
                 .filteredOn(event -> event.getMessage().matches(regexMatch))
                 .isNotEmpty();
         }
+    }
+
+    @Test
+    public void shouldReturnTheProvidedImage() {
+        GenericContainer container = new GenericContainer(TestImages.REDIS_IMAGE);
+        assertThat(container.getImage().get()).isEqualTo("redis:3.0.2");
+        container.setImage(new RemoteDockerImage(TestImages.ALPINE_IMAGE));
+        assertThat(container.getImage().get()).isEqualTo("alpine:3.16");
     }
 
     static class NoopStartupCheckStrategy extends StartupCheckStrategy {
