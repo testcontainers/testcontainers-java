@@ -267,6 +267,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     public void setImage(Future<String> image) {
+        this.image = new RemoteDockerImage(image);
         this.containerDef.setImage(new RemoteDockerImage(image));
     }
 
