@@ -20,8 +20,10 @@ import org.testcontainers.DockerClientFactory;
 import org.testcontainers.TestImages;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
+import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.images.builder.Transferable;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import java.util.Arrays;
@@ -222,6 +224,38 @@ public class GenericContainerTest {
         }
     }
 
+    @Test
+    public void shouldReturnTheProvidedImage() {
+        GenericContainer container = new GenericContainer(TestImages.REDIS_IMAGE);
+        assertThat(container.getImage().get()).isEqualTo("redis:3.0.2");
+        container.setImage(new RemoteDockerImage(TestImages.ALPINE_IMAGE));
+        assertThat(container.getImage().get()).isEqualTo("alpine:3.16");
+    }
+
+    @Test
+    public void shouldContainDefaultNetworkAlias() {
+        try (GenericContainer<?> container = new GenericContainer<>("testcontainers/helloworld:1.1.0")) {
+            container.start();
+            assertThat(container.getNetworkAliases()).hasSize(1);
+        }
+    }
+
+    @Test
+    public void shouldContainDefaultNetworkAliasWhenUsingGenericContainer() {
+        try (HelloWorldContainer container = new HelloWorldContainer("testcontainers/helloworld:1.1.0")) {
+            container.start();
+            assertThat(container.getNetworkAliases()).hasSize(1);
+        }
+    }
+
+    @Test
+    public void shouldContainDefaultNetworkAliasWhenUsingContainerDef() {
+        try (TcHelloWorldContainer container = new TcHelloWorldContainer("testcontainers/helloworld:1.1.0")) {
+            container.start();
+            assertThat(container.getNetworkAliases()).hasSize(1);
+        }
+    }
+
     static class NoopStartupCheckStrategy extends StartupCheckStrategy {
 
         @Override
@@ -256,6 +290,33 @@ public class GenericContainerTest {
             );
 
             throw new IllegalStateException("Nope!");
+        }
+    }
+
+    static class HelloWorldContainer extends GenericContainer<HelloWorldContainer> {
+
+        public HelloWorldContainer(String image) {
+            super(DockerImageName.parse(image));
+            withExposedPorts(8080);
+        }
+    }
+
+    static class TcHelloWorldContainer extends GenericContainer<HelloWorldContainer> {
+
+        public TcHelloWorldContainer(String image) {
+            super(DockerImageName.parse(image));
+        }
+
+        @Override
+        ContainerDef createContainerDef() {
+            return new HelloWorldContainerDef();
+        }
+
+        class HelloWorldContainerDef extends ContainerDef {
+
+            HelloWorldContainerDef() {
+                addExposedTcpPort(8080);
+            }
         }
     }
 }
