@@ -6,7 +6,7 @@ dependencies {
     api projects.jdbc
     testImplementation projects.jdbcTest
     // YCQL driver
-    testImplementation 'com.yugabyte:java-driver-core:4.6.0-yb-12'
+    testImplementation 'com.yugabyte:java-driver-core:4.15.0-yb-1'
     // YSQL driver
     testRuntimeOnly 'com.yugabyte:jdbc-yugabytedb:42.3.5-yb-3'
 }
