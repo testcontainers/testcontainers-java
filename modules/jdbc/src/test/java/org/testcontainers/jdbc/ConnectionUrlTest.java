@@ -190,5 +190,21 @@ public class ConnectionUrlTest {
             .contains("host-name_123");
     }
 
+    @Test
+    public void testDaemonModeParsing() {
+        String daemonModeUrl = "jdbc:tc:mysql://hostname/databasename?TC_DAEMON=true";
+        ConnectionUrl url = ConnectionUrl.newInstance(daemonModeUrl);
+
+        assertThat(url.isInDaemonMode()).as("Daemon mode should be enabled").isTrue();
+    }
+
+    @Test
+    public void testReusableFlagParsing() {
+        String reusableFlagUrl = "jdbc:tc:mysql://hostname/databasename?TC_REUSABLE=true";
+        ConnectionUrl url = ConnectionUrl.newInstance(reusableFlagUrl);
+
+        assertThat(url.isReusable()).as("Reusable flag should be enabled").isTrue();
+    }
+
 
 }
