@@ -5,6 +5,8 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class ConnectionUrlTest {
 
@@ -139,5 +141,54 @@ public class ConnectionUrlTest {
         assertThat(url.getQueryParameters().get("param1")).as("Query parameter 'param1' should be correctly extracted").isEqualTo("value1");
         assertThat(url.getQueryParameters().get("param2")).as("Query parameter 'param2' should be correctly extracted").isEqualTo("value2");
     }
+
+    @Test
+    public void testMalformedUrl() {
+        String[] malformedUrls = {
+            "jdbc:tc:mysql:/hostname:3306/databasename", // Missing '//' after 'mysql:'
+            "jdbc:tc://hostname:3306/databasename",     // Missing database type
+            "jdbc:tc:mysql://hostname:3306",            // Missing database name
+            "jdbc:mysql://hostname:3306/databasename",  // Incorrect prefix 'jdbc:mysql' instead of 'jdbc:tc'
+            "jdbc:tc:mysql://:3306/databasename"        // Missing hostname
+        };
+
+        for (String urlString : malformedUrls) {
+            boolean thrown = false;
+            try {
+                ConnectionUrl.newInstance(urlString);
+            } catch (IllegalArgumentException e) {
+                thrown = true;
+            }
+            assertThat("IllegalArgumentException should be thrown for malformed URL: " + urlString, thrown, equalTo(true));
+        }
+    }
+
+    @Test
+    public void testEdgeCasesInUrlParsing() {
+        // URL with an unusually long image tag
+        String longTagUrl = "jdbc:tc:mysql:customtag1234567890://hostname:3306/databasename";
+        ConnectionUrl longTagUrlObj = ConnectionUrl.newInstance(longTagUrl);
+        assertThat(longTagUrlObj.getImageTag()).as("Long image tag should be correctly extracted")
+            .contains("customtag1234567890");
+
+        // URL with encoded characters in the database name
+        String encodedDbNameUrl = "jdbc:tc:mysql:5.7.34://hostname:3306/data%20base%20name";
+        ConnectionUrl encodedDbNameUrlObj = ConnectionUrl.newInstance(encodedDbNameUrl);
+        assertThat(encodedDbNameUrlObj.getDatabaseName()).as("Encoded database name should be correctly extracted")
+            .contains("data%20base%20name");
+
+        // URL with multiple query parameters with the same name
+        String duplicateParamsUrl = "jdbc:tc:mysql://hostname/databasename?param=value1&param=value2";
+        ConnectionUrl duplicateParamsUrlObj = ConnectionUrl.newInstance(duplicateParamsUrl);
+        assertThat(duplicateParamsUrlObj.getQueryParameters().get("param")).as("Duplicate query parameters should be handled correctly")
+            .isEqualTo("value1");
+
+        // URL with special characters in the host name
+        String specialCharHostUrl = "jdbc:tc:mysql://host-name_123:3306/databasename";
+        ConnectionUrl specialCharHostUrlObj = ConnectionUrl.newInstance(specialCharHostUrl);
+        assertThat(specialCharHostUrlObj.getDatabaseHost()).as("Special characters in host name should be correctly extracted")
+            .contains("host-name_123");
+    }
+
 
 }
