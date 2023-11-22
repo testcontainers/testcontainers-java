@@ -111,4 +111,33 @@ public class ConnectionUrlTest {
 
         assertThat(url.isInDaemonMode()).as("Daemon flag is set to true.").isTrue();
     }
+
+    @Test
+    public void testUrlParsingForRegexPatterns() {
+        String urlString = "jdbc:tc:mysql:5.7.34://hostname:3306/databasename?param1=value1&param2=value2";
+        ConnectionUrl url = ConnectionUrl.newInstance(urlString);
+
+        // Test database type extraction
+        assertThat(url.getDatabaseType()).as("Database Type should be correctly extracted").isEqualTo("mysql");
+
+        // Test image tag extraction
+        assertThat(url.getImageTag()).as("Image tag should be present").isPresent();
+        assertThat(url.getImageTag().get()).as("Image tag should be correctly extracted").isEqualTo("5.7.34");
+
+        // Test host and port extraction
+        assertThat(url.getDatabaseHost()).as("Database host should be present").isPresent();
+        assertThat(url.getDatabaseHost().get()).as("Database host should be correctly extracted").isEqualTo("hostname");
+
+        assertThat(url.getDatabasePort()).as("Database port should be present").isPresent();
+        assertThat(url.getDatabasePort().get()).as("Database port should be correctly extracted").isEqualTo(3306);
+
+        // Test database name extraction
+        assertThat(url.getDatabaseName()).as("Database name should be present").isPresent();
+        assertThat(url.getDatabaseName().get()).as("Database name should be correctly extracted").isEqualTo("databasename");
+
+        // Test query parameters extraction
+        assertThat(url.getQueryParameters().get("param1")).as("Query parameter 'param1' should be correctly extracted").isEqualTo("value1");
+        assertThat(url.getQueryParameters().get("param2")).as("Query parameter 'param2' should be correctly extracted").isEqualTo("value2");
+    }
+
 }
