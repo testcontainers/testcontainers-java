@@ -60,6 +60,8 @@ public class DockerClientFactory {
 
     public static final String TESTCONTAINERS_VERSION_LABEL = TESTCONTAINERS_LABEL + ".version";
 
+    public static final String TESTCONTAINERS_REMOVABLE_LABEL = TESTCONTAINERS_LABEL + ".container.removable";
+
     public static final String SESSION_ID = UUID.randomUUID().toString();
 
     public static final String TESTCONTAINERS_VERSION =
@@ -74,6 +76,7 @@ public class DockerClientFactory {
         labels.put(TESTCONTAINERS_LABEL, "true");
         labels.put(TESTCONTAINERS_LANG_LABEL, "java");
         labels.put(TESTCONTAINERS_VERSION_LABEL, testcontainersVersion);
+        labels.put(TESTCONTAINERS_REMOVABLE_LABEL, "true");
         return Collections.unmodifiableMap(labels);
     }
 

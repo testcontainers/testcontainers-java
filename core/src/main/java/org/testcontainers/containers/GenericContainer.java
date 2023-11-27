@@ -1,10 +1,13 @@
 package org.testcontainers.containers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
+import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.Bind;
@@ -39,6 +42,7 @@ import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.Testcontainers;
 import org.testcontainers.UnstableAPI;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.startupcheck.IsRunningStartupCheckStrategy;
@@ -68,6 +72,7 @@ import org.testcontainers.utility.ResourceReaper;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.UndeclaredThrowableException;
@@ -432,13 +437,27 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 reusable = false;
             }
 
-            if (!reusable) {
+            String detachedLabel = "com.testcontainers.desktop.detached";
+            boolean hasDetachedLabel = createCommand.getLabels().containsKey(detachedLabel);
+            if (!reusable && !hasDetachedLabel) {
                 //noinspection deprecation
                 createCommand = ResourceReaper.instance().register(this, createCommand);
             }
 
             if (!reused) {
-                containerId = createCommand.exec().getId();
+                CreateContainerResponse createContainerResponse = createCommand.exec();
+                String[] warnings = createContainerResponse.getWarnings();
+                boolean isDetachedContainer = false;
+                if (warnings != null && warnings.length > 0) {
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    isDetachedContainer = isDetachedContainer(warnings, objectMapper);
+                }
+                this.containerId = createContainerResponse.getId();
+                if (isDetachedContainer) {
+                    logger().info("Detached container {} was found: {}", dockerImageName, containerId);
+                    this.containerInfo = this.dockerClient.inspectContainerCmd(this.containerId).exec();
+                    return;
+                }
 
                 // TODO use single "copy" invocation (and calculate an hash of the resulting tar archive)
                 copyToFileContainerPathMap.forEach(this::copyFileToContainer);
@@ -565,6 +584,23 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
             throw new ContainerLaunchException("Could not create/start container", e);
         }
+    }
+
+    private boolean isDetachedContainer(String[] warnings, ObjectMapper objectMapper) {
+        return Arrays
+            .stream(warnings)
+            .filter(warning -> warning.startsWith("TCD="))
+            .map(warning -> warning.substring(4))
+            .map(tcdValue -> {
+                boolean isDetached = false;
+                try {
+                    JsonNode jsonNode = objectMapper.readTree(tcdValue);
+                    isDetached = jsonNode.get("detached").asBoolean();
+                } catch (IOException e) {}
+                return isDetached;
+            })
+            .findFirst()
+            .orElse(false);
     }
 
     @VisibleForTesting
@@ -1487,7 +1523,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     /**
      * Forces access to the tests host machine.
-     * Use this method if you need to call {@link org.testcontainers.Testcontainers#exposeHostPorts(int...)}
+     * Use this method if you need to call {@link Testcontainers#exposeHostPorts(int...)}
      * after you start this container.
      *
      * @return this
