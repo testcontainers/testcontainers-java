@@ -656,7 +656,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     /**
-     * Stops the container.
+     * Kill and remove the container.
      */
     @Override
     public void stop() {
