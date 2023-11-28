@@ -103,7 +103,6 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
     public BrowserWebDriverContainer() {
         super();
-
         this.waitStrategy = getDefaultWaitStrategy();
 
         this.withRecordingFileFactory(new DefaultRecordingFileFactory());
@@ -436,7 +435,9 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
     private WaitStrategy getDefaultWaitStrategy() {
         final WaitStrategy logWaitStrategy = new LogMessageWaitStrategy()
-            .withRegEx(".*(RemoteWebDriver instances should connect to|Selenium Server is up and running|Started Selenium Standalone).*\n")
+            .withRegEx(
+                ".*(RemoteWebDriver instances should connect to|Selenium Server is up and running|Started Selenium Standalone).*\n"
+            )
             .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS));
 
         return new WaitAllStrategy()
