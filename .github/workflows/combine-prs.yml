@@ -8,10 +8,11 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+      checks: read
     runs-on: ubuntu-latest
     steps:
       - name: combine-prs
         id: combine-prs
-        uses: github/combine-prs@v2.1.0
+        uses: github/combine-prs@v4.1.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

@@ -1,7 +1,4 @@
-# Testcontainers
-
-<!-- allow aspect ratio computation to reduce layout shift. CSS enforces max-width: 100% -->
-<img src="logo.png" alt="Testcontainers logo" width="1024" height="512"/>
+# Testcontainers for Java
 
 <p align=center><strong>Not using Java? Here are other supported languages!</strong></p>
 <div class="card-grid">
@@ -12,6 +9,7 @@
     <a href="https://testcontainers-python.readthedocs.io/en/latest/" class="card-grid-item"><img src="language-logos/python.svg"/>Python</a>
     <a href="https://docs.rs/testcontainers/latest/testcontainers/" class="card-grid-item"><img src="language-logos/rust.svg"/>Rust</a>
     <a href="https://github.com/testcontainers/testcontainers-hs/" class="card-grid-item" ><img src="language-logos/haskell.svg"/>Haskell</a>
+    <a href="https://github.com/testcontainers/testcontainers-ruby/" class="card-grid-item" ><img src="language-logos/ruby.svg"/>Ruby</a>
 </div>
 
 ## About Testcontainers for Java
@@ -222,6 +220,7 @@ A huge thank you to our sponsors:
 * [Bucket4j](https://github.com/bucket4j/bucket4j) - Java rate-limiting library based on the token-bucket algorithm.
 * [Spark ClickHouse Connector](https://github.com/housepower/spark-clickhouse-connector) - Integration tests for Apache Spark with both single node ClickHouse instance and multi-node ClickHouse cluster.
 * [Quarkus](https://github.com/quarkusio/quarkus) - Testcontainers is used extensively for Quarkus' [DevServices](https://quarkus.io/guides/dev-services) feature.
+* [Apache Kyuubi](https://kyuubi.apache.org) - Integration testing with Trino as data source engine, Kafka, etc.
 
 ## License
 

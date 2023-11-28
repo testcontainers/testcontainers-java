@@ -1,8 +1,8 @@
-description = "TestContainers :: elasticsearch"
+description = "Testcontainers :: elasticsearch"
 
 dependencies {
     api project(':testcontainers')
-    testImplementation "org.elasticsearch.client:elasticsearch-rest-client:8.6.2"
-    testImplementation "org.elasticsearch.client:transport:7.17.9"
+    testImplementation "org.elasticsearch.client:elasticsearch-rest-client:8.11.1"
+    testImplementation "org.elasticsearch.client:transport:7.17.15"
     testImplementation 'org.assertj:assertj-core:3.24.2'
 }

@@ -33,7 +33,12 @@ public abstract class ImageNameSubstitutor implements Function<DockerImageName, 
                 ImageNameSubstitutor configuredInstance;
                 try {
                     configuredInstance =
-                        (ImageNameSubstitutor) Class.forName(configuredClassName).getConstructor().newInstance();
+                        (ImageNameSubstitutor) Thread
+                            .currentThread()
+                            .getContextClassLoader()
+                            .loadClass(configuredClassName)
+                            .getConstructor()
+                            .newInstance();
                 } catch (Exception e) {
                     throw new IllegalArgumentException(
                         "Configured Image Substitutor could not be loaded: " + configuredClassName,
@@ -149,6 +154,11 @@ public abstract class ImageNameSubstitutor implements Function<DockerImageName, 
                 defaultInstance.getDescription(),
                 configuredInstance.getDescription()
             );
+        }
+
+        @Override
+        public String toString() {
+            return getDescription();
         }
     }
 

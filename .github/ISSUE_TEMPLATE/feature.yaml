@@ -18,6 +18,7 @@ body:
         - Cassandra
         - Clickhouse
         - CockroachDB
+        - CrateDB
         - Consul
         - Couchbase
         - DB2
@@ -30,13 +31,15 @@ body:
         - Kafka
         - LocalStack
         - MariaDB
+        - MinIO
         - MockServer
         - MongoDB
         - MSSQLServer
         - MySQL
         - Neo4j
         - NGINX
-        - Oracle-XE
+        - Oracle Free
+        - Oracle XE
         - OrientDB
         - PostgreSQL
         - QuestDB

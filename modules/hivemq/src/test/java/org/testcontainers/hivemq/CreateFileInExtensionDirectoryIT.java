@@ -21,7 +21,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
-public class CreateFileInExtensionDirectoryIT {
+class CreateFileInExtensionDirectoryIT {
 
     @Test
     @Timeout(value = 3, unit = TimeUnit.MINUTES)

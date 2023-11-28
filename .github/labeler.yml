@@ -1,4 +1,6 @@
 "area/docker-compose":
+  - core/src/main/java/org/testcontainers/containers/ComposeContainer.java
+  - core/src/main/java/org/testcontainers/containers/ComposeDelegate.java
   - core/src/main/java/org/testcontainers/containers/DockerComposeContainer.java
   - core/src/main/java/org/testcontainers/containers/DockerComposeFiles.java
 "github_actions":
@@ -19,6 +21,8 @@
   - modules/consul/**/*
 "modules/couchbase":
   - modules/couchbase/**/*
+"modules/cratedb":
+  - modules/cratedb/**/*
 "modules/db2":
   - modules/db2/**/*
 "modules/dynalite":
@@ -43,6 +47,8 @@
   - modules/localstack/**/*
 "modules/mariadb":
   - modules/mariadb/**/*
+"modules/minio":
+  - modules/minio/**/*
 "modules/mockserver":
   - modules/mockserver/**/*
 "modules/mongodb":
@@ -56,6 +62,7 @@
 "modules/nginx":
   - modules/nginx/**/*
 "modules/oracle":
+  - modules/oracle-free/**/*
   - modules/oracle-xe/**/*
 "modules/orientdb":
   - modules/orientdb/**/*

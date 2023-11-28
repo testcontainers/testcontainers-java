@@ -1,7 +1,6 @@
 package org.testcontainers.solace;
 
 import org.apache.qpid.jms.JmsConnectionFactory;
-import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -18,6 +17,8 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class SolaceContainerAMQPTest {
 
@@ -42,8 +43,8 @@ public class SolaceContainerAMQPTest {
                 solaceContainer.getOrigin(Service.AMQP)
             );
             // }
-            Assertions.assertThat(session).isNotNull();
-            Assertions.assertThat(consumeMessageFromSolace(session)).isEqualTo(MESSAGE);
+            assertThat(session).isNotNull();
+            assertThat(consumeMessageFromSolace(session)).isEqualTo(MESSAGE);
             session.close();
         }
     }
@@ -86,7 +87,7 @@ public class SolaceContainerAMQPTest {
                 }
             });
             publishMessageToSolace(session, topic);
-            Assertions.assertThat(latch.await(10L, TimeUnit.SECONDS)).isTrue();
+            assertThat(latch.await(10L, TimeUnit.SECONDS)).isTrue();
             messageConsumer.close();
             return result[0];
         } catch (Exception e) {

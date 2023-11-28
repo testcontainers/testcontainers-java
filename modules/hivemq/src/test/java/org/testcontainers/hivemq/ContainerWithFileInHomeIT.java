@@ -20,7 +20,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
-public class ContainerWithFileInHomeIT {
+class ContainerWithFileInHomeIT {
 
     @Test
     @Timeout(value = 3, unit = TimeUnit.MINUTES)

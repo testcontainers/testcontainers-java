@@ -27,33 +27,61 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 
 ### JDBC URL examples
 
-#### Using Testcontainers with a fixed version
+#### Using ClickHouse
 
-`jdbc:tc:mysql:5.7.34:///databasename`
-
-#### Using PostgreSQL
-
-`jdbc:tc:postgresql:9.6.8:///databasename`
-
-#### Using PostGIS
-
-`jdbc:tc:postgis:9.6-2.5:///databasename`
-
-#### Using TimescaleDB
-
-`jdbc:tc:timescaledb:2.1.0-pg13:///databasename`
-
-#### Using Trino
-
-`jdbc:tc:trino:352://localhost/memory/default`
+`jdbc:tc:clickhouse:18.10.3:///databasename`
 
 #### Using CockroachDB
 
 `jdbc:tc:cockroach:v21.2.3:///databasename`
 
+#### Using CrateDB
+
+`jdbc:tc:cratedb:5.2.3//localhost:5432/crate`
+
+#### Using DB2
+
+`jdbc:tc:db2:11.5.0.0a//localhost:5432/crate`
+
+#### Using MariaDB
+
+`jdbc:tc:mariadb:10.2.14:///databasename`
+
+#### Using MySQL
+
+`jdbc:tc:mysql:5.7.34:///databasename`
+
+#### Using MSSQL Server
+
+`jdbc:tc:sqlserver:2017-CU12:///databasename`
+
+#### Using Oracle
+
+`jdbc:tc:oracle:21-slim-faststart:///databasename`
+
+#### Using PostGIS
+
+`jdbc:tc:postgis:9.6-2.5:///databasename`
+
+#### Using PostgreSQL
+
+`jdbc:tc:postgresql:9.6.8:///databasename`
+
+#### Using QuestDB
+
+`jdbc:tc:questdb:6.5.3:///databasename`
+
+#### Using TimescaleDB
+
+`jdbc:tc:timescaledb:2.1.0-pg13:///databasename`
+
 #### Using TiDB
 
 `jdbc:tc:tidb:v6.1.0:///databasename`
+
+#### Using Trino
+
+`jdbc:tc:trino:352://localhost/memory/default`
 
 #### Using YugabyteDB
 
