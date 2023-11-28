@@ -5,7 +5,7 @@ from SeleniumHQ's [docker-selenium](https://github.com/SeleniumHQ/docker-seleniu
 
 ## Benefits
 
-* Fully compatible with Selenium 2/Webdriver tests, by providing a `RemoteWebDriver` instance
+* Fully compatible with Selenium 3 & 4 tests for Chrome and Firefox and Selenium 4 tests for Edge, by providing a `RemoteWebDriver` instance
 * No need to have specific web browsers, or even a desktop environment, installed on test servers. The only dependency
   is a working Docker installation and your Java JUnit test suite.
 * Browsers are always launched from a fixed, clean image. This means no configuration drift from user changes or
@@ -36,8 +36,7 @@ test methods:
 You can then use this driver instance like a regular WebDriver.
 
 Note that, if you want to test a **web application running on the host machine** (the machine the JUnit tests are
-running on - which is quite likely), you'll need to replace any references to `localhost` with an IP address that the
-Docker container can reach. Use the `getTestHostIpAddress()` method, e.g.:
+running on - which is quite likely), you'll need to use [the host exposing](../features/networking.md#exposing-host-ports-to-the-container) feature of Testcontainers, e.g.:
 <!--codeinclude-->
 [Open Web Page](../../modules/selenium/src/test/java/org/testcontainers/junit/LocalServerWebDriverContainerTest.java) inside_block:getPage
 <!--/codeinclude-->
@@ -47,10 +46,11 @@ Docker container can reach. Use the `getTestHostIpAddress()` method, e.g.:
 
 ### Other browsers
 
-At the moment, Chrome and Firefox are supported. To switch, simply change the first parameter to the rule constructor:
+At the moment, Chrome, Firefox and Edge are supported. To switch, simply change the first parameter to the rule constructor:
 <!--codeinclude-->
 [Chrome](../../modules/selenium/src/test/java/org/testcontainers/junit/ChromeWebDriverContainerTest.java) inside_block:junitRule
 [Firefox](../../modules/selenium/src/test/java/org/testcontainers/junit/FirefoxWebDriverContainerTest.java) inside_block:junitRule
+[Edge](../../modules/selenium/src/test/java/org/testcontainers/junit/EdgeWebDriverContainerTest.java) inside_block:junitRule
 <!--/codeinclude-->
 
 ### Recording videos
@@ -82,38 +82,41 @@ Note the factory must implement `org.testcontainers.containers.RecordingFileFact
 
 ## More examples
 
-A few different examples are shown in [ChromeWebDriverContainerTest.java](https://github.com/testcontainers/testcontainers-java/blob/master/modules/selenium/src/test/java/org/testcontainers/junit/ChromeWebDriverContainerTest.java).
+A few different examples are shown in [ChromeWebDriverContainerTest.java](https://github.com/testcontainers/testcontainers-java/blob/main/modules/selenium/src/test/java/org/testcontainers/junit/ChromeWebDriverContainerTest.java).
 
 ## Adding this module to your project dependencies
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
-```groovy tab='Gradle'
-testImplementation "org.testcontainers:selenium:{{latest_version}}"
-```
-
-```xml tab='Maven'
-<dependency>
-    <groupId>org.testcontainers</groupId>
-    <artifactId>selenium</artifactId>
-    <version>{{latest_version}}</version>
-    <scope>test</scope>
-</dependency>
-```
+=== "Gradle"
+    ```groovy
+    testImplementation "org.testcontainers:selenium:{{latest_version}}"
+    ```
+=== "Maven"
+    ```xml
+    <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>selenium</artifactId>
+        <version>{{latest_version}}</version>
+        <scope>test</scope>
+    </dependency>
+    ```
 
 !!! hint
     Adding this Testcontainers library JAR will not automatically add a Selenium Webdriver JAR to your project. You should ensure that your project also has suitable Selenium dependencies in place, for example:
 
-    ```groovy tab='Gradle'
-    compile "org.seleniumhq.selenium:selenium-remote-driver:3.141.59"
-    ```
+    === "Gradle"
+        ```groovy
+        compile "org.seleniumhq.selenium:selenium-remote-driver:3.141.59"
+        ```
     
-    ```xml tab='Maven'
-    <dependency>
-        <groupId>org.seleniumhq.selenium</groupId>
-        <artifactId>selenium-remote-driver</artifactId>
-        <version>3.141.59</version>
-    </dependency>
-    ```
+    === "Maven"
+        ```xml
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-remote-driver</artifactId>
+            <version>3.141.59</version>
+        </dependency>
+        ```
     
     Testcontainers will try and match the version of the Dockerized browser to whichever version of Selenium is found on the classpath

@@ -1,0 +1,95 @@
+name: Feature
+description: Suggest a new feature
+title: "[Feature]: "
+labels: ["type/feature"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before submitting a `feature`, please make sure there is no existing feature for the one you are requesting and it has been discussed with the team via [discussions](https://github.com/testcontainers/testcontainers-java/discussions) or Slack. If so, please provide the following information:
+  - type: dropdown
+    id: module
+    attributes:
+      label: Module
+      description: Is this feature related to any of the existing modules?
+      options:
+        - Core
+        - Azure
+        - Cassandra
+        - Clickhouse
+        - CockroachDB
+        - CrateDB
+        - Consul
+        - Couchbase
+        - DB2
+        - Dynalite
+        - Elasticsearch
+        - GCloud
+        - HiveMQ
+        - InfluxDB
+        - K3S
+        - Kafka
+        - LocalStack
+        - MariaDB
+        - MinIO
+        - MockServer
+        - MongoDB
+        - MSSQLServer
+        - MySQL
+        - Neo4j
+        - NGINX
+        - Oracle Free
+        - Oracle XE
+        - OrientDB
+        - PostgreSQL
+        - QuestDB
+        - Presto
+        - Pulsar
+        - RabbitMQ
+        - Redpanda
+        - Selenium
+        - Solace
+        - Solr
+        - TiDB
+        - ToxiProxy
+        - Trino
+        - Vault
+        - YugabyteDB
+        - New Module
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Is this feature related to a problem? Please describe it.
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Solution
+      description: What's the proposed solution for this feature?
+    validations:
+      required: true
+  - type: textarea
+    id: benefit
+    attributes:
+      label: Benefit
+      description: What's the benefit of addng this feature to the project?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives
+      description: Are there other alternatives? Please describe them.
+    validations:
+      required: true
+  - type: dropdown
+    id: contribute
+    attributes:
+      label: Would you like to help contributing this feature?
+      options:
+        - 'Yes'
+        - 'No'
+    validations:
+      required: true

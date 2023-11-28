@@ -7,15 +7,26 @@ import org.testcontainers.containers.JdbcDatabaseContainerProvider;
 import org.testcontainers.delegate.DatabaseDelegate;
 import org.testcontainers.ext.ScriptUtils;
 
-import javax.script.ScriptException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.sql.*;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.sql.DriverPropertyInfo;
+import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Properties;
+import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.logging.Logger;
+
+import javax.script.ScriptException;
 
 /**
  * Test Containers JDBC proxy driver. This driver will handle JDBC URLs of the form:
@@ -38,9 +49,13 @@ public class ContainerDatabaseDriver implements Driver {
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ContainerDatabaseDriver.class);
 
     private Driver delegate;
+
     private static final Map<String, Set<Connection>> containerConnections = new HashMap<>();
+
     private static final Map<String, JdbcDatabaseContainer> jdbcUrlContainerCache = new HashMap<>();
+
     private static final Set<String> initializedContainers = new HashSet<>();
+
     private static final String FILE_PATH_PREFIX = "file:";
 
     static {
@@ -62,7 +77,6 @@ public class ContainerDatabaseDriver implements Driver {
 
     @Override
     public synchronized Connection connect(String url, final Properties info) throws SQLException {
-
         /*
           The driver should return "null" if it realizes it is the wrong kind of driver to connect to the given URL.
          */
@@ -73,7 +87,6 @@ public class ContainerDatabaseDriver implements Driver {
         ConnectionUrl connectionUrl = ConnectionUrl.newInstance(url);
 
         synchronized (jdbcUrlContainerCache) {
-
             String queryString = connectionUrl.getQueryString().orElse("");
             /*
               If we already have a running container for this exact connection string, we want to connect
@@ -81,7 +94,6 @@ public class ContainerDatabaseDriver implements Driver {
              */
             JdbcDatabaseContainer container = jdbcUrlContainerCache.get(connectionUrl.getUrl());
             if (container == null) {
-
                 LOGGER.debug("Container not found in cache, creating new instance");
 
                 Map<String, String> parameters = connectionUrl.getContainerParameters();
@@ -89,7 +101,9 @@ public class ContainerDatabaseDriver implements Driver {
                 /*
                   Find a matching container type using ServiceLoader.
                  */
-                ServiceLoader<JdbcDatabaseContainerProvider> databaseContainers = ServiceLoader.load(JdbcDatabaseContainerProvider.class);
+                ServiceLoader<JdbcDatabaseContainerProvider> databaseContainers = ServiceLoader.load(
+                    JdbcDatabaseContainerProvider.class
+                );
                 for (JdbcDatabaseContainerProvider candidateContainerType : databaseContainers) {
                     if (candidateContainerType.supports(connectionUrl.getDatabaseType())) {
                         container = candidateContainerType.newInstance(connectionUrl);
@@ -98,7 +112,9 @@ public class ContainerDatabaseDriver implements Driver {
                     }
                 }
                 if (container == null) {
-                    throw new UnsupportedOperationException("Database name " + connectionUrl.getDatabaseType() + " not supported");
+                    throw new UnsupportedOperationException(
+                        "Database name " + connectionUrl.getDatabaseType() + " not supported"
+                    );
                 }
 
                 /*
@@ -121,7 +137,7 @@ public class ContainerDatabaseDriver implements Driver {
             /*
               Create a connection using the delegated driver. The container must be ready to accept connections.
              */
-            Connection connection = container.createConnection(queryString);
+            Connection connection = container.createConnection(queryString, info);
 
             /*
               If this container has not been initialized, AND
@@ -138,7 +154,6 @@ public class ContainerDatabaseDriver implements Driver {
         }
     }
 
-
     /**
      * Wrap the connection, setting up a callback to be called when the connection is closed.
      * <p>
@@ -149,23 +164,34 @@ public class ContainerDatabaseDriver implements Driver {
      * @param connectionUrl {@link ConnectionUrl} instance representing JDBC Url for this connection
      * @return the connection, wrapped
      */
-    private Connection wrapConnection(final Connection connection, final JdbcDatabaseContainer container, final ConnectionUrl connectionUrl) {
-
+    private Connection wrapConnection(
+        final Connection connection,
+        final JdbcDatabaseContainer container,
+        final ConnectionUrl connectionUrl
+    ) {
         final boolean isDaemon = connectionUrl.isInDaemonMode() || connectionUrl.isReusable();
 
-        Set<Connection> connections = containerConnections.computeIfAbsent(container.getContainerId(), k -> new HashSet<>());
+        Set<Connection> connections = containerConnections.computeIfAbsent(
+            container.getContainerId(),
+            k -> new HashSet<>()
+        );
 
         connections.add(connection);
 
         final Set<Connection> finalConnections = connections;
 
-        return new ConnectionWrapper(connection, () -> {
-            finalConnections.remove(connection);
-            if (!isDaemon && finalConnections.isEmpty()) {
-                container.stop();
-                jdbcUrlContainerCache.remove(connectionUrl.getUrl());
+        return new ConnectionWrapper(
+            connection,
+            () -> {
+                finalConnections.remove(connection);
+                if (!isDaemon && finalConnections.isEmpty()) {
+                    synchronized (jdbcUrlContainerCache) {
+                        container.stop();
+                        jdbcUrlContainerCache.remove(connectionUrl.getUrl());
+                    }
+                }
             }
-        });
+        );
     }
 
     /**
@@ -175,7 +201,8 @@ public class ContainerDatabaseDriver implements Driver {
      * @param databaseDelegate database delegate to apply init scripts to the database
      * @throws SQLException on script or DB error
      */
-    private void runInitScriptIfRequired(final ConnectionUrl connectionUrl, DatabaseDelegate databaseDelegate) throws SQLException {
+    private void runInitScriptIfRequired(final ConnectionUrl connectionUrl, DatabaseDelegate databaseDelegate)
+        throws SQLException {
         if (connectionUrl.getInitScriptPath().isPresent()) {
             String initScriptPath = connectionUrl.getInitScriptPath().get();
             try {
@@ -189,7 +216,9 @@ public class ContainerDatabaseDriver implements Driver {
                 }
                 if (resource == null) {
                     LOGGER.warn("Could not load classpath init script: {}", initScriptPath);
-                    throw new SQLException("Could not load classpath init script: " + initScriptPath + ". Resource not found.");
+                    throw new SQLException(
+                        "Could not load classpath init script: " + initScriptPath + ". Resource not found."
+                    );
                 }
 
                 String sql = IOUtils.toString(resource, StandardCharsets.UTF_8);
@@ -211,7 +240,8 @@ public class ContainerDatabaseDriver implements Driver {
      * @param connection    JDBC connection to apply init functions to.
      * @throws SQLException on script or DB error
      */
-    private void runInitFunctionIfRequired(final ConnectionUrl connectionUrl, Connection connection) throws SQLException {
+    private void runInitFunctionIfRequired(final ConnectionUrl connectionUrl, Connection connection)
+        throws SQLException {
         if (connectionUrl.getInitFunction().isPresent()) {
             String className = connectionUrl.getInitFunction().get().getClassName();
             String methodName = connectionUrl.getInitFunction().get().getMethodName();
@@ -221,7 +251,9 @@ public class ContainerDatabaseDriver implements Driver {
                 Method method = initFunctionClazz.getMethod(methodName, Connection.class);
 
                 method.invoke(null, connection);
-            } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            } catch (
+                ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e
+            ) {
                 LOGGER.error("Error while executing init function: {}::{}", className, methodName, e);
                 throw new SQLException("Error while executing init function: " + className + "::" + methodName, e);
             }
@@ -268,7 +300,6 @@ public class ContainerDatabaseDriver implements Driver {
             containerConnections.clear();
             initializedContainers.clear();
         }
-
     }
 
     /**

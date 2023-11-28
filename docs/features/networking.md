@@ -69,7 +69,8 @@ We need to tell Testcontainers to prepare to expose this port to containers:
 <!--/codeinclude-->
 
 !!! warning
-    Note that the above command should be invoked _before_ containers are started, but _after_ the server on the host was started.
+    Note that the above command should be invoked _before_ containers are started, but _after_ the server on the host was started.  
+    Alternatively, use `container.withAccessToHost(true)` to force the host access mechanism (you still need to call `exposeHostPorts` to make the port available).
     
 Having done so, we can now access this port from any containers that are launched.
 From a container's perspective, the hostname will be `host.testcontainers.internal` and the port will be the same value as `localServerPort`.

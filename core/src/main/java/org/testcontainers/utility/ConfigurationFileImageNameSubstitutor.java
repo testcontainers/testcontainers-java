@@ -28,7 +28,8 @@ final class ConfigurationFileImageNameSubstitutor extends ImageNameSubstitutor {
             .asCompatibleSubstituteFor(original);
 
         if (!result.equals(original)) {
-            log.warn("Image name {} was substituted by configuration to {}. This approach is deprecated and will be removed in the future",
+            log.warn(
+                "Image name {} was substituted by configuration to {}. This approach is deprecated and will be removed in the future",
                 original,
                 result
             );

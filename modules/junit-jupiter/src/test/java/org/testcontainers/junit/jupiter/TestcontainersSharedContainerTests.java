@@ -4,22 +4,22 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.testcontainers.junit.jupiter.JUnitJupiterTestImages.HTTPD_IMAGE;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @Testcontainers
 class TestcontainersSharedContainerTests {
 
     @Container
-    private static final GenericContainer<?> GENERIC_CONTAINER = new GenericContainer<>(HTTPD_IMAGE)
+    private static final GenericContainer<?> GENERIC_CONTAINER = new GenericContainer<>(
+        JUnitJupiterTestImages.HTTPD_IMAGE
+    )
         .withExposedPorts(80);
 
     private static String lastContainerId;
 
     @BeforeAll
     static void doSomethingWithAContainer() {
-        assertTrue(GENERIC_CONTAINER.isRunning());
+        assertThat(GENERIC_CONTAINER.isRunning()).isTrue();
     }
 
     @Test
@@ -27,7 +27,7 @@ class TestcontainersSharedContainerTests {
         if (lastContainerId == null) {
             lastContainerId = GENERIC_CONTAINER.getContainerId();
         } else {
-            assertEquals(lastContainerId, GENERIC_CONTAINER.getContainerId());
+            assertThat(GENERIC_CONTAINER.getContainerId()).isEqualTo(lastContainerId);
         }
     }
 
@@ -36,8 +36,7 @@ class TestcontainersSharedContainerTests {
         if (lastContainerId == null) {
             lastContainerId = GENERIC_CONTAINER.getContainerId();
         } else {
-            assertEquals(lastContainerId, GENERIC_CONTAINER.getContainerId());
+            assertThat(GENERIC_CONTAINER.getContainerId()).isEqualTo(lastContainerId);
         }
     }
-
 }

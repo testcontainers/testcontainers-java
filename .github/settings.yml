@@ -1,0 +1,367 @@
+# These settings are synced to GitHub by https://probot.github.io/apps/settings/
+
+repository:
+  # See https://docs.github.com/en/rest/reference/repos#update-a-repository for all available settings.
+
+  # The name of the repository. Changing this will rename the repository
+  name: testcontainers-java
+
+  # A short description of the repository that will show up on GitHub
+  description: Testcontainers is a Java library that supports JUnit tests, providing lightweight, throwaway instances of common databases, Selenium web browsers, or anything else that can run in a Docker container.
+
+  # A URL with more information about the repository
+  homepage: https://testcontainers.org
+
+  # A comma-separated list of topics to set on the repository
+  topics: java,testing,docker,docker-compose,jvm,test-automation,junit,hacktoberfest
+
+  # Either `true` to make the repository private, or `false` to make it public.
+  private: false
+
+  # Either `true` to enable issues for this repository, `false` to disable them.
+  has_issues: true
+
+  # Either `true` to enable projects for this repository, or `false` to disable them.
+  # If projects are disabled for the organization, passing `true` will cause an API error.
+  has_projects: false
+
+  # Either `true` to enable the wiki for this repository, `false` to disable it.
+  has_wiki: false
+
+  # Either `true` to enable downloads for this repository, `false` to disable them.
+  has_downloads: false
+
+  # Updates the default branch for this repository.
+  default_branch: main
+
+  # Either `true` to allow squash-merging pull requests, or `false` to prevent
+  # squash-merging.
+  allow_squash_merge: true
+
+  # Either `true` to allow merging pull requests with a merge commit, or `false`
+  # to prevent merging pull requests with merge commits.
+  allow_merge_commit: false
+
+  # Either `true` to allow rebase-merging pull requests, or `false` to prevent
+  # rebase-merging.
+  allow_rebase_merge: false
+
+  # Either `true` to enable automatic deletion of branches on merge, or `false` to disable
+  delete_branch_on_merge: true
+
+# Labels: define labels for Issues and Pull Requests
+# If including a `#`, make sure to wrap it with quotes!
+labels:
+  - name: area/bitbucket-pipelines
+    color: '#f9d0c4'
+
+  - name: area/docker-compose
+    color: '#f9d0c4'
+
+  - name: area/logging
+    color: '#f9d0c4'
+
+  - name: area/shading
+    color: '#f9d0c4'
+
+  - name: area/test frameworks
+    color: '#f9d0c4'
+
+  - name: blocker
+    color: '#b60205'
+
+  - name: client/docker-for-mac
+    color: '#c2e0c6'
+
+  - name: client/docker-for-windows
+    color: '#c2e0c6'
+
+  - name: client/docker-machine
+    color: '#c2e0c6'
+
+  - name: client/in-container
+    color: '#c2e0c6'
+
+  - name: client/podman
+    color: '#c2e0c6'
+
+  - name: dependencies
+    color: '#0025ff'
+
+  - name: github_actions
+    color: '#000000'
+
+  - name: good first issue
+    color: '#14d60a'
+
+  - name: gradle-wrapper
+    color: '#02303A'
+
+  - name: hacktoberfest
+    color: '#14d60a'
+
+  - name: hacktoberfest-accepted
+    color: '#79C259'
+
+  - name: help wanted
+    color: '#fef2c0'
+
+  - name: modules/azure
+    color: '#006b75'
+
+  - name: modules/cassandra
+    color: '#006b75'
+
+  - name: modules/clickhouse
+    color: '#006b75'
+
+  - name: modules/cockroachdb
+    color: '#006b75'
+
+  - name: modules/consul
+    color: '#006b75'
+
+  - name: modules/couchbase
+    color: '#006b75'
+
+  - name: modules/cratedb
+    color: '#006b75'
+
+  - name: modules/db2
+    color: '#006b75'
+
+  - name: modules/dynalite
+    color: '#006b75'
+
+  - name: modules/elasticsearch
+    color: '#006b75'
+
+  - name: modules/gcloud
+    color: '#006b75'
+
+  - name: modules/hivemq
+    color: '#006b75'
+
+  - name: modules/influx
+    color: '#006b75'
+
+  - name: modules/jdbc
+    color: '#006b75'
+
+  - name: modules/jupiter
+    color: '#006b75'
+
+  - name: modules/k3s
+    color: '#006b75'
+
+  - name: modules/kafka
+    color: '#006b75'
+
+  - name: modules/localstack
+    color: '#006b75'
+
+  - name: modules/mariadb
+    color: '#006b75'
+
+  - name: modules/mockserver
+    color: '#006b75'
+
+  - name: modules/mongodb
+    color: '#006b75'
+
+  - name: modules/mysql
+    color: '#006b75'
+
+  - name: modules/neo4j
+    color: '#006b75'
+
+  - name: modules/nginx
+    color: '#006b75'
+
+  - name: modules/oracle
+    color: '#006b75'
+
+  - name: modules/orientdb
+    color: '#006b75'
+
+  - name: modules/postgres
+    color: '#006b75'
+
+  - name: modules/presto
+    color: '#006b75'
+
+  - name: modules/pulsar
+    color: '#006b75'
+
+  - name: modules/questdb
+    color: '#006b75'
+
+  - name: modules/r2dbc
+    color: '#006b75'
+
+  - name: modules/rabbitmq
+    color: '#006b75'
+
+  - name: modules/redpanda
+    color: '#006b75'
+
+  - name: modules/selenium
+    color: '#006b75'
+
+  - name: modules/solace
+    color: '#006b75'
+
+  - name: modules/solr
+    color: '#006b75'
+
+  - name: modules/spock
+    color: '#006b75'
+
+  - name: modules/sql-server
+    color: '#006b75'
+
+  - name: modules/tidb
+    color: '#006b75'
+
+  - name: modules/toxiproxy
+    color: '#006b75'
+
+  - name: modules/trino
+    color: '#006b75'
+
+  - name: modules/vault
+    color: '#006b75'
+
+  - name: os/linux
+    color: '#1d76db'
+
+  - name: os/macOS
+    color: '#1d76db'
+
+  - name: os/windows
+    color: '#1d76db'
+
+  - name: resolution/acknowledged
+    color: '#fef2c0'
+
+  - name: resolution/answered
+    color: '#fef2c0'
+
+  - name: resolution/awaiting-release
+    color: '#fef2c0'
+
+  - name: resolution/duplicate
+    color: '#fef2c0'
+
+  - name: resolution/invalid
+    color: '#fef2c0'
+
+  - name: resolution/pr-submitted
+    color: '#fef2c0'
+
+  - name: resolution/somedaymaybe
+    color: '#fef2c0'
+
+  - name: resolution/waiting-for-info
+    color: '#fef2c0'
+
+  - name: resolution/wontfix
+    color: '#fef2c0'
+
+  - name: security
+    color: '#ee0701'
+
+  - name: stale
+    color: '#ffffff'
+
+  - name: type/breaking-api-change
+    color: '#d4c5f9'
+
+  - name: type/bug
+    color: '#d4c5f9'
+
+  - name: type/deprecation
+    color: '#d4c5f9'
+
+  - name: type/docs
+    color: '#d4c5f9'
+
+  - name: type/enhancement
+    color: '#d4c5f9'
+
+  - name: type/feature
+    color: '#d4c5f9'
+
+  - name: type/housekeeping
+    color: '#d4c5f9'
+
+  - name: type/new module
+    color: '#d4c5f9'
+
+  - name: type/question
+    color: '#d4c5f9'
+
+  - name: type/test-improvement
+    color: '#d4c5f9'
+
+# Collaborators: give specific users access to this repository.
+# See https://docs.github.com/en/rest/reference/repos#add-a-repository-collaborator for available options
+# collaborators:
+#   - username:
+#     permission: maintain
+
+  # Note: `permission` is only valid on organization-owned repositories.
+  # The permission to grant the collaborator. Can be one of:
+  # * `pull` - can pull, but not push to or administer this repository.
+  # * `push` - can pull and push, but not administer this repository.
+  # * `admin` - can pull, push and administer this repository.
+  # * `maintain` - Recommended for project managers who need to manage the repository without access to sensitive or destructive actions.
+  # * `triage` - Recommended for contributors who need to proactively manage issues and pull requests without write access.
+
+# See https://docs.github.com/en/rest/reference/teams#add-or-update-team-repository-permissions for available options
+teams:
+  # Please make sure the team already exist in the organization, as the repository-settings application is not creating them.
+  # See https://github.com/repository-settings/app/discussions/639 for more information about teams and settings
+  - name: java-team
+    # The permission to grant the team. Can be one of:
+    # * `pull` - can pull, but not push to or administer this repository.
+    # * `push` - can pull and push, but not administer this repository.
+    # * `admin` - can pull, push and administer this repository.
+    # * `maintain` - Recommended for project managers who need to manage the repository without access to sensitive or destructive actions.
+    # * `triage` - Recommended for contributors who need to proactively manage issues and pull requests without write access.
+    permission: admin
+  - name: oss-team
+    permission: maintain
+
+branches:
+  - name: main
+    # https://docs.github.com/en/rest/reference/repos#update-branch-protection
+    # Branch Protection settings. Set to null to disable
+    protection:
+      # Required. Require at least one approving review on a pull request, before merging. Set to null to disable.
+      required_pull_request_reviews:
+        # The number of approvals required. (1-6)
+        required_approving_review_count: 1
+        # Dismiss approved reviews automatically when a new commit is pushed.
+        dismiss_stale_reviews: true
+        # Blocks merge until code owners have reviewed.
+        require_code_owner_reviews: true
+        # Specify which users and teams can dismiss pull request reviews. Pass an empty dismissal_restrictions object to disable. User and team dismissal_restrictions are only available for organization-owned repositories. Omit this parameter for personal repositories.
+        dismissal_restrictions:
+          users: []
+          teams: [java-team]
+      # Required. Require status checks to pass before merging. Set to null to disable
+      required_status_checks:
+        # Required. Require branches to be up to date before merging.
+        strict: true
+        # Required. The list of status checks to require in order to merge into this branch
+        contexts: ["check (:testcontainers:check)", "check (:docs:examples:check)", "in-docker_test", "ci/circleci: minimal_core", "test"]
+      # Required. Enforce all configured restrictions for administrators. Set to true to enforce required status checks for repository administrators. Set to null to disable.
+      enforce_admins: false
+      # Prevent merge commits from being pushed to matching branches
+      required_linear_history: true
+      # Required. Restrict who can push to this branch. Team and user restrictions are only available for organization-owned repositories. Set to null to disable.
+      restrictions:
+        apps: []
+        users: []
+        teams: [java-team]

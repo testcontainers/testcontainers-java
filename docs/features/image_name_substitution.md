@@ -112,9 +112,10 @@ To do this, create or modify a file on the classpath named `testcontainers.prope
 
 For example:
 
-```text tab="src/test/resources/testcontainers.properties"
-image.substitutor=com.mycompany.testcontainers.ExampleImageNameSubstitutor
-``` 
+=== "`src/test/resources/testcontainers.properties`"
+    ```text
+    image.substitutor=com.mycompany.testcontainers.ExampleImageNameSubstitutor
+    ``` 
 
 Note that it is also possible to provide this same configuration property:
 
@@ -130,7 +131,7 @@ Please see [the documentation on configuration mechanisms](./configuration.md) f
 !!! note
     This approach is discouraged and deprecated, but is documented for completeness.
     Please consider one of the other approaches outlined in this page instead.
-    Overriding individual image names via configuration may be removed in 2021. 
+    Overriding individual image names via configuration may be removed in the future. 
 
 Consider this if:
 

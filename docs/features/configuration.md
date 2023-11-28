@@ -30,7 +30,6 @@ Before running any containers Testcontainers will perform a set of startup check
 ```
         ℹ︎ Checking the system...
         ✔ Docker version should be at least 1.6.0
-        ✔ Docker environment should have more than 2GB free disk space
         ✔ File should be mountable
         ✔ A port exposed by a docker container should be accessible
 ```
@@ -47,16 +46,16 @@ It takes a couple of seconds, but if you want to speed up your tests, you can di
 Testcontainers uses public Docker images to perform different actions like startup checks, VNC recording and others. 
 Some companies disallow the usage of Docker Hub, but you can override `*.image` properties with your own images from your private registry to workaround that.
 
-> **ryuk.container.image = testcontainers/ryuk:0.3.1**
+> **ryuk.container.image = testcontainers/ryuk:0.3.3**
 > Performs fail-safe cleanup of containers, and always required (unless [Ryuk is disabled](#disabling-ryuk))
 
-> **tinyimage.container.image = alpine:3.14**  
+> **tinyimage.container.image = alpine:3.16**  
 > Used to check whether images can be pulled at startup, and always required (unless [startup checks are disabled](#disabling-the-startup-checks))
 
-> **sshd.container.image = testcontainers/sshd:1.0.0**  
+> **sshd.container.image = testcontainers/sshd:1.1.0**  
 > Required if [exposing host ports to containers](./networking.md#exposing-host-ports-to-the-container)
 
-> **vncrecorder.container.image = testcontainers/vnc-recorder:1.1.0**
+> **vncrecorder.container.image = testcontainers/vnc-recorder:1.3.0**
 > Used by VNC recorder in Testcontainers' Selenium integration
 
 > **socat.container.image = alpine/socat**  
@@ -74,10 +73,10 @@ Some companies disallow the usage of Docker Hub, but you can override `*.image` 
 
 ## Customizing Ryuk resource reaper
 
-> **ryuk.container.image = testcontainers/ryuk:0.3.1**
+> **ryuk.container.image = testcontainers/ryuk:0.3.3**
 > The resource reaper is responsible for container removal and automatic cleanup of dead containers at JVM shutdown
 
-> **ryuk.container.privileged = false**
+> **ryuk.container.privileged = true**
 > In some environments ryuk must be started in privileged mode to work properly (--privileged flag)
 
 ### Disabling Ryuk
@@ -93,6 +92,11 @@ but does not allow starting privileged containers, you can turn off the Ryuk con
 
 > **pull.pause.timeout = 30**
 > By default Testcontainers will abort the pull of an image if the pull appears stalled (no data transferred) for longer than this duration (in seconds).
+
+## Customizing client ping behaviour
+
+> **client.ping.timeout = 5**
+> Specifies for how long Testcontainers will try to connect to the Docker client to obtain valid info about the client before giving up and trying next strategy, if applicable (in seconds).
 
 ## Customizing Docker host detection
 
@@ -120,4 +124,8 @@ docker.client.strategy=org.testcontainers.dockerclient.EnvironmentAndSystemPrope
 docker.host=tcp\://my.docker.host\:1234     # Equivalent to the DOCKER_HOST environment variable. Colons should be escaped.
 docker.tls.verify=1                         # Equivalent to the DOCKER_TLS_VERIFY environment variable
 docker.cert.path=/some/path                 # Equivalent to the DOCKER_CERT_PATH environment variable
+```
+In addition, you can deactivate this behaviour by specifying:
+```properties
+dockerconfig.source=autoIgnoringUserProperties # 'auto' by default
 ```

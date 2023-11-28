@@ -8,8 +8,7 @@ import org.testcontainers.dockerclient.DockerMachineClientProviderStrategy;
  */
 public class TestEnvironment {
 
-    private TestEnvironment() {
-    }
+    private TestEnvironment() {}
 
     public static boolean dockerApiAtLeast(String minimumVersion) {
         ComparableVersion min = new ComparableVersion(minimumVersion);
@@ -29,4 +28,3 @@ public class TestEnvironment {
         return DockerClientFactory.instance().isUsing(DockerMachineClientProviderStrategy.class);
     }
 }
-

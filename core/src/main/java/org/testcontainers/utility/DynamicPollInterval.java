@@ -15,6 +15,7 @@ import java.time.Instant;
 public class DynamicPollInterval implements PollInterval {
 
     final Duration interval;
+
     Instant lastTimestamp;
 
     private DynamicPollInterval(Duration interval) {

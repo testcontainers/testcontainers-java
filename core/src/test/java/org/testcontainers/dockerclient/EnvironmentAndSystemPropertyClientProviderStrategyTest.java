@@ -1,7 +1,6 @@
 package org.testcontainers.dockerclient;
 
 import com.github.dockerjava.core.DefaultDockerClientConfig;
-import com.github.dockerjava.core.LocalDirectorySSLConfig;
 import com.github.dockerjava.transport.SSLConfig;
 import org.junit.Before;
 import org.junit.Rule;
@@ -16,10 +15,10 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Properties;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 
@@ -32,7 +31,9 @@ public class EnvironmentAndSystemPropertyClientProviderStrategyTest {
 
     @Rule
     public MockTestcontainersConfigurationRule mockConfig = new MockTestcontainersConfigurationRule();
+
     private URI defaultDockerHost;
+
     private com.github.dockerjava.core.SSLConfig defaultSSLConfig;
 
     @Before
@@ -45,28 +46,54 @@ public class EnvironmentAndSystemPropertyClientProviderStrategyTest {
 
     @Test
     public void testWhenConfigAbsent() {
-        Mockito.doReturn(null).when(TestcontainersConfiguration.getInstance()).getEnvVarOrUserProperty(eq("docker.host"), isNull());
-        Mockito.doReturn(null).when(TestcontainersConfiguration.getInstance()).getEnvVarOrUserProperty(eq("docker.tls.verify"), isNull());
-        Mockito.doReturn(null).when(TestcontainersConfiguration.getInstance()).getEnvVarOrUserProperty(eq("docker.cert.path"), isNull());
+        Mockito
+            .doReturn("auto")
+            .when(TestcontainersConfiguration.getInstance())
+            .getEnvVarOrProperty(eq("dockerconfig.source"), anyString());
+        Mockito
+            .doReturn(null)
+            .when(TestcontainersConfiguration.getInstance())
+            .getEnvVarOrUserProperty(eq("docker.host"), isNull());
+        Mockito
+            .doReturn(null)
+            .when(TestcontainersConfiguration.getInstance())
+            .getEnvVarOrUserProperty(eq("docker.tls.verify"), isNull());
+        Mockito
+            .doReturn(null)
+            .when(TestcontainersConfiguration.getInstance())
+            .getEnvVarOrUserProperty(eq("docker.cert.path"), isNull());
 
         EnvironmentAndSystemPropertyClientProviderStrategy strategy = new EnvironmentAndSystemPropertyClientProviderStrategy();
 
         TransportConfig transportConfig = strategy.getTransportConfig();
-        assertEquals(defaultDockerHost, transportConfig.getDockerHost());
-        assertEquals(defaultSSLConfig, transportConfig.getSslConfig());
+        assertThat(transportConfig.getDockerHost()).isEqualTo(defaultDockerHost);
+        assertThat(transportConfig.getSslConfig()).isEqualTo(defaultSSLConfig);
     }
 
     @Test
     public void testWhenDockerHostPresent() {
-        Mockito.doReturn("tcp://1.2.3.4:2375").when(TestcontainersConfiguration.getInstance()).getEnvVarOrUserProperty(eq("docker.host"), isNull());
-        Mockito.doReturn(null).when(TestcontainersConfiguration.getInstance()).getEnvVarOrUserProperty(eq("docker.tls.verify"), isNull());
-        Mockito.doReturn(null).when(TestcontainersConfiguration.getInstance()).getEnvVarOrUserProperty(eq("docker.cert.path"), isNull());
+        Mockito
+            .doReturn("auto")
+            .when(TestcontainersConfiguration.getInstance())
+            .getEnvVarOrProperty(eq("dockerconfig.source"), anyString());
+        Mockito
+            .doReturn("tcp://1.2.3.4:2375")
+            .when(TestcontainersConfiguration.getInstance())
+            .getEnvVarOrUserProperty(eq("docker.host"), isNull());
+        Mockito
+            .doReturn(null)
+            .when(TestcontainersConfiguration.getInstance())
+            .getEnvVarOrUserProperty(eq("docker.tls.verify"), isNull());
+        Mockito
+            .doReturn(null)
+            .when(TestcontainersConfiguration.getInstance())
+            .getEnvVarOrUserProperty(eq("docker.cert.path"), isNull());
 
         EnvironmentAndSystemPropertyClientProviderStrategy strategy = new EnvironmentAndSystemPropertyClientProviderStrategy();
 
         TransportConfig transportConfig = strategy.getTransportConfig();
-        assertEquals("tcp://1.2.3.4:2375", transportConfig.getDockerHost().toString());
-        assertEquals(defaultSSLConfig, transportConfig.getSslConfig());
+        assertThat(transportConfig.getDockerHost().toString()).isEqualTo("tcp://1.2.3.4:2375");
+        assertThat(transportConfig.getSslConfig()).isEqualTo(defaultSSLConfig);
     }
 
     @Test
@@ -74,18 +101,59 @@ public class EnvironmentAndSystemPropertyClientProviderStrategyTest {
         Path tempDir = Files.createTempDirectory("testcontainers-test");
         String tempDirPath = tempDir.toAbsolutePath().toString();
 
-        Mockito.doReturn("tcp://1.2.3.4:2375").when(TestcontainersConfiguration.getInstance()).getEnvVarOrUserProperty(eq("docker.host"), isNull());
-        Mockito.doReturn("1").when(TestcontainersConfiguration.getInstance()).getEnvVarOrUserProperty(eq("docker.tls.verify"), isNull());
-        Mockito.doReturn(tempDirPath).when(TestcontainersConfiguration.getInstance()).getEnvVarOrUserProperty(eq("docker.cert.path"), isNull());
+        Mockito
+            .doReturn("auto")
+            .when(TestcontainersConfiguration.getInstance())
+            .getEnvVarOrProperty(eq("dockerconfig.source"), anyString());
+        Mockito
+            .doReturn("tcp://1.2.3.4:2375")
+            .when(TestcontainersConfiguration.getInstance())
+            .getEnvVarOrUserProperty(eq("docker.host"), isNull());
+        Mockito
+            .doReturn("1")
+            .when(TestcontainersConfiguration.getInstance())
+            .getEnvVarOrUserProperty(eq("docker.tls.verify"), isNull());
+        Mockito
+            .doReturn(tempDirPath)
+            .when(TestcontainersConfiguration.getInstance())
+            .getEnvVarOrUserProperty(eq("docker.cert.path"), isNull());
 
         EnvironmentAndSystemPropertyClientProviderStrategy strategy = new EnvironmentAndSystemPropertyClientProviderStrategy();
 
         TransportConfig transportConfig = strategy.getTransportConfig();
-        assertEquals("tcp://1.2.3.4:2375", transportConfig.getDockerHost().toString());
+        assertThat(transportConfig.getDockerHost().toString()).isEqualTo("tcp://1.2.3.4:2375");
 
         SSLConfig sslConfig = transportConfig.getSslConfig();
-        assertNotNull(sslConfig);
-        assertTrue(sslConfig instanceof LocalDirectorySSLConfig);
-        assertEquals(tempDirPath, ((LocalDirectorySSLConfig) sslConfig).getDockerCertPath());
+        assertThat(sslConfig).extracting("dockerCertPath").isEqualTo(tempDirPath);
+    }
+
+    @Test
+    public void applicableWhenIgnoringUserPropertiesAndConfigured() {
+        Mockito
+            .doReturn("autoIgnoringUserProperties")
+            .when(TestcontainersConfiguration.getInstance())
+            .getEnvVarOrProperty(eq("dockerconfig.source"), anyString());
+
+        Properties oldProperties = System.getProperties();
+        try {
+            System.setProperty("DOCKER_HOST", "tcp://1.2.3.4:2375");
+            EnvironmentAndSystemPropertyClientProviderStrategy strategy = new EnvironmentAndSystemPropertyClientProviderStrategy();
+
+            assertThat(strategy.isApplicable()).isTrue();
+        } finally {
+            System.setProperties(oldProperties);
+        }
+    }
+
+    @Test
+    public void notApplicableWhenIgnoringUserPropertiesAndNotConfigured() {
+        Mockito
+            .doReturn("autoIgnoringUserProperties")
+            .when(TestcontainersConfiguration.getInstance())
+            .getEnvVarOrProperty(eq("dockerconfig.source"), anyString());
+
+        EnvironmentAndSystemPropertyClientProviderStrategy strategy = new EnvironmentAndSystemPropertyClientProviderStrategy();
+
+        assertThat(strategy.isApplicable()).isFalse();
     }
 }

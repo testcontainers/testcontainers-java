@@ -32,16 +32,13 @@ We do this as follows:
 To establish a connection from the test code (on the host machine) to the target container via Toxiproxy, we obtain **Toxiproxy's** proxy host IP and port:
 
 <!--codeinclude-->
-[Obtaining proxied host and port for connections from the host machine](../../modules/toxiproxy/src/test/java/org/testcontainers/containers/ToxiproxyTest.java) inside_block:obtainProxiedHostAndPortForHostMachine
+[Obtaining proxied host and port](../../modules/toxiproxy/src/test/java/org/testcontainers/containers/ToxiproxyTest.java) inside_block:obtainProxiedHostAndPortForHostMachine
 <!--/codeinclude-->
 
 Code under test should connect to this proxied host IP and port.
 
-To establish a connection from a different container on the same network to the target container via Toxiproxy, we use **Toxiproxy's** network alias and original port:
-
-<!--codeinclude-->
-[Obtaining proxied host and port for connections from a different container](../../modules/toxiproxy/src/test/java/org/testcontainers/containers/ToxiproxyTest.java) inside_block:obtainProxiedHostAndPortForDifferentContainer
-<!--/codeinclude-->
+!!! note
+    Currently, `ToxiProxyContainer` will reserve 31 ports, starting at 8666.
 
 Other containers should connect to this proxied host and port.
 
@@ -72,18 +69,19 @@ Additionally we can disable the proxy to simulate a complete interruption to the
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
-```groovy tab='Gradle'
-testImplementation "org.testcontainers:toxiproxy:{{latest_version}}"
-```
-
-```xml tab='Maven'
-<dependency>
-    <groupId>org.testcontainers</groupId>
-    <artifactId>toxiproxy</artifactId>
-    <version>{{latest_version}}</version>
-    <scope>test</scope>
-</dependency>
-```
+=== "Gradle"
+    ```groovy
+    testImplementation "org.testcontainers:toxiproxy:{{latest_version}}"
+    ```
+=== "Maven"
+    ```xml
+    <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>toxiproxy</artifactId>
+        <version>{{latest_version}}</version>
+        <scope>test</scope>
+    </dependency>
+    ```
 
 ## Acknowledgements
 

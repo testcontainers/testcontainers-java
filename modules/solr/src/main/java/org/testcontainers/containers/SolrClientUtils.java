@@ -1,5 +1,13 @@
 package org.testcontainers.containers;
 
+import okhttp3.HttpUrl;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import org.apache.commons.io.IOUtils;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -11,19 +19,8 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.commons.io.IOUtils;
-
-import okhttp3.HttpUrl;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-
 /**
  * Utils class which can create collections and configurations.
- *
- * @author Simon Schneider
  */
 public class SolrClientUtils {
 
@@ -38,7 +35,13 @@ public class SolrClientUtils {
      * @param solrConfig        the url under which the solrconfig.xml can be found
      * @param solrSchema        the url under which the schema.xml can be found or null if the default schema should be used
      */
-    public static void uploadConfiguration(String hostname, int port, String configurationName, URL solrConfig, URL solrSchema) throws URISyntaxException, IOException {
+    public static void uploadConfiguration(
+        String hostname,
+        int port,
+        String configurationName,
+        URL solrConfig,
+        URL solrSchema
+    ) throws URISyntaxException, IOException {
         Map<String, String> parameters = new HashMap<>();
         parameters.put("action", "UPLOAD");
         parameters.put("name", configurationName);
@@ -46,7 +49,6 @@ public class SolrClientUtils {
 
         byte[] configurationZipFile = generateConfigZipFile(solrConfig, solrSchema);
         executePost(url, configurationZipFile);
-
     }
 
     /**
@@ -58,7 +60,8 @@ public class SolrClientUtils {
      * @param configurationName the name of the configuration which should used to create the collection
      *                          or null if the default configuration should be used
      */
-    public static void createCollection(String hostname, int port, String collectionName, String configurationName) throws URISyntaxException, IOException {
+    public static void createCollection(String hostname, int port, String collectionName, String configurationName)
+        throws URISyntaxException, IOException {
         Map<String, String> parameters = new HashMap<>();
         parameters.put("action", "CREATE");
         parameters.put("name", collectionName);
@@ -73,16 +76,11 @@ public class SolrClientUtils {
     }
 
     private static void executePost(HttpUrl url, byte[] data) throws IOException {
+        RequestBody requestBody = data == null
+            ? RequestBody.create(MediaType.parse("text/plain"), "")
+            : RequestBody.create(MediaType.parse("application/octet-stream"), data);
+        Request request = new Request.Builder().url(url).post(requestBody).build();
 
-        RequestBody requestBody = data == null ?
-            RequestBody.create(MediaType.parse("text/plain"), "") :
-            RequestBody.create(MediaType.parse("application/octet-stream"), data);
-        ;
-
-        Request request = new Request.Builder()
-            .url(url)
-            .post(requestBody)
-            .build();
         Response response = httpClient.newCall(request).execute();
         if (!response.isSuccessful()) {
             String responseBody = "";
@@ -97,7 +95,12 @@ public class SolrClientUtils {
         }
     }
 
-    private static HttpUrl generateSolrURL(String hostname, int port, List<String> pathSegments, Map<String, String> parameters) throws URISyntaxException {
+    private static HttpUrl generateSolrURL(
+        String hostname,
+        int port,
+        List<String> pathSegments,
+        Map<String, String> parameters
+    ) throws URISyntaxException {
         HttpUrl.Builder builder = new HttpUrl.Builder();
         builder.scheme("http");
         builder.host(hostname);

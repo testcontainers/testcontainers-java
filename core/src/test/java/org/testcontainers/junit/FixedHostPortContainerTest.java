@@ -3,6 +3,7 @@ package org.testcontainers.junit;
 import com.google.common.util.concurrent.Uninterruptibles;
 import org.junit.Test;
 import org.rnorth.ducttape.unreliables.Unreliables;
+import org.testcontainers.TestImages;
 import org.testcontainers.containers.FixedHostPortGenericContainer;
 import org.testcontainers.containers.GenericContainer;
 
@@ -12,9 +13,7 @@ import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.concurrent.TimeUnit;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.testcontainers.TestImages.TINY_IMAGE;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Test of {@link FixedHostPortGenericContainer}. Note that this is not an example of typical use (usually, a container
@@ -24,7 +23,7 @@ import static org.testcontainers.TestImages.TINY_IMAGE;
  */
 public class FixedHostPortContainerTest {
 
-    private static final String TEST_IMAGE = "alpine:3.14";
+    private static final String TEST_IMAGE = "alpine:3.16";
 
     /**
      * Default http server port (just something different from default)
@@ -39,15 +38,18 @@ public class FixedHostPortContainerTest {
     /**
      * *nix pipe to fire test response on test port
      */
-    private static final String HTTP_ECHO_CMD =
-        String.format("while true; do echo \"%s\" | nc -l -p %d; done", TEST_RESPONSE, TEST_PORT);
+    private static final String HTTP_ECHO_CMD = String.format(
+        "while true; do echo \"%s\" | nc -l -p %d; done",
+        TEST_RESPONSE,
+        TEST_PORT
+    );
 
     @Test
     public void testFixedHostPortMapping() throws IOException {
         // first find a free port on the docker host that will work for testing
         final Integer unusedHostPort;
         try (
-            final GenericContainer echoServer = new GenericContainer(TINY_IMAGE)
+            final GenericContainer echoServer = new GenericContainer(TestImages.TINY_IMAGE)
                 .withExposedPorts(TEST_PORT)
                 .withCommand("/bin/sh", "-c", HTTP_ECHO_CMD)
         ) {
@@ -58,18 +60,19 @@ public class FixedHostPortContainerTest {
         // now starting echo server container mapped to known-as-free host port
         try (
             final GenericContainer echoServer = new FixedHostPortGenericContainer(TEST_IMAGE)
-            // using workaround for port bind+expose
-            .withFixedExposedPort(unusedHostPort, TEST_PORT)
-            .withExposedPorts(TEST_PORT)
-            .withCommand("/bin/sh", "-c", HTTP_ECHO_CMD)
+                // using workaround for port bind+expose
+                .withFixedExposedPort(unusedHostPort, TEST_PORT)
+                .withExposedPorts(TEST_PORT)
+                .withCommand("/bin/sh", "-c", HTTP_ECHO_CMD)
         ) {
             echoServer.start();
 
-            assertThat("Port mapping does not seem to match given fixed port",
-                echoServer.getMappedPort(TEST_PORT), equalTo(unusedHostPort));
+            assertThat(echoServer.getMappedPort(TEST_PORT))
+                .as("Port mapping does not seem to match given fixed port")
+                .isEqualTo(unusedHostPort);
 
             final String content = this.readResponse(echoServer, unusedHostPort);
-            assertThat("Returned echo from fixed port does not match expected", content, equalTo(TEST_RESPONSE));
+            assertThat(content).as("Returned echo from fixed port does not match expected").isEqualTo(TEST_RESPONSE);
         }
     }
 
@@ -83,7 +86,9 @@ public class FixedHostPortContainerTest {
      */
     private String readResponse(GenericContainer container, Integer port) throws IOException {
         try (
-            final BufferedReader reader = Unreliables.retryUntilSuccess(10, TimeUnit.SECONDS,
+            final BufferedReader reader = Unreliables.retryUntilSuccess(
+                10,
+                TimeUnit.SECONDS,
                 () -> {
                     Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
                     final Socket socket = new Socket(container.getHost(), port);

@@ -10,7 +10,6 @@ import java.nio.file.Path;
  *
  */
 public interface FilesTrait<SELF extends FilesTrait<SELF> & BuildContextBuilderTrait<SELF>> {
-
     /**
      * Adds file to tarball copied into container.
      * @param path in tarball

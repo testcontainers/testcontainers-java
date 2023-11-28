@@ -16,13 +16,12 @@ import java.util.List;
  * figures).
  */
 public class FailureDetectingExternalResource implements TestRule {
+
     @Override
     public Statement apply(Statement base, Description description) {
-
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {
-
                 List<Throwable> errors = new ArrayList<Throwable>();
 
                 try {
@@ -41,16 +40,11 @@ public class FailureDetectingExternalResource implements TestRule {
         };
     }
 
-    protected void starting(Description description) {
+    protected void starting(Description description) {}
 
-    }
+    protected void succeeded(Description description) {}
 
-    protected void succeeded(Description description) {
-    }
+    protected void failed(Throwable e, Description description) {}
 
-    protected void failed(Throwable e, Description description) {
-    }
-
-    protected void finished(Description description) {
-    }
+    protected void finished(Description description) {}
 }

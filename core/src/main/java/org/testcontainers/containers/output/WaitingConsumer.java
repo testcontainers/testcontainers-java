@@ -71,22 +71,21 @@ public class WaitingConsumer extends BaseConsumer<WaitingConsumer> {
      * @param limitUnit maximum time to wait (units)
      * @param times     number of times the predicate has to match
      */
-    public void waitUntil(Predicate<OutputFrame> predicate, long limit, TimeUnit limitUnit, int times) throws TimeoutException {
+    public void waitUntil(Predicate<OutputFrame> predicate, long limit, TimeUnit limitUnit, int times)
+        throws TimeoutException {
         long expiry = limitUnit.toMillis(limit) + System.currentTimeMillis();
 
         waitUntil(predicate, expiry, times);
     }
 
     private void waitUntil(Predicate<OutputFrame> predicate, long expiry, int times) throws TimeoutException {
-
         int numberOfMatches = 0;
         while (System.currentTimeMillis() < expiry) {
             try {
-                OutputFrame frame = frames.pollLast(100, TimeUnit.MILLISECONDS);
+                final OutputFrame frame = frames.pollLast(100, TimeUnit.MILLISECONDS);
 
                 if (frame != null) {
-                    final String trimmedFrameText = frame.getUtf8String().replaceFirst("\n$", "");
-                    LOGGER.debug("{}: {}", frame.getType(), trimmedFrameText);
+                    LOGGER.debug("{}: {}", frame.getType(), frame.getUtf8StringWithoutLineEnding());
 
                     if (predicate.test(frame)) {
                         numberOfMatches++;

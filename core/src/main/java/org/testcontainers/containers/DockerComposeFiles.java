@@ -1,43 +1,45 @@
 package org.testcontainers.containers;
 
+import org.testcontainers.utility.DockerImageName;
+
 import java.io.File;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 public class DockerComposeFiles {
 
-    private List<ParsedDockerComposeFile> parsedComposeFiles;
+    private final List<ParsedDockerComposeFile> parsedComposeFiles;
 
     public DockerComposeFiles(List<File> composeFiles) {
         this.parsedComposeFiles = composeFiles.stream().map(ParsedDockerComposeFile::new).collect(Collectors.toList());
     }
 
     public Set<String> getDependencyImages() {
-
         Map<String, Set<String>> mergedServiceNameToImageNames = mergeServiceDependencyImageNames();
 
         return getImageNames(mergedServiceNameToImageNames);
     }
 
     private Map<String, Set<String>> mergeServiceDependencyImageNames() {
-        Map<String, Set<String>> mergedServiceNameToImageNames = new HashMap();
+        Map<String, Set<String>> mergedServiceNameToImageNames = new HashMap<>();
         for (ParsedDockerComposeFile parsedComposeFile : parsedComposeFiles) {
-            for (Entry<String, Set<String>> entry : parsedComposeFile.getServiceNameToImageNames().entrySet()) {
-                mergedServiceNameToImageNames.put(entry.getKey(), entry.getValue());
-            }
+            mergedServiceNameToImageNames.putAll(parsedComposeFile.getServiceNameToImageNames());
         }
         return mergedServiceNameToImageNames;
     }
 
     private Set<String> getImageNames(Map<String, Set<String>> serviceToImageNames) {
-        Set<String> imageNames = new HashSet<>();
-        serviceToImageNames.values().stream().forEach(imageNames::addAll);
-        return imageNames;
+        return serviceToImageNames
+            .values()
+            .stream()
+            .flatMap(Collection::stream)
+            // Pass through DockerImageName to convert image names to canonical form (e.g. making implicit latest tag explicit)
+            .map(DockerImageName::parse)
+            .map(DockerImageName::asCanonicalNameString)
+            .collect(Collectors.toSet());
     }
-
 }

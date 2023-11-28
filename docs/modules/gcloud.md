@@ -5,17 +5,30 @@
 
 Testcontainers module for the Google Cloud Platform's [Cloud SDK](https://cloud.google.com/sdk/).
 
-Currently, the module supports `Bigtable`, `Datastore`, `Firestore`, `Spanner`, and `Pub/Sub` emulators. In order to use it, you should use the following classes:
+Currently, the module supports `BigQuery`, `Bigtable`, `Datastore`, `Firestore`, `Spanner`, and `Pub/Sub` emulators. In order to use it, you should use the following classes:
 
 Class | Container Image
 -|-
-BigtableEmulatorContainer | [gcr.io/google.com/cloudsdktool/cloud-sdk:emulators](https://gcr.io/google.com/cloudsdktool/cloud-sdk)
-DatastoreEmulatorContainer | [gcr.io/google.com/cloudsdktool/cloud-sdk:emulators](https://gcr.io/google.com/cloudsdktool/cloud-sdk)
-FirestoreEmulatorContainer | [gcr.io/google.com/cloudsdktool/cloud-sdk:emulators](https://gcr.io/google.com/cloudsdktool/cloud-sdk)
+BigQueryEmulatorContainer | [ghcr.io/goccy/bigquery-emulator](https://ghcr.io/goccy/bigquery-emulator)
+BigtableEmulatorContainer | [gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators](https://gcr.io/google.com/cloudsdktool/google-cloud-cli)
+DatastoreEmulatorContainer | [gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators](https://gcr.io/google.com/cloudsdktool/google-cloud-cli)
+FirestoreEmulatorContainer | [gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators](https://gcr.io/google.com/cloudsdktool/google-cloud-cli)
 SpannerEmulatorContainer | [gcr.io/cloud-spanner-emulator/emulator](https://gcr.io/cloud-spanner-emulator/emulator)
-PubSubEmulatorContainer | [gcr.io/google.com/cloudsdktool/cloud-sdk:emulators](https://gcr.io/google.com/cloudsdktool/cloud-sdk)
+PubSubEmulatorContainer | [gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators](https://gcr.io/google.com/cloudsdktool/google-cloud-cli)
 
 ## Usage example
+
+### BigQuery
+
+Start BigQuery Emulator during a test:
+
+<!--codeinclude-->
+[Starting a BigQuery Emulator container](../../modules/gcloud/src/test/java/org/testcontainers/containers/BigQueryEmulatorContainerTest.java) inside_block:emulatorContainer
+<!--/codeinclude-->
+
+<!--codeinclude-->
+[Creating BigQuery Client](../../modules/gcloud/src/test/java/org/testcontainers/containers/BigQueryEmulatorContainerTest.java) inside_block:bigQueryClient
+<!--/codeinclude-->
 
 ### Bigtable
 
@@ -53,7 +66,7 @@ And test against the Emulator:
 
 See more examples:
 
- * [Full sample code](https://github.com/testcontainers/testcontainers-java/tree/master/modules/gcloud/src/test/java/org/testcontainers/containers/DatastoreEmulatorContainerTest.java)
+ * [Full sample code](https://github.com/testcontainers/testcontainers-java/tree/main/modules/gcloud/src/test/java/org/testcontainers/containers/DatastoreEmulatorContainerTest.java)
  * [With Spring Boot](https://github.com/saturnism/testcontainers-gcloud-examples/tree/main/springboot/datastore-example/src/test/java/com/example/springboot/datastore) 
 
 ### Firestore 
@@ -72,7 +85,7 @@ And test against the Emulator:
 
 See more examples:
 
- * [Full sample code](https://github.com/testcontainers/testcontainers-java/tree/master/modules/gcloud/src/test/java/org/testcontainers/containers/FirestoreEmulatorContainerTest.java)
+ * [Full sample code](https://github.com/testcontainers/testcontainers-java/tree/main/modules/gcloud/src/test/java/org/testcontainers/containers/FirestoreEmulatorContainerTest.java)
  * [With Spring Boot](https://github.com/saturnism/testcontainers-gcloud-examples/tree/main/springboot/firestore-example/src/test/java/com/example/springboot/firestore/FirestoreIntegrationTests.java)
 
 ### Spanner 
@@ -103,7 +116,7 @@ And test against the Emulator:
 
 See more examples:
 
- * [Full sample code](https://github.com/testcontainers/testcontainers-java/tree/master/modules/gcloud/src/test/java/org/testcontainers/containers/SpannerEmulatorContainerTest.java)
+ * [Full sample code](https://github.com/testcontainers/testcontainers-java/tree/main/modules/gcloud/src/test/java/org/testcontainers/containers/SpannerEmulatorContainerTest.java)
  * [With Spring Boot](https://github.com/saturnism/testcontainers-gcloud-examples/tree/main/springboot/spanner-example/src/test/java/com/example/springboot/spanner/SpannerIntegrationTests.java)
 
 ### Pub/Sub 
@@ -134,22 +147,23 @@ And test against the Emulator:
 
 See more examples:
 
- * [Full sample code](https://github.com/testcontainers/testcontainers-java/tree/master/modules/gcloud/src/test/java/org/testcontainers/containers/PubSubEmulatorContainerTest.java)
+ * [Full sample code](https://github.com/testcontainers/testcontainers-java/tree/main/modules/gcloud/src/test/java/org/testcontainers/containers/PubSubEmulatorContainerTest.java)
  * [With Spring Boot](https://github.com/saturnism/testcontainers-gcloud-examples/tree/main/springboot/pubsub-example/src/test/java/com/example/springboot/pubsub/PubSubIntegrationTests.java)
 
 ## Adding this module to your project dependencies
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
-```groovy tab='Gradle'
-testImplementation "org.testcontainers:gcloud:{{latest_version}}"
-```
-
-```xml tab='Maven'
-<dependency>
-    <groupId>org.testcontainers</groupId>
-    <artifactId>gcloud</artifactId>
-    <version>{{latest_version}}</version>
-    <scope>test</scope>
-</dependency>
-```
+=== "Gradle"
+    ```groovy
+    testImplementation "org.testcontainers:gcloud:{{latest_version}}"
+    ```
+=== "Maven"
+    ```xml
+    <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>gcloud</artifactId>
+        <version>{{latest_version}}</version>
+        <scope>test</scope>
+    </dependency>
+    ```

@@ -13,7 +13,8 @@ public class MariaDBR2DBCDatabaseContainer implements R2DBCDatabaseContainer {
     private final MariaDBContainer<?> container;
 
     public static ConnectionFactoryOptions getOptions(MariaDBContainer<?> container) {
-        ConnectionFactoryOptions options = ConnectionFactoryOptions.builder()
+        ConnectionFactoryOptions options = ConnectionFactoryOptions
+            .builder()
             .option(ConnectionFactoryOptions.DRIVER, MariaDBR2DBCDatabaseContainerProvider.DRIVER)
             .build();
 
@@ -22,7 +23,8 @@ public class MariaDBR2DBCDatabaseContainer implements R2DBCDatabaseContainer {
 
     @Override
     public ConnectionFactoryOptions configure(ConnectionFactoryOptions options) {
-        return options.mutate()
+        return options
+            .mutate()
             .option(ConnectionFactoryOptions.HOST, container.getHost())
             .option(ConnectionFactoryOptions.PORT, container.getMappedPort(MariaDBContainer.MARIADB_PORT))
             .option(ConnectionFactoryOptions.DATABASE, container.getDatabaseName())

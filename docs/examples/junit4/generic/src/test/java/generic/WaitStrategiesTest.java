@@ -8,14 +8,15 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class WaitStrategiesTest {
 
     @Rule
     // waitForNetworkListening {
-    public GenericContainer nginx = new GenericContainer(DockerImageName.parse("nginx:1.9.4"))
+    public GenericContainer nginx = new GenericContainer(DockerImageName.parse("nginx:1.9.4")) //
         .withExposedPorts(80);
+
     // }
 
     @Rule
@@ -23,49 +24,53 @@ public class WaitStrategiesTest {
     public GenericContainer nginxWithHttpWait = new GenericContainer(DockerImageName.parse("nginx:1.9.4"))
         .withExposedPorts(80)
         .waitingFor(Wait.forHttp("/"));
+
     // }
 
     @Rule
     // logMessageWait {
     public GenericContainer containerWithLogWait = new GenericContainer(DockerImageName.parse("redis:5.0.3"))
         .withExposedPorts(6379)
-        .waitingFor(
-            Wait.forLogMessage(".*Ready to accept connections.*\\n", 1)
-        );
+        .waitingFor(Wait.forLogMessage(".*Ready to accept connections.*\\n", 1));
+
     // }
 
     private static final HttpWaitStrategy MULTI_CODE_HTTP_WAIT =
+        // spotless:off
         // waitForHttpWithMultipleStatusCodes {
         Wait.forHttp("/")
             .forStatusCode(200)
-            .forStatusCode(301)
+            .forStatusCode(301);
         // }
-        ;
+        // spotless:on
 
     private static final HttpWaitStrategy PREDICATE_HTTP_WAIT =
+        // spotless:off
         // waitForHttpWithStatusCodePredicate {
         Wait.forHttp("/all")
-            .forStatusCodeMatching(it -> it >= 200 && it < 300 || it == 401)
+            .forStatusCodeMatching(it -> it >= 200 && it < 300 || it == 401);
         // }
-        ;
+        // spotless:on
 
     private static final HttpWaitStrategy TLS_HTTP_WAIT =
+        // spotless:off
         // waitForHttpWithTls {
         Wait.forHttp("/all")
-            .usingTls()
+            .usingTls();
         // }
-        ;
+        // spotless:on
 
     private static final WaitStrategy HEALTHCHECK_WAIT =
+        // spotless:off
         // healthcheckWait {
-        Wait.forHealthcheck()
+        Wait.forHealthcheck();
         // }
-        ;
+        // spotless:on
 
     @Test
     public void testContainersAllStarted() {
-        assertTrue(nginx.isRunning());
-        assertTrue(nginxWithHttpWait.isRunning());
-        assertTrue(containerWithLogWait.isRunning());
+        assertThat(nginx.isRunning()).isTrue();
+        assertThat(nginxWithHttpWait.isRunning()).isTrue();
+        assertThat(containerWithLogWait.isRunning()).isTrue();
     }
 }

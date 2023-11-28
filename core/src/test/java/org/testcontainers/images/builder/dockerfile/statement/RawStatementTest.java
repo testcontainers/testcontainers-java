@@ -8,5 +8,4 @@ public class RawStatementTest extends AbstractStatementTest {
     public void simpleTest() throws Exception {
         assertStatement(new RawStatement("TEST", "value\nas\t\\\nis"));
     }
-
 }

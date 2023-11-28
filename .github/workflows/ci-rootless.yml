@@ -1,34 +1,55 @@
 name: CI-Docker-Rootless
 
 on:
-  pull_request: {}
-  push: { branches: [ master ] }
+  pull_request:
+    paths-ignore:
+      - '.github/ISSUE_TEMPLATE/*.yaml'
+      - '.github/CODEOWNERS'
+      - '.github/pull_request_template.md'
+      - 'docs/**/*.css'
+      - 'docs/**/*.html'
+      - 'docs/**/*.ico'
+      - 'docs/**/*.md'
+      - 'docs/**/*.png'
+      - 'docs/**/*.svg'
+      - 'mkdocs.yml'
+      - 'README.md'
+      - 'RELEASING.md'
+      - '.sdkmanrc'
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - '.github/ISSUE_TEMPLATE/*.yaml'
+      - '.github/CODEOWNERS'
+      - '.github/pull_request_template.md'
+      - 'docs/**/*.css'
+      - 'docs/**/*.html'
+      - 'docs/**/*.ico'
+      - 'docs/**/*.md'
+      - 'docs/**/*.png'
+      - 'docs/**/*.svg'
+      - 'mkdocs.yml'
+      - 'README.md'
+      - 'RELEASING.md'
+      - '.sdkmanrc'
+
+concurrency:
+  group: "${{ github.workflow }}-${{ github.head_ref || github.sha }}"
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   test:
-    runs-on: ubuntu-18.04
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - { XDG_RUNTIME_DIR: "" }
-          - { XDG_RUNTIME_DIR: "/tmp/docker-testcontainers/" }
-    env:
-      XDG_RUNTIME_DIR: ${{ matrix.XDG_RUNTIME_DIR }}
+    runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v2
-      - name: debug
-        run: id -u; whoami
-      - name: uninstall rootful Docker
-        run: sudo apt-get -q -y --purge remove moby-engine moby-buildx && sudo rm -rf /var/run/docker.sock
-      - name: install rootless Docker
-        run: |
-          mkdir -p $XDG_RUNTIME_DIR || true
-          curl -fsSL https://get.docker.com/rootless | sh > init.sh
-          cat init.sh
-          source <(grep '^export' init.sh)
-          PATH=$HOME/bin:$PATH dockerd-rootless.sh --experimental --storage-driver vfs &
-          sleep 1
-          DOCKER_HOST=unix://$XDG_RUNTIME_DIR/docker.sock docker info || ls -la $XDG_RUNTIME_DIR
+      - uses: actions/checkout@v4
+      - name: Setup rootless Docker
+        uses: ScribeMD/rootless-docker@0.2.2
+      - name: Remove Docket root socket
+        run: sudo rm -rf /var/run/docker.sock
+      - name: Setup Gradle Build Action
+        uses: gradle/gradle-build-action@v2
       - name: Build with Gradle
         run: ./gradlew --no-daemon --scan testcontainers:test --tests '*GenericContainerRuleTest'

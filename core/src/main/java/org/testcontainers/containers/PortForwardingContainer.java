@@ -15,9 +15,29 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 public enum PortForwardingContainer {
     INSTANCE;
+
+    private static String PASSWORD = UUID.randomUUID().toString();
+
+    private static ContainerDef DEFINITION = new ContainerDef() {
+        {
+            setImage(DockerImageName.parse("testcontainers/sshd:1.1.0"));
+            addExposedTcpPort(22);
+            addEnvVar("PASSWORD", PASSWORD);
+            setCommand(
+                "sh",
+                "-c",
+                // Disable ipv6 & Make it listen on all interfaces, not just localhost
+                // Enable algorithms supported by our ssh client library
+                "echo \"root:$PASSWORD\" | chpasswd && /usr/sbin/sshd -D -o PermitRootLogin=yes " +
+                "-o AddressFamily=inet -o GatewayPorts=yes -o AllowAgentForwarding=yes -o AllowTcpForwarding=yes " +
+                "-o KexAlgorithms=+diffie-hellman-group1-sha1 -o HostkeyAlgorithms=+ssh-rsa "
+            );
+        }
+    };
 
     private GenericContainer<?> container;
 
@@ -28,16 +48,7 @@ public enum PortForwardingContainer {
 
     @SneakyThrows
     private Connection createSSHSession() {
-        String password = UUID.randomUUID().toString();
-        container = new GenericContainer<>(DockerImageName.parse("testcontainers/sshd:1.0.0"))
-            .withExposedPorts(22)
-            .withEnv("PASSWORD", password)
-            .withCommand(
-                "sh",
-                "-c",
-                // Disable ipv6 & Make it listen on all interfaces, not just localhost
-                "echo \"root:$PASSWORD\" | chpasswd && /usr/sbin/sshd -D -o PermitRootLogin=yes -o AddressFamily=inet -o GatewayPorts=yes"
-            );
+        container = new GenericContainer<>(DEFINITION);
         container.start();
 
         Connection connection = new Connection(container.getHost(), container.getMappedPort(22));
@@ -49,7 +60,7 @@ public enum PortForwardingContainer {
             (int) Duration.ofSeconds(30).toMillis()
         );
 
-        if (!connection.authenticateWithPassword("root", password)) {
+        if (!connection.authenticateWithPassword("root", PASSWORD)) {
             throw new IllegalStateException("Authentication failed.");
         }
 
@@ -63,14 +74,30 @@ public enum PortForwardingContainer {
 
     @SneakyThrows
     public void exposeHostPort(int hostPort, int containerPort) {
-    	if (exposedPorts.add(new AbstractMap.SimpleEntry<>(hostPort, containerPort))) {
+        if (exposedPorts.add(new AbstractMap.SimpleEntry<>(hostPort, containerPort))) {
             getSshConnection().requestRemotePortForwarding("", containerPort, "localhost", hostPort);
         }
     }
 
+    void start() {
+        getSshConnection();
+    }
+
     Optional<ContainerNetwork> getNetwork() {
-        return Optional.ofNullable(container)
+        return Optional
+            .ofNullable(container)
             .map(GenericContainer::getContainerInfo)
             .flatMap(it -> it.getNetworkSettings().getNetworks().values().stream().findFirst());
+    }
+
+    void reset() {
+        if (container != null) {
+            container.stop();
+        }
+        container = null;
+
+        ((AtomicReference<?>) (Object) sshConnection).set(null);
+
+        exposedPorts.clear();
     }
 }

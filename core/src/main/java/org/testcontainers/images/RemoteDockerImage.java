@@ -10,7 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.ToString;
-import lombok.experimental.Wither;
+import lombok.With;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ContainerFetchException;
@@ -34,8 +34,11 @@ public class RemoteDockerImage extends LazyFuture<String> {
     @ToString.Exclude
     private Future<DockerImageName> imageNameFuture;
 
-    @Wither
-    private ImagePullPolicy imagePullPolicy = PullPolicy.defaultPolicy();
+    @With
+    ImagePullPolicy imagePullPolicy = PullPolicy.defaultPolicy();
+
+    @With
+    private ImageNameSubstitutor imageNameSubstitutor = ImageNameSubstitutor.instance();
 
     @ToString.Exclude
     private DockerClient dockerClient = DockerClientFactory.lazyClient();
@@ -59,7 +62,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
     }
 
     @Override
-    @SneakyThrows({InterruptedException.class, ExecutionException.class})
+    @SneakyThrows({ InterruptedException.class, ExecutionException.class })
     protected final String resolve() {
         final DockerImageName imageName = getImageName();
         Logger logger = DockerLoggerFactory.getLogger(imageName.toString());
@@ -69,11 +72,15 @@ public class RemoteDockerImage extends LazyFuture<String> {
             }
 
             // The image is not available locally - pull it
-            logger.info("Pulling docker image: {}. Please be patient; this may take some time but only needs to be done once.", imageName);
+            logger.info(
+                "Pulling docker image: {}. Please be patient; this may take some time but only needs to be done once.",
+                imageName
+            );
 
             Exception lastFailure = null;
             final Instant lastRetryAllowed = Instant.now().plus(PULL_RETRY_TIME_LIMIT);
 
+            Instant startedAt = Instant.now();
             while (Instant.now().isBefore(lastRetryAllowed)) {
                 try {
                     PullImageCmd pullImageCmd = dockerClient
@@ -81,9 +88,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
                         .withTag(imageName.getVersionPart());
 
                     try {
-                        pullImageCmd
-                            .exec(new TimeLimitedLoggedPullImageResultCallback(logger))
-                            .awaitCompletion();
+                        pullImageCmd.exec(new TimeLimitedLoggedPullImageResultCallback(logger)).awaitCompletion();
                     } catch (DockerClientException e) {
                         // Try to fallback to x86
                         pullImageCmd
@@ -91,19 +96,29 @@ public class RemoteDockerImage extends LazyFuture<String> {
                             .exec(new TimeLimitedLoggedPullImageResultCallback(logger))
                             .awaitCompletion();
                     }
+                    String dockerImageName = imageName.asCanonicalNameString();
+                    logger.info("Image {} pull took {}", dockerImageName, Duration.between(startedAt, Instant.now()));
 
                     LocalImagesCache.INSTANCE.refreshCache(imageName);
 
-                    return imageName.asCanonicalNameString();
+                    return dockerImageName;
                 } catch (InterruptedException | InternalServerErrorException e) {
                     // these classes of exception often relate to timeout/connection errors so should be retried
                     lastFailure = e;
-                    logger.warn("Retrying pull for image: {} ({}s remaining)",
+                    logger.warn(
+                        "Retrying pull for image: {} ({}s remaining)",
                         imageName,
-                        Duration.between(Instant.now(), lastRetryAllowed).getSeconds());
+                        Duration.between(Instant.now(), lastRetryAllowed).getSeconds()
+                    );
                 }
             }
-            logger.error("Failed to pull image: {}. Please check output of `docker pull {}`", imageName, imageName, lastFailure);
+
+            logger.error(
+                "Failed to pull image: {}. Please check output of `docker pull {}`",
+                imageName,
+                imageName,
+                lastFailure
+            );
 
             throw new ContainerFetchException("Failed to pull image: " + imageName, lastFailure);
         } catch (DockerClientException e) {
@@ -115,7 +130,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
         final DockerImageName specifiedImageName = imageNameFuture.get();
 
         // Allow the image name to be substituted
-        return ImageNameSubstitutor.instance().apply(specifiedImageName);
+        return imageNameSubstitutor.apply(specifiedImageName);
     }
 
     @ToString.Include(name = "imageName", rank = 1)

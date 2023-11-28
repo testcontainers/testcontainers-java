@@ -1,8 +1,8 @@
 package org.testcontainers.images.builder.dockerfile.statement;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.Rule;
 import org.junit.rules.TestName;
 import org.rnorth.ducttape.Preconditions;
@@ -10,8 +10,7 @@ import org.rnorth.ducttape.Preconditions;
 import java.io.InputStream;
 import java.util.Arrays;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.fail;
-import static org.rnorth.visibleassertions.VisibleAssertions.pass;
+import static org.assertj.core.api.Assertions.fail;
 
 public abstract class AbstractStatementTest {
 
@@ -19,7 +18,6 @@ public abstract class AbstractStatementTest {
     public TestName testName = new TestName();
 
     protected void assertStatement(Statement statement) {
-
         String[] expectedLines = new String[0];
         try {
             String path = "fixtures/statements/" + getClass().getSimpleName() + "/" + testName.getMethodName();
@@ -31,7 +29,7 @@ public abstract class AbstractStatementTest {
             IOUtils.closeQuietly(inputStream);
             expectedLines = StringUtils.chomp(content.replaceAll("\r\n", "\n").trim()).split("\n");
         } catch (Exception e) {
-            fail("can't load fixture '" + testName.getMethodName() + "'\n" + ExceptionUtils.getFullStackTrace(e));
+            fail("can't load fixture '" + testName.getMethodName() + "'\n" + ExceptionUtils.getStackTrace(e));
         }
 
         StringBuilder builder = new StringBuilder();
@@ -39,7 +37,9 @@ public abstract class AbstractStatementTest {
         String[] resultLines = StringUtils.chomp(builder.toString().trim()).split("\n");
 
         if (expectedLines.length != resultLines.length) {
-            fail("number of lines is not the same. Expected " + expectedLines.length + " but got " + resultLines.length);
+            fail(
+                "number of lines is not the same. Expected " + expectedLines.length + " but got " + resultLines.length
+            );
         }
 
         if (!Arrays.equals(expectedLines, resultLines)) {
@@ -59,12 +59,9 @@ public abstract class AbstractStatementTest {
                     failureBuilder.append(expectedLine);
                     failureBuilder.append(">\n");
                 }
-
             }
 
             fail(failureBuilder.toString());
         }
-
-        pass(testName.getMethodName());
     }
 }

@@ -7,5 +7,5 @@ public abstract class Statement {
 
     final String type;
 
-    abstract public void appendArguments(StringBuilder dockerfileStringBuilder);
+    public abstract void appendArguments(StringBuilder dockerfileStringBuilder);
 }

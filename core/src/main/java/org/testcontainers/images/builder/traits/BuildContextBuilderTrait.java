@@ -7,6 +7,5 @@ import org.testcontainers.images.builder.Transferable;
  *
  */
 public interface BuildContextBuilderTrait<SELF extends BuildContextBuilderTrait<SELF>> {
-
     SELF withFileFromTransferable(String path, Transferable transferable);
 }

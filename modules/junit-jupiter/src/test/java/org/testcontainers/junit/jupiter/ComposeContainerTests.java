@@ -11,14 +11,15 @@ import org.testcontainers.containers.wait.strategy.Wait;
 
 import java.io.File;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @Testcontainers
 class ComposeContainerTests {
 
     @Container
     private DockerComposeContainer composeContainer = new DockerComposeContainer(
-        new File("src/test/resources/docker-compose.yml"))
+        new File("src/test/resources/docker-compose.yml")
+    )
         .withExposedService("whoami_1", 80, Wait.forHttp("/"));
 
     private String host;
@@ -37,6 +38,6 @@ class ComposeContainerTests {
 
         HttpResponse response = client.execute(new HttpGet("http://" + host + ":" + port));
 
-        assertEquals(200, response.getStatusLine().getStatusCode());
+        assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
     }
 }

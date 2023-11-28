@@ -15,16 +15,16 @@ public class ChromeWebDriverContainerTest extends BaseWebDriverContainerTest {
     @Rule
     public BrowserWebDriverContainer<?> chrome = new BrowserWebDriverContainer<>()
         .withCapabilities(new ChromeOptions())
-    // }
+        // }
         .withNetwork(NETWORK);
 
     @Before
     public void checkBrowserIsIndeedChrome() {
-        assertBrowserNameIs(chrome, "chrome");
+        assertBrowserNameIs(chrome, "chrome", new ChromeOptions());
     }
 
     @Test
     public void simpleExploreTest() {
-        doSimpleExplore(chrome);
+        doSimpleExplore(chrome, new ChromeOptions());
     }
 }

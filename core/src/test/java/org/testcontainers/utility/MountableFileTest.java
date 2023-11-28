@@ -15,12 +15,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Consumer;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class MountableFileTest {
 
     private static final int TEST_FILE_MODE = 0532;
+
     private static final int BASE_FILE_MODE = 0100000;
+
     private static final int BASE_DIR_MODE = 0040000;
 
     @Test
@@ -66,8 +68,10 @@ public class MountableFileTest {
 
         performChecks(mountableFile);
 
-        assertTrue("The resolved path contains the original space", mountableFile.getResolvedPath().contains(" "));
-        assertFalse("The resolved path does not contain an escaped space", mountableFile.getResolvedPath().contains("\\ "));
+        assertThat(mountableFile.getResolvedPath()).as("The resolved path contains the original space").contains(" ");
+        assertThat(mountableFile.getResolvedPath())
+            .as("The resolved path does not contain an escaped space")
+            .doesNotContain("\\ ");
     }
 
     @Test
@@ -77,17 +81,21 @@ public class MountableFileTest {
 
         performChecks(mountableFile);
 
-        assertTrue("The resolved path contains the original space", mountableFile.getResolvedPath().contains("+"));
-        assertFalse("The resolved path does not contain an escaped space", mountableFile.getResolvedPath().contains(" "));
+        assertThat(mountableFile.getResolvedPath()).as("The resolved path contains the original space").contains("+");
+        assertThat(mountableFile.getResolvedPath())
+            .as("The resolved path does not contain an escaped space")
+            .doesNotContain(" ");
     }
 
     @Test
     public void forClasspathResourceWithPermission() throws Exception {
-        final MountableFile mountableFile = MountableFile.forClasspathResource("mappable-resource/test-resource.txt",
-            TEST_FILE_MODE);
+        final MountableFile mountableFile = MountableFile.forClasspathResource(
+            "mappable-resource/test-resource.txt",
+            TEST_FILE_MODE
+        );
 
         performChecks(mountableFile);
-        assertEquals("Valid file mode.", BASE_FILE_MODE | TEST_FILE_MODE, mountableFile.getFileMode());
+        assertThat(mountableFile.getFileMode()).as("Valid file mode.").isEqualTo(BASE_FILE_MODE | TEST_FILE_MODE);
     }
 
     @Test
@@ -95,7 +103,7 @@ public class MountableFileTest {
         final Path file = createTempFile("somepath");
         final MountableFile mountableFile = MountableFile.forHostPath(file.toString(), TEST_FILE_MODE);
         performChecks(mountableFile);
-        assertEquals("Valid file mode.", BASE_FILE_MODE | TEST_FILE_MODE, mountableFile.getFileMode());
+        assertThat(mountableFile.getFileMode()).as("Valid file mode.").isEqualTo(BASE_FILE_MODE | TEST_FILE_MODE);
     }
 
     @Test
@@ -103,14 +111,15 @@ public class MountableFileTest {
         final Path dir = createTempDir();
         final MountableFile mountableFile = MountableFile.forHostPath(dir.toString(), TEST_FILE_MODE);
         performChecks(mountableFile);
-        assertEquals("Valid dir mode.", BASE_DIR_MODE | TEST_FILE_MODE, mountableFile.getFileMode());
+        assertThat(mountableFile.getFileMode()).as("Valid dir mode.").isEqualTo(BASE_DIR_MODE | TEST_FILE_MODE);
     }
 
     @Test
     public void noTrailingSlashesInTarEntryNames() throws Exception {
         final MountableFile mountableFile = MountableFile.forClasspathResource("mappable-resource/test-resource.txt");
 
-        @Cleanup final TarArchiveInputStream tais = intoTarArchive((taos) -> {
+        @Cleanup
+        final TarArchiveInputStream tais = intoTarArchive(taos -> {
             mountableFile.transferTo(taos, "/some/path.txt");
             mountableFile.transferTo(taos, "/path.txt");
             mountableFile.transferTo(taos, "path.txt");
@@ -118,13 +127,15 @@ public class MountableFileTest {
 
         ArchiveEntry entry;
         while ((entry = tais.getNextEntry()) != null) {
-            assertFalse("no entries should have a trailing slash", entry.getName().endsWith("/"));
+            assertThat(entry.getName()).as("no entries should have a trailing slash").doesNotEndWith("/");
         }
     }
 
     private TarArchiveInputStream intoTarArchive(Consumer<TarArchiveOutputStream> consumer) throws IOException {
-        @Cleanup final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        @Cleanup final TarArchiveOutputStream taos = new TarArchiveOutputStream(baos);
+        @Cleanup
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        @Cleanup
+        final TarArchiveOutputStream taos = new TarArchiveOutputStream(baos);
         consumer.accept(taos);
         taos.close();
 
@@ -150,8 +161,9 @@ public class MountableFileTest {
 
     private void performChecks(final MountableFile mountableFile) {
         final String mountablePath = mountableFile.getResolvedPath();
-        assertTrue("The filesystem path '" + mountablePath + "' can be found", new File(mountablePath).exists());
-        assertFalse("The filesystem path '" + mountablePath + "' does not contain any URL escaping", mountablePath.contains("%20"));
+        assertThat(new File(mountablePath)).as("The filesystem path '" + mountablePath + "' can be found").exists();
+        assertThat(mountablePath)
+            .as("The filesystem path '" + mountablePath + "' does not contain any URL escaping")
+            .doesNotContain("%20");
     }
-
 }

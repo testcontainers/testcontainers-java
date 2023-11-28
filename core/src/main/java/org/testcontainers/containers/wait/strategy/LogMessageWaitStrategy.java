@@ -2,7 +2,6 @@ package org.testcontainers.containers.wait.strategy;
 
 import com.github.dockerjava.api.command.LogContainerCmd;
 import lombok.SneakyThrows;
-import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.output.FrameConsumerResultCallback;
 import org.testcontainers.containers.output.OutputFrame;
@@ -12,9 +11,6 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
-
-import static org.testcontainers.containers.output.OutputFrame.OutputType.STDERR;
-import static org.testcontainers.containers.output.OutputFrame.OutputType.STDOUT;
 
 public class LogMessageWaitStrategy extends AbstractWaitStrategy {
 
@@ -27,22 +23,24 @@ public class LogMessageWaitStrategy extends AbstractWaitStrategy {
     protected void waitUntilReady() {
         WaitingConsumer waitingConsumer = new WaitingConsumer();
 
-        LogContainerCmd cmd = DockerClientFactory.instance().client().logContainerCmd(waitStrategyTarget.getContainerId())
+        LogContainerCmd cmd = waitStrategyTarget
+            .getDockerClient()
+            .logContainerCmd(waitStrategyTarget.getContainerId())
             .withFollowStream(true)
             .withSince(0)
             .withStdOut(true)
             .withStdErr(true);
 
         try (FrameConsumerResultCallback callback = new FrameConsumerResultCallback()) {
-            callback.addConsumer(STDOUT, waitingConsumer);
-            callback.addConsumer(STDERR, waitingConsumer);
+            callback.addConsumer(OutputFrame.OutputType.STDOUT, waitingConsumer);
+            callback.addConsumer(OutputFrame.OutputType.STDERR, waitingConsumer);
 
             cmd.exec(callback);
 
-            Predicate<OutputFrame> waitPredicate = outputFrame ->
+            Predicate<OutputFrame> waitPredicate = outputFrame -> {
                 // (?s) enables line terminator matching (equivalent to Pattern.DOTALL)
-                outputFrame.getUtf8String().matches("(?s)" + regEx);
-
+                return outputFrame.getUtf8String().matches("(?s)" + regEx);
+            };
             try {
                 waitingConsumer.waitUntil(waitPredicate, startupTimeout.getSeconds(), TimeUnit.SECONDS, times);
             } catch (TimeoutException e) {

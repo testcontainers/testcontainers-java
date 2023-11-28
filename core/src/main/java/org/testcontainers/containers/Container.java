@@ -1,17 +1,16 @@
 package org.testcontainers.containers;
 
-import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Bind;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.Value;
-import org.testcontainers.DockerClientFactory;
-import org.testcontainers.images.ImagePullPolicy;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
+import org.testcontainers.images.ImagePullPolicy;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.LogUtils;
 import org.testcontainers.utility.MountableFile;
 
@@ -24,7 +23,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 public interface Container<SELF extends Container<SELF>> extends LinkableContainer, ContainerState {
-
     /**
      * @return a reference to this container instance, cast to the expected generic type.
      */
@@ -39,8 +37,11 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     @Value
     @AllArgsConstructor(access = AccessLevel.MODULE)
     class ExecResult {
+
         int exitCode;
+
         String stdout;
+
         String stderr;
     }
 
@@ -76,9 +77,11 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @param hostPath      the file system path on the host
      * @param containerPath the file system path inside the container
      * @param mode          the bind mode
+     * @deprecated use {@link GenericContainer#withCopyToContainer(Transferable, String)}
      */
+    @Deprecated
     default void addFileSystemBind(final String hostPath, final String containerPath, final BindMode mode) {
-        addFileSystemBind(hostPath, containerPath, mode, SelinuxContext.NONE);
+        addFileSystemBind(hostPath, containerPath, mode, SelinuxContext.SHARED);
     }
 
     /**
@@ -89,7 +92,9 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @param containerPath the file system path inside the container
      * @param mode          the bind mode
      * @param selinuxContext selinux context argument to use for this file
+     * @deprecated use {@link GenericContainer#withCopyToContainer(Transferable, String)}
      */
+    @Deprecated
     void addFileSystemBind(String hostPath, String containerPath, BindMode mode, SelinuxContext selinuxContext);
 
     /**
@@ -133,7 +138,9 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @param hostPath the file system path on the host
      * @param containerPath the file system path inside the container
      * @return this
+     * @deprecated use {@link GenericContainer#withCopyToContainer(Transferable, String)}
      */
+    @Deprecated
     default SELF withFileSystemBind(String hostPath, String containerPath) {
         return withFileSystemBind(hostPath, containerPath, BindMode.READ_WRITE);
     }
@@ -145,7 +152,9 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @param containerPath the file system path inside the container
      * @param mode the bind mode
      * @return this
+     * @deprecated use {@link GenericContainer#withCopyToContainer(Transferable, String)}
      */
+    @Deprecated
     SELF withFileSystemBind(String hostPath, String containerPath, BindMode mode);
 
     /**
@@ -169,10 +178,22 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * Set the file to be copied before starting a created container
      *
      * @param mountableFile a Mountable file with path of source file / folder on host machine
-     * @param containerPath a destination path on conatiner to which the files / folders to be copied
+     * @param containerPath a destination path on container to which the files / folders to be copied
+     * @return this
+     *
+     * @deprecated Use {@link #withCopyToContainer(Transferable, String)} instead
+     */
+    @Deprecated
+    SELF withCopyFileToContainer(MountableFile mountableFile, String containerPath);
+
+    /**
+     * Set the content to be copied before starting a created container
+     *
+     * @param transferable a Transferable
+     * @param containerPath a destination path on container to which the files / folders to be copied
      * @return this
      */
-    SELF withCopyFileToContainer(MountableFile mountableFile, String containerPath);
+    SELF withCopyToContainer(Transferable transferable, String containerPath);
 
     /**
      * Add an environment variable to be passed to the container.
@@ -284,9 +305,15 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @param containerPath path this should be mapped to inside the container
      * @param mode          access mode for the file
      * @return this
+     * @deprecated use {@link GenericContainer#withCopyToContainer(Transferable, String)}
      */
-    default SELF withClasspathResourceMapping(final String resourcePath, final String containerPath, final BindMode mode) {
-        withClasspathResourceMapping(resourcePath, containerPath, mode, SelinuxContext.NONE);
+    @Deprecated
+    default SELF withClasspathResourceMapping(
+        final String resourcePath,
+        final String containerPath,
+        final BindMode mode
+    ) {
+        withClasspathResourceMapping(resourcePath, containerPath, mode, SelinuxContext.SHARED);
         return self();
     }
 
@@ -299,8 +326,15 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @param mode           access mode for the file
      * @param selinuxContext selinux context argument to use for this file
      * @return this
+     * @deprecated use {@link GenericContainer#withCopyToContainer(Transferable, String)}
      */
-    SELF withClasspathResourceMapping(String resourcePath, String containerPath, BindMode mode, SelinuxContext selinuxContext);
+    @Deprecated
+    SELF withClasspathResourceMapping(
+        String resourcePath,
+        String containerPath,
+        BindMode mode,
+        SelinuxContext selinuxContext
+    );
 
     /**
      * Set the duration of waiting time until container treated as started.
@@ -365,7 +399,9 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * from inside the container is not going to work, since the container has its own IP address.
      *
      * @return the IP address of the host machine
+     * @deprecated use {@link org.testcontainers.Testcontainers#exposeHostPorts(int...)}
      */
+    @Deprecated
     String getTestHostIpAddress();
 
     /**
@@ -374,7 +410,7 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @param consumer consumer that the frames should be sent to
      */
     default void followOutput(Consumer<OutputFrame> consumer) {
-        LogUtils.followOutput(DockerClientFactory.instance().client(), getContainerId(), consumer);
+        LogUtils.followOutput(getDockerClient(), getContainerId(), consumer);
     }
 
     /**
@@ -385,9 +421,8 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @param types    types that should be followed (one or both of STDOUT, STDERR)
      */
     default void followOutput(Consumer<OutputFrame> consumer, OutputFrame.OutputType... types) {
-        LogUtils.followOutput(DockerClientFactory.instance().client(), getContainerId(), consumer, types);
+        LogUtils.followOutput(getDockerClient(), getContainerId(), consumer, types);
     }
-
 
     /**
      * Attach an output consumer at container startup, enabling stdout and stderr to be followed, waited on, etc.
@@ -423,8 +458,6 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      */
     @Deprecated
     Map<String, LinkableContainer> getLinkedContainers();
-
-    DockerClient getDockerClient();
 
     void setExposedPorts(List<Integer> exposedPorts);
 
