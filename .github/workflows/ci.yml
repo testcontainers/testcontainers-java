@@ -55,6 +55,7 @@ jobs:
       - name: Build and test with Gradle
         run: |
           ./gradlew :testcontainers:check --no-daemon --continue --scan
+      - uses: ./.github/actions/setup-junit-report
 
   turbo-mode:
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
@@ -71,6 +72,7 @@ jobs:
         working-directory: ./smoke-test/
         run: |
           ./gradlew check --no-daemon --continue --scan --info
+      - uses: ./.github/actions/setup-junit-report
 
   find_gradle_jobs:
     needs: [core]
@@ -103,6 +105,7 @@ jobs:
       - name: Build and test with Gradle (${{matrix.gradle_args}})
         run: |
           ./gradlew --no-daemon --continue --scan ${{matrix.gradle_args}}
+      - uses: ./.github/actions/setup-junit-report
 
   find_examples_jobs:
     needs: [check]
@@ -137,6 +140,7 @@ jobs:
         working-directory: ./examples/
         run: |
           ./gradlew --no-daemon --continue --scan --info ${{matrix.gradle_args}}
+      - uses: ./.github/actions/setup-junit-report
 
   find_docs_examples_jobs:
     needs: [check_examples]
@@ -169,3 +173,4 @@ jobs:
       - name: Build and test with Gradle (${{matrix.gradle_args}})
         run: |
           ./gradlew --no-daemon --continue --scan ${{matrix.gradle_args}}
+      - uses: ./.github/actions/setup-junit-report
