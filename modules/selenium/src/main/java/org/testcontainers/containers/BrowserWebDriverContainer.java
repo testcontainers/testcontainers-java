@@ -437,12 +437,12 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     private WaitStrategy getDefaultWaitStrategy() {
         final WaitStrategy logWaitStrategy = new LogMessageWaitStrategy()
             .withRegEx(".*(RemoteWebDriver instances should connect to|Selenium Server is up and running|Started Selenium Standalone).*\n")
-            .withStartupTimeout(Duration.of(60, SECONDS));
+            .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS));
 
         return new WaitAllStrategy()
             .withStrategy(logWaitStrategy)
             .withStrategy(new HostPortWaitStrategy())
-            .withStartupTimeout(Duration.of(60, SECONDS));
+            .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS));
     }
 
     public enum VncRecordingMode {
