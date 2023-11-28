@@ -43,6 +43,8 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-22.04
+    permissions:
+      checks: write
     steps:
       - uses: actions/checkout@v4
       - name: Setup rootless Docker

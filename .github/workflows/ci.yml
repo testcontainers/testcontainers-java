@@ -49,6 +49,8 @@ env:
 jobs:
   core:
     runs-on: ubuntu-22.04
+    permissions:
+      checks: write
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-build
@@ -60,6 +62,8 @@ jobs:
   turbo-mode:
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-22.04
+    permissions:
+      checks: write
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-build
@@ -99,6 +103,8 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJson(needs.find_gradle_jobs.outputs.matrix) }}
     runs-on: ubuntu-22.04
+    permissions:
+      checks: write
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-build
@@ -133,6 +139,8 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJson(needs.find_examples_jobs.outputs.matrix) }}
     runs-on: ubuntu-22.04
+    permissions:
+      checks: write
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-build
@@ -167,6 +175,8 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJson(needs.find_docs_examples_jobs.outputs.matrix) }}
     runs-on: ubuntu-22.04
+    permissions:
+      checks: write
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-build
