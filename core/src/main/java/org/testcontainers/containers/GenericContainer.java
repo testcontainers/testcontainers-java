@@ -627,30 +627,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     /**
-     * Kills the container and removes it from Docker.
-     *
-     * <p>In most situations, killing the container is the correct course of action in a test environment.
-     * This is how Ryuk stops containers.
-     *
-     * <p>If a more graceful shutdown is required, interact with the container's docker client directly:
-     *
-     * <pre>
-     * container
-     *     .getDockerClient()
-     *     .stopContainerCmd(container.getContainerId())
-     *     .withTimeout(timeout)
-     *      .exec();
-     * </pre>
-     *
-     * <p>or, if control of the signal sent, consider using the kill command directly:
-     *
-     * <pre>
-     * container
-     *     .getDockerClient()
-     *     .killContainerCmd(container.getContainerId())
-     *     .withSignal("HUP")
-     *     .exec();
-     * </pre>
+     * Kill and remove the container.
      */
     @Override
     public void stop() {
