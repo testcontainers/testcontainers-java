@@ -991,6 +991,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * {@inheritDoc}
      */
     @Override
+    @Deprecated
     public void addFileSystemBind(
         final String hostPath,
         final String containerPath,
@@ -1019,6 +1020,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * {@inheritDoc}
      */
     @Override
+    @Deprecated
     public SELF withFileSystemBind(String hostPath, String containerPath, BindMode mode) {
         addFileSystemBind(hostPath, containerPath, mode);
         return self();
