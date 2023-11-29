@@ -25,4 +25,20 @@ public class MultiStageBuildTest {
             assertThat(container.execInContainer("ls").getStdout()).contains("hello.txt");
         }
     }
+
+    @Test
+    public void shouldBuildMultistageBuildWithBuildImageCmdModifier() throws IOException, InterruptedException {
+        try (
+            GenericContainer<?> container = new GenericContainer<>(
+                new ImageFromDockerfile()
+                    .withDockerfile(Paths.get("src/test/resources/Dockerfile-multistage"))
+                    .withBuildImageCmdModifier(cmd -> cmd.withTarget("builder"))
+            )
+                .withCommand("/bin/sh", "-c", "sleep 10")
+        ) {
+            container.start();
+            assertThat(container.execInContainer("pwd").getStdout()).contains("/my-files");
+            assertThat(container.execInContainer("ls").getStdout()).contains("hello.txt");
+        }
+    }
 }

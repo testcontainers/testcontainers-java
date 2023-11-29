@@ -43,6 +43,8 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-22.04
+    permissions:
+      checks: write
     steps:
       - uses: actions/checkout@v4
       - name: Setup rootless Docker
@@ -53,3 +55,4 @@ jobs:
         uses: gradle/gradle-build-action@v2
       - name: Build with Gradle
         run: ./gradlew --no-daemon --scan testcontainers:test --tests '*GenericContainerRuleTest'
+      - uses: ./.github/actions/setup-junit-report
