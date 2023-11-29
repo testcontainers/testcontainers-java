@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.zip.GZIPOutputStream;
 
 @Slf4j
@@ -50,7 +51,7 @@ public class ImageFromDockerfile
 
     private final String dockerImageName;
 
-    private boolean deleteOnExit = true;
+    private final boolean deleteOnExit;
 
     private final Map<String, Transferable> transferables = new HashMap<>();
 
@@ -92,6 +93,7 @@ public class ImageFromDockerfile
     protected final String resolve() {
         Logger logger = DockerLoggerFactory.getLogger(dockerImageName);
 
+        //noinspection resource
         DockerClient dockerClient = DockerClientFactory.instance().client();
 
         try {
@@ -103,12 +105,12 @@ public class ImageFromDockerfile
                     if (item.isErrorIndicated()) {
                         logger.error(item.getErrorDetail().getMessage());
                     } else {
-                        logger.debug(StringUtils.chomp(item.getStream(), "\n"));
+                        logger.debug(StringUtils.removeEnd(item.getStream(), "\n"));
                     }
                 }
             };
 
-            // We have to use pipes to avoid high memory consumption since users might want to build really big images
+            // We have to use pipes to avoid high memory consumption since users might want to build huge images
             @Cleanup
             PipedInputStream in = new PipedInputStream();
             @Cleanup
@@ -165,7 +167,7 @@ public class ImageFromDockerfile
     }
 
     protected void configure(BuildImageCmd buildImageCmd) {
-        buildImageCmd.withTag(this.getDockerImageName());
+        buildImageCmd.withTags(Collections.singleton(getDockerImageName()));
         this.dockerFilePath.ifPresent(buildImageCmd::withDockerfilePath);
         this.dockerfile.ifPresent(p -> {
                 buildImageCmd.withDockerfile(p.toFile());
@@ -183,25 +185,38 @@ public class ImageFromDockerfile
     }
 
     private void prePullDependencyImages(Set<String> imagesToPull) {
-        final DockerClient dockerClient = DockerClientFactory.instance().client();
-
         imagesToPull.forEach(imageName -> {
+            String resolvedImageName = applyBuildArgsToImageName(imageName);
             try {
                 log.info(
                     "Pre-emptively checking local images for '{}', referenced via a Dockerfile. If not available, it will be pulled.",
-                    imageName
+                    resolvedImageName
                 );
-                new RemoteDockerImage(DockerImageName.parse(imageName))
+                new RemoteDockerImage(DockerImageName.parse(resolvedImageName))
                     .withImageNameSubstitutor(ImageNameSubstitutor.noop())
                     .get();
             } catch (Exception e) {
                 log.warn(
                     "Unable to pre-fetch an image ({}) depended upon by Dockerfile - image build will continue but may fail. Exception message was: {}",
-                    imageName,
+                    resolvedImageName,
                     e.getMessage()
                 );
             }
         });
+    }
+
+    /**
+     * See {@code filterForEnvironmentVars()} in {@link com.github.dockerjava.core.dockerfile.DockerfileStatement}.
+     */
+    private String applyBuildArgsToImageName(String imageName) {
+        for (Map.Entry<String, String> entry : buildArgs.entrySet()) {
+            String value = Matcher.quoteReplacement(entry.getValue());
+            // handle: $VARIABLE case
+            imageName = imageName.replace("$" + entry.getKey(), value);
+            // handle ${VARIABLE} case
+            imageName = imageName.replace("${" + entry.getKey() + "}", value);
+        }
+        return imageName;
     }
 
     public ImageFromDockerfile withBuildArg(final String key, final String value) {
