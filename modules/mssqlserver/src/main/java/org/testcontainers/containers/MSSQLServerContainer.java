@@ -7,6 +7,13 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+/**
+ * Testcontainers implementation for Microsoft SQL Server.
+ * <p>
+ * Supported image: {@code mcr.microsoft.com/mssql/server}
+ * <p>
+ * Exposed ports: 1433
+ */
 public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("mcr.microsoft.com/mssql/server");
@@ -38,7 +45,7 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
     };
 
     /**
-     * @deprecated use {@link MSSQLServerContainer(DockerImageName)} instead
+     * @deprecated use {@link #MSSQLServerContainer(DockerImageName)} instead
      */
     @Deprecated
     public MSSQLServerContainer() {

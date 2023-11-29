@@ -8,6 +8,11 @@ import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Testcontainers implementation for ClickHouse.
+ *
+ * @deprecated use {@link org.testcontainers.clickhouse.ClickHouseContainer} instead
+ */
 public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContainer> {
 
     public static final String NAME = "clickhouse";
@@ -43,7 +48,7 @@ public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContain
     private boolean supportsNewDriver;
 
     /**
-     * @deprecated use {@link ClickHouseContainer(DockerImageName)} instead
+     * @deprecated use {@link #ClickHouseContainer(DockerImageName)} instead
      */
     @Deprecated
     public ClickHouseContainer() {

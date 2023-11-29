@@ -23,7 +23,7 @@ public class DynaliteContainer extends GenericContainer<DynaliteContainer> {
     private static final int MAPPED_PORT = 4567;
 
     /**
-     * @deprecated use {@link DynaliteContainer(DockerImageName)} instead
+     * @deprecated use {@link #DynaliteContainer(DockerImageName)} instead
      */
     @Deprecated
     public DynaliteContainer() {

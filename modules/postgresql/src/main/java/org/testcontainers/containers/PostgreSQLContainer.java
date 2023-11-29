@@ -8,6 +8,13 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Set;
 
+/**
+ * Testcontainers implementation for PostgreSQL.
+ * <p>
+ * Supported image: {@code postgres}
+ * <p>
+ * Exposed ports: 5432
+ */
 public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
 
     public static final String NAME = "postgresql";
