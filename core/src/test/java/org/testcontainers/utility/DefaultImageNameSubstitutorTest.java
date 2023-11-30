@@ -5,14 +5,15 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 
 public class DefaultImageNameSubstitutorTest {
 
     public static final DockerImageName ORIGINAL_IMAGE = DockerImageName.parse("foo");
+
     public static final DockerImageName SUBSTITUTE_IMAGE = DockerImageName.parse("bar");
+
     private ConfigurationFileImageNameSubstitutor underTest;
 
     @Rule
@@ -32,7 +33,7 @@ public class DefaultImageNameSubstitutorTest {
 
         final DockerImageName substitute = underTest.apply(ORIGINAL_IMAGE);
 
-        assertEquals("match is found", SUBSTITUTE_IMAGE, substitute);
-        assertTrue("compatibility is automatically set", substitute.isCompatibleWith(ORIGINAL_IMAGE));
+        assertThat(substitute).as("match is found").isEqualTo(SUBSTITUTE_IMAGE);
+        assertThat(substitute.isCompatibleWith(ORIGINAL_IMAGE)).as("compatibility is automatically set").isTrue();
     }
 }

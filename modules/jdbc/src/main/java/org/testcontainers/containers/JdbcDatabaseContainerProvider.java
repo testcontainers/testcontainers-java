@@ -1,8 +1,7 @@
 package org.testcontainers.containers;
 
-import org.testcontainers.jdbc.ConnectionUrl;
-
 import lombok.extern.slf4j.Slf4j;
+import org.testcontainers.jdbc.ConnectionUrl;
 
 import java.util.Objects;
 
@@ -26,9 +25,12 @@ public abstract class JdbcDatabaseContainerProvider {
      * @return Instance of {@link JdbcDatabaseContainer}
      */
     public JdbcDatabaseContainer newInstance() {
-        log.warn("No explicit version tag was provided in JDBC URL and this class ({}) does not " +
+        log.warn(
+            "No explicit version tag was provided in JDBC URL and this class ({}) does not " +
             "override newInstance() to set a default tag. `latest` will be used but results may " +
-            "be unreliable!", this.getClass().getCanonicalName());
+            "be unreliable!",
+            this.getClass().getCanonicalName()
+        );
         return this.newInstance("latest");
     }
 
@@ -55,7 +57,11 @@ public abstract class JdbcDatabaseContainerProvider {
         return result;
     }
 
-    protected JdbcDatabaseContainer newInstanceFromConnectionUrl(ConnectionUrl connectionUrl, final String userParamName, final String pwdParamName) {
+    protected JdbcDatabaseContainer newInstanceFromConnectionUrl(
+        ConnectionUrl connectionUrl,
+        final String userParamName,
+        final String pwdParamName
+    ) {
         Objects.requireNonNull(connectionUrl, "Connection URL cannot be null");
 
         final String databaseName = connectionUrl.getDatabaseName().orElse("test");

@@ -2,14 +2,11 @@ package org.testcontainers.containers.output;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import org.testcontainers.TestImages;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
-import static org.testcontainers.TestImages.ALPINE_IMAGE;
-import static org.testcontainers.containers.output.OutputFrame.OutputType.STDERR;
-import static org.testcontainers.containers.output.OutputFrame.OutputType.STDOUT;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ContainerLogsTest {
 
@@ -20,7 +17,7 @@ public class ContainerLogsTest {
             container.start();
 
             final String logs = container.getLogs();
-            assertEquals("stdout and stderr are reflected in the returned logs", "stdout\nstderr", logs);
+            assertThat(logs).as("stdout and stderr are reflected in the returned logs").isEqualTo("stdout\nstderr");
         }
     }
 
@@ -32,8 +29,8 @@ public class ContainerLogsTest {
             // docsGetAllLogs {
             final String logs = container.getLogs();
             // }
-            assertTrue("stdout is reflected in the returned logs", logs.contains("stdout"));
-            assertTrue("stderr is reflected in the returned logs", logs.contains("stderr"));
+            assertThat(logs).as("stdout is reflected in the returned logs").contains("stdout");
+            assertThat(logs).as("stderr is reflected in the returned logs").contains("stderr");
         }
     }
 
@@ -43,9 +40,9 @@ public class ContainerLogsTest {
             container.start();
 
             // docsGetStdOut {
-            final String logs = container.getLogs(STDOUT);
+            final String logs = container.getLogs(OutputFrame.OutputType.STDOUT);
             // }
-            assertTrue("stdout is reflected in the returned logs", logs.contains("stdout"));
+            assertThat(logs).as("stdout is reflected in the returned logs").contains("stdout");
         }
     }
 
@@ -55,9 +52,9 @@ public class ContainerLogsTest {
             container.start();
 
             // docsGetStdErr {
-            final String logs = container.getLogs(STDERR);
+            final String logs = container.getLogs(OutputFrame.OutputType.STDERR);
             // }
-            assertTrue("stderr is reflected in the returned logs", logs.contains("stderr"));
+            assertThat(logs).as("stderr is reflected in the returned logs").contains("stderr");
         }
     }
 
@@ -68,19 +65,18 @@ public class ContainerLogsTest {
 
             Thread.sleep(1000L);
 
-            final String logs = container.getLogs(STDOUT);
-            assertTrue("stdout is reflected in the returned logs for a running container", logs.contains("seq=0"));
+            final String logs = container.getLogs(OutputFrame.OutputType.STDOUT);
+            assertThat(logs).as("stdout is reflected in the returned logs for a running container").contains("seq=0");
         }
     }
 
     private static GenericContainer<?> shortLivedContainer() {
-        return new GenericContainer<>(ALPINE_IMAGE)
+        return new GenericContainer<>(TestImages.ALPINE_IMAGE)
             .withCommand("/bin/sh", "-c", "echo -n 'stdout' && echo -n 'stderr' 1>&2")
             .withStartupCheckStrategy(new OneShotStartupCheckStrategy());
     }
 
     private static GenericContainer<?> longRunningContainer() {
-        return new GenericContainer<>(ALPINE_IMAGE)
-            .withCommand("ping -c 100 127.0.0.1");
+        return new GenericContainer<>(TestImages.ALPINE_IMAGE).withCommand("ping -c 100 127.0.0.1");
     }
 }

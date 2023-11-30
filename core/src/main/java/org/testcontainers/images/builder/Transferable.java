@@ -5,11 +5,20 @@ import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.zip.Checksum;
 
 public interface Transferable {
-
     int DEFAULT_FILE_MODE = 0100644;
     int DEFAULT_DIR_MODE = 040755;
+
+    static Transferable of(String string) {
+        return of(string.getBytes(StandardCharsets.UTF_8));
+    }
+
+    static Transferable of(String string, int fileMode) {
+        return of(string.getBytes(StandardCharsets.UTF_8), fileMode);
+    }
 
     static Transferable of(byte[] bytes) {
         return of(bytes, DEFAULT_FILE_MODE);
@@ -25,6 +34,11 @@ public interface Transferable {
             @Override
             public byte[] getBytes() {
                 return bytes;
+            }
+
+            @Override
+            public void updateChecksum(Checksum checksum) {
+                checksum.update(bytes, 0, bytes.length);
             }
 
             @Override
@@ -77,5 +91,9 @@ public interface Transferable {
 
     default String getDescription() {
         return "";
+    }
+
+    default void updateChecksum(Checksum checksum) {
+        throw new UnsupportedOperationException("Provide implementation in subclass");
     }
 }

@@ -1,6 +1,6 @@
 package com.example.redis
 
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class RedisApplicationTests : AbstractIntegrationTest() {
 

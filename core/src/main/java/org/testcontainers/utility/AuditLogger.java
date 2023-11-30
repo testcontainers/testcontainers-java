@@ -3,16 +3,15 @@ package org.testcontainers.utility;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.command.DockerCmd;
+import com.google.common.base.Strings;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.MDC;
 
 import java.util.List;
-
-import static com.google.common.base.Strings.nullToEmpty;
 
 /**
  * Logger for tracking potentially destructive actions, intended for usage in a shared Docker environment where
@@ -26,34 +25,36 @@ import static com.google.common.base.Strings.nullToEmpty;
 public class AuditLogger {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
+
     public static final String MDC_PREFIX = AuditLogger.class.getCanonicalName();
 
-    public static void doLog(@NotNull String action,
-                             @Nullable String image,
-                             @Nullable String containerId,
-                             @NotNull DockerCmd<?> cmd) {
-
+    public static void doLog(
+        @NotNull String action,
+        @Nullable String image,
+        @Nullable String containerId,
+        @NotNull DockerCmd<?> cmd
+    ) {
         doLog(action, image, containerId, cmd, null);
     }
 
-    public static void doLog(@NotNull String action,
-                             @Nullable String image,
-                             @Nullable String containerId,
-                             @NotNull DockerCmd<?> cmd,
-                             @Nullable Exception e) {
-
-        if (! log.isTraceEnabled()) {
+    public static void doLog(
+        @NotNull String action,
+        @Nullable String image,
+        @Nullable String containerId,
+        @NotNull DockerCmd<?> cmd,
+        @Nullable Exception e
+    ) {
+        if (!log.isTraceEnabled()) {
             return;
         }
 
-        MDC.put(MDC_PREFIX + ".Action", nullToEmpty(action));
-        MDC.put(MDC_PREFIX + ".Image", nullToEmpty(image));
-        MDC.put(MDC_PREFIX + ".ContainerId", nullToEmpty(containerId));
+        MDC.put(MDC_PREFIX + ".Action", Strings.nullToEmpty(action));
+        MDC.put(MDC_PREFIX + ".Image", Strings.nullToEmpty(image));
+        MDC.put(MDC_PREFIX + ".ContainerId", Strings.nullToEmpty(containerId));
 
         try {
             MDC.put(MDC_PREFIX + ".Command", objectMapper.writeValueAsString(cmd));
-        } catch (JsonProcessingException ignored) {
-        }
+        } catch (JsonProcessingException ignored) {}
 
         if (e != null) {
             MDC.put(MDC_PREFIX + ".Exception", e.getLocalizedMessage());
@@ -69,10 +70,8 @@ public class AuditLogger {
         MDC.remove(MDC_PREFIX + ".Exception");
     }
 
-    public static void doComposeLog(@NotNull String[] commandParts,
-                                    @Nullable List<String> env) {
-
-        if (! log.isTraceEnabled()) {
+    public static void doComposeLog(@NotNull String[] commandParts, @Nullable List<String> env) {
+        if (!log.isTraceEnabled()) {
             return;
         }
 

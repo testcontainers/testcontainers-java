@@ -6,8 +6,7 @@ import org.testcontainers.db.AbstractContainerDatabaseTest;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertNotEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TimescaleDBContainerTest extends AbstractContainerDatabaseTest {
 
@@ -18,41 +17,60 @@ public class TimescaleDBContainerTest extends AbstractContainerDatabaseTest {
 
             ResultSet resultSet = performQuery(postgres, "SELECT 1");
             int resultSetInt = resultSet.getInt(1);
-            assertEquals("A basic SELECT query succeeds", 1, resultSetInt);
+            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
         }
     }
 
     @Test
     public void testCommandOverride() throws SQLException {
-        try (GenericContainer<?> postgres = new TimescaleDBContainerProvider().newInstance().withCommand("postgres -c max_connections=42")) {
+        try (
+            GenericContainer<?> postgres = new TimescaleDBContainerProvider()
+                .newInstance()
+                .withCommand("postgres -c max_connections=42")
+        ) {
             postgres.start();
 
-            ResultSet resultSet = performQuery((JdbcDatabaseContainer<?>) postgres, "SELECT current_setting('max_connections')");
+            ResultSet resultSet = performQuery(
+                (JdbcDatabaseContainer<?>) postgres,
+                "SELECT current_setting('max_connections')"
+            );
             String result = resultSet.getString(1);
-            assertEquals("max_connections should be overriden", "42", result);
+            assertThat(result).as("max_connections should be overriden").isEqualTo("42");
         }
     }
 
     @Test
     public void testUnsetCommand() throws SQLException {
-        try (GenericContainer<?> postgres = new TimescaleDBContainerProvider().newInstance().withCommand("postgres -c max_connections=42").withCommand()) {
+        try (
+            GenericContainer<?> postgres = new TimescaleDBContainerProvider()
+                .newInstance()
+                .withCommand("postgres -c max_connections=42")
+                .withCommand()
+        ) {
             postgres.start();
 
-            ResultSet resultSet = performQuery((JdbcDatabaseContainer<?>) postgres, "SELECT current_setting('max_connections')");
+            ResultSet resultSet = performQuery(
+                (JdbcDatabaseContainer<?>) postgres,
+                "SELECT current_setting('max_connections')"
+            );
             String result = resultSet.getString(1);
-            assertNotEquals("max_connections should not be overriden", "42", result);
+            assertThat(result).as("max_connections should not be overriden").isNotEqualTo("42");
         }
     }
 
     @Test
     public void testExplicitInitScript() throws SQLException {
-        try (JdbcDatabaseContainer<?> postgres = new TimescaleDBContainerProvider().newInstance().withInitScript("somepath/init_timescaledb.sql")) {
+        try (
+            JdbcDatabaseContainer<?> postgres = new TimescaleDBContainerProvider()
+                .newInstance()
+                .withInitScript("somepath/init_timescaledb.sql")
+        ) {
             postgres.start();
 
             ResultSet resultSet = performQuery(postgres, "SELECT foo FROM bar");
 
             String firstColumnValue = resultSet.getString(1);
-            assertEquals("Value from init script should equal real value", "hello world", firstColumnValue);
+            assertThat(firstColumnValue).as("Value from init script should equal real value").isEqualTo("hello world");
         }
     }
 }

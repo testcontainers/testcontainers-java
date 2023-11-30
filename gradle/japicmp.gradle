@@ -3,7 +3,7 @@ configurations {
 }
 
 dependencies {
-    baseline "org.testcontainers:${project.name}:1.16.0", {
+    baseline "org.testcontainers:${project.name}:${project['testcontainers.version']}", {
         exclude group: "*", module: "*"
     }
 }
@@ -15,8 +15,8 @@ tasks.japicmp {
     // have an existing published version.
     enabled = ! configurations.baseline.copy().resolvedConfiguration.lenientConfiguration.getFiles().empty
 
-    oldClasspath = configurations.baseline
-    newClasspath = shadowJar.outputs.files
+    oldClasspath.from(configurations.baseline)
+    newClasspath.from(shadowJar.outputs.files)
     ignoreMissingClasses = true
 
     accessModifier = "protected"
@@ -25,6 +25,9 @@ tasks.japicmp {
 
     onlyBinaryIncompatibleModified = true
     htmlOutputFile = file("$buildDir/reports/japi.html")
+    packageExcludes = [
+        "org.testcontainers.shaded.*",
+    ]
 }
 // do not run on Windows by default
 // TODO investigate zip issue on Windows

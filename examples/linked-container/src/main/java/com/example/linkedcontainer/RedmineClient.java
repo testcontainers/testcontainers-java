@@ -13,6 +13,7 @@ import java.io.IOException;
 public class RedmineClient {
 
     private String url;
+
     private OkHttpClient client;
 
     public RedmineClient(String url) {
@@ -21,9 +22,7 @@ public class RedmineClient {
     }
 
     public int getIssueCount() throws IOException {
-        Request request = new Request.Builder()
-                .url(url + "/issues.json")
-                .build();
+        Request request = new Request.Builder().url(url + "/issues.json").build();
 
         Response response = client.newCall(request).execute();
         JSONObject jsonObject = new JSONObject(response.body().string());

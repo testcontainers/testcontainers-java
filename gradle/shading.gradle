@@ -55,4 +55,16 @@ project.afterEvaluate {
 
         tasks.shadowJar.relocate(pkg, "org.testcontainers.shaded.${pkg}")
     }
+
+    // Add shaded JARs first
+    tasks.test.classpath = findShadedProjects(project)
+        .plus(project)
+        .sum { it.tasks.findByName("shadowJar").outputs.files }
+        .plus(sourceSets.test.runtimeClasspath)
+}
+
+static Set<Project> findShadedProjects(Project project) {
+    Set<Project> dependencies = project.configurations.api.dependencies.withType(ProjectDependency)*.dependencyProject
+
+    return dependencies + dependencies.collectMany { it -> findShadedProjects(it) }
 }

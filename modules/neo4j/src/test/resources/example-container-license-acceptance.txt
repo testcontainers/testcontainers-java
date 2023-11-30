@@ -1,1 +1,1 @@
-neo4j:3.5.0-enterprise
+neo4j:4.4.1-enterprise

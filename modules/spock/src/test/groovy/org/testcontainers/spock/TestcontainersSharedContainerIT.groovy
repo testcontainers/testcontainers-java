@@ -13,35 +13,34 @@ import spock.lang.Stepwise
 @Testcontainers
 class TestcontainersSharedContainerIT extends Specification {
 
-    @Shared
-    GenericContainer genericContainer = new GenericContainer(SpockTestImages.HTTPD_IMAGE)
-            .withExposedPorts(80)
+	@Shared
+	GenericContainer genericContainer = new GenericContainer(SpockTestImages.HTTPD_IMAGE)
+	.withExposedPorts(80)
 
-    @Shared
-    String lastContainerId
+	@Shared
+	String lastContainerId
 
-    def "starts accessible docker container"() {
-        given: "a http client"
-        def client = HttpClientBuilder.create().build()
-        lastContainerId = genericContainer.containerId
+	def "starts accessible docker container"() {
+		given: "a http client"
+		def client = HttpClientBuilder.create().build()
+		lastContainerId = genericContainer.containerId
 
-        when: "accessing web server"
-        CloseableHttpResponse response = performHttpRequest(client)
+		when: "accessing web server"
+		CloseableHttpResponse response = performHttpRequest(client)
 
-        then: "docker container is running and returns http status code 200"
-        response.statusLine.statusCode == 200
-    }
+		then: "docker container is running and returns http status code 200"
+		response.statusLine.statusCode == 200
+	}
 
-    def "containers keeps on running between features"() {
-        expect:
-        genericContainer.containerId == lastContainerId
-    }
+	def "containers keeps on running between features"() {
+		expect:
+		genericContainer.containerId == lastContainerId
+	}
 
-    private CloseableHttpResponse performHttpRequest(CloseableHttpClient client) {
-        String ip = genericContainer.host
-        String port = genericContainer.getMappedPort(80)
-        def response = client.execute(new HttpGet("http://$ip:$port"))
-        response
-    }
-
+	private CloseableHttpResponse performHttpRequest(CloseableHttpClient client) {
+		String ip = genericContainer.host
+		String port = genericContainer.getMappedPort(80)
+		def response = client.execute(new HttpGet("http://$ip:$port"))
+		response
+	}
 }

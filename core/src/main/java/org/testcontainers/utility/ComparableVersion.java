@@ -1,11 +1,10 @@
 package org.testcontainers.utility;
 
+import com.google.common.annotations.VisibleForTesting;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import com.google.common.annotations.VisibleForTesting;
-
-import org.jetbrains.annotations.NotNull;
 
 public final class ComparableVersion implements Comparable<ComparableVersion> {
 
@@ -19,7 +18,7 @@ public final class ComparableVersion implements Comparable<ComparableVersion> {
 
     @Override
     public int compareTo(@NotNull ComparableVersion other) {
-        for (int i=0; i<Math.min(this.parts.length, other.parts.length); i++) {
+        for (int i = 0; i < Math.min(this.parts.length, other.parts.length); i++) {
             int thisPart = this.parts[i];
             int otherPart = other.parts[i];
             if (thisPart > otherPart) {
@@ -71,5 +70,4 @@ public final class ComparableVersion implements Comparable<ComparableVersion> {
 
         return ret;
     }
-
 }

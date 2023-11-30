@@ -40,19 +40,19 @@ By default both standard out and standard error will both be emitted at INFO lev
 Standard error may be emitted at ERROR level, if desired:
 
 ```java
-Slf4jLogConsumer logConsumer = new Slf4jLogConsumer(log).withSeparateOutputStreams()
+Slf4jLogConsumer logConsumer = new Slf4jLogConsumer(LOGGER).withSeparateOutputStreams();
 ```
 
 The [Mapped Diagnostic Context (MDC)](http://logback.qos.ch/manual/mdc.html) for emitted messages may be configured using the `withMdc(...)` option:
 
 ```java
-Slf4jLogConsumer logConsumer = new Slf4jLogConsumer(log).withMdc("key", "value")
+Slf4jLogConsumer logConsumer = new Slf4jLogConsumer(LOGGER).withMdc("key", "value");
 ```
 
 or using an existing map of key-value pairs:
 
 ```java
-Slf4jLogConsumer logConsumer = new Slf4jLogConsumer(log).withMdc(map)
+Slf4jLogConsumer logConsumer = new Slf4jLogConsumer(LOGGER).withMdc(map);
 ```
 
 ### Capturing container output as a String

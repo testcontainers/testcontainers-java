@@ -8,5 +8,6 @@ import org.testcontainers.containers.traits.LinkableContainer;
  */
 @Data
 public class FutureContainer implements LinkableContainer {
+
     private final String containerName;
 }

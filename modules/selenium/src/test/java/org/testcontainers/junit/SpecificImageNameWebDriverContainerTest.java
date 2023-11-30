@@ -8,8 +8,7 @@ import org.testcontainers.utility.DockerImageName;
 
 public class SpecificImageNameWebDriverContainerTest extends BaseWebDriverContainerTest {
 
-    private static final DockerImageName FIREFOX_IMAGE = DockerImageName
-        .parse("selenium/standalone-firefox:2.53.1-beryllium");
+    private static final DockerImageName FIREFOX_IMAGE = DockerImageName.parse("selenium/standalone-firefox:4.10.0");
 
     @Rule
     public BrowserWebDriverContainer<?> firefox = new BrowserWebDriverContainer<>(FIREFOX_IMAGE)
@@ -18,6 +17,6 @@ public class SpecificImageNameWebDriverContainerTest extends BaseWebDriverContai
 
     @Test
     public void simpleExploreTest() {
-        doSimpleExplore(firefox);
+        doSimpleExplore(firefox, new FirefoxOptions());
     }
 }

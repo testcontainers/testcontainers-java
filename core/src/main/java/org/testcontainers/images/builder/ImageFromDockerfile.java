@@ -9,17 +9,20 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.images.ParsedDockerfile;
+import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.images.builder.traits.BuildContextBuilderTrait;
 import org.testcontainers.images.builder.traits.ClasspathTrait;
 import org.testcontainers.images.builder.traits.DockerfileTrait;
 import org.testcontainers.images.builder.traits.FilesTrait;
 import org.testcontainers.images.builder.traits.StringsTrait;
 import org.testcontainers.utility.Base58;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.DockerLoggerFactory;
+import org.testcontainers.utility.ImageNameSubstitutor;
 import org.testcontainers.utility.LazyFuture;
 import org.testcontainers.utility.ResourceReaper;
 
@@ -29,14 +32,18 @@ import java.io.PipedOutputStream;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.zip.GZIPOutputStream;
 
 @Slf4j
 @Getter
-public class ImageFromDockerfile extends LazyFuture<String> implements
+public class ImageFromDockerfile
+    extends LazyFuture<String>
+    implements
         BuildContextBuilderTrait<ImageFromDockerfile>,
         ClasspathTrait<ImageFromDockerfile>,
         FilesTrait<ImageFromDockerfile>,
@@ -48,9 +55,17 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
     private boolean deleteOnExit = true;
 
     private final Map<String, Transferable> transferables = new HashMap<>();
+
     private final Map<String, String> buildArgs = new HashMap<>();
+
     private Optional<String> dockerFilePath = Optional.empty();
+
     private Optional<Path> dockerfile = Optional.empty();
+
+    private Optional<String> target = Optional.empty();
+
+    private final Set<Consumer<BuildImageCmd>> buildImageCmdModifiers = new LinkedHashSet<>();
+
     private Set<String> dependencyImageNames = Collections.emptySet();
 
     public ImageFromDockerfile() {
@@ -84,10 +99,6 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
         DockerClient dockerClient = DockerClientFactory.instance().client();
 
         try {
-            if (deleteOnExit) {
-                ResourceReaper.instance().registerImageForCleanup(dockerImageName);
-            }
-
             BuildImageResultCallback resultCallback = new BuildImageResultCallback() {
                 @Override
                 public void onNext(BuildResponseItem item) {
@@ -102,8 +113,10 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
             };
 
             // We have to use pipes to avoid high memory consumption since users might want to build really big images
-            @Cleanup PipedInputStream in = new PipedInputStream();
-            @Cleanup PipedOutputStream out = new PipedOutputStream(in);
+            @Cleanup
+            PipedInputStream in = new PipedInputStream();
+            @Cleanup
+            PipedOutputStream out = new PipedOutputStream(in);
 
             BuildImageCmd buildImageCmd = dockerClient.buildImageCmd(in);
             configure(buildImageCmd);
@@ -111,7 +124,12 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
             if (buildImageCmd.getLabels() != null) {
                 labels.putAll(buildImageCmd.getLabels());
             }
+
             labels.putAll(DockerClientFactory.DEFAULT_LABELS);
+            if (deleteOnExit) {
+                //noinspection deprecation
+                labels.putAll(ResourceReaper.instance().getLabels());
+            }
             buildImageCmd.withLabels(labels);
 
             prePullDependencyImages(dependencyImageNames);
@@ -135,14 +153,17 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
             }
 
             log.info("Transferred {} to Docker daemon", FileUtils.byteCountToDisplaySize(bytesToDockerDaemon));
-            if (bytesToDockerDaemon > FileUtils.ONE_MB * 50) // warn if >50MB sent to docker daemon
-                log.warn("A large amount of data was sent to the Docker daemon ({}). Consider using a .dockerignore file for better performance.",
-                        FileUtils.byteCountToDisplaySize(bytesToDockerDaemon));
+            if (bytesToDockerDaemon > FileUtils.ONE_MB * 50) {
+                log.warn( // warn if >50MB sent to docker daemon
+                    "A large amount of data was sent to the Docker daemon ({}). Consider using a .dockerignore file for better performance.",
+                    FileUtils.byteCountToDisplaySize(bytesToDockerDaemon)
+                );
+            }
 
             exec.awaitImageId();
 
             return dockerImageName;
-        } catch(IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException("Can't close DockerClient", e);
         }
     }
@@ -151,17 +172,19 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
         buildImageCmd.withTag(this.getDockerImageName());
         this.dockerFilePath.ifPresent(buildImageCmd::withDockerfilePath);
         this.dockerfile.ifPresent(p -> {
-            buildImageCmd.withDockerfile(p.toFile());
-            dependencyImageNames = new ParsedDockerfile(p).getDependencyImageNames();
+                buildImageCmd.withDockerfile(p.toFile());
+                dependencyImageNames = new ParsedDockerfile(p).getDependencyImageNames();
 
-            if (dependencyImageNames.size() > 0) {
-                // if we'll be pre-pulling images, disable the built-in pull as it is not necessary and will fail for
-                // authenticated registries
-                buildImageCmd.withPull(false);
-            }
-        });
+                if (dependencyImageNames.size() > 0) {
+                    // if we'll be pre-pulling images, disable the built-in pull as it is not necessary and will fail for
+                    // authenticated registries
+                    buildImageCmd.withPull(false);
+                }
+            });
 
         this.buildArgs.forEach(buildImageCmd::withBuildArg);
+        this.target.ifPresent(buildImageCmd::withTarget);
+        this.buildImageCmdModifiers.forEach(hook -> hook.accept(buildImageCmd));
     }
 
     private void prePullDependencyImages(Set<String> imagesToPull) {
@@ -169,10 +192,19 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
 
         imagesToPull.forEach(imageName -> {
             try {
-                log.info("Pre-emptively checking local images for '{}', referenced via a Dockerfile. If not available, it will be pulled.", imageName);
-                DockerClientFactory.instance().checkAndPullImage(dockerClient, imageName);
+                log.info(
+                    "Pre-emptively checking local images for '{}', referenced via a Dockerfile. If not available, it will be pulled.",
+                    imageName
+                );
+                new RemoteDockerImage(DockerImageName.parse(imageName))
+                    .withImageNameSubstitutor(ImageNameSubstitutor.noop())
+                    .get();
             } catch (Exception e) {
-                log.warn("Unable to pre-fetch an image ({}) depended upon by Dockerfile - image build will continue but may fail. Exception message was: {}", imageName, e.getMessage());
+                log.warn(
+                    "Unable to pre-fetch an image ({}) depended upon by Dockerfile - image build will continue but may fail. Exception message was: {}",
+                    imageName,
+                    e.getMessage()
+                );
             }
         });
     }
@@ -184,6 +216,16 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
 
     public ImageFromDockerfile withBuildArgs(final Map<String, String> args) {
         this.buildArgs.putAll(args);
+        return this;
+    }
+
+    /**
+     * Sets the target build stage to use.
+     *
+     * @param target the target build stage
+     */
+    public ImageFromDockerfile withTarget(String target) {
+        this.target = Optional.of(target);
         return this;
     }
 
@@ -212,4 +254,15 @@ public class ImageFromDockerfile extends LazyFuture<String> implements
         return this;
     }
 
+    /**
+     * Allow low level modifications of {@link BuildImageCmd}.
+     * Warning: this does expose the underlying docker-java API so might change outside of our control.
+     *
+     * @param modifier {@link Consumer} of {@link BuildImageCmd}.
+     * @return this
+     */
+    public ImageFromDockerfile withBuildImageCmdModifier(Consumer<BuildImageCmd> modifier) {
+        this.buildImageCmdModifiers.add(modifier);
+        return this;
+    }
 }

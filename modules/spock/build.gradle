@@ -6,25 +6,33 @@ description = "Testcontainers :: Spock-Extension"
 
 dependencies {
     api project(':testcontainers')
-    api 'org.spockframework:spock-core:2.0-groovy-3.0'
+    api 'org.spockframework:spock-core:2.3-groovy-4.0'
 
     testImplementation project(':selenium')
     testImplementation project(':mysql')
     testImplementation project(':postgresql')
 
     testImplementation 'com.zaxxer:HikariCP:4.0.3'
-    testImplementation 'org.apache.httpcomponents:httpclient:4.5.13'
+    testImplementation 'org.apache.httpcomponents:httpclient:4.5.14'
 
-    testRuntimeOnly 'org.postgresql:postgresql:42.2.24'
-    testRuntimeOnly 'mysql:mysql-connector-java:8.0.26'
+    testRuntimeOnly 'org.postgresql:postgresql:42.6.0'
+    testRuntimeOnly 'mysql:mysql-connector-java:8.0.33'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.1'
+    testRuntimeOnly 'org.junit.platform:junit-platform-testkit:1.10.1'
 
-    testCompileClasspath 'org.jetbrains:annotations:22.0.0'
+    testCompileOnly 'org.jetbrains:annotations:24.0.1'
 }
 
 sourceJar {
     /* allJava is default (see gradle/publishing.gradle:sourceJar)
        allSource contains both .java and .groovy files */
     from sourceSets.main.allSource
+}
+
+javadocJar {
+    dependsOn groovydoc
+    archiveClassifier = 'javadoc'
+    from groovydoc.destinationDir
 }
 
 test {

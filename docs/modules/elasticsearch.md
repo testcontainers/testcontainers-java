@@ -32,15 +32,17 @@ You can turn on security by providing a password:
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
-```groovy tab='Gradle'
-testImplementation "org.testcontainers:elasticsearch:{{latest_version}}"
-```
+=== "Gradle"
+    ```groovy
+    testImplementation "org.testcontainers:elasticsearch:{{latest_version}}"
+    ```
 
-```xml tab='Maven'
-<dependency>
-    <groupId>org.testcontainers</groupId>
-    <artifactId>elasticsearch</artifactId>
-    <version>{{latest_version}}</version>
-    <scope>test</scope>
-</dependency>
-```
+=== "Maven"
+    ```xml
+    <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>elasticsearch</artifactId>
+        <version>{{latest_version}}</version>
+        <scope>test</scope>
+    </dependency>
+    ```

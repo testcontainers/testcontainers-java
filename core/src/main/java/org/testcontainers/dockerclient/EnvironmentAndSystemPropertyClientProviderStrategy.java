@@ -35,7 +35,8 @@ public final class EnvironmentAndSystemPropertyClientProviderStrategy extends Do
     }
 
     EnvironmentAndSystemPropertyClientProviderStrategy(DefaultDockerClientConfig.Builder configBuilder) {
-        String dockerConfigSource = TestcontainersConfiguration.getInstance()
+        String dockerConfigSource = TestcontainersConfiguration
+            .getInstance()
             .getEnvVarOrProperty("dockerconfig.source", "auto");
 
         switch (dockerConfigSource) {
@@ -62,7 +63,8 @@ public final class EnvironmentAndSystemPropertyClientProviderStrategy extends Do
 
     @Override
     public TransportConfig getTransportConfig() {
-        return TransportConfig.builder()
+        return TransportConfig
+            .builder()
             .dockerHost(dockerClientConfig.getDockerHost())
             .sslConfig(dockerClientConfig.getSSLConfig())
             .build();
@@ -75,7 +77,10 @@ public final class EnvironmentAndSystemPropertyClientProviderStrategy extends Do
 
     @Override
     public String getDescription() {
-        return "Environment variables, system properties and defaults. Resolved dockerHost=" + dockerClientConfig.getDockerHost();
+        return (
+            "Environment variables, system properties and defaults. Resolved dockerHost=" +
+            dockerClientConfig.getDockerHost()
+        );
     }
 
     @Override

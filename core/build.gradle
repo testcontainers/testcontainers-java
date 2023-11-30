@@ -6,7 +6,15 @@ sourceSets {
     jarFileTest
 }
 
+test.maxParallelForks = 4
+
 idea.module.testSourceDirs += sourceSets.jarFileTest.allSource.srcDirs
+
+jar {
+    manifest {
+        attributes('Implementation-Version': project.getProperty("version"))
+    }
+}
 
 shadowJar {
     [
@@ -38,9 +46,16 @@ tasks.japicmp {
         "org.testcontainers.shaded.*",
     ]
 
-    classExcludes = []
+    classExcludes = [
+        "org.testcontainers.utility.RyukResourceReaper",
+    ]
 
-    methodExcludes = []
+    methodExcludes = [
+        "org.testcontainers.containers.Container#getDockerClient()",
+        "org.testcontainers.containers.ContainerState#getDockerClient()",
+        "org.testcontainers.containers.ContainerState#execInContainer(org.testcontainers.containers.ExecConfig)",
+        "org.testcontainers.containers.ContainerState#execInContainer(java.nio.charset.Charset,org.testcontainers.containers.ExecConfig)"
+    ]
 
     fieldExcludes = []
 }
@@ -49,64 +64,68 @@ configurations.all {
     resolutionStrategy {
         // use lower Jackson version
         force 'com.fasterxml.jackson.core:jackson-databind:2.8.8'
+        force 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.8.8'
     }
 }
 
 dependencies {
-    baseline 'org.testcontainers:testcontainers:1.16.0', {
-        exclude group: "*", module: "*"
-    }
-
     api 'junit:junit:4.13.2'
-    api 'org.slf4j:slf4j-api:1.7.32'
-    compileOnly 'org.jetbrains:annotations:22.0.0'
-    testCompileClasspath 'org.jetbrains:annotations:21.0.1'
-    api 'org.apache.commons:commons-compress:1.21'
+    api 'org.slf4j:slf4j-api:1.7.36'
+    compileOnly 'org.jetbrains:annotations:24.0.1'
+    testCompileOnly 'org.jetbrains:annotations:24.0.1'
+    api 'org.apache.commons:commons-compress:1.24.0'
     api ('org.rnorth.duct-tape:duct-tape:1.0.8') {
         exclude(group: 'org.jetbrains', module: 'annotations')
     }
 
-    shaded 'org.awaitility:awaitility:4.1.0'
+    provided('com.google.cloud.tools:jib-core:0.23.0') {
+        exclude group: 'com.google.guava', module: 'guava'
+        exclude group: 'com.fasterxml.jackson.datatype', module: 'jackson-datatype-jsr310'
+        exclude group: 'com.fasterxml.jackson.core', module: 'jackson-core'
+        exclude group: 'com.fasterxml.jackson.core', module: 'jackson-databind'
+        exclude group: 'org.apache.commons', module: 'commons-compress'
+    }
 
-    api platform('com.github.docker-java:docker-java-bom:3.2.12')
-    shaded platform('com.github.docker-java:docker-java-bom:3.2.12')
+    shaded 'org.awaitility:awaitility:4.2.0'
+
+    api platform('com.github.docker-java:docker-java-bom:3.3.4')
+    shaded platform('com.github.docker-java:docker-java-bom:3.3.4')
 
     api "com.github.docker-java:docker-java-api"
 
-    shaded 'com.github.docker-java:docker-java-core'
-
-    shaded 'com.github.docker-java:docker-java-transport-okhttp', {
-        // TODO remove unused `net.java.dev.jna:jna-platform` from `docker-java-transport-okhttp`
-        exclude(group: 'net.java.dev.jna', module: 'jna-platform')
+    shaded('com.github.docker-java:docker-java-core') {
+        exclude group: 'com.google.guava', module: 'guava'
     }
 
     api 'com.github.docker-java:docker-java-transport-zerodep'
 
-    shaded "org.yaml:snakeyaml:1.29"
+    shaded 'com.google.guava:guava:32.1.3-jre'
+    shaded "org.yaml:snakeyaml:1.33"
 
     shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
 
     shaded 'org.zeroturnaround:zt-exec:1.12'
 
-    testImplementation 'org.apache.httpcomponents:httpclient:4.5.9'
-    testImplementation 'redis.clients:jedis:3.7.0'
-    testImplementation 'com.rabbitmq:amqp-client:5.13.1'
-    testImplementation 'org.mongodb:mongo-java-driver:3.12.10'
+    testImplementation('com.google.cloud.tools:jib-core:0.23.0')  {
+        exclude group: 'com.google.guava', module: 'guava'
+    }
+    testImplementation 'org.apache.httpcomponents:httpclient:4.5.14'
+    testImplementation 'redis.clients:jedis:5.0.2'
+    testImplementation 'com.rabbitmq:amqp-client:5.20.0'
+    testImplementation 'org.mongodb:mongo-java-driver:3.12.14'
 
-    testImplementation ('org.mockito:mockito-core:3.12.4') {
+    testImplementation ('org.mockito:mockito-core:4.11.0') {
         exclude(module: 'hamcrest-core')
     }
     // Synthetic JAR used for MountableFileTest and DirectoryTarResourceTest
     testImplementation files('testlib/repo/fakejar/fakejar/0/fakejar-0.jar')
 
-    testImplementation 'org.rnorth.visible-assertions:visible-assertions:2.1.2'
-    testImplementation 'org.assertj:assertj-core:3.21.0'
-    testImplementation project(':test-support')
+    testImplementation 'org.assertj:assertj-core:3.24.2'
 
     jarFileTestCompileOnly "org.projectlombok:lombok:${lombok.version}"
     jarFileTestAnnotationProcessor "org.projectlombok:lombok:${lombok.version}"
     jarFileTestImplementation 'junit:junit:4.13.2'
-    jarFileTestImplementation 'org.assertj:assertj-core:3.20.2'
+    jarFileTestImplementation 'org.assertj:assertj-core:3.24.2'
     jarFileTestImplementation 'org.ow2.asm:asm-debug-all:5.2'
 }
 

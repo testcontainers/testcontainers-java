@@ -1,13 +1,12 @@
 package com.example;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
-import static org.rnorth.visibleassertions.VisibleAssertions.info;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public class DemoControllerTest extends AbstractIntegrationTest {
+class DemoControllerTest extends AbstractIntegrationTest {
 
     @Autowired
     TestRestTemplate restTemplate;
@@ -16,24 +15,22 @@ public class DemoControllerTest extends AbstractIntegrationTest {
     DemoRepository demoRepository;
 
     @Test
-    public void simpleTest() {
+    void simpleTest() {
         String fooResource = "/foo";
 
-        info("putting 'bar' to " + fooResource);
         restTemplate.put(fooResource, "bar");
 
-        assertEquals("value is set", "bar", restTemplate.getForObject(fooResource, String.class));
+        assertThat(restTemplate.getForObject(fooResource, String.class)).as("value is set").isEqualTo("bar");
     }
 
     @Test
-    public void simpleJPATest() {
+    void simpleJPATest() {
         DemoEntity demoEntity = new DemoEntity();
         demoEntity.setValue("Some value");
         demoRepository.save(demoEntity);
 
         DemoEntity result = restTemplate.getForObject("/" + demoEntity.getId(), DemoEntity.class);
 
-        assertEquals("value is set", "Some value", result.getValue());
+        assertThat(result.getValue()).as("value is set").isEqualTo("Some value");
     }
-
 }

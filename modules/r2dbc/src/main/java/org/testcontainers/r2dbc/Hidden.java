@@ -42,7 +42,7 @@ class Hidden {
             //   | DRIVER   | tc              | postgres     |
             //   | PROTOCOL | postgres        | <empty>      |
 
-            String protocol = options.getRequiredValue(ConnectionFactoryOptions.PROTOCOL);
+            String protocol = (String) options.getRequiredValue(ConnectionFactoryOptions.PROTOCOL);
             if (protocol.trim().length() == 0) {
                 throw new IllegalArgumentException("Invalid protocol: " + protocol);
             }
@@ -52,7 +52,8 @@ class Hidden {
             // when protocol does NOT contain COLON, the length becomes 1
             String protocolDelegate = protocols.length == 2 ? protocols[1] : "";
 
-            return ConnectionFactoryOptions.builder()
+            return ConnectionFactoryOptions
+                .builder()
                 .from(options)
                 .option(ConnectionFactoryOptions.DRIVER, driverDelegate)
                 .option(ConnectionFactoryOptions.PROTOCOL, protocolDelegate)
@@ -68,6 +69,5 @@ class Hidden {
         public String getDriver() {
             return DRIVER;
         }
-
     }
 }

@@ -19,8 +19,12 @@ public abstract class AbstractR2DBCDatabaseContainerTest<T extends GenericContai
 
     protected abstract String createR2DBCUrl();
 
+    protected String query() {
+        return "SELECT %d";
+    }
+
     protected String createTestQuery(int result) {
-        return String.format("SELECT %d", result);
+        return String.format(query(), result);
     }
 
     @Test
@@ -60,9 +64,7 @@ public abstract class AbstractR2DBCDatabaseContainerTest<T extends GenericContai
                 .flatMap(it -> it.map((row, meta) -> (Number) row.get(0)))
                 .blockFirst();
 
-            assertThat(result)
-                .isNotNull()
-                .returns(expected, Number::intValue);
+            assertThat(result).isNotNull().returns(expected, Number::intValue);
         } finally {
             if (connectionFactory instanceof Closeable) {
                 Mono.from(((Closeable) connectionFactory).close()).block();

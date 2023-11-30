@@ -9,6 +9,7 @@ import org.testcontainers.utility.DockerImageName;
 public class PrestoContainerProvider extends JdbcDatabaseContainerProvider {
 
     public static final String USER_PARAM = "user";
+
     public static final String PASSWORD_PARAM = "password";
 
     @Override
@@ -30,5 +31,4 @@ public class PrestoContainerProvider extends JdbcDatabaseContainerProvider {
     public JdbcDatabaseContainer newInstance(ConnectionUrl connectionUrl) {
         return newInstanceFromConnectionUrl(connectionUrl, USER_PARAM, PASSWORD_PARAM);
     }
-
 }

@@ -11,7 +11,9 @@ import java.util.Optional;
 public class RedisBackedCache implements Cache {
 
     private final Jedis jedis;
+
     private final String cacheName;
+
     private final Gson gson;
 
     public RedisBackedCache(Jedis jedis, String cacheName) {

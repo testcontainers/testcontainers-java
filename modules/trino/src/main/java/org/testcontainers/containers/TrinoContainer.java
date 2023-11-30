@@ -1,27 +1,36 @@
 package org.testcontainers.containers;
 
+import com.google.common.base.Strings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.VisibleForTesting;
 import org.testcontainers.utility.DockerImageName;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.HashSet;
 import java.util.Set;
 
-import static com.google.common.base.Strings.nullToEmpty;
-import static java.lang.String.format;
-
+/**
+ * Testcontainers implementation for TrinoDB.
+ * <p>
+ * Supported image: {@code trinodb/trino}
+ * <p>
+ * Exposed ports: 8080
+ */
 public class TrinoContainer extends JdbcDatabaseContainer<TrinoContainer> {
+
     static final String NAME = "trino";
+
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("trinodb/trino");
+
     static final String IMAGE = "trinodb/trino";
+
     @VisibleForTesting
     static final String DEFAULT_TAG = "352";
 
     private static final int TRINO_PORT = 8080;
 
     private String username = "test";
+
     private String catalog = null;
 
     public TrinoContainer(final String dockerImageName) {
@@ -30,15 +39,19 @@ public class TrinoContainer extends JdbcDatabaseContainer<TrinoContainer> {
 
     public TrinoContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
         addExposedPort(TRINO_PORT);
     }
 
+    /**
+     * @return the ports on which to check if the container is ready
+     * @deprecated use {@link #getLivenessCheckPortNumbers()} instead
+     */
     @NotNull
     @Override
+    @Deprecated
     protected Set<Integer> getLivenessCheckPorts() {
-        return new HashSet<>(getMappedPort(TRINO_PORT));
+        return super.getLivenessCheckPorts();
     }
 
     @Override
@@ -48,7 +61,12 @@ public class TrinoContainer extends JdbcDatabaseContainer<TrinoContainer> {
 
     @Override
     public String getJdbcUrl() {
-        return format("jdbc:trino://%s:%s/%s", getHost(), getMappedPort(TRINO_PORT), nullToEmpty(catalog));
+        return String.format(
+            "jdbc:trino://%s:%s/%s",
+            getHost(),
+            getMappedPort(TRINO_PORT),
+            Strings.nullToEmpty(catalog)
+        );
     }
 
     @Override

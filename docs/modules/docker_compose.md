@@ -119,6 +119,22 @@ public static DockerComposeContainer environment =
             .waitingFor("db_1", Wait.forLogMessage("started", 1))
             .withLocalCompose(true);
 ```
+
+## Compose V2
+
+[Compose V2 is GA](https://www.docker.com/blog/announcing-compose-v2-general-availability/) and it relies on the `docker` command itself instead of `docker-compose`.
+Testcontainers provides `ComposeContainer` if you want to use Compose V2.
+
+```java
+public static ComposeContainer environment =
+    new ComposeContainer(new File("src/test/resources/compose-test.yml"))
+            .withExposedService("redis-1", REDIS_PORT, Wait.forListeningPort())
+            .waitingFor("db-1", Wait.forLogMessage("started", 1));
+```
+
+!!! note
+    Make sure the service name use a `-` instead of `_` as separator using `ComposeContainer`.
+
 ## Using private repositories in Docker compose
 When Docker Compose is used in container mode (not local), it's needs to be made aware of Docker settings for private repositories. 
 By default, those setting are located in `$HOME/.docker/config.json`. 
@@ -177,16 +193,17 @@ There are 3 ways to specify location of the `config.json` for Docker Compose:
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
-```groovy tab='Gradle'
-testImplementation "org.testcontainers:testcontainers:{{latest_version}}"
-```
-
-```xml tab='Maven'
-<dependency>
-    <groupId>org.testcontainers</groupId>
-    <artifactId>testcontainers</artifactId>
-    <version>{{latest_version}}</version>
-    <scope>test</scope>
-</dependency>
-```
+=== "Gradle"
+    ```groovy
+    testImplementation "org.testcontainers:testcontainers:{{latest_version}}"
+    ```
+=== "Maven"
+    ```xml
+    <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>testcontainers</artifactId>
+        <version>{{latest_version}}</version>
+        <scope>test</scope>
+    </dependency>
+    ```
 

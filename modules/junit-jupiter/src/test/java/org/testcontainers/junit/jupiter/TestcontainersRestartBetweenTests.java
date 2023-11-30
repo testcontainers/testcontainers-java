@@ -3,15 +3,14 @@ package org.testcontainers.junit.jupiter;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.testcontainers.junit.jupiter.JUnitJupiterTestImages.HTTPD_IMAGE;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @Testcontainers
 class TestcontainersRestartBetweenTests {
 
     @Container
-    private GenericContainer<?> genericContainer = new GenericContainer<>(HTTPD_IMAGE)
-            .withExposedPorts(80);
+    private GenericContainer<?> genericContainer = new GenericContainer<>(JUnitJupiterTestImages.HTTPD_IMAGE)
+        .withExposedPorts(80);
 
     private static String lastContainerId;
 
@@ -19,8 +18,8 @@ class TestcontainersRestartBetweenTests {
     void first_test() {
         if (lastContainerId == null) {
             lastContainerId = genericContainer.getContainerId();
-        }  else {
-            assertNotEquals(lastContainerId, genericContainer.getContainerId());
+        } else {
+            assertThat(genericContainer.getContainerId()).isNotEqualTo(lastContainerId);
         }
     }
 
@@ -28,9 +27,8 @@ class TestcontainersRestartBetweenTests {
     void second_test() {
         if (lastContainerId == null) {
             lastContainerId = genericContainer.getContainerId();
-        }  else {
-            assertNotEquals(lastContainerId, genericContainer.getContainerId());
+        } else {
+            assertThat(genericContainer.getContainerId()).isNotEqualTo(lastContainerId);
         }
     }
-
 }

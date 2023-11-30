@@ -1,16 +1,26 @@
-# Testcontainers
+# Testcontainers for Java
 
-![Testcontainers logo](./logo.png)
+<p align=center><strong>Not using Java? Here are other supported languages!</strong></p>
+<div class="card-grid">
+    <a class="card-grid-item"><img src="language-logos/java.svg"/>Java</a>
+    <a href="https://golang.testcontainers.org/" class="card-grid-item"><img src="language-logos/go.svg"/>Go</a>
+    <a href="https://dotnet.testcontainers.org/" class="card-grid-item"><img src="language-logos/dotnet.svg"/>.NET</a>
+    <a href="https://node.testcontainers.org/" class="card-grid-item"><img src="language-logos/nodejs.svg"/>Node.js</a>
+    <a href="https://testcontainers-python.readthedocs.io/en/latest/" class="card-grid-item"><img src="language-logos/python.svg"/>Python</a>
+    <a href="https://docs.rs/testcontainers/latest/testcontainers/" class="card-grid-item"><img src="language-logos/rust.svg"/>Rust</a>
+    <a href="https://github.com/testcontainers/testcontainers-hs/" class="card-grid-item" ><img src="language-logos/haskell.svg"/>Haskell</a>
+    <a href="https://github.com/testcontainers/testcontainers-ruby/" class="card-grid-item" ><img src="language-logos/ruby.svg"/>Ruby</a>
+</div>
 
-## About
+## About Testcontainers for Java
 
-Testcontainers is a Java library that supports JUnit tests, providing lightweight, throwaway instances of common databases, Selenium web browsers, or anything else that can run in a Docker container.
+*Testcontainers for Java* is a Java library that supports JUnit tests, providing lightweight, throwaway instances of common databases, Selenium web browsers, or anything else that can run in a Docker container.
 
 Testcontainers make the following kinds of tests easier:
 
 * **Data access layer integration tests**: use a containerized instance of a MySQL, PostgreSQL or Oracle database to test your data access layer code for complete compatibility, but without requiring complex setup on developers' machines and safe in the knowledge that your tests will always start with a known DB state. Any other database type that can be containerized can also be used.
 * **Application integration tests**: for running your application in a short-lived test mode with dependencies, such as databases, message queues or web servers.
-* **UI/Acceptance tests**: use containerized web browsers, compatible with Selenium, for conducting automated UI tests. Each test can get a fresh instance of the browser, with no browser state, plugin variations or automated browser upgrades to worry about. And you get a video recording of each test session, or just each session where tests failed.
+* **UI/Acceptance tests**: use [containerized web browsers](modules/webdriver_containers.md), compatible with Selenium, for conducting automated UI tests. Each test can get a fresh instance of the browser, with no browser state, plugin variations or automated browser upgrades to worry about. And you get a video recording of each test session, or just each session where tests failed.
 * **Much more!** Check out the various contributed modules or create your own custom container classes using [`GenericContainer`](features/creating_container.md) as a base.
 
 ## Prerequisites
@@ -31,18 +41,19 @@ Testcontainers is distributed as separate JARs with a common version number:
 
 For the core library, the latest Maven/Gradle dependency is as follows: 
 
-```groovy tab='Gradle'
-testImplementation "org.testcontainers:testcontainers:{{latest_version}}"
-```
-
-```xml tab='Maven'
-<dependency>
-    <groupId>org.testcontainers</groupId>
-    <artifactId>testcontainers</artifactId>
-    <version>{{latest_version}}</version>
-    <scope>test</scope>
-</dependency>
-```
+=== "Gradle"
+    ```groovy
+    testImplementation "org.testcontainers:testcontainers:{{latest_version}}"
+    ```
+=== "Maven"
+    ```xml
+    <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>testcontainers</artifactId>
+        <version>{{latest_version}}</version>
+        <scope>test</scope>
+    </dependency>
+    ```
 
 You can also [check the latest version available on Maven Central](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.testcontainers%22).
 
@@ -51,8 +62,8 @@ You can also [check the latest version available on Maven Central](https://searc
 To avoid specifying the version of each dependency, you can use a `BOM` or `Bill Of Materials`.
 
 Using Maven you can add the following to `dependencyManagement` section in your `pom.xml`:
-
-```xml tab='Maven'
+=== "Maven"
+```xml
 <dependencyManagement>
     <dependencies>
         <dependency>
@@ -65,22 +76,24 @@ Using Maven you can add the following to `dependencyManagement` section in your 
     </dependencies>
 </dependencyManagement>
 ```
-and then use dependencies without specifying a version:
 
-```xml tab='Maven'
-<dependency>
-    <groupId>org.testcontainers</groupId>
-    <artifactId>mysql</artifactId>
-    <scope>test</scope>
-</dependency>
-```
+and then use dependencies without specifying a version:
+=== "Maven"
+    ```xml
+    <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>mysql</artifactId>
+        <scope>test</scope>
+    </dependency>
+    ```
 
 Using Gradle 5.0 or higher, you can add the following to the `dependencies` section in your `build.gradle`:
 
-```groovy tab='Gradle'
-implementation platform('org.testcontainers:testcontainers-bom:{{latest_version}}') //import bom
-testImplementation('org.testcontainers:mysql') //no version specified
-```
+=== "Gradle"
+    ```groovy
+    implementation platform('org.testcontainers:testcontainers-bom:{{latest_version}}') //import bom
+    testImplementation('org.testcontainers:mysql') //no version specified
+    ```
 
 
 [JitPack](jitpack_dependencies.md) builds are available for pre-release versions.
@@ -88,8 +101,8 @@ testImplementation('org.testcontainers:mysql') //no version specified
 !!! warning "Shaded dependencies"
     Testcontainers depends on other libraries (like docker-java) for it to work.  
     Some of them (JUnit, docker-java-{api,transport} and its transitive dependencies, JNA, visible-assertions and others) are part of our public API.  
-    But there are also "private", implementation detail dependencies (e.g. docker-java-core, Guava, OkHttp, etc etc) that are not exposed to public API but prone to conflicts with test code/application under test code. 
-    As such, **these libraries are 'shaded' into the core testcontainers JAR** and relocated under `org.testcontainers.shaded` to prevent class conflicts.
+    But there are also "private", implementation detail dependencies (e.g., docker-java-core, Guava, OkHttp, etc.) that are not exposed to public API but prone to conflicts with test code/application under test code. 
+    As such, **these libraries are 'shaded' into the core Testcontainers JAR** and relocated under `org.testcontainers.shaded` to prevent class conflicts.
 
 ## Sponsors
 
@@ -126,16 +139,41 @@ A huge thank you to our sponsors:
     </a>
 </div>
 
+<div style="text-align:center; max-width: 128px; display: inline-block; margin: 5px;">
+    <a href="https://www.elastic.co/">
+        <img src="sponsor_logos/elastic.png" style="width: 100%"/>
+        <p>Elastic</p>
+    </a>
+</div>
+
+### Donors
+
+<div style="text-align:center; max-width: 128px; display: inline-block; margin: 5px;">
+    <a href="https://www.redhat.com">
+        <img src="sponsor_logos/red_hat.png" style="width: 100%"/>
+        <p>Red Hat</p>
+    </a>
+</div>
+
+<div style="text-align:center; max-width: 128px; display: inline-block; margin: 5px;">
+    <a href="https://www.spotify.com">
+        <img src="sponsor_logos/spotify.png" style="width: 100%"/>
+        <p>Spotify</p>
+    </a>
+</div>
+
 ### Backers
 
 * [Philip Riecks (@rieckpil)](https://github.com/rieckpil)
 * [Karl Heinz Marbaise (@khmarbaise)](https://github.com/khmarbaise)
 * [Sascha Frinken (@sascha-frinken)](https://github.com/sascha-frinken)
 * [Christoph Dreis (@dreis2211)](https://github.com/dreis2211)
-* [Pascal Zwick (@pas2al)](https://github.com/pas2al)
 * [Nikita Zhevnitskiy (@zhenik)](https://github.com/zhenik)
 * [Bas Stoker (@bastoker)](https://github.com/bastoker)
 * [Oleg Nenashev (@oleg-nenashev)](https://github.com/oleg-nenashev)
+* [Rik Glover (@rikglover)](https://github.com/rikglover)
+* [Amitosh Swain Mahapatra (@recrsn)](https://github.com/recrsn)
+* [Paris Apostolopoulos](https://opencollective.com/paris-apostolopoulos)
 
 ## Who is using Testcontainers?
 
@@ -147,14 +185,15 @@ A huge thank you to our sponsors:
 * [Playtika](https://github.com/Playtika/testcontainers-spring-boot) - Kafka, Couchbase, MariaDB, Redis, Neo4j, Aerospike, MemSQL
 * [JetBrains](https://www.jetbrains.com/) - Testing of the TeamCity plugin for HashiCorp Vault
 * [Plumbr](https://plumbr.io) - Integration testing of data processing pipeline micro-services
-* [Streamlio](https://streaml.io/) - Integration and Chaos Testing of our fast data platform based on Apache Puslar, Apache Bookeeper and Apache Heron.
+* [Streamlio](https://streaml.io/) - Integration and Chaos Testing of our fast data platform based on Apache Pulsar, Apache BookKeeper and Apache Heron.
 * [Spring Session](https://projects.spring.io/spring-session/) - Redis, PostgreSQL, MySQL and MariaDB integration testing
 * [Apache Camel](https://camel.apache.org) - Testing Camel against native services such as Consul, Etcd and so on
 * [Infinispan](https://infinispan.org) - Testing the Infinispan Server as well as integration tests with databases, LDAP and KeyCloak
 * [Instana](https://www.instana.com) - Testing agents and stream processing backends
 * [eBay Marketing](https://www.ebay.com) - Testing for MySQL, Cassandra, Redis, Couchbase, Kafka, etc.
 * [Skyscanner](https://www.skyscanner.net/) - Integration testing against HTTP service mocks and various data stores
-* [Neo4j-OGM](https://neo4j.com/developer/neo4j-ogm/) - Testing new, reactive client implementations
+* [Neo4j-OGM](https://neo4j.com/developer/neo4j-ogm/) - Testing with Neo4j
+* [Spring Data Neo4j](https://github.com/spring-projects/spring-data-neo4j/) - Testing imperative and reactive implementations with Neo4j
 * [Lightbend](https://www.lightbend.com/) - Testing [Alpakka Kafka](https://doc.akka.io/docs/alpakka-kafka/current/) and support in [Alpakka Kafka Testkit](https://doc.akka.io/docs/alpakka-kafka/current/testing.html#testing-with-kafka-in-docker)
 * [Zalando SE](https://corporate.zalando.com/en) - Testing core business services
 * [Europace AG](https://tech.europace.de/) - Integration testing for databases and micro services
@@ -176,11 +215,16 @@ A huge thank you to our sponsors:
 * [Elastic](https://www.elastic.co) - Integration testing of the Java APM agent
 * [Alkira](https://www.alkira.com/) - Testing of multiple micro-services using Kafka, PostgreSQL, Apache Zookeeper, Etcd and so on.
 * [Togglz](https://www.togglz.org/) - Feature Flags for the Java platform
-
+* [Byzer](https://www.byzer.org/home) - Integration tests for Data and AI platforms are based on multiple versions of Byzer, Ray and Apache Spark.
+* [Apache SeaTunnel](https://github.com/apache/incubator-seatunnel) - Integration testing with different datasource.
+* [Bucket4j](https://github.com/bucket4j/bucket4j) - Java rate-limiting library based on the token-bucket algorithm.
+* [Spark ClickHouse Connector](https://github.com/housepower/spark-clickhouse-connector) - Integration tests for Apache Spark with both single node ClickHouse instance and multi-node ClickHouse cluster.
+* [Quarkus](https://github.com/quarkusio/quarkus) - Testcontainers is used extensively for Quarkus' [DevServices](https://quarkus.io/guides/dev-services) feature.
+* [Apache Kyuubi](https://kyuubi.apache.org) - Integration testing with Trino as data source engine, Kafka, etc.
 
 ## License
 
-See [LICENSE](https://raw.githubusercontent.com/testcontainers/testcontainers-java/master/LICENSE).
+See [LICENSE](https://raw.githubusercontent.com/testcontainers/testcontainers-java/main/LICENSE).
 
 ## Attributions
 
@@ -192,4 +236,4 @@ This project was initially inspired by a [gist](https://gist.github.com/mosheesh
 
 Copyright (c) 2015-2021 Richard North and other authors.
 
-See [AUTHORS](https://raw.githubusercontent.com/testcontainers/testcontainers-java/master/AUTHORS) for contributors.
+See [AUTHORS](https://raw.githubusercontent.com/testcontainers/testcontainers-java/main/AUTHORS) for contributors.

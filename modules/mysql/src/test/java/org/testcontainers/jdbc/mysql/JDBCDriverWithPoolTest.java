@@ -11,16 +11,17 @@ import org.junit.runners.Parameterized;
 import org.testcontainers.jdbc.ContainerDatabaseDriver;
 import org.vibur.dbcp.ViburDBCPDataSource;
 
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
-import static java.util.Arrays.asList;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
+import javax.sql.DataSource;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * This test belongs in the jdbc module, as it is focused on testing the behaviour of {@link org.testcontainers.containers.JdbcDatabaseContainer}.
@@ -31,12 +32,14 @@ import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 @RunWith(Parameterized.class)
 public class JDBCDriverWithPoolTest {
 
-    public static final String URL = "jdbc:tc:mysql:5.7.34://hostname/databasename?TC_INITFUNCTION=org.testcontainers.jdbc.mysql.JDBCDriverWithPoolTest::sampleInitFunction";
+    public static final String URL =
+        "jdbc:tc:mysql:5.7.34://hostname/databasename?TC_INITFUNCTION=org.testcontainers.jdbc.mysql.JDBCDriverWithPoolTest::sampleInitFunction";
+
     private final DataSource dataSource;
 
     @Parameterized.Parameters
     public static Iterable<Supplier<DataSource>> dataSourceSuppliers() {
-        return asList(
+        return Arrays.asList(
             JDBCDriverWithPoolTest::getTomcatDataSourceWithDriverClassName,
             JDBCDriverWithPoolTest::getTomcatDataSource,
             JDBCDriverWithPoolTest::getHikariDataSourceWithDriverClassName,
@@ -54,13 +57,12 @@ public class JDBCDriverWithPoolTest {
 
     @Test
     public void testMySQLWithConnectionPoolUsingSameContainer() throws SQLException, InterruptedException {
-
         // Populate the database with some data in multiple threads, so that multiple connections from the pool will be used
         for (int i = 0; i < 100; i++) {
             executorService.submit(() -> {
                 try {
-                    new QueryRunner(dataSource).insert("INSERT INTO my_counter (n) VALUES (5)",
-                        (ResultSetHandler<Object>) rs -> true);
+                    new QueryRunner(dataSource)
+                        .insert("INSERT INTO my_counter (n) VALUES (5)", (ResultSetHandler<Object>) rs -> true);
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
@@ -72,21 +74,27 @@ public class JDBCDriverWithPoolTest {
         executorService.awaitTermination(5, TimeUnit.MINUTES);
 
         // compare to expected results
-        int count = new QueryRunner(dataSource).query("SELECT COUNT(1) FROM my_counter", rs -> {
-            rs.next();
-            return rs.getInt(1);
-        });
-        assertEquals("Reuse of a datasource points to the same DB container", 100, count);
+        int count = new QueryRunner(dataSource)
+            .query(
+                "SELECT COUNT(1) FROM my_counter",
+                rs -> {
+                    rs.next();
+                    return rs.getInt(1);
+                }
+            );
+        assertThat(count).as("Reuse of a datasource points to the same DB container").isEqualTo(100);
 
-
-        int sum = new QueryRunner(dataSource).query("SELECT SUM(n) FROM my_counter", rs -> {
-            rs.next();
-            return rs.getInt(1);
-        });
+        int sum = new QueryRunner(dataSource)
+            .query(
+                "SELECT SUM(n) FROM my_counter",
+                rs -> {
+                    rs.next();
+                    return rs.getInt(1);
+                }
+            );
         // 100 records * 5 = 500 expected
-        assertEquals("Reuse of a datasource points to the same DB container", 500, sum);
+        assertThat(sum).as("Reuse of a datasource points to the same DB container").isEqualTo(500);
     }
-
 
     private static DataSource getTomcatDataSourceWithDriverClassName() {
         PoolProperties poolProperties = new PoolProperties();
@@ -134,7 +142,7 @@ public class JDBCDriverWithPoolTest {
         ViburDBCPDataSource ds = new ViburDBCPDataSource();
 
         ds.setJdbcUrl(URL + ";TEST=VIBUR_WITH_CLASSNAME");
-        ds.setUsername("any");  // Recent versions of Vibur require a username, even though it will not be used
+        ds.setUsername("any"); // Recent versions of Vibur require a username, even though it will not be used
         ds.setPassword("");
         ds.setPoolInitialSize(3);
         ds.setPoolMaxSize(10);
@@ -149,7 +157,7 @@ public class JDBCDriverWithPoolTest {
     private static DataSource getViburDataSource() {
         ViburDBCPDataSource ds = new ViburDBCPDataSource();
         ds.setJdbcUrl(URL + ";TEST=VIBUR");
-        ds.setUsername("any");  // Recent versions of Vibur require a username, even though it will not be used
+        ds.setUsername("any"); // Recent versions of Vibur require a username, even though it will not be used
         ds.setPassword("");
         ds.setPoolInitialSize(3);
         ds.setPoolMaxSize(10);
@@ -162,12 +170,8 @@ public class JDBCDriverWithPoolTest {
 
     @SuppressWarnings("SqlNoDataSourceInspection")
     public static void sampleInitFunction(Connection connection) throws SQLException {
-        connection.createStatement().execute("CREATE TABLE bar (\n" +
-            "  foo VARCHAR(255)\n" +
-            ");");
+        connection.createStatement().execute("CREATE TABLE bar (\n" + "  foo VARCHAR(255)\n" + ");");
         connection.createStatement().execute("INSERT INTO bar (foo) VALUES ('hello world');");
-        connection.createStatement().execute("CREATE TABLE my_counter (\n" +
-            "  n INT\n" +
-            ");");
+        connection.createStatement().execute("CREATE TABLE my_counter (\n" + "  n INT\n" + ");");
     }
 }

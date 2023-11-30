@@ -2,28 +2,37 @@ package org.testcontainers.images;
 
 import com.github.dockerjava.api.command.PullImageResultCallback;
 import com.github.dockerjava.api.model.PullResponseItem;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 
 import java.io.Closeable;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
-
-import static java.lang.String.format;
-import static org.apache.commons.io.FileUtils.byteCountToDisplaySize;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * {@link PullImageResultCallback} with improved logging of pull progress.
  */
 class LoggedPullImageResultCallback extends PullImageResultCallback {
+
     private final Logger logger;
 
     private final Set<String> allLayers = new HashSet<>();
+
     private final Set<String> downloadedLayers = new HashSet<>();
+
     private final Set<String> pulledLayers = new HashSet<>();
+
     private final Map<String, Long> totalSizes = new HashMap<>();
+
     private final Map<String, Long> currentSizes = new HashMap<>();
+
     private boolean completed;
+
     private Instant start;
 
     LoggedPullImageResultCallback(final Logger logger) {
@@ -69,8 +78,7 @@ class LoggedPullImageResultCallback extends PullImageResultCallback {
             }
         }
 
-        if (statusLowercase.startsWith("pulling from" ) || statusLowercase.contains("complete" )) {
-
+        if (statusLowercase.startsWith("pulling from") || statusLowercase.contains("complete")) {
             long totalSize = totalLayerSize();
             long currentSize = downloadedLayerSize();
 
@@ -79,15 +87,17 @@ class LoggedPullImageResultCallback extends PullImageResultCallback {
             if (pendingCount > 0) {
                 friendlyTotalSize = "? MB";
             } else {
-                friendlyTotalSize = byteCountToDisplaySize(totalSize);
+                friendlyTotalSize = FileUtils.byteCountToDisplaySize(totalSize);
             }
 
-            logger.info("Pulling image layers: {} pending, {} downloaded, {} extracted, ({}/{})",
-                format("%2d", pendingCount),
-                format("%2d", downloadedLayers.size()),
-                format("%2d", pulledLayers.size()),
-                byteCountToDisplaySize(currentSize),
-                friendlyTotalSize);
+            logger.info(
+                "Pulling image layers: {} pending, {} downloaded, {} extracted, ({}/{})",
+                String.format("%2d", pendingCount),
+                String.format("%2d", downloadedLayers.size()),
+                String.format("%2d", pulledLayers.size()),
+                FileUtils.byteCountToDisplaySize(currentSize),
+                friendlyTotalSize
+            );
         }
 
         if (statusLowercase.contains("complete")) {
@@ -103,11 +113,13 @@ class LoggedPullImageResultCallback extends PullImageResultCallback {
         final long duration = Duration.between(start, Instant.now()).getSeconds();
 
         if (completed) {
-            logger.info("Pull complete. {} layers, pulled in {}s (downloaded {} at {}/s)",
+            logger.info(
+                "Pull complete. {} layers, pulled in {}s (downloaded {} at {}/s)",
                 allLayers.size(),
                 duration,
-                byteCountToDisplaySize(downloadedLayerSize),
-                byteCountToDisplaySize(downloadedLayerSize / duration));
+                FileUtils.byteCountToDisplaySize(downloadedLayerSize),
+                FileUtils.byteCountToDisplaySize(downloadedLayerSize / duration)
+            );
         }
     }
 

@@ -5,15 +5,19 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.testcontainers.containers.GenericContainer;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
 
 public class ImageNameSubstitutorTest {
 
     @Rule
     public MockTestcontainersConfigurationRule config = new MockTestcontainersConfigurationRule();
+
     private ImageNameSubstitutor originalInstance;
+
     private ImageNameSubstitutor originalDefaultImplementation;
 
     @Before
@@ -27,10 +31,7 @@ public class ImageNameSubstitutorTest {
             .doReturn(DockerImageName.parse("substituted-image"))
             .when(ImageNameSubstitutor.defaultImplementation)
             .apply(eq(DockerImageName.parse("original")));
-        Mockito
-            .doReturn("default implementation")
-            .when(ImageNameSubstitutor.defaultImplementation)
-            .getDescription();
+        Mockito.doReturn("default implementation").when(ImageNameSubstitutor.defaultImplementation).getDescription();
     }
 
     @After
@@ -49,27 +50,35 @@ public class ImageNameSubstitutorTest {
         final ImageNameSubstitutor imageNameSubstitutor = ImageNameSubstitutor.instance();
 
         DockerImageName result = imageNameSubstitutor.apply(DockerImageName.parse("original"));
-        assertEquals(
-            "the image has been substituted by default then configured implementations",
-            "transformed-substituted-image:latest",
-            result.asCanonicalNameString()
-        );
+        assertThat(result.asCanonicalNameString())
+            .as("the image has been substituted by default then configured implementations")
+            .isEqualTo("transformed-substituted-image:latest");
     }
 
     @Test
     public void testWorksWithoutConfiguredImplementation() {
-        Mockito
-            .doReturn(null)
-            .when(TestcontainersConfiguration.getInstance())
-            .getImageSubstitutorClassName();
+        Mockito.doReturn(null).when(TestcontainersConfiguration.getInstance()).getImageSubstitutorClassName();
 
         final ImageNameSubstitutor imageNameSubstitutor = ImageNameSubstitutor.instance();
 
         DockerImageName result = imageNameSubstitutor.apply(DockerImageName.parse("original"));
-        assertEquals(
-            "the image has been substituted by default then configured implementations",
-            "substituted-image:latest",
-            result.asCanonicalNameString()
-        );
+        assertThat(result.asCanonicalNameString())
+            .as("the image has been substituted by default then configured implementations")
+            .isEqualTo("substituted-image:latest");
+    }
+
+    @Test
+    public void testImageNameSubstitutorToString() {
+        Mockito
+            .doReturn(FakeImageSubstitutor.class.getCanonicalName())
+            .when(TestcontainersConfiguration.getInstance())
+            .getImageSubstitutorClassName();
+
+        try (GenericContainer<?> container = new GenericContainer<>(DockerImageName.parse("original"))) {
+            assertThatThrownBy(container::start)
+                .hasMessageContaining(
+                    "imageNameSubstitutor=Chained substitutor of 'default implementation' and then 'test implementation'"
+                );
+        }
     }
 }

@@ -1,24 +1,35 @@
 package org.testcontainers.containers;
 
-import static java.net.HttpURLConnection.HTTP_OK;
-import static java.util.stream.Collectors.toSet;
-
-import java.time.Duration;
-import java.util.Set;
-import java.util.stream.Stream;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
+import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.LicenseAcceptance;
 import org.testcontainers.utility.MountableFile;
 
+import java.net.HttpURLConnection;
+import java.time.Duration;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 /**
- * Testcontainer for Neo4j.
- *
- * @param <S> "SELF" to be used in the <code>withXXX</code> methods.
- * @author Michael J. Simons
+ * Testcontainers implementation for Neo4j.
+ * <p>
+ * Supported image: {@code neo4j}
+ * <p>
+ * Exposed ports:
+ * <ul>
+ *     <li>Bolt: 7687</li>
+ *     <li>HTTP: 7474</li>
+ *     <li>HTTPS: 7473</li>
+ * </ul>
  */
 public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContainer<S> {
 
@@ -30,7 +41,8 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
     /**
      * The default tag (version) to use.
      */
-    private static final String DEFAULT_TAG = "3.5.0";
+    private static final String DEFAULT_TAG = "4.4";
+
     private static final String ENTERPRISE_TAG = DEFAULT_TAG + "-enterprise";
 
     /**
@@ -59,9 +71,21 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
 
     private String adminPassword = DEFAULT_ADMIN_PASSWORD;
 
+    private final Set<String> labsPlugins = new HashSet<>();
+
+    /**
+     * Default wait strategies
+     */
+    public static final WaitStrategy WAIT_FOR_BOLT = new LogMessageWaitStrategy()
+        .withRegEx(String.format(".*Bolt enabled on .*:%d\\.\n", DEFAULT_BOLT_PORT));
+
+    private static final WaitStrategy WAIT_FOR_HTTP = new HttpWaitStrategy()
+        .forPort(DEFAULT_HTTP_PORT)
+        .forStatusCodeMatching(response -> response == HttpURLConnection.HTTP_OK);
+
     /**
      * Creates a Neo4jContainer using the official Neo4j docker image.
-     * @deprecated use {@link Neo4jContainer(DockerImageName)} instead
+     * @deprecated use {@link #Neo4jContainer(DockerImageName)} instead
      */
     @Deprecated
     public Neo4jContainer() {
@@ -84,40 +108,80 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
      */
     public Neo4jContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-
-        this.standardImage = dockerImageName.getUnversionedPart()
-            .equals(DEFAULT_IMAGE_NAME.getUnversionedPart());
+        this.standardImage = dockerImageName.getUnversionedPart().equals(DEFAULT_IMAGE_NAME.getUnversionedPart());
 
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
-        WaitStrategy waitForBolt = new LogMessageWaitStrategy()
-            .withRegEx(String.format(".*Bolt enabled on 0\\.0\\.0\\.0:%d\\.\n", DEFAULT_BOLT_PORT));
-        WaitStrategy waitForHttp = new HttpWaitStrategy()
-            .forPort(DEFAULT_HTTP_PORT)
-            .forStatusCodeMatching(response -> response == HTTP_OK);
-
-        this.waitStrategy = new WaitAllStrategy()
-            .withStrategy(waitForBolt)
-            .withStrategy(waitForHttp)
-            .withStartupTimeout(Duration.ofMinutes(2));
+        this.waitStrategy =
+            new WaitAllStrategy()
+                .withStrategy(WAIT_FOR_BOLT)
+                .withStrategy(WAIT_FOR_HTTP)
+                .withStartupTimeout(Duration.ofMinutes(2));
 
         addExposedPorts(DEFAULT_BOLT_PORT, DEFAULT_HTTP_PORT, DEFAULT_HTTPS_PORT);
     }
 
     @Override
     public Set<Integer> getLivenessCheckPortNumbers() {
-
-        return Stream.of(DEFAULT_BOLT_PORT, DEFAULT_HTTP_PORT, DEFAULT_HTTPS_PORT)
+        return Stream
+            .of(DEFAULT_BOLT_PORT, DEFAULT_HTTP_PORT, DEFAULT_HTTPS_PORT)
             .map(this::getMappedPort)
-            .collect(toSet());
+            .collect(Collectors.toSet());
     }
 
     @Override
     protected void configure() {
+        configureAuth();
+        configureLabsPlugins();
+        configureWaitStrategy();
+    }
 
-        boolean emptyAdminPassword = this.adminPassword == null || this.adminPassword.isEmpty();
-        String neo4jAuth = emptyAdminPassword ? "none" : String.format(AUTH_FORMAT, this.adminPassword);
-        addEnv("NEO4J_AUTH", neo4jAuth);
+    /**
+     * Configured via {@link Neo4jContainer#withAdminPassword(String)} or {@link Neo4jContainer#withoutAuthentication()}
+     * It is only possible to set the correct auth in the configuration call.
+     * Also, the custom methods overrule the set env parameter.
+     */
+    private void configureAuth() {
+        String neo4jAuthEnvKey = "NEO4J_AUTH";
+        if (!getEnvMap().containsKey(neo4jAuthEnvKey) || !DEFAULT_ADMIN_PASSWORD.equals(this.adminPassword)) {
+            boolean emptyAdminPassword = this.adminPassword == null || this.adminPassword.isEmpty();
+            String neo4jAuth = emptyAdminPassword ? "none" : String.format(AUTH_FORMAT, this.adminPassword);
+            addEnv(neo4jAuthEnvKey, neo4jAuth);
+        }
+    }
+
+    /**
+     * Configured via {@link Neo4jContainer#withLabsPlugins}.
+     * Configuration can only happen in the configuration call because there is no default.
+     */
+    private void configureLabsPlugins() {
+        String neo4jLabsPluginsEnvKey = "NEO4JLABS_PLUGINS";
+        if (!getEnv().contains(neo4jLabsPluginsEnvKey) && !this.labsPlugins.isEmpty()) {
+            String enabledPlugins =
+                this.labsPlugins.stream().map(pluginName -> "\"" + pluginName + "\"").collect(Collectors.joining(","));
+
+            addEnv(neo4jLabsPluginsEnvKey, "[" + enabledPlugins + "]");
+        }
+    }
+
+    /**
+     * Update the default Neo4jContainer wait strategy based on the exposed ports.
+     * Still possible to override the startup timeout before starting the container via {@link WaitStrategy#withStartupTimeout(Duration)}.
+     */
+    private void configureWaitStrategy() {
+        List<Integer> exposedPorts = getExposedPorts();
+        boolean boltExposed = exposedPorts.contains(DEFAULT_BOLT_PORT);
+        boolean httpExposed = exposedPorts.contains(DEFAULT_HTTP_PORT);
+        boolean onlyBoltExposed = boltExposed && !httpExposed;
+        boolean onlyHttpExposed = !boltExposed && httpExposed;
+
+        if (onlyBoltExposed) {
+            this.waitStrategy =
+                new WaitAllStrategy().withStrategy(WAIT_FOR_BOLT).withStartupTimeout(Duration.ofMinutes(2));
+        } else if (onlyHttpExposed) {
+            this.waitStrategy =
+                new WaitAllStrategy().withStrategy(WAIT_FOR_HTTP).withStartupTimeout(Duration.ofMinutes(2));
+        }
     }
 
     /**
@@ -153,8 +217,8 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
     public S withEnterpriseEdition() {
         if (!standardImage) {
             throw new IllegalStateException(
-                String.format("Cannot use enterprise version with alternative image %s.",
-                    getDockerImageName()));
+                String.format("Cannot use enterprise version with alternative image %s.", getDockerImageName())
+            );
         }
 
         setDockerImageName(DEFAULT_IMAGE_NAME.withTag(ENTERPRISE_TAG).asCanonicalNameString());
@@ -173,7 +237,9 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
      * @return This container.
      */
     public S withAdminPassword(final String adminPassword) {
-
+        if (adminPassword != null && adminPassword.length() < 8) {
+            logger().warn("Your provided admin password is too short and will not work with Neo4j 5.3+.");
+        }
         this.adminPassword = adminPassword;
         return self();
     }
@@ -194,6 +260,8 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
      * If you want to map your database into the container instead of copying them, please use {@code #withClasspathResourceMapping},
      * but this will only work when your test does not run in a container itself.
      * <br>
+     * Note: This method only works with Neo4j 3.5.
+     * <br>
      * Mapping would work like this:
      * <pre>
      *      &#64;Container
@@ -202,9 +270,15 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
      * </pre>
      *
      * @param graphDb The graph.db folder to copy into the container
+     * @throws IllegalArgumentException If the database version is not 3.5.
      * @return This container.
      */
     public S withDatabase(MountableFile graphDb) {
+        if (!isNeo4jDatabaseVersionSupportingDbCopy()) {
+            throw new IllegalArgumentException(
+                "Copying database folder is not supported for Neo4j instances with version 4.0 or higher."
+            );
+        }
         return withCopyFileToContainer(graphDb, "/data/databases/graph.db");
     }
 
@@ -231,7 +305,6 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
      * @return This container.
      */
     public S withNeo4jConfig(String key, String value) {
-
         addEnv(formatConfigurationKey(key), value);
         return self();
     }
@@ -243,11 +316,62 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
         return adminPassword;
     }
 
+    /**
+     * Registers one or more {@link Neo4jLabsPlugin} for download and server startup.
+
+     * @param neo4jLabsPlugins The Neo4j plugins that should get started with the server.
+     * @return This container.
+     */
+    public S withLabsPlugins(Neo4jLabsPlugin... neo4jLabsPlugins) {
+        List<String> pluginNames = Arrays
+            .stream(neo4jLabsPlugins)
+            .map(plugin -> plugin.pluginName)
+            .collect(Collectors.toList());
+
+        this.labsPlugins.addAll(pluginNames);
+        return self();
+    }
+
+    /**
+     * Registers one or more {@link Neo4jLabsPlugin} for download and server startup.
+
+     * @param neo4jLabsPlugins The Neo4j plugins that should get started with the server.
+     * @return This container.
+     */
+    public S withLabsPlugins(String... neo4jLabsPlugins) {
+        this.labsPlugins.addAll(Arrays.asList(neo4jLabsPlugins));
+        return self();
+    }
+
     private static String formatConfigurationKey(String plainConfigKey) {
         final String prefix = "NEO4J_";
 
-        return String.format("%s%s", prefix, plainConfigKey
-            .replaceAll("_", "__")
-            .replaceAll("\\.", "_"));
+        return String.format("%s%s", prefix, plainConfigKey.replaceAll("_", "__").replaceAll("\\.", "_"));
+    }
+
+    private boolean isNeo4jDatabaseVersionSupportingDbCopy() {
+        String usedImageVersion = DockerImageName.parse(getDockerImageName()).getVersionPart();
+        ComparableVersion usedComparableVersion = new ComparableVersion(usedImageVersion);
+
+        boolean versionSupportingDbCopy =
+            usedComparableVersion.isLessThan("4.0") && usedComparableVersion.isGreaterThanOrEqualTo("2");
+
+        if (versionSupportingDbCopy) {
+            return true;
+        }
+        if (!usedComparableVersion.isSemanticVersion()) {
+            logger()
+                .warn(
+                    "Version {} is not a semantic version. The function \"withDatabase\" will fail.",
+                    usedImageVersion
+                );
+            logger().warn("Copying databases is only supported for Neo4j versions 3.5.x");
+        }
+
+        return false;
+    }
+
+    public S withRandomPassword() {
+        return withAdminPassword(UUID.randomUUID().toString());
     }
 }

@@ -8,17 +8,18 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
-import static org.junit.Assert.assertEquals;
-import static org.testcontainers.junit.jupiter.JUnitJupiterTestImages.POSTGRES_IMAGE;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @Testcontainers
 class PostgresContainerTests {
 
     @Container
-    private static final PostgreSQLContainer<?> POSTGRE_SQL_CONTAINER = new PostgreSQLContainer<>(POSTGRES_IMAGE)
-            .withDatabaseName("foo")
-            .withUsername("foo")
-            .withPassword("secret");
+    private static final PostgreSQLContainer<?> POSTGRE_SQL_CONTAINER = new PostgreSQLContainer<>(
+        JUnitJupiterTestImages.POSTGRES_IMAGE
+    )
+        .withDatabaseName("foo")
+        .withUsername("foo")
+        .withPassword("secret");
 
     @Test
     void waits_until_postgres_accepts_jdbc_connections() throws Exception {
@@ -34,8 +35,7 @@ class PostgresContainerTests {
             resultSet.next();
 
             int resultSetInt = resultSet.getInt(1);
-            assertEquals(1, resultSetInt);
+            assertThat(resultSetInt).isEqualTo(1);
         }
     }
-
 }

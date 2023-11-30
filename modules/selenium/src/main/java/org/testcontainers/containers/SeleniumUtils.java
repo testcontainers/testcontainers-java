@@ -45,19 +45,24 @@ public final class SeleniumUtils {
                     }
                 }
             }
-
         } catch (Exception e) {
             LOGGER.debug("Failed to determine Selenium-Version from selenium-api JAR Manifest", e);
         }
 
         if (seleniumVersions.size() == 0) {
-            LOGGER.warn("Failed to determine Selenium version from classpath - will use default version of {}", DEFAULT_SELENIUM_VERSION);
+            LOGGER.warn(
+                "Failed to determine Selenium version from classpath - will use default version of {}",
+                DEFAULT_SELENIUM_VERSION
+            );
             return DEFAULT_SELENIUM_VERSION;
         }
 
         String foundVersion = seleniumVersions.iterator().next();
         if (seleniumVersions.size() > 1) {
-            LOGGER.warn("Multiple versions of Selenium API found on classpath - will select {}, but this may not be reliable", foundVersion);
+            LOGGER.warn(
+                "Multiple versions of Selenium API found on classpath - will select {}, but this may not be reliable",
+                foundVersion
+            );
         }
 
         return foundVersion;
@@ -76,7 +81,7 @@ public final class SeleniumUtils {
         }
 
         // Compatibility Selenium > 3.X
-        if(seleniumVersion == null) {
+        if (seleniumVersion == null) {
             Attributes seleniumInfo = manifest.getAttributes("Selenium");
             if (seleniumInfo != null) {
                 seleniumVersion = seleniumInfo.getValue("Selenium-Version");

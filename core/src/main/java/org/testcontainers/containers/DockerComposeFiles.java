@@ -33,7 +33,9 @@ public class DockerComposeFiles {
     }
 
     private Set<String> getImageNames(Map<String, Set<String>> serviceToImageNames) {
-        return serviceToImageNames.values().stream()
+        return serviceToImageNames
+            .values()
+            .stream()
             .flatMap(Collection::stream)
             // Pass through DockerImageName to convert image names to canonical form (e.g. making implicit latest tag explicit)
             .map(DockerImageName::parse)

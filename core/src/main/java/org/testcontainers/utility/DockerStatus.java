@@ -33,15 +33,16 @@ public class DockerStatus {
      * @param now                    the time to consider as the current time
      * @return true if we can conclude that the container is running, false otherwise
      */
-    public static boolean isContainerRunning(InspectContainerResponse.ContainerState state,
-                                             Duration minimumRunningDuration,
-                                             Instant now) {
+    public static boolean isContainerRunning(
+        InspectContainerResponse.ContainerState state,
+        Duration minimumRunningDuration,
+        Instant now
+    ) {
         if (state.getRunning()) {
             if (minimumRunningDuration == null) {
                 return true;
             }
-            Instant startedAt = DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(
-                state.getStartedAt(), Instant::from);
+            Instant startedAt = DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(state.getStartedAt(), Instant::from);
 
             if (startedAt.isBefore(now.minus(minimumRunningDuration))) {
                 return true;
@@ -57,7 +58,6 @@ public class DockerStatus {
      * @return true if we can conclude that the container has started but is now stopped, false otherwise.
      */
     public static boolean isContainerStopped(InspectContainerResponse.ContainerState state) {
-
         // get some preconditions out of the way
         if (state.getRunning() || state.getPaused()) {
             return false;
@@ -72,10 +72,12 @@ public class DockerStatus {
     public static boolean isDockerTimestampNonEmpty(String dockerTimestamp) {
         // This is a defensive approach. Current versions of Docker use the DOCKER_TIMESTAMP_ZERO value, but
         // that could change.
-        return dockerTimestamp != null
-                && !dockerTimestamp.isEmpty()
-                && !dockerTimestamp.equals(DOCKER_TIMESTAMP_ZERO)
-                && DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(dockerTimestamp, Instant::from).getEpochSecond() >= 0L;
+        return (
+            dockerTimestamp != null &&
+            !dockerTimestamp.isEmpty() &&
+            !dockerTimestamp.equals(DOCKER_TIMESTAMP_ZERO) &&
+            DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(dockerTimestamp, Instant::from).getEpochSecond() >= 0L
+        );
     }
 
     public static boolean isContainerExitCodeSuccess(InspectContainerResponse.ContainerState state) {

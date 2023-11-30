@@ -7,6 +7,5 @@ package org.testcontainers.containers.traits;
  */
 @Deprecated
 public interface LinkableContainer {
-
     String getContainerName();
 }

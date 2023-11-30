@@ -1,11 +1,11 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '2.5.5'
+    id 'org.springframework.boot' version '2.7.17'
 }
 apply plugin: 'io.spring.dependency-management'
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 dependencies {
@@ -17,5 +17,9 @@ dependencies {
     runtimeOnly 'org.postgresql:postgresql'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.testcontainers:postgresql'
-    testImplementation 'org.rnorth.visible-assertions:visible-assertions:2.1.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.1'
+}
+
+test {
+    useJUnitPlatform()
 }

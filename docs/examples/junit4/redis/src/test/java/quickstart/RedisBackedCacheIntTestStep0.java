@@ -1,14 +1,14 @@
 package quickstart;
 
-
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @Ignore("This test class is deliberately invalid, as it relies on a non-existent local Redis")
 public class RedisBackedCacheIntTestStep0 {
+
     private RedisBackedCache underTest;
 
     @Before
@@ -22,6 +22,6 @@ public class RedisBackedCacheIntTestStep0 {
         underTest.put("test", "example");
 
         String retrieved = underTest.get("test");
-        assertEquals("example", retrieved);
+        assertThat(retrieved).isEqualTo("example");
     }
 }

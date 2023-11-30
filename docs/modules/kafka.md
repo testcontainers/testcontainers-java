@@ -10,9 +10,9 @@ More precisely Testcontainers uses the official Docker images for [Confluent OSS
 
 ## Example
 
-The following field in your JUnit test class will prepare a container running Kafka:
+Create a `KafkaContainer` to use it in your tests:
 <!--codeinclude-->
-[JUnit Rule](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:junitRule
+[Creating a KafkaContainer](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:constructorWithVersion
 <!--/codeinclude-->
 
 The correspondence between Confluent Platform versions and Kafka versions can be seen [in Confluent documentation](https://docs.confluent.io/current/installation/versions-interoperability.html#cp-and-apache-kafka-compatibility)
@@ -32,33 +32,52 @@ If for some reason you want to use an externally running Zookeeper, then just pa
 [External Zookeeper](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:withExternalZookeeper
 <!--/codeinclude-->
 
+### Using Kraft mode
 
-## Multi-container usage
+KRaft mode was declared production ready in 3.3.1 (confluentinc/cp-kafka:7.3.x)" 
 
-If your test needs to run some other Docker container which needs access to Kafka, do the following:
-
-* Run your other container on the same network as Kafka container, e.g.:
 <!--codeinclude-->
-[Network](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:withKafkaNetwork
+[Kraft mode](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:withKraftMode
 <!--/codeinclude-->
-* Use `kafka.getNetworkAliases().get(0)+":9092"` as bootstrap server location. 
-Or just give your Kafka container a network alias of your liking.
 
-You will need to explicitly create a network and set it on the Kafka container as well as on your other containers that need to communicate with Kafka.
+See the [versions interoperability matrix](https://docs.confluent.io/platform/current/installation/versions-interoperability.html) for more details. 
+
+## Register listeners
+
+There are scenarios where additional listeners are needed because the consumer/producer can be in another
+container in the same network or a different process where the port to connect differs from the default 
+exposed port `9093`. E.g [Toxiproxy](../../modules/toxiproxy/).
+
+<!--codeinclude-->
+[Register additional listener](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:registerListener
+<!--/codeinclude-->
+
+Container defined in the same network:
+
+<!--codeinclude-->
+[Create kcat container](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:createKCatContainer
+<!--/codeinclude-->
+
+Client using the new registered listener:
+
+<!--codeinclude-->
+[Produce/Consume via new listener](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:produceConsumeMessage
+<!--/codeinclude-->
 
 ## Adding this module to your project dependencies
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
-```groovy tab='Gradle'
-testImplementation "org.testcontainers:kafka:{{latest_version}}"
-```
-
-```xml tab='Maven'
-<dependency>
-    <groupId>org.testcontainers</groupId>
-    <artifactId>kafka</artifactId>
-    <version>{{latest_version}}</version>
-    <scope>test</scope>
-</dependency>
-```
+=== "Gradle"
+    ```groovy
+    testImplementation "org.testcontainers:kafka:{{latest_version}}"
+    ```
+=== "Maven"
+    ```xml
+    <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>kafka</artifactId>
+        <version>{{latest_version}}</version>
+        <scope>test</scope>
+    </dependency>
+    ```

@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<hivemq>
+
+    <listeners>
+        <tcp-listener>
+            <port>1883</port>
+            <bind-address>0.0.0.0</bind-address>
+        </tcp-listener>
+    </listeners>
+    <mqtt>
+        <quality-of-service>
+            <max-qos>0</max-qos>
+        </quality-of-service>
+    </mqtt>
+</hivemq>

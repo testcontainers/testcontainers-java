@@ -1,16 +1,15 @@
 package org.testcontainers.containers.wait.strategy;
 
+import org.rnorth.ducttape.timeouts.Timeouts;
+
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.rnorth.ducttape.timeouts.Timeouts;
-
 public class WaitAllStrategy implements WaitStrategy {
 
     public enum Mode {
-
         /**
          * This is the default mode: The timeout of the {@link WaitAllStrategy strategy} is applied to each individual
          * strategy, so that the container waits maximum for
@@ -30,11 +29,13 @@ public class WaitAllStrategy implements WaitStrategy {
          * This is the original mode of this strategy: The inner strategies wait with their preconfigured timeout
          * individually and the wait all strategy kills them, if the outer limit is reached.
          */
-        WITH_MAXIMUM_OUTER_TIMEOUT
+        WITH_MAXIMUM_OUTER_TIMEOUT,
     }
 
     private final Mode mode;
+
     private final List<WaitStrategy> strategies = new ArrayList<>();
+
     private Duration timeout = Duration.ofSeconds(30);
 
     public WaitAllStrategy() {
@@ -50,9 +51,13 @@ public class WaitAllStrategy implements WaitStrategy {
         if (mode == Mode.WITH_INDIVIDUAL_TIMEOUTS_ONLY) {
             waitUntilNestedStrategiesAreReady(waitStrategyTarget);
         } else {
-            Timeouts.doWithTimeout((int) timeout.toMillis(), TimeUnit.MILLISECONDS, () -> {
-                waitUntilNestedStrategiesAreReady(waitStrategyTarget);
-            });
+            Timeouts.doWithTimeout(
+                (int) timeout.toMillis(),
+                TimeUnit.MILLISECONDS,
+                () -> {
+                    waitUntilNestedStrategiesAreReady(waitStrategyTarget);
+                }
+            );
         }
     }
 
@@ -63,7 +68,6 @@ public class WaitAllStrategy implements WaitStrategy {
     }
 
     public WaitAllStrategy withStrategy(WaitStrategy strategy) {
-
         if (mode == Mode.WITH_OUTER_TIMEOUT) {
             applyStartupTimeout(strategy);
         }
@@ -74,10 +78,13 @@ public class WaitAllStrategy implements WaitStrategy {
 
     @Override
     public WaitAllStrategy withStartupTimeout(Duration startupTimeout) {
-
         if (mode == Mode.WITH_INDIVIDUAL_TIMEOUTS_ONLY) {
-            throw new IllegalStateException(String.format(
-                "Changing startup timeout is not supported with mode %s", Mode.WITH_INDIVIDUAL_TIMEOUTS_ONLY));
+            throw new IllegalStateException(
+                String.format(
+                    "Changing startup timeout is not supported with mode %s",
+                    Mode.WITH_INDIVIDUAL_TIMEOUTS_ONLY
+                )
+            );
         }
 
         this.timeout = startupTimeout;

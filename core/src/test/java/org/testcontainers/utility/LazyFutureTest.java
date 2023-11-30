@@ -6,12 +6,17 @@ import org.junit.Test;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static java.util.stream.Collectors.toList;
-import static org.rnorth.visibleassertions.VisibleAssertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 public class LazyFutureTest {
 
@@ -26,16 +31,16 @@ public class LazyFutureTest {
             }
         };
 
-        assertEquals("No resolve() invocations before get()", 0, counter.get());
-        assertEquals("get() call returns proper result", 1, lazyFuture.get());
-        assertEquals("resolve() was called only once after single get() call", 1, counter.get());
+        assertThat(counter).as("No resolve() invocations before get()").hasValue(0);
+        assertThat(lazyFuture.get()).as("get() call returns proper result").isEqualTo(1);
+        assertThat(counter).as("resolve() was called only once after single get() call").hasValue(1);
 
         counter.incrementAndGet();
-        assertEquals("result of resolve() must be cached", 1, lazyFuture.get());
+        assertThat(lazyFuture.get()).as("result of resolve() must be cached").isEqualTo(1);
     }
 
     @Test(timeout = 5_000)
-    public void timeoutWorks() throws Exception {
+    public void timeoutWorks() {
         Future<Void> lazyFuture = new LazyFuture<Void>() {
             @Override
             @SneakyThrows(InterruptedException.class)
@@ -45,8 +50,9 @@ public class LazyFutureTest {
             }
         };
 
-        assertThrows("Should timeout", TimeoutException.class, () -> lazyFuture.get(10, TimeUnit.MILLISECONDS));
-        pass("timeout works");
+        assertThat(catchThrowable(() -> lazyFuture.get(10, TimeUnit.MILLISECONDS)))
+            .as("Should timeout")
+            .isInstanceOf(TimeoutException.class);
     }
 
     @Test(timeout = 5_000)
@@ -64,15 +70,21 @@ public class LazyFutureTest {
             }
         };
 
-        Future<List<Integer>> task = new ForkJoinPool(numOfThreads).submit(() -> {
-            return IntStream.rangeClosed(1, numOfThreads).parallel().mapToObj(i -> Futures.getUnchecked(lazyFuture)).collect(toList());
-        });
+        Future<List<Integer>> task = new ForkJoinPool(numOfThreads)
+            .submit(() -> {
+                return IntStream
+                    .rangeClosed(1, numOfThreads)
+                    .parallel()
+                    .mapToObj(i -> Futures.getUnchecked(lazyFuture))
+                    .collect(Collectors.toList());
+            });
 
         while (latch.getCount() > 0) {
             latch.countDown();
         }
 
-        assertEquals("All threads receives the same result", Collections.nCopies(numOfThreads, 1), task.get());
+        assertThat(task.get())
+            .as("All threads receives the same result")
+            .isEqualTo(Collections.nCopies(numOfThreads, 1));
     }
-
 }

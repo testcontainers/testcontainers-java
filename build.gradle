@@ -5,23 +5,33 @@ buildscript {
 
     dependencies {
         // https://github.com/melix/japicmp-gradle-plugin/issues/36
-        classpath 'com.google.guava:guava:30.1.1-jre'
+        classpath 'com.google.guava:guava:32.1.2-jre'
+        classpath 'com.github.tjni.captainhook:captain-hook:0.1.5'
     }
 }
 
 plugins {
-    id 'io.franzbecker.gradle-lombok' version '4.0.0'
-    id 'com.github.johnrengelman.shadow' version '7.0.0'
-    id 'me.champeau.gradle.japicmp' version '0.2.9' apply false
+    id 'io.franzbecker.gradle-lombok' version '5.0.0'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id 'me.champeau.gradle.japicmp' version '0.4.2' apply false
+    id 'com.diffplug.spotless' version '6.13.0' apply false
 }
 
 apply from: "$rootDir/gradle/ci-support.gradle"
+apply plugin: 'com.github.tjni.captainhook'
+
+captainHook {
+    autoApplyGitHooks = Boolean.valueOf(System.getenv("AUTO_APPLY_GIT_HOOKS"))
+    preCommit = './gradlew spotlessApply'
+}
 
 subprojects {
     apply plugin: 'java-library'
     apply plugin: 'idea'
     apply plugin: 'io.franzbecker.gradle-lombok'
     apply from: "$rootDir/gradle/shading.gradle"
+    apply from: "$rootDir/gradle/spotless.gradle"
+    apply plugin: 'checkstyle'
 
     group = "org.testcontainers"
 
@@ -29,6 +39,7 @@ subprojects {
     targetCompatibility = 1.8
     compileJava.options.encoding = 'UTF-8'
     compileTestJava.options.encoding = 'UTF-8'
+    javadoc.options.encoding = 'UTF-8'
 
     repositories {
         mavenCentral()
@@ -40,16 +51,17 @@ subprojects {
     }
 
     lombok {
-        version = '1.18.20'
+        version = '1.18.30'
     }
 
+
     task delombok(type: io.franzbecker.gradle.lombok.task.DelombokTask) {
-        def outputDir = file("$buildDir/delombok")
-        outputs.dir(outputDir)
-        for (srcDir in project.sourceSets.main.java.srcDirs) {
-            inputs.dir(srcDir)
-            args(srcDir, "-d", outputDir)
+        outputs.cacheIf {
+            true
         }
+        argumentProviders.addAll(
+            new org.testcontainers.build.DelombokArgumentProvider(srcDirs: project.sourceSets.main.java.srcDirs, outputDir: file("$buildDir/delombok"))
+        )
     }
     delombok.onlyIf {
         project.sourceSets.main.java.srcDirs.find { it.exists() }
@@ -73,6 +85,14 @@ subprojects {
             showStackTraces = true
             exceptionFormat = 'full'
             events "STARTED", "PASSED", "FAILED", "SKIPPED"
+        }
+        ext.isCI = System.getenv("CI") != null
+        if (isCI) {
+            retry {
+                maxRetries = 2
+                maxFailures = 5
+                failOnPassedAfterRetry = false
+            }
         }
     }
 
@@ -102,6 +122,11 @@ subprojects {
     }
 
     dependencies {
-        testImplementation 'ch.qos.logback:logback-classic:1.2.3'
+        testImplementation 'ch.qos.logback:logback-classic:1.3.11'
+    }
+
+    checkstyle {
+        toolVersion = "9.3"
+        configFile = rootProject.file('config/checkstyle/checkstyle.xml')
     }
 }

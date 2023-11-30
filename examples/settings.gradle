@@ -6,22 +6,22 @@ buildscript {
     }
     dependencies {
         classpath "gradle.plugin.ch.myniva.gradle:s3-build-cache:0.10.0"
-        classpath "com.gradle.enterprise:com.gradle.enterprise.gradle.plugin:3.2.1"
+        classpath "com.gradle.enterprise:com.gradle.enterprise.gradle.plugin:3.15.1"
+        classpath "com.gradle:common-custom-user-data-gradle-plugin:1.12"
     }
 }
 
-apply plugin: 'ch.myniva.s3-build-cache'
 apply plugin: 'com.gradle.enterprise'
+apply plugin: "com.gradle.common-custom-user-data-gradle-plugin"
 
 rootProject.name = 'testcontainers-examples'
 
 includeBuild '..'
 
 // explicit include to allow Dependabot to autodiscover subprojects
-include 'disque-job-queue'
 include 'kafka-cluster'
 include 'linked-container'
-include 'mongodb-container'
+include 'neo4j-container'
 include 'redis-backed-cache'
 include 'redis-backed-cache-testng'
 include 'selenium-container'
@@ -30,25 +30,36 @@ include 'solr-container'
 include 'spring-boot'
 include 'cucumber'
 include 'spring-boot-kotlin-redis'
-include 'spock'
+include 'immudb'
+include 'zookeeper'
+include 'hazelcast'
+include 'nats'
+include 'sftp'
 
-ext.isMasterBuild = false ||
-    (System.getenv("GITHUB_REF") == "refs/heads/master") ||
-    (System.getenv("BUILD_SOURCEBRANCHNAME") == "master")
+ext.isCI = System.getenv("CI") != null
 
 buildCache {
     local {
-        enabled = !isMasterBuild
+        enabled = !isCI
+    }
+    remote(HttpBuildCache) {
+        push = isCI && !System.getenv("READ_ONLY_REMOTE_GRADLE_CACHE")
+        enabled = true
+        url = 'https://ge.testcontainers.org/cache/'
+        credentials {
+            username = 'ci'
+            password = System.getenv("GRADLE_ENTERPRISE_CACHE_PASSWORD")
+        }
+    }
+}
+
+gradleEnterprise {
+    buildScan {
+        server = "https://ge.testcontainers.org/"
+        publishAlways()
+        publishIfAuthenticated()
+        uploadInBackground = !isCI
+        captureTaskInputFiles = true
     }
 
-    remote(ch.myniva.gradle.caching.s3.AwsS3BuildCache) {
-        endpoint = 'fra1.digitaloceanspaces.com'
-        region = 'fra1'
-        bucket = 'testcontainers'
-        path = 'cache'
-        push = isMasterBuild && !System.getenv("READ_ONLY_REMOTE_GRADLE_CACHE")
-        headers = [
-            'x-amz-acl': 'public-read'
-        ]
-    }
 }
