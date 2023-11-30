@@ -166,9 +166,7 @@ public class ElasticsearchContainerTest {
         try (
             // ossContainer {
             ElasticsearchContainer container = new ElasticsearchContainer(
-                DockerImageName
-                    .parse("docker.elastic.co/elasticsearch/elasticsearch-oss")
-                    .withTag(ELASTICSEARCH_VERSION)
+                "docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.2"
             )
             // }
         ) {
@@ -282,11 +280,7 @@ public class ElasticsearchContainerTest {
         // The OSS image can not use security feature
         assertThat(
             catchThrowable(() -> {
-                new ElasticsearchContainer(
-                    DockerImageName
-                        .parse("docker.elastic.co/elasticsearch/elasticsearch-oss")
-                        .withTag(ELASTICSEARCH_VERSION)
-                )
+                new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.2")
                     .withPassword("foo");
             })
         )
