@@ -40,7 +40,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
      * Elasticsearch Default version
      */
     @Deprecated
-    protected static final String DEFAULT_TAG = "7.15.0";
+    protected static final String DEFAULT_TAG = "7.9.2";
 
     @Deprecated
     private boolean isOss = false;
@@ -55,7 +55,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 
     /**
      * Create an Elasticsearch Container by passing the full docker image name
-     * @param dockerImageName Full docker image name as a {@link String}, like: docker.elastic.co/elasticsearch/elasticsearch:7.15.0
+     * @param dockerImageName Full docker image name as a {@link String}, like: docker.elastic.co/elasticsearch/elasticsearch:7.9.2
      */
     public ElasticsearchContainer(String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
@@ -63,7 +63,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 
     /**
      * Create an Elasticsearch Container by passing the full docker image name
-     * @param dockerImageName Full docker image name as a {@link DockerImageName}, like: DockerImageName.parse("docker.elastic.co/elasticsearch/elasticsearch:7.15.0")
+     * @param dockerImageName Full docker image name as a {@link DockerImageName}, like: DockerImageName.parse("docker.elastic.co/elasticsearch/elasticsearch:7.9.2")
      */
     public ElasticsearchContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
