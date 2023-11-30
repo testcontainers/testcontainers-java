@@ -235,6 +235,9 @@ labels:
   - name: modules/vault
     color: '#006b75'
 
+  - name: modules/yugabytedb
+    color: '#006b75'
+
   - name: os/linux
     color: '#1d76db'
 
