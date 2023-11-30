@@ -266,26 +266,49 @@ public interface ContainerState {
      * Run a command inside a running container as a given user, as using "docker exec -u user".
      * <p>
      * @see ExecInContainerPattern#execInContainerWithUser(DockerClient, InspectContainerResponse, String, String...)
+     * @deprecated use {@link #execInContainer(ExecConfig)}
      */
+    @Deprecated
     default Container.ExecResult execInContainerWithUser(String user, String... command)
         throws UnsupportedOperationException, IOException, InterruptedException {
-        return ExecInContainerPattern.execInContainerWithUser(getDockerClient(), getContainerInfo(), user, command);
+        return ExecInContainerPattern.execInContainer(
+            getDockerClient(),
+            getContainerInfo(),
+            ExecConfig.builder().user(user).command(command).build()
+        );
     }
 
     /**
      * Run a command inside a running container as a given user, as using "docker exec -u user".
      * <p>
      * @see ExecInContainerPattern#execInContainerWithUser(DockerClient, InspectContainerResponse, Charset, String, String...)
+     * @deprecated use {@link #execInContainer(Charset, ExecConfig)}
      */
+    @Deprecated
     default Container.ExecResult execInContainerWithUser(Charset outputCharset, String user, String... command)
         throws UnsupportedOperationException, IOException, InterruptedException {
-        return ExecInContainerPattern.execInContainerWithUser(
+        return ExecInContainerPattern.execInContainer(
             getDockerClient(),
             getContainerInfo(),
             outputCharset,
-            user,
-            command
+            ExecConfig.builder().user(user).command(command).build()
         );
+    }
+
+    /**
+     * Run a command inside a running container, as though using "docker exec".
+     */
+    default Container.ExecResult execInContainer(ExecConfig execConfig)
+        throws UnsupportedOperationException, IOException, InterruptedException {
+        return ExecInContainerPattern.execInContainer(getDockerClient(), getContainerInfo(), execConfig);
+    }
+
+    /**
+     * Run a command inside a running container, as though using "docker exec".
+     */
+    default Container.ExecResult execInContainer(Charset outputCharset, ExecConfig execConfig)
+        throws UnsupportedOperationException, IOException, InterruptedException {
+        return ExecInContainerPattern.execInContainer(getDockerClient(), getContainerInfo(), outputCharset, execConfig);
     }
 
     /**

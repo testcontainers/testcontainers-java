@@ -8,7 +8,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
-import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 
@@ -60,6 +59,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
         "docker.elastic.co/elasticsearch/elasticsearch"
     );
 
+    @Deprecated
     private static final DockerImageName DEFAULT_OSS_IMAGE_NAME = DockerImageName.parse(
         "docker.elastic.co/elasticsearch/elasticsearch-oss"
     );
@@ -72,7 +72,8 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
     @Deprecated
     protected static final String DEFAULT_TAG = "7.9.2";
 
-    private final boolean isOss;
+    @Deprecated
+    private boolean isOss = false;
 
     private final boolean isAtLeastMajorVersion8;
 
@@ -103,9 +104,16 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
     public ElasticsearchContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, DEFAULT_OSS_IMAGE_NAME, ELASTICSEARCH_IMAGE_NAME);
-        this.isOss = dockerImageName.isCompatibleWith(DEFAULT_OSS_IMAGE_NAME);
 
-        withNetworkAliases("elasticsearch-" + Base58.randomString(6));
+        if (dockerImageName.isCompatibleWith(DEFAULT_OSS_IMAGE_NAME)) {
+            this.isOss = true;
+            log.warn(
+                "{} is not supported anymore after 7.10.2. Please switch to {}",
+                dockerImageName.getUnversionedPart(),
+                DEFAULT_IMAGE_NAME.getUnversionedPart()
+            );
+        }
+
         withEnv("discovery.type", "single-node");
         // disable disk threshold checks
         withEnv("cluster.routing.allocation.disk.threshold_enabled", "false");

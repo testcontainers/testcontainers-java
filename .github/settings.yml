@@ -163,6 +163,9 @@ labels:
   - name: modules/mariadb
     color: '#006b75'
 
+  - name: modules/minio
+    color: '#006b75'
+
   - name: modules/mockserver
     color: '#006b75'
 
