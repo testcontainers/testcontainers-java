@@ -1,6 +1,5 @@
 package org.testcontainers.containers;
 
-import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateNetworkCmd;
 import lombok.Builder;
 import lombok.Getter;
@@ -91,8 +90,7 @@ class ContainerNetwork implements AutoCloseable {
     @Override
     public void close() {
         if (this.initialized.getAndSet(false)) {
-            DockerClient client = DockerClientFactory.instance().client();
-            client.removeNetworkCmd(this.id).exec();
+            ResourceReaper.instance().removeNetworkById(this.id);
         }
     }
 }
