@@ -112,7 +112,8 @@ public class HostPortWaitStrategy extends AbstractWaitStrategy {
                 waitStrategyTarget.getHost() +
                 " ports: " +
                 externalLivenessCheckPorts +
-                " should be listening)"
+                " should be listening)",
+                e
             );
         }
     }
