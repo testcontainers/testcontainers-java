@@ -5,8 +5,8 @@ buildscript {
         }
     }
     dependencies {
-        classpath "com.gradle.enterprise:com.gradle.enterprise.gradle.plugin:3.15.1"
-        classpath "com.gradle:common-custom-user-data-gradle-plugin:1.12"
+        classpath "com.gradle.enterprise:com.gradle.enterprise.gradle.plugin:3.16"
+        classpath "com.gradle:common-custom-user-data-gradle-plugin:1.12.1"
         classpath "org.gradle.toolchains:foojay-resolver:0.7.0"
     }
 }
@@ -41,7 +41,7 @@ buildCache {
         enabled = !isCI
     }
     remote(HttpBuildCache) {
-        push = isCI && !System.getenv("READ_ONLY_REMOTE_GRADLE_CACHE")
+        push = isCI && !System.getenv("READ_ONLY_REMOTE_GRADLE_CACHE") && System.getenv("GRADLE_ENTERPRISE_CACHE_PASSWORD")
         enabled = true
         url = 'https://ge.testcontainers.org/cache/'
         credentials {
