@@ -15,5 +15,5 @@ dependencies {
     testImplementation testFixtures(project(':r2dbc'))
     testRuntimeOnly 'io.asyncer:r2dbc-mysql:1.0.5'
 
-    compileOnly 'org.jetbrains:annotations:24.0.1'
+    compileOnly 'org.jetbrains:annotations:24.1.0'
 }
