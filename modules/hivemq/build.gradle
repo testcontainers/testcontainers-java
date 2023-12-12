@@ -4,7 +4,7 @@ dependencies {
     api(project(":testcontainers"))
     api("org.jetbrains:annotations:24.1.0")
 
-    shaded("org.apache.commons:commons-lang3:3.13.0")
+    shaded("org.apache.commons:commons-lang3:3.14.0")
     shaded("commons-io:commons-io:2.15.1")
     shaded("org.javassist:javassist:3.29.2-GA")
     shaded("org.jboss.shrinkwrap:shrinkwrap-api:1.2.6")
