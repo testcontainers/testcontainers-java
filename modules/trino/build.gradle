@@ -5,5 +5,5 @@ dependencies {
 
     testImplementation project(':jdbc-test')
     testRuntimeOnly 'io.trino:trino-jdbc:434'
-    compileOnly 'org.jetbrains:annotations:24.0.1'
+    compileOnly 'org.jetbrains:annotations:24.1.0'
 }
