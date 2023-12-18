@@ -15,3 +15,7 @@ dependencies {
     testImplementation testFixtures(project(':r2dbc'))
     testRuntimeOnly 'org.mariadb:r2dbc-mariadb:1.0.3'
 }
+
+tasks.withType(Test) {
+    dependsOn ':jdbc-test:shadowJar'
+}
