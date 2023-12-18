@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.delegate.DatabaseDelegate;
 import org.testcontainers.ext.ScriptUtils;
+import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.jdbc.JdbcDatabaseDelegate;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
@@ -50,15 +51,19 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
      * @deprecated use {@link #JdbcDatabaseContainer(DockerImageName)} instead
      */
     public JdbcDatabaseContainer(@NonNull final String dockerImageName) {
-        this(DockerImageName.parse(dockerImageName));
+        super(dockerImageName);
     }
 
     public JdbcDatabaseContainer(@NonNull final Future<String> image) {
         super(image);
     }
 
-    public JdbcDatabaseContainer(final DockerImageName dockerImageName) {
+    public JdbcDatabaseContainer(@NonNull final DockerImageName dockerImageName) {
         super(dockerImageName);
+    }
+
+    public JdbcDatabaseContainer(@NonNull final RemoteDockerImage image) {
+        super(image);
     }
 
     /**
