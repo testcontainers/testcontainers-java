@@ -77,8 +77,6 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 
     private final boolean isAtLeastMajorVersion8;
 
-    private Optional<byte[]> caCertAsBytes = Optional.empty();
-
     private String certPath = "/usr/share/elasticsearch/config/certs/http_ca.crt";
 
     /**
@@ -91,6 +89,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 
     /**
      * Create an Elasticsearch Container by passing the full docker image name
+     *
      * @param dockerImageName Full docker image name as a {@link String}, like: docker.elastic.co/elasticsearch/elasticsearch:7.9.2
      */
     public ElasticsearchContainer(String dockerImageName) {
@@ -99,6 +98,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 
     /**
      * Create an Elasticsearch Container by passing the full docker image name
+     *
      * @param dockerImageName Full docker image name as a {@link DockerImageName}, like: DockerImageName.parse("docker.elastic.co/elasticsearch/elasticsearch:7.9.2")
      */
     public ElasticsearchContainer(final DockerImageName dockerImageName) {
@@ -140,21 +140,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
     }
 
     @Override
-    protected void containerIsStarted(InspectContainerResponse containerInfo) {
-        if (isAtLeastMajorVersion8 && StringUtils.isNotEmpty(certPath)) {
-            try {
-                byte[] bytes = copyFileFromContainer(certPath, IOUtils::toByteArray);
-                if (bytes.length > 0) {
-                    this.caCertAsBytes = Optional.of(bytes);
-                }
-            } catch (NotFoundException e) {
-                // just emit an error message, but do not throw an exception
-                // this might be ok, if the docker image is accidentally looking like version 8 or latest
-                // can happen if Elasticsearch is repackaged, i.e. with custom plugins
-                log.warn("CA cert under " + certPath + " not found.");
-            }
-        }
-    }
+    protected void containerIsStarted(InspectContainerResponse containerInfo) {}
 
     /**
      * If this is running above Elasticsearch 8, this will return the probably self-signed CA cert that has been extracted
@@ -162,17 +148,36 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
      * @return byte array optional containing the CA cert extracted from the docker container
      */
     public Optional<byte[]> caCertAsBytes() {
-        return caCertAsBytes;
+        if (StringUtils.isBlank(certPath)) {
+            return Optional.empty();
+        }
+        try {
+            byte[] bytes = copyFileFromContainer(certPath, IOUtils::toByteArray);
+            if (bytes.length > 0) {
+                return Optional.of(bytes);
+            }
+        } catch (NotFoundException e) {
+            // just emit an error message, but do not throw an exception
+            // this might be ok, if the docker image is accidentally looking like version 8 or latest
+            // can happen if Elasticsearch is repackaged, i.e. with custom plugins
+            log.warn("CA cert under " + certPath + " not found.");
+        }
+        return Optional.empty();
     }
 
     /**
-     * A SSL context based on the self signed CA, so that using this SSL Context allows to connect to the Elasticsearch service
+     * A SSL context based on the self-signed CA, so that using this SSL Context allows to connect to the Elasticsearch service
      * @return a customized SSL Context
      */
     public SSLContext createSslContextFromCa() {
         try {
             CertificateFactory factory = CertificateFactory.getInstance("X.509");
-            Certificate trustedCa = factory.generateCertificate(new ByteArrayInputStream(caCertAsBytes.get()));
+            Certificate trustedCa = factory.generateCertificate(
+                new ByteArrayInputStream(
+                    caCertAsBytes()
+                        .orElseThrow(() -> new IllegalStateException("CA cert under " + certPath + " not found."))
+                )
+            );
             KeyStore trustStore = KeyStore.getInstance("pkcs12");
             trustStore.load(null, null);
             trustStore.setCertificateEntry("ca", trustedCa);
@@ -190,13 +195,13 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
     /**
      * Define the Elasticsearch password to set. It enables security behind the scene for major version below 8.0.0.
      * It's not possible to use security with the oss image.
-     * @param password  Password to set
+     * @param password Password to set
      * @return this
      */
     public ElasticsearchContainer withPassword(String password) {
         if (isOss) {
             throw new IllegalArgumentException(
-                "You can not activate security on Elastic OSS Image. " + "Please switch to the default distribution"
+                "You can not activate security on Elastic OSS Image. Please switch to the default distribution"
             );
         }
         withEnv("ELASTIC_PASSWORD", password);
@@ -222,7 +227,8 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
         return getHost() + ":" + getMappedPort(ELASTICSEARCH_DEFAULT_PORT);
     }
 
-    @Deprecated // The TransportClient will be removed in Elasticsearch 8. No need to expose this port anymore in the future.
+    @Deprecated
+    // The TransportClient will be removed in Elasticsearch 8. No need to expose this port anymore in the future.
     public InetSocketAddress getTcpHost() {
         return new InetSocketAddress(getHost(), getMappedPort(ELASTICSEARCH_DEFAULT_TCP_PORT));
     }
