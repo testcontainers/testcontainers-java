@@ -8,7 +8,7 @@
     * follow the style, naming and structure conventions of the rest of the project.
     * make commits atomic and easy to merge.
     * when updating documentation, please see [our guidance for documentation contributions](contributing_docs.md).
-    * apply format running `./gradlew spotlessApply`
+    * apply format running `./gradlew spotlessApply` (this requires [Node.js](https://nodejs.org/) to be installed on your machine, one of the [package managers](https://nodejs.org/en/download/package-manager/) might be handy)
     * verify all tests are passing. Build the project with `./gradlew check` to do this.
     **N.B.** Gradle's Build Cache is enabled by default, but you can add `--no-build-cache` flag to disable it.
 
