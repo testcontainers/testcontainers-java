@@ -59,7 +59,7 @@ Some companies disallow the usage of Docker Hub, but you can override `*.image` 
 > Used by VNC recorder in Testcontainers' Selenium integration
 
 > **socat.container.image = alpine/socat**  
-> **compose.container.image = docker/compose:1.8.0**  
+> **compose.container.image = docker:24.0.7**  
 > Required if using [Docker Compose](../modules/docker_compose.md)
 
 > **kafka.container.image = confluentinc/cp-kafka**  

@@ -62,7 +62,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
 
     public static final String COMPOSE_EXECUTABLE = SystemUtils.IS_OS_WINDOWS ? "docker-compose.exe" : "docker-compose";
 
-    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("docker/compose:1.29.2");
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("docker:24.0.7");
 
     private final ComposeDelegate composeDelegate;
 

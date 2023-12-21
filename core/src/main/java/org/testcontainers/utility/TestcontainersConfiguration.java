@@ -55,7 +55,7 @@ public class TestcontainersConfiguration {
 
     private static final String VNC_RECORDER_IMAGE = "testcontainers/vnc-recorder";
 
-    private static final String COMPOSE_IMAGE = "docker/compose";
+    private static final String COMPOSE_IMAGE = "docker";
 
     private static final String ALPINE_IMAGE = "alpine";
 
