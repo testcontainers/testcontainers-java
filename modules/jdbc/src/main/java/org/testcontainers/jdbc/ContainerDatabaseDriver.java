@@ -203,32 +203,33 @@ public class ContainerDatabaseDriver implements Driver {
      */
     private void runInitScriptIfRequired(final ConnectionUrl connectionUrl, DatabaseDelegate databaseDelegate)
         throws SQLException {
-        if (connectionUrl.getInitScriptPath().isPresent()) {
-            String initScriptPath = connectionUrl.getInitScriptPath().get();
+        if (!connectionUrl.getInitScriptPath().isPresent()) return;
+
+        for (String scriptPath : connectionUrl.getInitScriptPath().get().split(",")) {
             try {
                 URL resource;
-                if (initScriptPath.startsWith(FILE_PATH_PREFIX)) {
+                if (scriptPath.startsWith(FILE_PATH_PREFIX)) {
                     //relative workdir path
-                    resource = new URL(initScriptPath);
+                    resource = new URL(scriptPath);
                 } else {
                     //classpath resource
-                    resource = Thread.currentThread().getContextClassLoader().getResource(initScriptPath);
+                    resource = Thread.currentThread().getContextClassLoader().getResource(scriptPath);
                 }
                 if (resource == null) {
-                    LOGGER.warn("Could not load classpath init script: {}", initScriptPath);
+                    LOGGER.warn("Could not load classpath init script: {}", scriptPath);
                     throw new SQLException(
-                        "Could not load classpath init script: " + initScriptPath + ". Resource not found."
+                        "Could not load classpath init script: " + scriptPath + ". Resource not found."
                     );
                 }
 
                 String sql = IOUtils.toString(resource, StandardCharsets.UTF_8);
-                ScriptUtils.executeDatabaseScript(databaseDelegate, initScriptPath, sql);
+                ScriptUtils.executeDatabaseScript(databaseDelegate, scriptPath, sql);
             } catch (IOException e) {
-                LOGGER.warn("Could not load classpath init script: {}", initScriptPath);
-                throw new SQLException("Could not load classpath init script: " + initScriptPath, e);
+                LOGGER.warn("Could not load classpath init script: {}", scriptPath);
+                throw new SQLException("Could not load classpath init script: " + scriptPath, e);
             } catch (ScriptException e) {
-                LOGGER.error("Error while executing init script: {}", initScriptPath, e);
-                throw new SQLException("Error while executing init script: " + initScriptPath, e);
+                LOGGER.error("Error while executing init script: {}", scriptPath, e);
+                throw new SQLException("Error while executing init script: " + scriptPath, e);
             }
         }
     }

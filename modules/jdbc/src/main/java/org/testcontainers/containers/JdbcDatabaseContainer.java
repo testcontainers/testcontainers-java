@@ -17,7 +17,10 @@ import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Future;
@@ -34,7 +37,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
 
     private Driver driver;
 
-    private String initScriptPath;
+    private List<String> initScriptPaths = Collections.emptyList();
 
     protected Map<String, String> parameters = new HashMap<>();
 
@@ -133,7 +136,17 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
     }
 
     public SELF withInitScript(String initScriptPath) {
-        this.initScriptPath = initScriptPath;
+        this.initScriptPaths = Collections.singletonList(initScriptPath);
+        return self();
+    }
+
+    /**
+     * Execute each init script in the given order
+     *
+     * @since 1.20
+     */
+    public SELF withInitScript(String... initScriptPaths) {
+        this.initScriptPaths = Arrays.asList(initScriptPaths);
         return self();
     }
 
@@ -328,7 +341,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
      * Load init script content and apply it to the database if initScriptPath is set
      */
     protected void runInitScriptIfRequired() {
-        if (initScriptPath != null) {
+        for (String initScriptPath : initScriptPaths) {
             ScriptUtils.runInitScript(getDatabaseDelegate(), initScriptPath);
         }
     }

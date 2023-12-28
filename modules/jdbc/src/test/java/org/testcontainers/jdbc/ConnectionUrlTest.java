@@ -89,6 +89,21 @@ public class ConnectionUrlTest {
     }
 
     @Test
+    public void testMultipleInitScriptPathCapture() {
+        String urlString =
+            "jdbc:tc:mysql:5.7.34://somehostname:3306/databasename?TC_INITSCRIPT=somepath/init_mysql.sql," +
+                "somepath/init_mysql_other.sql";
+        ConnectionUrl url = ConnectionUrl.newInstance(urlString);
+
+        assertThat(url.getInitScriptPath())
+            .as("Database Type value is as expected")
+            .hasValue("somepath/init_mysql.sql,somepath/init_mysql_other.sql");
+        assertThat(url.getContainerParameters())
+            .as("INIT SCRIPT Path exists in Container Parameters")
+            .containsEntry("TC_INITSCRIPT", "somepath/init_mysql.sql,somepath/init_mysql_other.sql");
+    }
+
+    @Test
     public void testInitFunctionCapture() {
         String urlString =
             "jdbc:tc:mysql:5.7.34://somehostname:3306/databasename?a=b&c=d&TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction";
