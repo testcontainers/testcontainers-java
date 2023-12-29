@@ -95,12 +95,15 @@ Testcontainers can run an init script after the database container is started, b
 `jdbc:tc:mysql:5.7.34:///databasename?TC_INITSCRIPT=somepath/init_mysql.sql`
 
 This is useful if you have a fixed script for setting up database schema, etc.
+Several scripts can be specified, separated by comma `,`.
 
 ### Using an init script from a file
 
 If the init script path is prefixed `file:`, it will be loaded from a file (relative to the working directory, which will usually be the project root).
 
 `jdbc:tc:mysql:5.7.34:///databasename?TC_INITSCRIPT=file:src/main/resources/init_mysql.sql`
+
+Several scripts can be specified, separated by comma `,`.
 
 ### Using an init function
 
