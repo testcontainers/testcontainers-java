@@ -5,7 +5,7 @@ dependencies {
 
     compileOnly 'org.influxdb:influxdb-java:2.23'
 
-    testImplementation 'org.assertj:assertj-core:3.24.2'
+    testImplementation 'org.assertj:assertj-core:3.25.0'
     testImplementation 'org.influxdb:influxdb-java:2.23'
     testImplementation "com.influxdb:influxdb-client-java:6.11.0"
 }
