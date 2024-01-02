@@ -1,0 +1,15 @@
+description = "Testcontainers :: ScyllaDB"
+
+configurations.all {
+    resolutionStrategy {
+        force 'io.dropwizard.metrics:metrics-core:3.2.6'
+    }
+}
+
+dependencies {
+    api project(":database-commons")
+    api "com.scylladb:java-driver-core:4.15.0.0"
+    api "com.datastax.cassandra:cassandra-driver-core:3.10.0"
+
+    testImplementation 'org.assertj:assertj-core:3.24.2'
+}

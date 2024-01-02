@@ -47,6 +47,7 @@ body:
         - Pulsar
         - RabbitMQ
         - Redpanda
+        - ScyllaDB
         - Selenium
         - Solace
         - Solr
