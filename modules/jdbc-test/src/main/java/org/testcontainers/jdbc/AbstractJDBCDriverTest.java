@@ -22,6 +22,7 @@ public class AbstractJDBCDriverTest {
     protected enum Options {
         ScriptedSchema,
         CharacterSet,
+        CopyFiles,
         CustomIniFile,
         JDBCParams,
         PmdKnownBroken,
@@ -63,7 +64,7 @@ public class AbstractJDBCDriverTest {
                 performTestForCharacterEncodingForInitialScriptConnection(dataSource);
             }
 
-            if (options.contains(Options.CustomIniFile)) {
+            if (options.contains(Options.CopyFiles) || options.contains(Options.CustomIniFile)) {
                 performTestForCustomIniFile(dataSource);
             }
         }
@@ -204,13 +205,13 @@ public class AbstractJDBCDriverTest {
     private void performTestForCustomIniFile(HikariDataSource dataSource) throws SQLException {
         assumeFalse(SystemUtils.IS_OS_WINDOWS);
         Statement statement = dataSource.getConnection().createStatement();
-        statement.execute("SELECT @@GLOBAL.innodb_file_format");
+        statement.execute("SELECT @@GLOBAL.key_buffer_size");
         ResultSet resultSet = statement.getResultSet();
 
         assertThat(resultSet.next()).as("The query returns a result").isTrue();
         String result = resultSet.getString(1);
 
-        assertThat(result).as("The InnoDB file format has been set by the ini file content").isEqualTo("Barracuda");
+        assertThat(result).as("The InnoDB file format has been set by the ini file content").isEqualTo("32768");
     }
 
     private HikariDataSource getDataSource(String jdbcUrl, int poolSize) {

@@ -117,6 +117,18 @@ public class JDBCDriverTest {
     ...
 ```
 
+### Copying files to the container
+
+You may copy files into the container by specifying `TC_COPY_FILE`.
+This is useful for supplying custom configuration files or utilizing the entrypoint of a Docker image to run scripts.
+
+The syntax is: `?TC_COPY_FILE=host-path:container-path[:file-mode]` (file mode is optional).
+If the host path is prefixed with `file:` it will be loaded from a file (relative to the working directory, which will usually be the project root), otherwise it's mapped from a classpath resource. 
+
+* Single file: `jdbc:tc:mysql:5.7.34:///databasename?TC_COPY_FILE=some-path/init_mysql.sql:/docker-entrypoint-initdb.d/init_mysql.sql`
+* Single file with file mode: `jdbc:tc:mysql:5.7.34:///databasename?TC_COPY_FILE=some-path/init_mysql.sql:/docker-entrypoint-initdb.d/init_mysql.sql:755`
+* Multiple files: `jdbc:tc:mysql:5.7.34:///databasename?TC_COPY_FILE=some-path/init_mysql.sql:/docker-entrypoint-initdb.d/init_mysql.sql:755&TC_COPY_FILE=file:/absolute-path/another-file:/another/container-path/another-file`
+
 ### Running container in daemon mode
 
 By default database container is being stopped as soon as last connection is closed. There are cases when you might need to start container and keep it running till you stop it explicitly or JVM is shutdown. To do this, add `TC_DAEMON` parameter to the URL as follows:
