@@ -217,7 +217,7 @@ public abstract class DockerClientProviderStrategy {
                 .untilAsserted(() -> socket.connect(socketAddress, (int) timeout.toMillis()));
             return true;
         } catch (Exception e) {
-            log.warn("DOCKER_HOST {} is not listening", dockerHost);
+            log.warn("DOCKER_HOST {} is not listening", dockerHost, e);
             return false;
         }
     }
