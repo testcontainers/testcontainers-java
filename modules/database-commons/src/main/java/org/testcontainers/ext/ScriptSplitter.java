@@ -101,8 +101,8 @@ class ScriptSplitter {
                     if (";".equals(scanner.getCurrentMatch())) {
                         if (recursive) {
                             sb.append(temporary);
-                            appendMatch();
                         }
+                        appendMatch();
                         return true;
                     }
                     sb.append(temporary);
