@@ -2,7 +2,7 @@
 
 ## Usage example
 
-This example connects to the ScyllaDB Cluster, creates a keyspaces and asserts that is has been created.
+This example connects to a ScyllaDB Cluster, creates a keyspace and asserts that is has been created.
 
 <!--codeinclude-->
 [Building CqlSession](../../../modules/scylladb/src/test/java/org/testcontainers/containers/ScyllaDBDriver4Test.java) inside_block:scylladb
