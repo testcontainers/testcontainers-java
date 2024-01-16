@@ -1,15 +1,17 @@
 package org.testcontainers.containers;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.testcontainers.containers.wait.ScyllaDBQueryWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
+import java.net.InetSocketAddress;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.testcontainers.containers.ScyllaDBContainer.CQL_PORT;
 
 @Slf4j
 public class ScyllaDBContainerTest {
@@ -100,18 +102,16 @@ public class ScyllaDBContainerTest {
     }
 
     private ResultSet performQuery(ScyllaDBContainer<?> ScyllaDBContainer, String cql) {
-        Cluster explicitCluster = Cluster
-            .builder()
-            .addContactPoint(ScyllaDBContainer.getHost())
-            .withPort(ScyllaDBContainer.getMappedPort(ScyllaDBContainer.CQL_PORT))
-            .build();
-        return performQuery(explicitCluster, cql);
-    }
+        CqlSession session = CqlSession.
+            builder().
+            addContactPoint(
+                new InetSocketAddress(
+                    ScyllaDBContainer.getHost(),
+                    ScyllaDBContainer.getMappedPort(CQL_PORT)
+                )).
+            withLocalDatacenter("datacenter1").
+            build();
 
-    private ResultSet performQuery(Cluster cluster, String cql) {
-        try (Cluster closeableCluster = cluster) {
-            Session session = closeableCluster.newSession();
-            return session.execute(cql);
-        }
+        return session.execute(cql);
     }
 }
