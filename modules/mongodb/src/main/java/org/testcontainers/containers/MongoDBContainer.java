@@ -87,7 +87,7 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
     }
 
     /**
-     * Gets a connection string url, unlike {@link #getReplicaSetUrl} this does point to a
+     * Gets a connection string url, unlike {@link #getReplicaSetUrl} this does not point to a
      * database
      * @return a connection url pointing to a mongodb instance
      */
