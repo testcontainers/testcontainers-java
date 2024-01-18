@@ -29,6 +29,7 @@ body:
         - InfluxDB
         - K3S
         - Kafka
+        - Liberty
         - LocalStack
         - MariaDB
         - MinIO
