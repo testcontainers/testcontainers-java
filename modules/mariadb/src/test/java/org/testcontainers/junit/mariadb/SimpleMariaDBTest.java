@@ -133,9 +133,11 @@ public class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
     }
 
     private void assertThatCustomIniFileWasUsed(MariaDBContainer<?> mariadb) throws SQLException {
-        try (ResultSet resultSet = performQuery(mariadb, "SELECT @@GLOBAL.innodb_file_format")) {
-            String result = resultSet.getString(1);
-            assertThat(result).as("The InnoDB file format has been set by the ini file content").isEqualTo("Barracuda");
+        try (ResultSet resultSet = performQuery(mariadb, "SELECT @@GLOBAL.innodb_max_undo_log_size")) {
+            long result = resultSet.getLong(1);
+            assertThat(result)
+                .as("The InnoDB max undo log size has been set by the ini file content")
+                .isEqualTo(20000000);
         }
     }
 }
