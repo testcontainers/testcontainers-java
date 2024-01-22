@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 /**
  * Testcontainers implementation for Redpanda.
  * <p>
- * Supported images: {@code docker.redpanda.com/redpandadata/redpanda}, {@code docker.redpanda.com/vectorized/redpanda}
+ * Supported images: {@code redpandadata/redpanda}, {@code docker.redpanda.com/redpandadata/redpanda}
  * <p>
  * Exposed ports:
  * <ul>
@@ -43,10 +43,14 @@ public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
 
     private static final String REDPANDA_FULL_IMAGE_NAME = "docker.redpanda.com/redpandadata/redpanda";
 
+    private static final String IMAGE_NAME = "redpandadata/redpanda";
+
     @Deprecated
     private static final String REDPANDA_OLD_FULL_IMAGE_NAME = "docker.redpanda.com/vectorized/redpanda";
 
     private static final DockerImageName REDPANDA_IMAGE = DockerImageName.parse(REDPANDA_FULL_IMAGE_NAME);
+
+    private static final DockerImageName IMAGE = DockerImageName.parse(IMAGE_NAME);
 
     @Deprecated
     private static final DockerImageName REDPANDA_OLD_IMAGE = DockerImageName.parse(REDPANDA_OLD_FULL_IMAGE_NAME);
@@ -75,10 +79,14 @@ public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
 
     public RedpandaContainer(DockerImageName imageName) {
         super(imageName);
-        imageName.assertCompatibleWith(REDPANDA_OLD_IMAGE, REDPANDA_IMAGE);
+        imageName.assertCompatibleWith(REDPANDA_OLD_IMAGE, REDPANDA_IMAGE, IMAGE);
 
         boolean isLessThanBaseVersion = new ComparableVersion(imageName.getVersionPart()).isLessThan("v22.2.1");
-        if (REDPANDA_FULL_IMAGE_NAME.equals(imageName.getUnversionedPart()) && isLessThanBaseVersion) {
+        boolean isPublicCompatibleImage =
+            REDPANDA_FULL_IMAGE_NAME.equals(imageName.getUnversionedPart()) ||
+            IMAGE_NAME.equals(imageName.getUnversionedPart()) ||
+            REDPANDA_OLD_FULL_IMAGE_NAME.equals(imageName.getUnversionedPart());
+        if (isPublicCompatibleImage && isLessThanBaseVersion) {
             throw new IllegalArgumentException("Redpanda version must be >= v22.2.1");
         }
 

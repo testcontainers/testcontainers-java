@@ -215,9 +215,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private ContainerDef containerDef;
 
     ContainerDef createContainerDef() {
-        ContainerDef def = new ContainerDef();
-        def.addNetworkAlias("tc-" + Base58.randomString(8));
-        return def;
+        return new ContainerDef();
     }
 
     ContainerDef getContainerDef() {
@@ -242,6 +240,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     public GenericContainer(@NonNull final RemoteDockerImage image) {
         this.image = image;
         this.containerDef = createContainerDef();
+        this.containerDef.addNetworkAlias("tc-" + Base58.randomString(8));
         this.containerDef.setImage(image);
     }
 
@@ -267,6 +266,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     public void setImage(Future<String> image) {
+        this.image = new RemoteDockerImage(image);
         this.containerDef.setImage(new RemoteDockerImage(image));
     }
 
@@ -639,7 +639,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     /**
-     * Stops the container.
+     * Kill and remove the container.
      */
     @Override
     public void stop() {
