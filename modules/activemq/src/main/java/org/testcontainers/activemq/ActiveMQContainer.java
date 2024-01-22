@@ -35,6 +35,10 @@ public class ActiveMQContainer extends GenericContainer<ActiveMQContainer> {
 
     private static final int WS_PORT = 61614;
 
+    private String username;
+
+    private String password;
+
     public ActiveMQContainer(String image) {
         this(DockerImageName.parse(image));
     }
@@ -47,7 +51,35 @@ public class ActiveMQContainer extends GenericContainer<ActiveMQContainer> {
         waitingFor(Wait.forLogMessage(".*Apache ActiveMQ.*started.*", 1).withStartupTimeout(Duration.ofMinutes(1)));
     }
 
+    @Override
+    protected void configure() {
+        if (this.username != null) {
+            addEnv("ACTIVEMQ_CONNECTION_USER", this.username);
+        }
+        if (this.password != null) {
+            addEnv("ACTIVEMQ_CONNECTION_PASSWORD", this.password);
+        }
+    }
+
+    public ActiveMQContainer withUser(String username) {
+        this.username = username;
+        return this;
+    }
+
+    public ActiveMQContainer withPassword(String password) {
+        this.password = password;
+        return this;
+    }
+
     public String getBrokerUrl() {
         return String.format("tcp://%s:%s", getHost(), getMappedPort(TCP_PORT));
+    }
+
+    public String getUser() {
+        return this.username;
+    }
+
+    public String getPassword() {
+        return this.password;
     }
 }
