@@ -18,7 +18,7 @@ public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcD
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("mariadb");
 
     @Deprecated
-    public static final String DEFAULT_TAG = "10.3.39";
+    public static final String DEFAULT_TAG = "10.3.6";
 
     public static final String NAME = "mariadb";
 
