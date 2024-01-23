@@ -45,7 +45,7 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 
 #### Using MariaDB
 
-`jdbc:tc:mariadb:10.2.14:///databasename`
+`jdbc:tc:mariadb:10.3.39:///databasename`
 
 #### Using MySQL
 

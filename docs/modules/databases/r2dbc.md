@@ -39,7 +39,7 @@ So that the URL becomes:
 
 #### Using MariaDB
 
-`r2dbc:tc:mariadb:///databasename?TC_IMAGE_TAG=10.3.6`
+`r2dbc:tc:mariadb:///databasename?TC_IMAGE_TAG=10.3.39`
 
 #### Using PostgreSQL
 
