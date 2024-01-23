@@ -39,7 +39,7 @@ public class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
     public void testSpecificVersion() throws SQLException {
         try (
             MariaDBContainer<?> mariadbOldVersion = new MariaDBContainer<>(
-                MariaDBTestImages.MARIADB_IMAGE.withTag("5.5.51")
+                MariaDBTestImages.MARIADB_IMAGE.withTag("10.3.39")
             )
         ) {
             mariadbOldVersion.start();
@@ -49,7 +49,7 @@ public class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
 
             assertThat(resultSetString)
                 .as("The database version can be set using a container rule parameter")
-                .startsWith("5.5.51");
+                .startsWith("10.3.39");
         }
     }
 
@@ -59,7 +59,7 @@ public class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
 
         try (
             MariaDBContainer<?> mariadbCustomConfig = new MariaDBContainer<>(
-                MariaDBTestImages.MARIADB_IMAGE.withTag("10.1.16")
+                MariaDBTestImages.MARIADB_IMAGE.withTag("10.3.39")
             )
                 .withConfigurationOverride("somepath/mariadb_conf_override")
         ) {
@@ -107,7 +107,7 @@ public class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
 
         try (
             MariaDBContainer<?> mariadbCustomConfig = new MariaDBContainer<>(
-                MariaDBTestImages.MARIADB_IMAGE.withTag("10.1.16")
+                MariaDBTestImages.MARIADB_IMAGE.withTag("10.3.39")
             )
                 .withConfigurationOverride("somepath/mariadb_conf_override")
         ) {
@@ -133,9 +133,11 @@ public class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
     }
 
     private void assertThatCustomIniFileWasUsed(MariaDBContainer<?> mariadb) throws SQLException {
-        try (ResultSet resultSet = performQuery(mariadb, "SELECT @@GLOBAL.innodb_file_format")) {
-            String result = resultSet.getString(1);
-            assertThat(result).as("The InnoDB file format has been set by the ini file content").isEqualTo("Barracuda");
+        try (ResultSet resultSet = performQuery(mariadb, "SELECT @@GLOBAL.innodb_max_undo_log_size")) {
+            long result = resultSet.getLong(1);
+            assertThat(result)
+                .as("The InnoDB max undo log size has been set by the ini file content")
+                .isEqualTo(20000000);
         }
     }
 }
