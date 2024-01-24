@@ -5,7 +5,7 @@ dependencies {
 
     testImplementation 'org.assertj:assertj-core:3.25.1'
     testImplementation "org.apache.activemq:activemq-client-jakarta:5.18.2"
-    testImplementation "org.apache.activemq:artemis-jakarta-client:2.29.0"
+    testImplementation "org.apache.activemq:artemis-jakarta-client:2.31.2"
 }
 
 test {
