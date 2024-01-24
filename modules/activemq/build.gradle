@@ -4,19 +4,19 @@ dependencies {
     api project(':testcontainers')
 
     testImplementation 'org.assertj:assertj-core:3.24.2'
-    testImplementation "org.apache.activemq:activemq-client-jakarta:5.18.2"
+    testImplementation "org.apache.activemq:activemq-client:6.0.1"
     testImplementation "org.apache.activemq:artemis-jakarta-client:2.29.0"
 }
 
 test {
     javaLauncher = javaToolchains.launcherFor {
-        languageVersion = JavaLanguageVersion.of(11)
+        languageVersion = JavaLanguageVersion.of(17)
     }
 }
 
 compileTestJava {
     javaCompiler = javaToolchains.compilerFor {
-        languageVersion = JavaLanguageVersion.of(11)
+        languageVersion = JavaLanguageVersion.of(17)
     }
     options.release.set(11)
 }
