@@ -30,5 +30,5 @@ GenericContainer container = new GenericContainer("redis:6-alpine")
 ### Reusable Container with Testcontainers JDBC URL
 
 If using the [Testcontainers JDBC URL support](../../modules/databases/jdbc#database-containers-launched-via-jdbc-url-scheme)
-the URL **must** follow the pattern of `jdbc:tc:mysql:5.7.34:///databasename?TC_REUSABLE=true`.
+the URL **must** follow the pattern of `jdbc:tc:mysql:8.0.36:///databasename?TC_REUSABLE=true`.
 `TC_REUSABLE=true` is set as a parameter of the JDBC URL.

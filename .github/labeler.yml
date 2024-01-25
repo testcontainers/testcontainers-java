@@ -15,6 +15,10 @@
       - gradle/wrapper/*
       - gradlew
       - gradlew.bat
+"modules/activemq":
+  - changed-files:
+      - any-glob-to-any-file:
+          - modules/activemq/**/*
 "modules/azure":
   - changed-files:
     - any-glob-to-any-file:
