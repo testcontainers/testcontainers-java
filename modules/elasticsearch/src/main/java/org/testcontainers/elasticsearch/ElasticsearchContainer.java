@@ -1,6 +1,5 @@
 package org.testcontainers.elasticsearch;
 
-import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.NotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
@@ -138,9 +137,6 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
             withPassword(ELASTICSEARCH_DEFAULT_PASSWORD);
         }
     }
-
-    @Override
-    protected void containerIsStarted(InspectContainerResponse containerInfo) {}
 
     /**
      * If this is running above Elasticsearch 8, this will return the probably self-signed CA cert that has been extracted
