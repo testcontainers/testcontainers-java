@@ -3,6 +3,9 @@ name: Combine PRs
 on:
   workflow_dispatch:
 
+permissions:  # added using https://github.com/step-security/secure-repo
+  contents: read
+
 jobs:
   combine-prs:
     permissions:
@@ -13,6 +16,6 @@ jobs:
     steps:
       - name: combine-prs
         id: combine-prs
-        uses: github/combine-prs@v5.0.0
+        uses: github/combine-prs@a1b441298ab012db2ae25f7bf5fad0b7f78db9c4 # v5.0.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
