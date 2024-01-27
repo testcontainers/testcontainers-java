@@ -1,4 +1,4 @@
-FROM nginx:1.17-alpine
+FROM nginx@sha256:4c0fdaa8b6341bfdeca5f18f7837462c80cff90527ee35ef185571e1c327beac
 
 # If this fails, you ended up using a base image with bash installed. Consider removing /bin/bash in this case
 RUN if bash -c true &> /dev/null; then exit 1; fi
