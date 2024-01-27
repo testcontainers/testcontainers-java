@@ -15,13 +15,13 @@ jobs:
   release:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - uses: ./.github/actions/setup-java
       - name: Clear existing docker image cache
         run: docker image prune -af
 
       - name: Setup Gradle Build Action
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@a8f75513eafdebd8141bd1cd4e30fcd194af8dfa # v2.12.0
 
       - name: Run Gradle Build
         run: ./gradlew build --scan --no-daemon -i -x test
