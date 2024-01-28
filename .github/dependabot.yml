@@ -337,7 +337,7 @@ updates:
 
 # Dockerfiles
   - package-ecosystem: "docker"
-    directory: "/core/test/resources"
+    directory: "/core/src/test/resources"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
