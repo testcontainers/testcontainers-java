@@ -334,3 +334,10 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
+
+# Dockerfiles
+  - package-ecosystem: "docker"
+    directory: "/core/test/resources"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
