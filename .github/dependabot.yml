@@ -341,3 +341,43 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
+  - package-ecosystem: "docker"
+    directory: "/core/src/test/resources/compose-build-test"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "docker"
+    directory: "/core/src/test/resources/compose-dockerfile"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "docker"
+    directory: "/core/src/test/resources/compose-v2-build-test"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "docker"
+    directory: "/core/src/test/resources/dockerfile-build-invalid"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "docker"
+    directory: "/core/src/test/resources/dockerfile-build-test"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "docker"
+    directory: "/core/src/test/resources/health-wait-strategy-dockerfile"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "docker"
+    directory: "/core/src/test/resources/internal-port-check-dockerfile"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "docker"
+    directory: "/core/src/test/resources/mappable-dockerfile"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
