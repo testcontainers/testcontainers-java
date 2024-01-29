@@ -52,7 +52,7 @@ jobs:
       - name: Remove Docket root socket
         run: sudo rm -rf /var/run/docker.sock
       - name: Setup Gradle Build Action
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v3
       - name: Build with Gradle
         run: ./gradlew --no-daemon --scan testcontainers:test --tests '*GenericContainerRuleTest'
       - uses: ./.github/actions/setup-junit-report
