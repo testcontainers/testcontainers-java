@@ -12,10 +12,10 @@ dependencies {
     compileOnly 'io.r2dbc:r2dbc-postgresql:0.8.13.RELEASE'
 
     testImplementation projects.jdbcTest
-    testRuntimeOnly 'org.postgresql:postgresql:42.6.0'
+    testRuntimeOnly 'org.postgresql:postgresql:42.7.1'
 
     testImplementation testFixtures(projects.r2dbc)
     testRuntimeOnly 'io.r2dbc:r2dbc-postgresql:0.8.13.RELEASE'
 
-    compileOnly 'org.jetbrains:annotations:24.0.1'
+    compileOnly 'org.jetbrains:annotations:24.1.0'
 }

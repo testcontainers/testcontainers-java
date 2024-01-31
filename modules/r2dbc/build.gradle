@@ -12,10 +12,10 @@ dependencies {
     api projects.testcontainers
     api 'io.r2dbc:r2dbc-spi:0.9.0.RELEASE'
 
-    testImplementation 'org.assertj:assertj-core:3.24.2'
+    testImplementation 'org.assertj:assertj-core:3.25.2'
     testImplementation 'io.r2dbc:r2dbc-postgresql:0.8.13.RELEASE'
     testImplementation projects.postgresql
 
-    testFixturesImplementation 'io.projectreactor:reactor-core:3.5.11'
-    testFixturesImplementation 'org.assertj:assertj-core:3.24.2'
+    testFixturesImplementation 'io.projectreactor:reactor-core:3.6.2'
+    testFixturesImplementation 'org.assertj:assertj-core:3.25.2'
 }

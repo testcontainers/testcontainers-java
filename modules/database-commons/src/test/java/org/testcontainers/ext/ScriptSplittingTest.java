@@ -320,10 +320,17 @@ public class ScriptSplittingTest {
             "        IF something_wrong THEN LEAVE rec_loop; END IF;\n" +
             "        do_something_else;\n" +
             "    END LOOP;\n" +
-            "END",
+            "END;",
             "CALL something();"
         );
         splitAndCompare(script, expected, "@");
+    }
+
+    @Test
+    public void oracleStyleBlocks() {
+        String script = "BEGIN END; /\n" + "BEGIN END;";
+        List<String> expected = Arrays.asList("BEGIN END;", "BEGIN END;");
+        splitAndCompare(script, expected, "/");
     }
 
     @Test

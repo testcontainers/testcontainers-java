@@ -9,13 +9,13 @@ dependencies {
     api projects.jdbc
 
     compileOnly projects.r2dbc
-    compileOnly 'io.asyncer:r2dbc-mysql:1.0.5'
+    compileOnly 'io.asyncer:r2dbc-mysql:1.0.6'
 
     testImplementation projects.jdbcTest
     testRuntimeOnly 'mysql:mysql-connector-java:8.0.33'
 
     testImplementation testFixtures(projects.r2dbc)
-    testRuntimeOnly 'io.asyncer:r2dbc-mysql:1.0.5'
+    testRuntimeOnly 'io.asyncer:r2dbc-mysql:1.0.6'
 
-    compileOnly 'org.jetbrains:annotations:24.0.1'
+    compileOnly 'org.jetbrains:annotations:24.1.0'
 }

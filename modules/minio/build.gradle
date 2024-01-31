@@ -6,5 +6,5 @@ dependencies {
     api projects.testcontainers
 
     testImplementation("io.minio:minio:8.5.7")
-    testImplementation 'org.assertj:assertj-core:3.24.2'
+    testImplementation 'org.assertj:assertj-core:3.25.1'
 }

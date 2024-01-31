@@ -106,6 +106,9 @@ labels:
   - name: help wanted
     color: '#fef2c0'
 
+  - name: modules/activemq
+    color: '#006b75'
+
   - name: modules/azure
     color: '#006b75'
 
@@ -161,6 +164,9 @@ labels:
     color: '#006b75'
 
   - name: modules/mariadb
+    color: '#006b75'
+
+  - name: modules/minio
     color: '#006b75'
 
   - name: modules/mockserver
@@ -230,6 +236,9 @@ labels:
     color: '#006b75'
 
   - name: modules/vault
+    color: '#006b75'
+
+  - name: modules/yugabytedb
     color: '#006b75'
 
   - name: os/linux

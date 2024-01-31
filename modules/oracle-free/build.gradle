@@ -14,7 +14,7 @@ dependencies {
     testImplementation projects.jdbcTest
     testImplementation 'com.oracle.database.jdbc:ojdbc11:23.3.0.23.09'
 
-    compileOnly 'org.jetbrains:annotations:24.0.1'
+    compileOnly 'org.jetbrains:annotations:24.1.0'
 
     testImplementation testFixtures(projects.r2dbc)
     testRuntimeOnly 'com.oracle.database.r2dbc:oracle-r2dbc:1.2.0'

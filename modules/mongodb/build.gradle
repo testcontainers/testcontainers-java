@@ -6,7 +6,7 @@ dependencies {
     api projects.testcontainers
 
     testImplementation("org.mongodb:mongodb-driver-sync:4.11.1")
-    testImplementation 'org.assertj:assertj-core:3.24.2'
+    testImplementation 'org.assertj:assertj-core:3.25.1'
 }
 
 tasks.japicmp {

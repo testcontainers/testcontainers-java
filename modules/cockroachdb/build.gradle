@@ -6,6 +6,6 @@ dependencies {
     api projects.jdbc
 
     testImplementation projects.jdbcTest
-    testRuntimeOnly 'org.postgresql:postgresql:42.6.0'
-    testImplementation 'org.assertj:assertj-core:3.24.2'
+    testRuntimeOnly 'org.postgresql:postgresql:42.7.1'
+    testImplementation 'org.assertj:assertj-core:3.25.1'
 }

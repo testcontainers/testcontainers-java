@@ -4,6 +4,6 @@ description = "Testcontainers :: Nginx"
 
 dependencies {
     api projects.testcontainers
-    compileOnly 'org.jetbrains:annotations:24.0.1'
-    testImplementation 'org.assertj:assertj-core:3.24.2'
+    compileOnly 'org.jetbrains:annotations:24.1.0'
+    testImplementation 'org.assertj:assertj-core:3.25.1'
 }
