@@ -71,9 +71,9 @@ configurations.all {
 dependencies {
     api 'junit:junit:4.13.2'
     api 'org.slf4j:slf4j-api:1.7.36'
-    compileOnly 'org.jetbrains:annotations:24.0.1'
-    testCompileOnly 'org.jetbrains:annotations:24.0.1'
-    api 'org.apache.commons:commons-compress:1.24.0'
+    compileOnly 'org.jetbrains:annotations:24.1.0'
+    testCompileOnly 'org.jetbrains:annotations:24.1.0'
+    api 'org.apache.commons:commons-compress:1.25.0'
     api ('org.rnorth.duct-tape:duct-tape:1.0.8') {
         exclude(group: 'org.jetbrains', module: 'annotations')
     }
@@ -99,7 +99,7 @@ dependencies {
 
     api 'com.github.docker-java:docker-java-transport-zerodep'
 
-    shaded 'com.google.guava:guava:32.1.3-jre'
+    shaded 'com.google.guava:guava:33.0.0-jre'
     shaded "org.yaml:snakeyaml:1.33"
 
     shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
@@ -110,7 +110,7 @@ dependencies {
         exclude group: 'com.google.guava', module: 'guava'
     }
     testImplementation 'org.apache.httpcomponents:httpclient:4.5.14'
-    testImplementation 'redis.clients:jedis:5.0.2'
+    testImplementation 'redis.clients:jedis:5.1.0'
     testImplementation 'com.rabbitmq:amqp-client:5.20.0'
     testImplementation 'org.mongodb:mongo-java-driver:3.12.14'
 
@@ -120,12 +120,12 @@ dependencies {
     // Synthetic JAR used for MountableFileTest and DirectoryTarResourceTest
     testImplementation files('testlib/repo/fakejar/fakejar/0/fakejar-0.jar')
 
-    testImplementation 'org.assertj:assertj-core:3.24.2'
+    testImplementation 'org.assertj:assertj-core:3.25.1'
 
     jarFileTestCompileOnly "org.projectlombok:lombok:${lombok.version}"
     jarFileTestAnnotationProcessor "org.projectlombok:lombok:${lombok.version}"
     jarFileTestImplementation 'junit:junit:4.13.2'
-    jarFileTestImplementation 'org.assertj:assertj-core:3.24.2'
+    jarFileTestImplementation 'org.assertj:assertj-core:3.25.1'
     jarFileTestImplementation 'org.ow2.asm:asm-debug-all:5.2'
 }
 

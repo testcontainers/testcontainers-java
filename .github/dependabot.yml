@@ -32,6 +32,11 @@ updates:
 
 # Explicit entry for each module
   - package-ecosystem: "gradle"
+    directory: "/modules/activemq"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
     directory: "/modules/azure"
     schedule:
       interval: "weekly"

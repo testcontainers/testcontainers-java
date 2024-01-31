@@ -24,7 +24,9 @@ please contact the Testcontainers team and other users from the Testcontainers c
 In order to run testcontainers against [colima](https://github.com/abiosoft/colima) the env vars below should be set
 
 ```bash
+colima start --network-address
 export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock
+export TESTCONTAINERS_HOST_OVERRIDE=$(colima ls -j | jq -r '.address')
 export DOCKER_HOST="unix://${HOME}/.colima/default/docker.sock"
 ```
 
