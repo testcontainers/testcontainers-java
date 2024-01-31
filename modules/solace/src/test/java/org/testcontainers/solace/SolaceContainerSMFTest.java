@@ -52,7 +52,7 @@ public class SolaceContainerSMFTest {
     public void testSolaceContainerWithCertificates() {
         try (
             // solaceContainerUsageSSL {
-            SolaceContainer solaceContainer = new SolaceContainer("solace/solace-pubsub-standard:10.2")
+            SolaceContainer solaceContainer = new SolaceContainer("solace/solace-pubsub-standard:10.6")
                 .withClientCert(
                     MountableFile.forClasspathResource("solace.pem"),
                     MountableFile.forClasspathResource("rootCA.crt")
