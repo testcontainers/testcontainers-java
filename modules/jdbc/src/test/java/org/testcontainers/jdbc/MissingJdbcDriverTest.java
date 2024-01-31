@@ -59,6 +59,11 @@ public class MissingJdbcDriverTest {
         }
 
         @Override
+        public String getJdbcUrl(String customDatabaseName) {
+            return "";
+        }
+
+        @Override
         public String getUsername() {
             return "root";
         }

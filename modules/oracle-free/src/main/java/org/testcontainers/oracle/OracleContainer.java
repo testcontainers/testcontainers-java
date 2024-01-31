@@ -95,9 +95,14 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     @Override
     public String getJdbcUrl() {
+        return getJdbcUrl(databaseName);
+    }
+
+    @Override
+    public String getJdbcUrl(String customDatabaseName) {
         return isUsingSid()
             ? "jdbc:oracle:thin:" + "@" + getHost() + ":" + getOraclePort() + ":" + getSid()
-            : "jdbc:oracle:thin:" + "@" + getHost() + ":" + getOraclePort() + "/" + getDatabaseName();
+            : "jdbc:oracle:thin:" + "@" + getHost() + ":" + getOraclePort() + "/" + customDatabaseName;
     }
 
     @Override

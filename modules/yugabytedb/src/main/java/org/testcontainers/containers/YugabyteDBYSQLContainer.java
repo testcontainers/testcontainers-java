@@ -87,6 +87,11 @@ public class YugabyteDBYSQLContainer extends JdbcDatabaseContainer<YugabyteDBYSQ
 
     @Override
     public String getJdbcUrl() {
+        return getJdbcUrl(database);
+    }
+
+    @Override
+    public String getJdbcUrl(String customDatabaseName) {
         return (
             JDBC_CONNECT_PREFIX +
             "://" +
@@ -94,7 +99,7 @@ public class YugabyteDBYSQLContainer extends JdbcDatabaseContainer<YugabyteDBYSQ
             ":" +
             getMappedPort(YSQL_PORT) +
             "/" +
-            database +
+            customDatabaseName +
             constructUrlParameters("?", "&")
         );
     }

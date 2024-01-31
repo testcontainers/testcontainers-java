@@ -72,6 +72,13 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
     public abstract String getJdbcUrl();
 
     /**
+     * @return a JDBC URL that may be used to connect to the dockerized DB using a custom database name
+     */
+    public String getJdbcUrl(String customDatabaseName) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
      * @return the database name
      */
     public String getDatabaseName() {
@@ -292,10 +299,22 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
     }
 
     protected String constructUrlParameters(String startCharacter, String delimiter, String endCharacter) {
+        return constructUrlParameters(startCharacter, delimiter, endCharacter, urlParameters);
+    }
+
+    protected String constructUrlParameters(
+        String startCharacter,
+        String delimiter,
+        String endCharacter,
+        Map<String, String> customUrlParameters
+    ) {
         String urlParameters = "";
-        if (!this.urlParameters.isEmpty()) {
-            String additionalParameters =
-                this.urlParameters.entrySet().stream().map(Object::toString).collect(Collectors.joining(delimiter));
+        if (!customUrlParameters.isEmpty()) {
+            String additionalParameters = customUrlParameters
+                .entrySet()
+                .stream()
+                .map(Object::toString)
+                .collect(Collectors.joining(delimiter));
             urlParameters = startCharacter + additionalParameters + endCharacter;
         }
         return urlParameters;

@@ -98,7 +98,12 @@ public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContain
 
     @Override
     public String getJdbcUrl() {
-        return JDBC_URL_PREFIX + getHost() + ":" + getMappedPort(HTTP_PORT) + "/" + databaseName;
+        return getJdbcUrl(databaseName);
+    }
+
+    @Override
+    public String getJdbcUrl(String customDatabaseName) {
+        return JDBC_URL_PREFIX + getHost() + ":" + getMappedPort(HTTP_PORT) + "/" + customDatabaseName;
     }
 
     @Override

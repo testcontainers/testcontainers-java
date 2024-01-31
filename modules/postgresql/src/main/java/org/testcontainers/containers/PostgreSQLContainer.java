@@ -92,6 +92,11 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
 
     @Override
     public String getJdbcUrl() {
+        return getJdbcUrl(databaseName);
+    }
+
+    @Override
+    public String getJdbcUrl(String customDatabaseName) {
         String additionalUrlParams = constructUrlParameters("?", "&");
         return (
             "jdbc:postgresql://" +
@@ -99,7 +104,7 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
             ":" +
             getMappedPort(POSTGRESQL_PORT) +
             "/" +
-            databaseName +
+            customDatabaseName +
             additionalUrlParams
         );
     }

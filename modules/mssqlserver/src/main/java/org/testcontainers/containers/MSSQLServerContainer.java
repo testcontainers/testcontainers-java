@@ -3,6 +3,8 @@ package org.testcontainers.containers;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.LicenseAcceptance;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -26,6 +28,10 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
     public static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
 
     public static final Integer MS_SQL_SERVER_PORT = 1433;
+
+    // https://learn.microsoft.com/en-us/sql/relational-databases/security/authentication-access/principals-database-engine?view=sql-server-ver16#sa-login
+    // Beginning in SQL Server 2005 (9.x), the default database of "sa" is "master"
+    static final String DEFAULT_DATABASE = "master";
 
     static final String DEFAULT_USER = "sa";
 
@@ -106,10 +112,41 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
         return super.constructUrlForConnection(queryString);
     }
 
+    /**
+     * @return jdbc url for connecting to default database
+     */
     @Override
     public String getJdbcUrl() {
-        String additionalUrlParams = constructUrlParameters(";", ";");
+        return getJdbcUrl(urlParameters);
+    }
+
+    /**
+     * @param customDatabaseName database name to connect to
+     * @return jdbc url for connecting to database `customDatabaseName`
+     */
+    @Override
+    public String getJdbcUrl(String customDatabaseName) {
+        // MS SQL supports specifying database name via "database" or "databaseName" property.
+        // so removing both of them, if either of them was set, and setting "databaseName" to `customDatabaseName`
+        // `customUrlParameters` is a copy, so we don't mutate original urlParameters
+        Map<String, String> customUrlParameters = new HashMap<>(urlParameters);
+        String paramDatabase = "database";
+        customUrlParameters.remove(paramDatabase);
+
+        String paramDatabaseName = "databaseName";
+        customUrlParameters.remove(paramDatabaseName);
+        customUrlParameters.put(paramDatabaseName, customDatabaseName);
+
+        return getJdbcUrl(customUrlParameters);
+    }
+
+    private String getJdbcUrl(Map<String, String> customUrlParameters) {
+        String additionalUrlParams = constructUrlParameters(";", ";", "", customUrlParameters);
         return "jdbc:sqlserver://" + getHost() + ":" + getMappedPort(MS_SQL_SERVER_PORT) + additionalUrlParams;
+    }
+
+    public String getDatabaseName() {
+        return DEFAULT_DATABASE;
     }
 
     @Override

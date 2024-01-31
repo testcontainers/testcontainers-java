@@ -79,8 +79,21 @@ public class TiDBContainer extends JdbcDatabaseContainer<TiDBContainer> {
 
     @Override
     public String getJdbcUrl() {
+        return getJdbcUrl(databaseName);
+    }
+
+    @Override
+    public String getJdbcUrl(String customDatabaseName) {
         String additionalUrlParams = constructUrlParameters("?", "&");
-        return "jdbc:mysql://" + getHost() + ":" + getMappedPort(TIDB_PORT) + "/" + databaseName + additionalUrlParams;
+        return (
+            "jdbc:mysql://" +
+            getHost() +
+            ":" +
+            getMappedPort(TIDB_PORT) +
+            "/" +
+            customDatabaseName +
+            additionalUrlParams
+        );
     }
 
     @Override

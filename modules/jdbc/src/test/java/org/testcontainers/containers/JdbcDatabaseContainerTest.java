@@ -37,6 +37,11 @@ public class JdbcDatabaseContainerTest {
         }
 
         @Override
+        public String getJdbcUrl(String customDatabaseName) {
+            return null;
+        }
+
+        @Override
         public String getUsername() {
             return null;
         }
