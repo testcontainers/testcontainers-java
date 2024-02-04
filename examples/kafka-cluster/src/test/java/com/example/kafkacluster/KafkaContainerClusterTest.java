@@ -53,7 +53,7 @@ class KafkaContainerClusterTest {
 
     @Test
     void testKafkaContainerKraftClusterAfterConfluentPlatform740() throws Exception {
-        try (KafkaContainerKraftCluster cluster = new KafkaContainerKraftCluster("7.4.0", 3, 2)) {
+        try (KafkaContainerKraftCluster cluster = new KafkaContainerKraftCluster("7.5.3", 3, 2)) {
             cluster.start();
             String bootstrapServers = cluster.getBootstrapServers();
 

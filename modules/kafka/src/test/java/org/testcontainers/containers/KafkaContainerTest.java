@@ -37,12 +37,12 @@ import static org.assertj.core.api.Assertions.tuple;
 
 public class KafkaContainerTest {
 
-    private static final DockerImageName KAFKA_TEST_IMAGE = DockerImageName.parse("confluentinc/cp-kafka:6.2.1");
-
-    private static final DockerImageName KAFKA_KRAFT_TEST_IMAGE = DockerImageName.parse("confluentinc/cp-kafka:7.0.1");
+    private static final DockerImageName KAFKA_TEST_IMAGE = DockerImageName.parse(
+        "confluentinc/cp-kafka:7.5.3"
+    );
 
     private static final DockerImageName ZOOKEEPER_TEST_IMAGE = DockerImageName.parse(
-        "confluentinc/cp-zookeeper:4.0.0"
+        "confluentinc/cp-zookeeper:7.5.3"
     );
 
     private final ImmutableMap<String, String> properties = ImmutableMap.of(
@@ -66,7 +66,7 @@ public class KafkaContainerTest {
     public void testUsageWithSpecificImage() throws Exception {
         try (
             // constructorWithVersion {
-            KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:6.2.1"))
+            KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.5.3"))
             // }
         ) {
             kafka.start();
@@ -80,7 +80,7 @@ public class KafkaContainerTest {
 
     @Test
     public void testUsageWithVersion() throws Exception {
-        try (KafkaContainer kafka = new KafkaContainer("6.2.1")) {
+        try (KafkaContainer kafka = new KafkaContainer("7.5.3")) {
             kafka.start();
             testKafkaFunctionality(kafka.getBootstrapServers());
         }
@@ -91,7 +91,7 @@ public class KafkaContainerTest {
         try (
             Network network = Network.newNetwork();
             // withExternalZookeeper {
-            KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:6.2.1"))
+            KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.5.3"))
                 .withNetwork(network)
                 .withExternalZookeeper("zookeeper:2181");
             // }
@@ -99,7 +99,7 @@ public class KafkaContainerTest {
             GenericContainer<?> zookeeper = new GenericContainer<>(ZOOKEEPER_TEST_IMAGE)
                 .withNetwork(network)
                 .withNetworkAliases("zookeeper")
-                .withEnv("ZOOKEEPER_CLIENT_PORT", "2181");
+                .withEnv("ZOOKEEPER_CLIENT_PORT", "2181")
         ) {
             zookeeper.start();
             kafka.start();
@@ -110,7 +110,7 @@ public class KafkaContainerTest {
 
     @Test
     public void testConfluentPlatformVersion7() throws Exception {
-        try (KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.2.2"))) {
+        try (KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.5.3"))) {
             kafka.start();
             testKafkaFunctionality(kafka.getBootstrapServers());
         }
@@ -156,7 +156,7 @@ public class KafkaContainerTest {
     public void testUsageKraftAfterConfluentPlatformVersion74() throws Exception {
         try (
             // withKraftMode {
-            KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.4.0")).withKraft()
+            KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.5.3")).withKraft()
             // }
         ) {
             kafka.start();
@@ -167,7 +167,7 @@ public class KafkaContainerTest {
     @Test
     public void testNotSupportedKraftVersion() {
         try (
-            KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:6.2.1")).withKraft()
+            KafkaContainer ignored = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:6.2.1")).withKraft()
         ) {} catch (IllegalArgumentException e) {
             assertThat(e.getMessage())
                 .isEqualTo(
@@ -179,19 +179,19 @@ public class KafkaContainerTest {
     @Test
     public void testKraftZookeeperMutualExclusion() {
         try (
-            KafkaContainer kafka = new KafkaContainer(KAFKA_KRAFT_TEST_IMAGE).withKraft().withExternalZookeeper("")
+            KafkaContainer ignored = new KafkaContainer(KAFKA_TEST_IMAGE).withKraft().withExternalZookeeper("")
         ) {} catch (IllegalStateException e) {
             assertThat(e.getMessage()).isEqualTo("Cannot configure Zookeeper when using Kraft mode");
         }
 
         try (
-            KafkaContainer kafka = new KafkaContainer(KAFKA_KRAFT_TEST_IMAGE).withExternalZookeeper("").withKraft()
+            KafkaContainer ignored = new KafkaContainer(KAFKA_TEST_IMAGE).withExternalZookeeper("").withKraft()
         ) {} catch (IllegalStateException e) {
             assertThat(e.getMessage()).isEqualTo("Cannot configure Kraft mode when Zookeeper configured");
         }
 
         try (
-            KafkaContainer kafka = new KafkaContainer(KAFKA_KRAFT_TEST_IMAGE).withKraft().withEmbeddedZookeeper()
+            KafkaContainer ignored = new KafkaContainer(KAFKA_TEST_IMAGE).withKraft().withEmbeddedZookeeper()
         ) {} catch (IllegalStateException e) {
             assertThat(e.getMessage()).isEqualTo("Cannot configure Zookeeper when using Kraft mode");
         }
@@ -199,7 +199,7 @@ public class KafkaContainerTest {
 
     @Test
     public void testKraftPrecedenceOverEmbeddedZookeeper() throws Exception {
-        try (KafkaContainer kafka = new KafkaContainer(KAFKA_KRAFT_TEST_IMAGE).withEmbeddedZookeeper().withKraft()) {
+        try (KafkaContainer kafka = new KafkaContainer(KAFKA_TEST_IMAGE).withEmbeddedZookeeper().withKraft()) {
             kafka.start();
             testKafkaFunctionality(kafka.getBootstrapServers());
         }
@@ -210,15 +210,13 @@ public class KafkaContainerTest {
         try (
             Network network = Network.newNetwork();
             // registerListener {
-            KafkaContainer kafka = new KafkaContainer(KAFKA_KRAFT_TEST_IMAGE)
+            KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.5.3"))
                 .withListener(() -> "kafka:19092")
                 .withNetwork(network);
             // }
             // createKCatContainer {
-            GenericContainer<?> kcat = new GenericContainer<>("confluentinc/cp-kcat:7.4.1")
-                .withCreateContainerCmdModifier(cmd -> {
-                    cmd.withEntrypoint("sh");
-                })
+            GenericContainer<?> kcat = new GenericContainer<>("confluentinc/cp-kcat:7.5.3")
+                .withCreateContainerCmdModifier(cmd -> cmd.withEntrypoint("sh"))
                 .withCopyToContainer(Transferable.of("Message produced by kcat"), "/data/msgs.txt")
                 .withNetwork(network)
                 .withCommand("-c", "tail -f /dev/null")
@@ -240,7 +238,7 @@ public class KafkaContainerTest {
     @Test
     public void shouldConfigureAuthenticationWithSaslUsingJaas() {
         try (
-            KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:6.2.1"))
+            KafkaContainer kafka = new KafkaContainer(KAFKA_TEST_IMAGE)
                 .withEnv("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", "PLAINTEXT:SASL_PLAINTEXT,BROKER:SASL_PLAINTEXT")
                 .withEnv("KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL", "PLAIN")
                 .withEnv("KAFKA_LISTENER_NAME_PLAINTEXT_SASL_ENABLED_MECHANISMS", "PLAIN")
@@ -258,7 +256,7 @@ public class KafkaContainerTest {
     @Test
     public void enableSaslWithUnsuccessfulTopicCreation() {
         try (
-            KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:6.2.1"))
+            KafkaContainer kafka = new KafkaContainer(KAFKA_TEST_IMAGE)
                 .withEnv("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", "PLAINTEXT:SASL_PLAINTEXT,BROKER:SASL_PLAINTEXT")
                 .withEnv("KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL", "PLAIN")
                 .withEnv("KAFKA_LISTENER_NAME_PLAINTEXT_SASL_ENABLED_MECHANISMS", "PLAIN")
@@ -288,10 +286,9 @@ public class KafkaContainerTest {
 
             Awaitility
                 .await()
-                .untilAsserted(() -> {
-                    assertThatThrownBy(() -> adminClient.createTopics(topics).all().get(30, TimeUnit.SECONDS))
-                        .hasCauseInstanceOf(TopicAuthorizationException.class);
-                });
+                .untilAsserted(() -> assertThatThrownBy(() ->
+                    adminClient.createTopics(topics).all().get(30, TimeUnit.SECONDS))
+                    .hasCauseInstanceOf(TopicAuthorizationException.class));
         }
     }
 
@@ -300,7 +297,7 @@ public class KafkaContainerTest {
     public void enableSaslAndWithAuthenticationError() {
         String jaasConfig = getJaasConfig();
         try (
-            KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:6.2.1"))
+            KafkaContainer kafka = new KafkaContainer(KAFKA_TEST_IMAGE)
                 .withEnv("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", "PLAINTEXT:SASL_PLAINTEXT,BROKER:SASL_PLAINTEXT")
                 .withEnv("KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL", "PLAIN")
                 .withEnv("KAFKA_LISTENER_NAME_PLAINTEXT_SASL_ENABLED_MECHANISMS", "PLAIN")
@@ -328,21 +325,19 @@ public class KafkaContainerTest {
 
             Awaitility
                 .await()
-                .untilAsserted(() -> {
-                    assertThatThrownBy(() -> adminClient.createTopics(topics).all().get(30, TimeUnit.SECONDS))
-                        .hasCauseInstanceOf(SaslAuthenticationException.class);
-                });
+                .untilAsserted(() -> assertThatThrownBy(() ->
+                    adminClient.createTopics(topics).all().get(30, TimeUnit.SECONDS))
+                    .hasCauseInstanceOf(SaslAuthenticationException.class));
         }
     }
 
     private static String getJaasConfig() {
-        String jaasConfig =
+        return
             "org.apache.kafka.common.security.plain.PlainLoginModule required " +
             "username=\"admin\" " +
             "password=\"admin\" " +
             "user_admin=\"admin\" " +
             "user_test=\"secret\";";
-        return jaasConfig;
     }
 
     private void testKafkaFunctionality(String bootstrapServers) throws Exception {
@@ -398,7 +393,7 @@ public class KafkaContainerTest {
                 consumerProperties,
                 new StringDeserializer(),
                 new StringDeserializer()
-            );
+            )
         ) {
             String topicName = "messages-" + UUID.randomUUID();
 

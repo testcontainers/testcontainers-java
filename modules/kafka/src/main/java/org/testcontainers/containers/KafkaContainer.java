@@ -31,7 +31,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("confluentinc/cp-kafka");
 
-    private static final String DEFAULT_TAG = "5.4.3";
+    private static final String DEFAULT_TAG = "7.5.3";
 
     public static final int KAFKA_PORT = 9093;
 
