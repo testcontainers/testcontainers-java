@@ -18,7 +18,7 @@ dependencies {
     testImplementation("org.apache.httpcomponents:httpclient:4.5.14")
     testImplementation("ch.qos.logback:logback-classic:1.4.14")
     testImplementation 'org.assertj:assertj-core:3.25.1'
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.1")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.2")
 }
 
 test {
