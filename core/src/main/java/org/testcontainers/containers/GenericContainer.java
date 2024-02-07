@@ -208,6 +208,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Setter(AccessLevel.NONE)
     private boolean shouldBeReused = false;
 
+    @Nullable
+    private String customReuseHash;
+
     private boolean hostAccessible = false;
 
     private final Set<CreateContainerCmdModifier> createContainerCmdModifiers = loadCreateContainerCmdCustomizers();
@@ -405,7 +408,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                         .getLabels()
                         .put(COPIED_FILES_HASH_LABEL, Long.toHexString(hashCopiedFiles().getValue()));
 
-                    String hash = hash(createCommand);
+                    String hash = customReuseHash == null ? hash(createCommand) : customReuseHash;
 
                     containerId = findContainerForReuse(hash).orElse(null);
 
@@ -1482,6 +1485,18 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @UnstableAPI
     public SELF withReuse(boolean reusable) {
         this.shouldBeReused = reusable;
+        return self();
+    }
+
+    /**
+     * Use provided hash for a container reuse instead of calculating one from the container configuration.
+     *
+     * @param customReuseHash custom hash
+     * @return this
+     */
+    @UnstableAPI
+    public SELF withCustomReuseHash(String customReuseHash) {
+        this.customReuseHash = customReuseHash;
         return self();
     }
 

@@ -301,6 +301,30 @@ public class ReusabilityUnitTests {
                     }
                 );
         }
+
+        @Test
+        public void shouldUseCustomHashIfProvided() {
+            Mockito.doReturn(true).when(TestcontainersConfiguration.getInstance()).environmentSupportsReuse();
+            AtomicReference<CreateContainerCmd> commandRef = new AtomicReference<>();
+            String containerId = randomContainerId();
+            when(client.createContainerCmd(any())).then(createContainerAnswer(containerId, commandRef::set));
+            when(client.listContainersCmd()).then(listContainersAnswer());
+            when(client.startContainerCmd(containerId)).then(startContainerAnswer());
+            when(client.inspectContainerCmd(containerId)).then(inspectContainerAnswer());
+
+            GenericContainer container = makeReusable(new GenericContainer(TestImages.TINY_IMAGE))
+                .withCustomReuseHash("custom_hash");
+            container.start();
+
+            assertThat(commandRef).isNotNull();
+            assertThat(commandRef.get().getLabels())
+                .hasEntrySatisfying(
+                    GenericContainer.HASH_LABEL,
+                    newHash -> {
+                        assertThat(newHash).isEqualTo("custom_hash");
+                    }
+                );
+        }
     }
 
     @RunWith(Parameterized.class)
