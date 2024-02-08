@@ -7,6 +7,8 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.util.EntityUtils;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
@@ -30,9 +32,6 @@ import org.testcontainers.utility.MountableFile;
 import java.io.IOException;
 
 import javax.net.ssl.SSLHandshakeException;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
 
 public class ElasticsearchContainerTest {
 
@@ -378,6 +377,7 @@ public class ElasticsearchContainerTest {
 
     @Test
     public void testElasticsearch7CanHaveSecurityEnabledAndUseSslContext() throws Exception {
+        String customizedCertPath = "/usr/share/elasticsearch/config/certs/http_ca_customized.crt";
         try (
             ElasticsearchContainer container = new ElasticsearchContainer(
                 "docker.elastic.co/elasticsearch/elasticsearch:7.17.15"
@@ -390,10 +390,7 @@ public class ElasticsearchContainerTest {
                     "xpack.security.http.ssl.certificate",
                     "/usr/share/elasticsearch/config/certs/elasticsearch.crt"
                 )
-                .withEnv(
-                    "xpack.security.http.ssl.certificate_authorities",
-                    "/usr/share/elasticsearch/config/certs/http_ca.crt"
-                )
+                .withEnv("xpack.security.http.ssl.certificate_authorities", customizedCertPath)
                 // these lines show how certificates can be created self-made way
                 // obviously this shouldn't be done in prod environment, where proper and officially signed keys should be present
                 .withCopyToContainer(
@@ -401,8 +398,9 @@ public class ElasticsearchContainerTest {
                         "#!/bin/bash\n" +
                         "mkdir -p /usr/share/elasticsearch/config/certs;" +
                         "openssl req -x509 -newkey rsa:4096 -keyout /usr/share/elasticsearch/config/certs/elasticsearch.key -out /usr/share/elasticsearch/config/certs/elasticsearch.crt -days 365 -nodes -subj \"/CN=localhost\";" +
-                        "openssl x509 -outform der -in /usr/share/elasticsearch/config/certs/elasticsearch.crt -out /usr/share/elasticsearch/config/certs/http_ca.crt;" +
-                        "chown -R elasticsearch /usr/share/elasticsearch/config/certs/",
+                        "openssl x509 -outform der -in /usr/share/elasticsearch/config/certs/elasticsearch.crt -out " +
+                        customizedCertPath +
+                        "; chown -R elasticsearch /usr/share/elasticsearch/config/certs/",
                         555
                     ),
                     "/usr/share/elasticsearch/generate-certs.sh"
@@ -412,7 +410,8 @@ public class ElasticsearchContainerTest {
                     "sh",
                     "-c",
                     "/usr/share/elasticsearch/generate-certs.sh && /usr/local/bin/docker-entrypoint.sh"
-                );
+                )
+                .withCertPath(customizedCertPath)
         ) {
             container.start();
             assertClusterHealthResponse(container);

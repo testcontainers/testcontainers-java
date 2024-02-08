@@ -65,6 +65,9 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 
     private static final DockerImageName ELASTICSEARCH_IMAGE_NAME = DockerImageName.parse("elasticsearch");
 
+    // default location of the automatically generated self-signed HTTP cert for versions >= 8
+    public static final String DEFAULT_CERT_PATH = "/usr/share/elasticsearch/config/certs/http_ca.crt";
+
     /**
      * Elasticsearch Default version
      */
@@ -76,7 +79,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 
     private final boolean isAtLeastMajorVersion8;
 
-    private String certPath = "/usr/share/elasticsearch/config/certs/http_ca.crt";
+    private String certPath = "";
 
     /**
      * @deprecated use {@link #ElasticsearchContainer(DockerImageName)} instead
@@ -135,6 +138,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
         setWaitStrategy(new LogMessageWaitStrategy().withRegEx(regex));
         if (isAtLeastMajorVersion8) {
             withPassword(ELASTICSEARCH_DEFAULT_PASSWORD);
+            withCertPath(DEFAULT_CERT_PATH);
         }
     }
 
