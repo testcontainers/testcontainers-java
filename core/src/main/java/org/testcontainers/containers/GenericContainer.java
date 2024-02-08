@@ -586,7 +586,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @UnstableAPI
     @SneakyThrows(JsonProcessingException.class)
-    final String hash(CreateContainerCmd createCommand) {
+    protected String hash(CreateContainerCmd createCommand) {
         DefaultDockerClientConfig dockerClientConfig = DefaultDockerClientConfig.createDefaultConfigBuilder().build();
 
         byte[] commandJson = dockerClientConfig
