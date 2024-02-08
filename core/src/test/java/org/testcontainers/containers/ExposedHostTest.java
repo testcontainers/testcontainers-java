@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ExposedHostTest {
 
     private static HttpServer server;
+
     private static Network network;
 
     @BeforeClass
@@ -190,14 +191,16 @@ public class ExposedHostTest {
             .listNetworksCmd()
             .exec()
             .stream()
-            .filter(network ->
-                network.getName().equals(name.toString()) &&
-                network.getLabels().equals(DockerClientFactory.DEFAULT_LABELS)
-            )
+            .filter(network -> {
+                return (
+                    network.getName().equals(name.toString()) &&
+                    network.getLabels().equals(DockerClientFactory.DEFAULT_LABELS)
+                );
+            })
             .map(com.github.dockerjava.api.model.Network::getId)
             .findFirst()
-            .orElseGet(() ->
-                DockerClientFactory
+            .orElseGet(() -> {
+                return DockerClientFactory
                     .instance()
                     .client()
                     .createNetworkCmd()
@@ -205,8 +208,8 @@ public class ExposedHostTest {
                     .withCheckDuplicate(true)
                     .withLabels(DockerClientFactory.DEFAULT_LABELS)
                     .exec()
-                    .getId()
-            );
+                    .getId();
+            });
 
         return new Network() {
             @Override
