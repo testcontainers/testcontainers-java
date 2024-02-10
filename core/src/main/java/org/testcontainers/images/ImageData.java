@@ -18,8 +18,9 @@ public class ImageData {
 
     static ImageData from(InspectImageResponse inspectImageResponse) {
         final String created = inspectImageResponse.getCreated();
-        final Instant createdInstant =
-            ((created == null) || created.isEmpty()) ? Instant.EPOCH : ZonedDateTime.parse(created).toInstant();
+        final Instant createdInstant = ((created == null) || created.isEmpty())
+            ? Instant.EPOCH
+            : ZonedDateTime.parse(created).toInstant();
         return ImageData.builder().createdAt(createdInstant).build();
     }
 
