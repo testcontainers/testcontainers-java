@@ -24,6 +24,8 @@ public class ImageData {
     }
 
     static ImageData from(Image image) {
-        return ImageData.builder().createdAt(Instant.ofEpochSecond(image.getCreated())).build();
+        final Long created = image.getCreated();
+        final Instant createdInstant = (created == null) ? Instant.EPOCH : Instant.ofEpochSecond(created);
+        return ImageData.builder().createdAt(createdInstant).build();
     }
 }
