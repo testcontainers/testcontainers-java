@@ -106,6 +106,9 @@ labels:
   - name: help wanted
     color: '#fef2c0'
 
+  - name: modules/activemq
+    color: '#006b75'
+
   - name: modules/azure
     color: '#006b75'
 
