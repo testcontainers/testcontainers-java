@@ -1,0 +1,14 @@
+plugins {
+    id 'testcontainers.shading'
+    id 'testcontainers.java-conventions'
+    id 'testcontainers.japicmp'
+    id 'testcontainers.publishing'
+}
+
+javadoc {
+    dependsOn delombok
+    source = delombok.outputs
+}
+
+// Ensure that Javadoc generation is always tested
+check.dependsOn(javadoc)

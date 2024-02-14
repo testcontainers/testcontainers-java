@@ -1,7 +1,9 @@
+apply plugin: 'testcontainers.module'
+
 description = "Testcontainers :: Nginx"
 
 dependencies {
-    api project(':testcontainers')
+    api projects.testcontainers
     compileOnly 'org.jetbrains:annotations:24.1.0'
     testImplementation 'org.assertj:assertj-core:3.25.1'
 }

@@ -1,7 +1,9 @@
+apply plugin: 'testcontainers.module'
+
 description = "Testcontainers :: Orientdb"
 
 dependencies {
-    api project(":testcontainers")
+    api projects.testcontainers
 
     api "com.orientechnologies:orientdb-client:3.2.26"
 

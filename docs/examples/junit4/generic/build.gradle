@@ -1,3 +1,7 @@
+plugins {
+    id 'testcontainers.java-conventions'
+}
+
 description = "Examples for docs"
 
 dependencies {

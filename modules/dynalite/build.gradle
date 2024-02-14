@@ -1,7 +1,9 @@
+apply plugin: 'testcontainers.module'
+
 description = "Testcontainers :: Dynalite (deprecated)"
 
 dependencies {
-    api project(':testcontainers')
+    api projects.testcontainers
 
     compileOnly 'com.amazonaws:aws-java-sdk-dynamodb:1.12.643'
     testImplementation 'com.amazonaws:aws-java-sdk-dynamodb:1.12.643'

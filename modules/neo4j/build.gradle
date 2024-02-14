@@ -1,3 +1,5 @@
+apply plugin: 'testcontainers.module'
+
 description = "Testcontainers :: Neo4j"
 
 def generatedResourcesDir = new File(project.buildDir, "generated-resources")
@@ -31,7 +33,7 @@ processTestResources.dependsOn customNeo4jPluginJar
 dependencies {
     customNeo4jPluginCompileOnly "org.neo4j:neo4j:3.5.35"
 
-    api project(":testcontainers")
+    api projects.testcontainers
 
     testImplementation 'org.neo4j.driver:neo4j-java-driver:4.4.13'
     testImplementation 'org.assertj:assertj-core:3.25.2'

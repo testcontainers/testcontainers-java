@@ -1,0 +1,10 @@
+plugins {
+    id 'java'
+    id 'checkstyle'
+}
+
+checkstyle {
+    toolVersion = "10.12.4"
+    def rootProjectPath = rootProject.name == 'testcontainers-java' ? "" : "../"
+    configFile = rootProject.layout.projectDirectory.file(rootProjectPath + "config/checkstyle/checkstyle.xml").asFile
+}

@@ -1,3 +1,9 @@
+plugins {
+    id 'me.champeau.gradle.japicmp'
+}
+
+tasks.register('japicmp', me.champeau.gradle.japicmp.JapicmpTask)
+
 configurations {
     baseline
 }
@@ -34,3 +40,4 @@ tasks.japicmp {
 if (!org.gradle.internal.os.OperatingSystem.current().isWindows()) {
     project.tasks.check.dependsOn(japicmp)
 }
+

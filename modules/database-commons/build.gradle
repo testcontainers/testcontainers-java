@@ -1,7 +1,9 @@
+apply plugin: 'testcontainers.module'
+
 description = "Testcontainers :: Database-Commons"
 
 dependencies {
-    api project(':testcontainers')
+    api projects.testcontainers
 
     testImplementation 'org.assertj:assertj-core:3.25.1'
 }

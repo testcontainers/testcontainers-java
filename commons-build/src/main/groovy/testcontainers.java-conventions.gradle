@@ -1,0 +1,52 @@
+plugins {
+    id 'java'
+    id 'idea'
+    id 'testcontainers.checkstyle'
+    id 'testcontainers.lombok'
+    id 'testcontainers.spotless'
+}
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+    compileJava.options.encoding = 'UTF-8'
+    compileTestJava.options.encoding = 'UTF-8'
+    javadoc.options.encoding = 'UTF-8'
+}
+
+jar {
+    manifest {
+        attributes('Implementation-Version': project.getProperty("version"))
+    }
+}
+
+test {
+    defaultCharacterEncoding = "UTF-8"
+    testLogging {
+        displayGranularity 1
+        showStackTraces = true
+        exceptionFormat = 'full'
+        events "STARTED", "PASSED", "FAILED", "SKIPPED"
+    }
+    ext.isCI = System.getenv("CI") != null
+    if (isCI) {
+        retry {
+            maxRetries = 2
+            maxFailures = 5
+            failOnPassedAfterRetry = false
+        }
+    }
+}
+
+tasks.withType(Test).all {
+    reports {
+        junitXml.outputPerTestCase = true
+    }
+}

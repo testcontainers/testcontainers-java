@@ -1,7 +1,9 @@
+apply plugin: 'testcontainers.module'
+
 description = "Testcontainers :: Solace"
 
 dependencies {
-    api project(':testcontainers')
+    api projects.testcontainers
 
     shaded 'org.awaitility:awaitility:4.2.0'
 

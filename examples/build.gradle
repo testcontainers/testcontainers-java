@@ -1,21 +1,15 @@
 // empty build.gradle for dependabot
 plugins {
-    id 'com.diffplug.spotless' version '6.13.0' apply false
+    id 'testcontainers.java-conventions'
 }
 
 apply from: "$rootDir/../gradle/ci-support.gradle"
 
 subprojects {
-    apply plugin:"java"
-    apply from: "$rootDir/../gradle/spotless.gradle"
-    apply plugin: 'checkstyle'
+    apply plugin: 'java'
+    apply plugin: 'testcontainers.java-conventions'
 
     repositories {
         mavenCentral()
-    }
-
-    checkstyle {
-        toolVersion = "9.3"
-        configFile = rootProject.file('../config/checkstyle/checkstyle.xml')
     }
 }

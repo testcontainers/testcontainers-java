@@ -11,10 +11,7 @@ buildscript {
 }
 
 plugins {
-    id 'io.franzbecker.gradle-lombok' version '5.0.0'
-    id 'com.github.johnrengelman.shadow' version '8.1.1'
-    id 'me.champeau.gradle.japicmp' version '0.4.2' apply false
-    id 'com.diffplug.spotless' version '6.13.0' apply false
+    id 'testcontainers.java-conventions'
 }
 
 apply from: "$rootDir/gradle/ci-support.gradle"
@@ -27,19 +24,8 @@ captainHook {
 
 subprojects {
     apply plugin: 'java-library'
-    apply plugin: 'idea'
-    apply plugin: 'io.franzbecker.gradle-lombok'
-    apply from: "$rootDir/gradle/shading.gradle"
-    apply from: "$rootDir/gradle/spotless.gradle"
-    apply plugin: 'checkstyle'
 
     group = "org.testcontainers"
-
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
-    compileJava.options.encoding = 'UTF-8'
-    compileTestJava.options.encoding = 'UTF-8'
-    javadoc.options.encoding = 'UTF-8'
 
     repositories {
         mavenCentral()
@@ -50,83 +36,7 @@ subprojects {
         api.extendsFrom(provided)
     }
 
-    lombok {
-        version = '1.18.30'
-    }
-
-
-    task delombok(type: io.franzbecker.gradle.lombok.task.DelombokTask) {
-        outputs.cacheIf {
-            true
-        }
-        argumentProviders.addAll(
-            new org.testcontainers.build.DelombokArgumentProvider(srcDirs: project.sourceSets.main.java.srcDirs, outputDir: file("$buildDir/delombok"))
-        )
-    }
-    delombok.onlyIf {
-        project.sourceSets.main.java.srcDirs.find { it.exists() }
-    }
-
-    // specific modules should be excluded from publication
-    if ( ! ["test-support", "jdbc-test"].contains(it.name) && !it.path.startsWith(":docs:") && it != project(":docs") ) {
-        apply from: "$rootDir/gradle/publishing.gradle"
-
-        if (it.name != "bom") {
-            apply plugin: "me.champeau.gradle.japicmp"
-            tasks.register('japicmp', me.champeau.gradle.japicmp.JapicmpTask)
-            apply from: "$rootDir/gradle/japicmp.gradle"
-        }
-    }
-
-    test {
-        defaultCharacterEncoding = "UTF-8"
-        testLogging {
-            displayGranularity 1
-            showStackTraces = true
-            exceptionFormat = 'full'
-            events "STARTED", "PASSED", "FAILED", "SKIPPED"
-        }
-        ext.isCI = System.getenv("CI") != null
-        if (isCI) {
-            retry {
-                maxRetries = 2
-                maxFailures = 5
-                failOnPassedAfterRetry = false
-            }
-        }
-    }
-
-    tasks.withType(Test).all {
-        reports {
-            junitXml.outputPerTestCase = true
-        }
-    }
-
-    // Ensure that Javadoc generation is always tested
-    check.dependsOn(javadoc)
-
-    def postCheckCommand = properties["postCheckCommand"]
-    if (postCheckCommand) {
-        check.finalizedBy(tasks.create("postCheckExec", Exec) {
-            if (org.gradle.internal.os.OperatingSystem.current().isWindows()) {
-                commandLine('cmd', '/c', postCheckCommand)
-            } else {
-                commandLine('sh', '-c', postCheckCommand)
-            }
-        })
-    }
-
-    javadoc {
-        dependsOn delombok
-        source = delombok.outputs
-    }
-
     dependencies {
         testImplementation 'ch.qos.logback:logback-classic:1.3.14'
-    }
-
-    checkstyle {
-        toolVersion = "9.3"
-        configFile = rootProject.file('config/checkstyle/checkstyle.xml')
     }
 }

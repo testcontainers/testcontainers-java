@@ -1,4 +1,6 @@
-apply plugin: 'maven-publish'
+plugins {
+    id 'maven-publish'
+}
 
 task sourceJar(type: Jar) {
     archiveClassifier.set( 'sources')

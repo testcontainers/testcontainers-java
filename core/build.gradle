@@ -1,4 +1,9 @@
+plugins {
+    id 'testcontainers.module'
+}
+
 apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'testcontainers.module'
 
 description = "Testcontainers Core"
 
@@ -9,12 +14,6 @@ sourceSets {
 test.maxParallelForks = 4
 
 idea.module.testSourceDirs += sourceSets.jarFileTest.allSource.srcDirs
-
-jar {
-    manifest {
-        attributes('Implementation-Version': project.getProperty("version"))
-    }
-}
 
 shadowJar {
     [

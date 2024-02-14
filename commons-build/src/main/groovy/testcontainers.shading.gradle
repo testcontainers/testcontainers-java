@@ -1,11 +1,14 @@
 import java.util.jar.JarFile
 
-apply plugin: 'com.github.johnrengelman.shadow'
+plugins {
+    id 'com.github.johnrengelman.shadow'
+}
 
 configurations {
     shaded
     [apiElements, implementation, compileOnly, testCompile]*.extendsFrom shaded
 }
+
 configurations.api.canBeResolved = true
 
 shadowJar {
@@ -68,3 +71,4 @@ static Set<Project> findShadedProjects(Project project) {
 
     return dependencies + dependencies.collectMany { it -> findShadedProjects(it) }
 }
+

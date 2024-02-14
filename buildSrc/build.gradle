@@ -5,3 +5,12 @@ plugins {
 repositories {
     mavenCentral()
 }
+
+gradlePlugin {
+    plugins {
+        comparePomPlugin {
+            id = "org.testcontainers.comparepom"
+            implementationClass = "org.testcontainers.build.ComparePOMWithLatestReleasedTask"
+        }
+    }
+}

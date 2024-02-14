@@ -1,7 +1,9 @@
+apply plugin: 'testcontainers.module'
+
 description = "Testcontainers :: Consul"
 
 dependencies {
-    api project(':testcontainers')
+    api projects.testcontainers
 
     testImplementation 'com.ecwid.consul:consul-api:1.4.5'
     testImplementation 'io.rest-assured:rest-assured:5.4.0'

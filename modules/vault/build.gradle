@@ -1,7 +1,9 @@
+apply plugin: 'testcontainers.module'
+
 description = "Testcontainers :: Vault"
 
 dependencies {
-    api project(':testcontainers')
+    api projects.testcontainers
 
     testImplementation 'com.bettercloud:vault-java-driver:5.1.0'
     testImplementation 'io.rest-assured:rest-assured:5.4.0'
