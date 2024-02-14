@@ -79,7 +79,9 @@ public class RegistryAuthLocator {
             .getenv()
             .getOrDefault("DOCKER_CONFIG", System.getProperty("user.home") + "/.docker");
         this.configFile = new File(dockerConfigLocation + "/config.json");
-        this.configEnv = System.getenv(DOCKER_AUTH_ENV_VAR);
+        this.configEnv = TestcontainersConfiguration
+            .getInstance()
+            .getEnvVarOrProperty(DOCKER_AUTH_ENV_VAR, null);
         this.commandPathPrefix = "";
         this.commandExtension = "";
 

@@ -54,7 +54,9 @@ public class DockerMachineClient {
         String ls = CommandLine.runShellCommand(executableName, "ls", "-q");
         List<String> machineNames = Arrays.asList(ls.split("\n"));
 
-        String envMachineName = System.getenv("DOCKER_MACHINE_NAME");
+        String envMachineName = TestcontainersConfiguration
+            .getInstance()
+            .getEnvVarOrProperty("machine.name",null);
 
         if (machineNames.contains(envMachineName)) {
             LOGGER.debug("Using docker-machine set in DOCKER_MACHINE_NAME: {}", envMachineName);

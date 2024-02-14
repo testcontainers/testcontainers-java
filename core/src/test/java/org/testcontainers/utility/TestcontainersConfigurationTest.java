@@ -103,7 +103,7 @@ public class TestcontainersConfigurationTest {
     public void shouldReadDockerSettingsFromEnvironmentWithoutTestcontainersPrefix() {
         userProperties.remove("docker.foo");
         environment.put("DOCKER_FOO", "some value");
-        assertThat(newConfig().getEnvVarOrUserProperty("docker.foo", "default"))
+        assertThat(newConfig().getEnvVarOrProperty("docker.foo", "default"))
             .as("reads unprefixed env vars for docker. settings")
             .isEqualTo("some value");
     }
@@ -112,7 +112,7 @@ public class TestcontainersConfigurationTest {
     public void shouldNotReadDockerSettingsFromEnvironmentWithTestcontainersPrefix() {
         userProperties.remove("docker.foo");
         environment.put("TESTCONTAINERS_DOCKER_FOO", "some value");
-        assertThat(newConfig().getEnvVarOrUserProperty("docker.foo", "default"))
+        assertThat(newConfig().getEnvVarOrProperty("docker.foo", "default"))
             .as("reads unprefixed env vars for docker. settings")
             .isEqualTo("default");
     }
@@ -121,7 +121,7 @@ public class TestcontainersConfigurationTest {
     public void shouldReadDockerSettingsFromUserProperties() {
         environment.remove("DOCKER_FOO");
         userProperties.put("docker.foo", "some value");
-        assertThat(newConfig().getEnvVarOrUserProperty("docker.foo", "default"))
+        assertThat(newConfig().getEnvVarOrProperty("docker.foo", "default"))
             .as("reads unprefixed user properties for docker. settings")
             .isEqualTo("some value");
     }
@@ -129,7 +129,7 @@ public class TestcontainersConfigurationTest {
     @Test
     public void shouldNotReadSettingIfCorrespondingEnvironmentVarIsEmptyString() {
         environment.put("DOCKER_FOO", "");
-        assertThat(newConfig().getEnvVarOrUserProperty("docker.foo", "default"))
+        assertThat(newConfig().getEnvVarOrProperty("docker.foo", "default"))
             .as("reads unprefixed env vars for docker. settings")
             .isEqualTo("default");
     }

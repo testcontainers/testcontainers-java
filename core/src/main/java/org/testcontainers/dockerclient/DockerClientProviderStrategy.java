@@ -436,7 +436,9 @@ public abstract class DockerClientProviderStrategy {
     @VisibleForTesting
     static String resolveDockerHostIpAddress(DockerClient client, URI dockerHost, boolean allowUserOverrides) {
         if (allowUserOverrides) {
-            String hostOverride = System.getenv("TESTCONTAINERS_HOST_OVERRIDE");
+            String hostOverride = TestcontainersConfiguration
+                .getInstance()
+                .getEnvVarOrProperty("host.override", null);
             if (!StringUtils.isBlank(hostOverride)) {
                 return hostOverride;
             }

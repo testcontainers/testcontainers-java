@@ -58,7 +58,7 @@ public final class EnvironmentAndSystemPropertyClientProviderStrategy extends Do
     }
 
     private Optional<String> getSetting(final String name) {
-        return Optional.ofNullable(TestcontainersConfiguration.getInstance().getEnvVarOrUserProperty(name, null));
+        return Optional.ofNullable(TestcontainersConfiguration.getInstance().getEnvVarOrProperty(name, null));
     }
 
     @Override

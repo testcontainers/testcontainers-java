@@ -176,13 +176,13 @@ public class TestcontainersConfiguration {
     }
 
     public boolean isDisableChecks() {
-        return Boolean.parseBoolean(getEnvVarOrUserProperty("checks.disable", "false"));
+        return Boolean.parseBoolean(getEnvVarOrProperty("checks.disable", "false"));
     }
 
     @UnstableAPI
     public boolean environmentSupportsReuse() {
         // specifically not supported as an environment variable or classpath property
-        return Boolean.parseBoolean(getEnvVarOrUserProperty("testcontainers.reuse.enable", "false"));
+        return Boolean.parseBoolean(getEnvVarOrProperty("testcontainers.reuse.enable", "false"));
     }
 
     public String getDockerClientStrategyClassName() {
@@ -198,7 +198,7 @@ public class TestcontainersConfiguration {
         }
 
         // looks for unprefixed env var or unprefixed property, or null if the strategy is not set at all
-        return getEnvVarOrUserProperty("docker.client.strategy", null);
+        return getEnvVarOrProperty("docker.client.strategy", null);
     }
 
     public String getTransportType() {
@@ -267,22 +267,6 @@ public class TestcontainersConfiguration {
     }
 
     /**
-     * Gets a configured setting from an environment variable (if present) or a configuration file property otherwise.
-     * The configuration file will be the <code>.testcontainers.properties</code> file in the user's home directory.
-     * <p>
-     * Note that when searching environment variables, the prefix `TESTCONTAINERS_` will usually be applied to the
-     * property name, which will be converted to upper-case with underscore separators. This prefix will not be added
-     * if the property name begins `docker.`.
-     *
-     * @param propertyName name of configuration file property (dot-separated lower case)
-     * @return the found value, or null if not set
-     */
-    @Contract("_, !null -> !null")
-    public String getEnvVarOrUserProperty(@NotNull final String propertyName, @Nullable final String defaultValue) {
-        return getConfigurable(propertyName, defaultValue, userProperties);
-    }
-
-    /**
      * Gets a configured setting from <code>~/.testcontainers.properties</code>.
      *
      * @param propertyName name of configuration file property (dot-separated lower case)
@@ -299,7 +283,7 @@ public class TestcontainersConfiguration {
      * @return properties values available from user properties and classpath properties. Values set by environment
      * variable are NOT included.
      * @deprecated usages should be removed ASAP. See {@link TestcontainersConfiguration#getEnvVarOrProperty(String, String)},
-     * {@link TestcontainersConfiguration#getEnvVarOrUserProperty(String, String)} or {@link TestcontainersConfiguration#getUserProperty(String, String)}
+     * {@link TestcontainersConfiguration#getEnvVarOrProperty(String, String)} or {@link TestcontainersConfiguration#getUserProperty(String, String)}
      * for suitable replacements.
      */
     @Deprecated

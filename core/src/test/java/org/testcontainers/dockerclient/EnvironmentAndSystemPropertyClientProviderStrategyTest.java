@@ -53,15 +53,15 @@ public class EnvironmentAndSystemPropertyClientProviderStrategyTest {
         Mockito
             .doReturn(null)
             .when(TestcontainersConfiguration.getInstance())
-            .getEnvVarOrUserProperty(eq("docker.host"), isNull());
+            .getEnvVarOrProperty(eq("docker.host"), isNull());
         Mockito
             .doReturn(null)
             .when(TestcontainersConfiguration.getInstance())
-            .getEnvVarOrUserProperty(eq("docker.tls.verify"), isNull());
+            .getEnvVarOrProperty(eq("docker.tls.verify"), isNull());
         Mockito
             .doReturn(null)
             .when(TestcontainersConfiguration.getInstance())
-            .getEnvVarOrUserProperty(eq("docker.cert.path"), isNull());
+            .getEnvVarOrProperty(eq("docker.cert.path"), isNull());
 
         EnvironmentAndSystemPropertyClientProviderStrategy strategy = new EnvironmentAndSystemPropertyClientProviderStrategy();
 
@@ -79,15 +79,15 @@ public class EnvironmentAndSystemPropertyClientProviderStrategyTest {
         Mockito
             .doReturn("tcp://1.2.3.4:2375")
             .when(TestcontainersConfiguration.getInstance())
-            .getEnvVarOrUserProperty(eq("docker.host"), isNull());
+            .getEnvVarOrProperty(eq("docker.host"), isNull());
         Mockito
             .doReturn(null)
             .when(TestcontainersConfiguration.getInstance())
-            .getEnvVarOrUserProperty(eq("docker.tls.verify"), isNull());
+            .getEnvVarOrProperty(eq("docker.tls.verify"), isNull());
         Mockito
             .doReturn(null)
             .when(TestcontainersConfiguration.getInstance())
-            .getEnvVarOrUserProperty(eq("docker.cert.path"), isNull());
+            .getEnvVarOrProperty(eq("docker.cert.path"), isNull());
 
         EnvironmentAndSystemPropertyClientProviderStrategy strategy = new EnvironmentAndSystemPropertyClientProviderStrategy();
 
@@ -108,15 +108,15 @@ public class EnvironmentAndSystemPropertyClientProviderStrategyTest {
         Mockito
             .doReturn("tcp://1.2.3.4:2375")
             .when(TestcontainersConfiguration.getInstance())
-            .getEnvVarOrUserProperty(eq("docker.host"), isNull());
+            .getEnvVarOrProperty(eq("docker.host"), isNull());
         Mockito
             .doReturn("1")
             .when(TestcontainersConfiguration.getInstance())
-            .getEnvVarOrUserProperty(eq("docker.tls.verify"), isNull());
+            .getEnvVarOrProperty(eq("docker.tls.verify"), isNull());
         Mockito
             .doReturn(tempDirPath)
             .when(TestcontainersConfiguration.getInstance())
-            .getEnvVarOrUserProperty(eq("docker.cert.path"), isNull());
+            .getEnvVarOrProperty(eq("docker.cert.path"), isNull());
 
         EnvironmentAndSystemPropertyClientProviderStrategy strategy = new EnvironmentAndSystemPropertyClientProviderStrategy();
 
