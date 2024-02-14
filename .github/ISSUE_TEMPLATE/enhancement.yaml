@@ -30,6 +30,7 @@ body:
         - HiveMQ
         - InfluxDB
         - K3S
+        - K6
         - Kafka
         - LocalStack
         - MariaDB
