@@ -9,8 +9,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class K6ContainerTests {
 
-    private final String INJECT_SCRIPT_VAR = "are cool!";
-
     @Test
     public void k6StandardTest() throws Exception {
         try (
@@ -18,7 +16,8 @@ public class K6ContainerTests {
             K6Container container =
                 new K6Container()
                     .withTestScript("scripts/test.js")
-                    .withScriptVar("MY_SCRIPT_VAR", INJECT_SCRIPT_VAR)
+                    .withScriptVar("MY_SCRIPT_VAR", "are cool!")
+                    .withScriptVar("AN_UNUSED_VAR", "unused")
                     .withCmdOptions("--quiet", "--no-usage-report")
             // }
         ) {
@@ -31,7 +30,7 @@ public class K6ContainerTests {
             consumer.waitUntil(frame ->
                 frame.getUtf8String().contains("iteration_duration"), 3, TimeUnit.SECONDS);
 
-            assertThat(container.getLogs()).contains("k6 tests " + INJECT_SCRIPT_VAR);
+            assertThat(container.getLogs()).contains("k6 tests are cool!");
         }
     }
 
