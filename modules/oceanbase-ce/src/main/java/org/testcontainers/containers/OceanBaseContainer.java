@@ -48,11 +48,6 @@ public class OceanBaseContainer extends JdbcDatabaseContainer<OceanBaseContainer
     }
 
     @Override
-    public Integer getMappedPort(int originalPort) {
-        return "host".equals(getNetworkMode()) ? originalPort : super.getMappedPort(originalPort);
-    }
-
-    @Override
     public String getDriverClassName() {
         return driverClassName;
     }
