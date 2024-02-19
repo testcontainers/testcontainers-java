@@ -1,4 +1,4 @@
-# OceanBase-CE Module
+# OceanBase Module
 
 See [Database containers](./index.md) for documentation and usage that is common to all relational database container types.
 
@@ -8,14 +8,14 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 === "Gradle"
     ```groovy
-    testImplementation "org.testcontainers:oceanbase-ce:{{latest_version}}"
+    testImplementation "org.testcontainers:oceanbase:{{latest_version}}"
     ```
 
 === "Maven"
     ```xml
     <dependency>
         <groupId>org.testcontainers</groupId>
-        <artifactId>oceanbase-ce</artifactId>
+        <artifactId>oceanbase</artifactId>
         <version>{{latest_version}}</version>
         <scope>test</scope>
     </dependency>

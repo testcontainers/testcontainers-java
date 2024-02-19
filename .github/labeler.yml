@@ -123,10 +123,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/nginx/**/*
-"modules/oceanbase-ce":
+"modules/oceanbase":
   - changed-files:
     - any-glob-to-any-file:
-      - modules/oceanbase-ce/**/*
+      - modules/oceanbase/**/*
 "modules/oracle":
   - changed-files:
     - any-glob-to-any-file:

@@ -1,4 +1,4 @@
-description = "Testcontainers :: JDBC :: OceanBase CE"
+description = "Testcontainers :: JDBC :: OceanBase"
 
 dependencies {
     api project(':jdbc')

@@ -3,28 +3,32 @@ package org.testcontainers.junit.oceanbase;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.OceanBaseTestImages;
-import org.testcontainers.containers.OceanBaseContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
+import org.testcontainers.oceanbase.OceanBaseCEContainer;
+import org.testcontainers.oceanbase.OceanBaseCEContainerProvider;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class SimpleOceanBaseTest extends AbstractContainerDatabaseTest {
+public class SimpleOceanBaseCETest extends AbstractContainerDatabaseTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(SimpleOceanBaseTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(SimpleOceanBaseCETest.class);
+
+    private final OceanBaseCEContainerProvider containerProvider = new OceanBaseCEContainerProvider();
+
+    @SuppressWarnings("resource")
+    private OceanBaseCEContainer testContainer() {
+        return ((OceanBaseCEContainer) containerProvider.newInstance()).withEnv("MODE", "slim")
+            .withEnv("FASTBOOT", "true")
+            .withLogConsumer(new Slf4jLogConsumer(logger));
+    }
 
     @Test
     public void testSimple() throws SQLException {
-        try (
-            OceanBaseContainer container = new OceanBaseContainer(OceanBaseTestImages.OCEANBASE_CE_IMAGE)
-                .withMode("slim")
-                .enableFastboot()
-                .withLogConsumer(new Slf4jLogConsumer(logger))
-        ) {
+        try (OceanBaseCEContainer container = testContainer()) {
             container.start();
 
             ResultSet resultSet = performQuery(container, "SELECT 1");
@@ -36,13 +40,7 @@ public class SimpleOceanBaseTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testExplicitInitScript() throws SQLException {
-        try (
-            OceanBaseContainer container = new OceanBaseContainer(OceanBaseTestImages.OCEANBASE_CE_IMAGE)
-                .withMode("slim")
-                .enableFastboot()
-                .withInitScript("init.sql")
-                .withLogConsumer(new Slf4jLogConsumer(logger))
-        ) {
+        try (OceanBaseCEContainer container = testContainer().withInitScript("init.sql")) {
             container.start();
 
             ResultSet resultSet = performQuery(container, "SELECT foo FROM bar");
@@ -53,13 +51,7 @@ public class SimpleOceanBaseTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testWithAdditionalUrlParamInJdbcUrl() {
-        try (
-            OceanBaseContainer container = new OceanBaseContainer(OceanBaseTestImages.OCEANBASE_CE_IMAGE)
-                .withMode("slim")
-                .enableFastboot()
-                .withUrlParam("useSSL", "false")
-                .withLogConsumer(new Slf4jLogConsumer(logger))
-        ) {
+        try (OceanBaseCEContainer container = testContainer().withUrlParam("useSSL", "false")) {
             container.start();
 
             String jdbcUrl = container.getJdbcUrl();
@@ -68,7 +60,7 @@ public class SimpleOceanBaseTest extends AbstractContainerDatabaseTest {
         }
     }
 
-    private void assertHasCorrectExposedAndLivenessCheckPorts(OceanBaseContainer container) {
+    private void assertHasCorrectExposedAndLivenessCheckPorts(OceanBaseCEContainer container) {
         int sqlPort = 2881;
         int rpcPort = 2882;
 
