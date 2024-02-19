@@ -1,12 +1,13 @@
 package org.testcontainers.containers;
 
-import org.jetbrains.annotations.NotNull;
+import lombok.NonNull;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-import java.util.Set;
+import java.util.concurrent.Future;
 
 /**
  * Testcontainers implementation for PostgreSQL.
@@ -47,39 +48,42 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
         this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
 
-    public PostgreSQLContainer(final String dockerImageName) {
+    public PostgreSQLContainer(@NonNull final String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
     }
 
-    public PostgreSQLContainer(final DockerImageName dockerImageName) {
-        super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
-
-        this.waitStrategy =
-            new LogMessageWaitStrategy()
-                .withRegEx(".*database system is ready to accept connections.*\\s")
-                .withTimes(2)
-                .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS));
-        this.setCommand("postgres", "-c", FSYNC_OFF_OPTION);
-
-        addExposedPort(POSTGRESQL_PORT);
+    public PostgreSQLContainer(@NonNull final Future<String> image) {
+        super(image);
+        init();
     }
 
-    /**
-     * @return the ports on which to check if the container is ready
-     * @deprecated use {@link #getLivenessCheckPortNumbers()} instead
-     */
-    @NotNull
-    @Override
-    @Deprecated
-    protected Set<Integer> getLivenessCheckPorts() {
-        return super.getLivenessCheckPorts();
+    public PostgreSQLContainer(@NonNull final DockerImageName dockerImageName) {
+        super(dockerImageName);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        init();
+    }
+
+    public PostgreSQLContainer(@NonNull final RemoteDockerImage image) {
+        super(image);
+        init();
+    }
+
+    private void init() {
+        setWaitStrategy(
+            new LogMessageWaitStrategy()
+                .withRegEx(".*database system is ready to accept .*connections.*\\s")
+                .withTimes(2)
+                .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS))
+        );
+        setCommand("postgres", "-c", FSYNC_OFF_OPTION);
+
+        addExposedPort(POSTGRESQL_PORT);
     }
 
     @Override
     protected void configure() {
         // Disable Postgres driver use of java.util.logging to reduce noise at startup time
-        withUrlParam("loggerLevel", "OFF");
+        urlParameters.put("loggerLevel", "OFF");
         addEnv("POSTGRES_DB", databaseName);
         addEnv("POSTGRES_USER", username);
         addEnv("POSTGRES_PASSWORD", password);
