@@ -4,6 +4,13 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
+/**
+ * Testcontainers implementation of ChromaDB.
+ * <p>
+ * Supported images: {@code chromadb/chroma}, {@code ghcr.io/chroma-core/chroma}
+ * <p>
+ * Exposed ports: 8000
+ */
 public class ChromaDBContainer extends GenericContainer<ChromaDBContainer> {
 
     private static final DockerImageName DEFAULT_DOCKER_IMAGE = DockerImageName.parse("chromadb/chroma");
