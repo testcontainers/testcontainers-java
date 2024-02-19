@@ -72,7 +72,6 @@ nav:
                 - modules/databases/questdb.md
                 - modules/databases/tidb.md
                 - modules/databases/trino.md
-                - modules/databases/weaviate.md
                 - modules/databases/yugabytedb.md
           - modules/activemq.md
           - modules/azure.md
@@ -94,6 +93,7 @@ nav:
           - modules/solr.md
           - modules/toxiproxy.md
           - modules/vault.md
+          - modules/weaviate.md
           - modules/webdriver_containers.md
     - Test framework integration:
           - test_framework_integration/junit_4.md
