@@ -55,6 +55,7 @@ body:
         - ToxiProxy
         - Trino
         - Vault
+        - Weaviate
         - YugabyteDB
         - New Module
   - type: textarea

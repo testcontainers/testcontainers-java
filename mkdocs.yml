@@ -72,6 +72,7 @@ nav:
                 - modules/databases/questdb.md
                 - modules/databases/tidb.md
                 - modules/databases/trino.md
+                - modules/databases/weaviate.md
                 - modules/databases/yugabytedb.md
           - modules/activemq.md
           - modules/azure.md
