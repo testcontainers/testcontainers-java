@@ -52,6 +52,7 @@ nav:
                 - modules/databases/jdbc.md
                 - modules/databases/r2dbc.md
                 - modules/databases/cassandra.md
+                - modules/databases/chromadb.md
                 - modules/databases/cockroachdb.md
                 - modules/databases/couchbase.md
                 - modules/databases/clickhouse.md
