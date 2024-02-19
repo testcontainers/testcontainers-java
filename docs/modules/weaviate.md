@@ -4,7 +4,7 @@ Testcontainers module for [Weaviate](https://hub.docker.com/r/semitechnologies/w
 
 ## WeaviateContainer's usage examples
 
-You can start an Weaviate container instance from any Java application by using:
+You can start a Weaviate container instance from any Java application by using:
 
 <!--codeinclude-->
 [Default Weaviate container](../../modules/weaviate/src/test/java/org/testcontainers/weaviate/WeaviateContainerTest.java) inside_block:container
