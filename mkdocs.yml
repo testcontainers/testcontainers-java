@@ -52,7 +52,6 @@ nav:
                 - modules/databases/jdbc.md
                 - modules/databases/r2dbc.md
                 - modules/databases/cassandra.md
-                - modules/databases/chromadb.md
                 - modules/databases/cockroachdb.md
                 - modules/databases/couchbase.md
                 - modules/databases/clickhouse.md
@@ -76,6 +75,7 @@ nav:
                 - modules/databases/yugabytedb.md
           - modules/activemq.md
           - modules/azure.md
+          - modules/chromadb.md
           - modules/consul.md
           - modules/docker_compose.md
           - modules/elasticsearch.md
