@@ -7,7 +7,7 @@ repositories {
 }
 
 dependencies {
-    implementation platform('org.seleniumhq.selenium:selenium-bom:4.17.0')
+    implementation platform('org.seleniumhq.selenium:selenium-bom:4.18.0')
     implementation 'org.seleniumhq.selenium:selenium-remote-driver'
     implementation 'org.seleniumhq.selenium:selenium-firefox-driver'
     implementation 'org.seleniumhq.selenium:selenium-chrome-driver'
