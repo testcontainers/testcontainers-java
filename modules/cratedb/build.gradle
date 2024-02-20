@@ -4,7 +4,7 @@ dependencies {
     api project(':jdbc')
 
     testImplementation project(':jdbc-test')
-    testRuntimeOnly 'org.postgresql:postgresql:42.7.1'
+    testRuntimeOnly 'org.postgresql:postgresql:42.7.2'
 
     compileOnly 'org.jetbrains:annotations:24.1.0'
 }
