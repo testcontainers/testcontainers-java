@@ -167,6 +167,11 @@ updates:
       - dependency-name: "org.mariadb:r2dbc-mariadb"
         update-types: [ "version-update:semver-minor" ]
   - package-ecosystem: "gradle"
+    directory: "/modules/milvus"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
     directory: "/modules/minio"
     schedule:
       interval: "weekly"
