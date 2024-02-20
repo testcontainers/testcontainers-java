@@ -115,6 +115,9 @@ labels:
   - name: modules/cassandra
     color: '#006b75'
 
+  - name: modules/chromadb
+    color: '#006b75'
+
   - name: modules/clickhouse
     color: '#006b75'
 

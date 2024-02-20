@@ -52,6 +52,11 @@ updates:
       - dependency-name: "io.dropwizard.metrics:metrics-core"
         update-types: [ "version-update:semver-major" ]
   - package-ecosystem: "gradle"
+    directory: "/modules/chromadb"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
     directory: "/modules/clickhouse"
     schedule:
       interval: "weekly"
