@@ -93,6 +93,7 @@ nav:
           - modules/solr.md
           - modules/toxiproxy.md
           - modules/vault.md
+          - modules/weaviate.md
           - modules/webdriver_containers.md
     - Test framework integration:
           - test_framework_integration/junit_4.md
