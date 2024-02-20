@@ -30,7 +30,7 @@ public class WeaviateContainer extends GenericContainer<WeaviateContainer> {
         withEnv("PERSISTENCE_DATA_PATH", "/var/lib/weaviate");
     }
 
-    public String getEndpoint() {
+    public String getHttpHostAddress() {
         return getHost() + ":" + getMappedPort(8080);
     }
 }

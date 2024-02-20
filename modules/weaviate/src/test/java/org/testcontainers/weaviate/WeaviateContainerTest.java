@@ -17,7 +17,7 @@ public class WeaviateContainerTest {
             // }
         ) {
             weaviate.start();
-            WeaviateClient client = new WeaviateClient(new Config("http", weaviate.getEndpoint()));
+            WeaviateClient client = new WeaviateClient(new Config("http", weaviate.getHttpHostAddress()));
             Result<Meta> meta = client.misc().metaGetter().run();
             assertThat(meta.getResult().getVersion()).isEqualTo("1.22.4");
         }
