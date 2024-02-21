@@ -1,4 +1,4 @@
-description = "Testcontainers :: ActiveMQ"
+description = "Testcontainers :: Qdrant"
 
 dependencies {
     api project(':testcontainers')
