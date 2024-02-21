@@ -89,6 +89,7 @@ nav:
           - modules/mockserver.md
           - modules/nginx.md
           - modules/pulsar.md
+          - modules/qdrant.md
           - modules/rabbitmq.md
           - modules/redpanda.md
           - modules/solace.md

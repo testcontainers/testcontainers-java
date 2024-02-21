@@ -45,6 +45,7 @@ body:
         - Oracle XE
         - OrientDB
         - PostgreSQL
+        - Qdrant
         - QuestDB
         - Presto
         - Pulsar

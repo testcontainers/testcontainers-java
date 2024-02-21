@@ -205,6 +205,9 @@ labels:
   - name: modules/pulsar
     color: '#006b75'
 
+  - name: modules/qdrant
+    color: '#006b75'
+
   - name: modules/questdb
     color: '#006b75'
 
