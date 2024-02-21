@@ -1,0 +1,8 @@
+description = "Testcontainers :: Weaviate"
+
+dependencies {
+    api project(':testcontainers')
+
+    testImplementation 'org.assertj:assertj-core:3.25.1'
+    testImplementation 'io.weaviate:client:4.5.1'
+}

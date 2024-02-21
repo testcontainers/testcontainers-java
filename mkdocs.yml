@@ -75,6 +75,7 @@ nav:
                 - modules/databases/yugabytedb.md
           - modules/activemq.md
           - modules/azure.md
+          - modules/chromadb.md
           - modules/consul.md
           - modules/docker_compose.md
           - modules/elasticsearch.md
@@ -93,6 +94,7 @@ nav:
           - modules/solr.md
           - modules/toxiproxy.md
           - modules/vault.md
+          - modules/weaviate.md
           - modules/webdriver_containers.md
     - Test framework integration:
           - test_framework_integration/junit_4.md
