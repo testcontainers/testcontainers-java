@@ -17,6 +17,7 @@ body:
         - ActiveMQ
         - Azure
         - Cassandra
+        - ChromaDB
         - Clickhouse
         - CockroachDB
         - CrateDB
@@ -55,6 +56,7 @@ body:
         - ToxiProxy
         - Trino
         - Vault
+        - Weaviate
         - YugabyteDB
         - New Module
   - type: textarea

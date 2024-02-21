@@ -115,6 +115,9 @@ labels:
   - name: modules/cassandra
     color: '#006b75'
 
+  - name: modules/chromadb
+    color: '#006b75'
+
   - name: modules/clickhouse
     color: '#006b75'
 
@@ -236,6 +239,9 @@ labels:
     color: '#006b75'
 
   - name: modules/vault
+    color: '#006b75'
+
+  - name: modules/weaviate
     color: '#006b75'
 
   - name: modules/yugabytedb

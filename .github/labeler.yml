@@ -27,6 +27,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/cassandra/**/*
+"modules/chromadb":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/chromadb/**/*
 "modules/clickhouse":
   - changed-files:
     - any-glob-to-any-file:
@@ -192,6 +196,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/vault/**/*
+"modules/weaviate":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/weaviate/**/*
 "modules/yugabytedb":
   - changed-files:
     - any-glob-to-any-file:
