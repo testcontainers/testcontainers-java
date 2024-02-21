@@ -1,4 +1,4 @@
-description = "Testcontainers :: ActiveMQ"
+description = "Testcontainers :: Milvus"
 
 dependencies {
     api project(':testcontainers')
