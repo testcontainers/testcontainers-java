@@ -169,6 +169,9 @@ labels:
   - name: modules/mariadb
     color: '#006b75'
 
+  - name: modules/milvus
+    color: '#006b75'
+
   - name: modules/minio
     color: '#006b75'
 
