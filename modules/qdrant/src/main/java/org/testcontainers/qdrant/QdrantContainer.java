@@ -30,10 +30,6 @@ public class QdrantContainer extends GenericContainer<QdrantContainer> {
         waitingFor(Wait.forHttp("/readyz").forPort(6333));
     }
 
-    public String getHttpHostAddress() {
-        return getHost() + ":" + getMappedPort(6333);
-    }
-
     public String getGrpcHostAddress() {
         return getHost() + ":" + getMappedPort(6334);
     }
