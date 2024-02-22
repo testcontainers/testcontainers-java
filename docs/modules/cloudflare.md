@@ -1,6 +1,6 @@
 # Cloudflare Module
 
-Testcontainers module for Cloudflare Tunnels [](https://rancher.com/products/k3s/) for exposing your app to the internet. 
+Testcontainers module for Cloudflare Quick Tunnels(https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/do-more-with-tunnels/trycloudflare/) for exposing your app to the internet. 
 
 This module is intended to be used for testing components that need to be exposed to public internet - for example to receive hooks from public cloud.
 Or to show your local state of the application to friends. 
@@ -10,7 +10,7 @@ Or to show your local state of the application to friends.
 Start a Cloudflared container as follows:
 
 <!--codeinclude-->
-[Starting a Cloudflared Container](../../modules/k3s/src/test/java/org/testcontainers/cloudflare/CloudflaredContainerTest.java) inside_block:starting
+[Starting a Cloudflared Container](../../modules/cloudflare/src/test/java/org/testcontainers/cloudflare/CloudflaredContainerTest.java) inside_block:starting
 <!--/codeinclude-->
 
 ### Getting the public Url
@@ -19,7 +19,7 @@ Start a Cloudflared container as follows:
 To get the public url on which this port is available to the internet, call the `getPublicUrl` method. 
 
 <!--codeinclude-->
-[Get the public Url](../../modules/k3s/src/test/java/org/testcontainers/cloudflare/CloudflaredContainerTest.java) inside_block:get_public_url
+[Get the public Url](../../modules/cloudflare/src/test/java/org/testcontainers/cloudflare/CloudflaredContainerTest.java) inside_block:get_public_url
 <!--/codeinclude-->
 
 ## Known limitations
