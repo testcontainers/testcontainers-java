@@ -1,7 +1,7 @@
 package org.testcontainers.k6;
 
+import org.apache.commons.io.FilenameUtils;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
@@ -14,13 +14,7 @@ import java.util.Map;
 public class K6Container extends GenericContainer<K6Container> {
 
     /** Standard image for k6, as provided by Grafana. */
-    public static final DockerImageName K6_IMAGE = DockerImageName.parse("grafana/k6:0.49.0");
-
-    /**
-     * Extended image allowing for dynamic inclusion of k6 Extensions.
-     * @see <a href="https://grafana.com/docs/k6/latest/extensions/">k6 Extensions</a>
-     */
-    public static final DockerImageName K6_BUILDER_IMAGE = DockerImageName.parse("szkiba/k6x:v0.4.0");
+    private static final DockerImageName K6_IMAGE = DockerImageName.parse("grafana/k6");
 
     private String testScript;
 
@@ -29,10 +23,10 @@ public class K6Container extends GenericContainer<K6Container> {
     private Map<String, String> scriptVars = new HashMap<>();
 
     /**
-     * Creates a new container instance based upon the {@link #K6_IMAGE}.
+     * Creates a new container instance based upon the provided image name.
      */
-    public K6Container() {
-        this(K6_IMAGE);
+    public K6Container(String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
     }
 
     /**
@@ -40,20 +34,17 @@ public class K6Container extends GenericContainer<K6Container> {
      */
     public K6Container(DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(K6_IMAGE, K6_BUILDER_IMAGE);
-
-        setWaitStrategy(Wait.defaultWaitStrategy());
+        dockerImageName.assertCompatibleWith(K6_IMAGE);
     }
 
     /**
      * Specifies the test script to be executed within the container.
-     * @param scriptPath location of script to be copied into the container
+     * @param testScript file to be copied into the container
      * @return the builder
      */
-    public K6Container withTestScript(String scriptPath) {
-        this.testScript = "/home/k6/" + scriptPath;
-        final MountableFile mountableFile = MountableFile.forClasspathResource(scriptPath);
-        withCopyFileToContainer(mountableFile, this.testScript);
+    public K6Container withTestScript(MountableFile testScript) {
+        this.testScript = "/home/k6/" + FilenameUtils.getName(testScript.getResolvedPath());
+        withCopyFileToContainer(testScript, this.testScript);
         return self();
     }
 
