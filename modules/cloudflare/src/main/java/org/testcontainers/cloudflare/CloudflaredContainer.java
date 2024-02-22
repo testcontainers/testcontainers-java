@@ -5,9 +5,8 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
-import java.util.Scanner;
-
 public class CloudflaredContainer extends GenericContainer<CloudflaredContainer> {
+
     private String publicUrl;
 
     public CloudflaredContainer(DockerImageName dockerImageName, int port) {
@@ -38,5 +37,4 @@ public class CloudflaredContainer extends GenericContainer<CloudflaredContainer>
         }
         throw new IllegalStateException("Didn't find public url in logs. Has container started?");
     }
-
 }
