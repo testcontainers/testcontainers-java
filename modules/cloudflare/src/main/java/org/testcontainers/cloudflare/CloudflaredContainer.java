@@ -5,8 +5,6 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
-import static java.lang.String.format;
-
 public class CloudflaredContainer extends GenericContainer<CloudflaredContainer> {
 
     private String publicUrl;
@@ -16,7 +14,7 @@ public class CloudflaredContainer extends GenericContainer<CloudflaredContainer>
         dockerImageName.assertCompatibleWith(DockerImageName.parse("cloudflare/cloudflared"));
         withAccessToHost(true);
         Testcontainers.exposeHostPorts(port);
-        withCommand("tunnel", "--url", format("http://host.testcontainers.internal:%d", port));
+        withCommand("tunnel", "--url", String.format("http://host.testcontainers.internal:%d", port));
         waitingFor(Wait.forLogMessage(".*Registered tunnel connection.*", 1));
     }
 
