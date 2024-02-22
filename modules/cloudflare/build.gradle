@@ -1,4 +1,4 @@
-description = "Testcontainers :: Cloudflared"
+description = "Testcontainers :: Cloudflare"
 
 dependencies {
     api project(":testcontainers")

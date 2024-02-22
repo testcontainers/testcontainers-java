@@ -15,7 +15,6 @@ import java.net.URL;
 import java.time.Duration;
 
 
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class CloudflaredContainerTest {
@@ -23,26 +22,32 @@ public class CloudflaredContainerTest {
     @Test
     public void shouldStartAndTunnelToHelloWorld() throws IOException {
         try (GenericContainer<?> helloworld = new GenericContainer<>(
-            DockerImageName.parse("testcontainers/helloworld:1.1.0")
+                DockerImageName.parse("testcontainers/helloworld:1.1.0")
         )
-            .withNetworkAliases("helloworld")
-            .withExposedPorts(8080, 8081)
-            .waitingFor(new HttpWaitStrategy()) ) {
+                .withNetworkAliases("helloworld")
+                .withExposedPorts(8080, 8081)
+                .waitingFor(new HttpWaitStrategy())) {
 
             helloworld.start();
 
-            try (CloudflaredContainer cloudflare = new CloudflaredContainer(DockerImageName.parse("cloudflare/cloudflared:latest"), helloworld.getFirstMappedPort());) {
+            try (
+            // starting {
+            CloudflaredContainer cloudflare = new CloudflaredContainer(DockerImageName.parse("cloudflare/cloudflared:latest"), helloworld.getFirstMappedPort());
+            //
+            ) {
                 cloudflare.start();
+                // get_public_url {
                 String url = cloudflare.getPublicUrl();
+                // }
 
                 assertThat(url)
-                    .as("Public url contains 'cloudflare'")
-                    .contains("cloudflare");
+                        .as("Public url contains 'cloudflare'")
+                        .contains("cloudflare");
                 String body = readUrl(url);
 
                 assertThat(body.trim())
-                    .as("the index page contains the title 'Hello world'")
-                    .contains("Hello world");
+                        .as("the index page contains the title 'Hello world'")
+                        .contains("Hello world");
             }
 
         }
