@@ -57,7 +57,7 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 
 #### Using OceanBase
 
-`jdbc:tc:oceanbasece:4.2.1_bp3:///databasename`
+`jdbc:tc:oceanbasece:4.2.2:///databasename`
 
 #### Using Oracle
 
