@@ -17,6 +17,7 @@ body:
         - ActiveMQ
         - Azure
         - Cassandra
+        - ChromaDB
         - Clickhouse
         - CockroachDB
         - CrateDB
@@ -32,6 +33,7 @@ body:
         - Kafka
         - LocalStack
         - MariaDB
+        - Milvus
         - MinIO
         - MockServer
         - MongoDB
@@ -44,6 +46,7 @@ body:
         - Oracle XE
         - OrientDB
         - PostgreSQL
+        - Qdrant
         - QuestDB
         - Presto
         - Pulsar
@@ -56,6 +59,7 @@ body:
         - ToxiProxy
         - Trino
         - Vault
+        - Weaviate
         - YugabyteDB
         - New Module
   - type: textarea
