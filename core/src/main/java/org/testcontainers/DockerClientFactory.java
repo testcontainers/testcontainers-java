@@ -95,6 +95,8 @@ public class DockerClientFactory {
 
     private String activeApiVersion;
 
+    private boolean runningWindowsContainers;
+
     @Getter(lazy = true)
     private final boolean fileMountingSupported = checkMountableFile();
 
@@ -212,6 +214,8 @@ public class DockerClientFactory {
         Version version = client.versionCmd().exec();
         log.debug("Docker version: {}", version.getRawValues());
         activeApiVersion = version.getApiVersion();
+        String osType = dockerInfo.getOsType();
+        runningWindowsContainers = StringUtils.isNotBlank(osType) && osType.equals("windows");
 
         String serverInfo =
             "Connected to docker: \n" +
@@ -222,7 +226,7 @@ public class DockerClientFactory {
             activeApiVersion +
             "\n" +
             "  Operating System: " +
-            dockerInfo.getOperatingSystem() +
+            dockerInfo.getOperatingSystem() + (runningWindowsContainers ? " (WCOW)" : "") +
             "\n" +
             "  Total Memory: " +
             dockerInfo.getMemTotal() /
@@ -381,6 +385,14 @@ public class DockerClientFactory {
     public String getActiveApiVersion() {
         client();
         return activeApiVersion;
+    }
+
+    /**
+     * @return whether the daemon is running Windows containers
+     */
+    public boolean isRunningWindowsContainers() {
+        client();
+        return runningWindowsContainers;
     }
 
     /**

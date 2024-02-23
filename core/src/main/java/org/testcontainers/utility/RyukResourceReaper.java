@@ -33,7 +33,7 @@ class RyukResourceReaper extends ResourceReaper {
 
     private final AtomicBoolean started = new AtomicBoolean(false);
 
-    private final RyukContainer ryukContainer = new RyukContainer();
+    private final RyukContainer ryukContainer = new RyukContainer(DockerClientFactory.instance().isRunningWindowsContainers());
 
     @Override
     public void init() {
