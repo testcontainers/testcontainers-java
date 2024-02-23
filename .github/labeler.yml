@@ -99,6 +99,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/mariadb/**/*
+"modules/milvus":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/milvus/**/*
 "modules/minio":
   - changed-files:
     - any-glob-to-any-file:
@@ -148,6 +152,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/pulsar/**/*
+"modules/qdrant":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/qdrant/**/*
 "modules/questdb":
   - changed-files:
     - any-glob-to-any-file:

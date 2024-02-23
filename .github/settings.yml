@@ -169,6 +169,9 @@ labels:
   - name: modules/mariadb
     color: '#006b75'
 
+  - name: modules/milvus
+    color: '#006b75'
+
   - name: modules/minio
     color: '#006b75'
 
@@ -200,6 +203,9 @@ labels:
     color: '#006b75'
 
   - name: modules/pulsar
+    color: '#006b75'
+
+  - name: modules/qdrant
     color: '#006b75'
 
   - name: modules/questdb

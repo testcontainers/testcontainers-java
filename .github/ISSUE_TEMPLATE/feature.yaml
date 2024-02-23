@@ -33,6 +33,7 @@ body:
         - Kafka
         - LocalStack
         - MariaDB
+        - Milvus
         - MinIO
         - MockServer
         - MongoDB
@@ -44,6 +45,7 @@ body:
         - Oracle XE
         - OrientDB
         - PostgreSQL
+        - Qdrant
         - QuestDB
         - Presto
         - Pulsar
