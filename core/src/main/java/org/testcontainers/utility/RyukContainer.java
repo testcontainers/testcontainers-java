@@ -8,8 +8,8 @@ import org.testcontainers.containers.wait.strategy.Wait;
 
 class RyukContainer extends GenericContainer<RyukContainer> {
 
-    RyukContainer() {
-        super("testcontainers/ryuk:0.6.0");
+    RyukContainer(boolean runningWindowsContainers) {
+        super("testcontainers/ryuk:0.7.0");
         withExposedPorts(8080);
         withCreateContainerCmdModifier(cmd -> {
             cmd.withName("testcontainers-ryuk-" + DockerClientFactory.SESSION_ID);
@@ -17,9 +17,15 @@ class RyukContainer extends GenericContainer<RyukContainer> {
                 cmd
                     .getHostConfig()
                     .withAutoRemove(true)
-                    .withPrivileged(TestcontainersConfiguration.getInstance().isRyukPrivileged())
+                    .withPrivileged(TestcontainersConfiguration.getInstance().isRyukPrivileged()
+                        && !runningWindowsContainers)
                     .withBinds(
-                        new Bind(
+                        runningWindowsContainers
+                            ? new Bind(
+                            "//./pipe/docker_engine",
+                            new Volume("//./pipe/docker_engine")
+                        )
+                            : new Bind(
                             DockerClientFactory.instance().getRemoteDockerUnixSocketPath(),
                             new Volume("/var/run/docker.sock")
                         )
