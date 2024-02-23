@@ -41,6 +41,7 @@ body:
         - MySQL
         - Neo4j
         - NGINX
+        - Ollama
         - Oracle Free
         - Oracle XE
         - OrientDB

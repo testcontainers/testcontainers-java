@@ -131,6 +131,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/nginx/**/*
+"modules/ollama":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/ollama/**/*
 "modules/oracle":
   - changed-files:
     - any-glob-to-any-file:

@@ -190,6 +190,9 @@ labels:
   - name: modules/nginx
     color: '#006b75'
 
+  - name: modules/ollama
+    color: '#006b75'
+
   - name: modules/oracle
     color: '#006b75'
 

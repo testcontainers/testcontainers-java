@@ -88,6 +88,7 @@ nav:
           - modules/minio.md
           - modules/mockserver.md
           - modules/nginx.md
+          - modules/ollama.md
           - modules/pulsar.md
           - modules/qdrant.md
           - modules/rabbitmq.md
