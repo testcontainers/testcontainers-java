@@ -7,7 +7,7 @@ Testcontainers module for [OpenFGA](https://hub.docker.com/r/"openfga/openfga).
 You can start an OpenFGA container instance from any Java application by using:
 
 <!--codeinclude-->
-[OpenFGA container](../../modules/openfga/src/test/java/org/testcontainers/openfga/OpenFGAContainerTest.java) inside_block:openfgaContainer
+[OpenFGA container](../../modules/openfga/src/test/java/org/testcontainers/openfga/OpenFGAContainerTest.java) inside_block:container
 <!--/codeinclude-->
 
 ## Adding this module to your project dependencies
