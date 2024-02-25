@@ -88,6 +88,7 @@ nav:
           - modules/minio.md
           - modules/mockserver.md
           - modules/nginx.md
+          - modules/openfga.md
           - modules/pulsar.md
           - modules/qdrant.md
           - modules/rabbitmq.md
