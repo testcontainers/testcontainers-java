@@ -217,6 +217,10 @@ updates:
       interval: "weekly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
+    directory: "/modules/openfga"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "gradle"
     directory: "/modules/oracle-free"
     schedule:
       interval: "weekly"

@@ -42,6 +42,7 @@ body:
         - Neo4j
         - NGINX
         - OceanBase
+        - OpenFGA
         - Oracle Free
         - Oracle XE
         - OrientDB
