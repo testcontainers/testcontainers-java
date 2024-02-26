@@ -131,6 +131,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/nginx/**/*
+"modules/openfga":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/openfga/**/*
 "modules/oracle":
   - changed-files:
     - any-glob-to-any-file:
