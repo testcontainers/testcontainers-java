@@ -60,6 +60,8 @@ class ContainerDef {
     @Getter
     private WaitStrategy waitStrategy = GenericContainer.DEFAULT_WAIT_STRATEGY;
 
+    @Getter String cgroupParent;
+
     public ContainerDef() {}
 
     protected void applyTo(CreateContainerCmd createCommand) {
@@ -135,6 +137,10 @@ class ContainerDef {
         }
 
         createCommand.withLabels(combinedLabels);
+
+        if (cgroupParent != null) {
+            hostConfig.withCgroupParent(cgroupParent);
+        }
     }
 
     protected void setImage(RemoteDockerImage image) {
@@ -301,4 +307,9 @@ class ContainerDef {
     protected void setWaitStrategy(WaitStrategy waitStrategy) {
         this.waitStrategy = waitStrategy;
     }
+
+    protected void setCgroupParent(String cgroupParent) {
+        this.cgroupParent = cgroupParent;
+    }
+
 }

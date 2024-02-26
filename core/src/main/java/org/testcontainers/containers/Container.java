@@ -376,6 +376,13 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     SELF withWorkingDirectory(String workDir);
 
     /**
+     * Set the cgroup parent that the container should use on startup.
+     *
+     * @param cgroupParent the cgroup parent for the container
+     */
+    SELF withCgroupParent(String cgroupParent);
+
+    /**
      * <b>Resolve</b> Docker image and set it.
      *
      * @param dockerImageName image name

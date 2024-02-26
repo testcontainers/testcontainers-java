@@ -1316,6 +1316,15 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * {@inheritDoc}
      */
     @Override
+    public SELF withCgroupParent(String cgroupParent) {
+        this.containerDef.setCgroupParent(cgroupParent);
+        return self();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public SELF withCopyFileToContainer(MountableFile mountableFile, String containerPath) {
         if (copyToFileContainerPathMap.containsKey(mountableFile)) {
             throw new IllegalStateException("Path already configured for copy: " + mountableFile);
@@ -1575,6 +1584,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     public void setNetworkMode(String networkMode) {
         this.containerDef.setNetworkMode(networkMode);
+    }
+
+    public void setCgroupParent(String cgroupParent) {
+        this.containerDef.setCgroupParent(cgroupParent);
     }
 
     public void setNetwork(Network network) {
