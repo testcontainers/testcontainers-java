@@ -89,6 +89,7 @@ nav:
           - modules/mockserver.md
           - modules/nginx.md
           - modules/ollama.md
+          - modules/openfga.md
           - modules/pulsar.md
           - modules/qdrant.md
           - modules/rabbitmq.md

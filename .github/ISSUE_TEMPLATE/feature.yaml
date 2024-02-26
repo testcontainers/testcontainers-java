@@ -42,6 +42,7 @@ body:
         - Neo4j
         - NGINX
         - Ollama
+        - OpenFGA
         - Oracle Free
         - Oracle XE
         - OrientDB

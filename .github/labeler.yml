@@ -135,6 +135,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/ollama/**/*
+"modules/openfga":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/openfga/**/*
 "modules/oracle":
   - changed-files:
     - any-glob-to-any-file:
