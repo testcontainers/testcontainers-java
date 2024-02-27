@@ -83,7 +83,6 @@ public class K6Container extends GenericContainer<K6Container> {
         }
         commandParts.add(testScript);
 
-        setCommand(commandParts.toArray(new String[]{}));
+        setCommand(commandParts.toArray(new String[] {}));
     }
-
 }
