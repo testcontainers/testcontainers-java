@@ -29,8 +29,9 @@ public class K6ContainerTests {
             container.followOutput(consumer);
 
             // Wait for test script results to be collected
-            consumer.waitUntil(frame ->
-                frame.getUtf8String().contains("iteration_duration"), 3, TimeUnit.SECONDS);
+            consumer.waitUntil(frame -> {
+                return frame.getUtf8String().contains("iteration_duration");
+            }, 3, TimeUnit.SECONDS);
 
             assertThat(container.getLogs()).contains("k6 tests are cool!");
         }
