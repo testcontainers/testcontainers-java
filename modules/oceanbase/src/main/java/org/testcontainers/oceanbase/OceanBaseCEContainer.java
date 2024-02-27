@@ -39,8 +39,6 @@ public class OceanBaseCEContainer extends JdbcDatabaseContainer<OceanBaseCEConta
 
     private String tenantName = DEFAULT_TEST_TENANT_NAME;
 
-    private String driverClassName = "com.mysql.cj.jdbc.Driver";
-
     public OceanBaseCEContainer(String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
     }
@@ -54,7 +52,7 @@ public class OceanBaseCEContainer extends JdbcDatabaseContainer<OceanBaseCEConta
 
     @Override
     public String getDriverClassName() {
-        return driverClassName;
+        return OceanBaseJdbcUtils.getDriverClass();
     }
 
     @Override
@@ -64,7 +62,7 @@ public class OceanBaseCEContainer extends JdbcDatabaseContainer<OceanBaseCEConta
 
     public String getJdbcUrl(String databaseName) {
         String additionalUrlParams = constructUrlParameters("?", "&");
-        String prefix = driverClassName.contains("mysql") ? "jdbc:mysql://" : "jdbc:oceanbase://";
+        String prefix = OceanBaseJdbcUtils.isMySQLDriver(getDriverClassName()) ? "jdbc:mysql://" : "jdbc:oceanbase://";
         return prefix + getHost() + ":" + getMappedPort(SQL_PORT) + "/" + databaseName + additionalUrlParams;
     }
 
@@ -102,23 +100,6 @@ public class OceanBaseCEContainer extends JdbcDatabaseContainer<OceanBaseCEConta
             throw new IllegalArgumentException("Tenant name cannot be " + SYSTEM_TENANT_NAME);
         }
         this.tenantName = tenantName;
-        return self();
-    }
-
-    /**
-     * Set the driver class name.
-     *
-     * @param driverClassName the driver class name
-     * @return this
-     */
-    public OceanBaseCEContainer withDriverClassName(String driverClassName) {
-        if (StringUtils.isEmpty(driverClassName)) {
-            throw new IllegalArgumentException("Driver class name cannot be null or empty");
-        }
-        if (!driverClassName.contains("mysql") && !driverClassName.contains("oceanbase")) {
-            throw new IllegalArgumentException("Driver class name should contains 'mysql' or 'oceanbase'");
-        }
-        this.driverClassName = driverClassName;
         return self();
     }
 
