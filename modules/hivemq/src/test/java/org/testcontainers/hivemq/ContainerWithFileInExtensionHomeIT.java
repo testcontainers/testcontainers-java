@@ -24,10 +24,12 @@ import java.util.concurrent.TimeUnit;
 class ContainerWithFileInExtensionHomeIT {
 
     @ParameterizedTest
-    @ValueSource(strings = {
-        "2020.1", // first version that provided a container image
-        "2024.3" // version that runs the image as a non-root user by default
-    })
+    @ValueSource(
+        strings = {
+            "2020.1", // first version that provided a container image
+            "2024.3", // version that runs the image as a non-root user by default
+        }
+    )
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
     void test(final @NotNull String hivemqCeTag) throws Exception {
         final HiveMQExtension hiveMQExtension = HiveMQExtension
