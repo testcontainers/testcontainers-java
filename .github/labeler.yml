@@ -135,6 +135,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/nginx/**/*
+"modules/oceanbase":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/oceanbase/**/*
 "modules/openfga":
   - changed-files:
     - any-glob-to-any-file:

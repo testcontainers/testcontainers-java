@@ -64,6 +64,7 @@ nav:
                 - modules/databases/mssqlserver.md
                 - modules/databases/mysql.md
                 - modules/databases/neo4j.md
+                - modules/databases/oceanbase.md
                 - modules/databases/oraclefree.md
                 - modules/databases/oraclexe.md
                 - modules/databases/orientdb.md

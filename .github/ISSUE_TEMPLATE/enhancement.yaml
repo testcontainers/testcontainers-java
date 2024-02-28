@@ -42,6 +42,7 @@ body:
         - MySQL
         - Neo4j
         - NGINX
+        - OceanBase
         - OpenFGA
         - Oracle Free
         - Oracle XE
