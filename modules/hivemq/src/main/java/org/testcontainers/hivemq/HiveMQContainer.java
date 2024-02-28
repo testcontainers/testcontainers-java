@@ -134,9 +134,8 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
         setCommand(
             "-c",
             removeCommand +
-            "cp -r '/opt/hivemq/temp-extensions/'* /opt/hivemq/extensions/ " +
-            "; chmod -R 777 /opt/hivemq/extensions " +
-            "&& /opt/docker-entrypoint.sh /opt/hivemq/bin/run.sh"
+            "cp -r '/opt/hivemq/temp-extensions/'* /opt/hivemq/extensions/ ; " +
+            "/opt/docker-entrypoint.sh /opt/hivemq/bin/run.sh"
         );
     }
 
