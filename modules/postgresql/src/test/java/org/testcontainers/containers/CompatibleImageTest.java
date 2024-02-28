@@ -15,9 +15,7 @@ public class CompatibleImageTest extends AbstractContainerDatabaseTest {
     public void pgvector() throws SQLException {
         try (
             // pgvectorContainer {
-            PostgreSQLContainer<?> pgvector = new PostgreSQLContainer<>(
-                DockerImageName.parse("pgvector/pgvector:pg16").asCompatibleSubstituteFor("postgres")
-            )
+            PostgreSQLContainer<?> pgvector = new PostgreSQLContainer<>("pgvector/pgvector:pg16")
             // }
         ) {
             pgvector.start();
