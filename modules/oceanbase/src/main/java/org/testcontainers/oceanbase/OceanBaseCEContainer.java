@@ -1,6 +1,5 @@
 package org.testcontainers.oceanbase;
 
-import org.apache.commons.lang3.StringUtils;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -27,8 +26,6 @@ public class OceanBaseCEContainer extends JdbcDatabaseContainer<OceanBaseCEConta
 
     private static final Integer RPC_PORT = 2882;
 
-    private static final String SYSTEM_TENANT_NAME = "sys";
-
     private static final String DEFAULT_TEST_TENANT_NAME = "test";
 
     private static final String DEFAULT_USERNAME = "root";
@@ -36,8 +33,6 @@ public class OceanBaseCEContainer extends JdbcDatabaseContainer<OceanBaseCEConta
     private static final String DEFAULT_PASSWORD = "";
 
     private static final String DEFAULT_DATABASE_NAME = "test";
-
-    private String tenantName = DEFAULT_TEST_TENANT_NAME;
 
     public OceanBaseCEContainer(String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
@@ -73,7 +68,10 @@ public class OceanBaseCEContainer extends JdbcDatabaseContainer<OceanBaseCEConta
 
     @Override
     public String getUsername() {
-        return DEFAULT_USERNAME + "@" + tenantName;
+        // In OceanBase, the jdbc username is related to the name of user, tenant and cluster,
+        // if a tenant name other than the default value 'test' is used, you should manually
+        // construct the jdbc username by yourself.
+        return DEFAULT_USERNAME + "@" + DEFAULT_TEST_TENANT_NAME;
     }
 
     @Override
@@ -84,29 +82,5 @@ public class OceanBaseCEContainer extends JdbcDatabaseContainer<OceanBaseCEConta
     @Override
     protected String getTestQueryString() {
         return "SELECT 1";
-    }
-
-    /**
-     * Set the non-system tenant to be created for testing.
-     *
-     * @param tenantName the name of tenant to be created
-     * @return this
-     */
-    public OceanBaseCEContainer withTenant(String tenantName) {
-        if (StringUtils.isEmpty(tenantName)) {
-            throw new IllegalArgumentException("Tenant name cannot be null or empty");
-        }
-        if (SYSTEM_TENANT_NAME.equals(tenantName)) {
-            throw new IllegalArgumentException("Tenant name cannot be " + SYSTEM_TENANT_NAME);
-        }
-        this.tenantName = tenantName;
-        return self();
-    }
-
-    @Override
-    protected void configure() {
-        if (!DEFAULT_TEST_TENANT_NAME.equals(tenantName)) {
-            withEnv("OB_TENANT_NAME", tenantName);
-        }
     }
 }
