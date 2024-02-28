@@ -52,13 +52,9 @@ public class OceanBaseCEContainer extends JdbcDatabaseContainer<OceanBaseCEConta
 
     @Override
     public String getJdbcUrl() {
-        return getJdbcUrl(DEFAULT_DATABASE_NAME);
-    }
-
-    public String getJdbcUrl(String databaseName) {
         String additionalUrlParams = constructUrlParameters("?", "&");
         String prefix = OceanBaseJdbcUtils.isMySQLDriver(getDriverClassName()) ? "jdbc:mysql://" : "jdbc:oceanbase://";
-        return prefix + getHost() + ":" + getMappedPort(SQL_PORT) + "/" + databaseName + additionalUrlParams;
+        return prefix + getHost() + ":" + getMappedPort(SQL_PORT) + "/" + DEFAULT_DATABASE_NAME + additionalUrlParams;
     }
 
     @Override
