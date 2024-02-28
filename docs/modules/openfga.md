@@ -1,6 +1,6 @@
 # OpenFGA
 
-Testcontainers module for [OpenFGA](https://hub.docker.com/r/"openfga/openfga).
+Testcontainers module for [OpenFGA](https://hub.docker.com/r/openfga/openfga).
 
 ## OpenFGAContainer's usage examples
 
