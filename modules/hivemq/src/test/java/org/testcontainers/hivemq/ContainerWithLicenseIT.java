@@ -35,7 +35,7 @@ class ContainerWithLicenseIT {
 
         try (
             final HiveMQContainer hivemq = new HiveMQContainer(
-                DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3")
+                DockerImageName.parse("hivemq/hivemq-ce").withTag("2024.3")
             )
                 .withHiveMQConfig(MountableFile.forClasspathResource("/inMemoryConfig.xml"))
                 .withExtension(hiveMQExtension)
