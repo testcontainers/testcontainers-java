@@ -160,6 +160,9 @@ labels:
   - name: modules/k3s
     color: '#006b75'
 
+  - name: modules/k6
+    color: '#006b75'
+
   - name: modules/kafka
     color: '#006b75'
 

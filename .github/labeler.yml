@@ -87,6 +87,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/k3s/**/*
+"modules/k6":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/k6/**/*
 "modules/kafka":
   - changed-files:
     - any-glob-to-any-file:
