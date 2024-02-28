@@ -1,12 +1,10 @@
-package org.testcontainers.junit.oceanbase;
+package org.testcontainers.oceanbase;
 
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
-import org.testcontainers.oceanbase.OceanBaseCEContainer;
-import org.testcontainers.oceanbase.OceanBaseCEContainerProvider;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
