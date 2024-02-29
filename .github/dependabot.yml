@@ -149,6 +149,14 @@ updates:
       - dependency-name: "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml"
         update-types: [ "version-update:semver-minor", "version-update:semver-patch" ]
   - package-ecosystem: "gradle"
+    directory: "/modules/k6"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml"
+        update-types: [ "version-update:semver-minor", "version-update:semver-patch" ]
+  - package-ecosystem: "gradle"
     directory: "/modules/kafka"
     schedule:
       interval: "weekly"
@@ -208,6 +216,11 @@ updates:
         update-types: [ "version-update:semver-major" ]
   - package-ecosystem: "gradle"
     directory: "/modules/nginx"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
+    directory: "/modules/oceanbase"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10

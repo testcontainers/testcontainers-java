@@ -160,6 +160,9 @@ labels:
   - name: modules/k3s
     color: '#006b75'
 
+  - name: modules/k6
+    color: '#006b75'
+
   - name: modules/kafka
     color: '#006b75'
 
@@ -188,6 +191,9 @@ labels:
     color: '#006b75'
 
   - name: modules/nginx
+    color: '#006b75'
+
+  - name: modules/oceanbase
     color: '#006b75'
 
   - name: modules/ollama
@@ -382,7 +388,7 @@ branches:
         # Required. Require branches to be up to date before merging.
         strict: true
         # Required. The list of status checks to require in order to merge into this branch
-        contexts: ["check (:testcontainers:check)", "check (:docs:examples:check)", "in-docker_test", "ci/circleci: minimal_core", "test"]
+        contexts: ["core", "check_docs_examples", "in-docker_test", "ci/circleci: minimal_core", "test"]
       # Required. Enforce all configured restrictions for administrators. Set to true to enforce required status checks for repository administrators. Set to null to disable.
       enforce_admins: false
       # Prevent merge commits from being pushed to matching branches
