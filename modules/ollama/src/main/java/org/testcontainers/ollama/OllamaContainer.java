@@ -53,11 +53,11 @@ public class OllamaContainer extends GenericContainer<OllamaContainer> {
     }
 
     /**
-     * Commits the current file system changes in the container into a new image. 
+     * Commits the current file system changes in the container into a new image.
      * Should be used for creating an image that contains a loaded model.
      * @param imageName the name of the new image
      */
-    public void createImage(String imageName) {
+    public void commitToImage(String imageName) {
         DockerImageName dockerImageName = DockerImageName.parse(getDockerImageName());
         if (!dockerImageName.equals(DockerImageName.parse(imageName))) {
             DockerClient dockerClient = DockerClientFactory.instance().client();

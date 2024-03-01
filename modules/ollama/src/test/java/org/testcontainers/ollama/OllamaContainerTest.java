@@ -29,7 +29,7 @@ public class OllamaContainerTest {
     }
 
     @Test
-    public void downloadModelAndCreateImage() throws IOException, InterruptedException {
+    public void downloadModelAndCommitToImage() throws IOException, InterruptedException {
         String newImageName = "tc-ollama-allminilm-" + Base58.randomString(4).toLowerCase();
         try (OllamaContainer ollama = new OllamaContainer("ollama/ollama:0.1.26")) {
             ollama.start();
@@ -41,7 +41,7 @@ public class OllamaContainerTest {
                 .jsonPath()
                 .getString("models[0].name");
             assertThat(modelName).contains("all-minilm");
-            ollama.createImage(newImageName);
+            ollama.commitToImage(newImageName);
         }
         try (
             OllamaContainer ollama = new OllamaContainer(
