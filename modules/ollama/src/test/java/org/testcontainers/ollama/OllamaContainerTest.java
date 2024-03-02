@@ -12,18 +12,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class OllamaContainerTest {
 
     @Test
-    public void containerStart() {
+    public void withDefaultConfig() {
         try ( // container {
-            OllamaContainer ollamaContainer = new OllamaContainer("ollama/ollama:0.1.26")
+            OllamaContainer ollama = new OllamaContainer("ollama/ollama:0.1.26")
             // }
         ) {
-            ollamaContainer.start();
+            ollama.start();
 
-            String version = given()
-                .baseUri(ollamaContainer.getEndpoint())
-                .get("/api/version")
-                .jsonPath()
-                .get("version");
+            String version = given().baseUri(ollama.getEndpoint()).get("/api/version").jsonPath().get("version");
             assertThat(version).isEqualTo("0.1.26");
         }
     }
