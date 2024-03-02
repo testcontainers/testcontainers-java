@@ -196,6 +196,9 @@ labels:
   - name: modules/oceanbase
     color: '#006b75'
 
+  - name: modules/ollama
+    color: '#006b75'
+
   - name: modules/openfga
     color: '#006b75'
 

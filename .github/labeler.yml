@@ -139,6 +139,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/oceanbase/**/*
+"modules/ollama":
+  - changed-files:
+      - any-glob-to-any-file:
+          - modules/ollama/**/*
 "modules/openfga":
   - changed-files:
     - any-glob-to-any-file:
