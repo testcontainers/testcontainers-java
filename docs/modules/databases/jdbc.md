@@ -55,6 +55,10 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 
 `jdbc:tc:sqlserver:2017-CU12:///databasename`
 
+#### Using OceanBase
+
+`jdbc:tc:oceanbasece:4.2.2:///databasename`
+
 #### Using Oracle
 
 `jdbc:tc:oracle:21-slim-faststart:///databasename`
