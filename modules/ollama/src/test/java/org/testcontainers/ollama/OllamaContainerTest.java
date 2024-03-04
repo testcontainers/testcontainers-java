@@ -29,7 +29,9 @@ public class OllamaContainerTest {
         String newImageName = "tc-ollama-allminilm-" + Base58.randomString(4).toLowerCase();
         try (OllamaContainer ollama = new OllamaContainer("ollama/ollama:0.1.26")) {
             ollama.start();
+            // pullModel {
             ollama.execInContainer("ollama", "pull", "all-minilm");
+            // }
 
             String modelName = given()
                 .baseUri(ollama.getEndpoint())
@@ -37,12 +39,16 @@ public class OllamaContainerTest {
                 .jsonPath()
                 .getString("models[0].name");
             assertThat(modelName).contains("all-minilm");
+            // commitToImage {
             ollama.commitToImage(newImageName);
+            // }
         }
         try (
+            // containerSubstitute {
             OllamaContainer ollama = new OllamaContainer(
                 DockerImageName.parse(newImageName).asCompatibleSubstituteFor("ollama/ollama")
             )
+            // }
         ) {
             ollama.start();
             String modelName = given()
