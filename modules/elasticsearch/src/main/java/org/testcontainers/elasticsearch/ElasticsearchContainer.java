@@ -66,7 +66,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
     private static final DockerImageName ELASTICSEARCH_IMAGE_NAME = DockerImageName.parse("elasticsearch");
 
     // default location of the automatically generated self-signed HTTP cert for versions >= 8
-    public static final String DEFAULT_CERT_PATH = "/usr/share/elasticsearch/config/certs/http_ca.crt";
+    private static final String DEFAULT_CERT_PATH = "/usr/share/elasticsearch/config/certs/http_ca.crt";
 
     /**
      * Elasticsearch Default version
@@ -227,8 +227,8 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
         return getHost() + ":" + getMappedPort(ELASTICSEARCH_DEFAULT_PORT);
     }
 
-    @Deprecated
     // The TransportClient will be removed in Elasticsearch 8. No need to expose this port anymore in the future.
+    @Deprecated
     public InetSocketAddress getTcpHost() {
         return new InetSocketAddress(getHost(), getMappedPort(ELASTICSEARCH_DEFAULT_TCP_PORT));
     }

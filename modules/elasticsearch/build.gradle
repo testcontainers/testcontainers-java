@@ -8,13 +8,7 @@ dependencies {
 }
 
 tasks.japicmp {
-    packageExcludes = []
-
-    classExcludes = []
-
     methodExcludes = [
         "org.testcontainers.elasticsearch.ElasticsearchContainer#containerIsStarted(com.github.dockerjava.api.command.InspectContainerResponse)",
     ]
-
-    fieldExcludes = []
 }
