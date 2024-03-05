@@ -15,7 +15,7 @@ public class OpenFGAContainerTest {
 
     @Test
     public void withDefaultConfig() throws FgaInvalidParameterException, ExecutionException, InterruptedException {
-        try ( // container
+        try ( // container {
             OpenFGAContainer openfga = new OpenFGAContainer("openfga/openfga:v1.4.3")
             // }
         ) {

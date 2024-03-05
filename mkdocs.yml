@@ -64,6 +64,7 @@ nav:
                 - modules/databases/mssqlserver.md
                 - modules/databases/mysql.md
                 - modules/databases/neo4j.md
+                - modules/databases/oceanbase.md
                 - modules/databases/oraclefree.md
                 - modules/databases/oraclexe.md
                 - modules/databases/orientdb.md
@@ -82,12 +83,14 @@ nav:
           - modules/gcloud.md
           - modules/hivemq.md
           - modules/k3s.md
+          - modules/k6.md
           - modules/kafka.md
           - modules/localstack.md
           - modules/milvus.md
           - modules/minio.md
           - modules/mockserver.md
           - modules/nginx.md
+          - modules/ollama.md
           - modules/openfga.md
           - modules/pulsar.md
           - modules/qdrant.md

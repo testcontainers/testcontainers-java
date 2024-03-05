@@ -25,7 +25,7 @@ class ContainerWithExtensionSubclassIT {
 
         try (
             final HiveMQContainer hivemq = new HiveMQContainer(
-                DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3")
+                DockerImageName.parse("hivemq/hivemq-ce").withTag("2024.3")
             )
                 .waitForExtension(hiveMQExtension)
                 .withExtension(hiveMQExtension)

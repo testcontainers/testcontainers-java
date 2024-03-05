@@ -87,6 +87,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/k3s/**/*
+"modules/k6":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/k6/**/*
 "modules/kafka":
   - changed-files:
     - any-glob-to-any-file:
@@ -131,6 +135,14 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/nginx/**/*
+"modules/oceanbase":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/oceanbase/**/*
+"modules/ollama":
+  - changed-files:
+      - any-glob-to-any-file:
+          - modules/ollama/**/*
 "modules/openfga":
   - changed-files:
     - any-glob-to-any-file:
