@@ -33,4 +33,8 @@ public class WeaviateContainer extends GenericContainer<WeaviateContainer> {
     public String getHttpHostAddress() {
         return getHost() + ":" + getMappedPort(8080);
     }
+
+    public String getGrpcHostAddress() {
+        return getHost() + ":" + getMappedPort(50051);
+    }
 }
