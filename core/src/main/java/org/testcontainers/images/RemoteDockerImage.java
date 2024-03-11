@@ -1,16 +1,23 @@
 package org.testcontainers.images;
 
+import static org.awaitility.pollinterval.FibonacciPollInterval.fibonacci;
+import static org.awaitility.pollinterval.IterativePollInterval.iterative;
+
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.PullImageCmd;
 import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.google.common.util.concurrent.Futures;
+import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicReference;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.With;
+import org.awaitility.Awaitility;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ContainerFetchException;
@@ -30,6 +37,7 @@ import java.util.concurrent.Future;
 public class RemoteDockerImage extends LazyFuture<String> {
 
     private static final Duration PULL_RETRY_TIME_LIMIT = Duration.ofMinutes(2);
+    private static final int PULL_RETRY_ATTEMPT_LIMIT = 100;
 
     @ToString.Exclude
     private Future<DockerImageName> imageNameFuture;
@@ -65,7 +73,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
     @SneakyThrows({ InterruptedException.class, ExecutionException.class })
     protected final String resolve() {
         final DockerImageName imageName = getImageName();
-        Logger logger = DockerLoggerFactory.getLogger(imageName.toString());
+        final Logger logger = DockerLoggerFactory.getLogger(imageName.toString());
         try {
             if (!imagePullPolicy.shouldPull(imageName)) {
                 return imageName.asCanonicalNameString();
@@ -77,52 +85,71 @@ public class RemoteDockerImage extends LazyFuture<String> {
                 imageName
             );
 
-            Exception lastFailure = null;
+            final Instant startedAt = Instant.now();
             final Instant lastRetryAllowed = Instant.now().plus(PULL_RETRY_TIME_LIMIT);
+            final AtomicReference<Exception> lastFailure = new AtomicReference<>();
+            final PullImageCmd pullImageCmd = dockerClient
+                .pullImageCmd(imageName.getUnversionedPart())
+                .withTag(imageName.getVersionPart());
+            final AtomicReference<String> dockerImageName = new AtomicReference<>();
 
-            Instant startedAt = Instant.now();
-            while (Instant.now().isBefore(lastRetryAllowed)) {
-                try {
-                    PullImageCmd pullImageCmd = dockerClient
-                        .pullImageCmd(imageName.getUnversionedPart())
-                        .withTag(imageName.getVersionPart());
+            Awaitility.await()
+                .pollInSameThread()
+                .pollDelay(Duration.ZERO) // start checking immediately
+                .atMost(PULL_RETRY_TIME_LIMIT)
+                // The following poll interval in ms: 50, 100, 200, 400, 800....
+                // Results in ~70 requests in over 2 minutes
+                .pollInterval(iterative(duration -> duration.multipliedBy(2)).startDuration(Duration.ofMillis(50)))
+                .until(tryImagePullCommand(pullImageCmd, logger, dockerImageName, imageName, lastFailure, lastRetryAllowed));
 
-                    try {
-                        pullImageCmd.exec(new TimeLimitedLoggedPullImageResultCallback(logger)).awaitCompletion();
-                    } catch (DockerClientException e) {
-                        // Try to fallback to x86
-                        pullImageCmd
-                            .withPlatform("linux/amd64")
-                            .exec(new TimeLimitedLoggedPullImageResultCallback(logger))
-                            .awaitCompletion();
-                    }
-                    String dockerImageName = imageName.asCanonicalNameString();
-                    logger.info("Image {} pull took {}", dockerImageName, Duration.between(startedAt, Instant.now()));
-
-                    LocalImagesCache.INSTANCE.refreshCache(imageName);
-
-                    return dockerImageName;
-                } catch (InterruptedException | InternalServerErrorException e) {
-                    // these classes of exception often relate to timeout/connection errors so should be retried
-                    lastFailure = e;
-                    logger.warn(
-                        "Retrying pull for image: {} ({}s remaining)",
-                        imageName,
-                        Duration.between(Instant.now(), lastRetryAllowed).getSeconds()
-                    );
-                }
+            if(dockerImageName.get() == null) {
+                final Exception lastException = lastFailure.get();
+                logger.error(
+                    "Failed to pull image: {}. Please check output of `docker pull {}`",
+                    imageName,
+                    imageName,
+                    lastException
+                );
+                throw new ContainerFetchException("Failed to pull image: " + imageName, lastException);
             }
 
-            logger.error(
-                "Failed to pull image: {}. Please check output of `docker pull {}`",
-                imageName,
-                imageName,
-                lastFailure
-            );
-
-            throw new ContainerFetchException("Failed to pull image: " + imageName, lastFailure);
+            logger.info("Image {} pull took {}", dockerImageName.get(), Duration.between(startedAt, Instant.now()));
+            LocalImagesCache.INSTANCE.refreshCache(imageName);
+            return dockerImageName.get();
         } catch (DockerClientException e) {
             throw new ContainerFetchException("Failed to get Docker client for " + imageName, e);
+        }
+    }
+
+    private Callable<Boolean> tryImagePullCommand(PullImageCmd pullImageCmd, Logger logger, AtomicReference<String> dockerImageName,
+        DockerImageName imageName, AtomicReference<Exception> lastFailure, Instant lastRetryAllowed) {
+        return () -> {
+            try {
+                pullWithX86Fallback(pullImageCmd, logger);
+                dockerImageName.set(imageName.asCanonicalNameString());
+                return true;
+            } catch (InterruptedException | InternalServerErrorException e) {
+                // these classes of exception often relate to timeout/connection errors so should be retried
+                lastFailure.set(e);
+                logger.warn(
+                    "Retrying pull for image: {} ({}s remaining)",
+                    imageName,
+                    Duration.between(Instant.now(), lastRetryAllowed).getSeconds()
+                );
+                return false;
+            }
+        };
+    }
+
+    private TimeLimitedLoggedPullImageResultCallback pullWithX86Fallback(PullImageCmd pullImageCmd, Logger logger) throws InterruptedException {
+        try {
+            return pullImageCmd.exec(new TimeLimitedLoggedPullImageResultCallback(logger)).awaitCompletion();
+        } catch (DockerClientException e) {
+            // Try to fallback to x86
+            return pullImageCmd
+                .withPlatform("linux/amd64")
+                .exec(new TimeLimitedLoggedPullImageResultCallback(logger))
+                .awaitCompletion();
         }
     }
 
