@@ -17,18 +17,16 @@ class RyukContainer extends GenericContainer<RyukContainer> {
                 cmd
                     .getHostConfig()
                     .withAutoRemove(true)
-                    .withPrivileged(TestcontainersConfiguration.getInstance().isRyukPrivileged()
-                        && !runningWindowsContainers)
+                    .withPrivileged(
+                        TestcontainersConfiguration.getInstance().isRyukPrivileged() && !runningWindowsContainers
+                    )
                     .withBinds(
                         runningWindowsContainers
-                            ? new Bind(
-                            "//./pipe/docker_engine",
-                            new Volume("//./pipe/docker_engine")
-                        )
+                            ? new Bind("//./pipe/docker_engine", new Volume("//./pipe/docker_engine"))
                             : new Bind(
-                            DockerClientFactory.instance().getRemoteDockerUnixSocketPath(),
-                            new Volume("/var/run/docker.sock")
-                        )
+                                DockerClientFactory.instance().getRemoteDockerUnixSocketPath(),
+                                new Volume("/var/run/docker.sock")
+                            )
                     )
             );
         });

@@ -226,7 +226,8 @@ public class DockerClientFactory {
             activeApiVersion +
             "\n" +
             "  Operating System: " +
-            dockerInfo.getOperatingSystem() + (runningWindowsContainers ? " (WCOW)" : "") +
+            dockerInfo.getOperatingSystem() +
+            (runningWindowsContainers ? " (WCOW)" : "") +
             "\n" +
             "  Total Memory: " +
             dockerInfo.getMemTotal() /
