@@ -13,13 +13,15 @@ public class WeaviateContainerTest {
     @Test
     public void test() {
         try ( // container {
-            WeaviateContainer weaviate = new WeaviateContainer("semitechnologies/weaviate:1.22.4")
+            WeaviateContainer weaviate = new WeaviateContainer("semitechnologies/weaviate:1.24.1")
             // }
         ) {
             weaviate.start();
-            WeaviateClient client = new WeaviateClient(new Config("http", weaviate.getHttpHostAddress()));
+            Config config = new Config("http", weaviate.getHttpHostAddress());
+            config.setGRPCHost(weaviate.getGrpcHostAddress());
+            WeaviateClient client = new WeaviateClient(config);
             Result<Meta> meta = client.misc().metaGetter().run();
-            assertThat(meta.getResult().getVersion()).isEqualTo("1.22.4");
+            assertThat(meta.getResult().getVersion()).isEqualTo("1.24.1");
         }
     }
 }

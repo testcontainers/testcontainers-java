@@ -44,7 +44,7 @@ public class OllamaContainerTest {
             // }
         }
         try (
-            // containerSubstitute {
+            // substitute {
             OllamaContainer ollama = new OllamaContainer(
                 DockerImageName.parse(newImageName).asCompatibleSubstituteFor("ollama/ollama")
             )

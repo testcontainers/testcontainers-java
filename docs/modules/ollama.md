@@ -29,7 +29,7 @@ In order to create a new image that contains the model, you can use the followin
 And use the new image along with [Image name Substitution](../features/image_name_substitution.md#manual-substitution)
 
 <!--codeinclude-->
-[Use new Image](../../modules/ollama/src/test/java/org/testcontainers/ollama/OllamaContainerTest.java) inside_block:containerSubstitute
+[Use new Image](../../modules/ollama/src/test/java/org/testcontainers/ollama/OllamaContainerTest.java) inside_block:substitute
 <!--/codeinclude-->
 
 ## Adding this module to your project dependencies
