@@ -104,8 +104,8 @@ public abstract class DockerClientProviderStrategy {
     }
 
     /**
-   /* @return the path under which the Docker unix socket is reachable relative to the Docker daemon
-    */
+     * @return the path under which the Docker unix socket is reachable relative to the Docker daemon
+     */
     public String getRemoteDockerUnixSocketPath() {
         return null;
     }
@@ -301,7 +301,7 @@ public abstract class DockerClientProviderStrategy {
             String osType = strategy.getInfo().getOsType();
             if (StringUtils.isBlank(osType)) {
                 log.warn("Could not determine Docker OS type");
-            } else if (!osType.equals("linux")) {
+            } else if (!osType.equals("linux") && !osType.equals("windows")) {
                 log.warn("{} is currently not supported", osType);
                 throw new InvalidConfigurationException(osType + " containers are currently not supported");
             }
