@@ -35,7 +35,7 @@ public class QdrantContainerTest {
     @Test
     public void testApiKey() throws ExecutionException, InterruptedException {
         String apiKey = UUID.randomUUID().toString();
-        try (QdrantContainer qdrant = new QdrantContainer("qdrant/qdrant:v1.7.4").withApiKey(apiKey);) {
+        try (QdrantContainer qdrant = new QdrantContainer("qdrant/qdrant:v1.7.4").withApiKey(apiKey)) {
             qdrant.start();
 
             final QdrantClient unauthClient = new QdrantClient(
