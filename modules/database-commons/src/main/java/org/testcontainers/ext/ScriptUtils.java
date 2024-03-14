@@ -27,6 +27,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.script.ScriptException;
 
@@ -273,7 +274,7 @@ public abstract class ScriptUtils {
                 LOGGER.info("Executing database script from " + scriptPath);
             }
 
-            long startTime = System.currentTimeMillis();
+            long startTime = System.nanoTime();
             List<String> statements = new LinkedList<>();
 
             if (separator == null) {
@@ -306,7 +307,7 @@ public abstract class ScriptUtils {
                 closeableDelegate.execute(statements, scriptPath, continueOnError, ignoreFailedDrops);
             }
 
-            long elapsedTime = System.currentTimeMillis() - startTime;
+            long elapsedTime = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime);
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("Executed database script from " + scriptPath + " in " + elapsedTime + " ms.");
             }
