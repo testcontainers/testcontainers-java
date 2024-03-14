@@ -11,7 +11,7 @@ import org.testcontainers.utility.DockerImageName;
 public class OutOfPackageImagePullPolicyTest {
 
     @Test
-    public void shouldSupportCustomPoliciesOutOfTestContainersPackage() {
+    public void shouldSupportCustomPoliciesOutOfTestcontainersPackage() {
         try (
             GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
                 .withImagePullPolicy(

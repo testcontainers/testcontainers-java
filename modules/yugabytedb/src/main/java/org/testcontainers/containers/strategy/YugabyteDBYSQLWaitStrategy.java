@@ -8,6 +8,7 @@ import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.concurrent.TimeUnit;
 
 import static org.rnorth.ducttape.unreliables.Unreliables.retryUntilSuccess;
@@ -22,16 +23,17 @@ import static org.rnorth.ducttape.unreliables.Unreliables.retryUntilSuccess;
  * check the DB status with this way with a smoke test query that uses the underlying
  * custom objects and wait for the operation to complete.
  * </p>
- *
- * @author srinivasa-vasu
  */
 @RequiredArgsConstructor
 @Slf4j
 public final class YugabyteDBYSQLWaitStrategy extends AbstractWaitStrategy {
 
-    private static final String YSQL_TEST_QUERY = "SELECT 1";
-
     private final WaitStrategyTarget target;
+
+    private static final String YSQL_EXTENDED_PROBE =
+        "CREATE TABLE IF NOT EXISTS YB_SAMPLE(k int, v int, primary key(k, v))";
+
+    private static final String YSQL_EXTENDED_PROBE_DROP_TABLE = "DROP TABLE IF EXISTS YB_SAMPLE";
 
     @Override
     public void waitUntilReady(WaitStrategyTarget target) {
@@ -42,10 +44,11 @@ public final class YugabyteDBYSQLWaitStrategy extends AbstractWaitStrategy {
             () -> {
                 getRateLimiter()
                     .doWhenReady(() -> {
-                        try (Connection con = container.createConnection(container.getJdbcUrl())) {
-                            con.createStatement().execute(YSQL_TEST_QUERY);
+                        try (Connection con = container.createConnection(""); Statement stmt = con.createStatement()) {
+                            stmt.execute(YSQL_EXTENDED_PROBE);
+                            stmt.execute(YSQL_EXTENDED_PROBE_DROP_TABLE);
                         } catch (SQLException ex) {
-                            log.error("Error connecting to the database", ex);
+                            throw new RuntimeException(ex);
                         }
                     });
                 return true;

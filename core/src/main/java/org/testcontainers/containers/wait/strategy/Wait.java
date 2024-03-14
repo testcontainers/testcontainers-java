@@ -26,6 +26,16 @@ public class Wait {
     }
 
     /**
+     * Convenience method to return a WaitStrategy for exposed or mapped ports.
+     *
+     * @param ports the port to check
+     * @return the WaitStrategy
+     */
+    public static HostPortWaitStrategy forListeningPorts(int... ports) {
+        return new HostPortWaitStrategy().forPorts(ports);
+    }
+
+    /**
      * Convenience method to return a WaitStrategy for an HTTP endpoint.
      *
      * @param path the path to check
@@ -65,5 +75,15 @@ public class Wait {
      */
     public static DockerHealthcheckWaitStrategy forHealthcheck() {
         return new DockerHealthcheckWaitStrategy();
+    }
+
+    /**
+     * Convenience method to return a WaitStrategy for a shell command.
+     *
+     * @param command the command to run
+     * @return ShellStrategy
+     */
+    public static ShellStrategy forSuccessfulCommand(String command) {
+        return new ShellStrategy().withCommand(command);
     }
 }

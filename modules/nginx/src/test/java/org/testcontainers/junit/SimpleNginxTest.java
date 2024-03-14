@@ -20,9 +20,6 @@ import java.net.URLConnection;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * @author richardnorth
- */
 public class SimpleNginxTest {
 
     private static final DockerImageName NGINX_IMAGE = DockerImageName.parse("nginx:1.9.4");

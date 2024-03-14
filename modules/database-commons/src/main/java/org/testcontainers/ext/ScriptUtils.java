@@ -37,16 +37,6 @@ import javax.script.ScriptException;
  *
  * Generic utility methods for working with SQL scripts. Mainly for internal use
  * within the framework.
- *
- * @author Thomas Risberg
- * @author Sam Brannen
- * @author Juergen Hoeller
- * @author Keith Donald
- * @author Dave Syer
- * @author Chris Beams
- * @author Oliver Gierke
- * @author Chris Baldwin
- * @since 4.0.3
  */
 public abstract class ScriptUtils {
 
@@ -130,191 +120,18 @@ public abstract class ScriptUtils {
             "blockCommentEndDelimiter must not be null or empty"
         );
 
-        StringBuilder sb = new StringBuilder();
-        boolean inEscape = false;
-        boolean inLineComment = false;
-        boolean inBlockComment = false;
-        Character currentLiteralDelimiter = null;
-
-        int compoundStatementDepth = 0;
-        final String lowerCaseScriptContent = script.toLowerCase();
-        char[] content = script.toCharArray();
-        for (int i = 0; i < script.length(); i++) {
-            char c = content[i];
-            if (inEscape) {
-                inEscape = false;
-                sb.append(c);
-                continue;
-            }
-            // MySQL style escapes
-            if (c == '\\') {
-                inEscape = true;
-                sb.append(c);
-                continue;
-            }
-            // Determine whether we're entering/leaving a string literal
-            if (!inBlockComment && !inLineComment && (c == '\'' || c == '"' || c == '`')) {
-                if (currentLiteralDelimiter == null) { // ignore delimiters within an existing string literal
-                    currentLiteralDelimiter = c;
-                } else if (currentLiteralDelimiter == c) { // find end of string literal
-                    currentLiteralDelimiter = null;
-                }
-            }
-            final boolean inLiteral = currentLiteralDelimiter != null;
-
-            if (!inLiteral && containsSubstringAtOffset(lowerCaseScriptContent, commentPrefix, i)) {
-                inLineComment = true;
-            }
-            if (inLineComment && c == '\n') {
-                inLineComment = false;
-            }
-            if (!inLiteral && containsSubstringAtOffset(lowerCaseScriptContent, blockCommentStartDelimiter, i)) {
-                inBlockComment = true;
-            }
-            if (
-                !inLiteral &&
-                inBlockComment &&
-                containsSubstringAtOffset(lowerCaseScriptContent, blockCommentEndDelimiter, i)
-            ) {
-                inBlockComment = false;
-            }
-            final boolean inComment = inLineComment || inBlockComment;
-
-            if (
-                !inLiteral &&
-                !inComment &&
-                containsKeywordsAtOffset(
-                    lowerCaseScriptContent,
-                    "BEGIN",
-                    i,
-                    separator,
-                    commentPrefix,
-                    blockCommentStartDelimiter
-                )
-            ) {
-                compoundStatementDepth++;
-            }
-            if (
-                !inLiteral &&
-                !inComment &&
-                containsKeywordsAtOffset(
-                    lowerCaseScriptContent,
-                    "END",
-                    i,
-                    separator,
-                    commentPrefix,
-                    blockCommentStartDelimiter
-                )
-            ) {
-                compoundStatementDepth--;
-            }
-            final boolean inCompoundStatement = compoundStatementDepth != 0;
-
-            if (!inLiteral && !inCompoundStatement) {
-                if (script.startsWith(separator, i)) {
-                    // we've reached the end of the current statement
-                    sb = flushStringBuilder(sb, statements);
-                    i += separator.length() - 1;
-                    continue;
-                } else if (script.startsWith(commentPrefix, i)) {
-                    // skip over any content from the start of the comment to the EOL
-                    int indexOfNextNewline = script.indexOf("\n", i);
-                    if (indexOfNextNewline > i) {
-                        i = indexOfNextNewline;
-                        continue;
-                    } else {
-                        // if there's no EOL, we must be at the end
-                        // of the script, so stop here.
-                        break;
-                    }
-                } else if (script.startsWith(blockCommentStartDelimiter, i)) {
-                    // skip over any block comments
-                    int indexOfCommentEnd = script.indexOf(blockCommentEndDelimiter, i);
-                    if (indexOfCommentEnd > i) {
-                        i = indexOfCommentEnd + blockCommentEndDelimiter.length() - 1;
-                        inBlockComment = false;
-                        continue;
-                    } else {
-                        throw new ScriptParseException(
-                            String.format("Missing block comment end delimiter [%s].", blockCommentEndDelimiter),
-                            resource
-                        );
-                    }
-                } else if (c == ' ' || c == '\n' || c == '\t' || c == '\r') {
-                    // avoid multiple adjacent whitespace characters
-                    if (sb.length() > 0 && sb.charAt(sb.length() - 1) != ' ') {
-                        c = ' ';
-                    } else {
-                        continue;
-                    }
-                }
-            }
-            sb.append(c);
-        }
-        flushStringBuilder(sb, statements);
-    }
-
-    private static StringBuilder flushStringBuilder(StringBuilder sb, List<String> statements) {
-        if (sb.length() == 0) {
-            return sb;
-        }
-
-        final String s = sb.toString().trim();
-        if (StringUtils.isNotEmpty(s)) {
-            statements.add(s);
-        }
-
-        return new StringBuilder();
-    }
-
-    private static boolean isSeperator(
-        char c,
-        String separator,
-        String commentPrefix,
-        String blockCommentStartDelimiter
-    ) {
-        return (
-            c == ' ' ||
-            c == '\r' ||
-            c == '\n' ||
-            c == '\t' ||
-            c == separator.charAt(0) ||
-            c == separator.charAt(separator.length() - 1) ||
-            c == commentPrefix.charAt(0) ||
-            c == blockCommentStartDelimiter.charAt(0) ||
-            c == blockCommentStartDelimiter.charAt(blockCommentStartDelimiter.length() - 1)
-        );
-    }
-
-    private static boolean containsSubstringAtOffset(String lowercaseString, String substring, int offset) {
-        String lowercaseSubstring = substring.toLowerCase();
-
-        return lowercaseString.startsWith(lowercaseSubstring, offset);
-    }
-
-    private static boolean containsKeywordsAtOffset(
-        String lowercaseString,
-        String keywords,
-        int offset,
-        String separator,
-        String commentPrefix,
-        String blockCommentStartDelimiter
-    ) {
-        String lowercaseKeywords = keywords.toLowerCase();
-
-        boolean backSeperated =
-            (offset == 0) ||
-            isSeperator(lowercaseString.charAt(offset - 1), separator, commentPrefix, blockCommentStartDelimiter);
-        boolean frontSeperated =
-            (offset >= (lowercaseString.length() - keywords.length())) ||
-            isSeperator(
-                lowercaseString.charAt(offset + keywords.length()),
+        new ScriptSplitter(
+            new ScriptScanner(
+                resource,
+                script,
                 separator,
                 commentPrefix,
-                blockCommentStartDelimiter
-            );
-
-        return backSeperated && frontSeperated && lowercaseString.startsWith(lowercaseKeywords, offset);
+                blockCommentStartDelimiter,
+                blockCommentEndDelimiter
+            ),
+            statements
+        )
+            .split();
     }
 
     private static void checkArgument(boolean expression, String errorMessage) {
@@ -329,13 +146,45 @@ public abstract class ScriptUtils {
      * @param delim String delimiting each statement - typically a ';' character
      */
     public static boolean containsSqlScriptDelimiters(String script, String delim) {
-        boolean inLiteral = false;
-        char[] content = script.toCharArray();
-        for (int i = 0; i < script.length(); i++) {
-            if (content[i] == '\'') {
-                inLiteral = !inLiteral;
-            }
-            if (!inLiteral && script.startsWith(delim, i)) {
+        return containsSqlScriptDelimiters(
+            "",
+            script,
+            DEFAULT_COMMENT_PREFIX,
+            delim,
+            DEFAULT_BLOCK_COMMENT_START_DELIMITER,
+            DEFAULT_BLOCK_COMMENT_END_DELIMITER
+        );
+    }
+
+    /**
+     * Does the provided SQL script contain the specified delimiter?
+     *
+     * @param script                     the SQL script
+     * @param delim                      String delimiting each statement - typically a ';' character
+     * @param commentPrefix              the prefix that identifies comments in the SQL script,
+     *                                   typically "--"
+     * @param blockCommentStartDelimiter block comment start delimiter
+     * @param blockCommentEndDelimiter   block comment end delimiter
+     */
+    public static boolean containsSqlScriptDelimiters(
+        String scriptPath,
+        String script,
+        String commentPrefix,
+        String delim,
+        String blockCommentStartDelimiter,
+        String blockCommentEndDelimiter
+    ) {
+        ScriptScanner scanner = new ScriptScanner(
+            scriptPath,
+            script,
+            delim,
+            commentPrefix,
+            blockCommentStartDelimiter,
+            blockCommentEndDelimiter
+        );
+        ScriptScanner.Lexem l;
+        while ((l = scanner.next()) != ScriptScanner.Lexem.EOF) {
+            if (ScriptScanner.Lexem.SEPARATOR.equals(l)) {
                 return true;
             }
         }
@@ -431,7 +280,16 @@ public abstract class ScriptUtils {
             if (separator == null) {
                 separator = DEFAULT_STATEMENT_SEPARATOR;
             }
-            if (!containsSqlScriptDelimiters(script, separator)) {
+            if (
+                !containsSqlScriptDelimiters(
+                    scriptPath,
+                    script,
+                    commentPrefix,
+                    separator,
+                    blockCommentStartDelimiter,
+                    blockCommentEndDelimiter
+                )
+            ) {
                 separator = FALLBACK_STATEMENT_SEPARATOR;
             }
 

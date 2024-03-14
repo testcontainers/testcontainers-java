@@ -7,8 +7,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Test for basic functionality when used as a <code>@ClassRule</code>.
- *
- * @author Mrtin Greber
  */
 public class RabbitMQContainerJUnitIntegrationTest {
 

@@ -5,10 +5,10 @@ import org.testcontainers.utility.DockerImageName;
 
 /**
  * A Datastore container that relies in google cloud sdk.
- *
+ * <p>
+ * Supported images: {@code gcr.io/google.com/cloudsdktool/google-cloud-cli}, {@code gcr.io/google.com/cloudsdktool/cloud-sdk}
+ * <p>
  * Default port is 8081.
- *
- * @author Eddú Meléndez
  */
 public class DatastoreEmulatorContainer extends GenericContainer<DatastoreEmulatorContainer> {
 
@@ -20,8 +20,12 @@ public class DatastoreEmulatorContainer extends GenericContainer<DatastoreEmulat
         "gcr.io/google.com/cloudsdktool/cloud-sdk"
     );
 
-    private static final String CMD =
-        "gcloud beta emulators datastore start --project test-project --host-port 0.0.0.0:8081";
+    private static final String PROJECT_ID = "test-project";
+
+    private static final String CMD = String.format(
+        "gcloud beta emulators datastore start --project %s --host-port 0.0.0.0:8081",
+        PROJECT_ID
+    );
 
     private static final int HTTP_PORT = 8081;
 
@@ -60,5 +64,9 @@ public class DatastoreEmulatorContainer extends GenericContainer<DatastoreEmulat
      */
     public String getEmulatorEndpoint() {
         return getHost() + ":" + getMappedPort(HTTP_PORT);
+    }
+
+    public String getProjectId() {
+        return PROJECT_ID;
     }
 }

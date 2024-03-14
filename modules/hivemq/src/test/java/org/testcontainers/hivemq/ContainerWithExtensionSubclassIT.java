@@ -10,7 +10,7 @@ import org.testcontainers.utility.MountableFile;
 
 import java.util.concurrent.TimeUnit;
 
-public class ContainerWithExtensionSubclassIT {
+class ContainerWithExtensionSubclassIT {
 
     @Test
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
@@ -25,7 +25,7 @@ public class ContainerWithExtensionSubclassIT {
 
         try (
             final HiveMQContainer hivemq = new HiveMQContainer(
-                DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3")
+                DockerImageName.parse("hivemq/hivemq-ce").withTag("2024.3")
             )
                 .waitForExtension(hiveMQExtension)
                 .withExtension(hiveMQExtension)

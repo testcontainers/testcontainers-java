@@ -5,6 +5,7 @@ import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.ConnectionFactoryMetadata;
 import io.r2dbc.spi.ConnectionFactoryOptions;
 import io.r2dbc.spi.Option;
+import org.testcontainers.DockerClientFactory;
 
 import javax.annotation.Nullable;
 
@@ -21,7 +22,7 @@ public interface R2DBCDatabaseContainerProvider {
     default ConnectionFactoryMetadata getMetadata(ConnectionFactoryOptions options) {
         ConnectionFactoryOptions.Builder builder = options.mutate();
         if (!options.hasOption(ConnectionFactoryOptions.HOST)) {
-            builder.option(ConnectionFactoryOptions.HOST, "localhost");
+            builder.option(ConnectionFactoryOptions.HOST, DockerClientFactory.instance().dockerHostIpAddress());
         }
         if (!options.hasOption(ConnectionFactoryOptions.PORT)) {
             builder.option(ConnectionFactoryOptions.PORT, 65535);

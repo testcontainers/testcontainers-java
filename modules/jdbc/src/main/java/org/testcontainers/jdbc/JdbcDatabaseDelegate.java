@@ -11,8 +11,6 @@ import java.sql.Statement;
 
 /**
  * JDBC database delegate
- *
- * @author Eugeny Karpov
  */
 @Slf4j
 public class JdbcDatabaseDelegate extends AbstractDatabaseDelegate<Statement> {

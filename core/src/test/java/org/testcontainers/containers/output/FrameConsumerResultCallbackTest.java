@@ -20,86 +20,95 @@ public class FrameConsumerResultCallbackTest {
     private static final String LOG_RESULT = "Тест1\nTest2\nTest3";
 
     @Test
-    public void passStderrFrameWithoutColors() {
+    public void passStderrFrameWithoutColors() throws IOException {
         FrameConsumerResultCallback callback = new FrameConsumerResultCallback();
         ToStringConsumer consumer = new ToStringConsumer();
         callback.addConsumer(OutputFrame.OutputType.STDERR, consumer);
         callback.onNext(new Frame(StreamType.STDERR, FRAME_PAYLOAD.getBytes()));
+        callback.close();
         assertThat(consumer.toUtf8String()).isEqualTo(LOG_RESULT);
     }
 
     @Test
-    public void passStderrFrameWithColors() {
+    public void passStderrFrameWithColors() throws IOException {
         FrameConsumerResultCallback callback = new FrameConsumerResultCallback();
         ToStringConsumer consumer = new ToStringConsumer().withRemoveAnsiCodes(false);
         callback.addConsumer(OutputFrame.OutputType.STDERR, consumer);
         callback.onNext(new Frame(StreamType.STDERR, FRAME_PAYLOAD.getBytes()));
+        callback.close();
         assertThat(consumer.toUtf8String()).isEqualTo(FRAME_PAYLOAD);
     }
 
     @Test
-    public void passStdoutFrameWithoutColors() {
+    public void passStdoutFrameWithoutColors() throws IOException {
         FrameConsumerResultCallback callback = new FrameConsumerResultCallback();
         ToStringConsumer consumer = new ToStringConsumer();
         callback.addConsumer(OutputFrame.OutputType.STDOUT, consumer);
         callback.onNext(new Frame(StreamType.STDOUT, FRAME_PAYLOAD.getBytes()));
+        callback.close();
         assertThat(consumer.toUtf8String()).isEqualTo(LOG_RESULT);
     }
 
     @Test
-    public void passStdoutFrameWithColors() {
+    public void passStdoutFrameWithColors() throws IOException {
         FrameConsumerResultCallback callback = new FrameConsumerResultCallback();
         ToStringConsumer consumer = new ToStringConsumer().withRemoveAnsiCodes(false);
         callback.addConsumer(OutputFrame.OutputType.STDOUT, consumer);
         callback.onNext(new Frame(StreamType.STDOUT, FRAME_PAYLOAD.getBytes()));
+        callback.close();
         assertThat(consumer.toUtf8String()).isEqualTo(FRAME_PAYLOAD);
     }
 
     @Test
-    public void basicConsumer() {
+    public void basicConsumer() throws IOException {
         FrameConsumerResultCallback callback = new FrameConsumerResultCallback();
         BasicConsumer consumer = new BasicConsumer();
         callback.addConsumer(OutputFrame.OutputType.STDOUT, consumer);
         callback.onNext(new Frame(StreamType.STDOUT, FRAME_PAYLOAD.getBytes()));
+        callback.close();
         assertThat(consumer.toString()).isEqualTo(LOG_RESULT);
     }
 
     @Test
-    public void passStdoutNull() {
+    public void passStdoutNull() throws IOException {
         FrameConsumerResultCallback callback = new FrameConsumerResultCallback();
         ToStringConsumer consumer = new ToStringConsumer().withRemoveAnsiCodes(false);
         callback.addConsumer(OutputFrame.OutputType.STDOUT, consumer);
         callback.onNext(new Frame(StreamType.STDOUT, null));
+        callback.close();
         assertThat(consumer.toUtf8String()).isEqualTo("");
     }
 
     @Test
-    public void passStdoutEmptyLine() {
+    public void passStdoutEmptyLine() throws IOException {
         String payload = "";
         FrameConsumerResultCallback callback = new FrameConsumerResultCallback();
         ToStringConsumer consumer = new ToStringConsumer().withRemoveAnsiCodes(false);
         callback.addConsumer(OutputFrame.OutputType.STDOUT, consumer);
         callback.onNext(new Frame(StreamType.STDOUT, payload.getBytes()));
+        callback.close();
         assertThat(consumer.toUtf8String()).isEqualTo(payload);
     }
 
     @Test
-    public void passStdoutSingleLine() {
+    public void passStdoutSingleLine() throws IOException {
         String payload = "Test";
         FrameConsumerResultCallback callback = new FrameConsumerResultCallback();
         ToStringConsumer consumer = new ToStringConsumer().withRemoveAnsiCodes(false);
         callback.addConsumer(OutputFrame.OutputType.STDOUT, consumer);
         callback.onNext(new Frame(StreamType.STDOUT, payload.getBytes()));
+        callback.close();
         assertThat(consumer.toUtf8String()).isEqualTo(payload);
     }
 
     @Test
-    public void passStdoutSingleLineWithNewline() {
+    public void passStdoutSingleLineWithNewline() throws IOException {
         String payload = "Test\n";
         FrameConsumerResultCallback callback = new FrameConsumerResultCallback();
         ToStringConsumer consumer = new ToStringConsumer().withRemoveAnsiCodes(false);
         callback.addConsumer(OutputFrame.OutputType.STDOUT, consumer);
         callback.onNext(new Frame(StreamType.STDOUT, payload.getBytes()));
+        callback.close();
         assertThat(consumer.toUtf8String()).isEqualTo(payload);
     }
 
@@ -110,12 +119,12 @@ public class FrameConsumerResultCallbackTest {
         callback.addConsumer(OutputFrame.OutputType.STDOUT, waitConsumer);
         callback.onNext(new Frame(StreamType.RAW, FRAME_PAYLOAD.getBytes()));
         waitConsumer.waitUntil(
-            frame -> frame.getType() == OutputFrame.OutputType.STDOUT && frame.getUtf8String().equals("Test2"),
+            frame -> frame.getType() == OutputFrame.OutputType.STDOUT && frame.getUtf8String().equals("Test2\n"),
             1,
             TimeUnit.SECONDS
         );
         waitConsumer.waitUntil(
-            frame -> frame.getType() == OutputFrame.OutputType.STDOUT && frame.getUtf8String().equals("Тест1"),
+            frame -> frame.getType() == OutputFrame.OutputType.STDOUT && frame.getUtf8String().equals("Тест1\n"),
             1,
             TimeUnit.SECONDS
         );
@@ -148,7 +157,7 @@ public class FrameConsumerResultCallbackTest {
             frame -> {
                 return (
                     frame.getType() == OutputFrame.OutputType.STDOUT &&
-                    frame.getUtf8String().equals("\u001B[1;33mTest2\u001B[0m")
+                    frame.getUtf8String().equals("\u001B[1;33mTest2\u001B[0m\n")
                 );
             },
             1,
@@ -158,7 +167,7 @@ public class FrameConsumerResultCallbackTest {
             frame -> {
                 return (
                     frame.getType() == OutputFrame.OutputType.STDOUT &&
-                    frame.getUtf8String().equals("\u001B[0;32mТест1\u001B[0m")
+                    frame.getUtf8String().equals("\u001B[0;32mТест1\u001B[0m\n")
                 );
             },
             1,
@@ -212,16 +221,10 @@ public class FrameConsumerResultCallbackTest {
 
     private static class BasicConsumer implements Consumer<OutputFrame> {
 
-        private boolean firstLine = true;
-
         private StringBuilder input = new StringBuilder();
 
         @Override
         public void accept(OutputFrame outputFrame) {
-            if (!firstLine) {
-                input.append('\n');
-            }
-            firstLine = false;
             input.append(outputFrame.getUtf8String());
         }
 

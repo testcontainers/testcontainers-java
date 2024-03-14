@@ -2,6 +2,7 @@ package org.testcontainers.containers;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
+import lombok.SneakyThrows;
 import org.junit.Test;
 
 import java.io.File;
@@ -59,6 +60,22 @@ public class ParsedDockerComposeFileValidationTest {
 
         // no services while version is defined
         new ParsedDockerComposeFile(ImmutableMap.of("version", "9000"));
+    }
+
+    @Test
+    @SneakyThrows
+    public void shouldRejectDeserializationOfArbitraryClasses() {
+        // Reject deserialization gadget chain attacks: https://nvd.nist.gov/vuln/detail/CVE-2022-1471
+        // https://raw.githubusercontent.com/mbechler/marshalsec/master/marshalsec.pdf
+
+        File file = new File("src/test/resources/docker-compose-deserialization.yml");
+
+        // ParsedDockerComposeFile should reject deserialization of ParsedDockerComposeFileBean
+        assertThatThrownBy(() -> {
+                new ParsedDockerComposeFile(file);
+            })
+            .hasMessageContaining(file.getAbsolutePath())
+            .hasMessageContaining("Unable to parse YAML file");
     }
 
     @Test

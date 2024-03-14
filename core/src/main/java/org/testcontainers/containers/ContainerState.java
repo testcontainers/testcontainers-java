@@ -119,6 +119,12 @@ public interface ContainerState {
         }
     }
 
+    /**
+     * Inspects the container and returns up-to-date inspection response.
+     *
+     * @return up-to-date container inspect response
+     * @see #getContainerInfo()
+     */
     default InspectContainerResponse getCurrentContainerInfo() {
         return getDockerClient().inspectContainerCmd(getContainerId()).exec();
     }
@@ -140,10 +146,16 @@ public interface ContainerState {
 
     /**
      * Get the actual mapped port for a given port exposed by the container.
-     * Should be used in conjunction with {@link #getHost()}.
+     * It should be used in conjunction with {@link #getHost()}.
+     * <p>
+     * Note: The returned port number might be outdated (for instance, after disconnecting from a network and reconnecting
+     * again). If you always need up-to-date value, override the {@link #getContainerInfo()} to return the
+     * {@link #getCurrentContainerInfo()}.
      *
      * @param originalPort the original TCP port that is exposed
      * @return the port that the exposed port is mapped to, or null if it is not exposed
+     * @see #getContainerInfo()
+     * @see #getCurrentContainerInfo()
      */
     default Integer getMappedPort(int originalPort) {
         Preconditions.checkState(
@@ -222,7 +234,10 @@ public interface ContainerState {
     }
 
     /**
+     * Returns the container inspect response. The response might be cached/outdated.
+     *
      * @return the container info
+     * @see #getCurrentContainerInfo()
      */
     InspectContainerResponse getContainerInfo();
 
@@ -230,7 +245,7 @@ public interface ContainerState {
      * Run a command inside a running container, as though using "docker exec", and interpreting
      * the output as UTF8.
      * <p>
-     * @see ExecInContainerPattern#execInContainer(com.github.dockerjava.api.command.InspectContainerResponse, String...)
+     * @see #execInContainer(Charset, String...)
      */
     default Container.ExecResult execInContainer(String... command)
         throws UnsupportedOperationException, IOException, InterruptedException {
@@ -240,11 +255,60 @@ public interface ContainerState {
     /**
      * Run a command inside a running container, as though using "docker exec".
      * <p>
-     * @see ExecInContainerPattern#execInContainer(com.github.dockerjava.api.command.InspectContainerResponse, Charset, String...)
+     * @see ExecInContainerPattern#execInContainer(DockerClient, InspectContainerResponse, Charset, String...)
      */
     default Container.ExecResult execInContainer(Charset outputCharset, String... command)
         throws UnsupportedOperationException, IOException, InterruptedException {
         return ExecInContainerPattern.execInContainer(getDockerClient(), getContainerInfo(), outputCharset, command);
+    }
+
+    /**
+     * Run a command inside a running container as a given user, as using "docker exec -u user".
+     * <p>
+     * @see ExecInContainerPattern#execInContainerWithUser(DockerClient, InspectContainerResponse, String, String...)
+     * @deprecated use {@link #execInContainer(ExecConfig)}
+     */
+    @Deprecated
+    default Container.ExecResult execInContainerWithUser(String user, String... command)
+        throws UnsupportedOperationException, IOException, InterruptedException {
+        return ExecInContainerPattern.execInContainer(
+            getDockerClient(),
+            getContainerInfo(),
+            ExecConfig.builder().user(user).command(command).build()
+        );
+    }
+
+    /**
+     * Run a command inside a running container as a given user, as using "docker exec -u user".
+     * <p>
+     * @see ExecInContainerPattern#execInContainerWithUser(DockerClient, InspectContainerResponse, Charset, String, String...)
+     * @deprecated use {@link #execInContainer(Charset, ExecConfig)}
+     */
+    @Deprecated
+    default Container.ExecResult execInContainerWithUser(Charset outputCharset, String user, String... command)
+        throws UnsupportedOperationException, IOException, InterruptedException {
+        return ExecInContainerPattern.execInContainer(
+            getDockerClient(),
+            getContainerInfo(),
+            outputCharset,
+            ExecConfig.builder().user(user).command(command).build()
+        );
+    }
+
+    /**
+     * Run a command inside a running container, as though using "docker exec".
+     */
+    default Container.ExecResult execInContainer(ExecConfig execConfig)
+        throws UnsupportedOperationException, IOException, InterruptedException {
+        return ExecInContainerPattern.execInContainer(getDockerClient(), getContainerInfo(), execConfig);
+    }
+
+    /**
+     * Run a command inside a running container, as though using "docker exec".
+     */
+    default Container.ExecResult execInContainer(Charset outputCharset, ExecConfig execConfig)
+        throws UnsupportedOperationException, IOException, InterruptedException {
+        return ExecInContainerPattern.execInContainer(getDockerClient(), getContainerInfo(), outputCharset, execConfig);
     }
 
     /**

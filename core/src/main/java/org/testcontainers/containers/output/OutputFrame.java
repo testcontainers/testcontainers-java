@@ -2,10 +2,11 @@ package org.testcontainers.containers.output;
 
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.StreamType;
-import com.google.common.base.Charsets;
+
+import java.nio.charset.StandardCharsets;
 
 /**
- * Holds a frame of container output (usually one line, possibly more)
+ * Holds exactly one complete line of container output. Lines are split on newline characters (LF, CR LF).
  */
 public class OutputFrame {
 
@@ -15,7 +16,7 @@ public class OutputFrame {
 
     private final byte[] bytes;
 
-    public OutputFrame(OutputType type, byte[] bytes) {
+    public OutputFrame(final OutputType type, final byte[] bytes) {
         this.type = type;
         this.bytes = bytes;
     }
@@ -29,11 +30,26 @@ public class OutputFrame {
     }
 
     public String getUtf8String() {
+        return (bytes == null) ? "" : new String(bytes, StandardCharsets.UTF_8);
+    }
+
+    public String getUtf8StringWithoutLineEnding() {
         if (bytes == null) {
             return "";
         }
+        return new String(bytes, 0, bytes.length - determineLineEndingLength(bytes), StandardCharsets.UTF_8);
+    }
 
-        return new String(bytes, Charsets.UTF_8);
+    private static int determineLineEndingLength(final byte[] bytes) {
+        if (bytes.length > 0) {
+            switch (bytes[bytes.length - 1]) {
+                case '\r':
+                    return 1;
+                case '\n':
+                    return ((bytes.length > 1) && (bytes[bytes.length - 2] == '\r')) ? 2 : 1;
+            }
+        }
+        return 0;
     }
 
     public enum OutputType {
@@ -44,7 +60,6 @@ public class OutputFrame {
         public static OutputType forStreamType(StreamType streamType) {
             switch (streamType) {
                 case RAW:
-                    return STDOUT;
                 case STDOUT:
                     return STDOUT;
                 case STDERR:
@@ -56,7 +71,7 @@ public class OutputFrame {
     }
 
     public static OutputFrame forFrame(Frame frame) {
-        OutputType outputType = OutputType.forStreamType(frame.getStreamType());
+        final OutputType outputType = OutputType.forStreamType(frame.getStreamType());
         if (outputType == null) {
             return null;
         }

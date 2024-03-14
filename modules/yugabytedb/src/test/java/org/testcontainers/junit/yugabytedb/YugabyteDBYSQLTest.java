@@ -11,8 +11,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * YugabyteDB YSQL API unit test class
- *
- * @author srinivasa-vasu
  */
 public class YugabyteDBYSQLTest extends AbstractContainerDatabaseTest {
 
@@ -95,6 +93,22 @@ public class YugabyteDBYSQLTest extends AbstractContainerDatabaseTest {
             assertThat(performQuery(ysqlContainer, "SELECT 1").getInt(1))
                 .as("A sample test query with a custom role succeeds")
                 .isEqualTo(1);
+        }
+    }
+
+    @Test
+    public void testWaitStrategy() throws SQLException {
+        try (final YugabyteDBYSQLContainer ysqlContainer = new YugabyteDBYSQLContainer(YBDB_TEST_IMAGE)) {
+            ysqlContainer.start();
+            assertThat(performQuery(ysqlContainer, "SELECT 1").getInt(1))
+                .as("A sample test query succeeds")
+                .isEqualTo(1);
+            boolean tableExists = performQuery(
+                ysqlContainer,
+                "SELECT EXISTS (SELECT FROM pg_tables WHERE tablename = 'YB_SAMPLE')"
+            )
+                .getBoolean(1);
+            assertThat(tableExists).as("yb_sample table does not exists").isFalse();
         }
     }
 }

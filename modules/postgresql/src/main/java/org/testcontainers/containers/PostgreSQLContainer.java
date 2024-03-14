@@ -9,7 +9,11 @@ import java.time.temporal.ChronoUnit;
 import java.util.Set;
 
 /**
- * @author richardnorth
+ * Testcontainers implementation for PostgreSQL.
+ * <p>
+ * Supported images: {@code postgres}, {@code pgvector/pgvector}
+ * <p>
+ * Exposed ports: 5432
  */
 public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
 
@@ -20,6 +24,8 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
     public static final String DEFAULT_TAG = "9.6.12";
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("postgres");
+
+    private static final DockerImageName PGVECTOR_IMAGE_NAME = DockerImageName.parse("pgvector/pgvector");
 
     public static final Integer POSTGRESQL_PORT = 5432;
 
@@ -49,7 +55,7 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
 
     public PostgreSQLContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, PGVECTOR_IMAGE_NAME);
 
         this.waitStrategy =
             new LogMessageWaitStrategy()

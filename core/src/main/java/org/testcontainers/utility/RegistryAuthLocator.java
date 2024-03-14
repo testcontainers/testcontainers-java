@@ -2,6 +2,7 @@ package org.testcontainers.utility;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.AuthConfig;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang3.StringUtils;
@@ -33,6 +34,8 @@ public class RegistryAuthLocator {
 
     private static final String DEFAULT_REGISTRY_NAME = "https://index.docker.io/v1/";
 
+    private static final String DOCKER_AUTH_ENV_VAR = "DOCKER_AUTH_CONFIG";
+
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private static RegistryAuthLocator instance;
@@ -42,6 +45,8 @@ public class RegistryAuthLocator {
     private final String commandExtension;
 
     private final File configFile;
+
+    private final String configEnv;
 
     private final Map<String, Optional<AuthConfig>> cache = new ConcurrentHashMap<>();
 
@@ -54,11 +59,13 @@ public class RegistryAuthLocator {
     @VisibleForTesting
     RegistryAuthLocator(
         File configFile,
+        String configEnv,
         String commandPathPrefix,
         String commandExtension,
         Map<String, String> notFoundMessageHolderReference
     ) {
         this.configFile = configFile;
+        this.configEnv = configEnv;
         this.commandPathPrefix = commandPathPrefix;
         this.commandExtension = commandExtension;
 
@@ -72,6 +79,7 @@ public class RegistryAuthLocator {
             .getenv()
             .getOrDefault("DOCKER_CONFIG", System.getProperty("user.home") + "/.docker");
         this.configFile = new File(dockerConfigLocation + "/config.json");
+        this.configEnv = System.getenv(DOCKER_AUTH_ENV_VAR);
         this.commandPathPrefix = "";
         this.commandExtension = "";
 
@@ -131,15 +139,8 @@ public class RegistryAuthLocator {
     }
 
     private Optional<AuthConfig> lookupUncachedAuthConfig(String registryName, DockerImageName dockerImageName) {
-        log.debug(
-            "RegistryAuthLocator has configFile: {} ({}) and commandPathPrefix: {}",
-            configFile,
-            configFile.exists() ? "exists" : "does not exist",
-            commandPathPrefix
-        );
-
         try {
-            final JsonNode config = OBJECT_MAPPER.readTree(configFile);
+            final JsonNode config = getDockerAuthConfig();
             log.debug("registryName [{}] for dockerImageName [{}]", registryName, dockerImageName);
 
             // use helper preferentially (per https://docs.docker.com/engine/reference/commandline/cli/)
@@ -162,13 +163,41 @@ public class RegistryAuthLocator {
             }
         } catch (Exception e) {
             log.info(
-                "Failure when attempting to lookup auth config. Please ignore if you don't have images in an authenticated registry. Details: (dockerImageName: {}, configFile: {}. Falling back to docker-java default behaviour. Exception message: {}",
+                "Failure when attempting to lookup auth config. Please ignore if you don't have images in an authenticated registry. Details: (dockerImageName: {}, configFile: {}, configEnv: {}). Falling back to docker-java default behaviour. Exception message: {}",
                 dockerImageName,
                 configFile,
+                DOCKER_AUTH_ENV_VAR,
                 e.getMessage()
             );
         }
         return Optional.empty();
+    }
+
+    private JsonNode getDockerAuthConfig() throws Exception {
+        log.debug(
+            "RegistryAuthLocator has configFile: {} ({}) configEnv: {} ({}) and commandPathPrefix: {}",
+            configFile,
+            configFile.exists() ? "exists" : "does not exist",
+            DOCKER_AUTH_ENV_VAR,
+            configEnv != null ? "exists" : "does not exist",
+            commandPathPrefix
+        );
+
+        if (configEnv != null) {
+            log.debug("RegistryAuthLocator reading from environment variable: {}", DOCKER_AUTH_ENV_VAR);
+            return OBJECT_MAPPER.readTree(configEnv);
+        } else if (configFile.exists()) {
+            log.debug("RegistryAuthLocator reading from configFile: {}", configFile);
+            return OBJECT_MAPPER.readTree(configFile);
+        }
+
+        throw new NotFoundException(
+            "No config supplied. Checked in order: " +
+            configFile +
+            " (file not found), " +
+            DOCKER_AUTH_ENV_VAR +
+            " (not set)"
+        );
     }
 
     private AuthConfig findExistingAuthConfig(final JsonNode config, final String reposName) throws Exception {

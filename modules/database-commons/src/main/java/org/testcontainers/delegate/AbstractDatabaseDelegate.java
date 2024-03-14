@@ -4,7 +4,6 @@ import java.util.Collection;
 
 /**
  * @param <CONNECTION> connection to the database
- * @author Eugeny Karpov
  */
 public abstract class AbstractDatabaseDelegate<CONNECTION> implements DatabaseDelegate {
 

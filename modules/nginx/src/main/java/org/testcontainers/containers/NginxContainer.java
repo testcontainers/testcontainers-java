@@ -8,9 +8,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Set;
 
-/**
- * @author richardnorth
- */
 public class NginxContainer<SELF extends NginxContainer<SELF>>
     extends GenericContainer<SELF>
     implements LinkableContainer {
@@ -22,7 +19,7 @@ public class NginxContainer<SELF extends NginxContainer<SELF>>
     private static final String DEFAULT_TAG = "1.9.4";
 
     /**
-     * @deprecated use {@link NginxContainer(DockerImageName)} instead
+     * @deprecated use {@link #NginxContainer(DockerImageName)} instead
      */
     @Deprecated
     public NginxContainer() {

@@ -1,12 +1,17 @@
 package org.testcontainers.containers;
 
 import org.jetbrains.annotations.NotNull;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 
 import java.util.Set;
 
 /**
- * @author richardnorth
+ * Testcontainers implementation for MySQL.
+ * <p>
+ * Supported image: {@code mysql}
+ * <p>
+ * Exposed ports: 3306
  */
 public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
 
@@ -37,7 +42,7 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
     private static final String MYSQL_ROOT_USER = "root";
 
     /**
-     * @deprecated use {@link MySQLContainer(DockerImageName)} instead
+     * @deprecated use {@link #MySQLContainer(DockerImageName)} instead
      */
     @Deprecated
     public MySQLContainer() {
@@ -71,7 +76,8 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
         optionallyMapResourceParameterAsVolume(
             MY_CNF_CONFIG_OVERRIDE_PARAM_NAME,
             "/etc/mysql/conf.d",
-            "mysql-default-conf"
+            "mysql-default-conf",
+            Transferable.DEFAULT_DIR_MODE
         );
 
         addEnv("MYSQL_DATABASE", databaseName);

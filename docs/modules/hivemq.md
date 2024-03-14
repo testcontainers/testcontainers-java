@@ -1,6 +1,6 @@
 # HiveMQ Module
 
-<img src="../modules_logos/hivemq-module.png" alt="drawing" width="800"/>
+![hivemq logo](../modules_logos/hivemq-module.png)
 
 Automatic starting HiveMQ docker containers for JUnit4 and JUnit5 tests.
 This enables testing MQTT client applications and integration testing of custom HiveMQ extensions.
@@ -34,7 +34,7 @@ Using the Enterprise Edition:
 [Enterprise Edition HiveMQ image](../../modules/hivemq/src/test/java/org/testcontainers/hivemq/docs/DemoHiveMQContainerIT.java) inside_block:hiveEEVersion
 <!--/codeinclude-->
 
-Using a specifc version is possible by using the tag:
+Using a specific version is possible by using the tag:
 <!--codeinclude-->
 [Specific HiveMQ Version](../../modules/hivemq/src/test/java/org/testcontainers/hivemq/docs/DemoHiveMQContainerIT.java) inside_block:specificVersion
 <!--/codeinclude-->
@@ -151,7 +151,7 @@ If the extension folder contains a DISABLED file, the extension will be disabled
 
 ---
 
-We first load the extension from the filesytem:
+We first load the extension from the filesystem:
 <!--codeinclude-->
 [Extension from filesystem](../../modules/hivemq/src/test/java/org/testcontainers/hivemq/docs/DemoDisableExtensionsIT.java) inside_block:startFromFilesystem
 <!--/codeinclude-->

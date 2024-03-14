@@ -17,8 +17,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Tests for {@link HttpWaitStrategy}.
- *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrategy> {
 

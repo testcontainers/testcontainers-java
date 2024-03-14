@@ -11,9 +11,6 @@ import org.testcontainers.utility.DockerImageName;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * @author Eugeny Karpov
- */
 @Slf4j
 public class CassandraContainerTest {
 

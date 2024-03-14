@@ -16,8 +16,6 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 
 /**
  * Common test methods for {@link WaitStrategy} implementations.
- *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public abstract class AbstractWaitStrategyTest<W extends WaitStrategy> {
 

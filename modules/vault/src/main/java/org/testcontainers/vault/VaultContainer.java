@@ -16,15 +16,17 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
- * GenericContainer subclass for Vault specific configuration and features. The main feature is the
- * withSecretInVault method, where users can specify which secrets to be pre-loaded into Vault for
- * their specific test scenario.
+ * Testcontainers implementation for Vault.
  * <p>
- * Other helpful features include the withVaultPort, and withVaultToken methods for convenience.
+ * Supported image: {@code hashicorp/vault}, {@code vault}
+ * <p>
+ * Exposure ports: 8200
  */
 public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericContainer<SELF> {
 
-    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("vault");
+    private static final DockerImageName DEFAULT_OLD_IMAGE_NAME = DockerImageName.parse("vault");
+
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("hashicorp/vault");
 
     private static final String DEFAULT_TAG = "1.1.3";
 
@@ -37,7 +39,7 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
     private int port = VAULT_PORT;
 
     /**
-     * @deprecated use {@link VaultContainer(DockerImageName)} instead
+     * @deprecated use {@link #VaultContainer(DockerImageName)} instead
      */
     @Deprecated
     public VaultContainer() {
@@ -50,7 +52,7 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
 
     public VaultContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DEFAULT_OLD_IMAGE_NAME, DEFAULT_IMAGE_NAME);
 
         // Use the vault healthcheck endpoint to check for readiness, per https://www.vaultproject.io/api/system/health.html
         setWaitStrategy(Wait.forHttp("/v1/sys/health").forStatusCode(200));
@@ -154,7 +156,9 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
      *
      * @param level the logging level to set for Vault.
      * @return this
+     * @deprecated use {@link #withEnv(String, String)} instead
      */
+    @Deprecated
     public SELF withLogLevel(VaultLogLevel level) {
         return withEnv("VAULT_LOG_LEVEL", level.config);
     }
@@ -170,7 +174,9 @@ public class VaultContainer<SELF extends VaultContainer<SELF>> extends GenericCo
      * @param firstSecret      first secret to add to specifed path
      * @param remainingSecrets var args list of secrets to add to specified path
      * @return this
+     * @deprecated use {@link #withInitCommand(String...)} instead
      */
+    @Deprecated
     public SELF withSecretInVault(String path, String firstSecret, String... remainingSecrets) {
         List<String> list = new ArrayList<>();
         list.add(firstSecret);

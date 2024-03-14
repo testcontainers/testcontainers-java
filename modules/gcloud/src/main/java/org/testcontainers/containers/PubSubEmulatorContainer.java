@@ -5,10 +5,10 @@ import org.testcontainers.utility.DockerImageName;
 
 /**
  * A PubSub container that relies in google cloud sdk.
- *
+ * <p>
+ * Supported images: {@code gcr.io/google.com/cloudsdktool/google-cloud-cli}, {@code gcr.io/google.com/cloudsdktool/cloud-sdk}
+ * <p>
  * Default port is 8085.
- *
- * @author Eddú Meléndez
  */
 public class PubSubEmulatorContainer extends GenericContainer<PubSubEmulatorContainer> {
 
@@ -23,6 +23,10 @@ public class PubSubEmulatorContainer extends GenericContainer<PubSubEmulatorCont
     private static final String CMD = "gcloud beta emulators pubsub start --host-port 0.0.0.0:8085";
 
     private static final int PORT = 8085;
+
+    public PubSubEmulatorContainer(String image) {
+        this(DockerImageName.parse(image));
+    }
 
     public PubSubEmulatorContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);

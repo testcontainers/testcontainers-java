@@ -50,12 +50,10 @@ public class Slf4jLogConsumer extends BaseConsumer<Slf4jLogConsumer> {
 
     @Override
     public void accept(OutputFrame outputFrame) {
-        OutputFrame.OutputType outputType = outputFrame.getType();
+        final OutputFrame.OutputType outputType = outputFrame.getType();
+        final String utf8String = outputFrame.getUtf8StringWithoutLineEnding();
 
-        String utf8String = outputFrame.getUtf8String();
-        utf8String = FrameConsumerResultCallback.LINE_BREAK_AT_END_PATTERN.matcher(utf8String).replaceAll("");
-
-        Map<String, String> originalMdc = MDC.getCopyOfContextMap();
+        final Map<String, String> originalMdc = MDC.getCopyOfContextMap();
         MDC.setContextMap(mdc);
         try {
             switch (outputType) {

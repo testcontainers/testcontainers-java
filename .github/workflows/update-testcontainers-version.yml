@@ -13,9 +13,9 @@ jobs:
       contents: write  # for peter-evans/create-pull-request to create branch
       pull-requests: write  # for peter-evans/create-pull-request to create a PR
     if: github.repository == 'testcontainers/testcontainers-java'
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: main
       - name: Update testcontainers.version property in gradle.properties
@@ -23,7 +23,7 @@ jobs:
           sed -i "s/^testcontainers\.version=.*/testcontainers\.version=${GITHUB_REF##*/}/g" gradle.properties
           git diff
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@2b011faafdcbc9ceb11414d64d0573f37c774b04 # v3.10.1
+        uses: peter-evans/create-pull-request@153407881ec5c347639a548ade7d8ad1d6740e38 # v3.10.1
         with:
           title: Update testcontainers version to ${GITHUB_REF##*/}
           body: |

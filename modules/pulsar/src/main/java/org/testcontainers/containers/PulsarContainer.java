@@ -5,7 +5,15 @@ import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.utility.DockerImageName;
 
 /**
- * This container wraps Apache Pulsar running in standalone mode
+ * Testcontainers implementation for Apache Pulsar.
+ * <p>
+ * Supported image: {@code apachepulsar/pulsar}
+ * <p>
+ * Exposed ports:
+ * <ul>
+ *     <li>Pulsar: 6650</li>
+ *     <li>HTTP: 8080</li>
+ * </ul>
  */
 public class PulsarContainer extends GenericContainer<PulsarContainer> {
 
@@ -30,7 +38,7 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("apachepulsar/pulsar");
 
     @Deprecated
-    private static final String DEFAULT_TAG = "2.10.0";
+    private static final String DEFAULT_TAG = "3.0.0";
 
     private final WaitAllStrategy waitAllStrategy = new WaitAllStrategy();
 
@@ -39,7 +47,7 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
     private boolean transactionsEnabled = false;
 
     /**
-     * @deprecated use {@link PulsarContainer(DockerImageName)} instead
+     * @deprecated use {@link #PulsarContainer(DockerImageName)} instead
      */
     @Deprecated
     public PulsarContainer() {
@@ -47,7 +55,7 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
     }
 
     /**
-     * @deprecated use {@link PulsarContainer(DockerImageName)} instead
+     * @deprecated use {@link #PulsarContainer(DockerImageName)} instead
      */
     @Deprecated
     public PulsarContainer(String pulsarVersion) {

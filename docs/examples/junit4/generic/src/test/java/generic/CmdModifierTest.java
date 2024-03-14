@@ -25,9 +25,9 @@ public class CmdModifierTest {
 
     // spotless:off
     // memory {
-    private long memoryInBytes = 32 * 1024 * 1024;
+    private long memoryInBytes = 32l * 1024l * 1024l;
 
-    private long memorySwapInBytes = 64 * 1024 * 1024;
+    private long memorySwapInBytes = 64l * 1024l * 1024l;
 
     @Rule
     public GenericContainer memoryLimitedRedis = new GenericContainer<>(DockerImageName.parse("redis:3.0.2"))

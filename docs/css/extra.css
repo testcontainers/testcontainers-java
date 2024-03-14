@@ -1,18 +1,29 @@
-@import url('https://fonts.googleapis.com/css?family=Rubik');
 h1, h2, h3, h4, h5, h6 {
     font-family: 'Rubik', sans-serif;
-
 }
 
 [data-md-color-scheme="testcontainers"] {
-    --md-primary-fg-color:       #291A3F;
-    --md-accent-fg-color:        #291A3F;
+    --md-primary-fg-color:       #00bac2;
+    --md-accent-fg-color:        #361E5B;
     --md-typeset-a-color:        #0C94AA;
+    --md-primary-fg-color--dark: #291A3F;
+    --md-default-fg-color--lightest: #F2F4FE;
+    --md-footer-fg-color: #361E5B;
+    --md-footer-fg-color--light: #746C8F;
+    --md-footer-fg-color--lighter: #C3BEDE;
+    --md-footer-bg-color: #F7F9FD;
+    --md-footer-bg-color--dark: #F7F9FD;
 }
 
 .card-grid {
     display: grid;
     gap: 10px;
+}
+
+.tc-version {
+    font-size: 1.1em;
+    text-align: center;
+    margin: 0;
 }
 
 @media (min-width: 680px) {
@@ -39,12 +50,79 @@ body .card-grid-item:focus {
 }
 
 .card-grid-item[href] {
-    color: var(--md-primary-fg-color);
+    color: var(--md-primary-fg-color--dark);
     background: transparent;
 }
 
 .card-grid-item[href]:hover,
 .card-grid-item[href]:focus {
     background: #F2F4FE;
-    color: var(--md-primary-fg-color);
+    color: var(--md-primary-fg-color--dark);
+}
+
+.community-callout-wrapper {
+    padding: 30px 10px 0 10px;
+}
+
+.community-callout {
+    color: #F2F4FE;
+    background: linear-gradient(10.88deg, rgba(102, 56, 242, 0.4) 9.56%, #6638F2 100%), #291A3F;
+    box-shadow: 0px 20px 45px rgba(#9991B5, 0.75);
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.community-callout h2 {
+    font-size: 1.15em;
+    margin: 0 0 20px 0;
+    color: #F2F4FE;
+    text-align: center;
+}
+
+.community-callout ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 20px;
+    margin-bottom: 0;
+}
+
+.community-callout a {
+    transition: opacity 0.2s ease;
+}
+
+.community-callout a:hover {
+    opacity: 0.5;
+}
+
+.community-callout a img {
+    height: 1.75em;
+    width: auto;
+    aspect-ratio: 1;
+}
+
+@media (min-width: 1220px) {
+    .community-callout-wrapper {
+       padding: 40px 0 0;
+    }
+
+    .community-callout h2 {
+        font-size: 1.25em;
+    }
+
+    .community-callout a img {
+        height: 2em;
+    }
+}
+
+@media (min-width: 1600px) {
+    .community-callout h2 {
+        font-size: 1.15em;
+    }
+
+    .community-callout a img {
+        height: 1.75em;
+    }
 }

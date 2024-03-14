@@ -19,9 +19,9 @@ public class MultiVersionMySQLTest extends AbstractContainerDatabaseTest {
     @Parameterized.Parameters(name = "{0}")
     public static DockerImageName[] params() {
         return new DockerImageName[] {
-            MySQLTestImages.MYSQL_56_IMAGE,
             MySQLTestImages.MYSQL_57_IMAGE,
             MySQLTestImages.MYSQL_80_IMAGE,
+            MySQLTestImages.MYSQL_INNOVATION_IMAGE,
         };
     }
 

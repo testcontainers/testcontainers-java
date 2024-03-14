@@ -6,7 +6,20 @@ dependencies {
     testImplementation project(":selenium")
     testImplementation project(":mysql")
 
-    testImplementation 'mysql:mysql-connector-java:8.0.32'
-    testImplementation "org.seleniumhq.selenium:selenium-api:4.8.0"
-    testImplementation 'org.assertj:assertj-core:3.24.2'
+    testRuntimeOnly 'mysql:mysql-connector-java:8.0.33'
+    testImplementation "org.seleniumhq.selenium:selenium-api:4.17.0"
+    testImplementation 'org.assertj:assertj-core:3.25.2'
+}
+
+test {
+    javaLauncher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
+}
+
+compileTestJava {
+    javaCompiler = javaToolchains.compilerFor {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
+    options.release.set(11)
 }

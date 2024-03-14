@@ -14,7 +14,6 @@ import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 import org.apache.commons.io.FileUtils;
 import org.bson.Document;
-import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Ignore;
@@ -28,7 +27,6 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.SelinuxContext;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 import org.testcontainers.utility.Base58;
-import org.testcontainers.utility.TestEnvironment;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -264,6 +262,7 @@ public class GenericContainerRuleTest {
             final GenericContainer alpineCustomLabel = new GenericContainer<>(TestImages.ALPINE_IMAGE)
                 .withLabel("our.custom", "label")
                 .withCommand("top")
+                .withCreateContainerCmdModifier(cmd -> cmd.getLabels().put("scope", "local"))
         ) {
             alpineCustomLabel.start();
 
@@ -278,6 +277,10 @@ public class GenericContainerRuleTest {
                 .containsKey("org.testcontainers.version");
             assertThat(labels).as("our.custom label is present").containsKey("our.custom");
             assertThat(labels).as("our.custom label value is label").containsEntry("our.custom", "label");
+            assertThat(labels)
+                .as("project label value is testcontainers-java")
+                .containsEntry("project", "testcontainers-java");
+            assertThat(labels).as("scope label value is local").containsEntry("scope", "local");
         }
     }
 
@@ -352,21 +355,6 @@ public class GenericContainerRuleTest {
         } finally {
             failsImmediately.stop();
         }
-    }
-
-    @Test
-    public void testExecInContainer() throws Exception {
-        // The older "lxc" execution driver doesn't support "exec". At the time of writing (2016/03/29),
-        // that's the case for CircleCI.
-        // Once they resolve the issue, this clause can be removed.
-        Assume.assumeTrue(TestEnvironment.dockerExecutionDriverSupportsExec());
-
-        final GenericContainer.ExecResult result = redis.execInContainer("redis-cli", "role");
-        assertThat(result.getStdout())
-            .as("Output for \"redis-cli role\" command should start with \"master\"")
-            .startsWith("master");
-        assertThat(result.getStderr()).as("Stderr for \"redis-cli role\" command should be empty").isEmpty();
-        // We expect to reach this point for modern Docker versions.
     }
 
     @Test

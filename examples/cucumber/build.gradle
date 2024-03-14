@@ -7,11 +7,27 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.seleniumhq.selenium:selenium-remote-driver:3.141.59'
-    implementation 'org.seleniumhq.selenium:selenium-firefox-driver:3.141.59'
-    implementation 'org.seleniumhq.selenium:selenium-chrome-driver:3.141.59'
-    testImplementation 'io.cucumber:cucumber-java:7.11.1'
-    testImplementation 'io.cucumber:cucumber-junit:7.11.1'
+    implementation platform('org.seleniumhq.selenium:selenium-bom:4.17.0')
+    implementation 'org.seleniumhq.selenium:selenium-remote-driver'
+    implementation 'org.seleniumhq.selenium:selenium-firefox-driver'
+    implementation 'org.seleniumhq.selenium:selenium-chrome-driver'
+
+    testImplementation platform('io.cucumber:cucumber-bom:7.15.0')
+    testImplementation 'io.cucumber:cucumber-java'
+    testImplementation 'io.cucumber:cucumber-junit'
     testImplementation 'org.testcontainers:selenium'
-    testImplementation 'org.assertj:assertj-core:3.24.2'
+    testImplementation 'org.assertj:assertj-core:3.25.2'
+}
+
+test {
+    javaLauncher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
+}
+
+compileTestJava {
+    javaCompiler = javaToolchains.compilerFor {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
+    options.release.set(11)
 }

@@ -85,11 +85,10 @@ public class WaitingConsumer extends BaseConsumer<WaitingConsumer> {
 
         while (System.nanoTime() - startTime < timeoutLimitInNanos) {
             try {
-                OutputFrame frame = frames.pollLast(100, TimeUnit.MILLISECONDS);
+                final OutputFrame frame = frames.pollLast(100, TimeUnit.MILLISECONDS);
 
                 if (frame != null) {
-                    final String trimmedFrameText = frame.getUtf8String().replaceFirst("\n$", "");
-                    LOGGER.debug("{}: {}", frame.getType(), trimmedFrameText);
+                    LOGGER.debug("{}: {}", frame.getType(), frame.getUtf8StringWithoutLineEnding());
 
                     if (predicate.test(frame)) {
                         numberOfMatches++;

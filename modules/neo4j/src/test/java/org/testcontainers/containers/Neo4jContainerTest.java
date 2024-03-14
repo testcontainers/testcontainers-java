@@ -28,8 +28,6 @@ import static org.assertj.core.api.Assumptions.assumeThat;
 
 /**
  * Tests of functionality special to the Neo4jContainer.
- *
- * @author Michael J. Simons
  */
 public class Neo4jContainerTest {
 
@@ -193,7 +191,7 @@ public class Neo4jContainerTest {
 
     @Test
     public void shouldSetCustomPasswordCorrectly() {
-        // withoutAuthentication {
+        // withAdminPassword {
         Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4").withAdminPassword("verySecret");
         // }
 

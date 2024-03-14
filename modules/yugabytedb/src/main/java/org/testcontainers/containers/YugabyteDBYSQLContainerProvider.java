@@ -5,8 +5,6 @@ import org.testcontainers.utility.DockerImageName;
 
 /**
  * YugabyteDB YSQL (Structured Query Language) JDBC container provider
- *
- * @author srinivasa-vasu
  */
 public class YugabyteDBYSQLContainerProvider extends JdbcDatabaseContainerProvider {
 
