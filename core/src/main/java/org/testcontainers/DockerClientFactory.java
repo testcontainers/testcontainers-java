@@ -160,14 +160,15 @@ public class DockerClientFactory {
 
     @UnstableAPI
     public String getRemoteDockerUnixSocketPath() {
-        if (this.strategy != null && this.strategy.allowUserOverrides()) {
+        DockerClientProviderStrategy strategy = getOrInitializeStrategy();
+        if (strategy.allowUserOverrides()) {
             String dockerSocketOverride = System.getenv("TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE");
             if (!StringUtils.isBlank(dockerSocketOverride)) {
                 return dockerSocketOverride;
             }
         }
-        if (this.strategy != null && this.strategy.getRemoteDockerUnixSocketPath() != null) {
-            return this.strategy.getRemoteDockerUnixSocketPath();
+        if (strategy.getRemoteDockerUnixSocketPath() != null) {
+            return strategy.getRemoteDockerUnixSocketPath();
         }
 
         URI dockerHost = getTransportConfig().getDockerHost();

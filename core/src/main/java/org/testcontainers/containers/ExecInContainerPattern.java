@@ -16,6 +16,9 @@ import org.testcontainers.utility.TestEnvironment;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Provides utility methods for executing commands in containers
@@ -97,7 +100,9 @@ public class ExecInContainerPattern {
      * @param command the command to execute
      * @see #execInContainerWithUser(DockerClient, InspectContainerResponse, Charset, String,
      *     String...)
+     * @deprecated use {@link #execInContainer(DockerClient, InspectContainerResponse, ExecConfig)}
      */
+    @Deprecated
     public Container.ExecResult execInContainerWithUser(
         DockerClient dockerClient,
         InspectContainerResponse containerInfo,
@@ -121,13 +126,64 @@ public class ExecInContainerPattern {
      * @throws IOException if there's an issue communicating with Docker
      * @throws InterruptedException if the thread waiting for the response is interrupted
      * @throws UnsupportedOperationException if the docker daemon you're connecting to doesn't support "exec".
+     * @deprecated use {@link #execInContainer(DockerClient, InspectContainerResponse, Charset, ExecConfig)}
      */
+    @Deprecated
     public Container.ExecResult execInContainerWithUser(
         DockerClient dockerClient,
         InspectContainerResponse containerInfo,
         Charset outputCharset,
         String user,
         String... command
+    ) throws UnsupportedOperationException, IOException, InterruptedException {
+        return execInContainer(
+            dockerClient,
+            containerInfo,
+            outputCharset,
+            ExecConfig.builder().user(user).command(command).build()
+        );
+    }
+
+    /**
+     * Run a command inside a running container as a given user, as using "docker exec -u user".
+     * <p>
+     * This functionality is not available on a docker daemon running the older "lxc" execution
+     * driver. At the time of writing, CircleCI was using this driver.
+     * @param dockerClient the {@link DockerClient}
+     * @param containerInfo the container info
+     * @param execConfig the exec configuration
+     * @return the result of execution
+     * @throws IOException if there's an issue communicating with Docker
+     * @throws InterruptedException if the thread waiting for the response is interrupted
+     * @throws UnsupportedOperationException if the docker daemon you're connecting to doesn't support "exec".
+     */
+    public Container.ExecResult execInContainer(
+        DockerClient dockerClient,
+        InspectContainerResponse containerInfo,
+        ExecConfig execConfig
+    ) throws UnsupportedOperationException, IOException, InterruptedException {
+        return execInContainer(dockerClient, containerInfo, StandardCharsets.UTF_8, execConfig);
+    }
+
+    /**
+     * Run a command inside a running container as a given user, as using "docker exec -u user".
+     * <p>
+     * This functionality is not available on a docker daemon running the older "lxc" execution
+     * driver. At the time of writing, CircleCI was using this driver.
+     * @param dockerClient the {@link DockerClient}
+     * @param containerInfo the container info
+     * @param outputCharset the character set used to interpret the output.
+     * @param execConfig the exec configuration
+     * @return the result of execution
+     * @throws IOException if there's an issue communicating with Docker
+     * @throws InterruptedException if the thread waiting for the response is interrupted
+     * @throws UnsupportedOperationException if the docker daemon you're connecting to doesn't support "exec".
+     */
+    public Container.ExecResult execInContainer(
+        DockerClient dockerClient,
+        InspectContainerResponse containerInfo,
+        Charset outputCharset,
+        ExecConfig execConfig
     ) throws UnsupportedOperationException, IOException, InterruptedException {
         if (!TestEnvironment.dockerExecutionDriverSupportsExec()) {
             // at time of writing, this is the expected result in CircleCI.
@@ -143,15 +199,34 @@ public class ExecInContainerPattern {
         String containerId = containerInfo.getId();
         String containerName = containerInfo.getName();
 
+        String[] command = execConfig.getCommand();
         log.debug("{}: Running \"exec\" command: {}", containerName, String.join(" ", command));
         final ExecCreateCmd execCreateCmd = dockerClient
             .execCreateCmd(containerId)
             .withAttachStdout(true)
             .withAttachStderr(true)
             .withCmd(command);
+
+        String user = execConfig.getUser();
         if (user != null && !user.isEmpty()) {
             log.debug("{}: Running \"exec\" command with user: {}", containerName, user);
             execCreateCmd.withUser(user);
+        }
+
+        String workDir = execConfig.getWorkDir();
+        if (workDir != null && !workDir.isEmpty()) {
+            log.debug("{}: Running \"exec\" command inside workingDir: {}", containerName, workDir);
+            execCreateCmd.withWorkingDir(workDir);
+        }
+
+        Map<String, String> envVars = execConfig.getEnvVars();
+        if (envVars != null && !envVars.isEmpty()) {
+            List<String> envVarList = envVars
+                .entrySet()
+                .stream()
+                .map(e -> e.getKey() + "=" + e.getValue())
+                .collect(Collectors.toList());
+            execCreateCmd.withEnv(envVarList);
         }
 
         final ExecCreateCmdResponse execCreateCmdResponse = execCreateCmd.exec();

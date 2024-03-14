@@ -77,7 +77,9 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @param hostPath      the file system path on the host
      * @param containerPath the file system path inside the container
      * @param mode          the bind mode
+     * @deprecated use {@link GenericContainer#withCopyToContainer(Transferable, String)}
      */
+    @Deprecated
     default void addFileSystemBind(final String hostPath, final String containerPath, final BindMode mode) {
         addFileSystemBind(hostPath, containerPath, mode, SelinuxContext.SHARED);
     }
@@ -90,7 +92,9 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @param containerPath the file system path inside the container
      * @param mode          the bind mode
      * @param selinuxContext selinux context argument to use for this file
+     * @deprecated use {@link GenericContainer#withCopyToContainer(Transferable, String)}
      */
+    @Deprecated
     void addFileSystemBind(String hostPath, String containerPath, BindMode mode, SelinuxContext selinuxContext);
 
     /**
@@ -134,7 +138,9 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @param hostPath the file system path on the host
      * @param containerPath the file system path inside the container
      * @return this
+     * @deprecated use {@link GenericContainer#withCopyToContainer(Transferable, String)}
      */
+    @Deprecated
     default SELF withFileSystemBind(String hostPath, String containerPath) {
         return withFileSystemBind(hostPath, containerPath, BindMode.READ_WRITE);
     }
@@ -146,7 +152,9 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @param containerPath the file system path inside the container
      * @param mode the bind mode
      * @return this
+     * @deprecated use {@link GenericContainer#withCopyToContainer(Transferable, String)}
      */
+    @Deprecated
     SELF withFileSystemBind(String hostPath, String containerPath, BindMode mode);
 
     /**
@@ -297,7 +305,9 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @param containerPath path this should be mapped to inside the container
      * @param mode          access mode for the file
      * @return this
+     * @deprecated use {@link GenericContainer#withCopyToContainer(Transferable, String)}
      */
+    @Deprecated
     default SELF withClasspathResourceMapping(
         final String resourcePath,
         final String containerPath,
@@ -316,7 +326,9 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @param mode           access mode for the file
      * @param selinuxContext selinux context argument to use for this file
      * @return this
+     * @deprecated use {@link GenericContainer#withCopyToContainer(Transferable, String)}
      */
+    @Deprecated
     SELF withClasspathResourceMapping(
         String resourcePath,
         String containerPath,

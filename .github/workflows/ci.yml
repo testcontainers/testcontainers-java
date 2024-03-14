@@ -49,16 +49,21 @@ env:
 jobs:
   core:
     runs-on: ubuntu-22.04
+    permissions:
+      checks: write
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-build
       - name: Build and test with Gradle
         run: |
           ./gradlew :testcontainers:check --no-daemon --continue --scan
+      - uses: ./.github/actions/setup-junit-report
 
   turbo-mode:
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-22.04
+    permissions:
+      checks: write
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-build
@@ -71,6 +76,7 @@ jobs:
         working-directory: ./smoke-test/
         run: |
           ./gradlew check --no-daemon --continue --scan --info
+      - uses: ./.github/actions/setup-junit-report
 
   find_gradle_jobs:
     needs: [core]
@@ -81,7 +87,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-java
       - name: Setup Gradle Build Action
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v3
       - id: set-matrix
         env:
           # Since we override the tests executor,
@@ -97,12 +103,15 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJson(needs.find_gradle_jobs.outputs.matrix) }}
     runs-on: ubuntu-22.04
+    permissions:
+      checks: write
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-build
       - name: Build and test with Gradle (${{matrix.gradle_args}})
         run: |
           ./gradlew --no-daemon --continue --scan ${{matrix.gradle_args}}
+      - uses: ./.github/actions/setup-junit-report
 
   find_examples_jobs:
     needs: [check]
@@ -113,7 +122,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-java
       - name: Setup Gradle Build Action
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v3
       - id: set-matrix
         working-directory: ./examples/
         env:
@@ -130,6 +139,8 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJson(needs.find_examples_jobs.outputs.matrix) }}
     runs-on: ubuntu-22.04
+    permissions:
+      checks: write
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-build
@@ -137,6 +148,7 @@ jobs:
         working-directory: ./examples/
         run: |
           ./gradlew --no-daemon --continue --scan --info ${{matrix.gradle_args}}
+      - uses: ./.github/actions/setup-junit-report
 
   find_docs_examples_jobs:
     needs: [check_examples]
@@ -147,7 +159,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-java
       - name: Setup Gradle Build Action
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v3
       - id: set-matrix
         env:
           # Since we override the tests executor,
@@ -163,9 +175,12 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJson(needs.find_docs_examples_jobs.outputs.matrix) }}
     runs-on: ubuntu-22.04
+    permissions:
+      checks: write
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-build
       - name: Build and test with Gradle (${{matrix.gradle_args}})
         run: |
           ./gradlew --no-daemon --continue --scan ${{matrix.gradle_args}}
+      - uses: ./.github/actions/setup-junit-report

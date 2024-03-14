@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '2.7.16'
+    id 'org.springframework.boot' version '2.7.18'
 }
 apply plugin: 'io.spring.dependency-management'
 
@@ -16,8 +16,8 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.testcontainers:selenium'
     testImplementation 'org.testcontainers:junit-jupiter'
-    testImplementation 'org.assertj:assertj-core:3.24.2'
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+    testImplementation 'org.assertj:assertj-core:3.25.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.1'
 }
 
 test {

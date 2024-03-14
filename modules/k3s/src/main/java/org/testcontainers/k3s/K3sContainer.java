@@ -46,7 +46,7 @@ public class K3sContainer extends GenericContainer<K3sContainer> {
         tmpFsMapping.put("/var/run", "");
         setTmpFsMapping(tmpFsMapping);
 
-        setCommand("server", "--no-deploy=traefik", "--tls-san=" + this.getHost());
+        setCommand("server", "--disable=traefik", "--tls-san=" + this.getHost());
         setWaitStrategy(new LogMessageWaitStrategy().withRegEx(".*Node controller sync successful.*"));
     }
 
