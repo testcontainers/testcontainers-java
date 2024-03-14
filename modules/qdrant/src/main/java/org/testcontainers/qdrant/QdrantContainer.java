@@ -48,7 +48,7 @@ public class QdrantContainer extends GenericContainer<QdrantContainer> {
         return withCopyFileToContainer(configFile, CONFIG_FILE_PATH);
     }
 
-    public int getRestPort() {
+    public int getHttpPort() {
         return getMappedPort(QDRANT_REST_PORT);
     }
 
@@ -57,7 +57,7 @@ public class QdrantContainer extends GenericContainer<QdrantContainer> {
     }
 
     public String getRestHostAddress() {
-        return getHost() + ":" + getRestPort();
+        return getHost() + ":" + getHttpPort();
     }
 
     public String getGrpcHostAddress() {
