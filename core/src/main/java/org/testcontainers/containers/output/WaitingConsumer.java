@@ -73,12 +73,13 @@ public class WaitingConsumer extends BaseConsumer<WaitingConsumer> {
      */
     public void waitUntil(Predicate<OutputFrame> predicate, long limit, TimeUnit limitUnit, int times)
         throws TimeoutException {
-        long timeoutLimitInNanos = limitUnit.toNanos(limit) ;
+        long timeoutLimitInNanos = limitUnit.toNanos(limit);
 
         waitUntil(predicate, timeoutLimitInNanos, times);
     }
 
-    private void waitUntil(Predicate<OutputFrame> predicate, long timeoutLimitInNanos, int times) throws TimeoutException {
+    private void waitUntil(Predicate<OutputFrame> predicate, long timeoutLimitInNanos, int times)
+        throws TimeoutException {
         int numberOfMatches = 0;
 
         final long startTime = System.nanoTime();
