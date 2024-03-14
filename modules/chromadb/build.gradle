@@ -1,0 +1,8 @@
+description = "Testcontainers :: ChromaDB"
+
+dependencies {
+    api project(':testcontainers')
+
+    testImplementation 'org.assertj:assertj-core:3.25.1'
+    testImplementation 'io.rest-assured:rest-assured:5.4.0'
+}

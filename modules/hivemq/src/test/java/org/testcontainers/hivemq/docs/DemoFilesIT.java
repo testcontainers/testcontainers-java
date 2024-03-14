@@ -19,7 +19,7 @@ class DemoFilesIT {
 
     // hivemqHome {
     final HiveMQContainer hivemqFileInHome = new HiveMQContainer(
-        DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3")
+        DockerImageName.parse("hivemq/hivemq-ce").withTag("2024.3")
     )
         .withFileInHomeFolder(
             MountableFile.forHostPath("src/test/resources/additionalFile.txt"),
@@ -31,7 +31,7 @@ class DemoFilesIT {
     // extensionHome {
     @Container
     final HiveMQContainer hivemqFileInExtensionHome = new HiveMQContainer(
-        DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3")
+        DockerImageName.parse("hivemq/hivemq-ce").withTag("2024.3")
     )
         .withExtension(
             HiveMQExtension
@@ -52,7 +52,7 @@ class DemoFilesIT {
 
     // withLicenses {
     @Container
-    final HiveMQContainer hivemq = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3"))
+    final HiveMQContainer hivemq = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq-ce").withTag("2024.3"))
         .withLicense(MountableFile.forHostPath("src/test/resources/myLicense.lic"))
         .withLicense(MountableFile.forHostPath("src/test/resources/myExtensionLicense.elic"));
 

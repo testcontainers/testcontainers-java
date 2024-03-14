@@ -6,13 +6,21 @@ import org.testcontainers.utility.DockerImageName;
 /**
  * Testcontainers implementation for MongoDB.
  * <p>
- * Supported image: {@code mongo}
+ * Supported images: {@code mongo}, {@code mongodb/mongodb-community-server}, {@code mongodb/mongodb-enterprise-server}
  * <p>
  * Exposed ports: 27017
  */
 public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("mongo");
+
+    private static final DockerImageName COMMUNITY_SERVER_IMAGE = DockerImageName.parse(
+        "mongodb/mongodb-community-server"
+    );
+
+    private static final DockerImageName ENTERPRISE_SERVER_IMAGE = DockerImageName.parse(
+        "mongodb/mongodb-enterprise-server"
+    );
 
     private static final String DEFAULT_TAG = "4.0.10";
 
@@ -32,7 +40,7 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
 
     public MongoDBContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, COMMUNITY_SERVER_IMAGE, ENTERPRISE_SERVER_IMAGE);
     }
 
     @Override
