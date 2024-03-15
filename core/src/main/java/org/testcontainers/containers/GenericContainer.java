@@ -71,7 +71,6 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.UndeclaredThrowableException;
-import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
@@ -111,8 +110,6 @@ import static org.awaitility.Awaitility.await;
 public class GenericContainer<SELF extends GenericContainer<SELF>>
     extends FailureDetectingExternalResource
     implements Container<SELF>, AutoCloseable, WaitStrategyTarget, Startable {
-
-    private static final Charset UTF8 = Charset.forName("UTF-8");
 
     public static final int CONTAINER_RUNNING_TIMEOUT_SEC = 30;
 
