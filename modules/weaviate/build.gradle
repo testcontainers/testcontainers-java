@@ -3,6 +3,6 @@ description = "Testcontainers :: Weaviate"
 dependencies {
     api project(':testcontainers')
 
-    testImplementation 'org.assertj:assertj-core:3.25.1'
+    testImplementation 'org.assertj:assertj-core:3.25.3'
     testImplementation 'io.weaviate:client:4.6.0'
 }
