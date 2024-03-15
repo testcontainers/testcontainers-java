@@ -12,9 +12,9 @@ public class ImageNameSubstitutionTest {
         try (
             // spotless:off
             // directDockerHubReference {
-            // Referring directly to an image on Docker Hub (mysql:8.0.24)
+            // Referring directly to an image on Docker Hub (mysql:8.0.36)
             final MySQLContainer<?> mysql = new MySQLContainer<>(
-                DockerImageName.parse("mysql:8.0.24")
+                DockerImageName.parse("mysql:8.0.36")
             )
             // start the container and use it for testing
             // }
@@ -36,7 +36,7 @@ public class ImageNameSubstitutionTest {
             // hardcodedMirror {
             // Referring directly to an image on a private registry - image name will vary
             final MySQLContainer<?> mysql = new MySQLContainer<>(
-                DockerImageName.parse("registry.mycompany.com/mirror/mysql:8.0.24")
+                DockerImageName.parse("registry.mycompany.com/mirror/mysql:8.0.36")
                     .asCompatibleSubstituteFor("mysql")
             )
             // start the container and use it for testing

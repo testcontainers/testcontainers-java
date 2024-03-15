@@ -15,6 +15,10 @@
       - gradle/wrapper/*
       - gradlew
       - gradlew.bat
+"modules/activemq":
+  - changed-files:
+      - any-glob-to-any-file:
+          - modules/activemq/**/*
 "modules/azure":
   - changed-files:
     - any-glob-to-any-file:
@@ -23,6 +27,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/cassandra/**/*
+"modules/chromadb":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/chromadb/**/*
 "modules/clickhouse":
   - changed-files:
     - any-glob-to-any-file:
@@ -79,6 +87,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/k3s/**/*
+"modules/k6":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/k6/**/*
 "modules/kafka":
   - changed-files:
     - any-glob-to-any-file:
@@ -91,6 +103,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/mariadb/**/*
+"modules/milvus":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/milvus/**/*
 "modules/minio":
   - changed-files:
     - any-glob-to-any-file:
@@ -119,6 +135,18 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/nginx/**/*
+"modules/oceanbase":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/oceanbase/**/*
+"modules/ollama":
+  - changed-files:
+      - any-glob-to-any-file:
+          - modules/ollama/**/*
+"modules/openfga":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/openfga/**/*
 "modules/oracle":
   - changed-files:
     - any-glob-to-any-file:
@@ -140,6 +168,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/pulsar/**/*
+"modules/qdrant":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/qdrant/**/*
 "modules/questdb":
   - changed-files:
     - any-glob-to-any-file:
@@ -188,6 +220,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/vault/**/*
+"modules/weaviate":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/weaviate/**/*
 "modules/yugabytedb":
   - changed-files:
     - any-glob-to-any-file:
