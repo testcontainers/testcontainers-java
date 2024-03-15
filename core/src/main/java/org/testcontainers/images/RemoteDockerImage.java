@@ -1,14 +1,10 @@
 package org.testcontainers.images;
 
-import static org.awaitility.pollinterval.IterativePollInterval.iterative;
-
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.PullImageCmd;
 import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.google.common.util.concurrent.Futures;
-import java.util.concurrent.Callable;
-import java.util.concurrent.atomic.AtomicReference;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -16,6 +12,8 @@ import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.With;
 import org.awaitility.Awaitility;
+import org.awaitility.pollinterval.IterativePollInterval;
+import org.awaitility.pollinterval.PollInterval;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ContainerFetchException;
@@ -26,9 +24,11 @@ import org.testcontainers.utility.LazyFuture;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
 
 @ToString
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
@@ -90,16 +90,23 @@ public class RemoteDockerImage extends LazyFuture<String> {
                 .withTag(imageName.getVersionPart());
             final AtomicReference<String> dockerImageName = new AtomicReference<>();
 
-            Awaitility.await()
+            // The following poll interval in ms: 50, 100, 200, 400, 800....
+            // Results in ~70 requests in over 2 minutes
+            final PollInterval interval = IterativePollInterval
+                .iterative(duration -> duration.multipliedBy(2))
+                .startDuration(Duration.ofMillis(50));
+
+            Awaitility
+                .await()
                 .pollInSameThread()
                 .pollDelay(Duration.ZERO) // start checking immediately
                 .atMost(PULL_RETRY_TIME_LIMIT)
-                // The following poll interval in ms: 50, 100, 200, 400, 800....
-                // Results in ~70 requests in over 2 minutes
-                .pollInterval(iterative(duration -> duration.multipliedBy(2)).startDuration(Duration.ofMillis(50)))
-                .until(tryImagePullCommand(pullImageCmd, logger, dockerImageName, imageName, lastFailure, lastRetryAllowed));
+                .pollInterval(interval)
+                .until(
+                    tryImagePullCommand(pullImageCmd, logger, dockerImageName, imageName, lastFailure, lastRetryAllowed)
+                );
 
-            if(dockerImageName.get() == null) {
+            if (dockerImageName.get() == null) {
                 final Exception lastException = lastFailure.get();
                 logger.error(
                     "Failed to pull image: {}. Please check output of `docker pull {}`",
@@ -118,8 +125,14 @@ public class RemoteDockerImage extends LazyFuture<String> {
         }
     }
 
-    private Callable<Boolean> tryImagePullCommand(PullImageCmd pullImageCmd, Logger logger, AtomicReference<String> dockerImageName,
-        DockerImageName imageName, AtomicReference<Exception> lastFailure, Instant lastRetryAllowed) {
+    private Callable<Boolean> tryImagePullCommand(
+        PullImageCmd pullImageCmd,
+        Logger logger,
+        AtomicReference<String> dockerImageName,
+        DockerImageName imageName,
+        AtomicReference<Exception> lastFailure,
+        Instant lastRetryAllowed
+    ) {
         return () -> {
             try {
                 pullWithX86Fallback(pullImageCmd, logger);
@@ -138,7 +151,8 @@ public class RemoteDockerImage extends LazyFuture<String> {
         };
     }
 
-    private TimeLimitedLoggedPullImageResultCallback pullWithX86Fallback(PullImageCmd pullImageCmd, Logger logger) throws InterruptedException {
+    private TimeLimitedLoggedPullImageResultCallback pullWithX86Fallback(PullImageCmd pullImageCmd, Logger logger)
+        throws InterruptedException {
         try {
             return pullImageCmd.exec(new TimeLimitedLoggedPullImageResultCallback(logger)).awaitCompletion();
         } catch (DockerClientException e) {
