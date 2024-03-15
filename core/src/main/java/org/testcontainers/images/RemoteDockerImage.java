@@ -1,6 +1,5 @@
 package org.testcontainers.images;
 
-import static org.awaitility.pollinterval.FibonacciPollInterval.fibonacci;
 import static org.awaitility.pollinterval.IterativePollInterval.iterative;
 
 import com.github.dockerjava.api.DockerClient;
@@ -17,7 +16,6 @@ import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.With;
 import org.awaitility.Awaitility;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ContainerFetchException;
@@ -37,7 +35,6 @@ import java.util.concurrent.Future;
 public class RemoteDockerImage extends LazyFuture<String> {
 
     private static final Duration PULL_RETRY_TIME_LIMIT = Duration.ofMinutes(2);
-    private static final int PULL_RETRY_ATTEMPT_LIMIT = 100;
 
     @ToString.Exclude
     private Future<DockerImageName> imageNameFuture;
