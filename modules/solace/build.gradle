@@ -3,7 +3,7 @@ description = "Testcontainers :: Solace"
 dependencies {
     api project(':testcontainers')
 
-    shaded 'org.awaitility:awaitility:4.2.0'
+    shaded 'org.awaitility:awaitility:4.2.1'
 
     testImplementation 'org.assertj:assertj-core:3.25.1'
     testImplementation 'com.solacesystems:sol-jcsmp:10.22.0'
