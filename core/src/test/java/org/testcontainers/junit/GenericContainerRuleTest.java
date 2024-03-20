@@ -333,7 +333,7 @@ public class GenericContainerRuleTest {
     @Test
     @Ignore //TODO investigate intermittent failures
     public void failFastWhenContainerHaltsImmediately() {
-        long startingTimeMs = System.currentTimeMillis();
+        long startingTimeNano = System.nanoTime();
         final GenericContainer failsImmediately = new GenericContainer<>(TestImages.ALPINE_IMAGE)
             .withCommand("/bin/sh", "-c", "return false")
             .withMinimumRunningDuration(Duration.ofMillis(100));
@@ -345,11 +345,11 @@ public class GenericContainerRuleTest {
 
             // Check how long it took, to verify that we ARE bailing out early.
             // Want to strike a balance here; too short and this test will fail intermittently
-            // on slow systems and/or due to GC variation, too long and we won't properly test
+            // on slow systems and/or due to GC variation, too long, and we won't properly test
             // what we're intending to test.
             int allowedSecondsToFailure = GenericContainer.CONTAINER_RUNNING_TIMEOUT_SEC / 2;
-            long completedTimeMs = System.currentTimeMillis();
-            assertThat(completedTimeMs - startingTimeMs < 1000L * allowedSecondsToFailure)
+            long completedTimeNano = System.nanoTime();
+            assertThat(completedTimeNano - startingTimeNano < TimeUnit.SECONDS.toNanos(allowedSecondsToFailure))
                 .as("container should not take long to start up")
                 .isTrue();
         } finally {
