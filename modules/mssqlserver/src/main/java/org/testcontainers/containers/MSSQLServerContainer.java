@@ -134,6 +134,11 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
         return self();
     }
 
+    @Override
+    protected void waitUntilContainerStarted() {
+        getWaitStrategy().waitUntilReady(this);
+    }
+
     private void checkPasswordStrength(String password) {
         if (password == null) {
             throw new IllegalArgumentException("Null password is not allowed");
