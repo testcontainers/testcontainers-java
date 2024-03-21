@@ -4,7 +4,7 @@ dependencies {
     api "io.lettuce:lettuce-core:6.3.1.RELEASE"
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.10.1"
-    testImplementation "org.junit.jupiter:junit-jupiter-params:5.10.1"
+    testImplementation "org.junit.jupiter:junit-jupiter-params:5.10.2"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.10.1"
     testImplementation project(":testcontainers")
     testImplementation project(":junit-jupiter")
