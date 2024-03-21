@@ -135,7 +135,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
     ) {
         return () -> {
             try {
-                pullWithX86Fallback(pullImageCmd, logger);
+                pullImage(pullImageCmd, logger);
                 dockerImageName.set(imageName.asCanonicalNameString());
                 return true;
             } catch (InterruptedException | InternalServerErrorException e) {
@@ -151,7 +151,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
         };
     }
 
-    private TimeLimitedLoggedPullImageResultCallback pullWithX86Fallback(PullImageCmd pullImageCmd, Logger logger)
+    private TimeLimitedLoggedPullImageResultCallback pullImage(PullImageCmd pullImageCmd, Logger logger)
         throws InterruptedException {
         try {
             return pullImageCmd.exec(new TimeLimitedLoggedPullImageResultCallback(logger)).awaitCompletion();
