@@ -3,7 +3,7 @@ description = "Testcontainers :: Qdrant"
 dependencies {
     api project(':testcontainers')
 
-    testImplementation 'org.assertj:assertj-core:3.25.1'
+    testImplementation 'org.assertj:assertj-core:3.25.3'
     testImplementation 'io.qdrant:client:1.7.1'
     testImplementation platform('io.grpc:grpc-bom:1.61.1')
     testImplementation 'io.grpc:grpc-stub'
