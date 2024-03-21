@@ -52,6 +52,7 @@ import org.testcontainers.core.CreateContainerCmdModifier;
 import org.testcontainers.images.ImagePullPolicy;
 import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.images.builder.Transferable;
+import org.testcontainers.images.retry.ImagePullRetryPolicy;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.lifecycle.Startables;
 import org.testcontainers.lifecycle.TestDescription;
@@ -1234,6 +1235,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public SELF withImagePullPolicy(ImagePullPolicy imagePullPolicy) {
         this.image = this.image.withImagePullPolicy(imagePullPolicy);
+        return self();
+    }
+
+    @Override
+    public SELF withImagePullRetryPolicy(ImagePullRetryPolicy policy) {
+        this.image = this.image.withImagePullRetryPolicy(policy);
         return self();
     }
 

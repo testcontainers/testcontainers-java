@@ -11,6 +11,7 @@ import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.images.ImagePullPolicy;
 import org.testcontainers.images.builder.Transferable;
+import org.testcontainers.images.retry.ImagePullRetryPolicy;
 import org.testcontainers.utility.LogUtils;
 import org.testcontainers.utility.MountableFile;
 
@@ -296,6 +297,12 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      * @return
      */
     SELF withImagePullPolicy(ImagePullPolicy policy);
+
+    /**
+     * Set the image retry on pull error policy of the container
+     * @return
+     */
+    SELF withImagePullRetryPolicy(ImagePullRetryPolicy policy);
 
     /**
      * Map a resource (file or directory) on the classpath to a path inside the container.
