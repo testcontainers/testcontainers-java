@@ -16,7 +16,7 @@ dependencies {
     testImplementation 'io.cucumber:cucumber-java'
     testImplementation 'io.cucumber:cucumber-junit'
     testImplementation 'org.testcontainers:selenium'
-    testImplementation 'org.assertj:assertj-core:3.25.2'
+    testImplementation 'org.assertj:assertj-core:3.25.3'
 }
 
 test {

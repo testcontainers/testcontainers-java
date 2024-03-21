@@ -10,7 +10,7 @@ dependencies {
     testImplementation 'org.testcontainers:testcontainers'
     testImplementation 'com.hazelcast:hazelcast:5.3.6'
     testImplementation 'ch.qos.logback:logback-classic:1.3.14'
-    testImplementation 'org.assertj:assertj-core:3.25.2'
+    testImplementation 'org.assertj:assertj-core:3.25.3'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.1'
 }
 
