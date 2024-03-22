@@ -32,7 +32,11 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     static final int ORACLE_PORT = 1521;
 
+    private static final String STARTUP_TIMEOUT_SECONDS_PROPERTY = "org.testcontainers.oracle.timeout.startup.seconds";
+
     private static final int DEFAULT_STARTUP_TIMEOUT_SECONDS = 60;
+
+    private static final String CONNECT_TIMEOUT_SECONDS_PROPERTY = "org.testcontainers.oracle.timeout.connect.seconds";
 
     private static final int DEFAULT_CONNECT_TIMEOUT_SECONDS = 60;
 
@@ -72,8 +76,15 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
             new LogMessageWaitStrategy()
                 .withRegEx(".*DATABASE IS READY TO USE!.*\\s")
                 .withTimes(1)
-                .withStartupTimeout(Duration.of(DEFAULT_STARTUP_TIMEOUT_SECONDS, ChronoUnit.SECONDS));
-        withConnectTimeoutSeconds(DEFAULT_CONNECT_TIMEOUT_SECONDS);
+                .withStartupTimeout(
+                    Duration.of(
+                        Long.getLong(STARTUP_TIMEOUT_SECONDS_PROPERTY, DEFAULT_STARTUP_TIMEOUT_SECONDS),
+                        ChronoUnit.SECONDS
+                    )
+                );
+        withConnectTimeoutSeconds(
+            Integer.getInteger(CONNECT_TIMEOUT_SECONDS_PROPERTY, DEFAULT_CONNECT_TIMEOUT_SECONDS)
+        );
         addExposedPorts(ORACLE_PORT);
     }
 
