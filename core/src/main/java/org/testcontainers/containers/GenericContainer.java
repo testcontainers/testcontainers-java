@@ -1114,6 +1114,17 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     /**
+    * Sets the port bindings for the container
+    *
+    * @param portBindings the list of port bindings to set. Each entry should be in the format "hostPort:containerPort".
+    * @return this
+    */
+    public SELF withPortBindings(List<String> portBindings) {
+        this.setPortBindings(portBindings);
+        return self();
+    }
+
+    /**
      * Add a TCP container port that should be bound to a fixed port on the docker host.
      * <p>
      * Note that this method is protected scope to discourage use, as clashes or instability are more likely when
