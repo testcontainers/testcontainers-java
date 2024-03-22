@@ -44,7 +44,7 @@ public class ParameterizedDockerfileContainerTest {
             { "alpine:3.13", "3.13" },
             { "alpine:3.14", "3.14" },
             { "alpine:3.15", "3.15" },
-            { "alpine:3.16", "3.16" },
+            { "alpine:3.17", "3.16" },
         };
     }
 
