@@ -182,15 +182,14 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         // exporting KAFKA_ADVERTISED_LISTENERS with the container hostname
         command += String.format("export KAFKA_ADVERTISED_LISTENERS=%s\n", kafkaAdvertisedListeners);
 
-        if (this.kraftEnabled && isLessThanCP740()) {
+        if (!this.kraftEnabled || isLessThanCP740()) {
             // Optimization: skip the checks
             command += "echo '' > /etc/confluent/docker/ensure \n";
-            command += commandKraft();
         }
 
-        if (!this.kraftEnabled) {
-            // Optimization: skip the checks
-            command += "echo '' > /etc/confluent/docker/ensure \n";
+        if (this.kraftEnabled) {
+            command += commandKraft();
+        } else if (this.externalZookeeperConnect == null) {
             command += commandZookeeper();
         }
 
