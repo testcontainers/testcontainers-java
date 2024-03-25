@@ -4,13 +4,15 @@ import io.weaviate.client.Config;
 import io.weaviate.client.WeaviateClient;
 import io.weaviate.client.base.Result;
 import io.weaviate.client.v1.misc.model.Meta;
+import org.assertj.core.api.InstanceOfAssertFactories;
+import org.junit.Test;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import static org.assertj.core.api.Assertions.assertThat;
-import org.assertj.core.api.InstanceOfAssertFactories;
-import org.junit.Test;
 
 public class WeaviateContainerTest {
 
