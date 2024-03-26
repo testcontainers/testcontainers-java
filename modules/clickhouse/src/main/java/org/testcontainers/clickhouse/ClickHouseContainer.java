@@ -25,9 +25,9 @@ public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContain
 
     private static final DockerImageName CLICKHOUSE_IMAGE_NAME = DockerImageName.parse("clickhouse/clickhouse-server");
 
-    private static final Integer HTTP_PORT = 8123;
+    public static final Integer HTTP_PORT = 8123;
 
-    private static final Integer NATIVE_PORT = 9000;
+    static final Integer NATIVE_PORT = 9000;
 
     private static final String DRIVER_CLASS_NAME = "com.clickhouse.jdbc.ClickHouseDriver";
 

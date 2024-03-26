@@ -49,15 +49,17 @@ class Hidden {
             String[] protocols = protocol.split(":", 2);
             String driverDelegate = protocols[0];
 
-            // when protocol does NOT contain COLON, the length becomes 1
-            String protocolDelegate = protocols.length == 2 ? protocols[1] : "";
-
-            return ConnectionFactoryOptions
+            ConnectionFactoryOptions.Builder builder = ConnectionFactoryOptions
                 .builder()
                 .from(options)
-                .option(ConnectionFactoryOptions.DRIVER, driverDelegate)
-                .option(ConnectionFactoryOptions.PROTOCOL, protocolDelegate)
-                .build();
+                .option(ConnectionFactoryOptions.DRIVER, driverDelegate);
+
+            if (protocols.length == 2) {
+                // when protocol does NOT contain COLON, the length becomes 1
+                builder.option(ConnectionFactoryOptions.PROTOCOL, protocols[1]);
+            }
+
+            return builder.build();
         }
 
         @Override
