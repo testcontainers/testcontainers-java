@@ -16,7 +16,8 @@ public class ClickHouseR2DBCDatabaseContainer implements R2DBCDatabaseContainer 
     }
 
     public static ConnectionFactoryOptions getOptions(ClickHouseContainer container) {
-        ConnectionFactoryOptions options = ConnectionFactoryOptions.builder()
+        ConnectionFactoryOptions options = ConnectionFactoryOptions
+            .builder()
             .option(ConnectionFactoryOptions.DRIVER, ClickHouseR2DBCDatabaseContainerProvider.DRIVER)
             .build();
 
@@ -35,7 +36,8 @@ public class ClickHouseR2DBCDatabaseContainer implements R2DBCDatabaseContainer 
 
     @Override
     public ConnectionFactoryOptions configure(ConnectionFactoryOptions options) {
-        return options.mutate()
+        return options
+            .mutate()
             .option(ConnectionFactoryOptions.HOST, container.getHost())
             .option(ConnectionFactoryOptions.PORT, container.getMappedPort(ClickHouseContainer.HTTP_PORT))
             .option(ConnectionFactoryOptions.DATABASE, container.getDatabaseName())

@@ -8,6 +8,7 @@ import org.testcontainers.r2dbc.R2DBCDatabaseContainer;
 import org.testcontainers.r2dbc.R2DBCDatabaseContainerProvider;
 
 public class ClickHouseR2DBCDatabaseContainerProvider implements R2DBCDatabaseContainerProvider {
+
     public static final String DRIVER = ClickHouseConnectionFactoryProvider.CLICKHOUSE_DRIVER;
 
     private static final String IMAGE_NAME = "clickhouse/clickhouse-server";

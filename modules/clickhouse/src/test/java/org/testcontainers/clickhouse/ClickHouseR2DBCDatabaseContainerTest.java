@@ -4,6 +4,7 @@ import io.r2dbc.spi.ConnectionFactoryOptions;
 import org.testcontainers.r2dbc.AbstractR2DBCDatabaseContainerTest;
 
 public class ClickHouseR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseContainerTest<ClickHouseContainer> {
+
     @Override
     protected ConnectionFactoryOptions getOptions(ClickHouseContainer container) {
         // spotless:off
