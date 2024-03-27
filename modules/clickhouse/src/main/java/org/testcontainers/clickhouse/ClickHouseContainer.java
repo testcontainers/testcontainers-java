@@ -23,9 +23,11 @@ public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContain
 
     private static final String NAME = "clickhouse";
 
-    private static final DockerImageName CLICKHOUSE_IMAGE_NAME = DockerImageName.parse("clickhouse/clickhouse-server");
+    static final String CLICKHOUSE_CLICKHOUSE_SERVER = "clickhouse/clickhouse-server";
 
-    public static final Integer HTTP_PORT = 8123;
+    private static final DockerImageName CLICKHOUSE_IMAGE_NAME = DockerImageName.parse(CLICKHOUSE_CLICKHOUSE_SERVER);
+
+    static final Integer HTTP_PORT = 8123;
 
     static final Integer NATIVE_PORT = 9000;
 
@@ -35,11 +37,15 @@ public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContain
 
     private static final String TEST_QUERY = "SELECT 1";
 
+    static final String DEFAULT_USER = "default";
+
+    static final String DEFAULT_PASSWORD = "";
+
     private String databaseName = "default";
 
-    private String username = "default";
+    private String username = DEFAULT_USER;
 
-    private String password = "";
+    private String password = DEFAULT_PASSWORD;
 
     public ClickHouseContainer(String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));

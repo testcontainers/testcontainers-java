@@ -1,7 +1,6 @@
 package org.testcontainers.clickhouse;
 
 import io.r2dbc.spi.ConnectionFactoryOptions;
-import org.testcontainers.containers.ClickHouseR2DBCDatabaseContainerProvider;
 import org.testcontainers.r2dbc.R2DBCDatabaseContainer;
 
 /**

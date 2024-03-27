@@ -7,13 +7,7 @@ public class ClickHouseR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseC
 
     @Override
     protected ConnectionFactoryOptions getOptions(ClickHouseContainer container) {
-        // spotless:off
-        // get_options {
-        ConnectionFactoryOptions options = ClickHouseR2DBCDatabaseContainer.getOptions(
-            container
-        );
-        // }
-        // spotless:on
+        ConnectionFactoryOptions options = ClickHouseR2DBCDatabaseContainer.getOptions(container);
 
         return options;
     }
@@ -25,10 +19,6 @@ public class ClickHouseR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseC
 
     @Override
     protected ClickHouseContainer createContainer() {
-        return new ClickHouseContainer("clickhouse/clickhouse-server:21.9.2-alpine")
-            .withExposedPorts(ClickHouseContainer.HTTP_PORT, ClickHouseContainer.NATIVE_PORT)
-            .withUsername("test")
-            .withPassword("test")
-            .withDatabaseName("db");
+        return new ClickHouseContainer("clickhouse/clickhouse-server:21.9.2-alpine");
     }
 }
