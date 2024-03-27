@@ -98,6 +98,11 @@ public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContain
     }
 
     @Override
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    @Override
     public String getTestQueryString() {
         return TEST_QUERY;
     }
