@@ -8,7 +8,7 @@ dependencies {
     // Any >2.8 version here is not compatible with jackson-databind 2.8.x.
     shaded 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.8.8'
 
-    testImplementation 'io.fabric8:kubernetes-client:6.10.0'
+    testImplementation 'io.fabric8:kubernetes-client:6.11.0'
     testImplementation 'io.kubernetes:client-java:19.0.0'
     testImplementation 'org.assertj:assertj-core:3.25.2'
 }
