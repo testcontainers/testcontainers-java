@@ -17,7 +17,10 @@ import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Future;
@@ -35,7 +38,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
 
     private Driver driver;
 
-    private String initScriptPath;
+    private List<String> initScriptPaths = new ArrayList<>();
 
     protected Map<String, String> parameters = new HashMap<>();
 
@@ -133,8 +136,37 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
         return self();
     }
 
+    /**
+     * Sets a script for initialization.
+     *
+     * @param initScriptPath path to the script file
+     * @return self
+     */
     public SELF withInitScript(String initScriptPath) {
-        this.initScriptPath = initScriptPath;
+        this.initScriptPaths = new ArrayList<>();
+        this.initScriptPaths.add(initScriptPath);
+        return self();
+    }
+
+    /**
+     * Sets an ordered array of scripts for initialization.
+     *
+     * @param initScriptPaths paths to the script files
+     * @return self
+     */
+    public SELF withInitScripts(String... initScriptPaths) {
+        return withInitScripts(Arrays.asList(initScriptPaths));
+    }
+
+    /**
+     * Sets an ordered collection of scripts for initialization.
+     *
+     * @param initScriptPaths paths to the script files
+     * @return self
+     */
+    public SELF withInitScripts(Iterable<String> initScriptPaths) {
+        this.initScriptPaths = new ArrayList<>();
+        initScriptPaths.forEach(this.initScriptPaths::add);
         return self();
     }
 
@@ -329,9 +361,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
      * Load init script content and apply it to the database if initScriptPath is set
      */
     protected void runInitScriptIfRequired() {
-        if (initScriptPath != null) {
-            ScriptUtils.runInitScript(getDatabaseDelegate(), initScriptPath);
-        }
+        initScriptPaths.forEach(path -> ScriptUtils.runInitScript(getDatabaseDelegate(), path));
     }
 
     public void setParameters(Map<String, String> parameters) {
