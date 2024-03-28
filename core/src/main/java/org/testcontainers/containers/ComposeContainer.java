@@ -165,7 +165,7 @@ public class ComposeContainer extends FailureDetectingExternalResource implement
                 if (removeImages != null) {
                     cmd += " --rmi " + removeImages.dockerRemoveImagesType();
                 }
-                this.composeDelegate.runWithCompose(this.localCompose, cmd);
+                this.composeDelegate.runWithCompose(this.localCompose, cmd, env);
             } finally {
                 this.project = this.composeDelegate.randomProjectId();
             }
