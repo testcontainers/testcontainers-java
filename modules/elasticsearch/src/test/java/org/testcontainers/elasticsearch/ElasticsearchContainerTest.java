@@ -23,6 +23,7 @@ import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.RemoteDockerImage;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
@@ -372,6 +373,49 @@ public class ElasticsearchContainerTest {
             Response response = getClient(container).performRequest(new Request("GET", "/_cluster/health"));
             assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
             assertThat(EntityUtils.toString(response.getEntity())).contains("cluster_name");
+        }
+    }
+
+    @Test
+    public void testElasticsearch7CanHaveSecurityEnabledAndUseSslContext() throws Exception {
+        String customizedCertPath = "/usr/share/elasticsearch/config/certs/http_ca_customized.crt";
+        try (
+            ElasticsearchContainer container = new ElasticsearchContainer(
+                "docker.elastic.co/elasticsearch/elasticsearch:7.17.15"
+            )
+                .withPassword(ElasticsearchContainer.ELASTICSEARCH_DEFAULT_PASSWORD)
+                .withEnv("xpack.security.enabled", "true")
+                .withEnv("xpack.security.http.ssl.enabled", "true")
+                .withEnv("xpack.security.http.ssl.key", "/usr/share/elasticsearch/config/certs/elasticsearch.key")
+                .withEnv(
+                    "xpack.security.http.ssl.certificate",
+                    "/usr/share/elasticsearch/config/certs/elasticsearch.crt"
+                )
+                .withEnv("xpack.security.http.ssl.certificate_authorities", customizedCertPath)
+                // these lines show how certificates can be created self-made way
+                // obviously this shouldn't be done in prod environment, where proper and officially signed keys should be present
+                .withCopyToContainer(
+                    Transferable.of(
+                        "#!/bin/bash\n" +
+                        "mkdir -p /usr/share/elasticsearch/config/certs;" +
+                        "openssl req -x509 -newkey rsa:4096 -keyout /usr/share/elasticsearch/config/certs/elasticsearch.key -out /usr/share/elasticsearch/config/certs/elasticsearch.crt -days 365 -nodes -subj \"/CN=localhost\";" +
+                        "openssl x509 -outform der -in /usr/share/elasticsearch/config/certs/elasticsearch.crt -out " +
+                        customizedCertPath +
+                        "; chown -R elasticsearch /usr/share/elasticsearch/config/certs/",
+                        555
+                    ),
+                    "/usr/share/elasticsearch/generate-certs.sh"
+                )
+                // because we need to generate the certificates before Elasticsearch starts, the entry command has to be tuned accordingly
+                .withCommand(
+                    "sh",
+                    "-c",
+                    "/usr/share/elasticsearch/generate-certs.sh && /usr/local/bin/docker-entrypoint.sh"
+                )
+                .withCertPath(customizedCertPath)
+        ) {
+            container.start();
+            assertClusterHealthResponse(container);
         }
     }
 

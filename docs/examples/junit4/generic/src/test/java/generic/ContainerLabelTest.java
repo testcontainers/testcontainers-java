@@ -9,7 +9,7 @@ import java.util.Map;
 public class ContainerLabelTest {
 
     // single_label {
-    public GenericContainer containerWithLabel = new GenericContainer(DockerImageName.parse("alpine:3.16"))
+    public GenericContainer containerWithLabel = new GenericContainer(DockerImageName.parse("alpine:3.17"))
         .withLabel("key", "value");
     // }
 
@@ -17,7 +17,7 @@ public class ContainerLabelTest {
     private Map<String, String> mapOfLabels = new HashMap<>();
     // populate map, e.g. mapOfLabels.put("key1", "value1");
 
-    public GenericContainer containerWithMultipleLabels = new GenericContainer(DockerImageName.parse("alpine:3.16"))
+    public GenericContainer containerWithMultipleLabels = new GenericContainer(DockerImageName.parse("alpine:3.17"))
         .withLabels(mapOfLabels);
     // }
 }
