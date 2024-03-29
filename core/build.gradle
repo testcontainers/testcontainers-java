@@ -53,6 +53,7 @@ tasks.japicmp {
     methodExcludes = [
         "org.testcontainers.containers.Container#getDockerClient()",
         "org.testcontainers.containers.ContainerState#getDockerClient()",
+        "org.testcontainers.containers.GenericContainer#setContainerDef(org.testcontainers.containers.ContainerDef)",
         "org.testcontainers.containers.ContainerState#execInContainer(org.testcontainers.containers.ExecConfig)",
         "org.testcontainers.containers.ContainerState#execInContainer(java.nio.charset.Charset,org.testcontainers.containers.ExecConfig)"
     ]

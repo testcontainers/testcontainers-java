@@ -209,14 +209,21 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private final Set<CreateContainerCmdModifier> createContainerCmdModifiers = loadCreateContainerCmdCustomizers();
 
-    private ContainerDef containerDef;
+    @Setter(AccessLevel.NONE)
+    private BaseContainerDef containerDef;
 
-    ContainerDef createContainerDef() {
+    private StartedContainer startedContainer;
+
+    BaseContainerDef createContainerDef() {
         return new ContainerDef();
     }
 
-    ContainerDef getContainerDef() {
+    BaseContainerDef getContainerDef() {
         return this.containerDef;
+    }
+
+    StartedContainer getStartedContainer() {
+        return this.startedContainer;
     }
 
     private Set<CreateContainerCmdModifier> loadCreateContainerCmdCustomizers() {
@@ -257,7 +264,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         this(new RemoteDockerImage(image));
     }
 
-    GenericContainer(@NonNull final ContainerDef containerDef) {
+    GenericContainer(@NonNull final BaseContainerDef containerDef) {
         this.image = containerDef.getImage();
         this.containerDef = containerDef;
     }
@@ -379,6 +386,14 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     private void tryStart() {
+        this.startedContainer = this.containerDef.toStarted(this);
+
+        ContainerLifecycleHooks containerLifecycle = this.startedContainer instanceof ContainerLifecycleHooks
+            ? (ContainerLifecycleHooks) this.startedContainer
+            : ContainerLifecycleHooks.EMPTY;
+
+        containerLifecycle.configure();
+
         try {
             String dockerImageName = getDockerImageName();
             logger().debug("Starting container: {}", dockerImageName);
@@ -487,6 +502,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
             // Tell subclasses that we're starting
             containerIsStarting(containerInfo, reused);
+            containerLifecycle.containerIsStarting(reused);
 
             // Wait until the container has reached the desired running state
             if (!this.startupCheckStrategy.waitUntilStartupSuccessful(this)) {
@@ -540,6 +556,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
             logger().info("Container {} started in {}", dockerImageName, Duration.between(startedAt, Instant.now()));
             containerIsStarted(containerInfo, reused);
+            containerLifecycle.containerIsStarted(reused);
         } catch (Exception e) {
             if (e instanceof UndeclaredThrowableException && e.getCause() instanceof Exception) {
                 e = (Exception) e.getCause();

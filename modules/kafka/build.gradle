@@ -7,3 +7,12 @@ dependencies {
     testImplementation 'org.assertj:assertj-core:3.25.1'
     testImplementation 'com.google.guava:guava:23.0'
 }
+
+tasks.japicmp {
+    methodExcludes = [
+        "org.testcontainers.containers.KafkaContainer#containerIsStarting(com.github.dockerjava.api.command.InspectContainerResponse)",
+        "org.testcontainers.containers.KafkaContainer#commandKraft()",
+        "org.testcontainers.containers.KafkaContainer#commandZookeeper()",
+        "org.testcontainers.containers.KafkaContainer#brokerAdvertisedListener(com.github.dockerjava.api.command.InspectContainerResponse)",
+    ]
+}
