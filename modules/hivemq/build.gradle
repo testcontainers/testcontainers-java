@@ -3,7 +3,7 @@ apply plugin: 'testcontainers.module'
 description = "Testcontainers :: HiveMQ"
 
 dependencies {
-    api(projects.testcontainers)
+    api projects.testcontainers
     api("org.jetbrains:annotations:24.1.0")
 
     shaded("org.apache.commons:commons-lang3:3.14.0")

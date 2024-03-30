@@ -1,7 +1,8 @@
+apply plugin: 'testcontainers.module'
 description = "Testcontainers :: Qdrant"
 
 dependencies {
-    api project(':testcontainers')
+    api projects.testcontainers
 
     testImplementation 'org.assertj:assertj-core:3.25.1'
     testImplementation 'io.qdrant:client:1.7.1'

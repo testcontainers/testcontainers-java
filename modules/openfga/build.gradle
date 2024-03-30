@@ -1,7 +1,8 @@
+apply plugin: 'testcontainers.module'
 description = "Testcontainers :: OpenFGA"
 
 dependencies {
-    api project(':testcontainers')
+    api projects.testcontainers
 
     testImplementation 'org.assertj:assertj-core:3.25.1'
     testImplementation 'dev.openfga:openfga-sdk:0.3.2'

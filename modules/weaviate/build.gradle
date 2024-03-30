@@ -1,7 +1,8 @@
+apply plugin: 'testcontainers.module'
 description = "Testcontainers :: Weaviate"
 
 dependencies {
-    api project(':testcontainers')
+    api projects.testcontainers
 
     testImplementation 'org.assertj:assertj-core:3.25.1'
     testImplementation 'io.weaviate:client:4.6.0'

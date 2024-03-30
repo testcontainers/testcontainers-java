@@ -1,7 +1,8 @@
+apply plugin: 'testcontainers.module'
 description = "Testcontainers :: Ollama"
 
 dependencies {
-    api project(':testcontainers')
+    api projects.testcontainers
 
     testImplementation 'org.assertj:assertj-core:3.25.1'
     testImplementation 'io.rest-assured:rest-assured:5.4.0'

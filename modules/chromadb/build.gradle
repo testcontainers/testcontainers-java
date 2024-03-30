@@ -1,3 +1,4 @@
+apply plugin: 'testcontainers.module'
 description = "Testcontainers :: ChromaDB"
 
 dependencies {

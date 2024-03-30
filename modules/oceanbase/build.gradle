@@ -1,8 +1,9 @@
+apply plugin: 'testcontainers.module'
 description = "Testcontainers :: JDBC :: OceanBase"
 
 dependencies {
-    api project(':jdbc')
+    api projects.jdbc
 
-    testImplementation project(':jdbc-test')
+    testImplementation projects.jdbcTest
     testRuntimeOnly 'mysql:mysql-connector-java:8.0.33'
 }

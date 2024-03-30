@@ -1,7 +1,8 @@
+apply plugin: 'testcontainers.module'
 description = "Testcontainers :: Milvus"
 
 dependencies {
-    api project(':testcontainers')
+    api projects.testcontainers
 
     testImplementation 'org.assertj:assertj-core:3.25.1'
     testImplementation 'io.milvus:milvus-sdk-java:2.3.4'
