@@ -72,7 +72,7 @@ dependencies {
     api 'org.slf4j:slf4j-api:1.7.36'
     compileOnly 'org.jetbrains:annotations:24.1.0'
     testCompileOnly 'org.jetbrains:annotations:24.1.0'
-    api 'org.apache.commons:commons-compress:1.25.0'
+    api 'org.apache.commons:commons-compress:1.24.0'
     api ('org.rnorth.duct-tape:duct-tape:1.0.8') {
         exclude(group: 'org.jetbrains', module: 'annotations')
     }
@@ -87,8 +87,8 @@ dependencies {
 
     shaded 'org.awaitility:awaitility:4.2.0'
 
-    api platform('com.github.docker-java:docker-java-bom:3.3.4')
-    shaded platform('com.github.docker-java:docker-java-bom:3.3.4')
+    api platform('com.github.docker-java:docker-java-bom:3.3.6')
+    shaded platform('com.github.docker-java:docker-java-bom:3.3.6')
 
     api "com.github.docker-java:docker-java-api"
 

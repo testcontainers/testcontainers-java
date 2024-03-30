@@ -17,13 +17,16 @@ public class ImageData {
     Instant createdAt;
 
     static ImageData from(InspectImageResponse inspectImageResponse) {
-        return ImageData
-            .builder()
-            .createdAt(ZonedDateTime.parse(inspectImageResponse.getCreated()).toInstant())
-            .build();
+        final String created = inspectImageResponse.getCreated();
+        final Instant createdInstant = ((created == null) || created.isEmpty())
+            ? Instant.EPOCH
+            : ZonedDateTime.parse(created).toInstant();
+        return ImageData.builder().createdAt(createdInstant).build();
     }
 
     static ImageData from(Image image) {
-        return ImageData.builder().createdAt(Instant.ofEpochSecond(image.getCreated())).build();
+        final Long created = image.getCreated();
+        final Instant createdInstant = (created == null) ? Instant.EPOCH : Instant.ofEpochSecond(created);
+        return ImageData.builder().createdAt(createdInstant).build();
     }
 }

@@ -115,6 +115,9 @@ labels:
   - name: modules/cassandra
     color: '#006b75'
 
+  - name: modules/chromadb
+    color: '#006b75'
+
   - name: modules/clickhouse
     color: '#006b75'
 
@@ -157,6 +160,9 @@ labels:
   - name: modules/k3s
     color: '#006b75'
 
+  - name: modules/k6
+    color: '#006b75'
+
   - name: modules/kafka
     color: '#006b75'
 
@@ -164,6 +170,9 @@ labels:
     color: '#006b75'
 
   - name: modules/mariadb
+    color: '#006b75'
+
+  - name: modules/milvus
     color: '#006b75'
 
   - name: modules/minio
@@ -184,6 +193,15 @@ labels:
   - name: modules/nginx
     color: '#006b75'
 
+  - name: modules/oceanbase
+    color: '#006b75'
+
+  - name: modules/ollama
+    color: '#006b75'
+
+  - name: modules/openfga
+    color: '#006b75'
+
   - name: modules/oracle
     color: '#006b75'
 
@@ -197,6 +215,9 @@ labels:
     color: '#006b75'
 
   - name: modules/pulsar
+    color: '#006b75'
+
+  - name: modules/qdrant
     color: '#006b75'
 
   - name: modules/questdb
@@ -236,6 +257,9 @@ labels:
     color: '#006b75'
 
   - name: modules/vault
+    color: '#006b75'
+
+  - name: modules/weaviate
     color: '#006b75'
 
   - name: modules/yugabytedb
@@ -364,7 +388,7 @@ branches:
         # Required. Require branches to be up to date before merging.
         strict: true
         # Required. The list of status checks to require in order to merge into this branch
-        contexts: ["check (:testcontainers:check)", "check (:docs:examples:check)", "in-docker_test", "ci/circleci: minimal_core", "test"]
+        contexts: ["core", "check_docs_examples (:docs:examples:check)", "in-docker_test", "ci/circleci: minimal_core", "test"]
       # Required. Enforce all configured restrictions for administrators. Set to true to enforce required status checks for repository administrators. Set to null to disable.
       enforce_admins: false
       # Prevent merge commits from being pushed to matching branches

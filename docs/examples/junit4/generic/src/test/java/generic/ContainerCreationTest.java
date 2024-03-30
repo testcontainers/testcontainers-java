@@ -20,7 +20,7 @@ public class ContainerCreationTest {
     // }
     // spotless:on
 
-    public static final DockerImageName ALPINE_IMAGE = DockerImageName.parse("alpine:3.16");
+    public static final DockerImageName ALPINE_IMAGE = DockerImageName.parse("alpine:3.17");
 
     // spotless:off
     // withOptions {

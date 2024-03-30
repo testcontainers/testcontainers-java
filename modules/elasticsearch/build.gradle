@@ -8,3 +8,9 @@ dependencies {
     testImplementation "org.elasticsearch.client:transport:7.17.17"
     testImplementation 'org.assertj:assertj-core:3.25.2'
 }
+
+tasks.japicmp {
+    methodExcludes = [
+        "org.testcontainers.elasticsearch.ElasticsearchContainer#containerIsStarted(com.github.dockerjava.api.command.InspectContainerResponse)",
+    ]
+}
