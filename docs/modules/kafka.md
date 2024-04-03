@@ -3,6 +3,7 @@
 Testcontainers can be used to automatically instantiate and manage [Apache Kafka](https://kafka.apache.org) containers.
 
 Currently, two different Kafka images are supported:
+
 * `org.testcontainers.containers.KafkaContainer` supports 
 [confluentinc/cp-kafka](https://hub.docker.com/r/confluentinc/cp-kafka/)
 * `org.testcontainers.kafka.KafkaContainer` supports [apache/kafka](https://hub.docker.com/r/apache/kafka/)
