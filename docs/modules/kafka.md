@@ -1,7 +1,11 @@
-# Kafka Containers
+# Kafka Module
 
 Testcontainers can be used to automatically instantiate and manage [Apache Kafka](https://kafka.apache.org) containers.
-More precisely Testcontainers uses the official Docker images for [Confluent OSS Platform](https://hub.docker.com/r/confluentinc/cp-kafka/)
+
+Currently, two different Kafka images are supported:
+* `org.testcontainers.containers.KafkaContainer` supports 
+[confluentinc/cp-kafka](https://hub.docker.com/r/confluentinc/cp-kafka/)
+* `org.testcontainers.kafka.KafkaContainer` supports [apache/kafka](https://hub.docker.com/r/apache/kafka/)
 
 ## Benefits
 
@@ -24,6 +28,9 @@ Now your tests or any other process running on your machine can get access to ru
 <!--/codeinclude-->
 
 ## Options
+
+!!! note 
+    The options below are only available for `org.testcontainers.containers.KafkaContainer`
         
 ### <a name="zookeeper"></a> Using external Zookeeper
 
