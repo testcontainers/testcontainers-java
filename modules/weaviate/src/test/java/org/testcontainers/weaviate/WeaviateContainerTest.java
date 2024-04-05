@@ -19,7 +19,7 @@ public class WeaviateContainerTest {
     @Test
     public void testWeaviate() {
         try ( // container {
-            WeaviateContainer weaviate = new WeaviateContainer("semitechnologies/weaviate:1.24.5")
+            WeaviateContainer weaviate = new WeaviateContainer("cr.weaviate.io/semitechnologies/weaviate:1.24.5")
             // }
         ) {
             weaviate.start();
