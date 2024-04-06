@@ -20,6 +20,8 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import com.amazonaws.services.sqs.model.CreateQueueResult;
+import java.util.HashMap;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.junit.ClassRule;
@@ -33,8 +35,27 @@ import org.testcontainers.containers.localstack.LocalStackContainer.Service;
 import org.testcontainers.utility.DockerImageName;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.waiters.WaiterResponse;
 import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.dynamodb.model.AttributeDefinition;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+import software.amazon.awssdk.services.dynamodb.model.CreateTableRequest;
+import software.amazon.awssdk.services.dynamodb.model.CreateTableResponse;
+import software.amazon.awssdk.services.dynamodb.model.DeleteTableRequest;
+import software.amazon.awssdk.services.dynamodb.model.DeleteTableResponse;
+import software.amazon.awssdk.services.dynamodb.model.DescribeTableRequest;
+import software.amazon.awssdk.services.dynamodb.model.DescribeTableResponse;
+import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.GetItemResponse;
+import software.amazon.awssdk.services.dynamodb.model.KeySchemaElement;
+import software.amazon.awssdk.services.dynamodb.model.KeyType;
+import software.amazon.awssdk.services.dynamodb.model.ProvisionedThroughput;
+import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.PutItemResponse;
+import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
+import software.amazon.awssdk.services.dynamodb.waiters.DynamoDbWaiter;
 
 import java.io.IOException;
 import java.net.URL;
@@ -67,6 +88,7 @@ public class LocalstackContainerTest {
                 Service.S3,
                 Service.SQS,
                 Service.CLOUDWATCHLOGS,
+                Service.DYNAMODB,
                 Service.KMS,
                 LocalStackContainer.EnabledService.named("events")
             );
@@ -241,6 +263,82 @@ public class LocalstackContainerTest {
                     )
                         .getServiceEndpoint()
                 );
+        }
+
+        @Test
+        public void dynamodDbTestUsingAwsSdkV2() {
+            final String key = "key-" + UUID.randomUUID().toString();
+            final String keyVal = "keyVal-" + UUID.randomUUID().toString();
+            final String tableName = "table-" + UUID.randomUUID().toString();
+
+            // with_aws_sdk_v2 {
+            DynamoDbClient dbClient = DynamoDbClient.builder()
+                .endpointOverride(localstack.getEndpoint())
+                .credentialsProvider(
+                    StaticCredentialsProvider.create(
+                        AwsBasicCredentials.create(localstack.getAccessKey(), localstack.getSecretKey())
+                    )
+                )
+                .region(Region.of(localstack.getRegion()))
+                .build();
+            DynamoDbWaiter dbWaiter = dbClient.waiter();
+            CreateTableRequest request = CreateTableRequest.builder()
+                .attributeDefinitions(AttributeDefinition.builder()
+                    .attributeName(key)
+                    .attributeType(ScalarAttributeType.S)
+                    .build())
+                .keySchema(KeySchemaElement.builder()
+                    .attributeName(key)
+                    .keyType(KeyType.HASH)
+                    .build())
+                .provisionedThroughput(ProvisionedThroughput.builder()
+                    .readCapacityUnits(5L)
+                    .writeCapacityUnits(5L)
+                    .build())
+                .tableName(tableName)
+                .build();
+            CreateTableResponse response = dbClient.createTable(request);
+            assertThat(response.tableDescription().tableName()).isEqualTo(tableName);
+            DescribeTableRequest tableRequest = DescribeTableRequest.builder()
+                .tableName(tableName)
+                .build();
+            WaiterResponse<DescribeTableResponse> waiterResponse =  dbWaiter.waitUntilTableExists(tableRequest);
+            DescribeTableResponse describeTableResponse = waiterResponse.matched().response().get();
+            assertThat(describeTableResponse).isNotNull();
+            assertThat(describeTableResponse.sdkHttpResponse().isSuccessful()).isTrue();
+            assertThat(describeTableResponse.responseMetadata().requestId()).isNotNull();
+            assertThat(describeTableResponse.table().tableName()).isEqualTo(tableName);
+
+            HashMap<String, AttributeValue> putItemValues = new HashMap<>();
+            putItemValues.put(key, AttributeValue.builder().s(keyVal).build());
+            putItemValues.put("city", AttributeValue.builder().s("Seattle").build());
+            putItemValues.put("country", AttributeValue.builder().s("USA").build());
+
+            PutItemRequest putItemRequest = PutItemRequest.builder()
+                .tableName(tableName)
+                .item(putItemValues)
+                .build();
+            PutItemResponse putItemResponse = dbClient.putItem(putItemRequest);
+            assertThat(putItemResponse.sdkHttpResponse().isSuccessful()).isTrue();
+
+            HashMap<String, AttributeValue> getItemValues = new HashMap<>();
+            getItemValues.put(key, AttributeValue.builder().s(keyVal).build());
+            GetItemRequest getItemRequest = GetItemRequest.builder()
+                .tableName(tableName)
+                .key(getItemValues)
+                .consistentRead(true)
+                .build();
+            GetItemResponse getItemResponse = dbClient.getItem(getItemRequest);
+            assertThat(getItemResponse.sdkHttpResponse().isSuccessful()).isTrue();
+            assertThat(getItemResponse.item().keySet()).containsExactly("country", "city", key);
+
+            DeleteTableRequest deleteTableRequest = DeleteTableRequest.builder()
+                .tableName(tableName)
+                .build();
+            DeleteTableResponse deleteTableResponse = dbClient.deleteTable(deleteTableRequest);
+            assertThat(deleteTableResponse.sdkHttpResponse().isSuccessful()).isTrue();
+            // }
+
         }
     }
 
