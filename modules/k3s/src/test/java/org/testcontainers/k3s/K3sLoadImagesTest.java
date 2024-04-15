@@ -33,7 +33,6 @@ public class K3sLoadImagesTest {
 
     @Test
     public void testLoadImageFromTar() throws Exception {
-
         try (PullImageCmd pullImageCmd = k3s.getDockerClient().pullImageCmd("busybox:1.35")) {
             pullImageCmd.start().awaitCompletion();
 
@@ -48,8 +47,7 @@ public class K3sLoadImagesTest {
 
                 Container.ExecResult result = k3s.execInContainer("crictl", "images");
                 assertThat(result.getStdout()).contains("busybox");
-            }
-            finally {
+            } finally {
                 Files.delete(tarFile.toPath());
                 Files.delete(tarsTempFolder.toPath());
             }

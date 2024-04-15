@@ -8,7 +8,6 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.github.dockerjava.api.command.CopyArchiveToContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.command.SaveImageCmd;
-import com.github.dockerjava.api.command.SaveImagesCmd;
 import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
 import org.testcontainers.containers.BindMode;
@@ -21,17 +20,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.CopyOption;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-
-import static org.awaitility.Awaitility.await;
 
 /**
  * Testcontainers implementation for K3S
@@ -75,9 +68,7 @@ public class K3sContainer extends GenericContainer<K3sContainer> {
      * @throws InterruptedException thrown when the thread is interrupted
      */
     public void loadImages(Set<String> images) throws IOException, InterruptedException {
-
         if (images != null && !images.isEmpty()) {
-
             // create temporary directory on the host where all tar(s) will reside
             File tarsTempFolder = Files.createTempDirectory("").toFile();
             File tarFile = File.createTempFile("images", ".tar", tarsTempFolder);
@@ -110,8 +101,6 @@ public class K3sContainer extends GenericContainer<K3sContainer> {
                 importTar(tarFile, false);
             }
         }
-
-
     }
 
     @Override
@@ -177,8 +166,7 @@ public class K3sContainer extends GenericContainer<K3sContainer> {
             if (!noErrors) {
                 throw new RuntimeException(result.getStderr());
             }
-        }
-        finally {
+        } finally {
             if (deleteAfterCopy) {
                 Files.deleteIfExists(tarFile.toPath());
             }
