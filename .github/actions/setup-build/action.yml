@@ -1,0 +1,10 @@
+name: Set up Build
+description: Sets up Build
+runs:
+  using: "composite"
+  steps:
+    - uses: ./.github/actions/setup-java
+    - name: Clear existing docker image cache
+      shell: bash
+      run: docker image prune -af
+    - uses: ./.github/actions/setup-gradle

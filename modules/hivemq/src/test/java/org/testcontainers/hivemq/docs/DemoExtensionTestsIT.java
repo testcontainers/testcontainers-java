@@ -15,7 +15,7 @@ import org.testcontainers.utility.MountableFile;
 import java.util.concurrent.TimeUnit;
 
 @Testcontainers
-public class DemoExtensionTestsIT {
+class DemoExtensionTestsIT {
 
     // waitStrategy {
     @Container
@@ -38,7 +38,7 @@ public class DemoExtensionTestsIT {
 
     @Container
     final HiveMQContainer hivemqWithClasspathExtension = new HiveMQContainer(
-        DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3")
+        DockerImageName.parse("hivemq/hivemq-ce").withTag("2024.3")
     )
         .waitForExtension(hiveMQEClasspathxtension)
         .withExtension(hiveMQEClasspathxtension)
@@ -48,7 +48,7 @@ public class DemoExtensionTestsIT {
 
     @Test
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
-    public void test() throws Exception {
+    void test() throws Exception {
         // mqtt5client {
         final Mqtt5BlockingClient client = Mqtt5Client
             .builder()

@@ -13,7 +13,15 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * SolrContainer allows a solr container to be launched and controlled.
+ * Testcontainers implementation for Solr.
+ * <p>
+ * Supported image: {@code solr}
+ * <p>
+ * Exposed ports:
+ * <ul>
+ *     <li>Solr: 8983</li>
+ *     <li>Zookeeper: 9983</li>
+ * </ul>
  */
 public class SolrContainer extends GenericContainer<SolrContainer> {
 
@@ -32,7 +40,7 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
     private SolrContainerConfiguration configuration;
 
     /**
-     * @deprecated use {@link SolrContainer(DockerImageName)} instead
+     * @deprecated use {@link #SolrContainer(DockerImageName)} instead
      */
     @Deprecated
     public SolrContainer() {
@@ -40,7 +48,7 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
     }
 
     /**
-     * @deprecated use {@link SolrContainer(DockerImageName)} instead
+     * @deprecated use {@link #SolrContainer(DockerImageName)} instead
      */
     public SolrContainer(final String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));

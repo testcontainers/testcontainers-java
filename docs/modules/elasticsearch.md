@@ -28,15 +28,6 @@ You can turn on security by providing a password:
 [HttpClient](../../modules/elasticsearch/src/test/java/org/testcontainers/elasticsearch/ElasticsearchContainerTest.java) inside_block:httpClientSecuredContainer
 <!--/codeinclude-->
 
-## Choose your Elasticsearch license
-
-If you prefer to start a Docker image with the pure OSS version (which means with no security in older versions or
-other new and advanced features), you can use this instead:
-
-<!--codeinclude-->
-[Elasticsearch OSS](../../modules/elasticsearch/src/test/java/org/testcontainers/elasticsearch/ElasticsearchContainerTest.java) inside_block:ossContainer
-<!--/codeinclude-->
-
 ## Adding this module to your project dependencies
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:

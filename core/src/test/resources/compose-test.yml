@@ -1,6 +1,6 @@
 redis:
   image: redis
 db:
-  image: mysql:5.7.34
+  image: mysql:8.0.36
   environment:
     MYSQL_RANDOM_ROOT_PASSWORD: "true"

@@ -1,6 +1,6 @@
 # HiveMQ Module
 
-<img src="../modules_logos/hivemq-module.png" alt="drawing" width="800"/>
+![hivemq logo](../modules_logos/hivemq-module.png)
 
 Automatic starting HiveMQ docker containers for JUnit4 and JUnit5 tests.
 This enables testing MQTT client applications and integration testing of custom HiveMQ extensions.

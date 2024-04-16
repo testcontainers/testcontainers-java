@@ -191,7 +191,7 @@ public class Neo4jContainerTest {
 
     @Test
     public void shouldSetCustomPasswordCorrectly() {
-        // withoutAuthentication {
+        // withAdminPassword {
         Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4").withAdminPassword("verySecret");
         // }
 
