@@ -10,7 +10,7 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class QdrantContainerTest {
 
@@ -43,7 +43,7 @@ public class QdrantContainerTest {
                 QdrantGrpcClient.newBuilder(qdrant.getHost(), qdrant.getGrpcPort(), false).build()
             );
 
-            assertThrows(ExecutionException.class, () -> unauthClient.healthCheckAsync().get());
+            assertThatThrownBy(() -> unauthClient.healthCheckAsync().get()).isInstanceOf(ExecutionException.class);
 
             unauthClient.close();
 
@@ -72,7 +72,7 @@ public class QdrantContainerTest {
                 QdrantGrpcClient.newBuilder(qdrant.getHost(), qdrant.getGrpcPort(), false).build()
             );
 
-            assertThrows(ExecutionException.class, () -> unauthClient.healthCheckAsync().get());
+            assertThatThrownBy(() -> unauthClient.healthCheckAsync().get()).isInstanceOf(ExecutionException.class);
 
             unauthClient.close();
 
