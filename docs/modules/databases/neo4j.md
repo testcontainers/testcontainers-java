@@ -73,13 +73,12 @@ Whole directories work as well:
 
 ### Add Neo4j Docker Labs plugins
 
-Add any Neo4j Labs plugin from the [Neo4j Docker Labs plugin list](https://neo4j.com/docs/operations-manual/4.4/docker/operations/#docker-neo4jlabs-plugins).
+Add any Neo4j Labs plugin from the [Neo4j 4.4 Docker Labs plugin list](https://neo4j.com/docs/operations-manual/4.4/docker/operations/#docker-neo4jlabs-plugins)
+or [Neo4j 5 plugin list](https://neo4j.com/docs/operations-manual/5/configuration/plugins/).
 
 !!! note
-    At the moment only the plugins available from the list Neo4j Docker 4.4 are supported by type.
-    If you want to register another supported Neo4j Labs plugin, you have to add it manually
-    by using the method `withLabsPlugins(String... neo4jLabsPlugins)`.
-    Please refer to the list of [supported Docker image plugins](https://neo4j.com/docs/operations-manual/current/docker/operations/#docker-neo4jlabs-plugins).
+    The methods `withLabsPlugins(Neo4jLabsPlugin...)` and `withLabsPlugins(String... plugins)` are deprecated.
+    Please the method `withPlugins(String... plugins)`.
 
 <!--codeinclude-->
 [Configure Neo4j Labs Plugins](../../../modules/neo4j/src/test/java/org/testcontainers/containers/Neo4jContainerTest.java) inside_block:configureLabsPlugins
