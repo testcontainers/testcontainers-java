@@ -13,6 +13,7 @@
     </root>
 
     <logger name="org.testcontainers" level="INFO"/>
+    <logger name="tc.dockerImageName" level="DEBUG"/>
 
     <logger name="com.github.dockerjava" level="WARN"/>
     <logger name="org.zeroturnaround.exec" level="WARN"/>

@@ -1,0 +1,5 @@
+services:
+  redis:
+    image: redis
+    ports:
+      - ${REDIS_PORT}

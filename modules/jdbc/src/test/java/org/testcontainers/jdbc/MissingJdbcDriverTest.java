@@ -43,7 +43,7 @@ public class MissingJdbcDriverTest {
         private final AtomicInteger connectionAttempts = new AtomicInteger();
 
         MissingDriverContainer() {
-            super(DockerImageName.parse("mysql:5.7.34"));
+            super(DockerImageName.parse("mysql:8.0.36"));
             withEnv("MYSQL_ROOT_PASSWORD", "test");
             withExposedPorts(3306);
         }

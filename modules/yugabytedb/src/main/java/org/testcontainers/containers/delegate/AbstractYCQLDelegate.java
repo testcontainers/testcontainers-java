@@ -4,8 +4,6 @@ import org.testcontainers.delegate.DatabaseDelegate;
 
 /**
  * An abstract delegate do-nothing class
- *
- * @author srinivasa-vasu
  */
 public abstract class AbstractYCQLDelegate implements DatabaseDelegate {
 

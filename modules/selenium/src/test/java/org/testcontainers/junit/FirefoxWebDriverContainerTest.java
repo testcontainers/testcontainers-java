@@ -20,7 +20,7 @@ public class FirefoxWebDriverContainerTest extends BaseWebDriverContainerTest {
 
     @Before
     public void checkBrowserIsIndeedFirefox() {
-        assertBrowserNameIs(firefox, "firefox");
+        assertBrowserNameIs(firefox, "firefox", new FirefoxOptions());
     }
 
     @Test

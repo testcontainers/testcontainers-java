@@ -20,10 +20,16 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Testcontainer for Neo4j.
- *
- * @param <S> "SELF" to be used in the <code>withXXX</code> methods.
- * @author Michael J. Simons
+ * Testcontainers implementation for Neo4j.
+ * <p>
+ * Supported image: {@code neo4j}
+ * <p>
+ * Exposed ports:
+ * <ul>
+ *     <li>Bolt: 7687</li>
+ *     <li>HTTP: 7474</li>
+ *     <li>HTTPS: 7473</li>
+ * </ul>
  */
 public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContainer<S> {
 
@@ -79,7 +85,7 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
 
     /**
      * Creates a Neo4jContainer using the official Neo4j docker image.
-     * @deprecated use {@link Neo4jContainer(DockerImageName)} instead
+     * @deprecated use {@link #Neo4jContainer(DockerImageName)} instead
      */
     @Deprecated
     public Neo4jContainer() {
@@ -312,9 +318,11 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
 
     /**
      * Registers one or more {@link Neo4jLabsPlugin} for download and server startup.
-
+     *
      * @param neo4jLabsPlugins The Neo4j plugins that should get started with the server.
      * @return This container.
+     * @deprecated {@link Neo4jLabsPlugin} were deprecated due to naming changes that cannot be solved by this enumeration.
+     * Please use the {@link Neo4jContainer#withPlugins(String...)} method.
      */
     public S withLabsPlugins(Neo4jLabsPlugin... neo4jLabsPlugins) {
         List<String> pluginNames = Arrays
@@ -327,13 +335,25 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
     }
 
     /**
-     * Registers one or more {@link Neo4jLabsPlugin} for download and server startup.
-
-     * @param neo4jLabsPlugins The Neo4j plugins that should get started with the server.
-     * @return This container.
+     * @deprecated Please use {@link Neo4jContainer#withPlugins(String...)} for named plugins.
      */
     public S withLabsPlugins(String... neo4jLabsPlugins) {
-        this.labsPlugins.addAll(Arrays.asList(neo4jLabsPlugins));
+        return this.withPlugins(neo4jLabsPlugins);
+    }
+
+    /**
+     * Registers one or more Neo4j plugins for server startup.
+     * The plugins are listed here
+     * <ul>
+     *     <li><a href="https://neo4j.com/docs/operations-manual/5/configuration/plugins/">Neo4j 5</a></li>
+     *     <li><a href="https://neo4j.com/docs/operations-manual/4.4/docker/operations/#docker-neo4jlabs-plugins">Neo4j 4.4</a></li>
+     * </ul>
+     *
+     * @param plugins The Neo4j plugins that should get started with the server.
+     * @return This container.
+     */
+    public S withPlugins(String... plugins) {
+        this.labsPlugins.addAll(Arrays.asList(plugins));
         return self();
     }
 

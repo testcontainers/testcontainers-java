@@ -22,8 +22,6 @@ import static org.rnorth.ducttape.unreliables.Unreliables.retryUntilSuccess;
  * check the DB status with this way with a smoke test query that uses the underlying
  * custom objects and wait for the operation to complete.
  * </p>
- *
- * @author srinivasa-vasu
  */
 @RequiredArgsConstructor
 @Slf4j
@@ -39,6 +37,16 @@ public final class YugabyteDBYCQLWaitStrategy extends AbstractWaitStrategy {
     public void waitUntilReady(WaitStrategyTarget target) {
         YugabyteDBYCQLContainer container = (YugabyteDBYCQLContainer) target;
         AtomicBoolean status = new AtomicBoolean(true);
+        final String containerInterfaceIP = container
+            .getContainerInfo()
+            .getNetworkSettings()
+            .getNetworks()
+            .entrySet()
+            .stream()
+            .findFirst()
+            .get()
+            .getValue()
+            .getIpAddress();
         retryUntilSuccess(
             (int) startupTimeout.getSeconds(),
             TimeUnit.SECONDS,
@@ -48,6 +56,7 @@ public final class YugabyteDBYCQLWaitStrategy extends AbstractWaitStrategy {
                         try {
                             ExecResult result = container.execInContainer(
                                 BIN_PATH,
+                                containerInterfaceIP,
                                 "-u",
                                 container.getUsername(),
                                 "-p",

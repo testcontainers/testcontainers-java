@@ -30,8 +30,12 @@ public class IsRunningStartupCheckStrategy extends StartupCheckStrategy {
     private StartupStatus checkState(InspectContainerResponse.ContainerState state) {
         if (Boolean.TRUE.equals(state.getRunning())) {
             return StartupStatus.SUCCESSFUL;
-        } else if (!DockerStatus.isContainerExitCodeSuccess(state)) {
-            return StartupStatus.FAILED;
+        } else if (DockerStatus.isContainerStopped(state)) {
+            if (DockerStatus.isContainerExitCodeSuccess(state)) {
+                return StartupStatus.SUCCESSFUL;
+            } else {
+                return StartupStatus.FAILED;
+            }
         } else {
             return StartupStatus.NOT_YET_KNOWN;
         }

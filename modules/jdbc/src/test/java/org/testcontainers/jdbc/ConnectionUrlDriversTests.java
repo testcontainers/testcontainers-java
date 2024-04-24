@@ -12,8 +12,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * This Test class validates that all supported JDBC URL's can be parsed by ConnectionUrl class.
- *
- * @author ManikMagar
  */
 @RunWith(Parameterized.class)
 public class ConnectionUrlDriversTests {
@@ -37,7 +35,7 @@ public class ConnectionUrlDriversTests {
     public static Iterable<Object[]> data() {
         return Arrays.asList(
             new Object[][] {
-                { "jdbc:tc:mysql:5.7.34://hostname/test", "mysql", Optional.of("5.7.34"), "hostname/test", "test" },
+                { "jdbc:tc:mysql:8.0.36://hostname/test", "mysql", Optional.of("8.0.36"), "hostname/test", "test" },
                 { "jdbc:tc:mysql://hostname/test", "mysql", Optional.empty(), "hostname/test", "test" },
                 {
                     "jdbc:tc:postgresql:1.2.3://hostname/test",

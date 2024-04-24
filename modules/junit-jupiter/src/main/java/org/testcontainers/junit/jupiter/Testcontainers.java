@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
  * {@code @Testcontainers} is a JUnit Jupiter extension to activate automatic
  * startup and stop of containers used in a test case.
  *
- * <p>The test containers extension finds all fields that are annotated with
+ * <p>The Testcontainers extension finds all fields that are annotated with
  * {@link Container} and calls their container lifecycle methods. Containers
  * declared as static fields will be shared between test methods. They will be
  * started only once before any test method is executed and stopped after the
@@ -60,7 +60,15 @@ import java.lang.annotation.Target;
 @Inherited
 public @interface Testcontainers {
     /**
-     * Whether tests should be disabled (rather than failing) when Docker is not available.
+     * Whether tests should be disabled (rather than failing) when Docker is not available. Defaults to
+     * {@code false}.
+     * @return if the tests should be disabled when Docker is not available
      */
     boolean disabledWithoutDocker() default false;
+
+    /**
+     * Whether containers should start in parallel. Defaults to {@code false}.
+     * @return if the containers should start in parallel
+     */
+    boolean parallel() default false;
 }

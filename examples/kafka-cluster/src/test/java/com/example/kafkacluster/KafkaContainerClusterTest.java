@@ -13,7 +13,7 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.rnorth.ducttape.unreliables.Unreliables;
 
 import java.time.Duration;
@@ -25,11 +25,35 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
-public class KafkaContainerClusterTest {
+class KafkaContainerClusterTest {
 
     @Test
-    public void testKafkaContainerCluster() throws Exception {
+    void testKafkaContainerCluster() throws Exception {
         try (KafkaContainerCluster cluster = new KafkaContainerCluster("6.2.1", 3, 2)) {
+            cluster.start();
+            String bootstrapServers = cluster.getBootstrapServers();
+
+            assertThat(cluster.getBrokers()).hasSize(3);
+
+            testKafkaFunctionality(bootstrapServers, 3, 2);
+        }
+    }
+
+    @Test
+    void testKafkaContainerKraftCluster() throws Exception {
+        try (KafkaContainerKraftCluster cluster = new KafkaContainerKraftCluster("7.0.0", 3, 2)) {
+            cluster.start();
+            String bootstrapServers = cluster.getBootstrapServers();
+
+            assertThat(cluster.getBrokers()).hasSize(3);
+
+            testKafkaFunctionality(bootstrapServers, 3, 2);
+        }
+    }
+
+    @Test
+    void testKafkaContainerKraftClusterAfterConfluentPlatform740() throws Exception {
+        try (KafkaContainerKraftCluster cluster = new KafkaContainerKraftCluster("7.4.0", 3, 2)) {
             cluster.start();
             String bootstrapServers = cluster.getBootstrapServers();
 

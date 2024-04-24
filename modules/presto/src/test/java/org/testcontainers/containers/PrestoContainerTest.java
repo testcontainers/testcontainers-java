@@ -14,9 +14,6 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * @author findepi
- */
 public class PrestoContainerTest {
 
     @Test

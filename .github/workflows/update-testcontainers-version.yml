@@ -1,0 +1,32 @@
+name: Update testcontainers version
+
+on:
+  release:
+    types: [ published ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    permissions:
+      contents: write  # for peter-evans/create-pull-request to create branch
+      pull-requests: write  # for peter-evans/create-pull-request to create a PR
+    if: github.repository == 'testcontainers/testcontainers-java'
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Update testcontainers.version property in gradle.properties
+        run: |
+          sed -i "s/^testcontainers\.version=.*/testcontainers\.version=${GITHUB_REF##*/}/g" gradle.properties
+          git diff
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@153407881ec5c347639a548ade7d8ad1d6740e38 # v3.10.1
+        with:
+          title: Update testcontainers version to ${GITHUB_REF##*/}
+          body: |
+            Update testcontainers version to ${GITHUB_REF##*/}
+          branch: update-tc-version
+          delete-branch: true

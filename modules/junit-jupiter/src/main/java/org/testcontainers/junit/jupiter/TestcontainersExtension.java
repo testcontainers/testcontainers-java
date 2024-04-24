@@ -18,6 +18,7 @@ import org.junit.platform.commons.support.ModifierSupport;
 import org.junit.platform.commons.support.ReflectionSupport;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.lifecycle.Startable;
+import org.testcontainers.lifecycle.Startables;
 import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
 
@@ -52,9 +53,7 @@ public class TestcontainersExtension
         Store store = context.getStore(NAMESPACE);
         List<StoreAdapter> sharedContainersStoreAdapters = findSharedContainers(testClass);
 
-        sharedContainersStoreAdapters.forEach(adapter -> {
-            store.getOrComputeIfAbsent(adapter.getKey(), k -> adapter.start());
-        });
+        startContainers(sharedContainersStoreAdapters, store, context);
 
         List<TestLifecycleAware> lifecycleAwareContainers = sharedContainersStoreAdapters
             .stream()
@@ -66,6 +65,24 @@ public class TestcontainersExtension
         signalBeforeTestToContainers(lifecycleAwareContainers, testDescriptionFrom(context));
     }
 
+    private void startContainers(List<StoreAdapter> storeAdapters, Store store, ExtensionContext context) {
+        if (storeAdapters.isEmpty()) {
+            return;
+        }
+
+        if (isParallelExecutionEnabled(context)) {
+            Stream<Startable> startables = storeAdapters
+                .stream()
+                .map(storeAdapter -> {
+                    store.getOrComputeIfAbsent(storeAdapter.getKey(), k -> storeAdapter);
+                    return storeAdapter.container;
+                });
+            Startables.deepStart(startables).join();
+        } else {
+            storeAdapters.forEach(adapter -> store.getOrComputeIfAbsent(adapter.getKey(), k -> adapter.start()));
+        }
+    }
+
     @Override
     public void afterAll(ExtensionContext context) {
         signalAfterTestToContainersFor(SHARED_LIFECYCLE_AWARE_CONTAINERS, context);
@@ -75,16 +92,37 @@ public class TestcontainersExtension
     public void beforeEach(final ExtensionContext context) {
         Store store = context.getStore(NAMESPACE);
 
-        List<TestLifecycleAware> lifecycleAwareContainers = collectParentTestInstances(context)
+        List<StoreAdapter> restartContainers = collectParentTestInstances(context)
             .parallelStream()
             .flatMap(this::findRestartContainers)
-            .peek(adapter -> store.getOrComputeIfAbsent(adapter.getKey(), k -> adapter.start()))
-            .filter(this::isTestLifecycleAware)
-            .map(lifecycleAwareAdapter -> (TestLifecycleAware) lifecycleAwareAdapter.container)
             .collect(Collectors.toList());
+
+        List<TestLifecycleAware> lifecycleAwareContainers = findTestLifecycleAwareContainers(
+            restartContainers,
+            store,
+            context
+        );
 
         store.put(LOCAL_LIFECYCLE_AWARE_CONTAINERS, lifecycleAwareContainers);
         signalBeforeTestToContainers(lifecycleAwareContainers, testDescriptionFrom(context));
+    }
+
+    private List<TestLifecycleAware> findTestLifecycleAwareContainers(
+        List<StoreAdapter> restartContainers,
+        Store store,
+        ExtensionContext context
+    ) {
+        startContainers(restartContainers, store, context);
+
+        return restartContainers
+            .stream()
+            .filter(this::isTestLifecycleAware)
+            .map(lifecycleAwareAdapter -> (TestLifecycleAware) lifecycleAwareAdapter.container)
+            .collect(Collectors.toList());
+    }
+
+    private boolean isParallelExecutionEnabled(ExtensionContext context) {
+        return findTestcontainers(context).map(Testcontainers::parallel).orElse(false);
     }
 
     @Override

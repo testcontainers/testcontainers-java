@@ -1,0 +1,9 @@
+name: Set up Java
+description: Sets up Java version
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-java@v4
+      with:
+        java-version: '8'
+        distribution: temurin

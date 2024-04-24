@@ -14,10 +14,20 @@ import java.util.stream.Collectors;
 
 /**
  * Testcontainers implementation for Consul.
+ * <p>
+ * Supported images: {@code hashicorp/consul}, {@code consul}
+ * <p>
+ * Exposed ports:
+ * <ul>
+ *     <li>HTTP: 8500</li>
+ *     <li>gRPC: 8502</li>
+ * </ul>
  */
 public class ConsulContainer extends GenericContainer<ConsulContainer> {
 
-    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("consul");
+    private static final DockerImageName DEFAULT_OLD_IMAGE_NAME = DockerImageName.parse("consul");
+
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("hashicorp/consul");
 
     private static final int CONSUL_HTTP_PORT = 8500;
 
@@ -33,7 +43,7 @@ public class ConsulContainer extends GenericContainer<ConsulContainer> {
 
     public ConsulContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DEFAULT_OLD_IMAGE_NAME, DEFAULT_IMAGE_NAME);
 
         // Use the status leader endpoint to verify if consul is running.
         setWaitStrategy(Wait.forHttp("/v1/status/leader").forPort(CONSUL_HTTP_PORT).forStatusCode(200));

@@ -11,6 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class SimpleCockroachDBTest extends AbstractContainerDatabaseTest {
     static {
@@ -54,12 +55,54 @@ public class SimpleCockroachDBTest extends AbstractContainerDatabaseTest {
         try {
             cockroach.start();
             String jdbcUrl = cockroach.getJdbcUrl();
-            assertThat(jdbcUrl).contains("?");
-            assertThat(jdbcUrl).contains("&");
-            assertThat(jdbcUrl).contains("sslmode=disable");
-            assertThat(jdbcUrl).contains("application_name=cockroach");
+            assertThat(jdbcUrl)
+                .contains("?")
+                .contains("&")
+                .contains("sslmode=disable")
+                .contains("application_name=cockroach");
         } finally {
             cockroach.stop();
         }
+    }
+
+    @Test
+    public void testWithUsernamePasswordDatabase() throws SQLException {
+        try (
+            CockroachContainer cockroach = new CockroachContainer(
+                CockroachDBTestImages.FIRST_COCKROACHDB_IMAGE_WITH_ENV_VARS_SUPPORT
+            )
+                .withUsername("test_user")
+                .withPassword("test_password")
+                .withDatabaseName("test_database")
+        ) {
+            cockroach.start();
+
+            ResultSet resultSet = performQuery(cockroach, "SELECT 1");
+
+            int resultSetInt = resultSet.getInt(1);
+            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+
+            String jdbcUrl = cockroach.getJdbcUrl();
+            assertThat(jdbcUrl).contains("/" + "test_database");
+        }
+    }
+
+    @Test
+    public void testAnExceptionIsThrownWhenImageDoesNotSupportEnvVars() {
+        CockroachContainer cockroachContainer = new CockroachContainer(
+            CockroachDBTestImages.COCKROACHDB_IMAGE_WITH_ENV_VARS_UNSUPPORTED
+        );
+
+        assertThatThrownBy(() -> cockroachContainer.withUsername("test_user"))
+            .isInstanceOf(UnsupportedOperationException.class)
+            .withFailMessage("Setting a username in not supported in the versions below 22.1.0");
+
+        assertThatThrownBy(() -> cockroachContainer.withPassword("test_password"))
+            .isInstanceOf(UnsupportedOperationException.class)
+            .withFailMessage("Setting a password in not supported in the versions below 22.1.0");
+
+        assertThatThrownBy(() -> cockroachContainer.withDatabaseName("test_database"))
+            .isInstanceOf(UnsupportedOperationException.class)
+            .withFailMessage("Setting a databaseName in not supported in the versions below 22.1.0");
     }
 }

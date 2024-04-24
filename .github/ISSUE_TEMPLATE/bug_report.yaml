@@ -14,12 +14,15 @@ body:
       description: Which Testcontainers module are you using?
       options:
         - Core
+        - ActiveMQ
         - Azure
         - Cassandra
+        - ChromaDB
         - Clickhouse
         - CockroachDB
         - Consul
         - Couchbase
+        - CrateDB
         - DB2
         - Dynalite
         - Elasticsearch
@@ -27,29 +30,39 @@ body:
         - HiveMQ
         - InfluxDB
         - K3S
+        - K6
         - Kafka
         - LocalStack
         - MariaDB
+        - Milvus
+        - MinIO
         - MockServer
         - MongoDB
         - MSSQLServer
         - MySQL
         - Neo4j
         - NGINX
-        - Oracle-XE
+        - OceanBase
+        - Ollama
+        - OpenFGA
+        - Oracle Free
+        - Oracle XE
         - OrientDB
         - PostgreSQL
         - Presto
         - Pulsar
+        - Qdrant
         - QuestDB
         - RabbitMQ
         - Redpanda
         - Selenium
+        - Solace
         - Solr
         - TiDB
         - ToxiProxy
         - Trino
         - Vault
+        - Weaviate
         - YugabyteDB
     validations:
       required: true

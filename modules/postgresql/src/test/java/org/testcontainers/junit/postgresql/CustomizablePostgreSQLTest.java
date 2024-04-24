@@ -10,9 +10,6 @@ import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * @author richardnorth
- */
 public class CustomizablePostgreSQLTest extends AbstractContainerDatabaseTest {
 
     private static final String DB_NAME = "foo";

@@ -28,8 +28,6 @@ import static org.assertj.core.api.Assumptions.assumeThat;
 
 /**
  * Tests of functionality special to the Neo4jContainer.
- *
- * @author Michael J. Simons
  */
 public class Neo4jContainerTest {
 
@@ -193,7 +191,7 @@ public class Neo4jContainerTest {
 
     @Test
     public void shouldSetCustomPasswordCorrectly() {
-        // withoutAuthentication {
+        // withAdminPassword {
         Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4").withAdminPassword("verySecret");
         // }
 
@@ -269,8 +267,9 @@ public class Neo4jContainerTest {
         assertThat(neo4jContainer.getWaitStrategy()).isInstanceOf(CustomDummyWaitStrategy.class);
     }
 
+    // Test for deprecated functionality to be still alive, if `Neo4jLabsPlugin` gets removed, remove this test.
     @Test
-    public void shouldConfigureSingleLabsPlugin() {
+    public void shouldConfigureSingleLabsPluginByType() {
         try (
             Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4").withLabsPlugins(Neo4jLabsPlugin.APOC)
         ) {
@@ -281,13 +280,12 @@ public class Neo4jContainerTest {
         }
     }
 
+    // Test for deprecated functionality to be still alive, if `Neo4jLabsPlugin` gets removed, remove this test.
     @Test
-    public void shouldConfigureMultipleLabsPlugins() {
+    public void shouldConfigureMultipleLabsPluginsByType() {
         try (
-            // configureLabsPlugins {
             Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4")
                 .withLabsPlugins(Neo4jLabsPlugin.APOC, Neo4jLabsPlugin.BLOOM);
-            // }
         ) {
             // needs to get called explicitly for setup
             neo4jContainer.configure();
@@ -297,26 +295,52 @@ public class Neo4jContainerTest {
         }
     }
 
+    // Test for deprecated functionality to be still alive, if `Neo4jContainer#withLabsPlugins` gets removed, remove this test.
     @Test
-    public void shouldConfigureSingleLabsPluginWithString() {
-        try (Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4").withLabsPlugins("myApoc")) {
+    public void shouldConfigureSingleLabsPlugin() {
+        try (Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4").withLabsPlugins("apoc")) {
             // needs to get called explicitly for setup
             neo4jContainer.configure();
 
-            assertThat(neo4jContainer.getEnvMap()).containsEntry("NEO4JLABS_PLUGINS", "[\"myApoc\"]");
+            assertThat(neo4jContainer.getEnvMap()).containsEntry("NEO4JLABS_PLUGINS", "[\"apoc\"]");
+        }
+    }
+
+    // Test for deprecated functionality to be still alive, if `Neo4jContainer#withLabsPlugins` gets removed, remove this test.
+    @Test
+    public void shouldConfigureMultipleLabsPlugins() {
+        try (Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4").withLabsPlugins("apoc", "bloom");) {
+            // needs to get called explicitly for setup
+            neo4jContainer.configure();
+
+            assertThat(neo4jContainer.getEnvMap().get("NEO4JLABS_PLUGINS"))
+                .containsAnyOf("[\"apoc\",\"bloom\"]", "[\"bloom\",\"apoc\"]");
         }
     }
 
     @Test
-    public void shouldConfigureMultipleLabsPluginsWithString() {
+    public void shouldConfigureSinglePluginByName() {
+        try (Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4").withPlugins("apoc")) {
+            // needs to get called explicitly for setup
+            neo4jContainer.configure();
+
+            assertThat(neo4jContainer.getEnvMap()).containsEntry("NEO4JLABS_PLUGINS", "[\"apoc\"]");
+        }
+    }
+
+    @Test
+    public void shouldConfigureMultiplePluginsByName() {
         try (
-            Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4").withLabsPlugins("myApoc", "myBloom")
+            // configureLabsPlugins {
+            Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4") //
+                .withPlugins("apoc", "bloom");
+            // }
         ) {
             // needs to get called explicitly for setup
             neo4jContainer.configure();
 
             assertThat(neo4jContainer.getEnvMap().get("NEO4JLABS_PLUGINS"))
-                .containsAnyOf("[\"myApoc\",\"myBloom\"]", "[\"myBloom\",\"myApoc\"]");
+                .containsAnyOf("[\"apoc\",\"bloom\"]", "[\"bloom\",\"apoc\"]");
         }
     }
 

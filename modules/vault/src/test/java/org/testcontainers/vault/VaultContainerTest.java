@@ -24,18 +24,14 @@ public class VaultContainerTest {
 
     @ClassRule
     // vaultContainer {
-    public static VaultContainer<?> vaultContainer = new VaultContainer<>("vault:1.6.1")
+    public static VaultContainer<?> vaultContainer = new VaultContainer<>("hashicorp/vault:1.13")
         .withVaultToken(VAULT_TOKEN)
-        .withSecretInVault("secret/testing1", "top_secret=password123")
-        .withSecretInVault(
-            "secret/testing2",
-            "secret_one=password1",
-            "secret_two=password2",
-            "secret_three=password3",
-            "secret_three=password3",
-            "secret_four=password4"
-        )
-        .withInitCommand("secrets enable transit", "write -f transit/keys/my-key");
+        .withInitCommand(
+            "secrets enable transit",
+            "write -f transit/keys/my-key",
+            "kv put secret/testing1 top_secret=password123",
+            "kv put secret/testing2 secret_one=password1 secret_two=password2 secret_three=password3 secret_three=password3 secret_four=password4"
+        );
 
     // }
 

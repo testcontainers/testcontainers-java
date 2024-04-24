@@ -49,11 +49,7 @@ public class ExposedHostTest {
 
     @Test
     public void testExposedHostAfterContainerIsStarted() {
-        try (
-            GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
-                .withCommand("top")
-                .withAccessToHost(true)
-        ) {
+        try (GenericContainer<?> container = new GenericContainer<>(tinyContainerDef()).withAccessToHost(true)) {
             container.start();
             Testcontainers.exposeHostPorts(server.getAddress().getPort());
             assertResponse(container, server.getAddress().getPort());
@@ -61,29 +57,29 @@ public class ExposedHostTest {
     }
 
     @Test
-    public void testExposedHost() throws Exception {
+    public void testExposedHost() {
         Testcontainers.exposeHostPorts(server.getAddress().getPort());
-        assertResponse(new GenericContainer<>(TestImages.TINY_IMAGE).withCommand("top"), server.getAddress().getPort());
+        assertResponse(new GenericContainer<>(tinyContainerDef()), server.getAddress().getPort());
     }
 
     @Test
-    public void testExposedHostWithNetwork() throws Exception {
+    public void testExposedHostWithNetwork() {
         Testcontainers.exposeHostPorts(server.getAddress().getPort());
         try (Network network = Network.newNetwork()) {
             assertResponse(
-                new GenericContainer<>(TestImages.TINY_IMAGE).withNetwork(network).withCommand("top"),
+                new GenericContainer<>(tinyContainerDef()).withNetwork(network),
                 server.getAddress().getPort()
             );
         }
     }
 
     @Test
-    public void testExposedHostPortOnFixedInternalPorts() throws Exception {
+    public void testExposedHostPortOnFixedInternalPorts() {
         Testcontainers.exposeHostPorts(ImmutableMap.of(server.getAddress().getPort(), 80));
         Testcontainers.exposeHostPorts(ImmutableMap.of(server.getAddress().getPort(), 81));
 
-        assertResponse(new GenericContainer<>(TestImages.TINY_IMAGE).withCommand("top"), 80);
-        assertResponse(new GenericContainer<>(TestImages.TINY_IMAGE).withCommand("top"), 81);
+        assertResponse(new GenericContainer<>(tinyContainerDef()), 80);
+        assertResponse(new GenericContainer<>(tinyContainerDef()), 81);
     }
 
     @SneakyThrows
@@ -98,6 +94,18 @@ public class ExposedHostTest {
             assertThat(response).as("received response").isEqualTo("Hello World!");
         } finally {
             container.stop();
+        }
+    }
+
+    private ContainerDef tinyContainerDef() {
+        return new TinyContainerDef();
+    }
+
+    private static class TinyContainerDef extends ContainerDef {
+
+        TinyContainerDef() {
+            setImage(TestImages.TINY_IMAGE);
+            setCommand("top");
         }
     }
 }

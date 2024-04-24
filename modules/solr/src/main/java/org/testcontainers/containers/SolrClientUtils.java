@@ -21,8 +21,6 @@ import java.util.zip.ZipOutputStream;
 
 /**
  * Utils class which can create collections and configurations.
- *
- * @author Simon Schneider
  */
 public class SolrClientUtils {
 

@@ -17,7 +17,15 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Container for resiliency testing using <a href="https://github.com/Shopify/toxiproxy">Toxiproxy</a>.
+ * Testcontainers implementation for Toxiproxy.
+ * <p>
+ * Supported images: {@code ghcr.io/shopify/toxiproxy}, {@code shopify/toxiproxy}
+ * <p>
+ * Exposed ports:
+ * <ul>
+ *     <li>HTTP: 8474</li>
+ *     <li>Proxied Ports: 8666-8697</li>
+ * </ul>
  */
 public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
 
@@ -40,7 +48,7 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
     private final AtomicInteger nextPort = new AtomicInteger(FIRST_PROXIED_PORT);
 
     /**
-     * @deprecated use {@link ToxiproxyContainer(DockerImageName)} instead
+     * @deprecated use {@link #ToxiproxyContainer(DockerImageName)} instead
      */
     @Deprecated
     public ToxiproxyContainer() {

@@ -5,6 +5,7 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.delegate.DatabaseDelegate;
 import org.testcontainers.ext.ScriptUtils;
@@ -20,12 +21,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
  * Base class for containers that expose a JDBC connection
- *
- * @author richardnorth
  */
 public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<SELF>>
     extends GenericContainer<SELF>
@@ -48,7 +48,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
     private static final String QUERY_PARAM_SEPARATOR = "&";
 
     /**
-     * @deprecated use {@link JdbcDatabaseContainer(DockerImageName)} instead
+     * @deprecated use {@link #JdbcDatabaseContainer(DockerImageName)} instead
      */
     public JdbcDatabaseContainer(@NonNull final String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
@@ -149,17 +149,16 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
             );
 
         // Repeatedly try and open a connection to the DB and execute a test query
-        long start = System.currentTimeMillis();
+        long start = System.nanoTime();
 
         Exception lastConnectionException = null;
-        while (System.currentTimeMillis() < start + (1000 * startupTimeoutSeconds)) {
+        while ((System.nanoTime() - start) < TimeUnit.SECONDS.toNanos(startupTimeoutSeconds)) {
             if (!isRunning()) {
                 Thread.sleep(100L);
             } else {
                 try (Connection connection = createConnection(""); Statement statement = connection.createStatement()) {
                     boolean testQuerySucceeded = statement.execute(this.getTestQueryString());
                     if (testQuerySucceeded) {
-                        logger().info("Container is started (JDBC URL: {})", this.getJdbcUrl());
                         return;
                     }
                 } catch (NoDriverFoundException e) {
@@ -185,6 +184,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
 
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
+        logger().info("Container is started (JDBC URL: {})", this.getJdbcUrl());
         runInitScriptIfRequired();
     }
 
@@ -239,9 +239,9 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
 
         SQLException lastException = null;
         try {
-            long start = System.currentTimeMillis();
+            long start = System.nanoTime();
             // give up if we hit the time limit or the container stops running for some reason
-            while (System.currentTimeMillis() < start + (1000 * connectTimeoutSeconds) && isRunning()) {
+            while ((System.nanoTime() - start < TimeUnit.SECONDS.toNanos(connectTimeoutSeconds)) && isRunning()) {
                 try {
                     logger()
                         .debug(
@@ -302,15 +302,25 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
         return urlParameters;
     }
 
+    @Deprecated
     protected void optionallyMapResourceParameterAsVolume(
         @NotNull String paramName,
         @NotNull String pathNameInContainer,
         @NotNull String defaultResource
     ) {
+        optionallyMapResourceParameterAsVolume(paramName, pathNameInContainer, defaultResource, null);
+    }
+
+    protected void optionallyMapResourceParameterAsVolume(
+        @NotNull String paramName,
+        @NotNull String pathNameInContainer,
+        @NotNull String defaultResource,
+        @Nullable Integer fileMode
+    ) {
         String resourceName = parameters.getOrDefault(paramName, defaultResource);
 
         if (resourceName != null) {
-            final MountableFile mountableFile = MountableFile.forClasspathResource(resourceName);
+            final MountableFile mountableFile = MountableFile.forClasspathResource(resourceName, fileMode);
             withCopyFileToContainer(mountableFile, pathNameInContainer);
         }
     }

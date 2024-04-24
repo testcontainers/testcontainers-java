@@ -7,9 +7,6 @@ import org.testcontainers.utility.MountableFile;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * @author robfrank
- */
 public class OrientDBContainerTest {
 
     private static final DockerImageName ORIENTDB_IMAGE = DockerImageName.parse("orientdb:3.2.0-tp3");
