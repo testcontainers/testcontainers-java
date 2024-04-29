@@ -6,6 +6,17 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
 
+/**
+ * Testcontainers implementation for CockroachDB.
+ * <p>
+ * Supported image: {@code cockroachdb/cockroach}
+ * <p>
+ * Exposed ports:
+ * <ul>
+ *     <li>Database: 26257</li>
+ *     <li>Console: 8080</li>
+ * </ul>
+ */
 public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("cockroachdb/cockroach");
@@ -41,7 +52,7 @@ public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer
     private boolean isVersionGreaterThanOrEqualTo221;
 
     /**
-     * @deprecated use {@link CockroachContainer(DockerImageName)} instead
+     * @deprecated use {@link #CockroachContainer(DockerImageName)} instead
      */
     @Deprecated
     public CockroachContainer() {

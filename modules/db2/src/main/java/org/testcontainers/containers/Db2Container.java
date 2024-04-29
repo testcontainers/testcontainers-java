@@ -8,11 +8,24 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Set;
 
+/**
+ * Testcontainers implementation for IBM DB2.
+ * <p>
+ * Supported images: {@code icr.io/db2_community/db2}, {@code ibmcom/db2}
+ * <p>
+ * Exposed ports:
+ * <ul>
+ *     <li>Database: 50000</li>
+ * </ul>
+ */
 public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
 
     public static final String NAME = "db2";
 
+    @Deprecated
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("ibmcom/db2");
+
+    private static final DockerImageName DEFAULT_NEW_IMAGE_NAME = DockerImageName.parse("icr.io/db2_community/db2");
 
     @Deprecated
     public static final String DEFAULT_DB2_IMAGE_NAME = DEFAULT_IMAGE_NAME.getUnversionedPart();
@@ -29,7 +42,7 @@ public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
     private String password = "foobar1234";
 
     /**
-     * @deprecated use {@link Db2Container(DockerImageName)} instead
+     * @deprecated use {@link #Db2Container(DockerImageName)} instead
      */
     @Deprecated
     public Db2Container() {
@@ -42,7 +55,7 @@ public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
 
     public Db2Container(final DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DEFAULT_NEW_IMAGE_NAME, DEFAULT_IMAGE_NAME);
 
         withPrivilegedMode(true);
         this.waitStrategy =

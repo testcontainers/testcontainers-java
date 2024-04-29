@@ -138,7 +138,7 @@ public class TestcontainersConfiguration {
     }
 
     public boolean isRyukPrivileged() {
-        return Boolean.parseBoolean(getEnvVarOrProperty("ryuk.container.privileged", "false"));
+        return Boolean.parseBoolean(getEnvVarOrProperty("ryuk.container.privileged", "true"));
     }
 
     @Deprecated
@@ -211,6 +211,10 @@ public class TestcontainersConfiguration {
 
     public String getImageSubstitutorClassName() {
         return getEnvVarOrProperty("image.substitutor", null);
+    }
+
+    public String getImagePullPolicy() {
+        return getEnvVarOrProperty("pull.policy", null);
     }
 
     public Integer getClientPingTimeout() {

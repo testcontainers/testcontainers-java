@@ -6,6 +6,13 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.util.Set;
 
+/**
+ * Testcontainers implementation for MySQL.
+ * <p>
+ * Supported image: {@code mysql}
+ * <p>
+ * Exposed ports: 3306
+ */
 public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
 
     public static final String NAME = "mysql";
@@ -35,7 +42,7 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
     private static final String MYSQL_ROOT_USER = "root";
 
     /**
-     * @deprecated use {@link MySQLContainer(DockerImageName)} instead
+     * @deprecated use {@link #MySQLContainer(DockerImageName)} instead
      */
     @Deprecated
     public MySQLContainer() {

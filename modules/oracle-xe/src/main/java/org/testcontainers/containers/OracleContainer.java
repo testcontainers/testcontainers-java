@@ -13,6 +13,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
 
+/**
+ * Testcontainers implementation for Oracle.
+ * <p>
+ * Supported image: {@code gvenzl/oracle-xe}
+ * <p>
+ * Exposed ports: 1521
+ */
 public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     public static final String NAME = "oracle";
@@ -57,7 +64,7 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     private boolean usingSid = false;
 
     /**
-     * @deprecated use {@link OracleContainer(DockerImageName)} instead
+     * @deprecated use {@link #OracleContainer(DockerImageName)} instead
      */
     @Deprecated
     public OracleContainer() {

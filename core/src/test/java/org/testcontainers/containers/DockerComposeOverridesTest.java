@@ -8,6 +8,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.rnorth.ducttape.unreliables.Unreliables;
+import org.testcontainers.utility.CommandLine;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -61,7 +62,7 @@ public class DockerComposeOverridesTest {
     public void setUp() {
         if (localMode) {
             Assumptions
-                .assumeThat(LocalDockerCompose.executableExists())
+                .assumeThat(CommandLine.executableExists(DockerComposeContainer.COMPOSE_EXECUTABLE))
                 .as("docker-compose executable exists")
                 .isTrue();
         }

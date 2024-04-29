@@ -1,13 +1,10 @@
 description = "Testcontainers :: JDBC :: CrateDB"
 
 dependencies {
-    annotationProcessor 'com.google.auto.service:auto-service:1.0.1'
-    compileOnly 'com.google.auto.service:auto-service:1.0.1'
-
     api project(':jdbc')
 
     testImplementation project(':jdbc-test')
-    testImplementation 'org.postgresql:postgresql:42.6.0'
+    testRuntimeOnly 'org.postgresql:postgresql:42.7.1'
 
-    compileOnly 'org.jetbrains:annotations:24.0.1'
+    compileOnly 'org.jetbrains:annotations:24.1.0'
 }

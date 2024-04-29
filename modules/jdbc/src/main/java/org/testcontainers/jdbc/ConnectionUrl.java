@@ -159,7 +159,7 @@ public class ConnectionUrl {
     }
 
     /**
-     * Get the TestContainers Parameters such as Init Function, Init Script path etc.
+     * Get the Testcontainers Parameters such as Init Function, Init Script path etc.
      *
      * @return {@link Map}
      */
@@ -177,7 +177,7 @@ public class ConnectionUrl {
     }
 
     /**
-     * Get all Query parameters specified in the Connection URL after ?. This DOES NOT include TestContainers (TC_*) parameters.
+     * Get all Query parameters specified in the Connection URL after ?. This DOES NOT include Testcontainers (TC_*) parameters.
      *
      * @return {@link Map}
      */

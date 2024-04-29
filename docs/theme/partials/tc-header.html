@@ -1,0 +1,157 @@
+{% set header = ({
+    "siteUrl": "https://testcontainers.com/",
+    "menuItems": [
+        {
+            "label": "Desktop <span class=\"badge rounded-pill\">NEW</span>",
+            "url": "https://testcontainers.com/desktop/"
+        },
+        {
+            "label": "Cloud",
+            "url": "https://testcontainers.com/cloud/"
+        },
+        {
+            "label": "Getting Started",
+            "url": "https://testcontainers.com/getting-started/"
+        },
+        {
+            "label": "Guides",
+            "url": "https://testcontainers.com/guides/"
+        },
+        {
+            "label": "Modules",
+            "url": "https://testcontainers.com/modules/"
+        },
+        {
+            "label": "Docs",
+            "children": [
+                {
+                    "label": "Testcontainers for Java",
+                    "url": "https://java.testcontainers.org/",
+                    "image": "/language-logos/java.svg",
+                },
+                {
+                    "label": "Testcontainers for Go",
+                    "url": "https://golang.testcontainers.org/",
+                    "image": "/language-logos/go.svg",
+                },
+                {
+                    "label": "Testcontainers for .NET",
+                    "url": "https://dotnet.testcontainers.org/",
+                    "image": "/language-logos/dotnet.svg",
+                },
+                {
+                    "label": "Testcontainers for Node.js",
+                    "url": "https://node.testcontainers.org/",
+                    "image": "/language-logos/nodejs.svg",
+                },
+                {
+                    "label": "Testcontainers for Python",
+                    "url": "https://testcontainers-python.readthedocs.io/en/latest/",
+                    "image": "/language-logos/python.svg",
+                    "external": true,
+                },
+                {
+                    "label": "Testcontainers for Rust",
+                    "url": "https://docs.rs/testcontainers/latest/testcontainers/",
+                    "image": "/language-logos/rust.svg",
+                    "external": true,
+                },
+                {
+                    "label": "Testcontainers for Haskell",
+                    "url": "https://github.com/testcontainers/testcontainers-hs",
+                    "image": "/language-logos/haskell.svg",
+                    "external": true,
+                },
+                {
+                    "label": "Testcontainers for Ruby",
+                    "url": "https://github.com/testcontainers/testcontainers-ruby",
+                    "image": "/language-logos/ruby.svg",
+                    "external": true,
+                },
+            ]
+        },
+        {
+            "label": "Slack",
+            "url": "https://slack.testcontainers.org/",
+            "icon": "icon-slack",
+        },
+        {
+            "label": "GitHub",
+            "url": "https://github.com/testcontainers",
+            "icon": "icon-github",
+        },
+    ]
+}) %}
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="display: none">
+    <symbol id="icon-external" viewBox="0 0 15 17" width="15" height="17" fill="currentColor">
+        <path  d="M9.334 1.254a.999.999 0 1 0 0 2h1.584l-5.29 5.293a1.002 1.002 0 0 0 1.415 1.416l5.29-5.294v1.585a.999.999 0 1 0 2 0v-4c0-.553-.446-1-1-1h-4Zm-6.5 1a2.5 2.5 0 0 0-2.5 2.5v8a2.5 2.5 0 0 0 2.5 2.5h8a2.5 2.5 0 0 0 2.5-2.5v-2.5a.999.999 0 1 0-2 0v2.5c0 .275-.226.5-.5.5h-8a.501.501 0 0 1-.5-.5v-8c0-.275.224-.5.5-.5h2.5a.999.999 0 1 0 0-2h-2.5Z" />
+    </symbol>
+    <symbol id="icon-caret" width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
+        <path d="M.487 2.157a1.662 1.662 0 0 1 2.357 0L5 4.313l2.156-2.156a1.657 1.657 0 0 1 2.354 0 1.657 1.657 0 0 1 0 2.354L6.177 7.847a1.66 1.66 0 0 1-1.815.36 1.658 1.658 0 0 1-.54-.361L.487 4.51a1.66 1.66 0 0 1 .001-2.353Z" />
+    </symbol>
+    <symbol id="icon-slack" class="icon-slack" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="currentColor">
+        <path d="M8.76.06a2.392 2.392 0 0 0-2.207 3.309A2.392 2.392 0 0 0 8.76 4.847h2.39V2.453A2.392 2.392 0 0 0 8.76.06Zm0 6.384H2.39A2.392 2.392 0 0 0 .18 9.753a2.392 2.392 0 0 0 2.208 1.479h6.372a2.391 2.391 0 0 0 2.208-3.31 2.39 2.39 0 0 0-2.208-1.478ZM23.893 8.837a2.392 2.392 0 0 0-3.304-2.21 2.392 2.392 0 0 0-1.474 2.21v2.395h2.39a2.391 2.391 0 0 0 2.388-2.395Zm-6.371 0V2.453a2.39 2.39 0 1 0-4.779 0v6.384a2.39 2.39 0 1 0 4.779 0ZM15.133 24a2.391 2.391 0 0 0 2.389-2.394 2.39 2.39 0 0 0-2.39-2.394h-2.389v2.394A2.39 2.39 0 0 0 15.133 24Zm0-6.384h6.371a2.39 2.39 0 0 0 2.39-2.394 2.392 2.392 0 0 0-2.39-2.394h-6.372a2.391 2.391 0 0 0-2.389 2.394 2.39 2.39 0 0 0 2.39 2.394ZM0 15.222a2.391 2.391 0 0 0 4.08 1.691 2.391 2.391 0 0 0 .699-1.691v-2.394h-2.39A2.392 2.392 0 0 0 0 15.222m6.372 0v6.384a2.391 2.391 0 0 0 3.304 2.211 2.39 2.39 0 0 0 1.474-2.211v-6.384a2.392 2.392 0 0 0-2.39-2.394 2.391 2.391 0 0 0-2.388 2.394" />
+    </symbol>
+    <symbol id="icon-github" class="icon-github" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="currentColor">
+        <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57C20.565 21.795 24 17.295 24 12c0-6.63-5.37-12-12-12Z" />
+    </symbol>
+</svg>
+<header id="site-header">
+    <div class="brand">
+        <a href="https://testcontainers.com/" class="logo">
+            <img src="/testcontainers-logo.svg" alt="Testcontainers" width="183" height="48"/>
+        </a>
+        <button id="mobile-menu-toggle">
+            Menu
+            <svg width="30" height="30" viewBox="0 0 30 30" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <rect y="22" width="30" height="4" rx="2"/>
+                <rect y="13" width="30" height="4" rx="2"/>
+                <rect y="4" width="30" height="4" rx="2"/>
+            </svg>
+        </button>
+    </div>
+    <nav>
+        <ul class="menu">
+            {% for menuItem in header["menuItems"] %}
+                {% if menuItem.children %}
+                    <li class="menu-item has-children">
+                        <button>
+                            {{ menuItem.label }}
+                            <svg class="icon-caret" width="10" height="10" viewBox="0 0 10 10">
+                                <use href="#icon-caret"></use>
+                            </svg>
+                        </button>
+                        <ul class="menu-dropdown">
+                            {% for child in menuItem.children %}
+                                <li class="menu-dropdown-item">
+                                    <a href="{{ child.url }}" {% if child.external %}target="_blank"{% endif %}>
+                                        {% if child.image %}
+                                            <img src="{{ child.image }}" alt="" width="24" height="24"/>
+                                        {% endif %}
+                                        {{ child.label }}
+                                        {% if child.external %}
+                                            <svg class="icon-external" width="15" height="17" viewBox="0 0 15 17" aria-hidden="true" focusable="false">
+                                                <use href="#icon-external"></use>
+                                            </svg>
+                                        {% endif %}
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                {% else %}
+                    <li class="menu-item">
+                        <a href="{{ menuItem.url }}">
+                            {% if menuItem.icon %}
+                                <svg class="{{ menuItem.icon }}" width="24" height="24" viewBox="0 0 24 24">
+                                    <use href="#{{ menuItem.icon }}"></use>
+                                </svg>
+                            {% endif %}
+                            {{ menuItem.label }}
+                        </a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </nav>
+</header>
