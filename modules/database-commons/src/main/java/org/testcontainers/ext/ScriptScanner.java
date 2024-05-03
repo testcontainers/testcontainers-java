@@ -141,7 +141,7 @@ class ScriptScanner {
                 return Lexem.SEPARATOR;
             } else if (matchesSingleLineComment() || matchesMultilineComment()) {
                 return Lexem.COMMENT;
-            } else if (matchesQuotedString('\'') || matchesQuotedString('"') || matchesDollarQuotedString()) {
+            } else if (matchesQuotedString('\'') || matchesQuotedString('"') || matchesQuotedString('`') || matchesDollarQuotedString()) {
                 return Lexem.QUOTED_STRING;
             } else if (matches(identifier)) {
                 return Lexem.IDENTIFIER;
