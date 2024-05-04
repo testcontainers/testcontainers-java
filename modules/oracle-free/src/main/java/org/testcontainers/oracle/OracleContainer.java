@@ -3,11 +3,10 @@ package org.testcontainers.oracle;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.JdbcDatabaseContainer;
-import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -68,11 +67,11 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     public OracleContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
-        this.waitStrategy =
-            new LogMessageWaitStrategy()
-                .withRegEx(".*DATABASE IS READY TO USE!.*\\s")
-                .withTimes(1)
-                .withStartupTimeout(Duration.of(DEFAULT_STARTUP_TIMEOUT_SECONDS, ChronoUnit.SECONDS));
+        waitingFor(
+            Wait
+                .forLogMessage(".*DATABASE IS READY TO USE!.*\\s", 1)
+                .withStartupTimeout(Duration.ofSeconds(DEFAULT_STARTUP_TIMEOUT_SECONDS))
+        );
         withConnectTimeoutSeconds(DEFAULT_CONNECT_TIMEOUT_SECONDS);
         addExposedPorts(ORACLE_PORT);
     }

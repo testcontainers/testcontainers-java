@@ -172,7 +172,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
                 if (removeImages != null) {
                     cmd += " --rmi " + removeImages.dockerRemoveImagesType();
                 }
-                this.composeDelegate.runWithCompose(this.localCompose, cmd);
+                this.composeDelegate.runWithCompose(this.localCompose, cmd, this.env);
             } finally {
                 this.project = this.composeDelegate.randomProjectId();
             }
