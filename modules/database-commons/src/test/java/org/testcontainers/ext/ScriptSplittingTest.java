@@ -70,14 +70,9 @@ public class ScriptSplittingTest {
 
     @Test
     public void testSplittingEnquotedSemicolon() {
-        String script =
-            "CREATE TABLE `bar;bar` (\n" +
-            "  end_time VARCHAR(255)\n" +
-            ");";
+        String script = "CREATE TABLE `bar;bar` (\n" + "  end_time VARCHAR(255)\n" + ");";
 
-        List<String> expected = Arrays.asList(
-            "CREATE TABLE `bar;bar` ( end_time VARCHAR(255) )"
-        );
+        List<String> expected = Arrays.asList("CREATE TABLE `bar;bar` ( end_time VARCHAR(255) )");
 
         splitAndCompare(script, expected);
     }
