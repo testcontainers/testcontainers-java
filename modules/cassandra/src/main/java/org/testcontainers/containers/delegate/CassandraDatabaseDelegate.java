@@ -1,8 +1,8 @@
 package org.testcontainers.containers.delegate;
 
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.exceptions.DriverException;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.DriverException;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.containers.CassandraContainer;
@@ -16,14 +16,14 @@ import org.testcontainers.ext.ScriptUtils.ScriptStatementFailedException;
  */
 @Slf4j
 @RequiredArgsConstructor
-public class CassandraDatabaseDelegate extends AbstractDatabaseDelegate<Session> {
+public class CassandraDatabaseDelegate extends AbstractDatabaseDelegate<CqlSession> {
 
     private final ContainerState container;
 
     @Override
-    protected Session createNewConnection() {
+    protected CqlSession createNewConnection() {
         try {
-            return CassandraContainer.getCluster(container).newSession();
+            return CassandraContainer.getCqlSession(container);
         } catch (DriverException e) {
             log.error("Could not obtain cassandra connection");
             throw new ConnectionCreationException("Could not obtain cassandra connection", e);
@@ -51,9 +51,9 @@ public class CassandraDatabaseDelegate extends AbstractDatabaseDelegate<Session>
     }
 
     @Override
-    protected void closeConnectionQuietly(Session session) {
+    protected void closeConnectionQuietly(CqlSession session) {
         try {
-            session.getCluster().close();
+            session.close();
         } catch (Exception e) {
             log.error("Could not close cassandra connection", e);
         }

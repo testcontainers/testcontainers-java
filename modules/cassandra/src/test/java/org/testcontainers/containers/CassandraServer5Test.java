@@ -8,21 +8,19 @@ import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class CassandraDriver3Test {
+public class CassandraServer5Test {
 
     @Rule
-    public CassandraContainer<?> cassandra = new CassandraContainer<>("cassandra:3.11.2");
+    public CassandraContainer<?> cassandra = new CassandraContainer<>("cassandra:5");
 
     @Test
     public void testCassandraGetContactPoint() {
         try (
-            // cassandra {
             CqlSession session = CqlSession
                 .builder()
                 .addContactPoint(this.cassandra.getContactPoint())
                 .withLocalDatacenter(this.cassandra.getLocalDatacenter())
                 .build()
-            // }
         ) {
             session.execute(
                 "CREATE KEYSPACE IF NOT EXISTS test WITH replication = \n" +
@@ -31,7 +29,7 @@ public class CassandraDriver3Test {
 
             KeyspaceMetadata keyspace = session.getMetadata().getKeyspaces().get(CqlIdentifier.fromCql("test"));
 
-            assertThat(keyspace).as("keyspace created").isNotNull();
+            assertThat(keyspace).as("test keyspace created").isNotNull();
         }
     }
 }
