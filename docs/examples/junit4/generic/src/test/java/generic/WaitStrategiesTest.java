@@ -29,7 +29,7 @@ public class WaitStrategiesTest {
 
     @Rule
     // logMessageWait {
-    public GenericContainer containerWithLogWait = new GenericContainer(DockerImageName.parse("redis:5.0.3"))
+    public GenericContainer containerWithLogWait = new GenericContainer(DockerImageName.parse("redis:6-alpine"))
         .withExposedPorts(6379)
         .waitingFor(Wait.forLogMessage(".*Ready to accept connections.*\\n", 1));
 
