@@ -1,7 +1,7 @@
 version: '3.7'
 services:
   redis:
-      image: redis:2.6.17
+      image: redis:6-alpine
       deploy:
         resources:
           limits:
