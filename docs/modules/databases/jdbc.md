@@ -79,6 +79,10 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 
 `jdbc:tc:timescaledb:2.1.0-pg13:///databasename`
 
+#### Using PGVector
+
+`jdbc:tc:pgvector:pg16:///databasename`
+
 #### Using TiDB
 
 `jdbc:tc:tidb:v6.1.0:///databasename`
