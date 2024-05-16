@@ -20,7 +20,7 @@ public class EnabledIfDockerAvailableCondition implements ExecutionCondition {
     }
 
     boolean isDockerAvailable() {
-        return dockerDetector.isDockerAvailable();
+        return this.dockerDetector.isDockerAvailable();
     }
 
     private ConditionEvaluationResult evaluate(EnabledIfDockerAvailable testcontainers) {

@@ -193,7 +193,7 @@ public class TestcontainersExtension
     }
 
     boolean isDockerAvailable() {
-        return dockerDetector.isDockerAvailable();
+        return this.dockerDetector.isDockerAvailable();
     }
 
     private Set<Object> collectParentTestInstances(final ExtensionContext context) {
