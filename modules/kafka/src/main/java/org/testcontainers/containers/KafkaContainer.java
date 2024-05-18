@@ -195,7 +195,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
         // Run the original command
         command += "/etc/confluent/docker/run \n";
-        copyFileToContainer(Transferable.of(command, 0777), STARTER_SCRIPT);
+        copyFileToContainer(Transferable.of(command, 0777), getStarterScript());
     }
 
     protected String commandKraft() {
@@ -244,6 +244,11 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         return String.format("BROKER://%s:%s", containerInfo.getConfig().getHostName(), "9092");
     }
 
+    private static String getStarterScript() {
+        String scriptFromEnv = System.getenv("TESTCONTAINERS_KAFKA_STARTER_SCRIPT_OVERRIDE");
+        return scriptFromEnv != null ? scriptFromEnv : STARTER_SCRIPT;
+    }
+
     private static class KafkaContainerDef extends ContainerDef {
 
         private final Set<Supplier<String>> listeners = new HashSet<>();
@@ -268,7 +273,9 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
             addExposedTcpPort(KAFKA_PORT);
 
             setEntrypoint("sh");
-            setCommand("-c", "while [ ! -f " + STARTER_SCRIPT + " ]; do sleep 0.1; done; " + STARTER_SCRIPT);
+
+            String starterScript = getStarterScript();
+            setCommand("-c", "while [ ! -f " + starterScript + " ]; do sleep 0.1; done; " + starterScript);
 
             setWaitStrategy(Wait.forLogMessage(".*\\[KafkaServer id=\\d+\\] started.*", 1));
         }

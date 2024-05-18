@@ -14,6 +14,7 @@ import org.testcontainers.AbstractKafka;
 import org.testcontainers.Testcontainers;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
+import uk.org.webcompere.systemstubs.SystemStubs;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -312,6 +313,19 @@ public class KafkaContainerTest extends AbstractKafka {
                         .hasCauseInstanceOf(SaslAuthenticationException.class);
                 });
         }
+    }
+
+    @Test
+    public void starterScriptCanBeOverriddenWithEnvironmentVariable() throws Exception {
+        SystemStubs
+            .withEnvironmentVariables("TESTCONTAINERS_KAFKA_STARTER_SCRIPT_OVERRIDE", "/tmp/testcontainers_start.sh")
+            .execute(() -> {
+                try (KafkaContainer kafka = new KafkaContainer(KAFKA_TEST_IMAGE)) {
+                    kafka.start();
+                    testKafkaFunctionality(kafka.getBootstrapServers());
+                    assertThat(kafka.execInContainer("ls", "/tmp/").getStdout()).contains("testcontainers_start.sh");
+                }
+            });
     }
 
     private static String getJaasConfig() {
