@@ -14,9 +14,7 @@ public class PgVectorContainerProvider extends JdbcDatabaseContainerProvider {
 
     private static final String DEFAULT_TAG = "pg16";
 
-    private static final DockerImageName DEFAULT_IMAGE = DockerImageName
-        .parse("pgvector/pgvector")
-        .asCompatibleSubstituteFor("postgres");
+    private static final DockerImageName DEFAULT_IMAGE = DockerImageName.parse("pgvector/pgvector");
 
     public static final String USER_PARAM = "user";
 
