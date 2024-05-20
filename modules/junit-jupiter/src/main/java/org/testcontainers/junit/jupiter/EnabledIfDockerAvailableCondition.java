@@ -8,7 +8,7 @@ import org.junit.platform.commons.support.AnnotationSupport;
 
 import java.util.Optional;
 
-public class EnabledIfDockerAvailableCondition implements ExecutionCondition {
+class EnabledIfDockerAvailableCondition implements ExecutionCondition {
 
     private final DockerAvailableDetector dockerDetector = new DockerAvailableDetector();
 
