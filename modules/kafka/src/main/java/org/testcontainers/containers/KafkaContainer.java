@@ -211,7 +211,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         String command = "echo 'clientPort=" + ZOOKEEPER_PORT + "' > /tmp/zookeeper.properties\n";
         command += "echo 'dataDir=/var/lib/zookeeper/data' >> /tmp/zookeeper.properties\n";
         command += "echo 'dataLogDir=/var/lib/zookeeper/log' >> /tmp/zookeeper.properties\n";
-        command += "zookeeper-server-start zookeeper.properties &\n";
+        command += "zookeeper-server-start /tmp/zookeeper.properties &\n";
         return command;
     }
 
