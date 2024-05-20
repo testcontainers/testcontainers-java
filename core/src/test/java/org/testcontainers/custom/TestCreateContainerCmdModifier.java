@@ -13,6 +13,7 @@ public class TestCreateContainerCmdModifier implements CreateContainerCmdModifie
         Map<String, String> labels = new HashMap<>();
         labels.put("project", "testcontainers-java");
         labels.put("scope", "global");
-        return createContainerCmd.withLabels(labels);
+        createContainerCmd.getLabels().putAll(labels);
+        return createContainerCmd;
     }
 }

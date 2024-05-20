@@ -48,6 +48,14 @@ public class MinIOContainer extends GenericContainer<MinIOContainer> {
     public MinIOContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        withExposedPorts(MINIO_S3_PORT, MINIO_UI_PORT);
+        withCommand("server", "--console-address", ":" + MINIO_UI_PORT, "/data");
+        waitingFor(
+            Wait
+                .forHttp("/minio/health/live")
+                .forPort(MINIO_S3_PORT)
+                .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS))
+        );
     }
 
     /**
@@ -75,8 +83,6 @@ public class MinIOContainer extends GenericContainer<MinIOContainer> {
      */
     @Override
     public void configure() {
-        withExposedPorts(MinIOContainer.MINIO_S3_PORT, MinIOContainer.MINIO_UI_PORT);
-
         if (this.userName != null) {
             addEnv("MINIO_ROOT_USER", this.userName);
         } else {
@@ -87,14 +93,6 @@ public class MinIOContainer extends GenericContainer<MinIOContainer> {
         } else {
             this.password = DEFAULT_PASSWORD;
         }
-
-        withCommand("server", "--console-address", ":" + MINIO_UI_PORT, "/data");
-
-        waitingFor(
-            Wait
-                .forLogMessage(".*Status:         1 Online, 0 Offline..*", 1)
-                .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS))
-        );
     }
 
     /**

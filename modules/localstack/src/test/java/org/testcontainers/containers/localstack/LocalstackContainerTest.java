@@ -8,6 +8,15 @@ import com.amazonaws.services.kms.AWSKMSClientBuilder;
 import com.amazonaws.services.kms.model.CreateKeyRequest;
 import com.amazonaws.services.kms.model.CreateKeyResult;
 import com.amazonaws.services.kms.model.Tag;
+import com.amazonaws.services.lambda.AWSLambda;
+import com.amazonaws.services.lambda.AWSLambdaClientBuilder;
+import com.amazonaws.services.lambda.model.CreateFunctionRequest;
+import com.amazonaws.services.lambda.model.CreateFunctionResult;
+import com.amazonaws.services.lambda.model.FunctionCode;
+import com.amazonaws.services.lambda.model.GetFunctionRequest;
+import com.amazonaws.services.lambda.model.InvokeRequest;
+import com.amazonaws.services.lambda.model.InvokeResult;
+import com.amazonaws.services.lambda.model.Runtime;
 import com.amazonaws.services.logs.AWSLogs;
 import com.amazonaws.services.logs.AWSLogsClientBuilder;
 import com.amazonaws.services.logs.model.CreateLogGroupRequest;
@@ -20,12 +29,15 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import com.amazonaws.services.sqs.model.CreateQueueResult;
+import com.amazonaws.waiters.WaiterParameters;
+import com.github.dockerjava.api.DockerClient;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
@@ -36,10 +48,21 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.URL;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -449,6 +472,142 @@ public class LocalstackContainerTest {
             final String logs = execResult.getStdout() + execResult.getStderr();
             log.info(logs);
             return logs;
+        }
+    }
+
+    public static class S3SkipSignatureValidation {
+
+        @ClassRule
+        public static LocalStackContainer localstack = new LocalStackContainer(
+            LocalstackTestImages.LOCALSTACK_2_3_IMAGE
+        )
+            .withEnv("S3_SKIP_SIGNATURE_VALIDATION", "0");
+
+        @Test
+        public void shouldBeAccessibleWithCredentials() throws IOException {
+            AmazonS3 s3 = AmazonS3ClientBuilder
+                .standard()
+                .withEndpointConfiguration(
+                    new AwsClientBuilder.EndpointConfiguration(
+                        localstack.getEndpoint().toString(),
+                        localstack.getRegion()
+                    )
+                )
+                .withCredentials(
+                    new AWSStaticCredentialsProvider(
+                        new BasicAWSCredentials(localstack.getAccessKey(), localstack.getSecretKey())
+                    )
+                )
+                .build();
+
+            final String bucketName = "foo";
+
+            s3.createBucket(bucketName);
+
+            s3.putObject(bucketName, "bar", "baz");
+
+            final List<Bucket> buckets = s3.listBuckets();
+            final Optional<Bucket> maybeBucket = buckets
+                .stream()
+                .filter(b -> b.getName().equals(bucketName))
+                .findFirst();
+            assertThat(maybeBucket).as("The created bucket is present").isPresent();
+
+            URL presignedUrl = s3.generatePresignedUrl(
+                bucketName,
+                "bar",
+                Date.from(Instant.now().plus(5, ChronoUnit.MINUTES))
+            );
+
+            assertThat(presignedUrl).as("The presigned url is valid").isNotNull();
+            final String content = IOUtils.toString(presignedUrl, StandardCharsets.UTF_8);
+            assertThat(content).as("The object can be retrieved").isEqualTo("baz");
+        }
+    }
+
+    public static class LambdaContainerLabels {
+
+        @ClassRule
+        public static LocalStackContainer localstack = new LocalStackContainer(
+            LocalstackTestImages.LOCALSTACK_2_3_IMAGE
+        );
+
+        private static byte[] createLambdaHandlerZipFile() throws IOException {
+            StringBuilder sb = new StringBuilder();
+            sb.append("def handler(event, context):\n");
+            sb.append("    return event");
+
+            ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
+            ZipOutputStream out = new ZipOutputStream(byteOutput);
+            ZipEntry e = new ZipEntry("handler.py");
+            out.putNextEntry(e);
+
+            byte[] data = sb.toString().getBytes();
+            out.write(data, 0, data.length);
+            out.closeEntry();
+            out.close();
+            return byteOutput.toByteArray();
+        }
+
+        @Test
+        public void shouldLabelLambdaContainers() throws IOException {
+            AWSLambda lambda = AWSLambdaClientBuilder
+                .standard()
+                .withEndpointConfiguration(
+                    new AwsClientBuilder.EndpointConfiguration(
+                        localstack.getEndpoint().toString(),
+                        localstack.getRegion()
+                    )
+                )
+                .withCredentials(
+                    new AWSStaticCredentialsProvider(
+                        new BasicAWSCredentials(localstack.getAccessKey(), localstack.getSecretKey())
+                    )
+                )
+                .build();
+
+            // create function
+            byte[] handlerFile = createLambdaHandlerZipFile();
+            CreateFunctionRequest createFunctionRequest = new CreateFunctionRequest()
+                .withFunctionName("test-function")
+                .withRuntime(Runtime.Python311)
+                .withHandler("handler.handler")
+                .withRole("arn:aws:iam::000000000000:role/test-role")
+                .withCode(new FunctionCode().withZipFile(ByteBuffer.wrap(handlerFile)));
+            CreateFunctionResult createFunctionResult = lambda.createFunction(createFunctionRequest);
+            GetFunctionRequest getFunctionRequest = new GetFunctionRequest()
+                .withFunctionName(createFunctionResult.getFunctionName());
+            lambda
+                .waiters()
+                .functionActiveV2()
+                .run(new WaiterParameters<GetFunctionRequest>().withRequest(getFunctionRequest));
+
+            // invoke function once
+            String payload = "{\"test\": \"payload\"}";
+            InvokeRequest invokeRequest = new InvokeRequest()
+                .withFunctionName(createFunctionResult.getFunctionName())
+                .withPayload(payload);
+            InvokeResult invokeResult = lambda.invoke(invokeRequest);
+            assertThat(StandardCharsets.UTF_8.decode(invokeResult.getPayload()).toString())
+                .as("Invoke result not matching expected output")
+                .isEqualTo(payload);
+
+            // assert that the spawned lambda containers has the testcontainers labels set
+            DockerClient dockerClient = DockerClientFactory.instance().client();
+            Collection<String> nameFilter = Collections.singleton(localstack.getContainerName().replace("_", "-"));
+            com.github.dockerjava.api.model.Container lambdaContainer = dockerClient
+                .listContainersCmd()
+                .withNameFilter(nameFilter)
+                .exec()
+                .stream()
+                .findFirst()
+                .orElse(null);
+            assertThat(lambdaContainer).as("Lambda container not found").isNotNull();
+            Map<String, String> labels = lambdaContainer.getLabels();
+            assertThat(labels.get("org.testcontainers")).as("TestContainers label not present").isEqualTo("true");
+            assertThat(labels.get("org.testcontainers.sessionId"))
+                .as("TestContainers session id not present")
+                .isNotNull();
         }
     }
 }

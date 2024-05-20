@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 /**
  * Testcontainers implementation for Redpanda.
  * <p>
- * Supported images: {@code docker.redpanda.com/redpandadata/redpanda}, {@code docker.redpanda.com/vectorized/redpanda}
+ * Supported images: {@code redpandadata/redpanda}, {@code docker.redpanda.com/redpandadata/redpanda}
  * <p>
  * Exposed ports:
  * <ul>
@@ -43,10 +43,14 @@ public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
 
     private static final String REDPANDA_FULL_IMAGE_NAME = "docker.redpanda.com/redpandadata/redpanda";
 
+    private static final String IMAGE_NAME = "redpandadata/redpanda";
+
     @Deprecated
     private static final String REDPANDA_OLD_FULL_IMAGE_NAME = "docker.redpanda.com/vectorized/redpanda";
 
     private static final DockerImageName REDPANDA_IMAGE = DockerImageName.parse(REDPANDA_FULL_IMAGE_NAME);
+
+    private static final DockerImageName IMAGE = DockerImageName.parse(IMAGE_NAME);
 
     @Deprecated
     private static final DockerImageName REDPANDA_OLD_IMAGE = DockerImageName.parse(REDPANDA_OLD_FULL_IMAGE_NAME);
@@ -75,16 +79,20 @@ public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
 
     public RedpandaContainer(DockerImageName imageName) {
         super(imageName);
-        imageName.assertCompatibleWith(REDPANDA_OLD_IMAGE, REDPANDA_IMAGE);
+        imageName.assertCompatibleWith(REDPANDA_OLD_IMAGE, REDPANDA_IMAGE, IMAGE);
 
         boolean isLessThanBaseVersion = new ComparableVersion(imageName.getVersionPart()).isLessThan("v22.2.1");
-        if (REDPANDA_FULL_IMAGE_NAME.equals(imageName.getUnversionedPart()) && isLessThanBaseVersion) {
+        boolean isPublicCompatibleImage =
+            REDPANDA_FULL_IMAGE_NAME.equals(imageName.getUnversionedPart()) ||
+            IMAGE_NAME.equals(imageName.getUnversionedPart()) ||
+            REDPANDA_OLD_FULL_IMAGE_NAME.equals(imageName.getUnversionedPart());
+        if (isPublicCompatibleImage && isLessThanBaseVersion) {
             throw new IllegalArgumentException("Redpanda version must be >= v22.2.1");
         }
 
         withExposedPorts(REDPANDA_PORT, REDPANDA_ADMIN_PORT, SCHEMA_REGISTRY_PORT, REST_PROXY_PORT);
         withCreateContainerCmdModifier(cmd -> {
-            cmd.withEntrypoint();
+            cmd.withEntrypoint("/entrypoint-tc.sh");
             cmd.withUser("root:root");
         });
         waitingFor(Wait.forLogMessage(".*Successfully started Redpanda!.*", 1));
@@ -92,7 +100,7 @@ public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
             MountableFile.forClasspathResource("testcontainers/entrypoint-tc.sh", 0700),
             "/entrypoint-tc.sh"
         );
-        withCommand("/entrypoint-tc.sh", "redpanda", "start", "--mode=dev-container", "--smp=1", "--memory=1G");
+        withCommand("redpanda", "start", "--mode=dev-container", "--smp=1", "--memory=1G");
     }
 
     @Override
@@ -232,6 +240,7 @@ public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
                     Map<String, Object> listenerMap = new HashMap<>();
                     listenerMap.put("address", listener.getAddress());
                     listenerMap.put("port", listener.getPort());
+                    listenerMap.put("authentication_method", this.authenticationMethod);
                     return listenerMap;
                 })
                 .collect(Collectors.toList());
