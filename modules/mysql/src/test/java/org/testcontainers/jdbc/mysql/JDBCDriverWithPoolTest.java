@@ -33,7 +33,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class JDBCDriverWithPoolTest {
 
     public static final String URL =
-        "jdbc:tc:mysql:5.7.34://hostname/databasename?TC_INITFUNCTION=org.testcontainers.jdbc.mysql.JDBCDriverWithPoolTest::sampleInitFunction";
+        "jdbc:tc:mysql:8.0.36://hostname/databasename?TC_INITFUNCTION=org.testcontainers.jdbc.mysql.JDBCDriverWithPoolTest::sampleInitFunction";
 
     private final DataSource dataSource;
 

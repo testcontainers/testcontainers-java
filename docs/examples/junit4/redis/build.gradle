@@ -1,9 +1,9 @@
 description = "Examples for docs"
 
 dependencies {
-    api "io.lettuce:lettuce-core:6.3.0.RELEASE"
+    api "io.lettuce:lettuce-core:6.3.1.RELEASE"
 
     testImplementation "junit:junit:4.13.2"
     testImplementation project(":testcontainers")
-    testImplementation 'org.assertj:assertj-core:3.24.2'
+    testImplementation 'org.assertj:assertj-core:3.25.2'
 }
