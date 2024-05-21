@@ -227,9 +227,9 @@ public class GenericContainerTest {
     @Test
     public void shouldReturnTheProvidedImage() {
         GenericContainer container = new GenericContainer(TestImages.REDIS_IMAGE);
-        assertThat(container.getImage().get()).isEqualTo("redis:3.0.2");
+        assertThat(container.getImage().get()).isEqualTo("redis:6-alpine");
         container.setImage(new RemoteDockerImage(TestImages.ALPINE_IMAGE));
-        assertThat(container.getImage().get()).isEqualTo("alpine:3.16");
+        assertThat(container.getImage().get()).isEqualTo("alpine:3.17");
     }
 
     @Test

@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 class HiveMQTestContainerCore {
 
     @NotNull
-    final HiveMQContainer container = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3"));
+    final HiveMQContainer container = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq-ce").withTag("2024.3"));
 
     @TempDir
     File tempDir;

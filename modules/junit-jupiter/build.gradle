@@ -13,10 +13,10 @@ dependencies {
     testImplementation ('org.mockito:mockito-core:4.11.0') {
         exclude(module: 'hamcrest-core')
     }
-    testImplementation 'org.assertj:assertj-core:3.24.2'
+    testImplementation 'org.assertj:assertj-core:3.25.3'
     testImplementation 'org.junit.jupiter:junit-jupiter'
 
-    testRuntimeOnly 'org.postgresql:postgresql:42.7.1'
+    testRuntimeOnly 'org.postgresql:postgresql:42.7.3'
     testRuntimeOnly 'mysql:mysql-connector-java:8.0.33'
 }
 

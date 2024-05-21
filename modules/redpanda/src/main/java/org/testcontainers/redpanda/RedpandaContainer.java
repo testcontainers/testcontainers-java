@@ -92,7 +92,7 @@ public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
 
         withExposedPorts(REDPANDA_PORT, REDPANDA_ADMIN_PORT, SCHEMA_REGISTRY_PORT, REST_PROXY_PORT);
         withCreateContainerCmdModifier(cmd -> {
-            cmd.withEntrypoint();
+            cmd.withEntrypoint("/entrypoint-tc.sh");
             cmd.withUser("root:root");
         });
         waitingFor(Wait.forLogMessage(".*Successfully started Redpanda!.*", 1));
@@ -100,7 +100,7 @@ public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
             MountableFile.forClasspathResource("testcontainers/entrypoint-tc.sh", 0700),
             "/entrypoint-tc.sh"
         );
-        withCommand("/entrypoint-tc.sh", "redpanda", "start", "--mode=dev-container", "--smp=1", "--memory=1G");
+        withCommand("redpanda", "start", "--mode=dev-container", "--smp=1", "--memory=1G");
     }
 
     @Override

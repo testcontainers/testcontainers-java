@@ -38,7 +38,7 @@ class DemoExtensionTestsIT {
 
     @Container
     final HiveMQContainer hivemqWithClasspathExtension = new HiveMQContainer(
-        DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3")
+        DockerImageName.parse("hivemq/hivemq-ce").withTag("2024.3")
     )
         .waitForExtension(hiveMQEClasspathxtension)
         .withExtension(hiveMQEClasspathxtension)

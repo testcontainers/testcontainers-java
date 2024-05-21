@@ -77,7 +77,7 @@ public class DockerClientFactory {
         return Collections.unmodifiableMap(labels);
     }
 
-    private static final DockerImageName TINY_IMAGE = DockerImageName.parse("alpine:3.16");
+    private static final DockerImageName TINY_IMAGE = DockerImageName.parse("alpine:3.17");
 
     private static DockerClientFactory instance;
 

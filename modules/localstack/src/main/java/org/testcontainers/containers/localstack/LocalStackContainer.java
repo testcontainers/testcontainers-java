@@ -10,6 +10,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.ResourceReaper;
 
 import java.net.InetAddress;
 import java.net.URI;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Testcontainers implementation for LocalStack.
@@ -163,6 +165,34 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
         return true;
     }
 
+    /**
+     * Provides a docker argument string including all default labels set on testcontainer containers
+     * @return Argument string in the format `-l key1=value1 -l key2=value2`
+     */
+    private static String internalMarkerLabels() {
+        return Stream
+            .concat(
+                DockerClientFactory.DEFAULT_LABELS.entrySet().stream(),
+                ResourceReaper.instance().getLabels().entrySet().stream()
+            )
+            .map(entry -> String.format("-l %s=%s", entry.getKey(), entry.getValue()))
+            .collect(Collectors.joining(" "));
+    }
+
+    /**
+     * Configure the LocalStack container to include the default testcontainer labels on all spawned lambda containers
+     * Necessary to properly clean up lambda containers even if the LocalStack container is killed before it gets the
+     * chance.
+     */
+    private void configureLambdaContainerLabels() {
+        String lambdaDockerFlags = internalMarkerLabels();
+        String existingLambdaDockerFlags = getEnvMap().get("LAMBDA_DOCKER_FLAGS");
+        if (existingLambdaDockerFlags != null) {
+            lambdaDockerFlags = existingLambdaDockerFlags + " " + lambdaDockerFlags;
+        }
+        withEnv("LAMBDA_DOCKER_FLAGS", lambdaDockerFlags);
+    }
+
     @Override
     protected void configure() {
         super.configure();
@@ -185,6 +215,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
         }
 
         exposePorts();
+        configureLambdaContainerLabels();
     }
 
     private void resolveHostname(String envVar) {
