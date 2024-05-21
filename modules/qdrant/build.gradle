@@ -5,7 +5,7 @@ dependencies {
 
     testImplementation 'org.assertj:assertj-core:3.25.1'
     testImplementation 'io.qdrant:client:1.7.1'
-    testImplementation platform('io.grpc:grpc-bom:1.61.1')
+    testImplementation platform('io.grpc:grpc-bom:1.64.0')
     testImplementation 'io.grpc:grpc-stub'
     testImplementation 'io.grpc:grpc-protobuf'
     testImplementation 'io.grpc:grpc-netty-shaded'
