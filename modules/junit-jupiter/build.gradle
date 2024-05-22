@@ -2,7 +2,7 @@ description = "Testcontainers :: JUnit Jupiter Extension"
 
 dependencies {
     api project(':testcontainers')
-    implementation platform('org.junit:junit-bom:5.10.1')
+    implementation platform('org.junit:junit-bom:5.10.2')
     implementation 'org.junit.jupiter:junit-jupiter-api'
 
     testImplementation project(':mysql')
