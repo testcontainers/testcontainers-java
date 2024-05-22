@@ -14,11 +14,11 @@ import org.testcontainers.utility.MountableFile;
 import java.util.concurrent.TimeUnit;
 
 @Testcontainers
-public class DemoHiveMQContainerIT {
+class DemoHiveMQContainerIT {
 
     // ceVersion {
     @Container
-    final HiveMQContainer hivemqCe = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3"))
+    final HiveMQContainer hivemqCe = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq-ce").withTag("2024.3"))
         .withLogLevel(Level.DEBUG);
 
     // }
@@ -43,13 +43,13 @@ public class DemoHiveMQContainerIT {
 
     // specificVersion {
     @Container
-    final HiveMQContainer hivemqSpecificVersion = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq-ce:2021.3"));
+    final HiveMQContainer hivemqSpecificVersion = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq-ce:2024.3"));
 
     // }
 
     @Test
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
-    public void test() throws Exception {
+    void test() throws Exception {
         // mqtt5client {
         final Mqtt5BlockingClient client = Mqtt5Client
             .builder()

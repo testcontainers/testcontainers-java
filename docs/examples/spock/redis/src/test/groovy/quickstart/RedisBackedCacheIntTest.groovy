@@ -10,7 +10,7 @@ class RedisBackedCacheIntTest extends Specification {
 	private RedisBackedCache underTest
 
 	// init {
-	GenericContainer redis = new GenericContainer<>("redis:5.0.3-alpine")
+	GenericContainer redis = new GenericContainer<>("redis:6-alpine")
 	.withExposedPorts(6379)
 	// }
 

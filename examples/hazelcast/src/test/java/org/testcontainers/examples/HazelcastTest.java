@@ -3,8 +3,8 @@ package org.testcontainers.examples;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.core.HazelcastInstance;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -18,10 +18,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Examples with Hazelcast using both a single container and a cluster with two containers.
  */
-public class HazelcastTest {
+class HazelcastTest {
 
     // Hazelcast values
-    private static final String HZ_IMAGE_NAME = "hazelcast/hazelcast:5.2.0";
+    private static final String HZ_IMAGE_NAME = "hazelcast/hazelcast:5.2.0-slim";
 
     private static final String HZ_CLUSTERNAME_ENV_NAME = "HZ_CLUSTERNAME";
 
@@ -46,13 +46,13 @@ public class HazelcastTest {
 
     private static final String TRUE_VALUE = "true";
 
-    @After
-    public void cleanUp() {
+    @AfterEach
+    void cleanUp() {
         HazelcastClient.shutdownAll();
     }
 
     @Test
-    public void singleHazelcastContainer() {
+    void singleHazelcastContainer() {
         try (
             GenericContainer<?> container = new GenericContainer<>(DockerImageName.parse(HZ_IMAGE_NAME))
                 .withExposedPorts(DEFAULT_EXPOSED_PORT)
@@ -76,9 +76,9 @@ public class HazelcastTest {
     }
 
     @Test
-    public void hazelcastCluster() {
-        Network network = Network.newNetwork();
+    void hazelcastCluster() {
         try (
+            Network network = Network.newNetwork();
             GenericContainer<?> container1 = new GenericContainer<>(DockerImageName.parse(HZ_IMAGE_NAME))
                 .withExposedPorts(DEFAULT_EXPOSED_PORT)
                 .withEnv(HZ_CLUSTERNAME_ENV_NAME, TEST_CLUSTER_NAME)

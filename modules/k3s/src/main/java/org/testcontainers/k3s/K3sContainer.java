@@ -17,6 +17,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Testcontainers implementation for K3S
+ * <p>
+ * Supported image: {@code rancher/k3s}
+ */
 public class K3sContainer extends GenericContainer<K3sContainer> {
 
     public static int KUBE_SECURE_PORT = 6443;
@@ -41,7 +46,7 @@ public class K3sContainer extends GenericContainer<K3sContainer> {
         tmpFsMapping.put("/var/run", "");
         setTmpFsMapping(tmpFsMapping);
 
-        setCommand("server", "--no-deploy=traefik", "--tls-san=" + this.getHost());
+        setCommand("server", "--disable=traefik", "--tls-san=" + this.getHost());
         setWaitStrategy(Wait.forLogMessage(".*Node controller sync successful.*", 1));
     }
 

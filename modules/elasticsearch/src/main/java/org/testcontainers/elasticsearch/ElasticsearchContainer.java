@@ -1,6 +1,5 @@
 package org.testcontainers.elasticsearch;
 
-import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.NotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
@@ -8,7 +7,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 
@@ -23,8 +21,15 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
 /**
- * Represents an elasticsearch docker instance which exposes by default port 9200 and 9300 (transport.tcp.port)
- * The docker image is by default fetched from docker.elastic.co/elasticsearch/elasticsearch
+ * Testcontainers implementation for Elasticsearch.
+ * <p>
+ * Supported image: {@code docker.elastic.co/elasticsearch/elasticsearch}, {@code elasticsearch}
+ * <p>
+ * Exposed ports:
+ * <ul>
+ *     <li>HTTP: 9200</li>
+ *     <li>TCP Transport: 9300</li>
+ * </ul>
  */
 @Slf4j
 public class ElasticsearchContainer extends GenericContainer<ElasticsearchContainer> {
@@ -53,9 +58,15 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
         "docker.elastic.co/elasticsearch/elasticsearch"
     );
 
+    @Deprecated
     private static final DockerImageName DEFAULT_OSS_IMAGE_NAME = DockerImageName.parse(
         "docker.elastic.co/elasticsearch/elasticsearch-oss"
     );
+
+    private static final DockerImageName ELASTICSEARCH_IMAGE_NAME = DockerImageName.parse("elasticsearch");
+
+    // default location of the automatically generated self-signed HTTP cert for versions >= 8
+    private static final String DEFAULT_CERT_PATH = "/usr/share/elasticsearch/config/certs/http_ca.crt";
 
     /**
      * Elasticsearch Default version
@@ -63,16 +74,15 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
     @Deprecated
     protected static final String DEFAULT_TAG = "7.9.2";
 
-    private final boolean isOss;
+    @Deprecated
+    private boolean isOss = false;
 
     private final boolean isAtLeastMajorVersion8;
 
-    private Optional<byte[]> caCertAsBytes = Optional.empty();
-
-    private String certPath = "/usr/share/elasticsearch/config/certs/http_ca.crt";
+    private String certPath = "";
 
     /**
-     * @deprecated use {@link ElasticsearchContainer(DockerImageName)} instead
+     * @deprecated use {@link #ElasticsearchContainer(DockerImageName)} instead
      */
     @Deprecated
     public ElasticsearchContainer() {
@@ -81,6 +91,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 
     /**
      * Create an Elasticsearch Container by passing the full docker image name
+     *
      * @param dockerImageName Full docker image name as a {@link String}, like: docker.elastic.co/elasticsearch/elasticsearch:7.9.2
      */
     public ElasticsearchContainer(String dockerImageName) {
@@ -89,14 +100,22 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 
     /**
      * Create an Elasticsearch Container by passing the full docker image name
+     *
      * @param dockerImageName Full docker image name as a {@link DockerImageName}, like: DockerImageName.parse("docker.elastic.co/elasticsearch/elasticsearch:7.9.2")
      */
     public ElasticsearchContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, DEFAULT_OSS_IMAGE_NAME);
-        this.isOss = dockerImageName.isCompatibleWith(DEFAULT_OSS_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, DEFAULT_OSS_IMAGE_NAME, ELASTICSEARCH_IMAGE_NAME);
 
-        withNetworkAliases("elasticsearch-" + Base58.randomString(6));
+        if (dockerImageName.isCompatibleWith(DEFAULT_OSS_IMAGE_NAME)) {
+            this.isOss = true;
+            log.warn(
+                "{} is not supported anymore after 7.10.2. Please switch to {}",
+                dockerImageName.getUnversionedPart(),
+                DEFAULT_IMAGE_NAME.getUnversionedPart()
+            );
+        }
+
         withEnv("discovery.type", "single-node");
         // disable disk threshold checks
         withEnv("cluster.routing.allocation.disk.threshold_enabled", "false");
@@ -119,23 +138,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
         setWaitStrategy(Wait.forLogMessage(regex, 1));
         if (isAtLeastMajorVersion8) {
             withPassword(ELASTICSEARCH_DEFAULT_PASSWORD);
-        }
-    }
-
-    @Override
-    protected void containerIsStarted(InspectContainerResponse containerInfo) {
-        if (isAtLeastMajorVersion8 && StringUtils.isNotEmpty(certPath)) {
-            try {
-                byte[] bytes = copyFileFromContainer(certPath, IOUtils::toByteArray);
-                if (bytes.length > 0) {
-                    this.caCertAsBytes = Optional.of(bytes);
-                }
-            } catch (NotFoundException e) {
-                // just emit an error message, but do not throw an exception
-                // this might be ok, if the docker image is accidentally looking like version 8 or latest
-                // can happen if Elasticsearch is repackaged, i.e. with custom plugins
-                log.warn("CA cert under " + certPath + " not found.");
-            }
+            withCertPath(DEFAULT_CERT_PATH);
         }
     }
 
@@ -145,17 +148,36 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
      * @return byte array optional containing the CA cert extracted from the docker container
      */
     public Optional<byte[]> caCertAsBytes() {
-        return caCertAsBytes;
+        if (StringUtils.isBlank(certPath)) {
+            return Optional.empty();
+        }
+        try {
+            byte[] bytes = copyFileFromContainer(certPath, IOUtils::toByteArray);
+            if (bytes.length > 0) {
+                return Optional.of(bytes);
+            }
+        } catch (NotFoundException e) {
+            // just emit an error message, but do not throw an exception
+            // this might be ok, if the docker image is accidentally looking like version 8 or latest
+            // can happen if Elasticsearch is repackaged, i.e. with custom plugins
+            log.warn("CA cert under " + certPath + " not found.");
+        }
+        return Optional.empty();
     }
 
     /**
-     * A SSL context based on the self signed CA, so that using this SSL Context allows to connect to the Elasticsearch service
+     * A SSL context based on the self-signed CA, so that using this SSL Context allows to connect to the Elasticsearch service
      * @return a customized SSL Context
      */
     public SSLContext createSslContextFromCa() {
         try {
             CertificateFactory factory = CertificateFactory.getInstance("X.509");
-            Certificate trustedCa = factory.generateCertificate(new ByteArrayInputStream(caCertAsBytes.get()));
+            Certificate trustedCa = factory.generateCertificate(
+                new ByteArrayInputStream(
+                    caCertAsBytes()
+                        .orElseThrow(() -> new IllegalStateException("CA cert under " + certPath + " not found."))
+                )
+            );
             KeyStore trustStore = KeyStore.getInstance("pkcs12");
             trustStore.load(null, null);
             trustStore.setCertificateEntry("ca", trustedCa);
@@ -173,13 +195,13 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
     /**
      * Define the Elasticsearch password to set. It enables security behind the scene for major version below 8.0.0.
      * It's not possible to use security with the oss image.
-     * @param password  Password to set
+     * @param password Password to set
      * @return this
      */
     public ElasticsearchContainer withPassword(String password) {
         if (isOss) {
             throw new IllegalArgumentException(
-                "You can not activate security on Elastic OSS Image. " + "Please switch to the default distribution"
+                "You can not activate security on Elastic OSS Image. Please switch to the default distribution"
             );
         }
         withEnv("ELASTIC_PASSWORD", password);
@@ -205,7 +227,8 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
         return getHost() + ":" + getMappedPort(ELASTICSEARCH_DEFAULT_PORT);
     }
 
-    @Deprecated // The TransportClient will be removed in Elasticsearch 8. No need to expose this port anymore in the future.
+    // The TransportClient will be removed in Elasticsearch 8. No need to expose this port anymore in the future.
+    @Deprecated
     public InetSocketAddress getTcpHost() {
         return new InetSocketAddress(getHost(), getMappedPort(ELASTICSEARCH_DEFAULT_TCP_PORT));
     }

@@ -5,6 +5,8 @@ import org.testcontainers.utility.DockerImageName;
 
 /**
  * A Spanner container. Default ports: 9010 for GRPC and 9020 for HTTP.
+ * <p>
+ * Supported image: {@code gcr.io/cloud-spanner-emulator/emulator}
  */
 public class SpannerEmulatorContainer extends GenericContainer<SpannerEmulatorContainer> {
 
@@ -15,6 +17,10 @@ public class SpannerEmulatorContainer extends GenericContainer<SpannerEmulatorCo
     private static final int GRPC_PORT = 9010;
 
     private static final int HTTP_PORT = 9020;
+
+    public SpannerEmulatorContainer(String image) {
+        this(DockerImageName.parse(image));
+    }
 
     public SpannerEmulatorContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
