@@ -86,7 +86,7 @@ dependencies {
         exclude group: 'org.apache.commons', module: 'commons-compress'
     }
 
-    shaded 'org.awaitility:awaitility:4.2.0'
+    shaded 'org.awaitility:awaitility:4.2.1'
 
     api platform('com.github.docker-java:docker-java-bom:3.3.6')
     shaded platform('com.github.docker-java:docker-java-bom:3.3.6')
