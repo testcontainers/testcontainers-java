@@ -6,7 +6,7 @@ import org.testcontainers.utility.DockerImageName;
 /**
  * Testcontainers implementation of Weaviate.
  * <p>
- * Supported image: {@code semitechnologies/weaviate}
+ * Supported images: {@code cr.weaviate.io/semitechnologies/weaviate}, {@code semitechnologies/weaviate}
  * <p>
  * Exposed ports:
  * <ul>
@@ -16,7 +16,11 @@ import org.testcontainers.utility.DockerImageName;
  */
 public class WeaviateContainer extends GenericContainer<WeaviateContainer> {
 
-    private static final String WEAVIATE_IMAGE = "semitechnologies/weaviate";
+    private static final DockerImageName DEFAULT_WEAVIATE_IMAGE = DockerImageName.parse(
+        "cr.weaviate.io/semitechnologies/weaviate"
+    );
+
+    private static final DockerImageName DOCKER_HUB_WEAVIATE_IMAGE = DockerImageName.parse("semitechnologies/weaviate");
 
     public WeaviateContainer(String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
@@ -24,7 +28,7 @@ public class WeaviateContainer extends GenericContainer<WeaviateContainer> {
 
     public WeaviateContainer(DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DockerImageName.parse(WEAVIATE_IMAGE));
+        dockerImageName.assertCompatibleWith(DEFAULT_WEAVIATE_IMAGE, DOCKER_HUB_WEAVIATE_IMAGE);
         withExposedPorts(8080, 50051);
         withEnv("AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED", "true");
         withEnv("PERSISTENCE_DATA_PATH", "/var/lib/weaviate");

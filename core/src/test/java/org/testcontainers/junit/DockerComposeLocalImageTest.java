@@ -12,7 +12,7 @@ public class DockerComposeLocalImageTest {
 
     @Test
     public void usesLocalImageEvenWhenPullFails() throws InterruptedException {
-        tagImage("redis:4.0.10", "redis-local", "latest");
+        tagImage("redis:6-alpine", "redis-local", "latest");
 
         DockerComposeContainer composeContainer = new DockerComposeContainer(
             new File("src/test/resources/local-compose-test.yml")
