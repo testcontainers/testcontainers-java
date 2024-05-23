@@ -2,13 +2,13 @@ description = "Testcontainers :: JUnit Jupiter Extension"
 
 dependencies {
     api project(':testcontainers')
-    implementation platform('org.junit:junit-bom:5.10.1')
+    implementation platform('org.junit:junit-bom:5.10.2')
     implementation 'org.junit.jupiter:junit-jupiter-api'
 
     testImplementation project(':mysql')
     testImplementation project(':postgresql')
     testImplementation 'com.zaxxer:HikariCP:4.0.3'
-    testImplementation 'redis.clients:jedis:5.1.0'
+    testImplementation 'redis.clients:jedis:5.1.2'
     testImplementation 'org.apache.httpcomponents:httpclient:4.5.14'
     testImplementation ('org.mockito:mockito-core:4.11.0') {
         exclude(module: 'hamcrest-core')
