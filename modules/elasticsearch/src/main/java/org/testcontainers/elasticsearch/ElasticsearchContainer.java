@@ -6,7 +6,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 
@@ -135,7 +135,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
         //   matches 7.x JSON logging with whitespace between message field and content
         //   matches 6.x text logging with node name in brackets and just a 'started' message till the end of the line
         String regex = ".*(\"message\":\\s?\"started[\\s?|\"].*|] started\n$)";
-        setWaitStrategy(new LogMessageWaitStrategy().withRegEx(regex));
+        setWaitStrategy(Wait.forLogMessage(regex, 1));
         if (isAtLeastMajorVersion8) {
             withPassword(ELASTICSEARCH_DEFAULT_PASSWORD);
             withCertPath(DEFAULT_CERT_PATH);
