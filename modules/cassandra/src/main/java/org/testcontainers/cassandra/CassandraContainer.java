@@ -1,15 +1,9 @@
-package org.testcontainers.containers;
+package org.testcontainers.cassandra;
 
-import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.CqlSessionBuilder;
-import com.datastax.oss.driver.api.core.config.DefaultDriverOption;
-import com.datastax.oss.driver.api.core.config.DriverConfigLoader;
-import com.datastax.oss.driver.api.core.config.ProgrammaticDriverConfigLoaderBuilder;
-import com.datastax.oss.driver.internal.core.loadbalancing.DcInferringLoadBalancingPolicy;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.apache.commons.io.IOUtils;
-import org.testcontainers.containers.delegate.CassandraDatabaseDelegate;
-import org.testcontainers.delegate.DatabaseDelegate;
+import org.testcontainers.cassandra.delegate.CassandraDatabaseDelegate;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.ext.ScriptUtils;
 import org.testcontainers.ext.ScriptUtils.ScriptLoadException;
 import org.testcontainers.utility.DockerImageName;
@@ -19,10 +13,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.util.Optional;
-
-import javax.script.ScriptException;
 
 /**
  * Testcontainers implementation for Apache Cassandra.
@@ -30,18 +21,10 @@ import javax.script.ScriptException;
  * Supported image: {@code cassandra}
  * <p>
  * Exposed ports: 9042
- *
- * @deprecated use {@link org.testcontainers.cassandra.CassandraContainer} instead.
  */
-@Deprecated
 public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends GenericContainer<SELF> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("cassandra");
-
-    private static final String DEFAULT_TAG = "3.11.2";
-
-    @Deprecated
-    public static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
 
     public static final Integer CQL_PORT = 9042;
 
@@ -56,18 +39,6 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
     private String configLocation;
 
     private String initScriptPath;
-
-    /**
-     * @deprecated use {@link #CassandraContainer(DockerImageName)} instead
-     */
-    @Deprecated
-    public CassandraContainer() {
-        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
-    }
-
-    public CassandraContainer(String dockerImageName) {
-        this(DockerImageName.parse(dockerImageName));
-    }
 
     public CassandraContainer(DockerImageName dockerImageName) {
         super(dockerImageName);
@@ -107,12 +78,11 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
                     );
                 }
                 String cql = IOUtils.toString(resource, StandardCharsets.UTF_8);
-                DatabaseDelegate databaseDelegate = getDatabaseDelegate();
-                ScriptUtils.executeDatabaseScript(databaseDelegate, initScriptPath, cql);
+                new CassandraDatabaseDelegate(this).execute(cql, initScriptPath, -1, false, false);
             } catch (IOException e) {
                 logger().warn("Could not load classpath init script: {}", initScriptPath);
                 throw new ScriptLoadException("Could not load classpath init script: " + initScriptPath, e);
-            } catch (ScriptException e) {
+            } catch (ScriptUtils.ScriptStatementFailedException e) {
                 logger().error("Error while executing init script: {}", initScriptPath, e);
                 throw new ScriptUtils.UncategorizedScriptException(
                     "Error while executing init script: " + initScriptPath,
@@ -165,7 +135,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
     /**
      * Get username
      *
-     * By default Cassandra has authenticator: AllowAllAuthenticator in cassandra.yaml
+     * By default, Cassandra has authenticator: AllowAllAuthenticator in cassandra.yaml
      * If username and password need to be used, then authenticator should be set as PasswordAuthenticator
      * (through custom Cassandra configuration) and through CQL with default cassandra-cassandra credentials
      * user management should be modified
@@ -177,60 +147,13 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
     /**
      * Get password
      *
-     * By default Cassandra has authenticator: AllowAllAuthenticator in cassandra.yaml
+     * By default, Cassandra has authenticator: AllowAllAuthenticator in cassandra.yaml
      * If username and password need to be used, then authenticator should be set as PasswordAuthenticator
      * (through custom Cassandra configuration) and through CQL with default cassandra-cassandra credentials
      * user management should be modified
      */
     public String getPassword() {
         return PASSWORD;
-    }
-
-    /**
-     * Get a session on the configured cluster.
-     *
-     * Can be used to obtain connections to Cassandra in the container.
-     */
-    public CqlSession getCqlSession() {
-        return getCqlSession(this);
-    }
-
-    public static CqlSession getCqlSession(ContainerState containerState) {
-        final ProgrammaticDriverConfigLoaderBuilder driverConfigLoaderBuilder = DriverConfigLoader.programmaticBuilder();
-        boolean dcAvailable = containerState.getClass().isAssignableFrom(CassandraContainer.class);
-
-        // If the ContainerState is not a CassandraContainer instance, use DcInferringLoadBalancingPolicy to not have
-        // to specify the local datacenter to establish the connection, otherwise we can keep the default load balancing
-        // policy requiring to explicitly specify the local data center.
-        // See https://docs.datastax.com/en/developer/java-driver/latest/manual/core/configuration/reference/ for
-        // further information.
-        if (!dcAvailable) {
-            driverConfigLoaderBuilder.withClass(
-                DefaultDriverOption.LOAD_BALANCING_POLICY_CLASS,
-                DcInferringLoadBalancingPolicy.class
-            );
-        }
-
-        // Ignore warnings when a CQL script modifies the current keyspace. Typically, this generates unnecessary logs
-        // when executing an init script using multiple keyspaces.
-        driverConfigLoaderBuilder.withBoolean(DefaultDriverOption.REQUEST_WARN_IF_SET_KEYSPACE, false);
-
-        // Using Java driver 4.x, a feature called debouncing has been introduced: schema and topology changes received
-        // from the server could be accumulated before being processed by the driver. For more information, see:
-        // https://docs.datastax.com/en/developer/java-driver/latest/manual/core/performance/index.html#debouncing
-        // and https://stackoverflow.com/a/74152732/13292108
-        // To maintain good performance, reduce the default values for the schema debouncing properties.
-        driverConfigLoaderBuilder.withInt(DefaultDriverOption.METADATA_SCHEMA_MAX_EVENTS, 1);
-        driverConfigLoaderBuilder.withDuration(DefaultDriverOption.METADATA_SCHEMA_WINDOW, Duration.ofMillis(1));
-
-        final CqlSessionBuilder cqlSessionBuilder = CqlSession
-            .builder()
-            .withConfigLoader(driverConfigLoaderBuilder.build())
-            .addContactPoint(new InetSocketAddress(containerState.getHost(), containerState.getMappedPort(CQL_PORT)));
-        if (dcAvailable) {
-            cqlSessionBuilder.withLocalDatacenter(((CassandraContainer<?>) containerState).getLocalDatacenter());
-        }
-        return cqlSessionBuilder.build();
     }
 
     /**
@@ -251,7 +174,4 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
         return getEnvMap().getOrDefault("CASSANDRA_DC", DEFAULT_LOCAL_DATACENTER);
     }
 
-    private DatabaseDelegate getDatabaseDelegate() {
-        return new CassandraDatabaseDelegate(this);
-    }
 }

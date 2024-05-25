@@ -2,14 +2,17 @@
 
 ## Usage example
 
-This example connects to the Cassandra Cluster, creates a keyspaces and asserts that is has been created.
+This example connects to the Cassandra cluster:
 
-<!--codeinclude-->
-[Building CqlSession](../../../modules/cassandra/src/test/java/org/testcontainers/containers/CassandraDriver4Test.java) inside_block:cassandra
-<!--/codeinclude-->
+1. Define a container:
+   <!--codeinclude-->
+   [Defining container](../../../modules/cassandra/src/test/java/org/testcontainers/cassandra/CassandraDriver4Test.java) inside_block:container-definition
+   <!--/codeinclude-->
 
-!!! warning
-    All methods returning instances of the Cassandra Driver's Cluster object in `CassandraContainer` have been deprecated. Providing these methods unnecessarily couples the Container to the Driver and creates potential breaking changes if the driver is updated.
+2. Build a `CqlSession`:
+   <!--codeinclude-->
+   [Building CqlSession](../../../modules/cassandra/src/test/java/org/testcontainers/cassandra/CassandraDriver4Test.java) inside_block:cql-session
+   <!--/codeinclude-->
 
 ## Adding this module to your project dependencies
 

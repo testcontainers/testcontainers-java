@@ -1,8 +1,8 @@
-package org.testcontainers.containers.wait;
+package org.testcontainers.cassandra.wait;
 
 import org.rnorth.ducttape.TimeoutException;
 import org.testcontainers.containers.ContainerLaunchException;
-import org.testcontainers.containers.delegate.CassandraDatabaseDelegate;
+import org.testcontainers.cassandra.delegate.CassandraDatabaseDelegate;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
 import org.testcontainers.delegate.DatabaseDelegate;
 
@@ -12,10 +12,7 @@ import static org.rnorth.ducttape.unreliables.Unreliables.retryUntilSuccess;
 
 /**
  * Waits until Cassandra returns its version
- *
- * @deprecated use {@link org.testcontainers.cassandra.wait.CassandraQueryWaitStrategy} instead.
  */
-@Deprecated
 public class CassandraQueryWaitStrategy extends AbstractWaitStrategy {
 
     private static final String SELECT_VERSION_QUERY = "SELECT release_version FROM system.local";
