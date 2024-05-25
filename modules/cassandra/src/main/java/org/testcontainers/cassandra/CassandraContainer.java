@@ -1,7 +1,6 @@
 package org.testcontainers.cassandra;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import org.apache.commons.io.IOUtils;
 import org.testcontainers.cassandra.delegate.CassandraDatabaseDelegate;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.ext.ScriptUtils;
@@ -9,10 +8,10 @@ import org.testcontainers.ext.ScriptUtils.ScriptLoadException;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
-import java.io.IOException;
+import java.io.File;
 import java.net.InetSocketAddress;
+import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 /**
@@ -77,11 +76,13 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
                         "Could not load classpath init script: " + initScriptPath + ". Resource not found."
                     );
                 }
-                String cql = IOUtils.toString(resource, StandardCharsets.UTF_8);
-                new CassandraDatabaseDelegate(this).execute(cql, initScriptPath, -1, false, false);
-            } catch (IOException e) {
-                logger().warn("Could not load classpath init script: {}", initScriptPath);
-                throw new ScriptLoadException("Could not load classpath init script: " + initScriptPath, e);
+                // The init script is executed as is by the cqlsh command, so copy it into the container.
+                String targetInitScriptName = new File(resource.toURI()).getName();
+                this.copyFileToContainer(MountableFile.forClasspathResource(initScriptPath), targetInitScriptName);
+                new CassandraDatabaseDelegate(this).execute(null, targetInitScriptName, -1, false, false);
+            } catch (URISyntaxException e) {
+                logger().warn("Could not copy init script into container: {}", initScriptPath);
+                throw new ScriptLoadException("Could not copy init script into container: " + initScriptPath, e);
             } catch (ScriptUtils.ScriptStatementFailedException e) {
                 logger().error("Error while executing init script: {}", initScriptPath, e);
                 throw new ScriptUtils.UncategorizedScriptException(
