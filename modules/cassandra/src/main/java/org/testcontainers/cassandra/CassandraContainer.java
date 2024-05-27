@@ -174,5 +174,4 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
     public String getLocalDatacenter() {
         return getEnvMap().getOrDefault("CASSANDRA_DC", DEFAULT_LOCAL_DATACENTER);
     }
-
 }

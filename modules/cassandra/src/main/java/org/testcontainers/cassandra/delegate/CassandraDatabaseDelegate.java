@@ -40,7 +40,7 @@ public class CassandraDatabaseDelegate extends AbstractDatabaseDelegate<Void> {
         try {
             // Use cqlsh command directly inside the container to execute statements
             // See documentation here: https://cassandra.apache.org/doc/stable/cassandra/tools/cqlsh.html
-            String[] cqlshCommand = new String[]{"cqlsh"};
+            String[] cqlshCommand = new String[] { "cqlsh" };
 
             if (this.container instanceof CassandraContainer) {
                 CassandraContainer<?> cassandraContainer = ((CassandraContainer<?>) this.container);
@@ -59,9 +59,8 @@ public class CassandraDatabaseDelegate extends AbstractDatabaseDelegate<Void> {
             }
             cqlshCommand = ArrayUtils.addAll(cqlshCommand, executeArg, executeArgValue);
 
-            Container.ExecResult result = this.container.execInContainer(ExecConfig.builder()
-                .command(cqlshCommand)
-                .build());
+            Container.ExecResult result =
+                this.container.execInContainer(ExecConfig.builder().command(cqlshCommand).build());
             if (result.getExitCode() == 0) {
                 if (StringUtils.isBlank(statement)) {
                     log.info("CQL script {} successfully executed", scriptPath);
