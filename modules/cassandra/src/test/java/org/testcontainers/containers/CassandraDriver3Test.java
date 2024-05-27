@@ -26,7 +26,7 @@ public class CassandraDriver3Test {
         ) {
             session.execute(
                 "CREATE KEYSPACE IF NOT EXISTS test WITH replication = \n" +
-                    "{'class':'SimpleStrategy','replication_factor':'1'};"
+                "{'class':'SimpleStrategy','replication_factor':'1'};"
             );
 
             KeyspaceMetadata keyspace = session.getMetadata().getKeyspaces().get(CqlIdentifier.fromCql("test"));

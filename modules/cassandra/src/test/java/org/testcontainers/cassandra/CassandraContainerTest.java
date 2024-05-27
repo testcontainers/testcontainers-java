@@ -36,9 +36,7 @@ public class CassandraContainerTest {
     public void testSpecificVersion() {
         String cassandraVersion = "3.0.15";
         try (
-            CassandraContainer cassandraContainer = new CassandraContainer(
-                CASSANDRA_IMAGE.withTag(cassandraVersion)
-            )
+            CassandraContainer cassandraContainer = new CassandraContainer(CASSANDRA_IMAGE.withTag(cassandraVersion))
         ) {
             cassandraContainer.start();
             ResultSet resultSet = performQuery(cassandraContainer, BASIC_QUERY);
@@ -96,9 +94,7 @@ public class CassandraContainerTest {
     @Test
     public void testInitScriptWithLegacyCassandra() {
         try (
-            CassandraContainer cassandraContainer = new CassandraContainer(
-                DockerImageName.parse("cassandra:2.2.11")
-            )
+            CassandraContainer cassandraContainer = new CassandraContainer(DockerImageName.parse("cassandra:2.2.11"))
                 .withInitScript("initial.cql")
         ) {
             cassandraContainer.start();
