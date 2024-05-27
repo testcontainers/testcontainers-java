@@ -13,7 +13,7 @@ public class CassandraDriver4Test {
 
     @Rule
     // container-definition {
-    public CassandraContainer<?> cassandra = new CassandraContainer<>(DockerImageName.parse("cassandra:3.11.2"));
+    public CassandraContainer cassandra = new CassandraContainer(DockerImageName.parse("cassandra:3.11.2"));
 
     // }
 

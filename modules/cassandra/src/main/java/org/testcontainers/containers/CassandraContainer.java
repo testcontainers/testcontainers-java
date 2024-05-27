@@ -1,11 +1,6 @@
 package org.testcontainers.containers;
 
-import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.CqlSessionBuilder;
-import com.datastax.oss.driver.api.core.config.DefaultDriverOption;
-import com.datastax.oss.driver.api.core.config.DriverConfigLoader;
-import com.datastax.oss.driver.api.core.config.ProgrammaticDriverConfigLoaderBuilder;
-import com.datastax.oss.driver.internal.core.loadbalancing.DcInferringLoadBalancingPolicy;
+import com.datastax.driver.core.Cluster;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.apache.commons.io.IOUtils;
 import org.testcontainers.containers.delegate.CassandraDatabaseDelegate;
@@ -19,7 +14,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.util.Optional;
 
 import javax.script.ScriptException;
@@ -57,6 +51,8 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
 
     private String initScriptPath;
 
+    private boolean enableJmxReporting;
+
     /**
      * @deprecated use {@link #CassandraContainer(DockerImageName)} instead
      */
@@ -74,6 +70,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         addExposedPort(CQL_PORT);
+        this.enableJmxReporting = false;
 
         withEnv("CASSANDRA_SNITCH", "GossipingPropertyFileSnitch");
         withEnv("JVM_OPTS", "-Dcassandra.skip_wait_for_gossip_to_settle=0 -Dcassandra.initial_token=0");
@@ -163,6 +160,14 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
     }
 
     /**
+     * Initialize Cassandra client with JMX reporting enabled or disabled
+     */
+    public SELF withJmxReporting(boolean enableJmxReporting) {
+        this.enableJmxReporting = enableJmxReporting;
+        return self();
+    }
+
+    /**
      * Get username
      *
      * By default Cassandra has authenticator: AllowAllAuthenticator in cassandra.yaml
@@ -187,50 +192,37 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
     }
 
     /**
-     * Get a session on the configured cluster.
+     * Get configured Cluster
      *
-     * Can be used to obtain connections to Cassandra in the container.
+     * Can be used to obtain connections to Cassandra in the container
+     *
+     * @deprecated For Cassandra driver 3.x, use {@link #getHost()} and {@link #getMappedPort(int)} with
+     * the driver's {@link Cluster#builder() Cluster.Builder} {@code addContactPoint(String)} and
+     * {@code withPort(int)} methods to create a Cluster object. For Cassandra driver 4.x, use
+     * {@link #getContactPoint()} and {@link #getLocalDatacenter()} with the driver's {@code CqlSession.builder()}
+     * {@code addContactPoint(InetSocketAddress)} and {@code withLocalDatacenter(String)} methods to create
+     * a Session Object. See https://docs.datastax.com/en/developer/java-driver/ for more on the driver.
      */
-    public CqlSession getCqlSession() {
-        return getCqlSession(this);
+    @Deprecated
+    public Cluster getCluster() {
+        return getCluster(this, enableJmxReporting);
     }
 
-    public static CqlSession getCqlSession(ContainerState containerState) {
-        final ProgrammaticDriverConfigLoaderBuilder driverConfigLoaderBuilder = DriverConfigLoader.programmaticBuilder();
-        boolean dcAvailable = containerState.getClass().isAssignableFrom(CassandraContainer.class);
-
-        // If the ContainerState is not a CassandraContainer instance, use DcInferringLoadBalancingPolicy to not have
-        // to specify the local datacenter to establish the connection, otherwise we can keep the default load balancing
-        // policy requiring to explicitly specify the local data center.
-        // See https://docs.datastax.com/en/developer/java-driver/latest/manual/core/configuration/reference/ for
-        // further information.
-        if (!dcAvailable) {
-            driverConfigLoaderBuilder.withClass(
-                DefaultDriverOption.LOAD_BALANCING_POLICY_CLASS,
-                DcInferringLoadBalancingPolicy.class
-            );
-        }
-
-        // Ignore warnings when a CQL script modifies the current keyspace. Typically, this generates unnecessary logs
-        // when executing an init script using multiple keyspaces.
-        driverConfigLoaderBuilder.withBoolean(DefaultDriverOption.REQUEST_WARN_IF_SET_KEYSPACE, false);
-
-        // Using Java driver 4.x, a feature called debouncing has been introduced: schema and topology changes received
-        // from the server could be accumulated before being processed by the driver. For more information, see:
-        // https://docs.datastax.com/en/developer/java-driver/latest/manual/core/performance/index.html#debouncing
-        // and https://stackoverflow.com/a/74152732/13292108
-        // To maintain good performance, reduce the default values for the schema debouncing properties.
-        driverConfigLoaderBuilder.withInt(DefaultDriverOption.METADATA_SCHEMA_MAX_EVENTS, 1);
-        driverConfigLoaderBuilder.withDuration(DefaultDriverOption.METADATA_SCHEMA_WINDOW, Duration.ofMillis(1));
-
-        final CqlSessionBuilder cqlSessionBuilder = CqlSession
+    @Deprecated
+    public static Cluster getCluster(ContainerState containerState, boolean enableJmxReporting) {
+        final Cluster.Builder builder = Cluster
             .builder()
-            .withConfigLoader(driverConfigLoaderBuilder.build())
-            .addContactPoint(new InetSocketAddress(containerState.getHost(), containerState.getMappedPort(CQL_PORT)));
-        if (dcAvailable) {
-            cqlSessionBuilder.withLocalDatacenter(((CassandraContainer<?>) containerState).getLocalDatacenter());
+            .addContactPoint(containerState.getHost())
+            .withPort(containerState.getMappedPort(CQL_PORT));
+        if (!enableJmxReporting) {
+            builder.withoutJMXReporting();
         }
-        return cqlSessionBuilder.build();
+        return builder.build();
+    }
+
+    @Deprecated
+    public static Cluster getCluster(ContainerState containerState) {
+        return getCluster(containerState, false);
     }
 
     /**
@@ -251,6 +243,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
         return getEnvMap().getOrDefault("CASSANDRA_DC", DEFAULT_LOCAL_DATACENTER);
     }
 
+    @Deprecated
     private DatabaseDelegate getDatabaseDelegate() {
         return new CassandraDatabaseDelegate(this);
     }

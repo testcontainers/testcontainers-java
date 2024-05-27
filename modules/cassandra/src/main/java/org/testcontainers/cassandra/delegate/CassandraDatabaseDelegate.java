@@ -43,7 +43,7 @@ public class CassandraDatabaseDelegate extends AbstractDatabaseDelegate<Void> {
             String[] cqlshCommand = new String[] { "cqlsh" };
 
             if (this.container instanceof CassandraContainer) {
-                CassandraContainer<?> cassandraContainer = ((CassandraContainer<?>) this.container);
+                CassandraContainer cassandraContainer = (CassandraContainer) this.container;
                 String username = cassandraContainer.getUsername();
                 String password = cassandraContainer.getPassword();
                 cqlshCommand = ArrayUtils.addAll(cqlshCommand, "-u", username, "-p", password);

@@ -16,17 +16,15 @@ public class CassandraDriver4Test {
     @Test
     public void testCassandraGetContactPoint() {
         try (
-            // cassandra {
             CqlSession session = CqlSession
                 .builder()
                 .addContactPoint(this.cassandra.getContactPoint())
                 .withLocalDatacenter(this.cassandra.getLocalDatacenter())
                 .build()
-            // }
         ) {
             session.execute(
                 "CREATE KEYSPACE IF NOT EXISTS test WITH replication = \n" +
-                "{'class':'SimpleStrategy','replication_factor':'1'};"
+                    "{'class':'SimpleStrategy','replication_factor':'1'};"
             );
 
             KeyspaceMetadata keyspace = session.getMetadata().getKeyspaces().get(CqlIdentifier.fromCql("test"));

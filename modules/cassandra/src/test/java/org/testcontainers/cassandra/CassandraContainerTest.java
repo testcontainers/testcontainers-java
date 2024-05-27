@@ -24,7 +24,7 @@ public class CassandraContainerTest {
 
     @Test
     public void testSimple() {
-        try (CassandraContainer<?> cassandraContainer = new CassandraContainer<>(CASSANDRA_IMAGE)) {
+        try (CassandraContainer cassandraContainer = new CassandraContainer(CASSANDRA_IMAGE)) {
             cassandraContainer.start();
             ResultSet resultSet = performQuery(cassandraContainer, BASIC_QUERY);
             assertThat(resultSet.wasApplied()).as("Query was applied").isTrue();
@@ -36,7 +36,7 @@ public class CassandraContainerTest {
     public void testSpecificVersion() {
         String cassandraVersion = "3.0.15";
         try (
-            CassandraContainer<?> cassandraContainer = new CassandraContainer<>(
+            CassandraContainer cassandraContainer = new CassandraContainer(
                 CASSANDRA_IMAGE.withTag(cassandraVersion)
             )
         ) {
@@ -50,7 +50,7 @@ public class CassandraContainerTest {
     @Test
     public void testConfigurationOverride() {
         try (
-            CassandraContainer<?> cassandraContainer = new CassandraContainer<>(CASSANDRA_IMAGE)
+            CassandraContainer cassandraContainer = new CassandraContainer(CASSANDRA_IMAGE)
                 .withConfigurationOverride("cassandra-test-configuration-example")
         ) {
             cassandraContainer.start();
@@ -65,7 +65,7 @@ public class CassandraContainerTest {
     @Test(expected = ContainerLaunchException.class)
     public void testEmptyConfigurationOverride() {
         try (
-            CassandraContainer<?> cassandraContainer = new CassandraContainer<>(CASSANDRA_IMAGE)
+            CassandraContainer cassandraContainer = new CassandraContainer(CASSANDRA_IMAGE)
                 .withConfigurationOverride("cassandra-empty-configuration")
         ) {
             cassandraContainer.start();
@@ -75,7 +75,7 @@ public class CassandraContainerTest {
     @Test
     public void testInitScript() {
         try (
-            CassandraContainer<?> cassandraContainer = new CassandraContainer<>(CASSANDRA_IMAGE)
+            CassandraContainer cassandraContainer = new CassandraContainer(CASSANDRA_IMAGE)
                 .withInitScript("initial.cql")
         ) {
             cassandraContainer.start();
@@ -86,7 +86,7 @@ public class CassandraContainerTest {
     @Test(expected = ContainerLaunchException.class)
     public void testInitScriptWithError() {
         try (
-            CassandraContainer<?> cassandraContainer = new CassandraContainer<>(CASSANDRA_IMAGE)
+            CassandraContainer cassandraContainer = new CassandraContainer(CASSANDRA_IMAGE)
                 .withInitScript("initial-with-error.cql")
         ) {
             cassandraContainer.start();
@@ -96,7 +96,7 @@ public class CassandraContainerTest {
     @Test
     public void testInitScriptWithLegacyCassandra() {
         try (
-            CassandraContainer<?> cassandraContainer = new CassandraContainer<>(
+            CassandraContainer cassandraContainer = new CassandraContainer(
                 DockerImageName.parse("cassandra:2.2.11")
             )
                 .withInitScript("initial.cql")
@@ -109,7 +109,7 @@ public class CassandraContainerTest {
     @Test
     public void testCassandraQueryWaitStrategy() {
         try (
-            CassandraContainer<?> cassandraContainer = new CassandraContainer<>(CASSANDRA_IMAGE)
+            CassandraContainer cassandraContainer = new CassandraContainer(CASSANDRA_IMAGE)
                 .waitingFor(new CassandraQueryWaitStrategy())
         ) {
             cassandraContainer.start();
@@ -118,7 +118,7 @@ public class CassandraContainerTest {
         }
     }
 
-    private void testInitScript(CassandraContainer<?> cassandraContainer) {
+    private void testInitScript(CassandraContainer cassandraContainer) {
         ResultSet resultSet = performQuery(cassandraContainer, "SELECT * FROM keySpaceTest.catalog_category");
         assertThat(resultSet.wasApplied()).as("Query was applied").isTrue();
         Row row = resultSet.one();
@@ -126,7 +126,7 @@ public class CassandraContainerTest {
         assertThat(row.getString(1)).as("Inserted row is in expected state").isEqualTo("test_category");
     }
 
-    private ResultSet performQuery(CassandraContainer<?> cassandraContainer, String cql) {
+    private ResultSet performQuery(CassandraContainer cassandraContainer, String cql) {
         final CqlSession cqlSession = CqlSession
             .builder()
             .addContactPoint(

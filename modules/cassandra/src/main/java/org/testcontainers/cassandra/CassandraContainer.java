@@ -21,7 +21,7 @@ import java.util.Optional;
  * <p>
  * Exposed ports: 9042
  */
-public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends GenericContainer<SELF> {
+public class CassandraContainer extends GenericContainer<CassandraContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("cassandra");
 
@@ -78,7 +78,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
                 }
                 // The init script is executed as is by the cqlsh command, so copy it into the container.
                 String targetInitScriptName = new File(resource.toURI()).getName();
-                this.copyFileToContainer(MountableFile.forClasspathResource(initScriptPath), targetInitScriptName);
+                copyFileToContainer(MountableFile.forClasspathResource(initScriptPath), targetInitScriptName);
                 new CassandraDatabaseDelegate(this).execute(null, targetInitScriptName, -1, false, false);
             } catch (URISyntaxException e) {
                 logger().warn("Could not copy init script into container: {}", initScriptPath);
@@ -116,7 +116,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
      *
      * @param configLocation relative classpath with the directory that contains cassandra.yaml and other configuration files
      */
-    public SELF withConfigurationOverride(String configLocation) {
+    public CassandraContainer withConfigurationOverride(String configLocation) {
         this.configLocation = configLocation;
         return self();
     }
@@ -128,7 +128,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
      *
      * @param initScriptPath relative classpath resource
      */
-    public SELF withInitScript(String initScriptPath) {
+    public CassandraContainer withInitScript(String initScriptPath) {
         this.initScriptPath = initScriptPath;
         return self();
     }

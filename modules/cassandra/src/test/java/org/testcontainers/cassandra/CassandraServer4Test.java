@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class CassandraServer4Test {
 
     @Rule
-    public CassandraContainer<?> cassandra = new CassandraContainer<>(DockerImageName.parse("cassandra:4.1.1"));
+    public CassandraContainer cassandra = new CassandraContainer(DockerImageName.parse("cassandra:4.1.1"));
 
     @Test
     public void testCassandraGetContactPoint() {
