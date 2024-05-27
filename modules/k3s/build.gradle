@@ -10,5 +10,5 @@ dependencies {
 
     testImplementation 'io.fabric8:kubernetes-client:6.12.1'
     testImplementation 'io.kubernetes:client-java:20.0.1-legacy'
-    testImplementation 'org.assertj:assertj-core:3.25.3'
+    testImplementation 'org.assertj:assertj-core:3.26.0'
 }
