@@ -179,6 +179,10 @@ public class TestcontainersConfiguration {
         return Boolean.parseBoolean(getEnvVarOrUserProperty("checks.disable", "false"));
     }
 
+    public boolean isRyukShutdownHookEnabled() {
+        return Boolean.parseBoolean(getEnvVarOrUserProperty("ryuk.container.shutdownhook", "false"));
+    }
+
     @UnstableAPI
     public boolean environmentSupportsReuse() {
         // specifically not supported as an environment variable or classpath property

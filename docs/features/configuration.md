@@ -79,13 +79,16 @@ Some companies disallow the usage of Docker Hub, but you can override `*.image` 
 > **ryuk.container.privileged = true**
 > In some environments ryuk must be started in privileged mode to work properly (--privileged flag)
 
+> **ryuk.container.shutdownhook = true**
+> In order to improve the termination process you may configure a shutdown hook which will send a SIGTERM to the Ryuk container causing it to finish sooner.
+
 ### Disabling Ryuk
 Ryuk must be started as a privileged container.  
 If your environment already implements automatic cleanup of containers after the execution,
 but does not allow starting privileged containers, you can turn off the Ryuk container by setting
 `TESTCONTAINERS_RYUK_DISABLED` **environment variable** to `true`.
 
-!!!tip
+!!! tip
     Note that Testcontainers will continue doing the cleanup at JVM's shutdown, unless you `kill -9` your JVM process.
 
 ## Customizing image pull behaviour

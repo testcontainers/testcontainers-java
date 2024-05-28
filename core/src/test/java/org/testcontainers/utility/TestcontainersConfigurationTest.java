@@ -225,6 +225,31 @@ public class TestcontainersConfigurationTest {
             .isEqualTo("testcontainers/ryuk:0.3.2");
     }
 
+    @Test
+    public void shouldNotReadRyukShutdownHookClasspathProperties() {
+        assertThat(newConfig().isRyukShutdownHookEnabled()).as("Ryuk shutdown hook disabled by default").isFalse();
+
+        classpathProperties.setProperty("ryuk.container.shutdownhook", "true");
+        assertThat(newConfig().isRyukShutdownHookEnabled()).as("Ryuk shutdown hook is not affected by classpath properties").isFalse();
+    }
+
+    @Test
+    public void shouldReadRyukShutdownHookFromUserProperties() {
+        assertThat(newConfig().isRyukShutdownHookEnabled()).as("Ryuk shutdown hook disabled by default").isFalse();
+
+        userProperties.setProperty("ryuk.container.shutdownhook", "true");
+        assertThat(newConfig().isRyukShutdownHookEnabled()).as("Ryuk shutdown hook enabled via user properties").isTrue();
+    }
+
+    @Test
+    public void shouldReadRyukShutdownHookFromEnvironment() {
+        assertThat(newConfig().isRyukShutdownHookEnabled()).as("Ryuk shutdown hook disabled by default").isFalse();
+
+        userProperties.remove("ryuk.container.shutdownhook");
+        environment.put("TESTCONTAINERS_RYUK_CONTAINER_SHUTDOWNHOOK", "true");
+        assertThat(newConfig().isRyukShutdownHookEnabled()).as("Ryuk shutdown hook enabled via env var").isTrue();
+    }
+
     private TestcontainersConfiguration newConfig() {
         return new TestcontainersConfiguration(userProperties, classpathProperties, environment);
     }
