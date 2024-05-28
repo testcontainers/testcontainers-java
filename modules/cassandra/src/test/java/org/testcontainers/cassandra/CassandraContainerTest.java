@@ -3,17 +3,13 @@ package org.testcontainers.cassandra;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.testcontainers.cassandra.wait.CassandraQueryWaitStrategy;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.utility.DockerImageName;
 
-import java.net.InetSocketAddress;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Slf4j
 public class CassandraContainerTest {
 
     private static final DockerImageName CASSANDRA_IMAGE = DockerImageName.parse("cassandra:3.11.2");
@@ -125,12 +121,7 @@ public class CassandraContainerTest {
     private ResultSet performQuery(CassandraContainer cassandraContainer, String cql) {
         final CqlSession cqlSession = CqlSession
             .builder()
-            .addContactPoint(
-                new InetSocketAddress(
-                    cassandraContainer.getHost(),
-                    cassandraContainer.getMappedPort(CassandraContainer.CQL_PORT)
-                )
-            )
+            .addContactPoint(cassandraContainer.getContactPoint())
             .withLocalDatacenter(cassandraContainer.getLocalDatacenter())
             .build();
         return performQuery(cqlSession, cql);
