@@ -230,7 +230,9 @@ public class TestcontainersConfigurationTest {
         assertThat(newConfig().isRyukShutdownHookEnabled()).as("Ryuk shutdown hook disabled by default").isFalse();
 
         classpathProperties.setProperty("ryuk.container.shutdownhook", "true");
-        assertThat(newConfig().isRyukShutdownHookEnabled()).as("Ryuk shutdown hook is not affected by classpath properties").isFalse();
+        assertThat(newConfig().isRyukShutdownHookEnabled())
+            .as("Ryuk shutdown hook is not affected by classpath properties")
+            .isFalse();
     }
 
     @Test
@@ -238,7 +240,9 @@ public class TestcontainersConfigurationTest {
         assertThat(newConfig().isRyukShutdownHookEnabled()).as("Ryuk shutdown hook disabled by default").isFalse();
 
         userProperties.setProperty("ryuk.container.shutdownhook", "true");
-        assertThat(newConfig().isRyukShutdownHookEnabled()).as("Ryuk shutdown hook enabled via user properties").isTrue();
+        assertThat(newConfig().isRyukShutdownHookEnabled())
+            .as("Ryuk shutdown hook enabled via user properties")
+            .isTrue();
     }
 
     @Test
