@@ -12,6 +12,6 @@ dependencies {
     testRuntimeOnly 'org.postgresql:postgresql:42.7.1'
     testImplementation 'ch.qos.logback:logback-classic:1.3.14'
     testImplementation 'org.testcontainers:postgresql'
-    testImplementation 'org.assertj:assertj-core:3.25.2'
+    testImplementation 'org.assertj:assertj-core:3.25.3'
 }
 
