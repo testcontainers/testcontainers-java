@@ -16,8 +16,14 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-build
 
+      - name: Remove default Docker
+        run: sudo apt-get remove docker docker-engine docker.io containerd runc
+
       - name: Install Latest Docker
         run: curl https://get.docker.com | CHANNEL=test sh
+
+      - name: Check Docker version
+        run: docker --version
 
       - name: Build with Gradle
         run: ./gradlew --no-daemon --continue --scan testcontainers:test --tests '*GenericContainerRuleTest'
