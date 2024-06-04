@@ -1,4 +1,4 @@
-name: Tests against Latest Docker Moby
+name: Tests against latest Docker engine
 
 on:
   pull_request:
@@ -15,15 +15,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-build
-#
-#      - name: Install Latest Docker
-#        run: curl https://get.docker.com | CHANNEL=test sh
+
+      - name: Install Latest Docker
+        run: curl https://get.docker.com | CHANNEL=test sh
 
       - name: Check Docker version
         run: docker version
 
       - name: Build with Gradle
-        run: ./gradlew --no-daemon --continue --scan testcontainers:test --tests '*GenericContainerRuleTest'
+        run: ./gradlew cleanTest --no-daemon --continue --scan testcontainers:test
 
 #      - name: Notify to Slack on failures
 #        id: slack
