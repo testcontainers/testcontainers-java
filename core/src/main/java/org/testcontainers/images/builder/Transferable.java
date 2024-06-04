@@ -25,6 +25,10 @@ public interface Transferable {
     }
 
     static Transferable of(byte[] bytes, int fileMode) {
+        return of(bytes, fileMode, 0, 0);
+    }
+
+    static Transferable of(byte[] bytes, int fileMode, int userId, int groupId) {
         return new Transferable() {
             @Override
             public long getSize() {
@@ -44,6 +48,16 @@ public interface Transferable {
             @Override
             public int getFileMode() {
                 return fileMode;
+            }
+
+            @Override
+            public long getUserId() {
+                return userId;
+            }
+
+            @Override
+            public long getGroupId() {
+                return groupId;
             }
         };
     }
@@ -66,6 +80,24 @@ public interface Transferable {
     long getSize();
 
     /**
+     * User ID owning the file
+     *
+     * @return ID of user owner
+     */
+    default long getUserId() {
+        return 0;
+    }
+
+    /**
+     * Group ID owning the file
+     *
+     * @return ID of group owner
+     */
+    default long getGroupId() {
+        return 0;
+    }
+
+    /**
      * transfer content of this Transferable to the output stream. <b>Must not</b> close the stream.
      *
      * @param tarArchiveOutputStream stream to output
@@ -75,6 +107,8 @@ public interface Transferable {
         TarArchiveEntry tarEntry = new TarArchiveEntry(destination);
         tarEntry.setSize(getSize());
         tarEntry.setMode(getFileMode());
+        tarEntry.setUserId(getUserId());
+        tarEntry.setGroupId(getGroupId());
 
         try {
             tarArchiveOutputStream.putArchiveEntry(tarEntry);
