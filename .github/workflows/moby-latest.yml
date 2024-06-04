@@ -1,0 +1,38 @@
+name: Tests against Latest Docker Moby
+
+on:
+  pull_request:
+    # TODO remove this once PR works, just for testing from the PR
+    types: [opened, reopened]
+  schedule:
+    # nightly build, at 23:59 CEST
+    - cron:  '59 23 * * *'
+
+jobs:
+  test_latest_moby:
+    name: "Core tests using latest Docker-CE"
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-build
+
+      - name: Install Latest Docker
+        run: curl https://get.docker.com | CHANNEL=test sh
+
+      - name: Build with Gradle
+        run: ./gradlew --no-daemon --continue --scan testcontainers:test --tests '*GenericContainerRuleTest'
+
+#      - name: Notify to Slack on failures
+#        id: slack
+#        uses: slackapi/slack-github-action@v1.26.0
+#        with:
+#          # This data can be any valid JSON from a previous step in the GitHub Action
+#          payload: |
+#            {
+#              "tc_project": "testcontainers-java",
+#              "tc_github_action_url": "https://github.com/testcontainers/testcontainers-java/actions/runs/${{ env.GITHUB_RUN_ID }}/job/${{ env.GITHUB_RUN_NUMBER }}",
+#              "tc_github_action_status": "FAILED",
+#              "tc_slack_channel_id": "${{ secrets.SLACK_DOCKER_LATEST_CHANNEL_ID }}"
+#            }
+#        env:
+#          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_DOCKER_LATEST_WEBHOOK }}
