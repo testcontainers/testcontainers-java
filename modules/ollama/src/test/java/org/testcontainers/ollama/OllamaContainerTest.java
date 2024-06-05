@@ -16,8 +16,8 @@ public class OllamaContainerTest {
     @Test
     public void withDefaultConfig() {
         try ( // container {
-              OllamaContainer ollama = new OllamaContainer("ollama/ollama:0.1.26")
-              // }
+            OllamaContainer ollama = new OllamaContainer("ollama/ollama:0.1.26")
+            // }
         ) {
             ollama.start();
 
@@ -91,6 +91,7 @@ public class OllamaContainerTest {
 
     public static class EmbeddingRequest {
         public final String model;
+
         public final String prompt;
 
         public EmbeddingRequest(String model, String prompt) {

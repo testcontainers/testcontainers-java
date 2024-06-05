@@ -29,7 +29,9 @@ import java.util.Map;
 public class OllamaContainer extends GenericContainer<OllamaContainer> {
 
     private static final String FULL_IMAGE_NAME = "ollama/ollama";
+
     private static final DockerImageName DOCKER_IMAGE_NAME = DockerImageName.parse(FULL_IMAGE_NAME);
+
     private HuggingFaceModel huggingFaceModel;
 
     public OllamaContainer(String image) {
@@ -97,12 +99,13 @@ public class OllamaContainer extends GenericContainer<OllamaContainer> {
 
         if (huggingFaceModel != null) {
             this.setImage(new ImageFromDockerfile()
-                .withDockerfileFromBuilder(builder ->
+                .withDockerfileFromBuilder(builder -> {
                     builder
                         .from(this.getDockerImageName())
                         .run("apt-get update && apt-get upgrade -y && apt-get install -y python3-pip")
                         .run("pip install huggingface-hub")
-                        .build())
+                        .build();
+                })
             );
         }
 
@@ -142,10 +145,14 @@ public class OllamaContainer extends GenericContainer<OllamaContainer> {
         }
 
     }
+
     public static class HuggingFaceModel {
         public final String repository;
+
         public final String model;
+
         public String modelfile;
+
         public String name;
 
         public HuggingFaceModel(String repository, String model) {
