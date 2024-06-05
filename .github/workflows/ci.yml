@@ -1,37 +1,37 @@
 name: CI
 
-on:
-  pull_request:
-    paths-ignore:
-      - '.github/ISSUE_TEMPLATE/*.yaml'
-      - '.github/CODEOWNERS'
-      - '.github/pull_request_template.md'
-      - 'docs/**/*.css'
-      - 'docs/**/*.html'
-      - 'docs/**/*.ico'
-      - 'docs/**/*.md'
-      - 'docs/**/*.png'
-      - 'docs/**/*.svg'
-      - 'mkdocs.yml'
-      - 'README.md'
-      - 'RELEASING.md'
-      - '.sdkmanrc'
-  push:
-    branches: [ main ]
-    paths-ignore:
-      - '.github/ISSUE_TEMPLATE/*.yaml'
-      - '.github/CODEOWNERS'
-      - '.github/pull_request_template.md'
-      - 'docs/**/*.css'
-      - 'docs/**/*.html'
-      - 'docs/**/*.ico'
-      - 'docs/**/*.md'
-      - 'docs/**/*.png'
-      - 'docs/**/*.svg'
-      - 'mkdocs.yml'
-      - 'README.md'
-      - 'RELEASING.md'
-      - '.sdkmanrc'
+on: workflow_dispatch
+#  pull_request:
+#    paths-ignore:
+#      - '.github/ISSUE_TEMPLATE/*.yaml'
+#      - '.github/CODEOWNERS'
+#      - '.github/pull_request_template.md'
+#      - 'docs/**/*.css'
+#      - 'docs/**/*.html'
+#      - 'docs/**/*.ico'
+#      - 'docs/**/*.md'
+#      - 'docs/**/*.png'
+#      - 'docs/**/*.svg'
+#      - 'mkdocs.yml'
+#      - 'README.md'
+#      - 'RELEASING.md'
+#      - '.sdkmanrc'
+#  push:
+#    branches: [ main ]
+#    paths-ignore:
+#      - '.github/ISSUE_TEMPLATE/*.yaml'
+#      - '.github/CODEOWNERS'
+#      - '.github/pull_request_template.md'
+#      - 'docs/**/*.css'
+#      - 'docs/**/*.html'
+#      - 'docs/**/*.ico'
+#      - 'docs/**/*.md'
+#      - 'docs/**/*.png'
+#      - 'docs/**/*.svg'
+#      - 'mkdocs.yml'
+#      - 'README.md'
+#      - 'RELEASING.md'
+#      - '.sdkmanrc'
 
 concurrency:
   group: "${{ github.workflow }}-${{ github.head_ref || github.sha }}"

@@ -2,8 +2,6 @@ name: Tests against latest Docker engine
 
 on:
   pull_request:
-    # TODO remove this once PR works, just for testing from the PR
-    types: [opened, reopened]
   schedule:
     # nightly build, at 23:59 CEST
     - cron:  '59 23 * * *'
@@ -23,7 +21,7 @@ jobs:
         run: docker version
 
       - name: Build with Gradle
-        run: ./gradlew cleanTest --no-daemon --continue --scan testcontainers:test
+        run: ./gradlew cleanTest --no-daemon --continue --scan -Dscan.tag.DOCKER_LATEST testcontainers:test
 
 #      - name: Notify to Slack on failures
 #        id: slack
