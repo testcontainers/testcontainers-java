@@ -6,7 +6,6 @@ import com.github.dockerjava.api.model.DeviceRequest;
 import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.api.model.Info;
 import com.github.dockerjava.api.model.RuntimeInfo;
-import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
@@ -25,7 +24,6 @@ import java.util.Map;
  * <p>
  * Exposed ports: 11434
  */
-@Slf4j
 public class OllamaContainer extends GenericContainer<OllamaContainer> {
 
     private static final String FULL_IMAGE_NAME = "ollama/ollama";
