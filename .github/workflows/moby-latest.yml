@@ -22,6 +22,7 @@ jobs:
 
       - name: Build with Gradle
         run: ./gradlew cleanTest --no-daemon --continue --scan -Dscan.tag.DOCKER_STABLE testcontainers:test
+      - uses: ./.github/actions/setup-junit-report
 
   test_latest_docker:
     name: "Core tests using latest Docker-CE"
@@ -38,6 +39,8 @@ jobs:
 
       - name: Build with Gradle
         run: ./gradlew cleanTest --no-daemon --continue --scan -Dscan.tag.DOCKER_LATEST testcontainers:test
+
+      - uses: ./.github/actions/setup-junit-report
 
 #      - name: Notify to Slack on failures
 #        id: slack
