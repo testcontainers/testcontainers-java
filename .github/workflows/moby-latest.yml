@@ -8,7 +8,7 @@ on:
 
 jobs:
   test_stable_docker:
-    name: "Core tests using latest Docker-CE"
+    name: "Core tests using stable Docker-CE"
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
