@@ -1,4 +1,4 @@
-name: Tests against latest Docker engine
+name: Tests against recent Docker engine releases
 
 on:
   pull_request:
@@ -7,7 +7,23 @@ on:
     - cron:  '59 23 * * *'
 
 jobs:
-  test_latest_moby:
+  test_stable_docker:
+    name: "Core tests using latest Docker-CE"
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-build
+
+      - name: Install Stable Docker
+        run: curl https://get.docker.com
+
+      - name: Check Docker version
+        run: docker version
+
+      - name: Build with Gradle
+        run: ./gradlew cleanTest --no-daemon --continue --scan -Dscan.tag.DOCKER_STABLE testcontainers:test
+
+  test_latest_docker:
     name: "Core tests using latest Docker-CE"
     runs-on: ubuntu-22.04
     steps:
