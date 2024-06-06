@@ -141,6 +141,11 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
     @SneakyThrows(InterruptedException.class)
     @Override
     protected void waitUntilContainerStarted() {
+        if (getWaitStrategy() != DEFAULT_WAIT_STRATEGY) {
+            getWaitStrategy().waitUntilReady(this);
+            return;
+        }
+
         logger()
             .info(
                 "Waiting for database connection to become available at {} using query '{}'",

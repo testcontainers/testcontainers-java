@@ -181,7 +181,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Setter(AccessLevel.NONE)
     private InspectContainerResponse containerInfo;
 
-    static WaitStrategy DEFAULT_WAIT_STRATEGY = Wait.defaultWaitStrategy();
+    protected static WaitStrategy DEFAULT_WAIT_STRATEGY = Wait.defaultWaitStrategy();
 
     /**
      * The approach to determine if the container is ready.
