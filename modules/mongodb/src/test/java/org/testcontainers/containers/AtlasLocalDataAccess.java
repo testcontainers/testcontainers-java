@@ -7,16 +7,33 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import lombok.Getter;
+import lombok.Setter;
 import org.bson.BsonDocument;
 import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
+import org.bson.conversions.Bson;
+import org.bson.json.JsonWriterSettings;
 import org.slf4j.Logger;
 
-import java.util.Arrays;
-import java.util.List;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
+import static com.mongodb.client.model.Aggregates.search;
 import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.search.SearchOperator.of;
+import static com.mongodb.client.model.search.SearchOperator.text;
+import static com.mongodb.client.model.search.SearchOptions.searchOptions;
+import static com.mongodb.client.model.search.SearchPath.fieldPath;
+import static java.lang.Thread.sleep;
+import static java.util.Collections.singletonList;
+import static java.util.Objects.requireNonNull;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -24,9 +41,12 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class AtlasLocalDataAccess implements AutoCloseable {
     private static final Logger log = getLogger(AtlasLocalDataAccess.class);
     private final MongoClient mongoClient;
+    private final MongoDatabase testDB;
     private final MongoCollection<TestData> testCollection;
+    private final String collectionName;
 
     public AtlasLocalDataAccess(String connectionString, String databaseName, String collectionName) {
+        this.collectionName = collectionName;
         log.info("DataAccess connecting to {}", connectionString);
 
         CodecRegistry pojoCodecRegistry = fromProviders(PojoCodecProvider.builder().automatic(true).build());
@@ -37,74 +57,78 @@ public class AtlasLocalDataAccess implements AutoCloseable {
             .codecRegistry(codecRegistry)
             .build();
         mongoClient = MongoClients.create(clientSettings);
-        MongoDatabase testDB = mongoClient.getDatabase(databaseName);
-        testDB.createCollection(collectionName);
+        testDB = mongoClient.getDatabase(databaseName);
         testCollection = testDB.getCollection(collectionName, TestData.class);
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         mongoClient.close();
     }
 
-    public void initAtlasSearchIndex() {
-        testCollection.createSearchIndex("AtlasSearchIndex",
-                BsonDocument.parse("{\"mappings\": " +
-                    "{" +
-                        "\"dynamic\": false," +
-                        "\"fields\": " +
-                            "{" +
-                                "\"test2\": {\"type\": \"number\",\"representation\": \"int64\",\"indexDoubles\": false}," +
-                                "\"test\": {\"type\": \"string\"}," +
-                                "\"test3\": {\"type\": \"boolean\"}" +
-                            "}" +
-                    "}" +
-                "}")
-        );
+    // initAtlasSearchIndex {
+    public void initAtlasSearchIndex() throws URISyntaxException, IOException, InterruptedException {
+        //Create the collection (if it doesn't exist). Required because unlike other database operations, createSearchIndex will fail if the collection doesn't exist yet
+        testDB.createCollection(collectionName);
 
-        //wait for the search index to be ready
+        //Read the atlas search index JSON from a resource file
+        String atlasSearchIndexJson = new String(Files.readAllBytes(Paths.get(requireNonNull(getClass().getResource("/atlas-local-index.json")).toURI())), StandardCharsets.UTF_8);
+        log.info("Creating Atlas Search index AtlasSearchIndex on collection {}:\n{}", collectionName, atlasSearchIndexJson);
+        testCollection.createSearchIndex("AtlasSearchIndex", BsonDocument.parse(atlasSearchIndexJson));
+
+        //wait for the atlas search index to be ready
         boolean ready = false;
-        while (!ready) {
+        Instant start = Instant.now();
+        Instant timeout = start.plusSeconds(5);
+        while (!ready && Instant.now().isBefore(timeout)) {
             ListSearchIndexesIterable<Document> searchIndexes = testCollection.listSearchIndexes();
             for (Document searchIndex : searchIndexes) {
                 if (searchIndex.get("name").equals("AtlasSearchIndex")) {
                     ready = searchIndex.get("status").equals("READY");
                     if (ready) {
-                        System.out.println("Search index AtlasSearchIndex is ready");
                         break;
                     }
                 }
             }
+            sleep(50);
         }
+        if (!ready) {
+            throw new IllegalStateException(String.format("Atlas Search index AtlasSearchIndex on collection %s did not become ready within %d seconds", collectionName, 5));
+        }
+        log.info("Atlas Search index AtlasSearchIndex on collection {} is ready (took {} milliseconds) to create.", collectionName, start.until(Instant.now(), ChronoUnit.MILLIS));
     }
+    // }
 
     public void insertData(TestData data) {
         log.info("Inserting document {}", data);
         testCollection.insertOne(data);
     }
 
-    public TestData findClassic(int test2) {
-        return testCollection.find(eq("test2", test2)).first();
+    public TestData findClassic(String test) {
+        Bson findQuery = eq("test", test);
+        log.trace("Searching for document using MongoDB:\n{}", findQuery.toBsonDocument().toJson(JsonWriterSettings.builder().indent(true).build()));
+        return testCollection.find(findQuery).first();
     }
 
-    public TestData findAtlasSearch(int test2) {
-        List<Document> query = Arrays.asList(new Document("$search",
-                        new Document("index", "AtlasSearchIndex")
-                                .append("equals",
-                                        new Document()
-                                                .append("path", "test2")
-                                                .append("value", test2)
-                                )
-                )
+    // queryAtlasSearch {
+    public TestData findAtlasSearch(String test) {
+        Bson searchClause = search(
+            of(text(fieldPath("test"), test).fuzzy()),
+            searchOptions().index("AtlasSearchIndex")
         );
-        return testCollection.aggregate(query).first();
+        log.trace("Searching for document using Atlas Search:\n{}", searchClause.toBsonDocument().toJson(JsonWriterSettings.builder().indent(true).build()));
+        return testCollection.aggregate(singletonList(searchClause)).first();
     }
+    // }
 
 
+    @Setter
+    @Getter
     public static class TestData{
         String test;
         int test2;
         boolean test3;
+
         public TestData() {}
         public TestData(String test, int test2, boolean test3) {
             this.test = test;
@@ -112,28 +136,13 @@ public class AtlasLocalDataAccess implements AutoCloseable {
             this.test3 = test3;
         }
 
-        public String getTest() {
-            return test;
-        }
-
-        public void setTest(String test) {
-            this.test = test;
-        }
-
-        public int getTest2() {
-            return test2;
-        }
-
-        public void setTest2(int test2) {
-            this.test2 = test2;
-        }
-
-        public boolean isTest3() {
-            return test3;
-        }
-
-        public void setTest3(boolean test3) {
-            this.test3 = test3;
+        @Override
+        public String toString() {
+            return "TestData{" +
+                "test='" + test + '\'' +
+                ", test2=" + test2 +
+                ", test3=" + test3 +
+                '}';
         }
     }
 
