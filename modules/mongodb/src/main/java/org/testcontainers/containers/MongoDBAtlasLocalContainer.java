@@ -34,9 +34,8 @@ public class MongoDBAtlasLocalContainer extends GenericContainer<MongoDBAtlasLoc
 
     /**
      * Get the connection string to MongoDB.
-     * Note: Because we are connecting to a single node replica set, we need to use the directConnection=true
      */
     public String getConnectionString() {
-        return String.format("mongodb://%s:%d/?directConnection=true", this.getHost(), this.getMappedPort(MONGODB_INTERNAL_PORT));
+        return String.format("mongodb://%s:%d", this.getHost(), this.getMappedPort(MONGODB_INTERNAL_PORT));
     }
 }
