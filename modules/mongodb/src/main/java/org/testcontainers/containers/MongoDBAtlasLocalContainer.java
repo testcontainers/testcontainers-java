@@ -39,9 +39,4 @@ public class MongoDBAtlasLocalContainer extends GenericContainer<MongoDBAtlasLoc
     public String getConnectionString() {
         return String.format("mongodb://%s:%d/?directConnection=true", this.getHost(), this.getMappedPort(MONGODB_INTERNAL_PORT));
     }
-
-    @Override
-    public void close() {
-        super.close();
-    }
 }
