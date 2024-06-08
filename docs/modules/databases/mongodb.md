@@ -59,13 +59,13 @@ And how to start it:
 [Start the Container](../../../modules/mongodb/src/test/java/org/testcontainers/containers/MongoDBAtlasLocalContainerTest.java) inside_block:startingAtlasLocalContainer
 <!--/codeinclude-->
 
-It is important to use the connection string provided by the MongoDBAtlasLocalContainer's getConnectionString() method. It includes the correct host and port + the directConnection parameter:
+The connection string provided by the MongoDBAtlasLocalContainer's getConnectionString() method includes the dynamically allocated port:
 
 <!--codeinclude-->
 [Get the Connection String](../../../modules/mongodb/src/test/java/org/testcontainers/containers/MongoDBAtlasLocalContainerTest.java) inside_block:getConnectionStringAtlasLocalContainer
 <!--/codeinclude-->
 
-e.g. `mongodb://localhost:12345/?directConnection=true`
+e.g. `mongodb://localhost:12345`
 
 ### General info
 MongoDB Atlas Local combines the MongoDB database engine with MongoT, a sidecar process for advanced searching capabilities built by MongoDB and powered by [Apache Lucene](https://lucene.apache.org/). 

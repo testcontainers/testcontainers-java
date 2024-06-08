@@ -15,7 +15,7 @@ public class MongoDBAtlasLocalContainerTest {
             String connectionString = container.getConnectionString();
             assertNotNull(connectionString);
             assertTrue(connectionString.startsWith("mongodb://"));
-            assertEquals(String.format("mongodb://localhost:%d/?directConnection=true", container.getFirstMappedPort()), connectionString);
+            assertEquals(String.format("mongodb://localhost:%d", container.getFirstMappedPort()), connectionString);
         }
     }
 
