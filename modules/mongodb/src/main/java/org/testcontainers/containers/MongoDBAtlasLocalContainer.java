@@ -5,14 +5,16 @@ import org.testcontainers.utility.DockerImageName;
 
 public class MongoDBAtlasLocalContainer extends GenericContainer<MongoDBAtlasLocalContainer> {
 
+    public static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("mongodb/mongodb-atlas-local");
     public static final int MONGODB_INTERNAL_PORT = 27017;
 
-    public MongoDBAtlasLocalContainer() {
-        this("latest");
+    public MongoDBAtlasLocalContainer(final String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
     }
 
-    public MongoDBAtlasLocalContainer(String tag) {
-        super(DockerImageName.parse("mongodb/mongodb-atlas-local").withTag(tag));
+    public MongoDBAtlasLocalContainer(final DockerImageName dockerImageName) {
+        super(dockerImageName);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
     }
 
     MongoDBAtlasContainerDef createContainerDef() {
