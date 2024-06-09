@@ -24,7 +24,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     private static final String DEFAULT_INTERNAL_TOPIC_RF = "1";
 
-    private static final String STARTER_SCRIPT = "/testcontainers_start.sh";
+    private static final String STARTER_SCRIPT = "/tmp/testcontainers_start.sh";
 
     private static final String DEFAULT_CLUSTER_ID = "4L6g3nShT-eMCtK--X86sw";
 
