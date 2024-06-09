@@ -34,7 +34,9 @@ public class MongoDBAtlasLocalContainerTest {
             String connectionString = atlasLocalContainer.getConnectionString();
             // }
 
-            try (AtlasLocalDataAccess atlasLocalDataAccess = new AtlasLocalDataAccess(connectionString, "test", "test")) {
+            try (
+                AtlasLocalDataAccess atlasLocalDataAccess = new AtlasLocalDataAccess(connectionString, "test", "test")
+            ) {
                 atlasLocalDataAccess.initAtlasSearchIndex();
 
                 // writeAndReadBack {
@@ -55,7 +57,6 @@ public class MongoDBAtlasLocalContainerTest {
 
                 AtlasLocalDataAccess.TestData foundRegular = atlasLocalDataAccess.findClassic("tests");
                 assertNotNull("Failed to find using classic find()", foundRegular);
-
             }
         }
     }

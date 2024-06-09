@@ -39,6 +39,7 @@ import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class AtlasLocalDataAccess implements AutoCloseable {
+
     private static final Logger log = getLogger(AtlasLocalDataAccess.class);
     private final MongoClient mongoClient;
     private final MongoDatabase testDB;
@@ -50,9 +51,9 @@ public class AtlasLocalDataAccess implements AutoCloseable {
         log.info("DataAccess connecting to {}", connectionString);
 
         CodecRegistry pojoCodecRegistry = fromProviders(PojoCodecProvider.builder().automatic(true).build());
-        CodecRegistry codecRegistry = fromRegistries(MongoClientSettings.getDefaultCodecRegistry(),
-            pojoCodecRegistry);
-        MongoClientSettings clientSettings = MongoClientSettings.builder()
+        CodecRegistry codecRegistry = fromRegistries(MongoClientSettings.getDefaultCodecRegistry(), pojoCodecRegistry);
+        MongoClientSettings clientSettings = MongoClientSettings
+            .builder()
             .applyConnectionString(new ConnectionString(connectionString))
             .codecRegistry(codecRegistry)
             .build();
@@ -72,8 +73,15 @@ public class AtlasLocalDataAccess implements AutoCloseable {
         testDB.createCollection(collectionName);
 
         //Read the atlas search index JSON from a resource file
-        String atlasSearchIndexJson = new String(Files.readAllBytes(Paths.get(requireNonNull(getClass().getResource("/atlas-local-index.json")).toURI())), StandardCharsets.UTF_8);
-        log.info("Creating Atlas Search index AtlasSearchIndex on collection {}:\n{}", collectionName, atlasSearchIndexJson);
+        String atlasSearchIndexJson = new String(
+            Files.readAllBytes(Paths.get(requireNonNull(getClass().getResource("/atlas-local-index.json")).toURI())),
+            StandardCharsets.UTF_8
+        );
+        log.info(
+            "Creating Atlas Search index AtlasSearchIndex on collection {}:\n{}",
+            collectionName,
+            atlasSearchIndexJson
+        );
         testCollection.createSearchIndex("AtlasSearchIndex", BsonDocument.parse(atlasSearchIndexJson));
 
         //wait for the atlas search index to be ready
@@ -93,10 +101,21 @@ public class AtlasLocalDataAccess implements AutoCloseable {
             sleep(50);
         }
         if (!ready) {
-            throw new IllegalStateException(String.format("Atlas Search index AtlasSearchIndex on collection %s did not become ready within %d seconds", collectionName, 5));
+            throw new IllegalStateException(
+                String.format(
+                    "Atlas Search index AtlasSearchIndex on collection %s did not become ready within %d seconds",
+                    collectionName,
+                    5
+                )
+            );
         }
-        log.info("Atlas Search index AtlasSearchIndex on collection {} is ready (took {} milliseconds) to create.", collectionName, start.until(Instant.now(), ChronoUnit.MILLIS));
+        log.info(
+            "Atlas Search index AtlasSearchIndex on collection {} is ready (took {} milliseconds) to create.",
+            collectionName,
+            start.until(Instant.now(), ChronoUnit.MILLIS)
+        );
     }
+
     // }
 
     public void insertData(TestData data) {
@@ -106,7 +125,10 @@ public class AtlasLocalDataAccess implements AutoCloseable {
 
     public TestData findClassic(String test) {
         Bson findQuery = eq("test", test);
-        log.trace("Searching for document using MongoDB:\n{}", findQuery.toBsonDocument().toJson(JsonWriterSettings.builder().indent(true).build()));
+        log.trace(
+            "Searching for document using MongoDB:\n{}",
+            findQuery.toBsonDocument().toJson(JsonWriterSettings.builder().indent(true).build())
+        );
         return testCollection.find(findQuery).first();
     }
 
@@ -116,20 +138,25 @@ public class AtlasLocalDataAccess implements AutoCloseable {
             of(text(fieldPath("test"), test).fuzzy()),
             searchOptions().index("AtlasSearchIndex")
         );
-        log.trace("Searching for document using Atlas Search:\n{}", searchClause.toBsonDocument().toJson(JsonWriterSettings.builder().indent(true).build()));
+        log.trace(
+            "Searching for document using Atlas Search:\n{}",
+            searchClause.toBsonDocument().toJson(JsonWriterSettings.builder().indent(true).build())
+        );
         return testCollection.aggregate(singletonList(searchClause)).first();
     }
-    // }
 
+    // }
 
     @Setter
     @Getter
-    public static class TestData{
+    public static class TestData {
+
         String test;
         int test2;
         boolean test3;
 
         public TestData() {}
+
         public TestData(String test, int test2, boolean test3) {
             this.test = test;
             this.test2 = test2;
@@ -138,12 +165,7 @@ public class AtlasLocalDataAccess implements AutoCloseable {
 
         @Override
         public String toString() {
-            return "TestData{" +
-                "test='" + test + '\'' +
-                ", test2=" + test2 +
-                ", test3=" + test3 +
-                '}';
+            return "TestData{" + "test='" + test + '\'' + ", test2=" + test2 + ", test3=" + test3 + '}';
         }
     }
-
 }
