@@ -1,0 +1,19 @@
+plugins {
+    id 'java'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.testcontainers:ollama'
+    testImplementation 'org.assertj:assertj-core:3.26.0'
+    testImplementation 'ch.qos.logback:logback-classic:1.5.6'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+    testImplementation 'io.rest-assured:rest-assured:5.4.0'
+}
+
+test {
+    useJUnitPlatform()
+}
