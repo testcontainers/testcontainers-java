@@ -25,15 +25,16 @@ public class OllamaHuggingFaceContainer extends OllamaContainer {
         super.configure();
 
         if (huggingFaceModel != null) {
-            this.setImage(new ImageFromDockerfile()
-                .withDockerfileFromBuilder(builder -> {
-                    builder
-                        .from(this.getDockerImageName())
-                        .run("apt-get update && apt-get upgrade -y && apt-get install -y python3-pip")
-                        .run("pip install huggingface-hub")
-                        .build();
-                })
-            );
+            this.setImage(
+                    new ImageFromDockerfile()
+                        .withDockerfileFromBuilder(builder -> {
+                            builder
+                                .from(this.getDockerImageName())
+                                .run("apt-get update && apt-get upgrade -y && apt-get install -y python3-pip")
+                                .run("pip install huggingface-hub")
+                                .build();
+                        })
+                );
         }
     }
 
@@ -46,15 +47,23 @@ public class OllamaHuggingFaceContainer extends OllamaContainer {
         }
 
         try {
-            ExecResult downloadModelFromHF = execInContainer("huggingface-cli", "download",
+            ExecResult downloadModelFromHF = execInContainer(
+                "huggingface-cli",
+                "download",
                 huggingFaceModel.repository,
                 huggingFaceModel.model,
-                "--local-dir", ".");
+                "--local-dir",
+                "."
+            );
             if (downloadModelFromHF.getExitCode() > 0) {
                 throw new ContainerLaunchException("Failed to download model: " + downloadModelFromHF.getStderr());
             }
 
-            ExecResult fillModelFile = execInContainer("sh", "-c", String.format("echo '%s' > Modelfile", huggingFaceModel.modelfileContent));
+            ExecResult fillModelFile = execInContainer(
+                "sh",
+                "-c",
+                String.format("echo '%s' > Modelfile", huggingFaceModel.modelfileContent)
+            );
             if (fillModelFile.getExitCode() > 0) {
                 throw new ContainerLaunchException("Failed to fill Modelfile: " + fillModelFile.getStderr());
             }
@@ -71,6 +80,7 @@ public class OllamaHuggingFaceContainer extends OllamaContainer {
     }
 
     public static class HuggingFaceModel {
+
         public final String repository;
 
         public final String model;

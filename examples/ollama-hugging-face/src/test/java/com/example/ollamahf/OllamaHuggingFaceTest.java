@@ -18,13 +18,21 @@ public class OllamaHuggingFaceTest {
         String repository = "CompendiumLabs/bge-small-en-v1.5-gguf";
         String model = "bge-small-en-v1.5-q4_k_m.gguf";
         String imageName = "embedding-model-from-hf";
-        try (OllamaContainer ollama = new OllamaContainer(DockerImageName.parse(imageName).asCompatibleSubstituteFor("ollama/ollama:0.1.42"))) {
+        try (
+            OllamaContainer ollama = new OllamaContainer(
+                DockerImageName.parse(imageName).asCompatibleSubstituteFor("ollama/ollama:0.1.42")
+            )
+        ) {
             try {
                 ollama.start();
             } catch (ContainerFetchException ex) {
                 // Create the image
-                try(OllamaHuggingFaceContainer huggingFaceContainer = new OllamaHuggingFaceContainer(imageName,
-                    new OllamaHuggingFaceContainer.HuggingFaceModel(repository, model))) {
+                try (
+                    OllamaHuggingFaceContainer huggingFaceContainer = new OllamaHuggingFaceContainer(
+                        imageName,
+                        new OllamaHuggingFaceContainer.HuggingFaceModel(repository, model)
+                    )
+                ) {
                     huggingFaceContainer.start();
                     huggingFaceContainer.stop();
                 }
@@ -36,14 +44,15 @@ public class OllamaHuggingFaceTest {
                 .get("/api/tags")
                 .jsonPath()
                 .getString("models[0].name");
-            assertThat(modelName).contains(model +":latest");
+            assertThat(modelName).contains(model + ":latest");
 
             List<Float> embedding = given()
                 .baseUri(ollama.getEndpoint())
                 .header(new Header("Content-Type", "application/json"))
                 .body(new EmbeddingRequest(model + ":latest", "Hello from Testcontainers!"))
                 .post("/api/embeddings")
-                .jsonPath().getList("embedding");
+                .jsonPath()
+                .getList("embedding");
 
             assertThat(embedding).isNotNull();
             assertThat(embedding.isEmpty()).isFalse();
@@ -51,6 +60,7 @@ public class OllamaHuggingFaceTest {
     }
 
     public static class EmbeddingRequest {
+
         public final String model;
 
         public final String prompt;
