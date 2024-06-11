@@ -26,7 +26,9 @@ public class OllamaHuggingFaceTest {
                 try(OllamaHuggingFaceContainer huggingFaceContainer = new OllamaHuggingFaceContainer(imageName,
                     new OllamaHuggingFaceContainer.HuggingFaceModel(repository, model))) {
                     huggingFaceContainer.start();
+                    huggingFaceContainer.stop();
                 }
+                ollama.start();
             }
 
             String modelName = given()
