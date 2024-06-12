@@ -24,7 +24,10 @@ See below for an example runner configuration:
 Please also include the following in your GitlabCI pipeline definitions (`.gitlab-ci.yml`) that use Testcontainers:
 ```yml
 variables:
+  # Windows and MacOS
   TESTCONTAINERS_HOST_OVERRIDE: "host.docker.internal"
+  # Linux
+  TESTCONTAINERS_HOST_OVERRIDE: "172.17.0.1"
 ```
 
 The environment variable `TESTCONTAINERS_HOST_OVERRIDE` needs to be configured, otherwise, a wrong IP address would be used to resolve the Docker host, which will likely lead to failing tests.
