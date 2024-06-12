@@ -39,8 +39,11 @@ public class OllamaHuggingFaceContainer extends OllamaContainer {
     }
 
     @Override
-    protected void containerIsStarted(InspectContainerResponse containerInfo) {
-        super.containerIsStarted(containerInfo);
+    protected void containerIsStarted(InspectContainerResponse containerInfo, boolean reused) {
+        super.containerIsStarted(containerInfo, reused);
+        if (reused) {
+            return;
+        }
 
         if (huggingFaceModel == null) {
             return;
