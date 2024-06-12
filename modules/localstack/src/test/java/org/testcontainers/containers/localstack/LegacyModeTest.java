@@ -139,4 +139,38 @@ public class LegacyModeTest {
             }
         }
     }
+
+    @RunWith(Parameterized.class)
+    @AllArgsConstructor
+    public static class LegacyModeUnitTest {
+
+        private final String version;
+        private final boolean shouldUseLegacyMode;
+
+        @Parameterized.Parameters(name = "{0} - {1}")
+        public static Iterable<Object[]> constructors() {
+            return Arrays.asList(
+                new Object[][] {
+                    { "latest", false },
+                    { "s3-latest", false },
+                    { "latest-bigdata", false },
+                    { "3.4.0-bigdata", false },
+                    { "3.4.0@sha256:54fcf172f6ff70909e1e26652c3bb4587282890aff0d02c20aa7695469476ac0", false },
+                    { "1.4@sha256:7badf31c550f81151c485980e17542592942d7f05acc09723c5f276d41b5927d", false },
+                    { "3.4.0", false },
+                    { "0.12", false },
+                    { "0.11", false },
+                    { "sha256:8bf0d744fea26603f2b11ef7206edb38375ef954258afaeda96532a6c9c1ab8b", false },
+                    { "0.10.7@sha256:45ef287e29af7285c6e4013fafea1e3567c167cd22d12282f0a5f9c7894b1c5f", true },
+                    { "0.10.7", true },
+                    { "0.9.6", true },
+                }
+            );
+        }
+
+        @Test
+        public void samePortIsExposedForAllServices() {
+            assertThat(LocalStackContainer.shouldRunInLegacyMode(version)).isEqualTo(shouldUseLegacyMode);
+        }
+    }
 }
