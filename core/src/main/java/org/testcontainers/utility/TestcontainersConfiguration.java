@@ -69,7 +69,7 @@ public class TestcontainersConfiguration {
 
     private static final String SSHD_IMAGE = "testcontainers/sshd";
 
-    private static final String ORACLE_IMAGE = "gvenzl/oracle-xe";
+    private static final String ORACLE_IMAGE = "gvenzl/oracle-free";
 
     private static final ImmutableMap<DockerImageName, String> CONTAINER_MAPPING = ImmutableMap
         .<DockerImageName, String>builder()
