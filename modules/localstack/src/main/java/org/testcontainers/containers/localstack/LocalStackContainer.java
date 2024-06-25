@@ -147,8 +147,10 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
         return true;
     }
 
-    private static boolean shouldRunInLegacyMode(String version) {
-        if (version.equals("latest")) {
+    static boolean shouldRunInLegacyMode(String version) {
+        // assume that the latest images are up-to-date
+        // also consider images with extra packages (like latest-bigdata) and service-specific images (like s3-latest)
+        if (version.equals("latest") || version.startsWith("latest-") || version.endsWith("-latest")) {
             return false;
         }
 
