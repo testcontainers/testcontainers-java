@@ -9,12 +9,14 @@ import com.amazonaws.services.dynamodbv2.model.KeyType;
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType;
 import com.amazonaws.services.dynamodbv2.model.TableDescription;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Ignore("Image is not compatible with the latest Docker version provided by GH Actions")
 public class DynaliteContainerTest {
 
     private static final DockerImageName DYNALITE_IMAGE = DockerImageName.parse(
