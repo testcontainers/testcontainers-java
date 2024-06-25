@@ -145,6 +145,7 @@ public class LegacyModeTest {
     public static class LegacyModeUnitTest {
 
         private final String version;
+
         private final boolean shouldUseLegacyMode;
 
         @Parameterized.Parameters(name = "{0} - {1}")
