@@ -22,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class SimpleNginxTest {
 
-    private static final DockerImageName NGINX_IMAGE = DockerImageName.parse("nginx:1.9.4");
+    private static final DockerImageName NGINX_IMAGE = DockerImageName.parse("nginx:1.27.0-alpine3.19-slim");
 
     private static String tmpDirectory = System.getProperty("user.home") + "/.tmp-test-container";
 
