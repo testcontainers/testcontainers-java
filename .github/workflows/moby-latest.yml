@@ -1,7 +1,6 @@
 name: Tests against recent Docker engine releases
 
 on:
-  pull_request:
   schedule:
     # nightly build, at 23:59 CEST
     - cron:  '59 23 * * *'
@@ -24,6 +23,21 @@ jobs:
         run: ./gradlew cleanTest --no-daemon --continue --scan -Dscan.tag.DOCKER_STABLE testcontainers:test
       - uses: ./.github/actions/setup-junit-report
 
+      - name: Notify to Slack on failures
+        if: failure()
+        id: slack
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          payload: |
+            {
+              "tc_project": "testcontainers-java",
+              "tc_github_action_url": "https://github.com/testcontainers/testcontainers-java/actions/runs/${{ env.GITHUB_RUN_ID }}/job/${{ env.GITHUB_RUN_NUMBER }}",
+              "tc_github_action_status": "FAILED",
+              "tc_slack_channel_id": "${{ secrets.SLACK_DOCKER_LATEST_CHANNEL_ID }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_DOCKER_LATEST_WEBHOOK }}
+
   test_latest_docker:
     name: "Core tests using latest Docker-CE"
     runs-on: ubuntu-22.04
@@ -42,17 +56,17 @@ jobs:
 
       - uses: ./.github/actions/setup-junit-report
 
-#      - name: Notify to Slack on failures
-#        id: slack
-#        uses: slackapi/slack-github-action@v1.26.0
-#        with:
-#          # This data can be any valid JSON from a previous step in the GitHub Action
-#          payload: |
-#            {
-#              "tc_project": "testcontainers-java",
-#              "tc_github_action_url": "https://github.com/testcontainers/testcontainers-java/actions/runs/${{ env.GITHUB_RUN_ID }}/job/${{ env.GITHUB_RUN_NUMBER }}",
-#              "tc_github_action_status": "FAILED",
-#              "tc_slack_channel_id": "${{ secrets.SLACK_DOCKER_LATEST_CHANNEL_ID }}"
-#            }
-#        env:
-#          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_DOCKER_LATEST_WEBHOOK }}
+      - name: Notify to Slack on failures
+        if: failure()
+        id: slack
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          payload: |
+            {
+              "tc_project": "testcontainers-java",
+              "tc_github_action_url": "https://github.com/testcontainers/testcontainers-java/actions/runs/${{ env.GITHUB_RUN_ID }}/job/${{ env.GITHUB_RUN_NUMBER }}",
+              "tc_github_action_status": "FAILED",
+              "tc_slack_channel_id": "${{ secrets.SLACK_DOCKER_LATEST_CHANNEL_ID }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_DOCKER_LATEST_WEBHOOK }}
