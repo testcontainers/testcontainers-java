@@ -14,14 +14,16 @@ public class WaitStrategiesTest {
 
     @Rule
     // waitForNetworkListening {
-    public GenericContainer nginx = new GenericContainer(DockerImageName.parse("nginx:1.9.4")) //
+    public GenericContainer nginx = new GenericContainer(DockerImageName.parse("nginx:1.27.0-alpine3.19-slim")) //
         .withExposedPorts(80);
 
     // }
 
     @Rule
     // waitForSimpleHttp {
-    public GenericContainer nginxWithHttpWait = new GenericContainer(DockerImageName.parse("nginx:1.9.4"))
+    public GenericContainer nginxWithHttpWait = new GenericContainer(
+        DockerImageName.parse("nginx:1.27.0-alpine3.19-slim")
+    )
         .withExposedPorts(80)
         .waitingFor(Wait.forHttp("/"));
 
