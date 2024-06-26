@@ -1,6 +1,7 @@
 package org.testcontainers.cassandra;
 
 import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.CqlSessionBuilder;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
 import org.junit.Test;
@@ -73,7 +74,20 @@ public class CassandraContainerTest {
                 .withInitScript("initial.cql")
         ) {
             cassandraContainer.start();
-            testInitScript(cassandraContainer);
+            testInitScript(cassandraContainer, false);
+        }
+    }
+
+    @Test
+    public void testInitScriptWithRequiredAuthentication() {
+        try (
+            CassandraContainer cassandraContainer = new CassandraContainer(CASSANDRA_IMAGE)
+                .withConfigurationOverride("cassandra-auth-required-configuration")
+                .waitingFor(new CassandraQueryWaitStrategy())
+                .withInitScript("initial.cql")
+        ) {
+            cassandraContainer.start();
+            testInitScript(cassandraContainer, true);
         }
     }
 
@@ -94,7 +108,7 @@ public class CassandraContainerTest {
                 .withInitScript("initial.cql")
         ) {
             cassandraContainer.start();
-            testInitScript(cassandraContainer);
+            testInitScript(cassandraContainer, false);
         }
     }
 
@@ -110,8 +124,9 @@ public class CassandraContainerTest {
         }
     }
 
-    private void testInitScript(CassandraContainer cassandraContainer) {
-        ResultSet resultSet = performQuery(cassandraContainer, "SELECT * FROM keySpaceTest.catalog_category");
+    private void testInitScript(CassandraContainer cassandraContainer, boolean withCredentials) {
+        ResultSet resultSet =
+            performQuery(cassandraContainer, "SELECT * FROM keySpaceTest.catalog_category", withCredentials);
         assertThat(resultSet.wasApplied()).as("Query was applied").isTrue();
         Row row = resultSet.one();
         assertThat(row.getLong(0)).as("Inserted row is in expected state").isEqualTo(1);
@@ -119,11 +134,18 @@ public class CassandraContainerTest {
     }
 
     private ResultSet performQuery(CassandraContainer cassandraContainer, String cql) {
-        final CqlSession cqlSession = CqlSession
+        return performQuery(cassandraContainer, cql, false);
+    }
+
+    private ResultSet performQuery(CassandraContainer cassandraContainer, String cql, boolean withCredentials) {
+        final CqlSessionBuilder cqlSessionBuilder = CqlSession
             .builder()
             .addContactPoint(cassandraContainer.getContactPoint())
-            .withLocalDatacenter(cassandraContainer.getLocalDatacenter())
-            .build();
+            .withLocalDatacenter(cassandraContainer.getLocalDatacenter());
+        if (withCredentials) {
+            cqlSessionBuilder.withAuthCredentials(cassandraContainer.getUsername(), cassandraContainer.getPassword());
+        }
+        final CqlSession cqlSession = cqlSessionBuilder.build();
         return performQuery(cqlSession, cql);
     }
 

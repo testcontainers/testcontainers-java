@@ -25,7 +25,7 @@ public class CassandraContainer extends GenericContainer<CassandraContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("cassandra");
 
-    public static final Integer CQL_PORT = 9042;
+    private static final Integer CQL_PORT = 9042;
 
     private static final String DEFAULT_LOCAL_DATACENTER = "datacenter1";
 
@@ -124,7 +124,16 @@ public class CassandraContainer extends GenericContainer<CassandraContainer> {
     /**
      * Initialize Cassandra with init CQL script
      * <p>
-     * CQL script will be applied after container is started (see using WaitStrategy)
+     *     CQL script will be applied after container is started (see using WaitStrategy).
+     * </p>
+     * <p>
+     *     If you override the Cassandra configuration (see {@link #withConfigurationOverride(String)}) to make the
+     *     authentication mandatory (using {@code PasswordAuthenticator} for the property {@code authenticator}), it's
+     *     strongly recommended to also use the {@link org.testcontainers.cassandra.wait.CassandraQueryWaitStrategy}
+     *     in order to guarantee the init script will be executed once the Cassandra node is really ready to execute
+     *     authenticated queries, otherwise you may encounter an error like this one:
+     *     "AuthenticationFailed('Failed to authenticate to 127.0.0.1: Error from server: code=0100 [Bad credentials]".
+     * </p>
      *
      * @param initScriptPath relative classpath resource
      */
