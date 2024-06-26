@@ -19,7 +19,7 @@ public class WeaviateContainerTest {
     @Test
     public void testWeaviate() {
         try ( // container {
-            WeaviateContainer weaviate = new WeaviateContainer("cr.weaviate.io/semitechnologies/weaviate:1.24.5")
+            WeaviateContainer weaviate = new WeaviateContainer("cr.weaviate.io/semitechnologies/weaviate:1.25.5")
             // }
         ) {
             weaviate.start();
@@ -27,7 +27,7 @@ public class WeaviateContainerTest {
             config.setGRPCHost(weaviate.getGrpcHostAddress());
             WeaviateClient client = new WeaviateClient(config);
             Result<Meta> meta = client.misc().metaGetter().run();
-            assertThat(meta.getResult().getVersion()).isEqualTo("1.24.5");
+            assertThat(meta.getResult().getVersion()).isEqualTo("1.25.5");
         }
     }
 
@@ -43,13 +43,13 @@ public class WeaviateContainerTest {
         Map<String, String> env = new HashMap<>();
         env.put("ENABLE_MODULES", String.join(",", enableModules));
         env.put("BACKUP_FILESYSTEM_PATH", "/tmp/backups");
-        try (WeaviateContainer weaviate = new WeaviateContainer("semitechnologies/weaviate:1.24.5").withEnv(env)) {
+        try (WeaviateContainer weaviate = new WeaviateContainer("semitechnologies/weaviate:1.25.5").withEnv(env)) {
             weaviate.start();
             Config config = new Config("http", weaviate.getHttpHostAddress());
             config.setGRPCHost(weaviate.getGrpcHostAddress());
             WeaviateClient client = new WeaviateClient(config);
             Result<Meta> meta = client.misc().metaGetter().run();
-            assertThat(meta.getResult().getVersion()).isEqualTo("1.24.5");
+            assertThat(meta.getResult().getVersion()).isEqualTo("1.25.5");
             Object modules = meta.getResult().getModules();
             assertThat(modules)
                 .isNotNull()
