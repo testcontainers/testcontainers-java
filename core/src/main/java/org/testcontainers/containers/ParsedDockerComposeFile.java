@@ -122,9 +122,10 @@ class ParsedDockerComposeFile {
         }
     }
 
-    private void findServiceImageName(String serviceName, Map serviceDefinitionMap) {
-        if (serviceDefinitionMap.containsKey("image") && serviceDefinitionMap.get("image") instanceof String) {
-            final String imageName = (String) serviceDefinitionMap.get("image");
+    private void findServiceImageName(String serviceName, Map<String, ?> serviceDefinitionMap) {
+        Object result = serviceDefinitionMap.get("image");
+        if (result instanceof String) {
+            final String imageName = (String) result;
             log.debug("Resolved dependency image for Docker Compose in {}: {}", composeFileName, imageName);
             serviceNameToImageNames.put(serviceName, Sets.newHashSet(imageName));
         }
