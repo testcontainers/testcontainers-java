@@ -7,9 +7,12 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.testcontainers.images.ParsedDockerfile;
+import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
+import org.yaml.snakeyaml.representer.Representer;
+import org.yaml.snakeyaml.resolver.Resolver;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -37,7 +40,17 @@ class ParsedDockerComposeFile {
     private final Map<String, Set<String>> serviceNameToImageNames = new HashMap<>();
 
     ParsedDockerComposeFile(File composeFile) {
-        Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
+        // The default is 50 and a big docker-compose.yml file can easily go above that number. 1,000 should give us some room
+        LoaderOptions options = new LoaderOptions();
+        options.setMaxAliasesForCollections(1_000);
+        DumperOptions dumperOptions = new DumperOptions();
+        Yaml yaml = new Yaml(
+            new SafeConstructor(options),
+            new Representer(dumperOptions),
+            dumperOptions,
+            options,
+            new Resolver()
+        );
         try (FileInputStream fileInputStream = FileUtils.openInputStream(composeFile)) {
             composeFileContent = yaml.load(fileInputStream);
         } catch (Exception e) {
