@@ -130,7 +130,8 @@ public class AbstractJDBCDriverTest {
         if (
             databaseType.equalsIgnoreCase("postgresql") ||
             databaseType.equalsIgnoreCase("postgis") ||
-            databaseType.equalsIgnoreCase("timescaledb")
+            databaseType.equalsIgnoreCase("timescaledb") ||
+            databaseType.equalsIgnoreCase("pgvector")
         ) {
             databaseQuery = "SELECT CURRENT_DATABASE()";
         }
@@ -204,13 +205,13 @@ public class AbstractJDBCDriverTest {
     private void performTestForCustomIniFile(HikariDataSource dataSource) throws SQLException {
         assumeFalse(SystemUtils.IS_OS_WINDOWS);
         Statement statement = dataSource.getConnection().createStatement();
-        statement.execute("SELECT @@GLOBAL.innodb_file_format");
+        statement.execute("SELECT @@GLOBAL.innodb_max_undo_log_size");
         ResultSet resultSet = statement.getResultSet();
 
         assertThat(resultSet.next()).as("The query returns a result").isTrue();
-        String result = resultSet.getString(1);
+        long result = resultSet.getLong(1);
 
-        assertThat(result).as("The InnoDB file format has been set by the ini file content").isEqualTo("Barracuda");
+        assertThat(result).as("The InnoDB max undo log size has been set by the ini file content").isEqualTo(20000000);
     }
 
     private HikariDataSource getDataSource(String jdbcUrl, int poolSize) {

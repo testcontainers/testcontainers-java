@@ -1,0 +1,8 @@
+description = "Testcontainers :: MinIO"
+
+dependencies {
+    api project(':testcontainers')
+
+    testImplementation("io.minio:minio:8.5.10")
+    testImplementation 'org.assertj:assertj-core:3.25.3'
+}

@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
@@ -29,6 +29,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+/**
+ * Testcontainers implementation for HiveMQ.
+ * <p>
+ * Supported images: {@code hivemq/hivemq4}, {@code hivemq/hivemq-ce}
+ * <p>
+ * Exposed ports:
+ * <ul>
+ *     <li>MQTT: 1883</li>
+ *     <li>Control Center: 8080</li>
+ *     <li>Debug: 9000</li>
+ * </ul>
+ */
 public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HiveMQContainer.class);
@@ -70,7 +82,7 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
 
         addExposedPort(MQTT_PORT);
 
-        waitStrategy.withStrategy(new LogMessageWaitStrategy().withRegEx("(.*)Started HiveMQ in(.*)"));
+        waitStrategy.withStrategy(Wait.forLogMessage("(.*)Started HiveMQ in(.*)", 1));
         waitingFor(waitStrategy);
 
         withLogConsumer(outputFrame -> {
@@ -122,9 +134,9 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
         setCommand(
             "-c",
             removeCommand +
-            "cp -r '/opt/hivemq/temp-extensions/'* /opt/hivemq/extensions/ " +
-            "; chmod -R 777 /opt/hivemq/extensions " +
-            "&& /opt/docker-entrypoint.sh /opt/hivemq/bin/run.sh"
+            "cp -r '/opt/hivemq/temp-extensions/'* /opt/hivemq/extensions/ ; " +
+            "chmod -R 777 /opt/hivemq/extensions ; " +
+            "/opt/docker-entrypoint.sh /opt/hivemq/bin/run.sh"
         );
     }
 
@@ -148,7 +160,7 @@ public class HiveMQContainer extends GenericContainer<HiveMQContainer> {
      */
     public @NotNull HiveMQContainer waitForExtension(final @NotNull String extensionName) {
         final String regEX = "(.*)Extension \"" + extensionName + "\" version (.*) started successfully(.*)";
-        waitStrategy.withStrategy(new LogMessageWaitStrategy().withRegEx(regEX));
+        waitStrategy.withStrategy(Wait.forLogMessage(regEX, 1));
         return self();
     }
 

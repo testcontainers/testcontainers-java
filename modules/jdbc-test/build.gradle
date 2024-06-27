@@ -1,16 +1,16 @@
 dependencies {
     api project(':jdbc')
 
-    api 'com.google.guava:guava:31.1-jre'
-    api 'org.apache.commons:commons-lang3:3.12.0'
+    api 'com.google.guava:guava:33.2.0-jre'
+    api 'org.apache.commons:commons-lang3:3.14.0'
     api 'com.zaxxer:HikariCP-java6:2.3.13'
-    api 'commons-dbutils:commons-dbutils:1.7'
+    api 'commons-dbutils:commons-dbutils:1.8.1'
 
     api 'com.googlecode.junit-toolbox:junit-toolbox:2.4'
 
-    api 'org.assertj:assertj-core:3.24.2'
+    api 'org.assertj:assertj-core:3.25.3'
 
     api 'org.apache.tomcat:tomcat-jdbc:10.0.27'
     api 'org.vibur:vibur-dbcp:25.0'
-    api 'mysql:mysql-connector-java:8.0.32'
+    api 'mysql:mysql-connector-java:8.0.33'
 }

@@ -32,9 +32,11 @@ import java.io.PipedOutputStream;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.zip.GZIPOutputStream;
 
 @Slf4j
@@ -61,6 +63,8 @@ public class ImageFromDockerfile
     private Optional<Path> dockerfile = Optional.empty();
 
     private Optional<String> target = Optional.empty();
+
+    private final Set<Consumer<BuildImageCmd>> buildImageCmdModifiers = new LinkedHashSet<>();
 
     private Set<String> dependencyImageNames = Collections.emptySet();
 
@@ -180,6 +184,7 @@ public class ImageFromDockerfile
 
         this.buildArgs.forEach(buildImageCmd::withBuildArg);
         this.target.ifPresent(buildImageCmd::withTarget);
+        this.buildImageCmdModifiers.forEach(hook -> hook.accept(buildImageCmd));
     }
 
     private void prePullDependencyImages(Set<String> imagesToPull) {
@@ -246,6 +251,18 @@ public class ImageFromDockerfile
      */
     public ImageFromDockerfile withDockerfile(Path dockerfile) {
         this.dockerfile = Optional.of(dockerfile);
+        return this;
+    }
+
+    /**
+     * Allow low level modifications of {@link BuildImageCmd}.
+     * Warning: this does expose the underlying docker-java API so might change outside of our control.
+     *
+     * @param modifier {@link Consumer} of {@link BuildImageCmd}.
+     * @return this
+     */
+    public ImageFromDockerfile withBuildImageCmdModifier(Consumer<BuildImageCmd> modifier) {
+        this.buildImageCmdModifiers.add(modifier);
         return this;
     }
 }

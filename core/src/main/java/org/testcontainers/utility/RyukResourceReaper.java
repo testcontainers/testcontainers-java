@@ -77,6 +77,19 @@ class RyukResourceReaper extends ResourceReaper {
 
         ryukContainer.start();
 
+        Runtime
+            .getRuntime()
+            .addShutdownHook(
+                new Thread(
+                    DockerClientFactory.TESTCONTAINERS_THREAD_GROUP,
+                    () -> {
+                        this.dockerClient.killContainerCmd(this.ryukContainer.getContainerId())
+                            .withSignal("SIGTERM")
+                            .exec();
+                    }
+                )
+            );
+
         CountDownLatch ryukScheduledLatch = new CountDownLatch(1);
 
         String host = ryukContainer.getHost();

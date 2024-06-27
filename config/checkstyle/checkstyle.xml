@@ -57,6 +57,8 @@
             <property name="allowNoEmptyLineBetweenFields" value="false" />
         </module>
         <module name="OneStatementPerLineCheck"/>
+        <module name="ModifierOrder" />
+        <module name="SingleSpaceSeparator" />
     </module>
     <module name="RegexpSingleline">
         <property name="format" value="^\s*\*\s*@author"/>

@@ -11,7 +11,7 @@ public class ContainerCreationTest {
 
     // spotless:off
     // simple {
-    public static final DockerImageName REDIS_IMAGE = DockerImageName.parse("redis:3.0.2");
+    public static final DockerImageName REDIS_IMAGE = DockerImageName.parse("redis:6-alpine");
 
     @ClassRule
     public static GenericContainer<?> redis = new GenericContainer<>(REDIS_IMAGE)
@@ -20,7 +20,7 @@ public class ContainerCreationTest {
     // }
     // spotless:on
 
-    public static final DockerImageName ALPINE_IMAGE = DockerImageName.parse("alpine:3.16");
+    public static final DockerImageName ALPINE_IMAGE = DockerImageName.parse("alpine:3.17");
 
     // spotless:off
     // withOptions {

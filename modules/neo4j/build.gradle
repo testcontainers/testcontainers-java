@@ -1,4 +1,4 @@
-description = "TestContainers :: Neo4j"
+description = "Testcontainers :: Neo4j"
 
 def generatedResourcesDir = new File(project.buildDir, "generated-resources")
 def customNeo4jPluginDestinationDir = new File(generatedResourcesDir, "custom-plugins")
@@ -33,6 +33,6 @@ dependencies {
 
     api project(":testcontainers")
 
-    testImplementation 'org.neo4j.driver:neo4j-java-driver:4.4.11'
-    testImplementation 'org.assertj:assertj-core:3.24.2'
+    testImplementation 'org.neo4j.driver:neo4j-java-driver:4.4.16'
+    testImplementation 'org.assertj:assertj-core:3.25.3'
 }

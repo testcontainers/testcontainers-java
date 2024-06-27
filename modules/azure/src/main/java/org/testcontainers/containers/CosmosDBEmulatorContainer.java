@@ -6,7 +6,11 @@ import org.testcontainers.utility.DockerImageName;
 import java.security.KeyStore;
 
 /**
- * An Azure CosmosDB container
+ * Testcontainers implementation for CosmosDB Emulator.
+ * <p>
+ * Supported image: {@code mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator}
+ * <p>
+ * Exposed ports: 8081
  */
 public class CosmosDBEmulatorContainer extends GenericContainer<CosmosDBEmulatorContainer> {
 
@@ -23,7 +27,7 @@ public class CosmosDBEmulatorContainer extends GenericContainer<CosmosDBEmulator
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
         withExposedPorts(PORT);
-        waitingFor(Wait.forLogMessage("(?s).*Started\\r\\n$", 1));
+        waitingFor(Wait.forLogMessage(".*Started\\r\\n$", 1));
     }
 
     /**

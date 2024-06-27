@@ -7,7 +7,7 @@ See [Database containers](./index.md) for documentation and usage that is common
 For MySQL databases, it is possible to override configuration settings using resources on the classpath. Assuming `somepath/mysql_conf_override`
 is a directory on the classpath containing .cnf files, the following URL can be used:
 
-  `jdbc:tc:mysql:5.7.34://hostname/databasename?TC_MY_CNF=somepath/mysql_conf_override`
+  `jdbc:tc:mysql:8.0.36://hostname/databasename?TC_MY_CNF=somepath/mysql_conf_override`
 
 Any .cnf files in this classpath directory will be mapped into the database container's /etc/mysql/conf.d directory,
 and will be able to override server settings when the container starts.

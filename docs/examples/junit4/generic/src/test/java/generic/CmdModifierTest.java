@@ -18,7 +18,7 @@ public class CmdModifierTest {
 
     // hostname {
     @Rule
-    public GenericContainer theCache = new GenericContainer<>(DockerImageName.parse("redis:3.0.2"))
+    public GenericContainer theCache = new GenericContainer<>(DockerImageName.parse("redis:6-alpine"))
         .withCreateContainerCmdModifier(cmd -> cmd.withHostName("the-cache"));
 
     // }
@@ -30,7 +30,7 @@ public class CmdModifierTest {
     private long memorySwapInBytes = 64l * 1024l * 1024l;
 
     @Rule
-    public GenericContainer memoryLimitedRedis = new GenericContainer<>(DockerImageName.parse("redis:3.0.2"))
+    public GenericContainer memoryLimitedRedis = new GenericContainer<>(DockerImageName.parse("redis:6-alpine"))
         .withCreateContainerCmdModifier(cmd -> {
             cmd.getHostConfig()
                 .withMemory(memoryInBytes)
