@@ -34,7 +34,7 @@ class ParsedDockerComposeFile {
     private final File composeFile;
 
     @Getter
-    private Map<String, Set<String>> serviceNameToImageNames = new HashMap<>();
+    private final Map<String, Set<String>> serviceNameToImageNames = new HashMap<>();
 
     ParsedDockerComposeFile(File composeFile) {
         Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
