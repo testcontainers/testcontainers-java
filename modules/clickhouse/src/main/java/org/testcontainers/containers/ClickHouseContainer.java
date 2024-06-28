@@ -1,10 +1,8 @@
 package org.testcontainers.containers;
 
-import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 
-import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -65,11 +63,6 @@ public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContain
         supportsNewDriver = isNewDriverSupported(dockerImageName);
 
         addExposedPorts(HTTP_PORT, NATIVE_PORT);
-        this.waitStrategy =
-            new HttpWaitStrategy()
-                .forStatusCode(200)
-                .forResponsePredicate("Ok."::equals)
-                .withStartupTimeout(Duration.ofMinutes(1));
     }
 
     @Override
