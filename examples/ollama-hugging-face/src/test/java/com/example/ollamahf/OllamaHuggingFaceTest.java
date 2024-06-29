@@ -17,8 +17,15 @@ public class OllamaHuggingFaceTest {
         String repository = "CompendiumLabs/bge-small-en-v1.5-gguf";
         String model = "bge-small-en-v1.5-q4_k_m.gguf";
         String imageName = "embedding-model-from-hugging-face";
-        OllamaContainer ollama = new OllamaContainer(DockerImageName.parse(imageName).asCompatibleSubstituteFor("ollama/ollama:0.1.47"));
-        boolean imageExists = ollama.getDockerClient().listImagesCmd().exec().stream().anyMatch(image -> image.getRepoTags()[0].equals(imageName + ":latest"));
+        OllamaContainer ollama = new OllamaContainer(
+            DockerImageName.parse(imageName).asCompatibleSubstituteFor("ollama/ollama:0.1.47")
+        );
+        boolean imageExists = ollama
+            .getDockerClient()
+            .listImagesCmd()
+            .exec()
+            .stream()
+            .anyMatch(image -> image.getRepoTags()[0].equals(imageName + ":latest"));
         if (!imageExists) {
             createImage(imageName, repository, model);
         }
@@ -44,7 +51,10 @@ public class OllamaHuggingFaceTest {
     }
 
     private static void createImage(String imageName, String repository, String model) {
-        OllamaHuggingFaceContainer.HuggingFaceModel hfModel = new OllamaHuggingFaceContainer.HuggingFaceModel(repository, model);
+        OllamaHuggingFaceContainer.HuggingFaceModel hfModel = new OllamaHuggingFaceContainer.HuggingFaceModel(
+            repository,
+            model
+        );
         OllamaHuggingFaceContainer huggingFaceContainer = new OllamaHuggingFaceContainer(hfModel);
         huggingFaceContainer.start();
         huggingFaceContainer.commitToImage(imageName);

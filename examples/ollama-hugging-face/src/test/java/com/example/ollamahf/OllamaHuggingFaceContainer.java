@@ -36,11 +36,7 @@ public class OllamaHuggingFaceContainer extends OllamaContainer {
                 "--local-dir",
                 "."
             );
-            executeCommand(
-                "sh",
-                "-c",
-                String.format("echo '%s' > Modelfile", huggingFaceModel.modelfileContent)
-            );
+            executeCommand("sh", "-c", String.format("echo '%s' > Modelfile", huggingFaceModel.modelfileContent));
             executeCommand("ollama", "create", huggingFaceModel.model, "-f", "Modelfile");
             executeCommand("rm", huggingFaceModel.model);
         } catch (IOException | InterruptedException e) {
@@ -51,7 +47,9 @@ public class OllamaHuggingFaceContainer extends OllamaContainer {
     private void executeCommand(String... command) throws ContainerLaunchException, IOException, InterruptedException {
         ExecResult execResult = execInContainer(command);
         if (execResult.getExitCode() > 0) {
-            throw new ContainerLaunchException("Failed to execute " + String.join(" ", command) + ": " + execResult.getStderr());
+            throw new ContainerLaunchException(
+                "Failed to execute " + String.join(" ", command) + ": " + execResult.getStderr()
+            );
         }
     }
 
