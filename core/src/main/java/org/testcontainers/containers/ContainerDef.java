@@ -90,8 +90,8 @@ class ContainerDef {
         createCommand.withEnv(
             this.envVars.entrySet()
                 .stream()
-                .filter(it -> it.getValue() != null)
-                .map(it -> it.getKey() + "=" + it.getValue())
+                .filter(it -> it.getValue() != null && it.getValue().get() != null)
+                .map(it -> it.getKey() + "=" + it.getValue().get())
                 .toArray(String[]::new)
         );
 
