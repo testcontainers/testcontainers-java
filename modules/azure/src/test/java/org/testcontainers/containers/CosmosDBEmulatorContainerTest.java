@@ -6,6 +6,7 @@ import com.azure.cosmos.models.CosmosContainerResponse;
 import com.azure.cosmos.models.CosmosDatabaseResponse;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -62,7 +63,7 @@ public class CosmosDBEmulatorContainerTest {
             .endpoint(emulator.getEmulatorEndpoint())
             .key(emulator.getEmulatorKey())
             .buildAsyncClient();
-        // }ChromaDB
+        // }
         // testWithClientAgainstEmulatorContainer {
         CosmosDatabaseResponse databaseResponse = client.createDatabaseIfNotExists("Azure").block();
         assertThat(databaseResponse.getStatusCode()).isEqualTo(201);
