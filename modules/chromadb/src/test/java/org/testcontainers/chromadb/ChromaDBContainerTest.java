@@ -10,7 +10,7 @@ public class ChromaDBContainerTest {
     @Test
     public void test() {
         try ( // container {
-            ChromaDBContainer chroma = new ChromaDBContainer("chromadb/chroma:0.5.4.dev25")
+            ChromaDBContainer chroma = new ChromaDBContainer("chromadb/chroma:0.4.22")
             // }
         ) {
             chroma.start();

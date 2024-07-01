@@ -1148,8 +1148,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         this.containerDef.addPortBindings(portBinding);
     }
 
-
-
     public SELF withEnv(String key, Supplier<String> value) {
         getEnvMap().put(key, value);
         return self();

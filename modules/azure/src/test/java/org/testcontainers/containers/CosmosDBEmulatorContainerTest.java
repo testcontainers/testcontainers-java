@@ -44,17 +44,11 @@ public class CosmosDBEmulatorContainerTest {
 
     // }
 
-    @Ignore
     @Test
     public void testWithCosmosClient() throws Exception {
         // buildAndSaveNewKeyStore {
         Path keyStoreFile = tempFolder.newFile("azure-cosmos-emulator.keystore").toPath();
-        KeyStore keyStore = null;
-        try {
-            keyStore = emulator.buildNewKeyStore();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        KeyStore keyStore = emulator.buildNewKeyStore();
         keyStore.store(new FileOutputStream(keyStoreFile.toFile()), emulator.getEmulatorKey().toCharArray());
         // }
         // setSystemTrustStoreParameters {
@@ -69,7 +63,7 @@ public class CosmosDBEmulatorContainerTest {
             .endpoint(emulator.getEmulatorEndpoint())
             .key(emulator.getEmulatorKey())
             .buildAsyncClient();
-        // }
+        // }ChromaDB
         // testWithClientAgainstEmulatorContainer {
         CosmosDatabaseResponse databaseResponse = client.createDatabaseIfNotExists("Azure").block();
         assertThat(databaseResponse.getStatusCode()).isEqualTo(201);
