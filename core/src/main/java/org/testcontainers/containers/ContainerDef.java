@@ -39,7 +39,7 @@ class ContainerDef {
 
     Map<String, String> labels = new HashMap<>();
 
-    Map<String, String> envVars = new HashMap<>();
+    Map<String, Supplier<String>> envVars = new HashMap<>();
 
     private String[] entrypoint;
 
@@ -220,11 +220,11 @@ class ContainerDef {
         this.labels.put(key, value);
     }
 
-    public Map<String, String> getEnvVars() {
+    public Map<String, Supplier<String>> getEnvVars() {
         return new HashMap<>(this.envVars);
     }
 
-    protected void setEnvVars(Map<String, String> envVars) {
+    protected void setEnvVars(Map<String, Supplier<String>> envVars) {
         this.envVars.clear();
         this.envVars.putAll(envVars);
     }
@@ -232,13 +232,13 @@ class ContainerDef {
     protected void addEnvVars(Map<String, String> envVars) {
         this.envVars.putAll(envVars.entrySet().stream().collect(
             HashMap::new,
-            (map, entry) -> map.put(entry.getKey(), entry.getValue()),
+            (map, entry) -> map.put(entry.getKey(), () -> entry.getValue()),
             HashMap::putAll
         ));
     }
 
     protected void addEnvVar(String key, String value) {
-        this.envVars.put(key, value);
+        this.envVars.put(key, () -> value);
     }
 
     public String[] getEntrypoint() {
