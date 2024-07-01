@@ -967,7 +967,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         return this.containerDef.getEnvVars()
             .entrySet()
             .stream()
-            .map(it -> it.getKey() + "=" + it.getValue())
+            .map(it -> it.getKey() + "=" + it.getValue().get())
             .collect(Collectors.toList());
     }
 
