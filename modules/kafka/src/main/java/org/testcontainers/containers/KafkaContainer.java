@@ -275,10 +275,10 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
         private void resolveListeners() {
             Set<String> listeners = Arrays
-                .stream(this.envVars.get("KAFKA_LISTENERS").get().split(","))
+                .stream(this.envVars.get("KAFKA_LISTENERS").split(","))
                 .collect(Collectors.toSet());
             Set<String> listenerSecurityProtocolMap = Arrays
-                .stream(this.envVars.get("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP").get().split(","))
+                .stream(this.envVars.get("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP").split(","))
                 .collect(Collectors.toSet());
 
             List<Supplier<String>> listenersToTransform = new ArrayList<>(this.listeners);
@@ -299,8 +299,8 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
             String kafkaListeners = String.join(",", listeners);
             String kafkaListenerSecurityProtocolMap = String.join(",", listenerSecurityProtocolMap);
 
-            this.envVars.put("KAFKA_LISTENERS", () -> kafkaListeners);
-            this.envVars.put("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", () -> kafkaListenerSecurityProtocolMap);
+            this.envVars.put("KAFKA_LISTENERS", kafkaListeners);
+            this.envVars.put("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", kafkaListenerSecurityProtocolMap);
         }
 
         void withListener(Supplier<String> listenerSupplier) {
@@ -321,7 +321,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         }
 
         void withRaft() {
-            this.envVars.computeIfAbsent("CLUSTER_ID", key -> () -> clusterId);
+            this.envVars.computeIfAbsent("CLUSTER_ID", key -> clusterId);
             this.envVars.computeIfAbsent("KAFKA_NODE_ID", key -> getEnvVars().get("KAFKA_BROKER_ID"));
             addEnvVar(
                 "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP",
@@ -340,7 +340,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
                 getEnvVars().get("KAFKA_NODE_ID"),
                 networkAlias
             );
-            this.envVars.computeIfAbsent("KAFKA_CONTROLLER_QUORUM_VOTERS", key -> () -> controllerQuorumVoters);
+            this.envVars.computeIfAbsent("KAFKA_CONTROLLER_QUORUM_VOTERS", key -> controllerQuorumVoters);
             addEnvVar("KAFKA_CONTROLLER_LISTENER_NAMES", "CONTROLLER");
 
             setWaitStrategy(Wait.forLogMessage(".*Transitioning from RECOVERY to RUNNING.*", 1));

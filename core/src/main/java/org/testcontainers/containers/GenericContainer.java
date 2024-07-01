@@ -955,7 +955,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     @Override
-    public Map<String, Supplier<String>> getEnvMap() {
+    public Map<String, String> getEnvMap() {
         return this.containerDef.envVars;
     }
 
@@ -974,7 +974,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public void setEnv(List<String> env) {
         this.containerDef.setEnvVars(
-            env.stream().map(it -> it.split("=")).collect(Collectors.toMap(it -> it[0], it -> () -> it[1]))
+            env.stream().map(it -> it.split("=")).collect(Collectors.toMap(it -> it[0], it -> it[1]))
         );
     }
 
@@ -1149,19 +1149,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         this.containerDef.addPortBindings(portBinding);
     }
 
-
-
-    public SELF withEnv(String key, Supplier<String> value) {
-        getEnvMap().put(key, value);
-        return self();
-    }
-
     /**
      * {@inheritDoc}
      */
     @Override
     public SELF withEnv(String key, String value) {
-        getEnvMap().put(key, () -> value);
+        getEnvMap().put(key, value);
         return self();
     }
 

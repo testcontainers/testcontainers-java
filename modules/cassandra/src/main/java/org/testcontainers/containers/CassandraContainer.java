@@ -237,7 +237,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
      * @return The configured local Datacenter name.
      */
     public String getLocalDatacenter() {
-        return getEnvMap().getOrDefault("CASSANDRA_DC", () -> DEFAULT_LOCAL_DATACENTER).get();
+        return getEnvMap().getOrDefault("CASSANDRA_DC", DEFAULT_LOCAL_DATACENTER);
     }
 
     @Deprecated

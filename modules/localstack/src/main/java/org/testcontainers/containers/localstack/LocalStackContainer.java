@@ -186,7 +186,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
      */
     private void configureLambdaContainerLabels() {
         String lambdaDockerFlags = internalMarkerLabels();
-        String existingLambdaDockerFlags = getEnvMap().get("LAMBDA_DOCKER_FLAGS").get();
+        String existingLambdaDockerFlags = getEnvMap().get("LAMBDA_DOCKER_FLAGS");
         if (existingLambdaDockerFlags != null) {
             lambdaDockerFlags = existingLambdaDockerFlags + " " + lambdaDockerFlags;
         }
@@ -342,7 +342,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
      * @return a default access key
      */
     public String getAccessKey() {
-        return this.getEnvMap().getOrDefault("AWS_ACCESS_KEY_ID", () -> DEFAULT_AWS_ACCESS_KEY_ID).get();
+        return this.getEnvMap().getOrDefault("AWS_ACCESS_KEY_ID", DEFAULT_AWS_ACCESS_KEY_ID);
     }
 
     /**
@@ -361,7 +361,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
      * @return a default secret key
      */
     public String getSecretKey() {
-        return this.getEnvMap().getOrDefault("AWS_SECRET_ACCESS_KEY", () -> DEFAULT_AWS_SECRET_ACCESS_KEY).get();
+        return this.getEnvMap().getOrDefault("AWS_SECRET_ACCESS_KEY", DEFAULT_AWS_SECRET_ACCESS_KEY);
     }
 
     /**
@@ -379,7 +379,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
      * @return a default region
      */
     public String getRegion() {
-        return this.getEnvMap().getOrDefault("DEFAULT_REGION", () -> DEFAULT_REGION).get();
+        return this.getEnvMap().getOrDefault("DEFAULT_REGION", DEFAULT_REGION);
     }
 
     public interface EnabledService {
