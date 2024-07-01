@@ -973,8 +973,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public void setEnv(List<String> env) {
         this.containerDef.setEnvVars(
-            env.stream().map(it -> it.split("=")).collect(Collectors.toMap(it -> it[0], it -> () -> it[1]))
-        );
+                env.stream().map(it -> it.split("=")).collect(Collectors.toMap(it -> it[0], it -> () -> it[1]))
+            );
     }
 
     /**

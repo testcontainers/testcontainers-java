@@ -230,11 +230,16 @@ class ContainerDef {
     }
 
     protected void addEnvVars(Map<String, String> envVars) {
-        this.envVars.putAll(envVars.entrySet().stream().collect(
-            HashMap::new,
-            (map, entry) -> map.put(entry.getKey(), () -> entry.getValue()),
-            HashMap::putAll
-        ));
+        this.envVars.putAll(
+                envVars
+                    .entrySet()
+                    .stream()
+                    .collect(
+                        HashMap::new,
+                        (map, entry) -> map.put(entry.getKey(), () -> entry.getValue()),
+                        HashMap::putAll
+                    )
+            );
     }
 
     protected void addEnvVar(String key, String value) {
