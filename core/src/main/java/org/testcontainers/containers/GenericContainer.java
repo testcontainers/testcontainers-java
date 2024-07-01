@@ -780,7 +780,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         return this.getLivenessCheckPorts();
     }
 
-    // TODO - init method to allow subclasses to perform additional configuration
     private void applyConfiguration(CreateContainerCmd createCommand) {
         this.containerDef.applyTo(createCommand);
         buildHostConfig(createCommand.getHostConfig());
