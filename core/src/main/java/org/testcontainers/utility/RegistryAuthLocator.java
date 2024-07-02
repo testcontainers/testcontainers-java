@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.testcontainers.DockerClientFactory;
 import org.zeroturnaround.exec.InvalidResultException;
 import org.zeroturnaround.exec.ProcessExecutor;
+import org.zeroturnaround.exec.stream.NullOutputStream;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -408,6 +409,7 @@ public class RegistryAuthLocator {
         return new ProcessExecutor()
             .command(command)
             .redirectInput(new ByteArrayInputStream(hostName.getBytes()))
+            .redirectError(NullOutputStream.NULL_OUTPUT_STREAM)
             .readOutput(true)
             .exitValueNormal()
             .timeout(30, TimeUnit.SECONDS)
