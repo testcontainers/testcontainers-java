@@ -1,32 +1,41 @@
 package org.testcontainers.containers;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import lombok.SneakyThrows;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.testcontainers.containers.RabbitMQContainer.SslVerification;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.images.builder.Transferable;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
-
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.time.Duration;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-
+@RunWith(Parameterized.class)
 public class RabbitMQContainerTest {
 
     public static final int DEFAULT_AMQPS_PORT = 5671;
@@ -37,9 +46,34 @@ public class RabbitMQContainerTest {
 
     public static final int DEFAULT_HTTP_PORT = 15672;
 
+    public static final String CLIENT_KEYSTORE_FILE = "certs/client_key.p12";
+
+    public static final String CLIENT_KEYSTORE_PASSWORD = "password";
+
+    public static final String CLIENT_TRUSTSTORE_FILE = "certs/truststore.jks";
+
+    public static final String CLIENT_TRUSTSTORE_PASSWORD = "password";
+
+    @Parameterized.Parameters
+    public static Collection<Object[]> data() {
+        return Arrays.asList(
+            new Object[][]{
+                {RabbitMQTestImages.RABBITMQ_IMAGE_3_7},
+                {RabbitMQTestImages.RABBITMQ_IMAGE_3_9},
+                {RabbitMQTestImages.RABBITMQ_IMAGE_3_12},
+            }
+        );
+    }
+
+    private final DockerImageName imageName;
+
+    public RabbitMQContainerTest(DockerImageName imageName) {
+        this.imageName = imageName;
+    }
+
     @Test
     public void shouldCreateRabbitMQContainer() {
-        try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
+        try (RabbitMQContainer container = new RabbitMQContainer(imageName)) {
             assertThat(container.getAdminPassword()).isEqualTo("guest");
             assertThat(container.getAdminUsername()).isEqualTo("guest");
 
@@ -79,7 +113,7 @@ public class RabbitMQContainerTest {
 
     @Test
     public void shouldCreateRabbitMQContainerWithExchange() throws IOException, InterruptedException {
-        try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
+        try (RabbitMQContainer container = new RabbitMQContainer(imageName)) {
             container.withExchange("test-exchange", "direct");
 
             container.start();
@@ -91,7 +125,7 @@ public class RabbitMQContainerTest {
 
     @Test
     public void shouldCreateRabbitMQContainerWithExchangeInVhost() throws IOException, InterruptedException {
-        try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
+        try (RabbitMQContainer container = new RabbitMQContainer(imageName)) {
             container.withVhost("test-vhost");
             container.withExchange(
                 "test-vhost",
@@ -112,7 +146,7 @@ public class RabbitMQContainerTest {
 
     @Test
     public void shouldCreateRabbitMQContainerWithQueues() throws IOException, InterruptedException {
-        try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
+        try (RabbitMQContainer container = new RabbitMQContainer(imageName)) {
             container
                 .withQueue("queue-one")
                 .withQueue("queue-two", false, true, ImmutableMap.of("x-message-ttl", 1000));
@@ -120,15 +154,14 @@ public class RabbitMQContainerTest {
             container.start();
 
             assertThat(container.execInContainer("rabbitmqctl", "list_queues", "name", "arguments").getStdout())
-                .containsPattern("queue-one");
-            assertThat(container.execInContainer("rabbitmqctl", "list_queues", "name", "arguments").getStdout())
+                .containsPattern("queue-one")
                 .containsPattern("queue-two\\s.*x-message-ttl");
         }
     }
 
     @Test
     public void shouldMountConfigurationFile() {
-        try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
+        try (RabbitMQContainer container = new RabbitMQContainer(imageName)) {
             container.withRabbitMQConfig(MountableFile.forClasspathResource("/rabbitmq-custom.conf"));
             container.start();
 
@@ -138,7 +171,7 @@ public class RabbitMQContainerTest {
 
     @Test
     public void shouldMountConfigurationFileErlang() {
-        try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
+        try (RabbitMQContainer container = new RabbitMQContainer(imageName)) {
             container.withRabbitMQConfigErlang(MountableFile.forClasspathResource("/rabbitmq-custom.config"));
             container.start();
 
@@ -148,7 +181,7 @@ public class RabbitMQContainerTest {
 
     @Test
     public void shouldMountConfigurationFileSysctl() {
-        try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
+        try (RabbitMQContainer container = new RabbitMQContainer(imageName)) {
             container.withRabbitMQConfigSysctl(MountableFile.forClasspathResource("/rabbitmq-custom.conf"));
             container.start();
 
@@ -158,7 +191,7 @@ public class RabbitMQContainerTest {
 
     @Test
     public void shouldStartTheWholeEnchilada() throws IOException, InterruptedException {
-        try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
+        try (RabbitMQContainer container = new RabbitMQContainer(imageName)) {
             container
                 .withVhost("vhost1")
                 .withVhostLimit("vhost1", "max-connections", 1)
@@ -233,66 +266,161 @@ public class RabbitMQContainerTest {
 
     @Test
     public void shouldThrowExceptionForDodgyJson() {
-        try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
+        try (RabbitMQContainer container = new RabbitMQContainer(imageName)) {
             assertThatCode(() -> container.withQueue("queue2", true, false, ImmutableMap.of("x-message-ttl", container))
                 )
                 .hasMessageStartingWith("Failed to convert arguments into json");
         }
     }
 
+    /**
+     * Example of how to enable SSL with environment variable.
+     * <p>
+     * ⚠️ This is incompatible with RabbitMQ 3.9+ because of the deprecation of the `RABBITMQ_SSL_*` variables.
+     * </p>
+     */
     @Test
-    public void shouldWorkWithSSL() {
-        try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
+    public void shouldWorkWithSSL_Legacy() {
+        try (RabbitMQContainer container = new RabbitMQContainer(imageName)) {
             container.withSSL(
                 MountableFile.forClasspathResource("/certs/server_key.pem", 0644),
                 MountableFile.forClasspathResource("/certs/server_certificate.pem", 0644),
                 MountableFile.forClasspathResource("/certs/ca_certificate.pem", 0644),
-                SslVerification.VERIFY_PEER,
-                true
+                SslVerification.VERIFY_PEER
             );
 
-            container.start();
+            if (imageName.equals(RabbitMQTestImages.RABBITMQ_IMAGE_3_7)) {
+                container.start();
+                assertThatCode(() -> connectThroughSsl(container)).doesNotThrowAnyException();
+            } else {
+                container
+                    .waitingFor(
+                        Wait.forLogMessage(".*is set but deprecated.*", 1)
+                            .withStartupTimeout(Duration.ofSeconds(60))
+                    )
+                    .start();
 
-            assertThatCode(() -> {
-                    ConnectionFactory connectionFactory = new ConnectionFactory();
-                    connectionFactory.useSslProtocol(
-                        createSslContext("certs/client_key.p12", "password", "certs/truststore.jks", "password")
-                    );
-                    connectionFactory.enableHostnameVerification();
-                    connectionFactory.setUri(container.getAmqpsUrl());
-                    connectionFactory.setPassword(container.getAdminPassword());
-                    Connection connection = connectionFactory.newConnection();
-                    Channel channel = connection
-                        .openChannel()
-                        .orElseThrow(() -> new RuntimeException("Failed to Open channel"));
-                    channel.close();
-                    connection.close();
-                })
-                .doesNotThrowAnyException();
+                assertThat(container.getLogs())
+                    .contains("error: deprecated environment variables detected")
+                    .contains("Please use a configuration file instead; visit https://www.rabbitmq.com/configure.html to learn more");
+            }
         }
     }
 
-    private SSLContext createSslContext(
-        String keystoreFile,
-        String keystorePassword,
-        String truststoreFile,
-        String truststorePassword
-    )
+    /**
+     * Example of how to enable SSL with advanced configuration.
+     */
+    @Test
+    public void shouldEnableSSLWithAdvancedConfiguration() {
+        try (RabbitMQContainer container = new RabbitMQContainer(imageName)) {
+            String advancedConfig = String.format(
+                "[\n" +
+                    "  {rabbit, [{ssl_listeners, [%d]},\n" +
+                    "            {ssl_options,   [{cacertfile,           \"%s\"},\n" +
+                    "                             {certfile,             \"%s\"},\n" +
+                    "                             {keyfile,              \"%s\"},\n" +
+                    "                             {verify,               %s},\n" +
+                    "                             {fail_if_no_peer_cert, %b},\n" +
+                    "                             {depth,                %d}]}]}\n" +
+                    "].",
+                DEFAULT_AMQPS_PORT,
+                "/etc/rabbitmq/ca_cert.pem",
+                "/etc/rabbitmq/rabbitmq_cert.pem",
+                "/etc/rabbitmq/rabbitmq_key.pem",
+                "verify_peer",
+                true,
+                1
+            );
+
+            container
+                .withCopyToContainer(Transferable.of(advancedConfig), "/etc/rabbitmq/advanced-custom.config")
+                .withCopyFileToContainer(MountableFile.forClasspathResource("/certs/ca_certificate.pem", 0644), "/etc/rabbitmq/ca_cert.pem")
+                .withCopyFileToContainer(MountableFile.forClasspathResource("/certs/server_certificate.pem", 0644), "/etc/rabbitmq/rabbitmq_cert.pem")
+                .withCopyFileToContainer(MountableFile.forClasspathResource("/certs/server_key.pem", 0644), "/etc/rabbitmq/rabbitmq_key.pem")
+                .withEnv("RABBITMQ_ADVANCED_CONFIG_FILE", "/etc/rabbitmq/advanced-custom.config");
+
+
+            container.start();
+            assertThatCode(() -> connectThroughSsl(container)).doesNotThrowAnyException();
+        }
+    }
+
+    /**
+     * Example of how to enable SSL with regular configuration.
+     * <p>
+     * ⚠️ This is incompatible with RabbitMQ 3.7 because it doesn't allow loading multiple configuration files from a directory.
+     * </p>
+     */
+    @Test
+    public void shouldEnableSSLWitRegularConfiguration() {
+        try (RabbitMQContainer container = new RabbitMQContainer(imageName)) {
+            String tlsConfig = String.format(
+                "listeners.ssl.1 = %d\n" +
+                "ssl_options.cacertfile = %s\n" +
+                "ssl_options.certfile = %s\n" +
+                "ssl_options.keyfile = %s\n" +
+                "ssl_options.verify = %s\n"+
+                "ssl_options.fail_if_no_peer_cert = %s\n",
+
+                DEFAULT_AMQPS_PORT,
+                "/etc/rabbitmq/ca_cert.pem",
+                "/etc/rabbitmq/rabbitmq_cert.pem",
+                "/etc/rabbitmq/rabbitmq_key.pem",
+                "verify_peer",
+                true
+            );
+
+            container
+                .withCopyToContainer(Transferable.of(tlsConfig), "/etc/rabbitmq/conf.d/20-tls.conf")
+                .withCopyFileToContainer(MountableFile.forClasspathResource("/certs/ca_certificate.pem", 0644), "/etc/rabbitmq/ca_cert.pem")
+                .withCopyFileToContainer(MountableFile.forClasspathResource("/certs/server_certificate.pem", 0644), "/etc/rabbitmq/rabbitmq_cert.pem")
+                .withCopyFileToContainer(MountableFile.forClasspathResource("/certs/server_key.pem", 0644), "/etc/rabbitmq/rabbitmq_key.pem")
+                .withEnv("RABBITMQ_CONFIG_FILES", "/etc/rabbitmq/conf.d");
+
+
+            container.start();
+
+            if(imageName.equals(RabbitMQTestImages.RABBITMQ_IMAGE_3_7)) {
+                assertThatCode(() -> connectThroughSsl(container)).hasMessage("Remote host terminated the handshake");
+            } else {
+                assertThatCode(() -> connectThroughSsl(container)).doesNotThrowAnyException();
+            }
+        }
+    }
+
+    @SneakyThrows
+    private void connectThroughSsl(RabbitMQContainer container) {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+        connectionFactory.useSslProtocol(createSslContext());
+        connectionFactory.enableHostnameVerification();
+        connectionFactory.setUri(container.getAmqpsUrl());
+        connectionFactory.setPassword(container.getAdminPassword());
+        Connection connection = connectionFactory.newConnection();
+        Channel channel = connection.openChannel().orElseThrow(() -> new RuntimeException("Failed to Open channel"));
+        channel.close();
+        connection.close();
+    }
+
+    private SSLContext createSslContext()
         throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException, UnrecoverableKeyException, KeyManagementException {
         ClassLoader classLoader = getClass().getClassLoader();
 
         KeyStore ks = KeyStore.getInstance("PKCS12");
         ks.load(
-            new FileInputStream(new File(classLoader.getResource(keystoreFile).getFile())),
-            keystorePassword.toCharArray()
+            Files.newInputStream(
+                new File(Objects.requireNonNull(classLoader.getResource(CLIENT_KEYSTORE_FILE)).getFile()).toPath()
+            ),
+            CLIENT_KEYSTORE_PASSWORD.toCharArray()
         );
         KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
-        kmf.init(ks, "password".toCharArray());
+        kmf.init(ks, CLIENT_KEYSTORE_PASSWORD.toCharArray());
 
         KeyStore trustStore = KeyStore.getInstance("PKCS12");
         trustStore.load(
-            new FileInputStream(new File(classLoader.getResource(truststoreFile).getFile())),
-            truststorePassword.toCharArray()
+            Files.newInputStream(
+                new File(Objects.requireNonNull(classLoader.getResource(CLIENT_TRUSTSTORE_FILE)).getFile()).toPath()
+            ),
+            CLIENT_TRUSTSTORE_PASSWORD.toCharArray()
         );
         TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
         tmf.init(trustStore);

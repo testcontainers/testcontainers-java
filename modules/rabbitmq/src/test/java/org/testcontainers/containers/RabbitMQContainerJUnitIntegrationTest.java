@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class RabbitMQContainerJUnitIntegrationTest {
 
     @ClassRule
-    public static RabbitMQContainer rabbitMQContainer = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE);
+    public static RabbitMQContainer rabbitMQContainer = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE_3_12);
 
     @Test
     public void shouldStart() {
