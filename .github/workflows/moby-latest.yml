@@ -20,7 +20,7 @@ jobs:
         run: docker version
 
       - name: Build with Gradle
-        run: ./gradlew cleanTest --no-daemon --continue --scan -Dscan.tag.DOCKER_STABLE testcontainers:test
+        run: ./gradlew cleanTest --no-daemon --continue --scan -Dscan.tag.DOCKER_STABLE testcontainers:test -Dorg.gradle.caching=false
       - uses: ./.github/actions/setup-junit-report
 
       - name: Notify to Slack on failures
@@ -52,7 +52,7 @@ jobs:
         run: docker version
 
       - name: Build with Gradle
-        run: ./gradlew cleanTest --no-daemon --continue --scan -Dscan.tag.DOCKER_LATEST testcontainers:test
+        run: ./gradlew cleanTest --no-daemon --continue --scan -Dscan.tag.DOCKER_LATEST testcontainers:test -Dorg.gradle.caching=false
 
       - uses: ./.github/actions/setup-junit-report
 
