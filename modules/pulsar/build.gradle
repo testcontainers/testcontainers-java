@@ -5,5 +5,5 @@ dependencies {
 
     testImplementation group: 'org.apache.pulsar', name: 'pulsar-client', version: '3.2.3'
     testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.25.3'
-    testImplementation group: 'org.apache.pulsar', name: 'pulsar-client-admin', version: '3.2.3'
+    testImplementation group: 'org.apache.pulsar', name: 'pulsar-client-admin', version: '3.3.0'
 }
