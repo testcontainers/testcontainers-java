@@ -55,6 +55,7 @@ body:
         - QuestDB
         - RabbitMQ
         - Redpanda
+        - ScyllaDB
         - Selenium
         - Solace
         - Solr
