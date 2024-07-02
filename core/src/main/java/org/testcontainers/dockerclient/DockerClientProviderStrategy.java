@@ -230,7 +230,8 @@ public abstract class DockerClientProviderStrategy {
     public static DockerClientProviderStrategy getFirstValidStrategy(List<DockerClientProviderStrategy> strategies) {
         if (FAIL_FAST_ALWAYS.get()) {
             throw new IllegalStateException(
-                "Previous attempts to find a Docker environment failed. Will not retry. Please see logs and check configuration"
+                "Previous attempts to find a Docker environment failed. Will not retry. Please see logs and check configuration.\n" +
+                    "To allow retries again, you may have to stop any long-running build daemons (eg, `gradle --stop`, `mvnd --stop`)."
             );
         }
 
