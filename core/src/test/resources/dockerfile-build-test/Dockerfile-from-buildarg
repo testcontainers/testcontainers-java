@@ -1,0 +1,9 @@
+ARG BUILD_IMAGE
+ARG BASE_IMAGE
+ARG BASE_IMAGE_TAG
+
+FROM ${BUILD_IMAGE} AS build
+COPY localfile.txt /test-build.txt
+
+FROM $BASE_IMAGE:${BASE_IMAGE_TAG} AS base
+COPY --from=build /test-build.txt /test.txt
