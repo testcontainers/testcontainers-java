@@ -14,7 +14,11 @@ jobs:
       - uses: ./.github/actions/setup-build
 
       - name: Install Stable Docker
-        run: curl https://get.docker.com
+        run: |
+          sudo systemctl stop docker.service
+          sudo apt-get purge docker-ce docker-ce-cli containerd.io docker-compose-plugin docker-ce-rootless-extras docker-buildx-plugin
+          curl -fsSL https://get.docker.com -o get-docker.sh
+          sudo sh ./get-docker.sh
 
       - name: Check Docker version
         run: docker version
@@ -46,7 +50,11 @@ jobs:
       - uses: ./.github/actions/setup-build
 
       - name: Install Latest Docker
-        run: curl https://get.docker.com | CHANNEL=test sh
+        run: |
+          sudo systemctl stop docker.service
+          sudo apt-get purge docker-ce docker-ce-cli containerd.io docker-compose-plugin docker-ce-rootless-extras docker-buildx-plugin
+          curl -fsSL https://test.docker.com -o get-docker.sh
+          sudo REPO_FILE=docker-ce-staging.repo DOWNLOAD_URL=https://download-stage.docker.com sh ./get-docker.sh
 
       - name: Check Docker version
         run: docker version
