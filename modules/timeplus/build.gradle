@@ -1,0 +1,10 @@
+description = "Testcontainers :: JDBC :: Timeplus"
+
+dependencies {
+    api project(':testcontainers')
+    api project(':jdbc')
+
+    testImplementation project(':jdbc-test')
+    testRuntimeOnly 'com.timeplus:proton-jdbc:0.6.0'
+    testImplementation 'org.assertj:assertj-core:3.25.3'
+}
