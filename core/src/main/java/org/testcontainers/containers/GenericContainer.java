@@ -893,7 +893,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @Override
     public void setWaitStrategy(WaitStrategy waitStrategy) {
-        this.containerDef.setWaitStrategy(waitStrategy);
+        this.waitStrategy = waitStrategy;
     }
 
     /**
