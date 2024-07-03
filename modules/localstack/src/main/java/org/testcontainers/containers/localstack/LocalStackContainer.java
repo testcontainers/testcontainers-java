@@ -1,5 +1,6 @@
 package org.testcontainers.containers.localstack;
 
+import com.github.dockerjava.api.command.InspectContainerResponse;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -8,9 +9,9 @@ import org.rnorth.ducttape.Preconditions;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
-import org.testcontainers.utility.ResourceReaper;
 
 import java.net.InetAddress;
 import java.net.URI;
@@ -20,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Testcontainers implementation for LocalStack.
@@ -52,6 +52,8 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
     private static final String DEFAULT_AWS_ACCESS_KEY_ID = "test";
 
     private static final String DEFAULT_AWS_SECRET_ACCESS_KEY = "test";
+
+    private static final String STARTER_SCRIPT = "/testcontainers_start.sh";
 
     @Deprecated
     public static final String VERSION = DEFAULT_TAG;
@@ -121,6 +123,8 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
 
         withFileSystemBind(DockerClientFactory.instance().getRemoteDockerUnixSocketPath(), "/var/run/docker.sock");
         waitingFor(Wait.forLogMessage(".*Ready\\.\n", 1));
+        withCreateContainerCmdModifier(cmd -> cmd.withEntrypoint("sh"));
+        setCommand("-c", "while [ ! -f " + STARTER_SCRIPT + " ]; do sleep 0.1; done; " + STARTER_SCRIPT);
     }
 
     private static boolean isVersion2(String version) {
@@ -167,34 +171,6 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
         return true;
     }
 
-    /**
-     * Provides a docker argument string including all default labels set on testcontainer containers
-     * @return Argument string in the format `-l key1=value1 -l key2=value2`
-     */
-    private static String internalMarkerLabels() {
-        return Stream
-            .concat(
-                DockerClientFactory.DEFAULT_LABELS.entrySet().stream(),
-                ResourceReaper.instance().getLabels().entrySet().stream()
-            )
-            .map(entry -> String.format("-l %s=%s", entry.getKey(), entry.getValue()))
-            .collect(Collectors.joining(" "));
-    }
-
-    /**
-     * Configure the LocalStack container to include the default testcontainer labels on all spawned lambda containers
-     * Necessary to properly clean up lambda containers even if the LocalStack container is killed before it gets the
-     * chance.
-     */
-    private void configureLambdaContainerLabels() {
-        String lambdaDockerFlags = internalMarkerLabels();
-        String existingLambdaDockerFlags = getEnvMap().get("LAMBDA_DOCKER_FLAGS");
-        if (existingLambdaDockerFlags != null) {
-            lambdaDockerFlags = existingLambdaDockerFlags + " " + lambdaDockerFlags;
-        }
-        withEnv("LAMBDA_DOCKER_FLAGS", lambdaDockerFlags);
-    }
-
     @Override
     protected void configure() {
         super.configure();
@@ -217,7 +193,50 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
         }
 
         exposePorts();
-        configureLambdaContainerLabels();
+    }
+
+    @Override
+    protected void containerIsStarting(InspectContainerResponse containerInfo) {
+        String command = "#!/bin/bash\n";
+        command += "export LAMBDA_DOCKER_FLAGS=" + configureLambdaContainerLabels() + "\n";
+        command += "/usr/local/bin/docker-entrypoint.sh\n";
+        copyFileToContainer(Transferable.of(command, 0777), STARTER_SCRIPT);
+    }
+
+    /**
+     * Configure the LocalStack container to include the default testcontainers labels on all spawned lambda containers
+     * Necessary to properly clean up lambda containers even if the LocalStack container is killed before it gets the
+     * chance.
+     * @return the lambda container labels as a string
+     */
+    private String configureLambdaContainerLabels() {
+        String lambdaDockerFlags = internalMarkerLabels();
+        String existingLambdaDockerFlags = getEnvMap().get("LAMBDA_DOCKER_FLAGS");
+        if (existingLambdaDockerFlags != null) {
+            lambdaDockerFlags = existingLambdaDockerFlags + " " + lambdaDockerFlags;
+        }
+        return "\"" + lambdaDockerFlags + "\"";
+    }
+
+    /**
+     * Provides a docker argument string including all default labels set on testcontainers containers (excluding reuse labels)
+     * @return Argument string in the format `-l key1=value1 -l key2=value2`
+     */
+    private String internalMarkerLabels() {
+        return getContainerInfo()
+            .getConfig()
+            .getLabels()
+            .entrySet()
+            .stream()
+            .filter(entry -> entry.getKey().startsWith(DockerClientFactory.TESTCONTAINERS_LABEL))
+            .filter(entry -> {
+                return (
+                    !entry.getKey().equals("org.testcontainers.hash") &&
+                    !entry.getKey().equals("org.testcontainers.copied_files.hash")
+                );
+            })
+            .map(entry -> String.format("-l %s=%s", entry.getKey(), entry.getValue()))
+            .collect(Collectors.joining(" "));
     }
 
     private void resolveHostname(String envVar) {
