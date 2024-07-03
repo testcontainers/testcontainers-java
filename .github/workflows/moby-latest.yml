@@ -10,7 +10,7 @@ jobs:
     strategy:
       matrix:
         install-docker-type: ["STABLE", "ROOTLESS", "ROOTFUL"]
-    name: "Core tests using stable Docker ${{ matrix.install-docker-type }}"
+    name: "Core tests using Docker ${{ matrix.install-docker-type }}"
     runs-on: ubuntu-22.04
     continue-on-error: true
     steps:
