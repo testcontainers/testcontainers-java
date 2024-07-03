@@ -31,6 +31,7 @@ jobs:
           payload: |
             {
               "tc_project": "testcontainers-java",
+              "tc_docker_install_type": "Docker Stable-CE",
               "tc_github_action_url": "https://github.com/testcontainers/testcontainers-java/actions/runs/${{ env.GITHUB_RUN_ID }}/job/${{ env.GITHUB_RUN_NUMBER }}",
               "tc_github_action_status": "FAILED",
               "tc_slack_channel_id": "${{ secrets.SLACK_DOCKER_LATEST_CHANNEL_ID }}"
@@ -64,6 +65,7 @@ jobs:
           payload: |
             {
               "tc_project": "testcontainers-java",
+              "tc_docker_install_type": "Rootful",
               "tc_github_action_url": "https://github.com/testcontainers/testcontainers-java/actions/runs/${{ env.GITHUB_RUN_ID }}/job/${{ env.GITHUB_RUN_NUMBER }}",
               "tc_github_action_status": "FAILED",
               "tc_slack_channel_id": "${{ secrets.SLACK_DOCKER_LATEST_CHANNEL_ID }}"
