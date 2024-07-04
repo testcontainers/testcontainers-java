@@ -37,8 +37,8 @@ public class LegacyModeTest {
                     { "0.12", new LocalStackContainer(LocalstackTestImages.LOCALSTACK_0_12_IMAGE) },
                     { "0.11", new LocalStackContainer(LocalstackTestImages.LOCALSTACK_0_11_IMAGE) },
                     {
-                        "0.7 with legacy = off",
-                        new LocalStackContainer(LocalstackTestImages.LOCALSTACK_0_7_IMAGE, false),
+                        "0.11 with legacy = off",
+                        new LocalStackContainer(LocalstackTestImages.LOCALSTACK_0_11_IMAGE, false),
                     },
                 }
             );
