@@ -11,7 +11,7 @@ buildscript {
     }
 }
 
-apply plugin: 'com.gradle.enterprise'
+apply plugin: 'com.gradle.develocity'
 apply plugin: "com.gradle.common-custom-user-data-gradle-plugin"
 apply plugin: "org.gradle.toolchains.foojay-resolver-convention"
 
@@ -51,13 +51,14 @@ buildCache {
     }
 }
 
-gradleEnterprise {
+develocity {
     buildScan {
         server = "https://ge.testcontainers.org/"
-        publishAlways()
-        publishIfAuthenticated()
+        publishing.onlyIf {
+            it.authenticated
+        }
         uploadInBackground = !isCI
-        captureTaskInputFiles = true
+        capture.fileFingerprints = true
     }
 
 }

@@ -145,7 +145,7 @@ public class DockerClientFactory {
         if (strategy != null) {
             return strategy;
         }
-
+        log.info("Testcontainers version: {}", DEFAULT_LABELS.get(TESTCONTAINERS_VERSION_LABEL));
         List<DockerClientProviderStrategy> configurationStrategies = new ArrayList<>();
         ServiceLoader.load(DockerClientProviderStrategy.class).forEach(configurationStrategies::add);
 

@@ -1,59 +1,44 @@
 name: Tests against recent Docker engine releases
 
 on:
+  workflow_dispatch:
   schedule:
     # nightly build, at 23:59 CEST
     - cron:  '59 23 * * *'
 
 jobs:
-  test_stable_docker:
-    name: "Core tests using stable Docker-CE"
+  test_docker:
+    strategy:
+      matrix:
+        install-docker-type: ["STABLE", "ROOTLESS", "ROOTFUL"]
+    name: "Core tests using Docker ${{ matrix.install-docker-type }}"
     runs-on: ubuntu-22.04
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-build
 
       - name: Install Stable Docker
+        if: ${{ matrix.install-docker-type == 'STABLE' }}
         run: curl https://get.docker.com
 
-      - name: Check Docker version
-        run: docker version
-
-      - name: Build with Gradle
-        run: ./gradlew cleanTest --no-daemon --continue --scan -Dscan.tag.DOCKER_STABLE testcontainers:test
-      - uses: ./.github/actions/setup-junit-report
-
-      - name: Notify to Slack on failures
-        if: failure()
-        id: slack
-        uses: slackapi/slack-github-action@v1.26.0
-        with:
-          payload: |
-            {
-              "tc_project": "testcontainers-java",
-              "tc_github_action_url": "https://github.com/testcontainers/testcontainers-java/actions/runs/${{ env.GITHUB_RUN_ID }}/job/${{ env.GITHUB_RUN_NUMBER }}",
-              "tc_github_action_status": "FAILED",
-              "tc_slack_channel_id": "${{ secrets.SLACK_DOCKER_LATEST_CHANNEL_ID }}"
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_DOCKER_LATEST_WEBHOOK }}
-
-  test_latest_docker:
-    name: "Core tests using latest Docker-CE"
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup-build
-
-      - name: Install Latest Docker
+      - name: Install Docker from the TEST channel
+        if: ${{ matrix.install-docker-type == 'ROOTFUL' }}
         run: curl https://get.docker.com | CHANNEL=test sh
 
+      - name: Setup rootless Docker
+        if: ${{ matrix.install-docker-type == 'ROOTLESS' }}
+        uses: ScribeMD/rootless-docker@6bd157a512c2fafa4e0243a8aa87d964eb890886  # v0.2.2
+
+      - name: Remove Docker root socket
+        if: ${{ matrix.install-docker-type == 'ROOTLESS' }}
+        run: sudo rm -rf /var/run/docker.sock
+
       - name: Check Docker version
         run: docker version
 
       - name: Build with Gradle
-        run: ./gradlew cleanTest --no-daemon --continue --scan -Dscan.tag.DOCKER_LATEST testcontainers:test
-
+        run: ./gradlew cleanTest --no-daemon --continue --scan -Dscan.tag.DOCKER_${{ matrix.install-docker-type }} testcontainers:test -Dorg.gradle.caching=false
       - uses: ./.github/actions/setup-junit-report
 
       - name: Notify to Slack on failures
@@ -64,6 +49,7 @@ jobs:
           payload: |
             {
               "tc_project": "testcontainers-java",
+              "tc_docker_install_type": "${{ matrix.install-docker-type }}",
               "tc_github_action_url": "https://github.com/testcontainers/testcontainers-java/actions/runs/${{ env.GITHUB_RUN_ID }}/job/${{ env.GITHUB_RUN_NUMBER }}",
               "tc_github_action_status": "FAILED",
               "tc_slack_channel_id": "${{ secrets.SLACK_DOCKER_LATEST_CHANNEL_ID }}"
