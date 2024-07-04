@@ -15,13 +15,9 @@ public class TimeplusContainer extends JdbcDatabaseContainer<TimeplusContainer> 
 
     public static final String NAME = "timeplus";
 
-    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse(
-        "ghcr.io/timeplus-io/proton:latest"
-    );
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("timeplus/timeplusd:2.2.10");
 
-    private static final DockerImageName TIMEPLUS_IMAGE_NAME = DockerImageName.parse(
-        "ghcr.io/timeplus-io/proton:latest"
-    );
+    private static final DockerImageName TIMEPLUS_IMAGE_NAME = DockerImageName.parse("timeplus/timeplusd:2.3.3");
 
     @Deprecated
     public static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();

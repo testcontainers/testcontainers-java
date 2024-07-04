@@ -12,7 +12,7 @@ public class TimeplusContainerTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSimple() throws SQLException {
-        try (TimeplusContainer timeplus = new TimeplusContainer("ghcr.io/timeplus-io/proton:latest")) {
+        try (TimeplusContainer timeplus = new TimeplusContainer("timeplus/timeplusd:2.3.3")) {
             timeplus.start();
 
             ResultSet resultSet = performQuery(timeplus, "SELECT 1");
@@ -25,7 +25,7 @@ public class TimeplusContainerTest extends AbstractContainerDatabaseTest {
     @Test
     public void customCredentialsWithUrlParams() throws SQLException {
         try (
-            TimeplusContainer timeplus = new TimeplusContainer("ghcr.io/timeplus-io/proton:latest")
+            TimeplusContainer timeplus = new TimeplusContainer("timeplus/timeplusd:2.3.3")
                 .withUsername("test")
                 .withPassword("test")
                 .withDatabaseName("test")

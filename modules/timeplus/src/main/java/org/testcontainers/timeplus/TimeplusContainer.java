@@ -15,9 +15,7 @@ public class TimeplusContainer extends JdbcDatabaseContainer<TimeplusContainer> 
 
     private static final String NAME = "timeplus";
 
-    private static final DockerImageName TIMEPLUS_IMAGE_NAME = DockerImageName.parse(
-        "ghcr.io/timeplus-io/proton:latest"
-    );
+    private static final DockerImageName TIMEPLUS_IMAGE_NAME = DockerImageName.parse("timeplus/timeplusd:2.3.3");
 
     private static final Integer HTTP_PORT = 3128;
 

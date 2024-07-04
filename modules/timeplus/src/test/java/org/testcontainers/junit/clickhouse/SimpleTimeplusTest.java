@@ -3,7 +3,7 @@ package org.testcontainers.junit.timeplus;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.testcontainers.TimeplusTestImages;
+import org.testcontainers.TimeplusImages;
 import org.testcontainers.containers.TimeplusContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 import org.testcontainers.utility.DockerImageName;
@@ -25,8 +25,8 @@ public class SimpleTimeplusTest extends AbstractContainerDatabaseTest {
     @Parameterized.Parameters(name = "{0}")
     public static Object[][] data() {
         return new Object[][] { //
-            { TimeplusTestImages.TIMEPLUS_PROTON_IMAGE },
-            { TimeplusTestImages.TIMEPLUS_IMAGE },
+            { TimeplusImages.TIMEPLUS_PROTON_IMAGE },
+            { TimeplusImages.TIMEPLUS_IMAGE },
         };
     }
 
