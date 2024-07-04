@@ -81,10 +81,12 @@ public class CassandraContainerTest {
     @Test
     public void testInitScriptWithRequiredAuthentication() {
         try (
+            // init-with-auth {
             CassandraContainer cassandraContainer = new CassandraContainer(CASSANDRA_IMAGE)
                 .withConfigurationOverride("cassandra-auth-required-configuration")
                 .waitingFor(new CassandraQueryWaitStrategy())
                 .withInitScript("initial.cql")
+            // }
         ) {
             cassandraContainer.start();
             testInitScript(cassandraContainer, true);

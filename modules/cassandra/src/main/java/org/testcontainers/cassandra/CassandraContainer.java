@@ -55,7 +55,12 @@ public class CassandraContainer extends GenericContainer<CassandraContainer> {
 
     @Override
     protected void configure() {
-        optionallyMapResourceParameterAsVolume(CONTAINER_CONFIG_LOCATION, configLocation);
+        // Map (effectively replace) directory in Docker with the content of resourceLocation if resource location is
+        // not null.
+        Optional
+            .ofNullable(configLocation)
+            .map(MountableFile::forClasspathResource)
+            .ifPresent(mountableFile -> withCopyFileToContainer(mountableFile, CONTAINER_CONFIG_LOCATION));
     }
 
     @Override
@@ -94,21 +99,6 @@ public class CassandraContainer extends GenericContainer<CassandraContainer> {
     }
 
     /**
-     * Map (effectively replace) directory in Docker with the content of resourceLocation if resource location is not null
-     *
-     * Protected to allow for changing implementation by extending the class
-     *
-     * @param pathNameInContainer path in docker
-     * @param resourceLocation    relative classpath to resource
-     */
-    protected void optionallyMapResourceParameterAsVolume(String pathNameInContainer, String resourceLocation) {
-        Optional
-            .ofNullable(resourceLocation)
-            .map(MountableFile::forClasspathResource)
-            .ifPresent(mountableFile -> withCopyFileToContainer(mountableFile, pathNameInContainer));
-    }
-
-    /**
      * Initialize Cassandra with the custom overridden Cassandra configuration
      * <p>
      * Be aware, that Docker effectively replaces all /etc/cassandra content with the content of config location, so if
@@ -125,14 +115,6 @@ public class CassandraContainer extends GenericContainer<CassandraContainer> {
      * Initialize Cassandra with init CQL script
      * <p>
      *     CQL script will be applied after container is started (see using WaitStrategy).
-     * </p>
-     * <p>
-     *     If you override the Cassandra configuration (see {@link #withConfigurationOverride(String)}) to make the
-     *     authentication mandatory (using {@code PasswordAuthenticator} for the property {@code authenticator}), it's
-     *     strongly recommended to also use the {@link org.testcontainers.cassandra.wait.CassandraQueryWaitStrategy}
-     *     in order to guarantee the init script will be executed once the Cassandra node is really ready to execute
-     *     authenticated queries, otherwise you may encounter an error like this one:
-     *     "AuthenticationFailed('Failed to authenticate to 127.0.0.1: Error from server: code=0100 [Bad credentials]".
      * </p>
      *
      * @param initScriptPath relative classpath resource
