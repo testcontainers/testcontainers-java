@@ -48,7 +48,7 @@ public class FileOperationsTest {
     public void copyLargeFilesToContainer() throws Exception {
         File tempFile = temporaryFolder.newFile();
         try (
-            GenericContainer alpineCopyToContainer = new GenericContainer(TestImages.ALPINE_IMAGE) //
+            GenericContainer<?> alpineCopyToContainer = new GenericContainer<>(TestImages.ALPINE_IMAGE) //
                 .withCommand("sleep", "infinity")
         ) {
             alpineCopyToContainer.start();

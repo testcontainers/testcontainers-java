@@ -22,17 +22,14 @@ import org.testcontainers.utility.LogUtils;
 import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.ThrowingFunction;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -342,38 +339,37 @@ public interface ContainerState {
      * @param transferable file which is copied into the container
      * @param containerPath destination path inside the container
      */
-    @SneakyThrows(IOException.class)
+    @SneakyThrows({ IOException.class, InterruptedException.class })
     default void copyFileToContainer(Transferable transferable, String containerPath) {
         if (getContainerId() == null) {
             throw new IllegalStateException("copyFileToContainer can only be used with created / running container");
         }
 
-        Path tempFile = Files.createTempFile("tc-", "-copy");
-
         try (
-            OutputStream os = Files.newOutputStream(tempFile);
-            BufferedOutputStream bos = new BufferedOutputStream(os);
-            TarArchiveOutputStream tarArchive = new TarArchiveOutputStream(bos)
+            PipedOutputStream pipedOutputStream = new PipedOutputStream();
+            PipedInputStream pipedInputStream = new PipedInputStream(pipedOutputStream);
+            TarArchiveOutputStream tarArchive = new TarArchiveOutputStream(pipedOutputStream)
         ) {
-            tarArchive.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
-            tarArchive.setBigNumberMode(TarArchiveOutputStream.BIGNUMBER_POSIX);
+            Thread thread = new Thread(() -> {
+                try {
+                    tarArchive.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
+                    tarArchive.setBigNumberMode(TarArchiveOutputStream.BIGNUMBER_POSIX);
 
-            transferable.transferTo(tarArchive, containerPath);
-            tarArchive.finish();
-            bos.flush();
+                    transferable.transferTo(tarArchive, containerPath);
+                } finally {
+                    IOUtils.closeQuietly(tarArchive);
+                }
+            });
 
-            try (
-                InputStream is = Files.newInputStream(tempFile);
-                BufferedInputStream bis = new BufferedInputStream(is)
-            ) {
-                getDockerClient()
-                    .copyArchiveToContainerCmd(getContainerId())
-                    .withTarInputStream(bis)
-                    .withRemotePath("/")
-                    .exec();
-            }
-        } finally {
-            Files.deleteIfExists(tempFile);
+            thread.start();
+
+            getDockerClient()
+                .copyArchiveToContainerCmd(getContainerId())
+                .withTarInputStream(pipedInputStream)
+                .withRemotePath("/")
+                .exec();
+
+            thread.join();
         }
     }
 
