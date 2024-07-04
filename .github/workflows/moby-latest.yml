@@ -1,6 +1,7 @@
 name: Tests against recent Docker engine releases
 
 on:
+  workflow_dispatch:
   schedule:
     # nightly build, at 23:59 CEST
     - cron:  '59 23 * * *'
@@ -18,19 +19,19 @@ jobs:
       - uses: ./.github/actions/setup-build
 
       - name: Install Stable Docker
-        if: ${{ matrix.install-docker-type == "STABLE" }}
+        if: ${{ matrix.install-docker-type == 'STABLE' }}
         run: curl https://get.docker.com
 
       - name: Install Docker from the TEST channel
-        if: ${{ matrix.install-docker-type == "ROOTFUL" }}
+        if: ${{ matrix.install-docker-type == 'ROOTFUL' }}
         run: curl https://get.docker.com | CHANNEL=test sh
 
       - name: Setup rootless Docker
-        if: ${{ matrix.install-docker-type == "ROOTLESS" }}
+        if: ${{ matrix.install-docker-type == 'ROOTLESS' }}
         uses: ScribeMD/rootless-docker@6bd157a512c2fafa4e0243a8aa87d964eb890886  # v0.2.2
 
       - name: Remove Docker root socket
-        if: ${{ matrix.install-docker-type == "ROOTLESS" }}
+        if: ${{ matrix.install-docker-type == 'ROOTLESS' }}
         run: sudo rm -rf /var/run/docker.sock
 
       - name: Check Docker version
