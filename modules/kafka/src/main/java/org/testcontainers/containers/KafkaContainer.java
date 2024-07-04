@@ -39,7 +39,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     private static final String DEFAULT_INTERNAL_TOPIC_RF = "1";
 
-    private static final String STARTER_SCRIPT = "/testcontainers_start.sh";
+    private static final String STARTER_SCRIPT = "/tmp/testcontainers_start.sh";
 
     // https://docs.confluent.io/platform/7.0.0/release-notes/index.html#ak-raft-kraft
     private static final String MIN_KRAFT_TAG = "7.0.0";
@@ -208,10 +208,10 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     }
 
     protected String commandZookeeper() {
-        String command = "echo 'clientPort=" + ZOOKEEPER_PORT + "' > zookeeper.properties\n";
-        command += "echo 'dataDir=/var/lib/zookeeper/data' >> zookeeper.properties\n";
-        command += "echo 'dataLogDir=/var/lib/zookeeper/log' >> zookeeper.properties\n";
-        command += "zookeeper-server-start zookeeper.properties &\n";
+        String command = "echo 'clientPort=" + ZOOKEEPER_PORT + "' > /tmp/zookeeper.properties\n";
+        command += "echo 'dataDir=/var/lib/zookeeper/data' >> /tmp/zookeeper.properties\n";
+        command += "echo 'dataLogDir=/var/lib/zookeeper/log' >> /tmp/zookeeper.properties\n";
+        command += "zookeeper-server-start /tmp/zookeeper.properties &\n";
         return command;
     }
 
