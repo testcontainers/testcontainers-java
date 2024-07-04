@@ -88,7 +88,7 @@ subprojects {
         }
         ext.isCI = System.getenv("CI") != null
         if (isCI) {
-            retry {
+            develocity.testRetry {
                 maxRetries = 2
                 maxFailures = 5
                 failOnPassedAfterRetry = false
