@@ -1,7 +1,7 @@
 package org.testcontainers.timeplus;
 
 import org.testcontainers.containers.JdbcDatabaseContainer;
-import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
@@ -43,7 +43,8 @@ public class TimeplusContainer extends JdbcDatabaseContainer<TimeplusContainer> 
 
         addExposedPorts(HTTP_PORT, NATIVE_PORT);
         this.waitStrategy =
-            new HttpWaitStrategy()
+            Wait
+                .forHttp("/")
                 .forStatusCode(200)
                 .forResponsePredicate("Ok."::equals)
                 .withStartupTimeout(Duration.ofMinutes(1));

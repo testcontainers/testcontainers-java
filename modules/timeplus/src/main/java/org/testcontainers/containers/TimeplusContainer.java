@@ -1,6 +1,6 @@
 package org.testcontainers.containers;
 
-import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 
@@ -15,19 +15,11 @@ public class TimeplusContainer extends JdbcDatabaseContainer<TimeplusContainer> 
 
     public static final String NAME = "timeplus";
 
-    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("timeplus/timeplusd:2.2.10");
+    public static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("timeplus/timeplusd");
 
-    private static final DockerImageName TIMEPLUS_IMAGE_NAME = DockerImageName.parse("timeplus/timeplusd:2.3.3");
+    private static final Integer HTTP_PORT = 3128;
 
-    @Deprecated
-    public static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
-
-    @Deprecated
-    public static final String DEFAULT_TAG = "latest";
-
-    public static final Integer HTTP_PORT = 3128;
-
-    public static final Integer NATIVE_PORT = 8463;
+    private static final Integer NATIVE_PORT = 8463;
 
     private static final String LEGACY_DRIVER_CLASS_NAME = "ru.yandex.clickhouse.ClickHouseDriver";
 
@@ -45,26 +37,19 @@ public class TimeplusContainer extends JdbcDatabaseContainer<TimeplusContainer> 
 
     private boolean supportsNewDriver;
 
-    /**
-     * @deprecated use {@link #TimeplusContainer(DockerImageName)} instead
-     */
-    @Deprecated
-    public TimeplusContainer() {
-        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
-    }
-
     public TimeplusContainer(String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
     }
 
     public TimeplusContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, TIMEPLUS_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
         supportsNewDriver = isNewDriverSupported(dockerImageName);
 
         addExposedPorts(HTTP_PORT, NATIVE_PORT);
         this.waitStrategy =
-            new HttpWaitStrategy()
+            Wait
+                .forHttp("/")
                 .forStatusCode(200)
                 .forResponsePredicate("Ok."::equals)
                 .withStartupTimeout(Duration.ofMinutes(1));

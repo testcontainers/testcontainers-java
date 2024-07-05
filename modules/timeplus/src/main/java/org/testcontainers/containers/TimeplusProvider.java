@@ -11,6 +11,8 @@ public class TimeplusProvider extends JdbcDatabaseContainerProvider {
 
     @Override
     public JdbcDatabaseContainer newInstance(String tag) {
-        return new TimeplusContainer(DockerImageName.parse(TimeplusContainer.IMAGE).withTag(tag));
+        return new TimeplusContainer(
+            DockerImageName.parse(TimeplusContainer.DEFAULT_IMAGE_NAME.getUnversionedPart()).withTag(tag)
+        );
     }
 }
