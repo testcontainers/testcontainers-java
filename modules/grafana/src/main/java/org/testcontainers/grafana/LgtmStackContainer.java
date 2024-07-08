@@ -5,15 +5,15 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 /**
- * Testcontainers implementation for Grafana Otel LGTM.
+ * Testcontainers implementation for Grafana OTel LGTM.
  * <p>
  * Supported image: {@code grafana/otel-lgtm}
  * <p>
  * Exposed ports:
  * <ul>
  *     <li>Grafana: 3000</li>
- *     <li>Otel Http: 4317</li>
- *     <li>Otel Grpc: 4318</li>
+ *     <li>OTel Http: 4317</li>
+ *     <li>OTel Grpc: 4318</li>
  *     <li>Prometheus: 9090</li>
  * </ul>
  */

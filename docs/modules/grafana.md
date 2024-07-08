@@ -1,10 +1,10 @@
 # Grafana
 
-Testcontainers module for [Grafana Otel LGTM](https://hub.docker.com/r/grafana/otel-lgtm).
+Testcontainers module for [Grafana OTel LGTM](https://hub.docker.com/r/grafana/otel-lgtm).
 
 ## LGTM's usage examples
 
-You can start a Grafana Otel LGTM container instance from any Java application by using:
+You can start a Grafana OTel LGTM container instance from any Java application by using:
 
 <!--codeinclude-->
 [Grafana Otel LGTM container](../../modules/grafana/src/test/java/org/testcontainers/grafana/LgtmStackContainerTest.java) inside_block:container
