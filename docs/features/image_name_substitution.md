@@ -125,6 +125,13 @@ Note that it is also possible to provide this same configuration property:
 
 Please see [the documentation on configuration mechanisms](./configuration.md) for more information.
 
+Also, you can use the `ServiceLoader` mechanism to provide the fully qualified class name of the `ImageNameSubstitutor` implementation:
+
+=== "`src/test/resources/META-INF/services/org.testcontainers.utility.ImageNameSubstitutor`"
+    ```text
+    com.mycompany.testcontainers.ExampleImageNameSubstitutor
+    ```
+
 
 ## Overriding image names individually in configuration
 
