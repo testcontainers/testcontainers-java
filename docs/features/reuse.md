@@ -16,7 +16,11 @@ opt-in mechanism per environment. To reuse a container, the container configurat
 
 ## How to use it
 
-* Enable `Reusable Containers` in `~/.testcontainers.properties`, by adding `testcontainers.reuse.enable=true`
+* Enable `Reusable Containers` 
+  * through environment variable `TESTCONTAINERS_REUSE_ENABLE=true` 
+  * through user property file `~/.testcontainers.properties`, by adding `testcontainers.reuse.enable=true` 
+  * **not** through classpath properties file [see this comment](https://github.com/testcontainers/testcontainers-java/issues/5364#issuecomment-1125907734)
+
 * Define a container and subscribe to reuse the container using `withReuse(true)`
 
 ```java
