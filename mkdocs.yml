@@ -81,6 +81,7 @@ nav:
           - modules/docker_compose.md
           - modules/elasticsearch.md
           - modules/gcloud.md
+          - modules/grafana.md
           - modules/hivemq.md
           - modules/k3s.md
           - modules/k6.md
