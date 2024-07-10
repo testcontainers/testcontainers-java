@@ -1,5 +1,7 @@
 package org.testcontainers.grafana;
 
+import com.github.dockerjava.api.command.InspectContainerResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
@@ -17,6 +19,7 @@ import org.testcontainers.utility.DockerImageName;
  *     <li>Prometheus: 9090</li>
  * </ul>
  */
+@Slf4j
 public class LgtmStackContainer extends GenericContainer<LgtmStackContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("grafana/otel-lgtm");
@@ -40,6 +43,11 @@ public class LgtmStackContainer extends GenericContainer<LgtmStackContainer> {
         waitingFor(
             Wait.forLogMessage(".*The OpenTelemetry collector and the Grafana LGTM stack are up and running.*\\s", 1)
         );
+    }
+
+    @Override
+    protected void containerIsStarted(InspectContainerResponse containerInfo) {
+        log.info("Access to the Grafana dashboard: {}", getOtlpHttpUrl());
     }
 
     public String getOtlpGrpcUrl() {
