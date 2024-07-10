@@ -238,7 +238,7 @@ public class ElasticsearchContainerTest {
                     .builder(HttpHost.create("https://" + container.getHttpHostAddress()))
                     .setHttpClientConfigCallback(httpClientBuilder -> {
                         httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
-                        // SSL is activated by default in Elasticseach 8
+                        // SSL is activated by default in Elasticsearch 8
                         httpClientBuilder.setSSLContext(container.createSslContextFromCa());
                         return httpClientBuilder;
                     })
