@@ -11,6 +11,8 @@ You can start an elasticsearch container instance from any Java application by u
 
 <!--codeinclude-->
 [HttpClient](../../modules/elasticsearch/src/test/java/org/testcontainers/elasticsearch/ElasticsearchContainerTest.java) inside_block:httpClientContainer
+[HttpClient with Elasticsearch 8](../../modules/elasticsearch/src/test/java/org/testcontainers/elasticsearch/ElasticsearchContainerTest.java) inside_block:httpClientContainer8
+[HttpClient with Elasticsearch 8 and SSL disabled](../../modules/elasticsearch/src/test/java/org/testcontainers/elasticsearch/ElasticsearchContainerTest.java) inside_block:httpClientContainer8NoSSL
 [TransportClient](../../modules/elasticsearch/src/test/java/org/testcontainers/elasticsearch/ElasticsearchContainerTest.java) inside_block:transportClientContainer
 <!--/codeinclude-->
 

@@ -214,6 +214,85 @@ public class ElasticsearchContainerTest {
     }
 
     @Test
+    public void restClientClusterHealthElasticsearch8() throws IOException {
+        // httpClientContainer8 {
+        // Create the elasticsearch container.
+        try (
+            ElasticsearchContainer container = new ElasticsearchContainer(
+                "docker.elastic.co/elasticsearch/elasticsearch:8.1.2"
+            )
+        ) {
+            // Start the container. This step might take some time...
+            container.start();
+
+            // Do whatever you want with the rest client ...
+            final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+            credentialsProvider.setCredentials(
+                AuthScope.ANY,
+                new UsernamePasswordCredentials(ELASTICSEARCH_USERNAME, ELASTICSEARCH_PASSWORD)
+            );
+
+            client =
+                RestClient
+                    // use HTTPS for Elasticsearch 8
+                    .builder(HttpHost.create("https://" + container.getHttpHostAddress()))
+                    .setHttpClientConfigCallback(httpClientBuilder -> {
+                        httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+                        // SSL is activated by default in Elasticseach 8
+                        httpClientBuilder.setSSLContext(container.createSslContextFromCa());
+                        return httpClientBuilder;
+                    })
+                    .build();
+
+            Response response = client.performRequest(new Request("GET", "/_cluster/health"));
+            // }}
+            assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
+            assertThat(EntityUtils.toString(response.getEntity())).contains("cluster_name");
+            // httpClientContainer8 {{
+        }
+        // }
+    }
+
+    @Test
+    public void restClientClusterHealthElasticsearch8WithoutSSL() throws IOException {
+        // httpClientContainer8NoSSL {
+        // Create the elasticsearch container.
+        try (
+            ElasticsearchContainer container = new ElasticsearchContainer(
+                "docker.elastic.co/elasticsearch/elasticsearch:8.1.2"
+            )
+                    // disable SSL
+                    .withEnv("xpack.security.transport.ssl.enabled", "false")
+                    .withEnv("xpack.security.http.ssl.enabled", "false")
+        ) {
+            // Start the container. This step might take some time...
+            container.start();
+
+            // Do whatever you want with the rest client ...
+            final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+            credentialsProvider.setCredentials(
+                AuthScope.ANY,
+                new UsernamePasswordCredentials(ELASTICSEARCH_USERNAME, ELASTICSEARCH_PASSWORD)
+            );
+
+            client =
+                RestClient
+                    .builder(HttpHost.create(container.getHttpHostAddress()))
+                    .setHttpClientConfigCallback(httpClientBuilder -> {
+                        return httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+                    })
+                    .build();
+
+            Response response = client.performRequest(new Request("GET", "/_cluster/health"));
+            // }}
+            assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
+            assertThat(EntityUtils.toString(response.getEntity())).contains("cluster_name");
+            // httpClientContainer8NoSSL {{
+        }
+        // }
+    }
+
+    @Test
     public void restClientSecuredClusterHealth() throws IOException {
         // httpClientSecuredContainer {
         // Create the elasticsearch container.
