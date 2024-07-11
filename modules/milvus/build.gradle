@@ -4,5 +4,8 @@ dependencies {
     api project(':testcontainers')
 
     testImplementation 'org.assertj:assertj-core:3.25.3'
-    testImplementation 'io.milvus:milvus-sdk-java:2.4.1'
+    testImplementation('io.milvus:milvus-sdk-java:2.4.1') {
+        exclude(group: 'org.testcontainers', module: 'milvus')
+        exclude(group: 'org.testcontainers', module: 'junit-jupiter')
+    }
 }
