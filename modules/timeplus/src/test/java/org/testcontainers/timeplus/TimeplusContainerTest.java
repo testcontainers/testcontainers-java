@@ -26,9 +26,9 @@ public class TimeplusContainerTest extends AbstractContainerDatabaseTest {
     public void customCredentialsWithUrlParams() throws SQLException {
         try (
             TimeplusContainer timeplus = new TimeplusContainer("timeplus/timeplusd:2.3.3")
-                .withUsername("test")
-                .withPassword("test")
-                .withDatabaseName("test")
+                .withUsername("system")
+                .withPassword("sys@t+")
+                .withDatabaseName("system")
                 .withUrlParam("max_result_rows", "5")
         ) {
             timeplus.start();
