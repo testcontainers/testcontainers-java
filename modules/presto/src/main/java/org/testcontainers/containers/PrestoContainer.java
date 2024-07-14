@@ -2,28 +2,31 @@ package org.testcontainers.containers;
 
 import com.google.common.base.Strings;
 import org.jetbrains.annotations.NotNull;
-import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.Set;
 
 /**
- * @deprecated Use {@code TrinoContainer} instead.
+ * Testcontainers implementation for Presto.
+ * <p>
+ * Supported image: {@code prestodb/presto}
+ * <p>
+ * Exposed ports: 8080
  */
-@Deprecated
 public class PrestoContainer<SELF extends PrestoContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
 
     public static final String NAME = "presto";
 
-    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("ghcr.io/trinodb/presto");
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("prestodb/presto");
 
-    public static final String IMAGE = "ghcr.io/trinodb/presto";
+    public static final String IMAGE = "prestodb/presto";
 
-    public static final String DEFAULT_TAG = "344";
+    public static final String DEFAULT_TAG = "0.292";
 
     public static final Integer PRESTO_PORT = 8080;
 
@@ -46,13 +49,12 @@ public class PrestoContainer<SELF extends PrestoContainer<SELF>> extends JdbcDat
     public PrestoContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
-
-        this.waitStrategy =
-            new LogMessageWaitStrategy()
-                .withRegEx(".*======== SERVER STARTED ========.*")
-                .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS));
-
+        waitingFor(Wait.forHttp("/v1/info/state").forPort(8080).forResponsePredicate("\"ACTIVE\""::equals));
         addExposedPort(PRESTO_PORT);
+        withCopyFileToContainer(
+            MountableFile.forClasspathResource("default/config.properties", Transferable.DEFAULT_DIR_MODE),
+            "/opt/presto-server/etc/config.properties"
+        );
     }
 
     /**
@@ -68,7 +70,7 @@ public class PrestoContainer<SELF extends PrestoContainer<SELF>> extends JdbcDat
 
     @Override
     public String getDriverClassName() {
-        return "io.prestosql.jdbc.PrestoDriver";
+        return "com.facebook.presto.jdbc.PrestoDriver";
     }
 
     @Override
