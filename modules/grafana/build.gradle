@@ -1,0 +1,23 @@
+description = "Testcontainers :: Grafana"
+
+dependencies {
+    api project(':testcontainers')
+
+    testImplementation 'org.assertj:assertj-core:3.25.3'
+    testImplementation 'io.rest-assured:rest-assured:5.4.0'
+    testImplementation 'io.micrometer:micrometer-registry-otlp:1.13.1'
+    testImplementation 'uk.org.webcompere:system-stubs-junit4:2.1.6'
+}
+
+test {
+    javaLauncher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
+}
+
+compileTestJava {
+    javaCompiler = javaToolchains.compilerFor {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
+    options.release.set(11)
+}
