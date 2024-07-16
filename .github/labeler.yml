@@ -208,6 +208,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/tidb/**/*
+"modules/timeplus":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/timeplus/**/*
 "modules/toxiproxy":
   - changed-files:
     - any-glob-to-any-file:

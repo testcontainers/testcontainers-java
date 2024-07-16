@@ -59,6 +59,7 @@ body:
         - Solace
         - Solr
         - TiDB
+        - Timeplus
         - ToxiProxy
         - Trino
         - Vault

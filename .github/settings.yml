@@ -250,6 +250,9 @@ labels:
   - name: modules/tidb
     color: '#006b75'
 
+  - name: modules/timeplus
+    color: '#006b75'
+
   - name: modules/toxiproxy
     color: '#006b75'
 
