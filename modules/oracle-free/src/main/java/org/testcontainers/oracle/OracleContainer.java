@@ -89,7 +89,12 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     @Override
     public String getDriverClassName() {
-        return "oracle.jdbc.driver.OracleDriver";
+        try {
+            Class.forName("oracle.jdbc.OracleDriver");
+            return "oracle.jdbc.OracleDriver";
+        } catch (ClassNotFoundException e) {
+            return "oracle.jdbc.driver.OracleDriver";
+        }
     }
 
     @Override

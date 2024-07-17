@@ -130,7 +130,8 @@ public class AbstractJDBCDriverTest {
         if (
             databaseType.equalsIgnoreCase("postgresql") ||
             databaseType.equalsIgnoreCase("postgis") ||
-            databaseType.equalsIgnoreCase("timescaledb")
+            databaseType.equalsIgnoreCase("timescaledb") ||
+            databaseType.equalsIgnoreCase("pgvector")
         ) {
             databaseQuery = "SELECT CURRENT_DATABASE()";
         }

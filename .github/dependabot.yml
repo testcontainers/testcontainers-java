@@ -107,6 +107,11 @@ updates:
       interval: "weekly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
+    directory: "/modules/grafana"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
     directory: "/modules/hivemq"
     schedule:
       interval: "weekly"
@@ -371,6 +376,13 @@ updates:
         update-types: [ "version-update:semver-major" ]
       - dependency-name: "com.diffplug.spotless"
         update-types: [ "version-update:semver-minor" ]
+  
+  # Smoke test
+  - package-ecosystem: "gradle"
+    directory: "/smoke-test"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
 
 # GitHub Actions
   - package-ecosystem: "github-actions"
