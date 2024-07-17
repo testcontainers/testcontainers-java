@@ -8,6 +8,8 @@ import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -22,6 +24,13 @@ public class DockerfileBuildTest {
 
     @Parameterized.Parameters
     public static Object[][] parameters() {
+        Map<String, String> buildArgs = new HashMap<>(4);
+        buildArgs.put("BUILD_IMAGE", "alpine:3.16");
+        buildArgs.put("BASE_IMAGE", "alpine");
+        buildArgs.put("BASE_IMAGE_TAG", "3.12");
+        buildArgs.put("UNUSED", "ignored");
+
+        //noinspection deprecation
         return new Object[][] {
             // Dockerfile build without explicit per-file inclusion
             new Object[] {
@@ -38,13 +47,21 @@ public class DockerfileBuildTest {
                 "test4567",
                 new ImageFromDockerfile().withFileFromPath(".", RESOURCE_PATH).withDockerfilePath("./Dockerfile-alt"),
             },
-            // Dockerfile build using build args
+            // Dockerfile build using withBuildArg()
             new Object[] {
                 "test7890",
                 new ImageFromDockerfile()
                     .withFileFromPath(".", RESOURCE_PATH)
                     .withDockerfilePath("./Dockerfile-buildarg")
                     .withBuildArg("CUSTOM_ARG", "test7890"),
+            },
+            // Dockerfile build using withBuildArgs() with build args in FROM statement
+            new Object[] {
+                "test1234",
+                new ImageFromDockerfile()
+                    .withFileFromPath(".", RESOURCE_PATH)
+                    .withDockerfile(RESOURCE_PATH.resolve("Dockerfile-from-buildarg"))
+                    .withBuildArgs(buildArgs),
             },
             // Dockerfile build using withDockerfile(File)
             new Object[] {
@@ -64,7 +81,7 @@ public class DockerfileBuildTest {
     @Test
     public void performTest() {
         try (
-            final GenericContainer container = new GenericContainer(image)
+            final GenericContainer<?> container = new GenericContainer<>(image)
                 .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
                 .withCommand("cat", "/test.txt")
         ) {
