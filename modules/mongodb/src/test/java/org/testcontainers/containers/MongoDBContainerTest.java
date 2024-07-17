@@ -13,7 +13,7 @@ public class MongoDBContainerTest extends AbstractMongo {
     public void shouldExecuteTransactions() {
         try (
             // creatingMongoDBContainer {
-            final MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:7.0.0")
+            final MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:4.0.10")
             // }
         ) {
             // startingMongoDBContainer {
@@ -32,7 +32,7 @@ public class MongoDBContainerTest extends AbstractMongo {
 
     @Test
     public void shouldTestDatabaseName() {
-        try (final MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:7.0.0")) {
+        try (final MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:4.0.10")) {
             mongoDBContainer.start();
             final String databaseName = "my-db";
             assertThat(mongoDBContainer.getReplicaSetUrl(databaseName)).endsWith(databaseName);
