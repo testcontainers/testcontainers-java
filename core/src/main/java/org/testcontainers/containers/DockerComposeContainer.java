@@ -68,7 +68,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
 
     private String project;
 
-    private List<String> fileCopyInclusions = new ArrayList<>();
+    private List<String> filesInDirectory = new ArrayList<>();
 
     @Deprecated
     public DockerComposeContainer(File composeFile, String identifier) {
@@ -143,7 +143,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
                     this.services,
                     this.scalingPreferences,
                     this.env,
-                    this.fileCopyInclusions
+                    this.filesInDirectory
                 );
             this.composeDelegate.startAmbassadorContainer();
             this.composeDelegate.waitUntilServiceStarted(this.tailChildContainers);
@@ -175,7 +175,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
                 if (removeImages != null) {
                     cmd += " --rmi " + removeImages.dockerRemoveImagesType();
                 }
-                this.composeDelegate.runWithCompose(this.localCompose, cmd, this.env, this.fileCopyInclusions);
+                this.composeDelegate.runWithCompose(this.localCompose, cmd, this.env, this.filesInDirectory);
             } finally {
                 this.project = this.composeDelegate.randomProjectId();
             }
@@ -358,8 +358,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
         return self();
     }
 
-    public SELF withFileCopyInclusions(String... fileCopyInclusions) {
-        this.fileCopyInclusions = Arrays.asList(fileCopyInclusions);
+    public SELF withCopyFilesInContainer(String... fileCopyInclusions) {
+        this.filesInDirectory = Arrays.asList(fileCopyInclusions);
         return self();
     }
 

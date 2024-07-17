@@ -135,25 +135,25 @@ public static ComposeContainer environment =
 !!! note
     Make sure the service name use a `-` instead of `_` as separator using `ComposeContainer`.
 
-## Limiting files that are copied
+## Build working directory
 
-Testcontainers runs the compose file on a new container.
-To make that possible, it needs to copy over your compose file along with any file inside the directory that the file is in, as the compose file might reference some of those files.
-If the compose file is on the root folder of the project, this means copying over all files of the whole project, including any temporary files that have been created during the build.
-
-To avoid unnecessary copying of files, you can indicate what files should be copied only via `withFileCopyInclusions`:
+You can select what files should be copied only via `withCopyFilesInContainer`:
 
 ```java
 public static ComposeContainer environment =
     new ComposeContainer(new File("compose.yml"))
-        .withFileCopyInclusions(".env");
+        .withCopyFilesInContainer(".env");
 ```
 
-In this example, only `compose.yml` and `.env` are copied over into the container that will run the Docker Compose file.
+In this example, only `compose.yml` and `.env` are copied over into the container that will run the Docker Compose file.  
+By default, all files in the same directory as the compose file are copied over.
 
 This can be used with `DockerComposeContainer` and `ComposeContainer`.
 You can use file and directory references.
 They are always resolved relative to the directory where the compose file resides.
+
+!!! note
+    This only work with containarized Compose, not with `Local Compose` mode.
 
 ## Using private repositories in Docker compose
 When Docker Compose is used in container mode (not local), it's needs to be made aware of Docker settings for private repositories. 
