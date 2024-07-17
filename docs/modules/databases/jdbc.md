@@ -87,6 +87,10 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 
 `jdbc:tc:tidb:v6.1.0:///databasename`
 
+#### Using Timeplus
+
+`jdbc:tc:timeplus:2.3.3:///databasename`
+
 #### Using Trino
 
 `jdbc:tc:trino:352://localhost/memory/default`
