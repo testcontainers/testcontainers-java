@@ -53,7 +53,7 @@ public class ImageFromDockerfile
 
     private final String dockerImageName;
 
-    private final boolean deleteOnExit;
+    private boolean deleteOnExit = true;
 
     private final Map<String, Transferable> transferables = new HashMap<>();
 

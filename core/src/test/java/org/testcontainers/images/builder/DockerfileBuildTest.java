@@ -79,7 +79,6 @@ public class DockerfileBuildTest {
     }
 
     @Test
-    @SuppressWarnings("resource")
     public void performTest() {
         try (
             final GenericContainer<?> container = new GenericContainer<>(image)

@@ -16,12 +16,10 @@ public class ImageFromDockerfileTest {
 
         String imageId = image.resolve();
 
-        //noinspection resource
         DockerClient dockerClient = DockerClientFactory.instance().client();
 
         InspectImageResponse inspectImageResponse = dockerClient.inspectImageCmd(imageId).exec();
 
-        assertThat(inspectImageResponse.getConfig()).isNotNull();
         assertThat(inspectImageResponse.getConfig().getLabels())
             .containsAllEntriesOf(DockerClientFactory.DEFAULT_LABELS);
     }
@@ -35,12 +33,10 @@ public class ImageFromDockerfileTest {
             .withDockerfileFromBuilder(it -> it.from("scratch"));
         String imageId = image.resolve();
 
-        //noinspection resource
         DockerClient dockerClient = DockerClientFactory.instance().client();
 
         try {
             InspectImageResponse inspectImageResponse = dockerClient.inspectImageCmd(imageId).exec();
-            assertThat(inspectImageResponse.getConfig()).isNotNull();
             assertThat(inspectImageResponse.getConfig().getLabels())
                 .doesNotContainKey(DockerClientFactory.TESTCONTAINERS_SESSION_ID_LABEL);
         } finally {
