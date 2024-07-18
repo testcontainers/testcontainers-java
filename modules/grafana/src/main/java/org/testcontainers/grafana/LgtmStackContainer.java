@@ -61,4 +61,8 @@ public class LgtmStackContainer extends GenericContainer<LgtmStackContainer> {
     public String getPromehteusHttpUrl() {
         return "http://" + getHost() + ":" + getMappedPort(PROMETHEUS_PORT);
     }
+
+    public String getGrafanaHttpUrl() {
+        return "http://" + getHost() + ":" + getMappedPort(GRAFANA_PORT);
+    }
 }
