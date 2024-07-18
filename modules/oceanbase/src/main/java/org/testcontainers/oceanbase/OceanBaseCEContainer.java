@@ -50,23 +50,7 @@ public class OceanBaseCEContainer extends JdbcDatabaseContainer<OceanBaseCEConta
          * Use minimal hardware resources and pre-built deployment files for quick startup,
          * and password of user tenant is the only available environment variable.
          */
-        SLIM;
-
-        public static Mode fromString(String mode) {
-            if (mode == null) {
-                throw new IllegalArgumentException("Mode cannot be null");
-            }
-            switch (mode.toUpperCase()) {
-                case "NORMAL":
-                    return NORMAL;
-                case "MINI":
-                    return MINI;
-                case "SLIM":
-                    return SLIM;
-                default:
-                    throw new IllegalArgumentException("Unknown mode: " + mode);
-            }
-        }
+        SLIM,
     }
 
     private Mode mode = Mode.SLIM;
@@ -93,9 +77,12 @@ public class OceanBaseCEContainer extends JdbcDatabaseContainer<OceanBaseCEConta
 
         if (!DEFAULT_USER_TENANT_NAME.equals(tenantName)) {
             if (mode == Mode.SLIM) {
-                throw new IllegalArgumentException("Tenant name is not configurable on slim mode");
+                logger().warn("The tenant name is not configurable on slim mode, so this option will be ignored.");
+                // reset the tenant name to ensure the constructed username is correct
+                tenantName = DEFAULT_USER_TENANT_NAME;
+            } else {
+                addEnv("OB_TENANT_NAME", tenantName);
             }
-            addEnv("OB_TENANT_NAME", tenantName);
         }
 
         if (!DEFAULT_PASSWORD.equals(password)) {
@@ -140,8 +127,8 @@ public class OceanBaseCEContainer extends JdbcDatabaseContainer<OceanBaseCEConta
         return "SELECT 1";
     }
 
-    public OceanBaseCEContainer withMode(String mode) {
-        this.mode = Mode.fromString(mode);
+    public OceanBaseCEContainer withMode(Mode mode) {
+        this.mode = mode;
         return this;
     }
 
