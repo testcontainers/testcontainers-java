@@ -47,7 +47,7 @@ public class LgtmStackContainer extends GenericContainer<LgtmStackContainer> {
 
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
-        log.info("Access to the Grafana dashboard: {}", getOtlpHttpUrl());
+        log.info("Access to the Grafana dashboard: {}", getGrafanaHttpUrl());
     }
 
     public String getOtlpGrpcUrl() {
