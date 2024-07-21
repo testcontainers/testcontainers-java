@@ -27,7 +27,7 @@ public class OceanBaseCEContainer extends JdbcDatabaseContainer<OceanBaseCEConta
 
     private static final Integer RPC_PORT = 2882;
 
-    private static final String DEFAULT_USER_TENANT_NAME = "test";
+    private static final String DEFAULT_TENANT_NAME = "test";
 
     private static final String DEFAULT_USER = "root";
 
@@ -35,27 +35,9 @@ public class OceanBaseCEContainer extends JdbcDatabaseContainer<OceanBaseCEConta
 
     private static final String DEFAULT_DATABASE_NAME = "test";
 
-    public enum Mode {
-        /**
-         * Use as much hardware resources as possible for deployment by default,
-         * and all environment variables are available.
-         */
-        NORMAL,
-        /**
-         * Use the minimum hardware resources for deployment by default,
-         * and all environment variables are available.
-         */
-        MINI,
-        /**
-         * Use minimal hardware resources and pre-built deployment files for quick startup,
-         * and password of user tenant is the only available environment variable.
-         */
-        SLIM,
-    }
-
     private Mode mode = Mode.SLIM;
 
-    private String tenantName = DEFAULT_USER_TENANT_NAME;
+    private String tenantName = DEFAULT_TENANT_NAME;
 
     private String password = DEFAULT_PASSWORD;
 
@@ -75,19 +57,17 @@ public class OceanBaseCEContainer extends JdbcDatabaseContainer<OceanBaseCEConta
     protected void configure() {
         addEnv("MODE", mode.name().toLowerCase());
 
-        if (!DEFAULT_USER_TENANT_NAME.equals(tenantName)) {
+        if (!DEFAULT_TENANT_NAME.equals(tenantName)) {
             if (mode == Mode.SLIM) {
                 logger().warn("The tenant name is not configurable on slim mode, so this option will be ignored.");
                 // reset the tenant name to ensure the constructed username is correct
-                tenantName = DEFAULT_USER_TENANT_NAME;
+                tenantName = DEFAULT_TENANT_NAME;
             } else {
                 addEnv("OB_TENANT_NAME", tenantName);
             }
         }
 
-        if (!DEFAULT_PASSWORD.equals(password)) {
-            addEnv("OB_TENANT_PASSWORD", password);
-        }
+        addEnv("OB_TENANT_PASSWORD", password);
     }
 
     @Override
@@ -140,5 +120,23 @@ public class OceanBaseCEContainer extends JdbcDatabaseContainer<OceanBaseCEConta
     public OceanBaseCEContainer withPassword(String password) {
         this.password = password;
         return this;
+    }
+
+    public enum Mode {
+        /**
+         * Use as much hardware resources as possible for deployment by default,
+         * and all environment variables are available.
+         */
+        NORMAL,
+        /**
+         * Use the minimum hardware resources for deployment by default,
+         * and all environment variables are available.
+         */
+        MINI,
+        /**
+         * Use minimal hardware resources and pre-built deployment files for quick startup,
+         * and password of user tenant is the only available environment variable.
+         */
+        SLIM,
     }
 }
