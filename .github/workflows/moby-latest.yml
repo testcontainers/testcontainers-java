@@ -24,7 +24,7 @@ jobs:
 
       - name: Install Docker from the TEST channel
         if: ${{ matrix.install-docker-type == 'ROOTFUL' }}
-        run: curl https://get.docker.com | CHANNEL=test sh
+        run: curl -fsSL https://test.docker.com | sh
 
       - name: Setup rootless Docker
         if: ${{ matrix.install-docker-type == 'ROOTLESS' }}
