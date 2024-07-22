@@ -20,7 +20,7 @@ jobs:
 
       - name: Install Stable Docker
         if: ${{ matrix.install-docker-type == 'STABLE' }}
-        run: curl https://get.docker.com
+        run: curl -fsSL https://get.docker.com | sh
 
       - name: Install Docker from the TEST channel
         if: ${{ matrix.install-docker-type == 'ROOTFUL' }}
