@@ -17,7 +17,7 @@ public class TimeplusContainer extends JdbcDatabaseContainer<TimeplusContainer> 
 
     static final String DOCKER_IMAGE_NAME = "timeplus/timeplusd";
 
-    private static final DockerImageName TIMEPLUS_IMAGE_NAME = DockerImageName.parse("timeplus/timeplusd:2.3.3");
+    private static final DockerImageName TIMEPLUS_IMAGE_NAME = DockerImageName.parse("timeplus/timeplusd");
 
     private static final Integer HTTP_PORT = 3218;
 
@@ -41,18 +41,17 @@ public class TimeplusContainer extends JdbcDatabaseContainer<TimeplusContainer> 
 
     public TimeplusContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(TIMEPLUS_IMAGE_NAME);
 
         addExposedPorts(HTTP_PORT, NATIVE_PORT);
-        this.waitStrategy =
-            Wait.forHttp("/timeplusd/v1/ping").forStatusCode(200).withStartupTimeout(Duration.ofMinutes(1));
+        waitingFor(Wait.forHttp("/timeplusd/v1/ping").forStatusCode(200).withStartupTimeout(Duration.ofMinutes(1)));
     }
 
     @Override
     protected void configure() {
-        withEnv("CLICKHOUSE_DB", this.databaseName);
-        withEnv("CLICKHOUSE_USER", this.username);
-        withEnv("CLICKHOUSE_PASSWORD", this.password);
+        withEnv("TIMEPLUS_DB", this.databaseName);
+        withEnv("TIMEPLUS_USER", this.username);
+        withEnv("TIMEPLUS_PASSWORD", this.password);
     }
 
     @Override
