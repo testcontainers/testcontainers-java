@@ -81,6 +81,7 @@ nav:
           - modules/docker_compose.md
           - modules/elasticsearch.md
           - modules/gcloud.md
+          - modules/grafana.md
           - modules/hivemq.md
           - modules/k3s.md
           - modules/k6.md
@@ -132,4 +133,4 @@ nav:
           - bounty.md
 edit_uri: edit/main/docs/
 extra:
-    latest_version: 1.19.7
+    latest_version: 1.20.0

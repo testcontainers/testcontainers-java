@@ -33,7 +33,7 @@ public class SimpleOracleTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testDefaultSettings() throws SQLException {
-        try (OracleContainer oracle = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME);) {
+        try (OracleContainer oracle = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME)) {
             runTest(oracle, "freepdb1", "test", "test");
 
             // Match against the last '/'
@@ -76,7 +76,7 @@ public class SimpleOracleTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSID() throws SQLException {
-        try (OracleContainer oracle = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME).usingSid();) {
+        try (OracleContainer oracle = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME).usingSid()) {
             runTest(oracle, "freepdb1", "system", "test");
 
             // Match against the last ':'
@@ -90,7 +90,7 @@ public class SimpleOracleTest extends AbstractContainerDatabaseTest {
         try (
             OracleContainer oracle = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME)
                 .usingSid()
-                .withPassword("testPassword");
+                .withPassword("testPassword")
         ) {
             runTest(oracle, "freepdb1", "system", "testPassword");
         }

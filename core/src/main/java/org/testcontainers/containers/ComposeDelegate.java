@@ -126,7 +126,8 @@ class ComposeDelegate {
         final Set<String> options,
         final List<String> services,
         final Map<String, Integer> scalingPreferences,
-        Map<String, String> env
+        Map<String, String> env,
+        List<String> fileCopyInclusions
     ) {
         // services that have been explicitly requested to be started. If empty, all services should be started.
         final String serviceNameArgs = Stream
@@ -160,7 +161,7 @@ class ComposeDelegate {
         }
 
         // Run the docker compose container, which starts up the services
-        runWithCompose(localCompose, command, env);
+        runWithCompose(localCompose, command, env, fileCopyInclusions);
     }
 
     private String getUpCommand(String options) {
@@ -237,10 +238,15 @@ class ComposeDelegate {
     }
 
     public void runWithCompose(boolean localCompose, String cmd) {
-        runWithCompose(localCompose, cmd, Collections.emptyMap());
+        runWithCompose(localCompose, cmd, Collections.emptyMap(), Collections.emptyList());
     }
 
-    public void runWithCompose(boolean localCompose, String cmd, Map<String, String> env) {
+    public void runWithCompose(
+        boolean localCompose,
+        String cmd,
+        Map<String, String> env,
+        List<String> fileCopyInclusions
+    ) {
         Preconditions.checkNotNull(composeFiles);
         Preconditions.checkArgument(!composeFiles.isEmpty(), "No docker compose file have been provided");
 
@@ -248,7 +254,8 @@ class ComposeDelegate {
         if (localCompose) {
             dockerCompose = new LocalDockerCompose(this.executable, composeFiles, project);
         } else {
-            dockerCompose = new ContainerisedDockerCompose(this.defaultImageName, composeFiles, project);
+            dockerCompose =
+                new ContainerisedDockerCompose(this.defaultImageName, composeFiles, project, fileCopyInclusions);
         }
 
         dockerCompose.withCommand(cmd).withEnv(env).invoke();

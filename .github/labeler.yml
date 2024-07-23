@@ -67,6 +67,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/gcloud/**/*
+"modules/grafana":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/grafana/**/*
 "modules/hivemq":
   - changed-files:
     - any-glob-to-any-file:
