@@ -1,6 +1,7 @@
 package org.testcontainers.oceanbase;
 
 import org.testcontainers.containers.JdbcDatabaseContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 /**
@@ -26,13 +27,19 @@ public class OceanBaseCEContainer extends JdbcDatabaseContainer<OceanBaseCEConta
 
     private static final Integer RPC_PORT = 2882;
 
-    private static final String DEFAULT_TEST_TENANT_NAME = "test";
+    private static final String DEFAULT_TENANT_NAME = "test";
 
-    private static final String DEFAULT_USERNAME = "root";
+    private static final String DEFAULT_USER = "root";
 
     private static final String DEFAULT_PASSWORD = "";
 
     private static final String DEFAULT_DATABASE_NAME = "test";
+
+    private Mode mode = Mode.SLIM;
+
+    private String tenantName = DEFAULT_TENANT_NAME;
+
+    private String password = DEFAULT_PASSWORD;
 
     public OceanBaseCEContainer(String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
@@ -43,6 +50,29 @@ public class OceanBaseCEContainer extends JdbcDatabaseContainer<OceanBaseCEConta
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         addExposedPorts(SQL_PORT, RPC_PORT);
+        setWaitStrategy(Wait.forLogMessage(".*boot success!.*", 1));
+    }
+
+    @Override
+    protected void configure() {
+        addEnv("MODE", mode.name().toLowerCase());
+
+        if (!DEFAULT_TENANT_NAME.equals(tenantName)) {
+            if (mode == Mode.SLIM) {
+                logger().warn("The tenant name is not configurable on slim mode, so this option will be ignored.");
+                // reset the tenant name to ensure the constructed username is correct
+                tenantName = DEFAULT_TENANT_NAME;
+            } else {
+                addEnv("OB_TENANT_NAME", tenantName);
+            }
+        }
+
+        addEnv("OB_TENANT_PASSWORD", password);
+    }
+
+    @Override
+    protected void waitUntilContainerStarted() {
+        getWaitStrategy().waitUntilReady(this);
     }
 
     @Override
@@ -64,19 +94,49 @@ public class OceanBaseCEContainer extends JdbcDatabaseContainer<OceanBaseCEConta
 
     @Override
     public String getUsername() {
-        // In OceanBase, the jdbc username is related to the name of user, tenant and cluster,
-        // if a tenant name other than the default value 'test' is used, you should manually
-        // construct the jdbc username by yourself.
-        return DEFAULT_USERNAME + "@" + DEFAULT_TEST_TENANT_NAME;
+        return DEFAULT_USER + "@" + tenantName;
     }
 
     @Override
     public String getPassword() {
-        return DEFAULT_PASSWORD;
+        return password;
     }
 
     @Override
     protected String getTestQueryString() {
         return "SELECT 1";
+    }
+
+    public OceanBaseCEContainer withMode(Mode mode) {
+        this.mode = mode;
+        return this;
+    }
+
+    public OceanBaseCEContainer withTenantName(String tenantName) {
+        this.tenantName = tenantName;
+        return this;
+    }
+
+    public OceanBaseCEContainer withPassword(String password) {
+        this.password = password;
+        return this;
+    }
+
+    public enum Mode {
+        /**
+         * Use as much hardware resources as possible for deployment by default,
+         * and all environment variables are available.
+         */
+        NORMAL,
+        /**
+         * Use the minimum hardware resources for deployment by default,
+         * and all environment variables are available.
+         */
+        MINI,
+        /**
+         * Use minimal hardware resources and pre-built deployment files for quick startup,
+         * and password of user tenant is the only available environment variable.
+         */
+        SLIM,
     }
 }
