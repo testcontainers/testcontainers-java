@@ -376,13 +376,18 @@ updates:
         update-types: [ "version-update:semver-major" ]
       - dependency-name: "com.diffplug.spotless"
         update-types: [ "version-update:semver-minor" ]
-  
+
   # Smoke test
   - package-ecosystem: "gradle"
     directory: "/smoke-test"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "ch.qos.logback:logback-classic"
+        update-types: [ "version-update:semver-minor" ]
+      - dependency-name: "com.diffplug.spotless"
+        update-types: [ "version-update:semver-minor" ]
 
 # GitHub Actions
   - package-ecosystem: "github-actions"
