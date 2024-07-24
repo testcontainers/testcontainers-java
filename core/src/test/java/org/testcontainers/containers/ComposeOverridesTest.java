@@ -1,4 +1,4 @@
-package org.testcontainers;
+package org.testcontainers.containers;
 
 import com.google.common.util.concurrent.Uninterruptibles;
 import org.apache.commons.lang3.SystemUtils;
@@ -9,7 +9,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.rnorth.ducttape.unreliables.Unreliables;
-import org.testcontainers.containers.ComposeContainer;
 import org.testcontainers.utility.CommandLine;
 
 import java.io.BufferedReader;
