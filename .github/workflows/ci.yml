@@ -52,7 +52,7 @@ jobs:
       checks: write
     strategy:
       matrix:
-        java: [ '8', '17', '21', '22' ]
+        java: [ '17', '21', '22' ]
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-build
