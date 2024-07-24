@@ -47,7 +47,7 @@ public class LgtmStackContainer extends GenericContainer<LgtmStackContainer> {
 
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
-        log.info("Access to the Grafana dashboard: {}", getOtlpHttpUrl());
+        log.info("Access to the Grafana dashboard: {}", getGrafanaHttpUrl());
     }
 
     public String getOtlpGrpcUrl() {
@@ -60,5 +60,9 @@ public class LgtmStackContainer extends GenericContainer<LgtmStackContainer> {
 
     public String getPromehteusHttpUrl() {
         return "http://" + getHost() + ":" + getMappedPort(PROMETHEUS_PORT);
+    }
+
+    public String getGrafanaHttpUrl() {
+        return "http://" + getHost() + ":" + getMappedPort(GRAFANA_PORT);
     }
 }
