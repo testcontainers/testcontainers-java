@@ -14,7 +14,7 @@ plugins {
     id 'io.franzbecker.gradle-lombok' version '5.0.0'
     id 'com.github.johnrengelman.shadow' version '8.1.1'
     id 'me.champeau.gradle.japicmp' version '0.4.2' apply false
-    id 'com.diffplug.spotless' version '6.13.0' apply false
+    id 'com.diffplug.spotless' version '6.22.0' apply false
 }
 
 apply from: "$rootDir/gradle/ci-support.gradle"
@@ -34,6 +34,12 @@ subprojects {
     apply plugin: 'checkstyle'
 
     group = "org.testcontainers"
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(17)
+        }
+    }
 
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
@@ -126,7 +132,7 @@ subprojects {
     }
 
     checkstyle {
-        toolVersion = "9.3"
+        toolVersion = "10.12.4"
         configFile = rootProject.file('config/checkstyle/checkstyle.xml')
     }
 }

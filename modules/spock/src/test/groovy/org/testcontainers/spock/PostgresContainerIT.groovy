@@ -41,6 +41,5 @@ class PostgresContainerIT extends Specification {
 		cleanup:
 		ds.close()
 	}
-
 }
 // }
