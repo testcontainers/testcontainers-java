@@ -10,6 +10,7 @@ import java.util.zip.Checksum;
 
 public interface Transferable {
     int DEFAULT_FILE_MODE = 0100644;
+
     int DEFAULT_DIR_MODE = 040755;
 
     static Transferable of(String string) {
