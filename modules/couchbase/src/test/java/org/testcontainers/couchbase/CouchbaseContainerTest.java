@@ -22,7 +22,6 @@ import com.couchbase.client.java.Collection;
 import com.couchbase.client.java.json.JsonObject;
 import org.junit.Test;
 import org.testcontainers.containers.ContainerLaunchException;
-import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
 import java.util.function.Consumer;
@@ -68,8 +67,7 @@ public class CouchbaseContainerTest {
 
         try (
             // container_definition {
-            CouchbaseContainer container = new CouchbaseContainer(couchbaseImage)
-                .withBucket(bucketDefinition)
+            CouchbaseContainer container = new CouchbaseContainer(couchbaseImage).withBucket(bucketDefinition)
             // }
         ) {
             setUpClient(

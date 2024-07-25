@@ -409,7 +409,14 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
         try {
             String clusterTopology = response.body().string();
-            hasTlsPorts = !MAPPER.readTree(clusterTopology).path("nodesExt").path(0).path("services").path("mgmtSSL").isMissingNode();
+            hasTlsPorts =
+                !MAPPER
+                    .readTree(clusterTopology)
+                    .path("nodesExt")
+                    .path(0)
+                    .path("services")
+                    .path("mgmtSSL")
+                    .isMissingNode();
         } catch (IOException e) {
             throw new IllegalStateException("Couchbase /pools/default/nodeServices did not return valid JSON");
         }
