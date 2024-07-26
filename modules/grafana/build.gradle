@@ -3,9 +3,9 @@ description = "Testcontainers :: Grafana"
 dependencies {
     api project(':testcontainers')
 
-    testImplementation 'org.assertj:assertj-core:3.25.3'
+    testImplementation 'org.assertj:assertj-core:3.26.3'
     testImplementation 'io.rest-assured:rest-assured:5.5.0'
-    testImplementation 'io.micrometer:micrometer-registry-otlp:1.13.1'
+    testImplementation 'io.micrometer:micrometer-registry-otlp:1.13.2'
     testImplementation 'uk.org.webcompere:system-stubs-junit4:2.1.6'
 }
 
