@@ -121,6 +121,9 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "com.influxdb:influxdb-java-client"
+        update-types: [ "version-update:semver-major" ]
   - package-ecosystem: "gradle"
     directory: "/modules/jdbc"
     schedule:
@@ -375,6 +378,8 @@ updates:
       - dependency-name: "org.springframework.boot"
         update-types: [ "version-update:semver-major" ]
       - dependency-name: "com.diffplug.spotless"
+        update-types: [ "version-update:semver-minor" ]
+      - dependency-name: "com.hazelcast:hazelcast"
         update-types: [ "version-update:semver-minor" ]
 
   # Smoke test
