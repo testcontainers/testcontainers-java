@@ -10,13 +10,18 @@ import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Testcontainers implementation for K3S
+ * <p>
+ * Supported image: {@code rancher/k3s}
+ */
 public class K3sContainer extends GenericContainer<K3sContainer> {
 
     public static int KUBE_SECURE_PORT = 6443;
@@ -41,8 +46,8 @@ public class K3sContainer extends GenericContainer<K3sContainer> {
         tmpFsMapping.put("/var/run", "");
         setTmpFsMapping(tmpFsMapping);
 
-        setCommand("server", "--no-deploy=traefik", "--tls-san=" + this.getHost());
-        setWaitStrategy(new LogMessageWaitStrategy().withRegEx(".*Node controller sync successful.*"));
+        setCommand("server", "--disable=traefik", "--tls-san=" + this.getHost());
+        setWaitStrategy(Wait.forLogMessage(".*Node controller sync successful.*", 1));
     }
 
     @Override

@@ -138,7 +138,7 @@ public class TestcontainersConfiguration {
     }
 
     public boolean isRyukPrivileged() {
-        return Boolean.parseBoolean(getEnvVarOrProperty("ryuk.container.privileged", "false"));
+        return Boolean.parseBoolean(getEnvVarOrProperty("ryuk.container.privileged", "true"));
     }
 
     @Deprecated
@@ -181,7 +181,6 @@ public class TestcontainersConfiguration {
 
     @UnstableAPI
     public boolean environmentSupportsReuse() {
-        // specifically not supported as an environment variable or classpath property
         return Boolean.parseBoolean(getEnvVarOrUserProperty("testcontainers.reuse.enable", "false"));
     }
 
@@ -211,6 +210,10 @@ public class TestcontainersConfiguration {
 
     public String getImageSubstitutorClassName() {
         return getEnvVarOrProperty("image.substitutor", null);
+    }
+
+    public String getImagePullPolicy() {
+        return getEnvVarOrProperty("pull.policy", null);
     }
 
     public Integer getClientPingTimeout() {
@@ -279,18 +282,16 @@ public class TestcontainersConfiguration {
     }
 
     /**
-     * Gets a configured setting from an environment variable.
-     * <p>
-     * Note that when searching environment variables, the prefix `TESTCONTAINERS_` will usually be applied to the
-     * property name, which will be converted to upper-case with underscore separators. This prefix will not be added
-     * if the property name begins `docker.`.
+     * Gets a configured setting from <code>~/.testcontainers.properties</code>.
      *
      * @param propertyName name of configuration file property (dot-separated lower case)
      * @return the found value, or null if not set
      */
     @Contract("_, !null -> !null")
     public String getUserProperty(@NotNull final String propertyName, @Nullable final String defaultValue) {
-        return getConfigurable(propertyName, defaultValue);
+        return this.userProperties.get(propertyName) != null
+            ? (String) this.userProperties.get(propertyName)
+            : defaultValue;
     }
 
     /**
@@ -367,13 +368,13 @@ public class TestcontainersConfiguration {
         try (InputStream inputStream = url.openStream()) {
             properties.load(inputStream);
         } catch (FileNotFoundException e) {
-            log.warn(
+            log.debug(
                 "Attempted to read Testcontainers configuration file at {} but the file was not found. Exception message: {}",
                 url,
                 ExceptionUtils.getRootCauseMessage(e)
             );
         } catch (IOException e) {
-            log.warn(
+            log.debug(
                 "Attempted to read Testcontainers configuration file at {} but could it not be loaded. Exception message: {}",
                 url,
                 ExceptionUtils.getRootCauseMessage(e)

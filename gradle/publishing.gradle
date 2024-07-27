@@ -30,7 +30,7 @@ publishing {
 
                     name project.description
                     description 'Isolated container management for Java code testing'
-                    url 'https://testcontainers.org'
+                    url 'https://java.testcontainers.org'
                     issueManagement {
                         system 'GitHub'
                         url 'https://github.com/testcontainers/testcontainers-java/issues'

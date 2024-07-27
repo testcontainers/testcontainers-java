@@ -19,7 +19,7 @@ public class NginxContainer<SELF extends NginxContainer<SELF>>
     private static final String DEFAULT_TAG = "1.9.4";
 
     /**
-     * @deprecated use {@link NginxContainer(DockerImageName)} instead
+     * @deprecated use {@link #NginxContainer(DockerImageName)} instead
      */
     @Deprecated
     public NginxContainer() {

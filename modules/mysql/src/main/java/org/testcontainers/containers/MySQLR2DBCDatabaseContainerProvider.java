@@ -1,7 +1,7 @@
 package org.testcontainers.containers;
 
 import com.google.auto.service.AutoService;
-import dev.miku.r2dbc.mysql.MySqlConnectionFactoryProvider;
+import io.asyncer.r2dbc.mysql.MySqlConnectionFactoryProvider;
 import io.r2dbc.spi.ConnectionFactoryMetadata;
 import io.r2dbc.spi.ConnectionFactoryOptions;
 import org.testcontainers.r2dbc.R2DBCDatabaseContainer;

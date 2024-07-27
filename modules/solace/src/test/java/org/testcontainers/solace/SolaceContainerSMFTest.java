@@ -11,7 +11,6 @@ import com.solacesystems.jcsmp.Topic;
 import com.solacesystems.jcsmp.XMLMessageConsumer;
 import com.solacesystems.jcsmp.XMLMessageListener;
 import com.solacesystems.jcsmp.XMLMessageProducer;
-import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -20,6 +19,8 @@ import org.testcontainers.utility.MountableFile;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class SolaceContainerSMFTest {
 
@@ -41,8 +42,8 @@ public class SolaceContainerSMFTest {
         ) {
             solaceContainer.start();
             JCSMPSession session = createSessionWithBasicAuth(solaceContainer);
-            Assertions.assertThat(session).isNotNull();
-            Assertions.assertThat(consumeMessageFromSolace(session)).isEqualTo(MESSAGE);
+            assertThat(session).isNotNull();
+            assertThat(consumeMessageFromSolace(session)).isEqualTo(MESSAGE);
             session.closeSession();
         }
     }
@@ -51,7 +52,7 @@ public class SolaceContainerSMFTest {
     public void testSolaceContainerWithCertificates() {
         try (
             // solaceContainerUsageSSL {
-            SolaceContainer solaceContainer = new SolaceContainer("solace/solace-pubsub-standard:10.2")
+            SolaceContainer solaceContainer = new SolaceContainer("solace/solace-pubsub-standard:10.6")
                 .withClientCert(
                     MountableFile.forClasspathResource("solace.pem"),
                     MountableFile.forClasspathResource("rootCA.crt")
@@ -61,8 +62,8 @@ public class SolaceContainerSMFTest {
         ) {
             solaceContainer.start();
             JCSMPSession session = createSessionWithCertificates(solaceContainer);
-            Assertions.assertThat(session).isNotNull();
-            Assertions.assertThat(consumeMessageFromSolace(session)).isEqualTo(MESSAGE);
+            assertThat(session).isNotNull();
+            assertThat(consumeMessageFromSolace(session)).isEqualTo(MESSAGE);
             session.closeSession();
         }
     }
@@ -157,7 +158,7 @@ public class SolaceContainerSMFTest {
             session.addSubscription(TOPIC);
             cons.start();
             publishMessageToSolace(session);
-            Assertions.assertThat(latch.await(10L, TimeUnit.SECONDS)).isTrue();
+            assertThat(latch.await(10L, TimeUnit.SECONDS)).isTrue();
             return result[0];
         } catch (Exception e) {
             throw new RuntimeException("Cannot receive message from solace", e);

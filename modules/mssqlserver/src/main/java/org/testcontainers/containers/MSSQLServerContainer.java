@@ -7,6 +7,13 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+/**
+ * Testcontainers implementation for Microsoft SQL Server.
+ * <p>
+ * Supported image: {@code mcr.microsoft.com/mssql/server}
+ * <p>
+ * Exposed ports: 1433
+ */
 public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("mcr.microsoft.com/mssql/server");
@@ -20,7 +27,7 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
 
     public static final Integer MS_SQL_SERVER_PORT = 1433;
 
-    static final String DEFAULT_USER = "SA";
+    static final String DEFAULT_USER = "sa";
 
     static final String DEFAULT_PASSWORD = "A_Str0ng_Required_Password";
 
@@ -38,7 +45,7 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
     };
 
     /**
-     * @deprecated use {@link MSSQLServerContainer(DockerImageName)} instead
+     * @deprecated use {@link #MSSQLServerContainer(DockerImageName)} instead
      */
     @Deprecated
     public MSSQLServerContainer() {
@@ -71,7 +78,7 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
             acceptLicense();
         }
 
-        addEnv("SA_PASSWORD", password);
+        addEnv("MSSQL_SA_PASSWORD", password);
     }
 
     /**

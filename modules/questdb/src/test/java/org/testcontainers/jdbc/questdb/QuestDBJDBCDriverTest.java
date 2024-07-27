@@ -13,7 +13,10 @@ public class QuestDBJDBCDriverTest extends AbstractJDBCDriverTest {
     @Parameterized.Parameters(name = "{index} - {0}")
     public static Iterable<Object[]> data() {
         return Arrays.asList(
-            new Object[][] { { "jdbc:tc:postgresql://hostname/databasename", EnumSet.of(Options.PmdKnownBroken) } }
+            new Object[][] {
+                { "jdbc:tc:postgresql://hostname/databasename", EnumSet.of(Options.PmdKnownBroken) },
+                { "jdbc:tc:questdb://hostname/databasename", EnumSet.of(Options.PmdKnownBroken) },
+            }
         );
     }
 }

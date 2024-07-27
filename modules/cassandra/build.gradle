@@ -1,4 +1,4 @@
-description = "TestContainers :: Cassandra"
+description = "Testcontainers :: Cassandra"
 
 configurations.all {
     resolutionStrategy {
@@ -10,6 +10,6 @@ dependencies {
     api project(":database-commons")
     api "com.datastax.cassandra:cassandra-driver-core:3.10.0"
 
-    testImplementation 'com.datastax.oss:java-driver-core:4.15.0'
-    testImplementation 'org.assertj:assertj-core:3.24.2'
+    testImplementation 'com.datastax.oss:java-driver-core:4.17.0'
+    testImplementation 'org.assertj:assertj-core:3.26.3'
 }

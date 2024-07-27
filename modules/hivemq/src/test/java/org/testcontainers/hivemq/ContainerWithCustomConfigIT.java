@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
-public class ContainerWithCustomConfigIT {
+class ContainerWithCustomConfigIT {
 
     @Test
     @Timeout(value = 3, unit = TimeUnit.MINUTES)

@@ -16,12 +16,12 @@ public class ImagePullTest {
     public static String[] parameters() {
         return new String[] {
             "alpine:latest",
-            "alpine:3.16",
+            "alpine:3.17",
             "alpine", // omitting the tag should work and default to latest
             "alpine@sha256:1775bebec23e1f3ce486989bfc9ff3c4e951690df84aa9f926497d82f2ffca9d",
-            "quay.io/testcontainers/ryuk:latest",
-            "quay.io/testcontainers/ryuk:0.2.3",
-            "quay.io/testcontainers/ryuk@sha256:bb5a635cac4bd96c93cc476969ce11dc56436238ec7cd028d0524462f4739dd9",
+            "docker.io/testcontainers/ryuk:latest",
+            "docker.io/testcontainers/ryuk:0.7.0",
+            "docker.io/testcontainers/ryuk@sha256:bcbee39cd601396958ba1bd06ea14ad64ce0ea709de29a427d741d1f5262080a",
             //            "ibmcom/db2express-c", // Big image for testing with slow networks
         };
     }

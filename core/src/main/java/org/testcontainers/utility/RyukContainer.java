@@ -9,7 +9,7 @@ import org.testcontainers.containers.wait.strategy.Wait;
 class RyukContainer extends GenericContainer<RyukContainer> {
 
     RyukContainer() {
-        super("testcontainers/ryuk:0.4.0");
+        super("testcontainers/ryuk:0.8.1");
         withExposedPorts(8080);
         withCreateContainerCmdModifier(cmd -> {
             cmd.withName("testcontainers-ryuk-" + DockerClientFactory.SESSION_ID);

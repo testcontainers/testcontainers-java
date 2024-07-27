@@ -48,7 +48,14 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
- * The couchbase container initializes and configures a Couchbase Server single node cluster.
+ * Testcontainers implementation for Couchbase.
+ * <p>
+ * Supported image: {@code couchbase/server}
+ * <p>
+ * Exposed ports:
+ * <ul>
+ *     <li>Console: 8091</li>
+ * </ul>
  * <p>
  * Note that it does not depend on a specific couchbase SDK, so it can be used with both the Java SDK 2 and 3 as well
  * as the Scala SDK 1 or newer. We recommend using the latest and greatest SDKs for the best experience.
@@ -116,9 +123,11 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     private boolean isEnterprise = false;
 
+    private boolean hasTlsPorts = false;
+
     /**
      * Creates a new couchbase container with the default image and version.
-     * @deprecated use {@link CouchbaseContainer(DockerImageName)} instead
+     * @deprecated use {@link #CouchbaseContainer(DockerImageName)} instead
      */
     @Deprecated
     public CouchbaseContainer() {
@@ -338,6 +347,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
         timePhase("waitUntilNodeIsOnline", this::waitUntilNodeIsOnline);
         timePhase("initializeIsEnterprise", this::initializeIsEnterprise);
+        timePhase("initializeHasTlsPorts", this::initializeHasTlsPorts);
         timePhase("renameNode", this::renameNode);
         timePhase("initializeServices", this::initializeServices);
         timePhase("setMemoryQuotas", this::setMemoryQuotas);
@@ -384,6 +394,31 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
             if (enabledServices.contains(CouchbaseService.EVENTING)) {
                 throw new IllegalStateException("The Eventing Service is only supported with the Enterprise version");
             }
+        }
+    }
+
+    /**
+     * Initializes the {@link #hasTlsPorts} flag.
+     * <p>
+     * Community Edition might support TLS one happy day, so use a "supports TLS" flag separate from
+     * the "enterprise edition" flag.
+     */
+    private void initializeHasTlsPorts() {
+        @Cleanup
+        Response response = doHttpRequest(MGMT_PORT, "/pools/default/nodeServices", "GET", null, true);
+
+        try {
+            String clusterTopology = response.body().string();
+            hasTlsPorts =
+                !MAPPER
+                    .readTree(clusterTopology)
+                    .path("nodesExt")
+                    .path(0)
+                    .path("services")
+                    .path("mgmtSSL")
+                    .isMissingNode();
+        } catch (IOException e) {
+            throw new IllegalStateException("Couchbase /pools/default/nodeServices did not return valid JSON");
         }
     }
 
@@ -512,33 +547,45 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         final FormBody.Builder builder = new FormBody.Builder();
         builder.add("hostname", getHost());
         builder.add("mgmt", Integer.toString(getMappedPort(MGMT_PORT)));
-        builder.add("mgmtSSL", Integer.toString(getMappedPort(MGMT_SSL_PORT)));
+        if (hasTlsPorts) {
+            builder.add("mgmtSSL", Integer.toString(getMappedPort(MGMT_SSL_PORT)));
+        }
 
         if (enabledServices.contains(CouchbaseService.KV)) {
             builder.add("kv", Integer.toString(getMappedPort(KV_PORT)));
-            builder.add("kvSSL", Integer.toString(getMappedPort(KV_SSL_PORT)));
             builder.add("capi", Integer.toString(getMappedPort(VIEW_PORT)));
-            builder.add("capiSSL", Integer.toString(getMappedPort(VIEW_SSL_PORT)));
+            if (hasTlsPorts) {
+                builder.add("kvSSL", Integer.toString(getMappedPort(KV_SSL_PORT)));
+                builder.add("capiSSL", Integer.toString(getMappedPort(VIEW_SSL_PORT)));
+            }
         }
 
         if (enabledServices.contains(CouchbaseService.QUERY)) {
             builder.add("n1ql", Integer.toString(getMappedPort(QUERY_PORT)));
-            builder.add("n1qlSSL", Integer.toString(getMappedPort(QUERY_SSL_PORT)));
+            if (hasTlsPorts) {
+                builder.add("n1qlSSL", Integer.toString(getMappedPort(QUERY_SSL_PORT)));
+            }
         }
 
         if (enabledServices.contains(CouchbaseService.SEARCH)) {
             builder.add("fts", Integer.toString(getMappedPort(SEARCH_PORT)));
-            builder.add("ftsSSL", Integer.toString(getMappedPort(SEARCH_SSL_PORT)));
+            if (hasTlsPorts) {
+                builder.add("ftsSSL", Integer.toString(getMappedPort(SEARCH_SSL_PORT)));
+            }
         }
 
         if (enabledServices.contains(CouchbaseService.ANALYTICS)) {
             builder.add("cbas", Integer.toString(getMappedPort(ANALYTICS_PORT)));
-            builder.add("cbasSSL", Integer.toString(getMappedPort(ANALYTICS_SSL_PORT)));
+            if (hasTlsPorts) {
+                builder.add("cbasSSL", Integer.toString(getMappedPort(ANALYTICS_SSL_PORT)));
+            }
         }
 
         if (enabledServices.contains(CouchbaseService.EVENTING)) {
             builder.add("eventingAdminPort", Integer.toString(getMappedPort(EVENTING_PORT)));
-            builder.add("eventingSSL", Integer.toString(getMappedPort(EVENTING_SSL_PORT)));
+            if (hasTlsPorts) {
+                builder.add("eventingSSL", Integer.toString(getMappedPort(EVENTING_SSL_PORT)));
+            }
         }
 
         @Cleanup

@@ -10,7 +10,7 @@ import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 @Testcontainers
-public class DemoDisableExtensionsIT {
+class DemoDisableExtensionsIT {
 
     // noExtensions {
     @Container

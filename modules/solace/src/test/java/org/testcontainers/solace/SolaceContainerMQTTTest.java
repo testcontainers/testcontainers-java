@@ -1,6 +1,5 @@
 package org.testcontainers.solace;
 
-import org.assertj.core.api.Assertions;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
@@ -14,6 +13,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class SolaceContainerMQTTTest {
 
@@ -36,8 +37,8 @@ public class SolaceContainerMQTTTest {
                 solaceContainer.getPassword(),
                 solaceContainer.getOrigin(Service.MQTT)
             );
-            Assertions.assertThat(client).isNotNull();
-            Assertions.assertThat(consumeMessageFromSolace(client)).isEqualTo(MESSAGE);
+            assertThat(client).isNotNull();
+            assertThat(consumeMessageFromSolace(client)).isEqualTo(MESSAGE);
         }
     }
 
@@ -86,7 +87,7 @@ public class SolaceContainerMQTTTest {
             );
             client.subscribe(TOPIC_NAME, 0);
             publishMessageToSolace(client);
-            Assertions.assertThat(latch.await(10L, TimeUnit.SECONDS)).isTrue();
+            assertThat(latch.await(10L, TimeUnit.SECONDS)).isTrue();
             return result[0];
         } catch (Exception e) {
             throw new RuntimeException("Cannot receive message from solace", e);

@@ -14,8 +14,10 @@ body:
       description: Is this feature related to any of the existing modules?
       options:
         - Core
+        - ActiveMQ
         - Azure
         - Cassandra
+        - ChromaDB
         - Clickhouse
         - CockroachDB
         - CrateDB
@@ -25,21 +27,30 @@ body:
         - Dynalite
         - Elasticsearch
         - GCloud
+        - Grafana
         - HiveMQ
         - InfluxDB
         - K3S
+        - K6
         - Kafka
         - LocalStack
         - MariaDB
+        - Milvus
+        - MinIO
         - MockServer
         - MongoDB
         - MSSQLServer
         - MySQL
         - Neo4j
         - NGINX
-        - Oracle-XE
+        - OceanBase
+        - Ollama
+        - OpenFGA
+        - Oracle Free
+        - Oracle XE
         - OrientDB
         - PostgreSQL
+        - Qdrant
         - QuestDB
         - Presto
         - Pulsar
@@ -52,6 +63,7 @@ body:
         - ToxiProxy
         - Trino
         - Vault
+        - Weaviate
         - YugabyteDB
         - New Module
   - type: textarea

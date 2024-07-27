@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class CreateFileInCopiedDirectoryIT {
+class CreateFileInCopiedDirectoryIT {
 
     private @NotNull MountableFile createDirectory() throws IOException {
         final File directory = new File(Files.createTempDirectory("").toFile(), "directory");
@@ -47,7 +47,7 @@ public class CreateFileInCopiedDirectoryIT {
 
         try (
             final HiveMQContainer hivemq = new HiveMQContainer(
-                DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3")
+                DockerImageName.parse("hivemq/hivemq-ce").withTag("2024.3")
             )
                 .withHiveMQConfig(MountableFile.forClasspathResource("/inMemoryConfig.xml"))
                 .withExtension(extension)

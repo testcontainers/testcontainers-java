@@ -32,6 +32,7 @@ public class ImageFromDockerfileTest {
         )
             .withDockerfileFromBuilder(it -> it.from("scratch"));
         String imageId = image.resolve();
+
         DockerClient dockerClient = DockerClientFactory.instance().client();
 
         try {
