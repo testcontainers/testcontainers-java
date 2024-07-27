@@ -232,6 +232,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
      *      <li>{@code container.getHost():container.getMappedPort(9093)}</li>
      *      <li>{@code container.getConfig().getHostName():9092}</li>
      * </ul>
+     *
      * @param listenerSupplier a supplier that will provide a listener
      * @return this {@link KafkaContainer} instance
      */
@@ -341,7 +342,11 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         }
 
         private String kafkaListenerSecurityProtocolMap() {
-            String kafkaListenerSecurityProtocolMapEnvVar = getEnvVars().get("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP");
+            Supplier<String> kafkaListenerSecurityProtocolMapEnvVarSupplier = getEnvVars()
+                .get("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP");
+            String kafkaListenerSecurityProtocolMapEnvVar = kafkaListenerSecurityProtocolMapEnvVarSupplier == null
+                ? null
+                : kafkaListenerSecurityProtocolMapEnvVarSupplier.get();
             String kafkaListenerSecurityProtocolMap = String.format(
                 "%s,CONTROLLER:PLAINTEXT",
                 kafkaListenerSecurityProtocolMapEnvVar
@@ -353,7 +358,10 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         }
 
         private String kafkaListeners() {
-            String kafkaListenersEnvVar = getEnvVars().get("KAFKA_LISTENERS");
+            Supplier<String> kafkaListenersEnvVarSupplier = getEnvVars().get("KAFKA_LISTENERS");
+            String kafkaListenersEnvVar = kafkaListenersEnvVarSupplier == null
+                ? null
+                : kafkaListenersEnvVarSupplier.get();
             String kafkaListeners = String.format("%s,CONTROLLER://0.0.0.0:9094", kafkaListenersEnvVar);
             Set<String> listeners = new HashSet<>(Arrays.asList(kafkaListeners.split(",")));
             return String.join(",", listeners);
