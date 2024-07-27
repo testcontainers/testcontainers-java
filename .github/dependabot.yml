@@ -107,6 +107,11 @@ updates:
       interval: "weekly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
+    directory: "/modules/grafana"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
     directory: "/modules/hivemq"
     schedule:
       interval: "weekly"
@@ -116,6 +121,9 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "com.influxdb:influxdb-java-client"
+        update-types: [ "version-update:semver-major" ]
   - package-ecosystem: "gradle"
     directory: "/modules/jdbc"
     schedule:
@@ -369,6 +377,20 @@ updates:
         update-types: [ "version-update:semver-major" ]
       - dependency-name: "org.springframework.boot"
         update-types: [ "version-update:semver-major" ]
+      - dependency-name: "com.diffplug.spotless"
+        update-types: [ "version-update:semver-minor" ]
+      - dependency-name: "com.hazelcast:hazelcast"
+        update-types: [ "version-update:semver-minor" ]
+
+  # Smoke test
+  - package-ecosystem: "gradle"
+    directory: "/smoke-test"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "ch.qos.logback:logback-classic"
+        update-types: [ "version-update:semver-minor" ]
       - dependency-name: "com.diffplug.spotless"
         update-types: [ "version-update:semver-minor" ]
 

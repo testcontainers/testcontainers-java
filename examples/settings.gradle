@@ -43,14 +43,9 @@ buildCache {
     local {
         enabled = !isCI
     }
-    remote(HttpBuildCache) {
-        push = isCI && !System.getenv("READ_ONLY_REMOTE_GRADLE_CACHE") && System.getenv("GRADLE_ENTERPRISE_CACHE_PASSWORD")
+    remote(develocity.buildCache) {
+        push = isCI && !System.getenv("READ_ONLY_REMOTE_GRADLE_CACHE") && System.getenv("DEVELOCITY_ACCESS_KEY")
         enabled = true
-        url = 'https://ge.testcontainers.org/cache/'
-        credentials {
-            username = 'ci'
-            password = System.getenv("GRADLE_ENTERPRISE_CACHE_PASSWORD")
-        }
     }
 }
 

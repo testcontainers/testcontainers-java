@@ -67,6 +67,8 @@ public class ComposeContainer extends FailureDetectingExternalResource implement
 
     private String project;
 
+    private List<String> filesInDirectory = new ArrayList<>();
+
     public ComposeContainer(File... composeFiles) {
         this(Arrays.asList(composeFiles));
     }
@@ -134,7 +136,8 @@ public class ComposeContainer extends FailureDetectingExternalResource implement
                     this.options,
                     this.services,
                     this.scalingPreferences,
-                    this.env
+                    this.env,
+                    this.filesInDirectory
                 );
             this.composeDelegate.startAmbassadorContainer();
             this.composeDelegate.waitUntilServiceStarted(this.tailChildContainers);
@@ -165,7 +168,7 @@ public class ComposeContainer extends FailureDetectingExternalResource implement
                 if (removeImages != null) {
                     cmd += " --rmi " + removeImages.dockerRemoveImagesType();
                 }
-                this.composeDelegate.runWithCompose(this.localCompose, cmd, this.env);
+                this.composeDelegate.runWithCompose(this.localCompose, cmd, this.env, this.filesInDirectory);
             } finally {
                 this.project = this.composeDelegate.randomProjectId();
             }
@@ -349,6 +352,11 @@ public class ComposeContainer extends FailureDetectingExternalResource implement
      */
     public ComposeContainer withStartupTimeout(Duration startupTimeout) {
         this.composeDelegate.setStartupTimeout(startupTimeout);
+        return this;
+    }
+
+    public ComposeContainer withCopyFilesInContainer(String... fileCopyInclusions) {
+        this.filesInDirectory = Arrays.asList(fileCopyInclusions);
         return this;
     }
 

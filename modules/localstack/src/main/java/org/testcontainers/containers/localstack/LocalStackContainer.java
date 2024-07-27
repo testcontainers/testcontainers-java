@@ -123,8 +123,13 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
 
         withFileSystemBind(DockerClientFactory.instance().getRemoteDockerUnixSocketPath(), "/var/run/docker.sock");
         waitingFor(Wait.forLogMessage(".*Ready\\.\n", 1));
-        withCreateContainerCmdModifier(cmd -> cmd.withEntrypoint("sh"));
-        setCommand("-c", "while [ ! -f " + STARTER_SCRIPT + " ]; do sleep 0.1; done; " + STARTER_SCRIPT);
+        withCreateContainerCmdModifier(cmd -> {
+            cmd.withEntrypoint(
+                "sh",
+                "-c",
+                "while [ ! -f " + STARTER_SCRIPT + " ]; do sleep 0.1; done; " + STARTER_SCRIPT
+            );
+        });
     }
 
     private static boolean isVersion2(String version) {
