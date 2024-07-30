@@ -83,18 +83,16 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
     public void invoke() {
         super.start();
 
-        this.followOutput(new Slf4jLogConsumer(logger()));
+        followOutput(new Slf4jLogConsumer(logger()));
 
         // wait for the compose container to stop, which should only happen after it has spawned all the service containers
-        logger()
-            .info("Docker Compose container is running for command: {}", Joiner.on(" ").join(this.getCommandParts()));
-        while (this.isRunning()) {
+        logger().info("Docker Compose container is running for command: {}", Joiner.on(" ").join(getCommandParts()));
+        while (isRunning()) {
             logger().trace("Compose container is still running");
             Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
         }
-        logger().info("Docker Compose has finished running");
 
-        AuditLogger.doComposeLog(this.getCommandParts(), this.getEnv());
+        AuditLogger.doComposeLog(getCommandParts(), getEnv());
 
         final Integer exitCode = getDockerClient()
             .inspectContainerCmd(getContainerId())
@@ -107,9 +105,11 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
                 "Containerised Docker Compose exited abnormally with code " +
                 exitCode +
                 " whilst running command: " +
-                StringUtils.join(this.getCommandParts(), ' ')
+                StringUtils.join(getCommandParts(), ' ')
             );
         }
+
+        logger().info("Docker Compose has finished running");
     }
 
     private String convertToUnixFilesystemPath(String path) {

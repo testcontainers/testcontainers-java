@@ -12,13 +12,15 @@ import java.util.List;
 /**
  * Testcontainers implementation for Apache Kafka.
  * <p>
- * Supported image: {@code apache/kafka}
+ * Supported image: {@code apache/kafka}, {@code apache/kafka-native}
  * <p>
  * Exposed ports: 9092
  */
 public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("apache/kafka");
+
+    private static final DockerImageName APACHE_KAFKA_NATIVE_IMAGE_NAME = DockerImageName.parse("apache/kafka-native");
 
     private static final int KAFKA_PORT = 9092;
 
@@ -34,7 +36,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     public KafkaContainer(DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, APACHE_KAFKA_NATIVE_IMAGE_NAME);
 
         withExposedPorts(KAFKA_PORT);
         withEnv("CLUSTER_ID", DEFAULT_CLUSTER_ID);
