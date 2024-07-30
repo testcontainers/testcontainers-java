@@ -10,7 +10,7 @@ public class KafkaContainerTest extends AbstractKafka {
 
     @Parameterized.Parameters(name = "{0}")
     public static String[] params() {
-        return new String[] { "apache/kafka:3.7.0", "apache/kafka-native:3.8.0-rc3" };
+        return new String[] { "apache/kafka:3.8.0", "apache/kafka-native:3.8.0" };
     }
 
     @Parameterized.Parameter
