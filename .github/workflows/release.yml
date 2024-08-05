@@ -21,7 +21,7 @@ jobs:
         run: docker image prune -af
 
       - name: Setup Gradle Build Action
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Run Gradle Build
         run: ./gradlew build --scan --no-daemon -i -x test
