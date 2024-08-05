@@ -6,7 +6,7 @@ Currently, two different Kafka images are supported:
 
 * `org.testcontainers.containers.KafkaContainer` supports 
 [confluentinc/cp-kafka](https://hub.docker.com/r/confluentinc/cp-kafka/)
-* `org.testcontainers.kafka.KafkaContainer` supports [apache/kafka](https://hub.docker.com/r/apache/kafka/)
+* `org.testcontainers.kafka.KafkaContainer` supports [apache/kafka](https://hub.docker.com/r/apache/kafka/) and [apache/kafka-native](https://hub.docker.com/r/apache/kafka-native/)
 
 ## Benefits
 
