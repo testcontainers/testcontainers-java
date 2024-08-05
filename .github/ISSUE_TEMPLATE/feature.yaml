@@ -84,7 +84,7 @@ body:
     id: benefit
     attributes:
       label: Benefit
-      description: What's the benefit of addng this feature to the project?
+      description: What's the benefit of adding this feature to the project?
     validations:
       required: true
   - type: textarea
