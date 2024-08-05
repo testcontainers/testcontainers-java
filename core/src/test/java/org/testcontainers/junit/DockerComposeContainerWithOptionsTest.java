@@ -1,10 +1,13 @@
 package org.testcontainers.junit;
 
 import com.google.common.collect.ImmutableSet;
+import org.assertj.core.api.Assumptions;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.testcontainers.containers.DockerComposeContainer;
+import org.testcontainers.utility.CommandLine;
 
 import java.io.File;
 import java.util.Set;
@@ -19,19 +22,19 @@ public class DockerComposeContainerWithOptionsTest {
 
     public DockerComposeContainerWithOptionsTest(
         final File composeFile,
-        final boolean local,
+        final boolean localMode,
         final Set<String> options,
         final boolean expectError
     ) {
         this.composeFile = composeFile;
-        this.local = local;
+        this.localMode = localMode;
         this.options = options;
         this.expectError = expectError;
     }
 
     private final File composeFile;
 
-    private final boolean local;
+    private final boolean localMode;
 
     private final Set<String> options;
 
@@ -73,12 +76,22 @@ public class DockerComposeContainerWithOptionsTest {
         };
     }
 
+    @Before
+    public void setUp() {
+        if (this.localMode) {
+            Assumptions
+                .assumeThat(CommandLine.executableExists(DockerComposeContainer.COMPOSE_EXECUTABLE))
+                .as("docker-compose executable exists")
+                .isTrue();
+        }
+    }
+
     @Test
     public void performTest() {
         try (
             DockerComposeContainer<?> environment = new DockerComposeContainer<>(composeFile)
                 .withOptions(options.stream().toArray(String[]::new))
-                .withLocalCompose(local)
+                .withLocalCompose(localMode)
         ) {
             environment.start();
             assertThat(expectError).isEqualTo(false);
