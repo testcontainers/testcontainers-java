@@ -90,6 +90,6 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     }
 
     public String getBootstrapServers() {
-        return String.format("%s:%s", getHost(), getMappedPort(KAFKA_PORT));
+        return String.format("PLAINTEXT://%s:%s", getHost(), getMappedPort(KAFKA_PORT));
     }
 }
