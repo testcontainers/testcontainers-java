@@ -261,9 +261,9 @@ public class ElasticsearchContainerTest {
             ElasticsearchContainer container = new ElasticsearchContainer(
                 "docker.elastic.co/elasticsearch/elasticsearch:8.1.2"
             )
-                    // disable SSL
-                    .withEnv("xpack.security.transport.ssl.enabled", "false")
-                    .withEnv("xpack.security.http.ssl.enabled", "false")
+                // disable SSL
+                .withEnv("xpack.security.transport.ssl.enabled", "false")
+                .withEnv("xpack.security.http.ssl.enabled", "false")
         ) {
             // Start the container. This step might take some time...
             container.start();
