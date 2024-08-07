@@ -183,7 +183,7 @@ public class ElasticsearchContainerTest {
 
     @Test
     public void restClientClusterHealth() throws IOException {
-        // httpClientContainer {
+        // httpClientContainer7 {
         // Create the elasticsearch container.
         try (ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE)) {
             // Start the container. This step might take some time...
@@ -208,7 +208,7 @@ public class ElasticsearchContainerTest {
             // }}
             assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
             assertThat(EntityUtils.toString(response.getEntity())).contains("cluster_name");
-            // httpClientContainer {{
+            // httpClientContainer7 {{
         }
         // }
     }
@@ -245,17 +245,17 @@ public class ElasticsearchContainerTest {
                     .build();
 
             Response response = client.performRequest(new Request("GET", "/_cluster/health"));
-            // }}}
+            // }
             assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
             assertThat(EntityUtils.toString(response.getEntity())).contains("cluster_name");
-            // httpClientContainer8 {{{
+            // httpClientContainer8 {
         }
         // }
     }
 
     @Test
     public void restClientClusterHealthElasticsearch8WithoutSSL() throws IOException {
-        // httpClientContainer8NoSSL {
+        // httpClientContainerNoSSL8 {
         // Create the elasticsearch container.
         try (
             ElasticsearchContainer container = new ElasticsearchContainer(
@@ -284,10 +284,10 @@ public class ElasticsearchContainerTest {
                     .build();
 
             Response response = client.performRequest(new Request("GET", "/_cluster/health"));
-            // }}}
+            // }
             assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
             assertThat(EntityUtils.toString(response.getEntity())).contains("cluster_name");
-            // httpClientContainer8NoSSL {{{
+            // httpClientContainerNoSSL8 {
         }
         // }
     }
