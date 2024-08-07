@@ -18,6 +18,7 @@ import com.github.dockerjava.api.model.Volume;
 import com.github.dockerjava.api.model.VolumesFrom;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -331,6 +332,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     protected void doStart() {
+        Stopwatch stopWatch = Stopwatch.createStarted();
         try {
             if (this.waitStrategy != DEFAULT_WAIT_STRATEGY) {
                 this.containerDef.setWaitStrategy(this.waitStrategy);
@@ -356,7 +358,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 }
             );
         } catch (Exception e) {
-            throw new ContainerLaunchException("Container startup failed for image " + getDockerImageName(), e);
+            throw new ContainerLaunchException(String.format("Container startup failed for image %s (elapsed %ss)", getDockerImageName(), stopWatch.elapsed(TimeUnit.SECONDS)), e);
         }
     }
 
