@@ -369,20 +369,6 @@ public class ElasticsearchContainerTest {
     }
 
     @Test
-    public void testElasticsearch8SecureByDefault() throws Exception {
-        try (
-            ElasticsearchContainer container = new ElasticsearchContainer(
-                "docker.elastic.co/elasticsearch/elasticsearch:8.1.2"
-            )
-        ) {
-            // Start the container. This step might take some time...
-            container.start();
-
-            assertClusterHealthResponse(container);
-        }
-    }
-
-    @Test
     public void testDockerHubElasticsearch8ImageSecureByDefault() throws Exception {
         try (ElasticsearchContainer container = new ElasticsearchContainer("elasticsearch:8.1.2")) {
             container.start();
