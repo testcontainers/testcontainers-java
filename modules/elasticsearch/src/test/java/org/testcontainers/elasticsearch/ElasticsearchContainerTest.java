@@ -205,10 +205,10 @@ public class ElasticsearchContainerTest {
                     .build();
 
             Response response = client.performRequest(new Request("GET", "/_cluster/health"));
-            // }}
+            // }}}
             assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
             assertThat(EntityUtils.toString(response.getEntity())).contains("cluster_name");
-            // httpClientContainer {{
+            // httpClientContainer {{{
         }
         // }
     }
@@ -245,10 +245,10 @@ public class ElasticsearchContainerTest {
                     .build();
 
             Response response = client.performRequest(new Request("GET", "/_cluster/health"));
-            // }}
+            // }}}
             assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
             assertThat(EntityUtils.toString(response.getEntity())).contains("cluster_name");
-            // httpClientContainer8 {{
+            // httpClientContainer8 {{{
         }
         // }
     }
@@ -284,10 +284,10 @@ public class ElasticsearchContainerTest {
                     .build();
 
             Response response = client.performRequest(new Request("GET", "/_cluster/health"));
-            // }}
+            // }}}
             assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
             assertThat(EntityUtils.toString(response.getEntity())).contains("cluster_name");
-            // httpClientContainer8NoSSL {{
+            // httpClientContainer8NoSSL {{{
         }
         // }
     }
@@ -320,10 +320,10 @@ public class ElasticsearchContainerTest {
                     .build();
 
             Response response = client.performRequest(new Request("GET", "/_cluster/health"));
-            // }}
+            // }}}
             assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
             assertThat(EntityUtils.toString(response.getEntity())).contains("cluster_name");
-            // httpClientSecuredContainer {{
+            // httpClientSecuredContainer {{{
         }
         // }
     }
