@@ -1,8 +1,6 @@
 package org.testcontainers.junit.timeplus;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 import org.testcontainers.TimeplusImages;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 import org.testcontainers.timeplus.TimeplusContainer;
@@ -13,7 +11,6 @@ import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(Parameterized.class)
 public class SimpleTimeplusTest extends AbstractContainerDatabaseTest {
 
     private final DockerImageName imageName;
@@ -22,7 +19,6 @@ public class SimpleTimeplusTest extends AbstractContainerDatabaseTest {
         this.imageName = imageName;
     }
 
-    @Parameterized.Parameters(name = "{0}")
     public static Object[][] data() {
         return new Object[][] { { TimeplusImages.TIMEPLUS_IMAGE } };
     }

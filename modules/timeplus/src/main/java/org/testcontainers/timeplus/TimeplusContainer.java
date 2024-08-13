@@ -17,7 +17,7 @@ public class TimeplusContainer extends JdbcDatabaseContainer<TimeplusContainer> 
 
     static final String DOCKER_IMAGE_NAME = "timeplus/timeplusd";
 
-    private static final DockerImageName TIMEPLUS_IMAGE_NAME = DockerImageName.parse("timeplus/timeplusd");
+    private static final DockerImageName TIMEPLUS_IMAGE_NAME = DockerImageName.parse(DOCKER_IMAGE_NAME);
 
     private static final Integer HTTP_PORT = 3218;
 
@@ -79,17 +79,17 @@ public class TimeplusContainer extends JdbcDatabaseContainer<TimeplusContainer> 
 
     @Override
     public String getUsername() {
-        return username;
+        return this.username;
     }
 
     @Override
     public String getPassword() {
-        return password;
+        return this.password;
     }
 
     @Override
     public String getDatabaseName() {
-        return databaseName;
+        return this.databaseName;
     }
 
     @Override

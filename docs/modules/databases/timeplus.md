@@ -1,4 +1,4 @@
-# timeplus Module
+# Timeplus Module
 
 ## Adding this module to your project dependencies
 
