@@ -38,7 +38,9 @@ public class CassandraContainer extends GenericContainer<CassandraContainer> {
     private String configLocation;
 
     private String initScriptPath;
-
+    public CassandraContainer(String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName);
+    }
     public CassandraContainer(DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
