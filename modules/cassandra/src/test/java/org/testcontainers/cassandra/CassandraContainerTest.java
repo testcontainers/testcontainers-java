@@ -115,8 +115,11 @@ public class CassandraContainerTest {
     }
 
     private void testInitScript(CassandraContainer cassandraContainer, boolean withCredentials) {
-        ResultSet resultSet =
-            performQuery(cassandraContainer, "SELECT * FROM keySpaceTest.catalog_category", withCredentials);
+        ResultSet resultSet = performQuery(
+            cassandraContainer,
+            "SELECT * FROM keySpaceTest.catalog_category",
+            withCredentials
+        );
         assertThat(resultSet.wasApplied()).as("Query was applied").isTrue();
         Row row = resultSet.one();
         assertThat(row.getLong(0)).as("Inserted row is in expected state").isEqualTo(1);
