@@ -5,14 +5,13 @@ import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata;
 import org.junit.Rule;
 import org.junit.Test;
-import org.testcontainers.utility.DockerImageName;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class CassandraServer4Test {
 
     @Rule
-    public CassandraContainer cassandra = new CassandraContainer(DockerImageName.parse("cassandra:4.1.1"));
+    public CassandraContainer cassandra = new CassandraContainer("cassandra:4.1.1");
 
     @Test
     public void testCassandraGetContactPoint() {

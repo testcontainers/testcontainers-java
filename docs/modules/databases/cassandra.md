@@ -17,9 +17,9 @@ This example connects to the Cassandra cluster:
 !!!hint
     If you override the Cassandra configuration (using `CassandraContainer.withConfigurationOverride(String)`) to make
     the authentication mandatory (using `PasswordAuthenticator` for the property `authenticator`), it's strongly
-    recommended to also use the `org.testcontainers.cassandra.wait.CassandraQueryWaitStrategy` in order to guarantee
-    the init script will be executed once the Cassandra node is really ready to execute authenticated queries, otherwise
-    you may encounter an error like this one:
+    recommended to keep the default waiting strategy (`org.testcontainers.cassandra.wait.CassandraQueryWaitStrategy`) 
+    in order to guarantee the init script will be executed once the Cassandra node is really ready to execute 
+    authenticated queries, otherwise you may encounter an error like this one:
     ```
     AuthenticationFailed('Failed to authenticate to x.x.x.x: Error from server: code=0100 [Bad credentials]
     ```

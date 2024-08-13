@@ -2,6 +2,7 @@ package org.testcontainers.cassandra;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.testcontainers.cassandra.delegate.CassandraDatabaseDelegate;
+import org.testcontainers.cassandra.wait.CassandraQueryWaitStrategy;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.ext.ScriptUtils;
 import org.testcontainers.ext.ScriptUtils.ScriptLoadException;
@@ -38,9 +39,11 @@ public class CassandraContainer extends GenericContainer<CassandraContainer> {
     private String configLocation;
 
     private String initScriptPath;
+
     public CassandraContainer(String dockerImageName) {
-        this(DockerImageName.parse(dockerImageName);
+        this(DockerImageName.parse(dockerImageName));
     }
+
     public CassandraContainer(DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
@@ -53,6 +56,9 @@ public class CassandraContainer extends GenericContainer<CassandraContainer> {
         withEnv("MAX_HEAP_SIZE", "1024M");
         withEnv("CASSANDRA_ENDPOINT_SNITCH", "GossipingPropertyFileSnitch");
         withEnv("CASSANDRA_DC", DEFAULT_LOCAL_DATACENTER);
+
+        // Use the CassandraQueryWaitStrategy by default to avoid potential issues when the authentication is enabled.
+        waitingFor(new CassandraQueryWaitStrategy());
     }
 
     @Override
