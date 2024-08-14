@@ -1,6 +1,7 @@
 package org.testcontainers.weaviate;
 
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 /**
@@ -32,6 +33,7 @@ public class WeaviateContainer extends GenericContainer<WeaviateContainer> {
         withExposedPorts(8080, 50051);
         withEnv("AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED", "true");
         withEnv("PERSISTENCE_DATA_PATH", "/var/lib/weaviate");
+        waitingFor(Wait.forHttp("/v1/.well-known/ready").forPort(8080).forStatusCode(200));
     }
 
     public String getHttpHostAddress() {

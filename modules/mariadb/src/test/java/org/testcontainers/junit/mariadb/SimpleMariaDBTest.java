@@ -132,6 +132,18 @@ public class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
         }
     }
 
+    @Test
+    public void testEmptyPasswordWithRootUser() throws SQLException {
+        try (MariaDBContainer<?> mysql = new MariaDBContainer<>("mariadb:11.2.4").withUsername("root")) {
+            mysql.start();
+
+            ResultSet resultSet = performQuery(mysql, "SELECT 1");
+            int resultSetInt = resultSet.getInt(1);
+
+            assertThat(resultSetInt).isEqualTo(1);
+        }
+    }
+
     private void assertThatCustomIniFileWasUsed(MariaDBContainer<?> mariadb) throws SQLException {
         try (ResultSet resultSet = performQuery(mariadb, "SELECT @@GLOBAL.innodb_max_undo_log_size")) {
             long result = resultSet.getLong(1);

@@ -27,6 +27,7 @@ body:
         - Dynalite
         - Elasticsearch
         - GCloud
+        - Grafana
         - HiveMQ
         - InfluxDB
         - K3S

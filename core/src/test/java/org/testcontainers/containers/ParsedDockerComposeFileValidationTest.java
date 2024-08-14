@@ -3,16 +3,23 @@ package org.testcontainers.containers;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import lombok.SneakyThrows;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
+import java.io.PrintWriter;
 import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.entry;
 
 public class ParsedDockerComposeFileValidationTest {
+
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Test
     public void shouldValidate() {
@@ -128,5 +135,23 @@ public class ParsedDockerComposeFileValidationTest {
                 entry("redis", Sets.newHashSet("redis")),
                 entry("custom", Sets.newHashSet("alpine:3.17"))
             ); // redis, mysql from compose file, alpine:3.17 from Dockerfile build
+    }
+
+    @Test
+    public void shouldSupportALotOfAliases() throws Exception {
+        File file = temporaryFolder.newFile();
+        try (PrintWriter writer = new PrintWriter(file)) {
+            writer.println("x-entry: &entry");
+            writer.println("  key: value");
+            writer.println();
+            writer.println("services:");
+            for (int i = 0; i < 1_000; i++) {
+                writer.println("  service" + i + ":");
+                writer.println("    image: busybox");
+                writer.println("    environment:");
+                writer.println("      <<: *entry");
+            }
+        }
+        assertThatNoException().isThrownBy(() -> new ParsedDockerComposeFile(file));
     }
 }

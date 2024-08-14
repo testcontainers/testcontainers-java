@@ -2,14 +2,23 @@
 
 ## Usage example
 
-This example connects to the Cassandra Cluster, creates a keyspaces and asserts that is has been created.
+This example connects to the Cassandra cluster:
 
-<!--codeinclude-->
-[Building CqlSession](../../../modules/cassandra/src/test/java/org/testcontainers/containers/CassandraDriver3Test.java) inside_block:cassandra
-<!--/codeinclude-->
+1. Define a container:
+    <!--codeinclude-->
+    [Container definition](../../../modules/cassandra/src/test/java/org/testcontainers/cassandra/CassandraDriver4Test.java) inside_block:container-definition
+    <!--/codeinclude-->
 
-!!! warning
-    All methods returning instances of the Cassandra Driver's Cluster object in `CassandraContainer` have been deprecated. Providing these methods unnecessarily couples the Container to the Driver and creates potential breaking changes if the driver is updated.
+2. Build a `CqlSession`:
+    <!--codeinclude-->
+    [Building CqlSession](../../../modules/cassandra/src/test/java/org/testcontainers/cassandra/CassandraDriver4Test.java) inside_block:cql-session
+    <!--/codeinclude-->
+
+3. Define a container with custom `cassandra.yaml` located in a directory `cassandra-auth-required-configuration`:
+    
+    <!--codeinclude-->
+    [Running init script with required authentication](../../../modules/cassandra/src/test/java/org/testcontainers/cassandra/CassandraContainerTest.java) inside_block:init-with-auth
+    <!--/codeinclude-->
 
 ## Adding this module to your project dependencies
 
