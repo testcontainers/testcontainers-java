@@ -72,6 +72,7 @@ nav:
                 - modules/databases/presto.md
                 - modules/databases/questdb.md
                 - modules/databases/tidb.md
+                - modules/databases/timeplus.md
                 - modules/databases/trino.md
                 - modules/databases/yugabytedb.md
           - modules/activemq.md

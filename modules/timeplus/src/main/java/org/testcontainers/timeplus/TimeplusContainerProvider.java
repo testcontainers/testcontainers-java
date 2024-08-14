@@ -9,7 +9,7 @@ import org.testcontainers.utility.DockerImageName;
  */
 public class TimeplusContainerProvider extends JdbcDatabaseContainerProvider {
 
-    private static final String DEFAULT_TAG = "2.3.3";
+    private static final String DEFAULT_TAG = "2.3.21";
 
     @Override
     public boolean supports(String databaseType) {

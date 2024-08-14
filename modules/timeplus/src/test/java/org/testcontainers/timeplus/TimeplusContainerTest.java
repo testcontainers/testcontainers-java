@@ -1,6 +1,7 @@
 package org.testcontainers.timeplus;
 
 import org.junit.Test;
+import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
 import java.sql.ResultSet;
@@ -12,7 +13,7 @@ public class TimeplusContainerTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSimple() throws SQLException {
-        try (TimeplusContainer timeplus = new TimeplusContainer("timeplus/timeplusd:2.3.3")) {
+        try (JdbcDatabaseContainer timeplus = new TimeplusContainerProvider().newInstance()) {
             timeplus.start();
 
             ResultSet resultSet = performQuery(timeplus, "SELECT 1");
@@ -25,17 +26,18 @@ public class TimeplusContainerTest extends AbstractContainerDatabaseTest {
     @Test
     public void customCredentialsWithUrlParams() throws SQLException {
         try (
-            TimeplusContainer timeplus = new TimeplusContainer("timeplus/timeplusd:2.3.3")
+            JdbcDatabaseContainer timeplus = new TimeplusContainerProvider()
+                .newInstance()
                 .withUsername("system")
                 .withPassword("sys@t+")
                 .withDatabaseName("system")
-                .withUrlParam("max_result_rows", "5")
+                .withUrlParam("interactive_delay", "5")
         ) {
             timeplus.start();
 
             ResultSet resultSet = performQuery(
                 timeplus,
-                "SELECT value FROM system.settings where name='max_result_rows'"
+                "SELECT to_int(value) FROM system.settings where name='interactive_delay'"
             );
 
             int resultSetInt = resultSet.getInt(1);
