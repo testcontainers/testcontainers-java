@@ -1,7 +1,7 @@
 package org.testcontainers.timeplus;
 
 import org.junit.Test;
-import org.testcontainers.containers.JdbcDatabaseContainer;
+import org.testcontainers.TimeplusImages;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
 import java.sql.ResultSet;
@@ -13,7 +13,7 @@ public class TimeplusContainerTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSimple() throws SQLException {
-        try (JdbcDatabaseContainer timeplus = new TimeplusContainerProvider().newInstance()) {
+        try (TimeplusContainer timeplus = new TimeplusContainer(TimeplusImages.TIMEPLUS_IMAGE)) {
             timeplus.start();
 
             ResultSet resultSet = performQuery(timeplus, "SELECT 1");
@@ -26,8 +26,7 @@ public class TimeplusContainerTest extends AbstractContainerDatabaseTest {
     @Test
     public void customCredentialsWithUrlParams() throws SQLException {
         try (
-            JdbcDatabaseContainer timeplus = new TimeplusContainerProvider()
-                .newInstance()
+            TimeplusContainer timeplus = new TimeplusContainer(TimeplusImages.TIMEPLUS_IMAGE)
                 .withUsername("system")
                 .withPassword("sys@t+")
                 .withDatabaseName("system")

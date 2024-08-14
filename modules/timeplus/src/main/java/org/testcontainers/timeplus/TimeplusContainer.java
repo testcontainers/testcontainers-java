@@ -10,6 +10,14 @@ import java.util.Set;
 
 /**
  * Testcontainers implementation for Timeplus.
+ * <p>
+ * Supported image: {@code timeplus/timeplusd}
+ * <p>
+ * Exposed ports:
+ * <ul>
+ *     <li>Database: 8463</li>
+ *     <li>HTTP: 3218</li>
+ * </ul>
  */
 public class TimeplusContainer extends JdbcDatabaseContainer<TimeplusContainer> {
 
