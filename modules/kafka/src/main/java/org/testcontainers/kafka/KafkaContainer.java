@@ -7,7 +7,10 @@ import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * Testcontainers implementation for Apache Kafka.
@@ -24,11 +27,11 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     private static final int KAFKA_PORT = 9092;
 
-    private static final String DEFAULT_INTERNAL_TOPIC_RF = "1";
-
     private static final String STARTER_SCRIPT = "/tmp/testcontainers_start.sh";
 
-    private static final String DEFAULT_CLUSTER_ID = "4L6g3nShT-eMCtK--X86sw";
+    private final Set<String> listeners = new HashSet<>();
+
+    private final Set<Supplier<String>> advertisedListeners = new HashSet<>();
 
     public KafkaContainer(String imageName) {
         this(DockerImageName.parse(imageName));
@@ -39,24 +42,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, APACHE_KAFKA_NATIVE_IMAGE_NAME);
 
         withExposedPorts(KAFKA_PORT);
-        withEnv("CLUSTER_ID", DEFAULT_CLUSTER_ID);
-
-        withEnv(
-            "KAFKA_LISTENERS",
-            "PLAINTEXT://0.0.0.0:" + KAFKA_PORT + ",BROKER://0.0.0.0:9093, CONTROLLER://0.0.0.0:9094"
-        );
-        withEnv("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", "BROKER:PLAINTEXT,PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT");
-        withEnv("KAFKA_INTER_BROKER_LISTENER_NAME", "BROKER");
-        withEnv("KAFKA_PROCESS_ROLES", "broker,controller");
-        withEnv("KAFKA_CONTROLLER_LISTENER_NAMES", "CONTROLLER");
-
-        withEnv("KAFKA_NODE_ID", "1");
-        withEnv("KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", DEFAULT_INTERNAL_TOPIC_RF);
-        withEnv("KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS", DEFAULT_INTERNAL_TOPIC_RF);
-        withEnv("KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR", DEFAULT_INTERNAL_TOPIC_RF);
-        withEnv("KAFKA_TRANSACTION_STATE_LOG_MIN_ISR", DEFAULT_INTERNAL_TOPIC_RF);
-        withEnv("KAFKA_LOG_FLUSH_INTERVAL_MESSAGES", Long.MAX_VALUE + "");
-        withEnv("KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS", "0");
+        withEnv(KafkaHelper.envVars());
 
         withCommand("sh", "-c", "while [ ! -f " + STARTER_SCRIPT + " ]; do sleep 0.1; done; " + STARTER_SCRIPT);
         waitingFor(Wait.forLogMessage(".*Transitioning from RECOVERY to RUNNING.*", 1));
@@ -64,6 +50,8 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     @Override
     protected void configure() {
+        KafkaHelper.resolveListeners(this, this.listeners);
+
         String firstNetworkAlias = getNetworkAliases().stream().findFirst().orElse(null);
         String networkAlias = getNetwork() != null ? firstNetworkAlias : "localhost";
         String controllerQuorumVoters = String.format("%s@%s:9094", getEnvMap().get("KAFKA_NODE_ID"), networkAlias);
@@ -80,13 +68,79 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         List<String> advertisedListeners = new ArrayList<>();
         advertisedListeners.add("PLAINTEXT://" + getBootstrapServers());
         advertisedListeners.add(brokerAdvertisedListener);
+
+        advertisedListeners.addAll(KafkaHelper.resolveAdvertisedListeners(this.advertisedListeners));
         String kafkaAdvertisedListeners = String.join(",", advertisedListeners);
+
         String command = "#!/bin/bash\n";
         // exporting KAFKA_ADVERTISED_LISTENERS with the container hostname
         command += String.format("export KAFKA_ADVERTISED_LISTENERS=%s\n", kafkaAdvertisedListeners);
 
         command += "/etc/kafka/docker/run \n";
         copyFileToContainer(Transferable.of(command, 0777), STARTER_SCRIPT);
+    }
+
+    /**
+     * Add a listener in the format {@code host:port}.
+     * Host will be included as a network alias.
+     * <p>
+     * Use it to register additional connections to the Kafka broker within the same container network.
+     * <p>
+     * The listener will be added to the list of default listeners.
+     * <p>
+     * Default listeners:
+     * <ul>
+     *     <li>0.0.0.0:9092</li>
+     *     <li>0.0.0.0:9093</li>
+     *     <li>0.0.0.0:9094</li>
+     * </ul>
+     * <p>
+     * The listener will be added to the list of default advertised listeners.
+     * <p>
+     * Default advertised listeners:
+     * <ul>
+     *      <li>{@code container.getConfig().getHostName():9092}</li>
+     *      <li>{@code container.getHost():container.getMappedPort(9093)}</li>
+     * </ul>
+     * @param listener a listener with format {@code host:port}
+     * @return this {@link KafkaContainer} instance
+     */
+    public KafkaContainer withListener(String listener) {
+        this.listeners.add(listener);
+        this.advertisedListeners.add(() -> listener);
+        return this;
+    }
+
+    /**
+     * Add a listener in the format {@code host:port} and a {@link Supplier} for the advertised listener.
+     * Host from listener will be included as a network alias.
+     * <p>
+     * Use it to register additional connections to the Kafka broker from outside the container network
+     * <p>
+     * The listener will be added to the list of default listeners.
+     * <p>
+     * Default listeners:
+     * <ul>
+     *     <li>0.0.0.0:9092</li>
+     *     <li>0.0.0.0:9093</li>
+     *     <li>0.0.0.0:9094</li>
+     * </ul>
+     * <p>
+     * The {@link Supplier} will be added to the list of default advertised listeners.
+     * <p>
+     * Default advertised listeners:
+     * <ul>
+     *      <li>{@code container.getConfig().getHostName():9092}</li>
+     *      <li>{@code container.getHost():container.getMappedPort(9093)}</li>
+     * </ul>
+     * @param listener a supplier that will provide a listener
+     * @param advertisedListener a supplier that will provide a listener
+     * @return this {@link KafkaContainer} instance
+     */
+    public KafkaContainer withListener(String listener, Supplier<String> advertisedListener) {
+        this.listeners.add(listener);
+        this.advertisedListeners.add(advertisedListener);
+        return this;
     }
 
     public String getBootstrapServers() {
