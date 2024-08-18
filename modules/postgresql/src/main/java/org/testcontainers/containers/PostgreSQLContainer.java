@@ -1,6 +1,8 @@
 package org.testcontainers.containers;
 
 import org.jetbrains.annotations.NotNull;
+import org.testcontainers.containers.wait.experimental.ComplexWaitStrategy;
+import org.testcontainers.containers.wait.experimental.MultiLogMessageWaitStrategy;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
@@ -58,10 +60,16 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, PGVECTOR_IMAGE_NAME);
 
         this.waitStrategy =
-            new LogMessageWaitStrategy()
-                .withRegEx(".*database system is ready to accept connections.*\\s")
-                .withTimes(2)
-                .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS));
+            new ComplexWaitStrategy()
+                .with(new LogMessageWaitStrategy()
+                    .withRegEx(".*database system is ready to accept connections.*\\s")
+                    .withTimes(2)
+                    .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS)))
+                .with(new MultiLogMessageWaitStrategy()
+                    .withRegex(".*PostgreSQL Database directory appears to contain a database; Skipping initialization.*",
+                        ".*database system is ready to accept connections.*\\s")
+                    .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS)))
+;
         this.setCommand("postgres", "-c", FSYNC_OFF_OPTION);
 
         addExposedPort(POSTGRESQL_PORT);
