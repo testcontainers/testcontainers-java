@@ -42,6 +42,7 @@ permissions:
 
 jobs:
   core:
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     runs-on: self-hosted
     permissions:
       checks: write
