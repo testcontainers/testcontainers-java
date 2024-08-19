@@ -361,11 +361,12 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
     /**
      * Load init script content and apply it to the database if initScriptPath is set
      */
-protected void runInitScriptIfRequired() {
-    initScriptPaths.stream()
-        .filter(Objects::nonNull)
-        .forEach(path -> ScriptUtils.runInitScript(getDatabaseDelegate(), path));
-}
+    protected void runInitScriptIfRequired() {
+        initScriptPaths
+            .stream()
+            .filter(Objects::nonNull)
+            .forEach(path -> ScriptUtils.runInitScript(getDatabaseDelegate(), path));
+    }
 
     public void setParameters(Map<String, String> parameters) {
         this.parameters = parameters;
