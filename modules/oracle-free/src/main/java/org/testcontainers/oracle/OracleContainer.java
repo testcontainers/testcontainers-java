@@ -31,9 +31,9 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     static final int ORACLE_PORT = 1521;
 
-    private static final int DEFAULT_STARTUP_TIMEOUT_SECONDS = 60;
+    private int startupTimeoutSeconds = 60;
 
-    private static final int DEFAULT_CONNECT_TIMEOUT_SECONDS = 60;
+    private int connectTimeoutSeconds = 60;
 
     // Container defaults
     static final String DEFAULT_DATABASE_NAME = "freepdb1";
@@ -70,9 +70,9 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
         waitingFor(
             Wait
                 .forLogMessage(".*DATABASE IS READY TO USE!.*\\s", 1)
-                .withStartupTimeout(Duration.ofSeconds(DEFAULT_STARTUP_TIMEOUT_SECONDS))
+                .withStartupTimeout(Duration.ofSeconds(startupTimeoutSeconds))
         );
-        withConnectTimeoutSeconds(DEFAULT_CONNECT_TIMEOUT_SECONDS);
+        withConnectTimeoutSeconds(connectTimeoutSeconds);
         addExposedPorts(ORACLE_PORT);
     }
 
@@ -134,6 +134,18 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
         }
         this.username = username;
         return self();
+    }
+
+    @Override
+    public OracleContainer withStartupTimeoutSeconds(int startupTimeoutSeconds) {
+        this.startupTimeoutSeconds = startupTimeoutSeconds;
+        return super.withStartupTimeoutSeconds(startupTimeoutSeconds);
+    }
+
+    @Override
+    public OracleContainer withConnectTimeoutSeconds(int connectTimeoutSeconds) {
+        this.connectTimeoutSeconds = connectTimeoutSeconds;
+        return super.withConnectTimeoutSeconds(connectTimeoutSeconds);
     }
 
     @Override
