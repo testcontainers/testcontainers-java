@@ -9,7 +9,8 @@ Currently, two different Kafka images are supported:
 * `org.testcontainers.kafka.KafkaContainer` supports [apache/kafka](https://hub.docker.com/r/apache/kafka/) and [apache/kafka-native](https://hub.docker.com/r/apache/kafka-native/)
 
 !!! note
-    The `org.testcontainers.containers.KafkaContainer` is deprecated.
+    `org.testcontainers.containers.KafkaContainer` is deprecated.
+    Please use `org.testcontainers.kafka.ConfluentKafkaContainer` or `org.testcontainers.kafka.KafkaContainer` instead, depending on the used image.
 
 ## Benefits
 
