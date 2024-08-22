@@ -1,6 +1,8 @@
 package org.testcontainers.kafka;
 
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.containers.wait.strategy.WaitStrategy;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,9 +13,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-public class KafkaHelper {
-
-    private static final int KAFKA_PORT = 9092;
+class KafkaHelper {
 
     private static final String DEFAULT_INTERNAL_TOPIC_RF = "1";
 
@@ -21,7 +21,19 @@ public class KafkaHelper {
 
     private static final String PROTOCOL_PREFIX = "TC";
 
-    public static Map<String, String> envVars() {
+    static final int KAFKA_PORT = 9092;
+
+    static final String STARTER_SCRIPT = "/tmp/testcontainers_start.sh";
+
+    static final String[] COMMAND = {
+        "sh",
+        "-c",
+        "while [ ! -f " + STARTER_SCRIPT + " ]; do sleep 0.1; done; " + STARTER_SCRIPT,
+    };
+
+    static final WaitStrategy WAIT_STRATEGY = Wait.forLogMessage(".*Transitioning from RECOVERY to RUNNING.*", 1);
+
+    static Map<String, String> envVars() {
         Map<String, String> envVars = new HashMap<>();
         envVars.put("CLUSTER_ID", DEFAULT_CLUSTER_ID);
 
@@ -47,7 +59,7 @@ public class KafkaHelper {
         return envVars;
     }
 
-    public static void resolveListeners(GenericContainer<?> kafkaContainer, Set<String> listenersSuppliers) {
+    static void resolveListeners(GenericContainer<?> kafkaContainer, Set<String> listenersSuppliers) {
         Set<String> listeners = Arrays
             .stream(kafkaContainer.getEnvMap().get("KAFKA_LISTENERS").split(","))
             .collect(Collectors.toSet());
@@ -76,7 +88,7 @@ public class KafkaHelper {
         kafkaContainer.getEnvMap().put("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", kafkaListenerSecurityProtocolMap);
     }
 
-    public static List<String> resolveAdvertisedListeners(Set<Supplier<String>> listenerSuppliers) {
+    static List<String> resolveAdvertisedListeners(Set<Supplier<String>> listenerSuppliers) {
         List<String> advertisedListeners = new ArrayList<>();
         List<Supplier<String>> listenersToTransform = new ArrayList<>(listenerSuppliers);
         for (int i = 0; i < listenersToTransform.size(); i++) {

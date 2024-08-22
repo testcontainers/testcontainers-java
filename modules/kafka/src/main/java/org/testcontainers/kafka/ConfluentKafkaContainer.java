@@ -2,7 +2,6 @@ package org.testcontainers.kafka;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 
@@ -23,10 +22,6 @@ public class ConfluentKafkaContainer extends GenericContainer<ConfluentKafkaCont
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("confluentinc/cp-kafka");
 
-    private static final int KAFKA_PORT = 9092;
-
-    private static final String STARTER_SCRIPT = "/tmp/testcontainers_start.sh";
-
     private final Set<String> listeners = new HashSet<>();
 
     private final Set<Supplier<String>> advertisedListeners = new HashSet<>();
@@ -39,11 +34,11 @@ public class ConfluentKafkaContainer extends GenericContainer<ConfluentKafkaCont
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
-        withExposedPorts(KAFKA_PORT);
+        withExposedPorts(KafkaHelper.KAFKA_PORT);
         withEnv(KafkaHelper.envVars());
 
-        withCommand("sh", "-c", "while [ ! -f " + STARTER_SCRIPT + " ]; do sleep 0.1; done; " + STARTER_SCRIPT);
-        waitingFor(Wait.forLogMessage(".*Transitioning from RECOVERY to RUNNING.*", 1));
+        withCommand(KafkaHelper.COMMAND);
+        waitingFor(KafkaHelper.WAIT_STRATEGY);
     }
 
     @Override
@@ -75,7 +70,7 @@ public class ConfluentKafkaContainer extends GenericContainer<ConfluentKafkaCont
         command += String.format("export KAFKA_ADVERTISED_LISTENERS=%s\n", kafkaAdvertisedListeners);
 
         command += "/etc/confluent/docker/run \n";
-        copyFileToContainer(Transferable.of(command, 0777), STARTER_SCRIPT);
+        copyFileToContainer(Transferable.of(command, 0777), KafkaHelper.STARTER_SCRIPT);
     }
 
     public ConfluentKafkaContainer withListener(String listener) {
@@ -91,6 +86,6 @@ public class ConfluentKafkaContainer extends GenericContainer<ConfluentKafkaCont
     }
 
     public String getBootstrapServers() {
-        return String.format("%s:%s", getHost(), getMappedPort(KAFKA_PORT));
+        return String.format("%s:%s", getHost(), getMappedPort(KafkaHelper.KAFKA_PORT));
     }
 }
