@@ -26,7 +26,11 @@ import java.util.stream.Collectors;
  *     <li>Kafka: 9093</li>
  *     <li>Zookeeper: 2181</li>
  * </ul>
+ *
+ * @deprecated use {@link org.testcontainers.kafka.ConfluentKafkaContainer} or
+ * {@link org.testcontainers.kafka.KafkaContainer} instead
  */
+@Deprecated
 public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("confluentinc/cp-kafka");

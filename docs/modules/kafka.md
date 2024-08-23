@@ -4,9 +4,13 @@ Testcontainers can be used to automatically instantiate and manage [Apache Kafka
 
 Currently, two different Kafka images are supported:
 
-* `org.testcontainers.containers.KafkaContainer` supports 
+* `org.testcontainers.kafka.ConfluentKafkaContainer` supports 
 [confluentinc/cp-kafka](https://hub.docker.com/r/confluentinc/cp-kafka/)
 * `org.testcontainers.kafka.KafkaContainer` supports [apache/kafka](https://hub.docker.com/r/apache/kafka/) and [apache/kafka-native](https://hub.docker.com/r/apache/kafka-native/)
+
+!!! note
+    `org.testcontainers.containers.KafkaContainer` is deprecated.
+    Please use `org.testcontainers.kafka.ConfluentKafkaContainer` or `org.testcontainers.kafka.KafkaContainer` instead, depending on the used image.
 
 ## Benefits
 
@@ -15,7 +19,10 @@ Currently, two different Kafka images are supported:
 
 ## Example
 
+### Using org.testcontainers.containers.KafkaContainer
+
 Create a `KafkaContainer` to use it in your tests:
+
 <!--codeinclude-->
 [Creating a KafkaContainer](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:constructorWithVersion
 <!--/codeinclude-->
@@ -28,12 +35,23 @@ Now your tests or any other process running on your machine can get access to ru
 [Bootstrap Servers](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:getBootstrapServers
 <!--/codeinclude-->
 
-## Options
+### Using org.testcontainers.kafka.ConfluentKafkaContainer
 
-!!! note 
-    The options below are only available for `org.testcontainers.containers.KafkaContainer`
+!!! note
+    Compatible with `confluentinc/cp-kafka` images version `7.4.0` and later.
+
+Create a `ConfluentKafkaContainer` to use it in your tests:
+
+<!--codeinclude-->
+[Creating a ConlfuentKafkaContainer](../../modules/kafka/src/test/java/org/testcontainers/kafka/ConfluentKafkaContainerTest.java) inside_block:constructorWithVersion
+<!--/codeinclude-->
+
+## Options
         
 ### <a name="zookeeper"></a> Using external Zookeeper
+
+!!! note
+    Only available for `org.testcontainers.containers.KafkaContainer`
 
 If for some reason you want to use an externally running Zookeeper, then just pass its location during construction:
 <!--codeinclude-->
@@ -42,19 +60,21 @@ If for some reason you want to use an externally running Zookeeper, then just pa
 
 ### Using Kraft mode
 
-KRaft mode was declared production ready in 3.3.1 (confluentinc/cp-kafka:7.3.x)" 
+!!! note
+    Only available for `org.testcontainers.containers.KafkaContainer`
+
+KRaft mode was declared production ready in 3.3.1 (confluentinc/cp-kafka:7.3.x) 
 
 <!--codeinclude-->
 [Kraft mode](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:withKraftMode
 <!--/codeinclude-->
 
-See the [versions interoperability matrix](https://docs.confluent.io/platform/current/installation/versions-interoperability.html) for more details. 
+See the [versions interoperability matrix](https://docs.confluent.io/platform/current/installation/versions-interoperability.html) for more details.
 
-## Register listeners
+### Register listeners
 
 There are scenarios where additional listeners are needed because the consumer/producer can be in another
-container in the same network or a different process where the port to connect differs from the default 
-exposed port `9093`. E.g [Toxiproxy](../../modules/toxiproxy/).
+container in the same network or a different process where the port to connect differs from the default exposed port. E.g [Toxiproxy](../../modules/toxiproxy/).
 
 <!--codeinclude-->
 [Register additional listener](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:registerListener
