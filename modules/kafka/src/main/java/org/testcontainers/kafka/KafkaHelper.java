@@ -71,8 +71,9 @@ class KafkaHelper {
         for (int i = 0; i < listenersToTransform.size(); i++) {
             String protocol = String.format("%s-%d", PROTOCOL_PREFIX, i);
             String listener = listenersToTransform.get(i);
+            String listenerHost = listener.split(":")[0];
             String listenerPort = listener.split(":")[1];
-            String listenerProtocol = String.format("%s://0.0.0.0:%s", protocol, listenerPort);
+            String listenerProtocol = String.format("%s://%s:%s", protocol, listenerHost, listenerPort);
             String protocolMap = String.format("%s:PLAINTEXT", protocol);
             listeners.add(listenerProtocol);
             listenerSecurityProtocolMap.add(protocolMap);
