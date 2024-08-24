@@ -46,6 +46,14 @@ Create a `ConfluentKafkaContainer` to use it in your tests:
 [Creating a ConlfuentKafkaContainer](../../modules/kafka/src/test/java/org/testcontainers/kafka/ConfluentKafkaContainerTest.java) inside_block:constructorWithVersion
 <!--/codeinclude-->
 
+### Using org.testcontainers.kafka.KafkaContainer
+
+Create a `KafkaContainer` to use it in your tests:
+
+<!--codeinclude-->
+[Creating a KafkaContainer](../../modules/kafka/src/test/java/org/testcontainers/kafka/KafkaContainerTest.java) inside_block:constructorWithVersion
+<!--/codeinclude-->
+
 ## Options
         
 ### <a name="zookeeper"></a> Using external Zookeeper
