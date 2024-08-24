@@ -52,9 +52,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     protected void configure() {
         KafkaHelper.resolveListeners(this, this.listeners);
 
-        String firstNetworkAlias = getNetworkAliases().stream().findFirst().orElse(null);
-        String networkAlias = getNetwork() != null ? firstNetworkAlias : "localhost";
-        String controllerQuorumVoters = String.format("%s@%s:9094", getEnvMap().get("KAFKA_NODE_ID"), networkAlias);
+        String controllerQuorumVoters = String.format("%s@localhost:9094", getEnvMap().get("KAFKA_NODE_ID"));
         withEnv("KAFKA_CONTROLLER_QUORUM_VOTERS", controllerQuorumVoters);
     }
 
