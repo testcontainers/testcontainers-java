@@ -32,6 +32,8 @@ on:
       - 'README.md'
       - 'RELEASING.md'
       - '.sdkmanrc'
+  repository_dispatch:
+    types: [windows-test-command]
 
 concurrency:
   group: "${{ github.workflow }}-${{ github.head_ref || github.sha }}"
@@ -42,7 +44,7 @@ permissions:
 
 jobs:
   core:
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event.client_payload.slash_command.command == 'windows-test' }}
     runs-on: self-hosted
     permissions:
       checks: write

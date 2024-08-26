@@ -26,7 +26,11 @@ import java.util.stream.Collectors;
  *     <li>Kafka: 9093</li>
  *     <li>Zookeeper: 2181</li>
  * </ul>
+ *
+ * @deprecated use {@link org.testcontainers.kafka.ConfluentKafkaContainer} or
+ * {@link org.testcontainers.kafka.KafkaContainer} instead
  */
+@Deprecated
 public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("confluentinc/cp-kafka");
@@ -327,13 +331,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
             addEnvVar("KAFKA_LISTENERS", kafkaListeners());
             addEnvVar("KAFKA_PROCESS_ROLES", "broker,controller");
 
-            String firstNetworkAlias = getNetworkAliases().stream().findFirst().orElse(null);
-            String networkAlias = getNetwork() != null ? firstNetworkAlias : "localhost";
-            String controllerQuorumVoters = String.format(
-                "%s@%s:9094",
-                getEnvVars().get("KAFKA_NODE_ID"),
-                networkAlias
-            );
+            String controllerQuorumVoters = String.format("%s@localhost:9094", getEnvVars().get("KAFKA_NODE_ID"));
             this.envVars.computeIfAbsent("KAFKA_CONTROLLER_QUORUM_VOTERS", key -> controllerQuorumVoters);
             addEnvVar("KAFKA_CONTROLLER_LISTENER_NAMES", "CONTROLLER");
 

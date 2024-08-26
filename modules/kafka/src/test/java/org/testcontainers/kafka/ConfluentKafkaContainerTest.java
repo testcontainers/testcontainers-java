@@ -8,12 +8,12 @@ import org.testcontainers.containers.SocatContainer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class KafkaContainerTest extends AbstractKafka {
+public class ConfluentKafkaContainerTest extends AbstractKafka {
 
     @Test
     public void testUsage() throws Exception {
         try ( // constructorWithVersion {
-            KafkaContainer kafka = new KafkaContainer("apache/kafka-native:3.8.0")
+            ConfluentKafkaContainer kafka = new ConfluentKafkaContainer("confluentinc/cp-kafka:7.4.0")
             // }
         ) {
             kafka.start();
@@ -25,9 +25,11 @@ public class KafkaContainerTest extends AbstractKafka {
     public void testUsageWithListener() throws Exception {
         try (
             Network network = Network.newNetwork();
-            KafkaContainer kafka = new KafkaContainer("apache/kafka-native:3.8.0")
+            // registerListener {
+            ConfluentKafkaContainer kafka = new ConfluentKafkaContainer("confluentinc/cp-kafka:7.4.0")
                 .withListener("kafka:19092")
                 .withNetwork(network);
+            // }
             KCatContainer kcat = new KCatContainer().withNetwork(network)
         ) {
             kafka.start();
@@ -46,10 +48,12 @@ public class KafkaContainerTest extends AbstractKafka {
     public void testUsageWithListenerFromProxy() throws Exception {
         try (
             Network network = Network.newNetwork();
+            // registerListenerFromProxy {
             SocatContainer socat = new SocatContainer().withNetwork(network).withTarget(2000, "kafka", 19092);
-            KafkaContainer kafka = new KafkaContainer("apache/kafka-native:3.8.0")
+            ConfluentKafkaContainer kafka = new ConfluentKafkaContainer("confluentinc/cp-kafka:7.4.0")
                 .withListener("kafka:19092", () -> socat.getHost() + ":" + socat.getMappedPort(2000))
                 .withNetwork(network)
+            // }
         ) {
             socat.start();
             kafka.start();
