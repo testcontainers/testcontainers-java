@@ -271,6 +271,9 @@ labels:
   - name: modules/yugabytedb
     color: '#006b75'
 
+  - name: modules/databend
+    color: '#006b75'
+
   - name: os/linux
     color: '#1d76db'
 
