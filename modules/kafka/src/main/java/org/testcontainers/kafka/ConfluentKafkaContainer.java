@@ -2,7 +2,6 @@ package org.testcontainers.kafka;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 
@@ -13,39 +12,33 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 /**
- * Testcontainers implementation for Apache Kafka.
+ * Testcontainers implementation for Confluent Kafka.
  * <p>
- * Supported image: {@code apache/kafka}, {@code apache/kafka-native}
+ * Supported image: {@code confluentinc/cp-kafka}
  * <p>
  * Exposed ports: 9092
  */
-public class KafkaContainer extends GenericContainer<KafkaContainer> {
+public class ConfluentKafkaContainer extends GenericContainer<ConfluentKafkaContainer> {
 
-    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("apache/kafka");
-
-    private static final DockerImageName APACHE_KAFKA_NATIVE_IMAGE_NAME = DockerImageName.parse("apache/kafka-native");
-
-    private static final int KAFKA_PORT = 9092;
-
-    private static final String STARTER_SCRIPT = "/tmp/testcontainers_start.sh";
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("confluentinc/cp-kafka");
 
     private final Set<String> listeners = new HashSet<>();
 
     private final Set<Supplier<String>> advertisedListeners = new HashSet<>();
 
-    public KafkaContainer(String imageName) {
+    public ConfluentKafkaContainer(String imageName) {
         this(DockerImageName.parse(imageName));
     }
 
-    public KafkaContainer(DockerImageName dockerImageName) {
+    public ConfluentKafkaContainer(DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, APACHE_KAFKA_NATIVE_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
-        withExposedPorts(KAFKA_PORT);
+        withExposedPorts(KafkaHelper.KAFKA_PORT);
         withEnv(KafkaHelper.envVars());
 
-        withCommand("sh", "-c", "while [ ! -f " + STARTER_SCRIPT + " ]; do sleep 0.1; done; " + STARTER_SCRIPT);
-        waitingFor(Wait.forLogMessage(".*Transitioning from RECOVERY to RUNNING.*", 1));
+        withCommand(KafkaHelper.COMMAND);
+        waitingFor(KafkaHelper.WAIT_STRATEGY);
     }
 
     @Override
@@ -74,8 +67,8 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         // exporting KAFKA_ADVERTISED_LISTENERS with the container hostname
         command += String.format("export KAFKA_ADVERTISED_LISTENERS=%s\n", kafkaAdvertisedListeners);
 
-        command += "/etc/kafka/docker/run \n";
-        copyFileToContainer(Transferable.of(command, 0777), STARTER_SCRIPT);
+        command += "/etc/confluent/docker/run \n";
+        copyFileToContainer(Transferable.of(command, 0777), KafkaHelper.STARTER_SCRIPT);
     }
 
     /**
@@ -101,9 +94,9 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
      *      <li>{@code container.getHost():container.getMappedPort(9093)}</li>
      * </ul>
      * @param listener a listener with format {@code host:port}
-     * @return this {@link KafkaContainer} instance
+     * @return this {@link ConfluentKafkaContainer} instance
      */
-    public KafkaContainer withListener(String listener) {
+    public ConfluentKafkaContainer withListener(String listener) {
         this.listeners.add(listener);
         this.advertisedListeners.add(() -> listener);
         return this;
@@ -133,15 +126,15 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
      * </ul>
      * @param listener a supplier that will provide a listener
      * @param advertisedListener a supplier that will provide a listener
-     * @return this {@link KafkaContainer} instance
+     * @return this {@link ConfluentKafkaContainer} instance
      */
-    public KafkaContainer withListener(String listener, Supplier<String> advertisedListener) {
+    public ConfluentKafkaContainer withListener(String listener, Supplier<String> advertisedListener) {
         this.listeners.add(listener);
         this.advertisedListeners.add(advertisedListener);
         return this;
     }
 
     public String getBootstrapServers() {
-        return String.format("%s:%s", getHost(), getMappedPort(KAFKA_PORT));
+        return String.format("%s:%s", getHost(), getMappedPort(KafkaHelper.KAFKA_PORT));
     }
 }

@@ -11,6 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 
 public class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
     static {
@@ -56,6 +57,16 @@ public class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
             ResultSet resultSet = performQuery(postgres, "SELECT current_setting('max_connections')");
             String result = resultSet.getString(1);
             assertThat(result).as("max_connections should not be overriden").isNotEqualTo("42");
+        }
+    }
+
+    @Test
+    public void testMissingInitScript() {
+        try (
+            PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(PostgreSQLTestImages.POSTGRES_TEST_IMAGE)
+                .withInitScript(null)
+        ) {
+            assertThatNoException().isThrownBy(postgres::start);
         }
     }
 
