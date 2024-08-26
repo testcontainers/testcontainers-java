@@ -14,7 +14,7 @@ public class DatabendJDBCDriverTest extends AbstractJDBCDriverTest {
     public static Iterable<Object[]> data() {
         return Arrays.asList(
             new Object[][] { //
-                { "jdbc:tc:databend://hostname/databasename", EnumSet.of(Options.PmdKnownBroken) },
+                { "jdbc:databend://hostname/databasename", EnumSet.of(Options.PmdKnownBroken) },
             }
         );
     }
