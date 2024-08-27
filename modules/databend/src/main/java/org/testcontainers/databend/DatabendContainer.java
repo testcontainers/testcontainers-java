@@ -1,4 +1,4 @@
-package org.testcontainers.databendhouse;
+package org.testcontainers.databend;
 
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
@@ -22,7 +22,7 @@ public class DatabendContainer extends JdbcDatabaseContainer<DatabendContainer> 
 
     private static final String NAME = "databend";
 
-    private static final DockerImageName Databend_IMAGE_NAME = DockerImageName.parse("datafuselabs/databend");
+    private static final DockerImageName DATABEND_IMAGE_NAME = DockerImageName.parse("datafuselabs/databend");
 
     private static final Integer HTTP_PORT = 8000;
 
@@ -49,11 +49,9 @@ public class DatabendContainer extends JdbcDatabaseContainer<DatabendContainer> 
         dockerImageName.assertCompatibleWith(DATABEND_IMAGE_NAME);
 
         addExposedPorts(HTTP_PORT);
-        this.waitStrategy =
-            new HttpWaitStrategy()
-                .forStatusCode(200)
-                .forResponsePredicate("Ok."::equals)
-                .withStartupTimeout(Duration.ofMinutes(1));
+        waitingFor(
+            Wait.forHttp("/").forResponsePredicate(response -> response.equals("Ok."))
+        );
     }
 
     @Override
