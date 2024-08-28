@@ -8,6 +8,7 @@ import org.awaitility.core.ConditionFactory;
 import org.junit.Test;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
 import org.zeroturnaround.exec.ProcessExecutor;
 import org.zeroturnaround.exec.ProcessResult;
 
@@ -103,9 +104,30 @@ public class ResourceReaperTest {
                 LABELS_MARKER + new ObjectMapper().writeValueAsString(ResourceReaper.instance().getLabels())
             );
 
-            GenericContainer<?> container = new GenericContainer<>("testcontainers/helloworld:sha-141af7909907e04b124e691d3cd6fc7c32da2207")
+            GenericContainer<?> container = new GenericContainer<>(
+                "testcontainers/helloworld:sha-141af7909907e04b124e691d3cd6fc7c32da2207"
+            )
                 .withNetwork(org.testcontainers.containers.Network.newNetwork())
                 .withExposedPorts(8080);
+
+            DockerClientFactory clientFactory = DockerClientFactory.instance();
+            if (clientFactory.isRunningWindowsContainers()) {
+                // Override the default WaitStrategy (HostPortWaitStrategy),
+                // which doesn't work on Windows, yet.
+                // See the InternalCommandPortListeningCheck.
+                container.setWaitStrategy(
+                    new AbstractWaitStrategy() {
+                        @Override
+                        protected void waitUntilReady() {
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                    }
+                );
+            }
 
             container.start();
         }
