@@ -19,6 +19,7 @@ public class DatabendContainerTest extends AbstractContainerDatabaseTest {
 
             int resultSetInt = resultSet.getInt(1);
             assertThat(resultSetInt).isEqualTo(1);
+            assertThat(databend.getJdbcUrl).contains("?ssl=false");
         }
     }
 

@@ -56,9 +56,8 @@ public class DatabendContainer extends JdbcDatabaseContainer<DatabendContainer> 
 
     @Override
     protected void configure() {
-        withEnv("Databend_DB", this.databaseName);
-        withEnv("Databend_USER", this.username);
-        withEnv("Databend_PASSWORD", this.password);
+        withEnv("QUERY_DEFAULT_USER", this.username);
+        withEnv("QUERY_DEFAULT_PASSWORD", this.password);
     }
 
     @Override
