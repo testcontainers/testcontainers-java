@@ -103,7 +103,7 @@ public class ResourceReaperTest {
                 LABELS_MARKER + new ObjectMapper().writeValueAsString(ResourceReaper.instance().getLabels())
             );
 
-            GenericContainer<?> container = new GenericContainer<>("testcontainers/helloworld:1.1.0")
+            GenericContainer<?> container = new GenericContainer<>("testcontainers/helloworld:sha-141af7909907e04b124e691d3cd6fc7c32da2207")
                 .withNetwork(org.testcontainers.containers.Network.newNetwork())
                 .withExposedPorts(8080);
 
