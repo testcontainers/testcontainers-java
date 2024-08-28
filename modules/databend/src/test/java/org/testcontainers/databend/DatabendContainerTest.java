@@ -12,7 +12,7 @@ public class DatabendContainerTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSimple() throws SQLException {
-        try (DatabendContainer databend = new DatabendContainer("datafuselabs/databend:v1.2.623-nightly")) {
+        try (DatabendContainer databend = new DatabendContainer("datafuselabs/databend:v1.2.615")) {
             databend.start();
 
             ResultSet resultSet = performQuery(databend, "SELECT 1");
@@ -26,7 +26,7 @@ public class DatabendContainerTest extends AbstractContainerDatabaseTest {
     @Test
     public void customCredentialsWithUrlParams() throws SQLException {
         try (
-            DatabendContainer databend = new DatabendContainer("datafuselabs/databend:v1.2.623-nightly")
+            DatabendContainer databend = new DatabendContainer("datafuselabs/databend:v1.2.615")
                 .withUsername("databend")
                 .withPassword("databend")
                 .withDatabaseName("default")
