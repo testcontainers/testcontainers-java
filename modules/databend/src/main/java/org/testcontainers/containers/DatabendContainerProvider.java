@@ -1,7 +1,6 @@
-package org.testcontainers.containers;
-
+package org.testcontainers.databend;
 import org.testcontainers.utility.DockerImageName;
-import org.testcontainers.containers.DatabendContainer;
+import org.testcontainers.databaend.DatabendContainer;
 
 public class DatabendContainerProvider extends JdbcDatabaseContainerProvider {
     private static final String DEFAULT_TAG = "v1.2.615";
