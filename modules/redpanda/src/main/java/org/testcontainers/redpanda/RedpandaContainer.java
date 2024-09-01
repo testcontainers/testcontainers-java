@@ -214,8 +214,7 @@ public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
      * @return this {@link RedpandaContainer} instance
      */
     public RedpandaContainer withListener(Supplier<String> listenerSupplier) {
-        String[] parts = listenerSupplier.get().split(":");
-        this.listenersValueSupplier.add(() -> new Listener(parts[0], Integer.parseInt(parts[1])));
+        this.listenersValueSupplier.add(() -> Listener.fromNetworkAddress(listenerSupplier.get()));
         return this;
     }
 
@@ -284,5 +283,10 @@ public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
         private String address;
 
         private int port;
+
+        private static Listener fromNetworkAddress(String networkAddress) {
+            String[] parts = networkAddress.split(":");
+            return new Listener(parts[0], Integer.parseInt(parts[1]));
+        }
     }
 }

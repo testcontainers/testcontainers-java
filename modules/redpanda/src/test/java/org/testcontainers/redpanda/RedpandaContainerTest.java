@@ -142,6 +142,17 @@ public class RedpandaContainerTest extends AbstractRedpanda {
     }
 
     @Test
+    public void testUsageWithListenerSupplierNotReady() {
+        try (
+            RedpandaContainer redpanda = new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v23.1.7")
+                .withListener(() -> null);
+        ) {
+            assertThatThrownBy(() -> redpanda.start())
+                .hasCauseInstanceOf(NullPointerException.class);
+        }
+    }
+
+    @Test
     public void testUsageWithListenerAndSasl() throws Exception {
         final String username = "panda";
         final String password = "pandapass";
