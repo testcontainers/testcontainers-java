@@ -1,4 +1,4 @@
-package org.testcontainers.databend;
+package org.testcontainers.containers;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.databend.DatabendContainer;
 
