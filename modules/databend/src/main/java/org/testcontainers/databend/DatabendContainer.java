@@ -2,6 +2,7 @@ package org.testcontainers.databend;
 
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
@@ -20,7 +21,8 @@ import java.util.Set;
  */
 public class DatabendContainer extends JdbcDatabaseContainer<DatabendContainer> {
 
-    private static final String NAME = "databend";
+    public static final String NAME = "databend";
+    public static final String DOCKER_IMAGE_NAME = "datafuselabs/databend";
 
     private static final DockerImageName DATABEND_IMAGE_NAME = DockerImageName.parse("datafuselabs/databend");
 
