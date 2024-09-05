@@ -2,6 +2,7 @@ package org.testcontainers.databend;
 
 import org.junit.Test;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
+import org.testcontainers.databend.DatabendContainer;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -30,7 +31,7 @@ public class DatabendContainerTest extends AbstractContainerDatabaseTest {
                 .withUsername("databend")
                 .withPassword("databend")
                 .withDatabaseName("default")
-                .withUrlParam("ssl", false)
+                .withUrlParam("ssl", "false")
         ) {
             databend.start();
 
