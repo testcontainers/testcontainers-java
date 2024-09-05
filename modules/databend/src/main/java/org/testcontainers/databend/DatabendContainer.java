@@ -22,6 +22,7 @@ import java.util.Set;
 public class DatabendContainer extends JdbcDatabaseContainer<DatabendContainer> {
 
     public static final String NAME = "databend";
+
     public static final String DOCKER_IMAGE_NAME = "datafuselabs/databend";
 
     private static final DockerImageName DATABEND_IMAGE_NAME = DockerImageName.parse("datafuselabs/databend");

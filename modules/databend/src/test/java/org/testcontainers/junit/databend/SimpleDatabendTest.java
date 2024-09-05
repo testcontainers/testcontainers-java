@@ -4,7 +4,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.testcontainers.DatabendTestImages;
-import org.testcontainers.containers.DatabendContainer;
+import org.testcontainers.databend.DatabendContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 import org.testcontainers.utility.DockerImageName;
 
