@@ -75,15 +75,13 @@ public class DatabendContainer extends JdbcDatabaseContainer<DatabendContainer> 
 
     @Override
     public String getJdbcUrl() {
-        return (
-            JDBC_URL_PREFIX +
+        return JDBC_URL_PREFIX +
             getHost() +
             ":" +
             getMappedPort(HTTP_PORT) +
             "/" +
             this.databaseName +
-            constructUrlParameters("?", "&")
-        );
+            constructUrlParameters("?", "&");
     }
 
     @Override
