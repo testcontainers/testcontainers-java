@@ -147,6 +147,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/nginx/**/*
+"modules/nvidia":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/nvidia/**/*
 "modules/oceanbase":
   - changed-files:
     - any-glob-to-any-file:

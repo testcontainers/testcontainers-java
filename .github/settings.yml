@@ -196,6 +196,9 @@ labels:
   - name: modules/nginx
     color: '#006b75'
 
+  - name: modules/nvidia
+    color: '#006b75'
+
   - name: modules/oceanbase
     color: '#006b75'
 
