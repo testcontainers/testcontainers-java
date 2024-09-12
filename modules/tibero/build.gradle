@@ -1,0 +1,36 @@
+description = "Testcontainers :: JDBC :: Tibero Database"
+
+tasks.register('wrapper', Wrapper) {
+    gradleVersion = '8.5'
+}
+tasks.register('prepareKotlinBuildScriptModel') {
+
+}
+
+dependencies {
+    api project(':jdbc')
+
+    annotationProcessor 'com.google.auto.service:auto-service:1.1.1'
+    compileOnly 'com.google.auto.service:auto-service:1.1.1'
+
+    testImplementation project(':jdbc-test')
+    testImplementation 'com.oracle.database.jdbc:ojdbc11:23.4.0.24.05'
+
+    compileOnly 'org.jetbrains:annotations:24.1.0'
+
+    // tibero jar file
+    testImplementation files('libs/tibero7-jdbc.jar')
+}
+
+test {
+    javaLauncher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+compileTestJava {
+    javaCompiler = javaToolchains.compilerFor {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
+    options.release.set(11)
+}
