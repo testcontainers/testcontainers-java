@@ -1,11 +1,9 @@
 package org.testcontainers.databend;
 
 import org.testcontainers.containers.JdbcDatabaseContainer;
-import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
-import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -52,9 +50,7 @@ public class DatabendContainer extends JdbcDatabaseContainer<DatabendContainer> 
         dockerImageName.assertCompatibleWith(DATABEND_IMAGE_NAME);
 
         addExposedPorts(HTTP_PORT);
-        waitingFor(
-            Wait.forHttp("/").forResponsePredicate(response -> response.equals("Ok."))
-        );
+        waitingFor(Wait.forHttp("/").forResponsePredicate(response -> response.equals("Ok.")));
     }
 
     @Override
@@ -75,13 +71,15 @@ public class DatabendContainer extends JdbcDatabaseContainer<DatabendContainer> 
 
     @Override
     public String getJdbcUrl() {
-        return JDBC_URL_PREFIX +
+        return (
+            JDBC_URL_PREFIX +
             getHost() +
             ":" +
             getMappedPort(HTTP_PORT) +
             "/" +
             this.databaseName +
-            constructUrlParameters("?", "&");
+            constructUrlParameters("?", "&")
+        );
     }
 
     @Override

@@ -2,7 +2,6 @@ package org.testcontainers.databend;
 
 import org.junit.Test;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
-import org.testcontainers.databend.DatabendContainer;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -26,16 +25,15 @@ public class DatabendContainerTest extends AbstractContainerDatabaseTest {
     @Test
     public void customCredentialsWithUrlParams() throws SQLException {
         try (
-                DatabendContainer databend = new DatabendContainer("datafuselabs/databend:v1.2.615")
-                        .withUsername("databend")
-                        .withPassword("databend")
-                        .withDatabaseName("default")
-                        .withUrlParam("ssl", "false")) {
+            DatabendContainer databend = new DatabendContainer("datafuselabs/databend:v1.2.615")
+                .withUsername("databend")
+                .withPassword("databend")
+                .withDatabaseName("default")
+                .withUrlParam("ssl", "false")
+        ) {
             databend.start();
 
-            ResultSet resultSet = performQuery(
-                    databend,
-                    "SELECT 1'");
+            ResultSet resultSet = performQuery(databend, "SELECT 1'");
 
             int resultSetInt = resultSet.getInt(1);
             assertThat(resultSetInt).isEqualTo(1);
