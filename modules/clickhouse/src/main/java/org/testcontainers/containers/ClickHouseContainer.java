@@ -1,7 +1,6 @@
 package org.testcontainers.containers;
 
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
-import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
@@ -11,27 +10,18 @@ import java.util.Set;
 /**
  * Testcontainers implementation for ClickHouse.
  *
- * @deprecated use {@link org.testcontainers.clickhouse.ClickHouseContainer} instead
  */
 public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContainer> {
 
     public static final String NAME = "clickhouse";
 
-    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("yandex/clickhouse-server");
-
     private static final DockerImageName CLICKHOUSE_IMAGE_NAME = DockerImageName.parse("clickhouse/clickhouse-server");
 
-    @Deprecated
-    public static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
-
-    @Deprecated
-    public static final String DEFAULT_TAG = "18.10.3";
+    public static final String IMAGE = CLICKHOUSE_IMAGE_NAME.getUnversionedPart();
 
     public static final Integer HTTP_PORT = 8123;
 
     public static final Integer NATIVE_PORT = 9000;
-
-    private static final String LEGACY_DRIVER_CLASS_NAME = "ru.yandex.clickhouse.ClickHouseDriver";
 
     private static final String DRIVER_CLASS_NAME = "com.clickhouse.jdbc.ClickHouseDriver";
 
@@ -45,24 +35,13 @@ public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContain
 
     private String password = "";
 
-    private boolean supportsNewDriver;
-
-    /**
-     * @deprecated use {@link #ClickHouseContainer(DockerImageName)} instead
-     */
-    @Deprecated
-    public ClickHouseContainer() {
-        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
-    }
-
     public ClickHouseContainer(String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
     }
 
     public ClickHouseContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, CLICKHOUSE_IMAGE_NAME);
-        supportsNewDriver = isNewDriverSupported(dockerImageName);
+        dockerImageName.assertCompatibleWith(CLICKHOUSE_IMAGE_NAME, CLICKHOUSE_IMAGE_NAME);
 
         addExposedPorts(HTTP_PORT, NATIVE_PORT);
         this.waitStrategy =
@@ -80,20 +59,11 @@ public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContain
     @Override
     public String getDriverClassName() {
         try {
-            if (supportsNewDriver) {
-                Class.forName(DRIVER_CLASS_NAME);
-                return DRIVER_CLASS_NAME;
-            } else {
-                return LEGACY_DRIVER_CLASS_NAME;
-            }
+            Class.forName(DRIVER_CLASS_NAME);
+            return DRIVER_CLASS_NAME;
         } catch (ClassNotFoundException e) {
-            return LEGACY_DRIVER_CLASS_NAME;
+            throw new RuntimeException("Could not load ClickHouse JDBC driver", e);
         }
-    }
-
-    private static boolean isNewDriverSupported(DockerImageName dockerImageName) {
-        // New driver supports versions 20.7+. Check the version part of the tag
-        return new ComparableVersion(dockerImageName.getVersionPart()).isGreaterThanOrEqualTo("20.7");
     }
 
     @Override
