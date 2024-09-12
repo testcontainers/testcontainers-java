@@ -33,7 +33,7 @@ public class DatabendContainerTest extends AbstractContainerDatabaseTest {
         ) {
             databend.start();
 
-            ResultSet resultSet = performQuery(databend, "SELECT 1'");
+            ResultSet resultSet = performQuery(databend, "SELECT 1;");
 
             int resultSetInt = resultSet.getInt(1);
             assertThat(resultSetInt).isEqualTo(1);
