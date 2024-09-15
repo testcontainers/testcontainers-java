@@ -4,7 +4,7 @@ import org.junit.Test;
 
 import java.time.Instant;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 public class MongoDBAtlasLocalContainerTest {
 
@@ -17,9 +17,9 @@ public class MongoDBAtlasLocalContainerTest {
         ) {
             container.start();
             String connectionString = container.getConnectionString();
-            assertNotNull(connectionString);
-            assertTrue(connectionString.startsWith("mongodb://"));
-            assertEquals(String.format("mongodb://localhost:%d", container.getFirstMappedPort()), connectionString);
+            assertThat(connectionString).isNotNull();
+            assertThat(connectionString).startsWith("mongodb://");
+            assertThat(connectionString).isEqualTo(String.format("mongodb://localhost:%d", container.getFirstMappedPort()));
         }
     }
 
@@ -58,11 +58,11 @@ public class MongoDBAtlasLocalContainerTest {
                     }
                     Thread.sleep(10);
                 }
-                assertNotNull("Failed to find using Atlas Search", foundSearch);
+                assertThat(foundSearch).isNotNull();
                 // }
 
                 AtlasLocalDataAccess.TestData foundRegular = atlasLocalDataAccess.findClassic("tests");
-                assertNotNull("Failed to find using classic find()", foundRegular);
+                assertThat(foundRegular).isNotNull();
             }
         }
     }
