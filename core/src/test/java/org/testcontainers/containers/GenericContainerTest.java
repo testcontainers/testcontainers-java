@@ -20,6 +20,8 @@ import org.testcontainers.DockerClientFactory;
 import org.testcontainers.TestImages;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.images.builder.Transferable;
@@ -256,6 +258,21 @@ public class GenericContainerTest {
         }
     }
 
+    @Test
+    public void shouldRespectWaitStrategy() {
+        try (
+            HelloWorldLogStrategyContainer container = new HelloWorldLogStrategyContainer(
+                "testcontainers/helloworld:1.1.0"
+            )
+        ) {
+            container.setWaitStrategy(Wait.forLogMessage(".*Starting server on port.*", 1));
+            container.start();
+            assertThat((LogMessageWaitStrategy) container.getWaitStrategy())
+                .extracting("regEx", "times")
+                .containsExactly(".*Starting server on port.*", 1);
+        }
+    }
+
     static class NoopStartupCheckStrategy extends StartupCheckStrategy {
 
         @Override
@@ -317,6 +334,15 @@ public class GenericContainerTest {
             HelloWorldContainerDef() {
                 addExposedTcpPort(8080);
             }
+        }
+    }
+
+    static class HelloWorldLogStrategyContainer extends GenericContainer<HelloWorldContainer> {
+
+        public HelloWorldLogStrategyContainer(String image) {
+            super(DockerImageName.parse(image));
+            withExposedPorts(8080);
+            waitingFor(Wait.forLogMessage(".*Starting server on port.*", 2));
         }
     }
 }

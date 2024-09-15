@@ -181,7 +181,6 @@ public class TestcontainersConfiguration {
 
     @UnstableAPI
     public boolean environmentSupportsReuse() {
-        // specifically not supported as an environment variable or classpath property
         return Boolean.parseBoolean(getEnvVarOrUserProperty("testcontainers.reuse.enable", "false"));
     }
 

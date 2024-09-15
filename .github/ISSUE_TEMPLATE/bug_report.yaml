@@ -27,6 +27,7 @@ body:
         - Dynalite
         - Elasticsearch
         - GCloud
+        - Grafana
         - HiveMQ
         - InfluxDB
         - K3S
@@ -59,6 +60,7 @@ body:
         - Solace
         - Solr
         - TiDB
+        - Timeplus
         - ToxiProxy
         - Trino
         - Vault

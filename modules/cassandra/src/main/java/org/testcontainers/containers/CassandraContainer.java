@@ -24,7 +24,10 @@ import javax.script.ScriptException;
  * Supported image: {@code cassandra}
  * <p>
  * Exposed ports: 9042
+ *
+ * @deprecated use {@link org.testcontainers.cassandra.CassandraContainer} instead.
  */
+@Deprecated
 public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends GenericContainer<SELF> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("cassandra");

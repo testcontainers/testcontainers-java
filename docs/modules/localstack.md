@@ -7,7 +7,7 @@ Testcontainers module for [LocalStack](http://localstack.cloud/), 'a fully funct
 Running LocalStack as a stand-in for AWS S3 during a test:
 
 ```java
-DockerImageName localstackImage = DockerImageName.parse("localstack/localstack:0.11.3");
+DockerImageName localstackImage = DockerImageName.parse("localstack/localstack:3.5.0");
 
 @Rule
 public LocalStackContainer localstack = new LocalStackContainer(localstackImage)
