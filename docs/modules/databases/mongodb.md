@@ -65,7 +65,7 @@ The connection string provided by the MongoDBAtlasLocalContainer's getConnection
 [Get the Connection String](../../../modules/mongodb/src/test/java/org/testcontainers/containers/MongoDBAtlasLocalContainerTest.java) inside_block:getConnectionStringAtlasLocalContainer
 <!--/codeinclude-->
 
-e.g. `mongodb://localhost:12345`
+e.g. `mongodb://localhost:12345/?directConnection=true`
 
 ### References
 MongoDB Atlas Local combines the MongoDB database engine with MongoT, a sidecar process for advanced searching capabilities built by MongoDB and powered by [Apache Lucene](https://lucene.apache.org/). 
