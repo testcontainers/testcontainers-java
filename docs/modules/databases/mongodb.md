@@ -67,22 +67,17 @@ The connection string provided by the MongoDBAtlasLocalContainer's getConnection
 
 e.g. `mongodb://localhost:12345`
 
-### General info
+### References
 MongoDB Atlas Local combines the MongoDB database engine with MongoT, a sidecar process for advanced searching capabilities built by MongoDB and powered by [Apache Lucene](https://lucene.apache.org/). 
-
-It allows you to use the following features:
-
-* MongoDB Atlas Search: Atlas Search gives MongoDB queries access to the incredible search toolbox that is Lucene. The main use-case is advanced lexical text querying capabilities similar to those found in many search engines. In addition, Atlas Search supports queries with faceting and parallel index search. These can extend MongoDB's aggregation capabilities and performance for uses like statistics and complex filters.  
-  [https://www.mongodb.com/docs/atlas/atlas-search/](https://www.mongodb.com/docs/atlas/atlas-search/)
-* MongoDB Atlas Vector Search: Supports artificial intelligence (AI) based searches for semantically similar items in your data. Vector indexes store embeddings (high-dimensional vectors encoding semantic meaning) used in large language models (LLMs). This feature makes use of Lucene's [vector search](https://lucene.apache.org/core/9_10_0/core/org/apache/lucene/search/KnnVectorQuery.html) capabilities to find the nearness between the values of each vector. This can be a powerful alternative or compliment to lexical text search.  
-  [https://www.mongodb.com/docs/atlas/atlas-vector-search/vector-search-overview/](https://www.mongodb.com/docs/atlas/atlas-vector-search/vector-search-overview/)
-
-Pairing these Lucene backed technologies with your MongoDB database allows you to build powerful search capabilities into your applications without the need to manage a separate search engine. You can also extend your search capabilities to include AI based vector searches, which can be useful for recommendation engines, image search, and other applications that require similarity searches.
 
 The container (mongodb/mongodb-atlas-local) documentation can be found here:
 [https://www.mongodb.com/docs/atlas/cli/current/atlas-cli-deploy-docker/](https://www.mongodb.com/docs/atlas/cli/current/atlas-cli-deploy-docker/)
 
+General information about Atlas Search can be found here:  
+https://www.mongodb.com/docs/atlas/atlas-search/
+
 ### Container Healthcheck
+This process should be seamless to you whilst using the MongoDBAtlasLocalContainer, however for information:  
 You cannot start calling Atlas Search commands, such as creating Atlas Search indexes, until the container is ready. The container takes some seconds to attain readiness, whilst:
 
 * MongoDB database starts
@@ -91,41 +86,6 @@ You cannot start calling Atlas Search commands, such as creating Atlas Search in
 * MongoDB connects to MongoT ready to perform $search and $vectorSearch queries
 
 The MongoDBAtlasLocalContainer uses the container's `runner healthcheck` command to check for readiness.
-
-### Creating an Atlas Search Index
-Here's an example of how you could create an Atlas Search index during testing:
-
-<!--codeinclude-->
-[Example Atlas Search Index](../../../modules/mongodb/src/test/resources/atlas-local-index.json)
-<!--/codeinclude-->
-
-<!--codeinclude-->
-[Creating an Atlas Search Index](../../../modules/mongodb/src/test/java/org/testcontainers/containers/AtlasLocalDataAccess.java) inside_block:initAtlasSearchIndex
-<!--/codeinclude-->
-
-A few things to note:
-
-* You must create a collection before you can build an Atlas Search index for it
-* It will take some time for the index to be built, and the driver's createSearchIndex will not wait for it to be ready. For this reason you need to implement your own check for the index state.
-
-### Searching an Atlas Search Index
-Here's an example of an Atlas Search query:
-
-<!--codeinclude-->
-[Searching an Atlas Search Index](../../../modules/mongodb/src/test/java/org/testcontainers/containers/AtlasLocalDataAccess.java) inside_block:queryAtlasSearch
-<!--/codeinclude-->
-
-A key thing to note during unit tests is that Atlas Search indexes are eventually consistent.
-
-If you write data and then immediately try to read it back, you'll find there is about a [1 second delay](https://feedback.mongodb.com/forums/924868-atlas-search/suggestions/48502157-atlas-search-local-deployment-lucene-indexing-late) before the data is available for search. This is because the data is first written to the MongoDB database, then indexed by MongoT, and finally available for search after a refresh period.
-
-You may need to use a technique like this to wait for the data to be available:
-
-<!--codeinclude-->
-[Write Data and Query Back (Eventually)](../../../modules/mongodb/src/test/java/org/testcontainers/containers/MongoDBAtlasLocalContainerTest.java) inside_block:writeAndReadBack
-<!--/codeinclude-->
-
-
 
 ## Adding this module to your project dependencies
 
