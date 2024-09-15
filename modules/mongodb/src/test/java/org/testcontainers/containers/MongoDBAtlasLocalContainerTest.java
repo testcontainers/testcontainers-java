@@ -2,9 +2,11 @@ package org.testcontainers.containers;
 
 import org.junit.Test;
 
-import java.time.Instant;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.awaitility.Awaitility.await;
 
 public class MongoDBAtlasLocalContainerTest {
 
@@ -49,16 +51,13 @@ public class MongoDBAtlasLocalContainerTest {
                 atlasLocalDataAccess.insertData(new AtlasLocalDataAccess.TestData("tests", 123, true));
 
                 //Wait for Atlas Search to index the data (Atlas Search is eventually consistent)
-                Instant start = Instant.now();
-                AtlasLocalDataAccess.TestData foundSearch = null;
-                while (Instant.now().isBefore(start.plusSeconds(5))) {
-                    foundSearch = atlasLocalDataAccess.findAtlasSearch("test");
-                    if (foundSearch != null) {
-                        break;
-                    }
-                    Thread.sleep(10);
-                }
-                assertThat(foundSearch).isNotNull();
+                await()
+                    .atMost(5, TimeUnit.SECONDS)
+                    .pollInterval(10, TimeUnit.MILLISECONDS)
+                    .pollInSameThread()
+                    .until(
+                        () -> atlasLocalDataAccess.findAtlasSearch("test"),
+                        Objects::nonNull);
                 // }
 
                 AtlasLocalDataAccess.TestData foundRegular = atlasLocalDataAccess.findClassic("tests");
