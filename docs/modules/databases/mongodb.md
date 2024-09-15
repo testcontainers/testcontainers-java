@@ -74,7 +74,7 @@ The container (mongodb/mongodb-atlas-local) documentation can be found here:
 [https://www.mongodb.com/docs/atlas/cli/current/atlas-cli-deploy-docker/](https://www.mongodb.com/docs/atlas/cli/current/atlas-cli-deploy-docker/)
 
 General information about Atlas Search can be found here:  
-https://www.mongodb.com/docs/atlas/atlas-search/
+[https://www.mongodb.com/docs/atlas/atlas-search/](https://www.mongodb.com/docs/atlas/atlas-search/)
 
 ### Container Healthcheck
 This process should be seamless to you whilst using the MongoDBAtlasLocalContainer, however for information:  
