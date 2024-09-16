@@ -2,7 +2,7 @@ package org.testcontainers.utility;
 
 import lombok.AccessLevel;
 import lombok.Getter;
-import org.rnorth.ducttape.timeouts.Timeouts;
+import org.testcontainers.utility.ducttape.Timeouts;
 
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -45,7 +45,7 @@ public abstract class LazyFuture<T> implements Future<T> {
     public T get(long timeout, TimeUnit unit) throws TimeoutException {
         try {
             return Timeouts.getWithTimeout((int) timeout, unit, this::get);
-        } catch (org.rnorth.ducttape.TimeoutException e) {
+        } catch (org.testcontainers.utility.ducttape.TimeoutException e) {
             throw new TimeoutException(e.getMessage());
         }
     }

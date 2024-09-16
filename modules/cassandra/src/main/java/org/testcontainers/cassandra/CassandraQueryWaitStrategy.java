@@ -2,14 +2,14 @@ package org.testcontainers.cassandra;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.rnorth.ducttape.TimeoutException;
+import org.testcontainers.utility.ducttape.TimeoutException;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
 import org.testcontainers.delegate.DatabaseDelegate;
 
 import java.util.concurrent.TimeUnit;
 
-import static org.rnorth.ducttape.unreliables.Unreliables.retryUntilSuccess;
+import static org.testcontainers.utility.ducttape.Unreliables.retryUntilSuccess;
 
 /**
  * Waits until Cassandra returns its version

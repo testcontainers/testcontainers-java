@@ -32,7 +32,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.UnstableAPI;
@@ -60,6 +59,7 @@ import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.PathUtils;
 import org.testcontainers.utility.ResourceReaper;
 import org.testcontainers.utility.TestcontainersConfiguration;
+import org.testcontainers.utility.ducttape.Unreliables;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;

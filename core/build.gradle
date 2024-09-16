@@ -66,9 +66,6 @@ dependencies {
     compileOnly 'org.jetbrains:annotations:26.0.2-1'
     testCompileOnly 'org.jetbrains:annotations:26.0.2-1'
     api 'org.apache.commons:commons-compress:1.28.0'
-    api ('org.rnorth.duct-tape:duct-tape:1.0.8') {
-        exclude(group: 'org.jetbrains', module: 'annotations')
-    }
 
     provided('com.google.cloud.tools:jib-core:0.27.3') {
         exclude group: 'com.google.guava', module: 'guava'

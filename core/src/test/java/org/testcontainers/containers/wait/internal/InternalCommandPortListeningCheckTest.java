@@ -4,8 +4,8 @@ import com.google.common.collect.ImmutableSet;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.rnorth.ducttape.TimeoutException;
-import org.rnorth.ducttape.unreliables.Unreliables;
+import org.testcontainers.utility.ducttape.TimeoutException;
+import org.testcontainers.utility.ducttape.Unreliables;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 
