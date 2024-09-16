@@ -1,6 +1,6 @@
 package org.testcontainers.containers.wait.strategy;
 
-import org.rnorth.ducttape.timeouts.Timeouts;
+import org.testcontainers.utility.ducttape.Timeouts;
 
 import java.time.Duration;
 import java.util.ArrayList;

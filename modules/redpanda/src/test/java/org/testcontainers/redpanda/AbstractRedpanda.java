@@ -13,7 +13,7 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.rnorth.ducttape.unreliables.Unreliables;
+import org.testcontainers.utility.ducttape.Unreliables;
 
 import java.time.Duration;
 import java.util.Collection;

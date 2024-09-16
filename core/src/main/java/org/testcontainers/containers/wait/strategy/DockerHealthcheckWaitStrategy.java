@@ -1,7 +1,7 @@
 package org.testcontainers.containers.wait.strategy;
 
-import org.rnorth.ducttape.TimeoutException;
-import org.rnorth.ducttape.unreliables.Unreliables;
+import org.testcontainers.utility.ducttape.TimeoutException;
+import org.testcontainers.utility.ducttape.Unreliables;
 import org.testcontainers.containers.ContainerLaunchException;
 
 import java.util.concurrent.TimeUnit;

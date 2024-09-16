@@ -1,8 +1,8 @@
 package org.testcontainers.containers.wait.strategy;
 
 import lombok.NonNull;
-import org.rnorth.ducttape.ratelimits.RateLimiter;
-import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
+import org.testcontainers.utility.ducttape.RateLimiter;
+import org.testcontainers.utility.ducttape.RateLimiterBuilder;
 
 import java.time.Duration;
 import java.util.Set;

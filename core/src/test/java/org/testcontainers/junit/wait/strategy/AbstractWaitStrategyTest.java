@@ -2,7 +2,7 @@ package org.testcontainers.junit.wait.strategy;
 
 import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
-import org.rnorth.ducttape.RetryCountExceededException;
+import org.testcontainers.utility.ducttape.RetryCountExceededException;
 import org.testcontainers.TestImages;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;

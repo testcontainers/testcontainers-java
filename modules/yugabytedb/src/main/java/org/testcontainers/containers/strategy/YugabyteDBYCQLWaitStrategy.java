@@ -10,7 +10,7 @@ import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.rnorth.ducttape.unreliables.Unreliables.retryUntilSuccess;
+import static org.testcontainers.utility.ducttape.Unreliables.retryUntilSuccess;
 
 /**
  * Custom wait strategy for YCQL API.

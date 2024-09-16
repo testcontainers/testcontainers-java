@@ -2,7 +2,7 @@ package org.testcontainers.junit;
 
 import com.google.common.util.concurrent.Uninterruptibles;
 import org.junit.Test;
-import org.rnorth.ducttape.unreliables.Unreliables;
+import org.testcontainers.utility.ducttape.Unreliables;
 import org.testcontainers.TestImages;
 import org.testcontainers.containers.FixedHostPortGenericContainer;
 import org.testcontainers.containers.GenericContainer;
