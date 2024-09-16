@@ -6,10 +6,10 @@ import org.testcontainers.utility.ducttape.TimeoutException;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
 import org.testcontainers.delegate.DatabaseDelegate;
+import org.testcontainers.utility.ducttape.Unreliables;
 
 import java.util.concurrent.TimeUnit;
 
-import static org.testcontainers.utility.ducttape.Unreliables.retryUntilSuccess;
 
 /**
  * Waits until Cassandra returns its version
@@ -25,7 +25,7 @@ public class CassandraQueryWaitStrategy extends AbstractWaitStrategy {
     protected void waitUntilReady() {
         // execute select version query until success or timeout
         try {
-            retryUntilSuccess(
+            Unreliables.retryUntilSuccess(
                 (int) startupTimeout.getSeconds(),
                 TimeUnit.SECONDS,
                 () -> {

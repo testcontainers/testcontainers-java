@@ -21,6 +21,10 @@ public class Timeouts {
         }
     });
 
+    public static void shutdown() {
+        EXECUTOR_SERVICE.shutdown();
+    }
+
     /**
      * Execute a lambda expression with a timeout. If it completes within the time, the result will be returned.
      * If it does not complete within the time, a TimeoutException will be thrown.

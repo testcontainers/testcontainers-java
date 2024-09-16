@@ -59,6 +59,7 @@ import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.PathUtils;
 import org.testcontainers.utility.ResourceReaper;
 import org.testcontainers.utility.TestcontainersConfiguration;
+import org.testcontainers.utility.ducttape.Timeouts;
 import org.testcontainers.utility.ducttape.Unreliables;
 
 import java.io.File;
@@ -655,6 +656,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             containerId = null;
             containerInfo = null;
         }
+
+        // If the Timeouts class was used, it created a Thread we need to close
+        Timeouts.shutdown();
     }
 
     /**
