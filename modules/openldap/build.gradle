@@ -1,0 +1,7 @@
+description = "Testcontainers :: OpenLdap"
+
+dependencies {
+    api project(':testcontainers')
+
+    testImplementation 'org.assertj:assertj-core:3.26.3'
+}
