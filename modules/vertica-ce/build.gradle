@@ -1,0 +1,13 @@
+description = "Testcontainers-Java :: JDBC :: Vertica-CE"
+
+dependencies {
+    annotationProcessor 'com.google.auto.service:auto-service:1.1.1'
+    compileOnly 'com.google.auto.service:auto-service:1.1.1'
+
+    api project(':jdbc')
+
+    testImplementation project(':jdbc-test')
+    testRuntimeOnly 'com.vertica.jdbc:vertica-jdbc:24.1.0-0'
+
+    compileOnly 'org.jetbrains:annotations:24.0.1'
+}
