@@ -4,6 +4,7 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.PullImageCmd;
 import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.exception.InternalServerErrorException;
+import com.github.dockerjava.api.exception.NotFoundException;
 import com.google.common.util.concurrent.Futures;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -155,7 +156,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
         throws InterruptedException {
         try {
             return pullImageCmd.exec(new TimeLimitedLoggedPullImageResultCallback(logger)).awaitCompletion();
-        } catch (DockerClientException e) {
+        } catch (DockerClientException | NotFoundException e) {
             // Try to fallback to x86
             return pullImageCmd
                 .withPlatform("linux/amd64")
