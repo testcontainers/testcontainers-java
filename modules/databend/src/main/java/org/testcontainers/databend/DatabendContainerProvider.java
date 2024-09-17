@@ -1,7 +1,7 @@
-package org.testcontainers.containers;
+package org.testcontainers.databend;
 
-import org.testcontainers.databend.DatabendContainer;
-import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.containers.JdbcDatabaseContainer;
+import org.testcontainers.containers.JdbcDatabaseContainerProvider;
 
 public class DatabendContainerProvider extends JdbcDatabaseContainerProvider {
 
@@ -20,7 +20,7 @@ public class DatabendContainerProvider extends JdbcDatabaseContainerProvider {
     @Override
     public JdbcDatabaseContainer newInstance(String tag) {
         if (tag != null) {
-            return new DatabendContainer(DockerImageName.parse(DatabendContainer.DOCKER_IMAGE_NAME).withTag(tag));
+            return new DatabendContainer(DatabendContainer.DOCKER_IMAGE_NAME.withTag(tag));
         } else {
             return newInstance();
         }

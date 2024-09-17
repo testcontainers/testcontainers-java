@@ -1,4 +1,4 @@
-package org.testcontainers.jdbc.databend;
+package org.testcontainers.databend;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;

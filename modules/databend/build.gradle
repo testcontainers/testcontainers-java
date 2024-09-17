@@ -1,16 +1,9 @@
 description = "Testcontainers :: JDBC :: Databend"
 
 dependencies {
-    api project(':testcontainers')
     api project(':jdbc')
 
     testImplementation project(':jdbc-test')
     testRuntimeOnly 'com.databend:databend-jdbc:0.2.9'
     testImplementation 'org.assertj:assertj-core:3.26.3'
-
-    configurations.all {
-        resolutionStrategy {
-            force 'org.slf4j:slf4j-api:1.7.36'
-        }
-    }
 }

@@ -8,7 +8,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Testcontainers implementation for databend.
+ * Testcontainers implementation for Databend.
  * <p>
  * Supported image: {@code datafuselabs/databend}
  * <p>
@@ -19,15 +19,11 @@ import java.util.Set;
  */
 public class DatabendContainer extends JdbcDatabaseContainer<DatabendContainer> {
 
-    public static final String NAME = "databend";
+    static final String NAME = "databend";
 
-    public static final String DOCKER_IMAGE_NAME = "datafuselabs/databend";
-
-    private static final DockerImageName DATABEND_IMAGE_NAME = DockerImageName.parse("datafuselabs/databend");
+    static final DockerImageName DOCKER_IMAGE_NAME = DockerImageName.parse("datafuselabs/databend");
 
     private static final Integer HTTP_PORT = 8000;
-
-    private static final Integer NATIVE_PORT = 8000;
 
     private static final String DRIVER_CLASS_NAME = "com.databend.jdbc.DatabendDriver";
 
@@ -47,7 +43,7 @@ public class DatabendContainer extends JdbcDatabaseContainer<DatabendContainer> 
 
     public DatabendContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DATABEND_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DOCKER_IMAGE_NAME);
 
         addExposedPorts(HTTP_PORT);
         waitingFor(Wait.forHttp("/").forResponsePredicate(response -> response.equals("Ok.")));
@@ -84,17 +80,17 @@ public class DatabendContainer extends JdbcDatabaseContainer<DatabendContainer> 
 
     @Override
     public String getUsername() {
-        return username;
+        return this.username;
     }
 
     @Override
     public String getPassword() {
-        return password;
+        return this.password;
     }
 
     @Override
     public String getDatabaseName() {
-        return databaseName;
+        return this.databaseName;
     }
 
     @Override

@@ -26,9 +26,9 @@ public class DatabendContainerTest extends AbstractContainerDatabaseTest {
     public void customCredentialsWithUrlParams() throws SQLException {
         try (
             DatabendContainer databend = new DatabendContainer("datafuselabs/databend:v1.2.615")
-                .withUsername("databend")
-                .withPassword("databend")
-                .withDatabaseName("default")
+                .withUsername("test")
+                .withPassword("test")
+                .withDatabaseName("test")
                 .withUrlParam("ssl", "false")
         ) {
             databend.start();
