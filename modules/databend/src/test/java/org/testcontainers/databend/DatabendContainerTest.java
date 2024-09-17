@@ -28,7 +28,6 @@ public class DatabendContainerTest extends AbstractContainerDatabaseTest {
             DatabendContainer databend = new DatabendContainer("datafuselabs/databend:v1.2.615")
                 .withUsername("test")
                 .withPassword("test")
-                .withDatabaseName("test")
                 .withUrlParam("ssl", "false")
         ) {
             databend.start();

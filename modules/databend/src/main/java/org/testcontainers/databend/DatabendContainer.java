@@ -109,10 +109,4 @@ public class DatabendContainer extends JdbcDatabaseContainer<DatabendContainer> 
         this.password = password;
         return this;
     }
-
-    @Override
-    public DatabendContainer withDatabaseName(String databaseName) {
-        this.databaseName = databaseName;
-        return this;
-    }
 }
