@@ -14,7 +14,7 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.Test;
-import org.rnorth.ducttape.unreliables.Unreliables;
+import org.testcontainers.utility.ducttape.Unreliables;
 
 import java.time.Duration;
 import java.util.Collection;

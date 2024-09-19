@@ -1,7 +1,7 @@
 package org.testcontainers.containers;
 
 import org.junit.Test;
-import org.rnorth.ducttape.TimeoutException;
+import org.testcontainers.utility.ducttape.TimeoutException;
 import org.testcontainers.containers.wait.strategy.Wait;
 
 import java.io.File;

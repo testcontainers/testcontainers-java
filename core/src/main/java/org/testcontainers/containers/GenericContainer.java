@@ -34,9 +34,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
-import org.rnorth.ducttape.ratelimits.RateLimiter;
-import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
-import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.UnstableAPI;
@@ -66,6 +63,10 @@ import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.PathUtils;
 import org.testcontainers.utility.ResourceReaper;
 import org.testcontainers.utility.TestcontainersConfiguration;
+import org.testcontainers.utility.ducttape.RateLimiter;
+import org.testcontainers.utility.ducttape.RateLimiterBuilder;
+import org.testcontainers.utility.ducttape.Timeouts;
+import org.testcontainers.utility.ducttape.Unreliables;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -660,6 +661,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             containerId = null;
             containerInfo = null;
         }
+
+        // If the Timeouts class was used, it created a Thread we need to close
+        Timeouts.shutdown();
     }
 
     /**

@@ -5,7 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.Rule;
 import org.junit.rules.TestName;
-import org.rnorth.ducttape.Preconditions;
+import org.testcontainers.utility.ducttape.Preconditions;
 
 import java.io.InputStream;
 import java.util.Arrays;

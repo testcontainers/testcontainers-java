@@ -1,7 +1,7 @@
 package com.example.kafkacluster;
 
 import lombok.SneakyThrows;
-import org.rnorth.ducttape.unreliables.Unreliables;
+import org.testcontainers.utility.ducttape.Unreliables;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.KafkaContainer;

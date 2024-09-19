@@ -5,7 +5,7 @@ import org.junit.Test;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.rnorth.ducttape.TimeoutException;
+import org.testcontainers.utility.ducttape.TimeoutException;
 import org.testcontainers.containers.GenericContainer;
 
 import java.time.Duration;
