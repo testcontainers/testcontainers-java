@@ -23,6 +23,7 @@ body:
         - CrateDB
         - Consul
         - Couchbase
+        - Databend
         - DB2
         - Dynalite
         - Elasticsearch
