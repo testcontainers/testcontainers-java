@@ -70,11 +70,9 @@ e.g. `mongodb://localhost:12345/?directConnection=true`
 ### References
 MongoDB Atlas Local combines the MongoDB database engine with MongoT, a sidecar process for advanced searching capabilities built by MongoDB and powered by [Apache Lucene](https://lucene.apache.org/). 
 
-The container (mongodb/mongodb-atlas-local) documentation can be found here:
-[https://www.mongodb.com/docs/atlas/cli/current/atlas-cli-deploy-docker/](https://www.mongodb.com/docs/atlas/cli/current/atlas-cli-deploy-docker/)
+The container (mongodb/mongodb-atlas-local) documentation can be found [here](https://www.mongodb.com/docs/atlas/cli/current/atlas-cli-deploy-docker/).
 
-General information about Atlas Search can be found here:  
-[https://www.mongodb.com/docs/atlas/atlas-search/](https://www.mongodb.com/docs/atlas/atlas-search/)
+General information about Atlas Search can be found [here](https://www.mongodb.com/docs/atlas/atlas-search/).
 
 ## Adding this module to your project dependencies
 
