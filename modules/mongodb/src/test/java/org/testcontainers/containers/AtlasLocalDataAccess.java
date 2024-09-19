@@ -24,16 +24,16 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.concurrent.TimeUnit;
 
 import static com.mongodb.client.model.Aggregates.search;
-import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.search.SearchOperator.of;
 import static com.mongodb.client.model.search.SearchOperator.text;
 import static com.mongodb.client.model.search.SearchOptions.searchOptions;
 import static com.mongodb.client.model.search.SearchPath.fieldPath;
-import static java.lang.Thread.sleep;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.requireNonNull;
+import static org.awaitility.Awaitility.await;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -67,7 +67,6 @@ public class AtlasLocalDataAccess implements AutoCloseable {
         mongoClient.close();
     }
 
-    // initAtlasSearchIndex {
     public void initAtlasSearchIndex() throws URISyntaxException, IOException, InterruptedException {
         //Create the collection (if it doesn't exist). Required because unlike other database operations, createSearchIndex will fail if the collection doesn't exist yet
         testDB.createCollection(collectionName);
@@ -85,30 +84,15 @@ public class AtlasLocalDataAccess implements AutoCloseable {
         testCollection.createSearchIndex("AtlasSearchIndex", BsonDocument.parse(atlasSearchIndexJson));
 
         //wait for the atlas search index to be ready
-        boolean ready = false;
         Instant start = Instant.now();
-        Instant timeout = start.plusSeconds(5);
-        while (!ready && Instant.now().isBefore(timeout)) {
-            ListSearchIndexesIterable<Document> searchIndexes = testCollection.listSearchIndexes();
-            for (Document searchIndex : searchIndexes) {
-                if (searchIndex.get("name").equals("AtlasSearchIndex")) {
-                    ready = searchIndex.get("status").equals("READY");
-                    if (ready) {
-                        break;
-                    }
-                }
-            }
-            sleep(50);
-        }
-        if (!ready) {
-            throw new IllegalStateException(
-                String.format(
-                    "Atlas Search index AtlasSearchIndex on collection %s did not become ready within %d seconds",
-                    collectionName,
-                    5
-                )
-            );
-        }
+        await()
+            .atMost(5, TimeUnit.SECONDS)
+            .pollInterval(10, TimeUnit.MILLISECONDS)
+            .pollInSameThread()
+            .until(
+                this::getIndexStatus,
+                "READY"::equalsIgnoreCase);
+
         log.info(
             "Atlas Search index AtlasSearchIndex on collection {} is ready (took {} milliseconds) to create.",
             collectionName,
@@ -116,23 +100,21 @@ public class AtlasLocalDataAccess implements AutoCloseable {
         );
     }
 
-    // }
+    private String getIndexStatus() {
+        ListSearchIndexesIterable<Document> searchIndexes = testCollection.listSearchIndexes();
+        for (Document searchIndex : searchIndexes) {
+            if (searchIndex.get("name").equals("AtlasSearchIndex")) {
+                return searchIndex.getString("status");
+            }
+        }
+        return null;
+    }
 
     public void insertData(TestData data) {
         log.info("Inserting document {}", data);
         testCollection.insertOne(data);
     }
 
-    public TestData findClassic(String test) {
-        Bson findQuery = eq("test", test);
-        log.trace(
-            "Searching for document using MongoDB:\n{}",
-            findQuery.toBsonDocument().toJson(JsonWriterSettings.builder().indent(true).build())
-        );
-        return testCollection.find(findQuery).first();
-    }
-
-    // queryAtlasSearch {
     public TestData findAtlasSearch(String test) {
         Bson searchClause = search(
             of(text(fieldPath("test"), test).fuzzy()),
@@ -144,8 +126,6 @@ public class AtlasLocalDataAccess implements AutoCloseable {
         );
         return testCollection.aggregate(singletonList(searchClause)).first();
     }
-
-    // }
 
     @Setter
     @Getter

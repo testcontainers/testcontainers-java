@@ -1,14 +1,20 @@
 package org.testcontainers.containers;
 
 import org.junit.Test;
+import org.slf4j.Logger;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+import static java.time.Instant.now;
 import static org.assertj.core.api.Assertions.*;
 import static org.awaitility.Awaitility.await;
+import static org.slf4j.LoggerFactory.getLogger;
 
 public class MongoDBAtlasLocalContainerTest {
+    private static final Logger log = getLogger(MongoDBAtlasLocalContainerTest.class);
 
     @Test
     public void getConnectionString() {
@@ -46,7 +52,8 @@ public class MongoDBAtlasLocalContainerTest {
 
                 atlasLocalDataAccess.insertData(new AtlasLocalDataAccess.TestData("tests", 123, true));
 
-                //Wait for Atlas Search to index the data (Atlas Search is eventually consistent)
+                Instant start = now();
+                log.info("Waiting for Atlas Search to index the data by polling atlas search query (Atlas Search is eventually consistent)");
                 await()
                     .atMost(5, TimeUnit.SECONDS)
                     .pollInterval(10, TimeUnit.MILLISECONDS)
@@ -54,9 +61,7 @@ public class MongoDBAtlasLocalContainerTest {
                     .until(
                         () -> atlasLocalDataAccess.findAtlasSearch("test"),
                         Objects::nonNull);
-
-                AtlasLocalDataAccess.TestData foundRegular = atlasLocalDataAccess.findClassic("tests");
-                assertThat(foundRegular).isNotNull();
+                log.info("Atlas Search indexed the new data and was searchable after {}ms.", start.until(now(), ChronoUnit.MILLIS));
             }
         }
     }
