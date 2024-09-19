@@ -44,7 +44,6 @@ public class MongoDBAtlasLocalContainerTest {
             ) {
                 atlasLocalDataAccess.initAtlasSearchIndex();
 
-                // writeAndReadBack {
                 atlasLocalDataAccess.insertData(new AtlasLocalDataAccess.TestData("tests", 123, true));
 
                 //Wait for Atlas Search to index the data (Atlas Search is eventually consistent)
@@ -55,7 +54,6 @@ public class MongoDBAtlasLocalContainerTest {
                     .until(
                         () -> atlasLocalDataAccess.findAtlasSearch("test"),
                         Objects::nonNull);
-                // }
 
                 AtlasLocalDataAccess.TestData foundRegular = atlasLocalDataAccess.findClassic("tests");
                 assertThat(foundRegular).isNotNull();
