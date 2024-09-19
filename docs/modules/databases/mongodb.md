@@ -76,17 +76,6 @@ The container (mongodb/mongodb-atlas-local) documentation can be found here:
 General information about Atlas Search can be found here:  
 [https://www.mongodb.com/docs/atlas/atlas-search/](https://www.mongodb.com/docs/atlas/atlas-search/)
 
-### Container Healthcheck
-This process should be seamless to you whilst using the MongoDBAtlasLocalContainer, however for information:  
-You cannot start calling Atlas Search commands, such as creating Atlas Search indexes, until the container is ready. The container takes some seconds to attain readiness, whilst:
-
-* MongoDB database starts
-* MongoDB initialises itself as a replica set
-* MongoT starts and connects to the MongoDB database ready to follow Change Streams for indexing
-* MongoDB connects to MongoT ready to perform $search and $vectorSearch queries
-
-The MongoDBAtlasLocalContainer uses the container's `runner healthcheck` command to check for readiness.
-
 ## Adding this module to your project dependencies
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
