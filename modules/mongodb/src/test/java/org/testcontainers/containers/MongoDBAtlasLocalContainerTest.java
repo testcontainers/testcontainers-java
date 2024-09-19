@@ -13,9 +13,7 @@ public class MongoDBAtlasLocalContainerTest {
     @Test
     public void getConnectionString() {
         try (
-            MongoDBAtlasLocalContainer container = new MongoDBAtlasLocalContainer(
-                MongoDBAtlasLocalContainer.DEFAULT_IMAGE_NAME.withTag("7.0.9")
-            )
+            MongoDBAtlasLocalContainer container = new MongoDBAtlasLocalContainer("mongodb/mongodb-atlas-local:7.0.9")
         ) {
             container.start();
             String connectionString = container.getConnectionString();
@@ -29,9 +27,8 @@ public class MongoDBAtlasLocalContainerTest {
     public void createAtlasIndexAndSearchIt() throws Exception {
         try (
             // creatingAtlasLocalContainer {
-            MongoDBAtlasLocalContainer atlasLocalContainer = new MongoDBAtlasLocalContainer(
-                MongoDBAtlasLocalContainer.DEFAULT_IMAGE_NAME.withTag("7.0.9")
-            );
+            MongoDBAtlasLocalContainer atlasLocalContainer =
+                new MongoDBAtlasLocalContainer("mongodb/mongodb-atlas-local:7.0.9");
             // }
         ) {
             // startingAtlasLocalContainer {

@@ -5,8 +5,8 @@ import org.testcontainers.utility.DockerImageName;
 
 public class MongoDBAtlasLocalContainer extends GenericContainer<MongoDBAtlasLocalContainer> {
 
-    static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("mongodb/mongodb-atlas-local");
-    static final int MONGODB_INTERNAL_PORT = 27017;
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("mongodb/mongodb-atlas-local");
+    private static final int MONGODB_INTERNAL_PORT = 27017;
 
     public MongoDBAtlasLocalContainer(final String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
