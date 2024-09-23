@@ -1,14 +1,15 @@
 package org.testcontainers.tibero;
 
-import java.time.Duration;
-import java.util.Collections;
-import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
+
+import java.time.Duration;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * Testcontainers implementation for Tibero Database.
@@ -26,9 +27,13 @@ public class TiberoContainer extends JdbcDatabaseContainer<TiberoContainer> {
     static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
 
     static final int TIBERO_PORT = 8629;
+
     // this name should be same as the one in the license.xml
+
     private static final String CMD_HOST_NAME = "localhost";
-    public static final String LICENSE_PATH = "./libs/license.xml";
+
+    private static final String LICENSE_PATH = "./libs/license.xml";
+
     private static final String CONTAINER_LICENSE_PATH = "/tibero7/license/license.xml";
 
     private static final int DEFAULT_STARTUP_TIMEOUT_SECONDS = 180;
@@ -50,11 +55,11 @@ public class TiberoContainer extends JdbcDatabaseContainer<TiberoContainer> {
     private String password = APP_USER_PASSWORD;
 
     public TiberoContainer(String dockerImageName, String licensePath) {
-        this(DockerImageName.parse(dockerImageName), licensePath);
+        this(DockerImageName.parse(dockerImageName), licensePath, CMD_HOST_NAME);
     }
 
     public TiberoContainer(String dockerImageName) {
-        this(DockerImageName.parse(dockerImageName), LICENSE_PATH);
+        this(DockerImageName.parse(dockerImageName), LICENSE_PATH, CMD_HOST_NAME);
     }
 
     public TiberoContainer(final DockerImageName dockerImageName) {
@@ -76,12 +81,12 @@ public class TiberoContainer extends JdbcDatabaseContainer<TiberoContainer> {
         );
     }
 
-    public TiberoContainer(final DockerImageName dockerImageName, String licensePath) {
+    public TiberoContainer(final DockerImageName dockerImageName, String licensePath, String hostName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         // setting host name
-        withCreateContainerCmdModifier(cmd -> cmd.withHostName(CMD_HOST_NAME));
+        withCreateContainerCmdModifier(cmd -> cmd.withHostName(hostName));
         // setting license
         withCopyToContainer(MountableFile.forHostPath(licensePath), CONTAINER_LICENSE_PATH);
 
@@ -94,7 +99,6 @@ public class TiberoContainer extends JdbcDatabaseContainer<TiberoContainer> {
                 .withStartupTimeout(Duration.ofSeconds(DEFAULT_STARTUP_TIMEOUT_SECONDS))
         );
     }
-
 
     @Override
     protected void waitUntilContainerStarted() {

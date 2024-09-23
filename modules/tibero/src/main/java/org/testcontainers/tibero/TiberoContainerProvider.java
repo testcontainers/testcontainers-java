@@ -1,7 +1,5 @@
 package org.testcontainers.tibero;
 
-import static org.testcontainers.tibero.TiberoContainer.LICENSE_PATH;
-
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.JdbcDatabaseContainerProvider;
 import org.testcontainers.utility.DockerImageName;
@@ -11,6 +9,10 @@ import org.testcontainers.utility.DockerImageName;
  */
 public class TiberoContainerProvider extends JdbcDatabaseContainerProvider {
 
+    private final String LICENSE_PATH = "./libs/license.xml";
+
+    private final String CMD_HOST_NAME = "localhost";
+
     @Override
     public boolean supports(String databaseType) {
         return databaseType.equals(TiberoContainer.NAME);
@@ -18,11 +20,11 @@ public class TiberoContainerProvider extends JdbcDatabaseContainerProvider {
 
     @Override
     public JdbcDatabaseContainer newInstance() {
-        return new TiberoContainer(DockerImageName.parse(TiberoContainer.IMAGE), LICENSE_PATH);
+        return new TiberoContainer(DockerImageName.parse(TiberoContainer.IMAGE), LICENSE_PATH, CMD_HOST_NAME);
     }
 
     @Override
     public JdbcDatabaseContainer newInstance(String tag) {
-        return new TiberoContainer(DockerImageName.parse(TiberoContainer.IMAGE), LICENSE_PATH);
+        return new TiberoContainer(DockerImageName.parse(TiberoContainer.IMAGE), LICENSE_PATH, CMD_HOST_NAME);
     }
 }
