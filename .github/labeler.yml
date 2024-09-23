@@ -240,6 +240,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/yugabytedb/**/*
+"modules/tibero":
+  - changed-files:
+      - any-glob-to-any-file:
+          - modules/tibero/**/*
 "type/docs":
   - changed-files:
     - any-glob-to-any-file:

@@ -66,6 +66,7 @@ body:
         - Vault
         - Weaviate
         - YugabyteDB
+        - Tibero
         - New Module
   - type: textarea
     id: problem
