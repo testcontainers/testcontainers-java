@@ -63,6 +63,26 @@ Client using the new registered listener:
 [Produce/Consume via new listener](../../modules/redpanda/src/test/java/org/testcontainers/redpanda/RedpandaContainerTest.java) inside_block:produceConsumeMessage
 <!--/codeinclude-->
 
+The following examples shows how to register a proxy as a new listener in `RedpandaContainer`:
+
+Use `SocatContainer` to create the proxy
+
+<!--codeinclude-->
+[Create Proxy](../../modules/redpanda/src/test/java/org/testcontainers/redpanda/RedpandaContainerTest.java) inside_block:createProxy
+<!--/codeinclude-->
+
+Register the listener and advertised listener
+
+<!--codeinclude-->
+[Register Listener](../../modules/redpanda/src/test/java/org/testcontainers/redpanda/RedpandaContainerTest.java) inside_block:registerListenerAndAdvertisedListener
+<!--/codeinclude-->
+
+Client using the new registered listener:
+
+<!--codeinclude-->
+[Produce/Consume via new listener](../../modules/redpanda/src/test/java/org/testcontainers/redpanda/RedpandaContainerTest.java) inside_block:produceConsumeMessageFromProxy
+<!--/codeinclude-->
+
 ## Adding this module to your project dependencies
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
