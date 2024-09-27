@@ -65,6 +65,9 @@ public class DockerComposeOverridesTest {
                 .assumeThat(CommandLine.executableExists(DockerComposeContainer.COMPOSE_EXECUTABLE))
                 .as("docker-compose executable exists")
                 .isTrue();
+            Assumptions
+                .assumeThat(CommandLine.runShellCommand("docker-compose", "--version"))
+                .doesNotStartWith("Docker Compose version v2");
         }
     }
 

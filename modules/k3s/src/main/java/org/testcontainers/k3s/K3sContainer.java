@@ -13,7 +13,7 @@ import org.apache.commons.io.IOUtils;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
@@ -56,7 +56,7 @@ public class K3sContainer extends GenericContainer<K3sContainer> {
         setTmpFsMapping(tmpFsMapping);
 
         setCommand("server", "--disable=traefik", "--tls-san=" + this.getHost());
-        setWaitStrategy(new LogMessageWaitStrategy().withRegEx(".*Node controller sync successful.*"));
+        setWaitStrategy(Wait.forLogMessage(".*Node controller sync successful.*", 1));
     }
 
     /**

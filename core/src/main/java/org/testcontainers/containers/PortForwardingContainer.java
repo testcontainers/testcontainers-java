@@ -24,18 +24,9 @@ public enum PortForwardingContainer {
 
     private static ContainerDef DEFINITION = new ContainerDef() {
         {
-            setImage(DockerImageName.parse("testcontainers/sshd:1.1.0"));
+            setImage(DockerImageName.parse("testcontainers/sshd:1.2.0"));
             addExposedTcpPort(22);
             addEnvVar("PASSWORD", PASSWORD);
-            setCommand(
-                "sh",
-                "-c",
-                // Disable ipv6 & Make it listen on all interfaces, not just localhost
-                // Enable algorithms supported by our ssh client library
-                "echo \"root:$PASSWORD\" | chpasswd && /usr/sbin/sshd -D -o PermitRootLogin=yes " +
-                "-o AddressFamily=inet -o GatewayPorts=yes -o AllowAgentForwarding=yes -o AllowTcpForwarding=yes " +
-                "-o KexAlgorithms=+diffie-hellman-group1-sha1 -o HostkeyAlgorithms=+ssh-rsa "
-            );
         }
     };
 

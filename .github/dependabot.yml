@@ -22,6 +22,8 @@ updates:
         update-types: [ "version-update:semver-minor", "version-update:semver-patch" ]
       - dependency-name: "org.apache.commons:commons-compress"
         update-types: [ "version-update:semver-minor" ]
+      - dependency-name: "org.awaitility:awaitility"
+        update-types: [ "version-update:semver-patch" ]
   - package-ecosystem: "gradle"
     directory: "/"
     allow:
@@ -76,6 +78,9 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "org.awaitility:awaitility"
+        update-types: [ "version-update:semver-patch" ]
   - package-ecosystem: "gradle"
     directory: "/modules/cratedb"
     schedule:
@@ -83,6 +88,10 @@ updates:
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/database-commons"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "gradle"
+    directory: "/modules/databend"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
@@ -107,6 +116,11 @@ updates:
       interval: "weekly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
+    directory: "/modules/grafana"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
     directory: "/modules/hivemq"
     schedule:
       interval: "weekly"
@@ -116,6 +130,9 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "com.influxdb:influxdb-java-client"
+        update-types: [ "version-update:semver-major" ]
   - package-ecosystem: "gradle"
     directory: "/modules/jdbc"
     schedule:
@@ -272,6 +289,9 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "org.awaitility:awaitility"
+        update-types: [ "version-update:semver-patch" ]
   - package-ecosystem: "gradle"
     directory: "/modules/r2dbc"
     schedule:
@@ -306,6 +326,8 @@ updates:
     ignore:
       - dependency-name: "org.apache.qpid:qpid-jms-client"
         update-types: [ "version-update:semver-major" ]
+      - dependency-name: "org.awaitility:awaitility"
+        update-types: [ "version-update:semver-patch" ]
   - package-ecosystem: "gradle"
     directory: "/modules/solr"
     schedule:
@@ -321,6 +343,11 @@ updates:
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/tidb"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
+    directory: "/modules/timeplus"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
@@ -369,6 +396,20 @@ updates:
         update-types: [ "version-update:semver-major" ]
       - dependency-name: "org.springframework.boot"
         update-types: [ "version-update:semver-major" ]
+      - dependency-name: "com.diffplug.spotless"
+        update-types: [ "version-update:semver-minor" ]
+      - dependency-name: "com.hazelcast:hazelcast"
+        update-types: [ "version-update:semver-minor" ]
+
+  # Smoke test
+  - package-ecosystem: "gradle"
+    directory: "/smoke-test"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "ch.qos.logback:logback-classic"
+        update-types: [ "version-update:semver-minor" ]
       - dependency-name: "com.diffplug.spotless"
         update-types: [ "version-update:semver-minor" ]
 

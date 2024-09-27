@@ -145,6 +145,9 @@ labels:
   - name: modules/gcloud
     color: '#006b75'
 
+  - name: modules/grafana
+    color: '#006b75'
+
   - name: modules/hivemq
     color: '#006b75'
 
@@ -250,6 +253,9 @@ labels:
   - name: modules/tidb
     color: '#006b75'
 
+  - name: modules/timeplus
+    color: '#006b75'
+
   - name: modules/toxiproxy
     color: '#006b75'
 
@@ -263,6 +269,9 @@ labels:
     color: '#006b75'
 
   - name: modules/yugabytedb
+    color: '#006b75'
+
+  - name: modules/databend
     color: '#006b75'
 
   - name: os/linux

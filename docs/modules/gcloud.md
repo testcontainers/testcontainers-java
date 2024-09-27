@@ -111,7 +111,7 @@ Create a test Database in the Emulator:
 And test against the Emulator:
 
 <!--codeinclude-->
-[Testing with a Firestore Emulator container](../../modules/gcloud/src/test/java/org/testcontainers/containers/SpannerEmulatorContainerTest.java) inside_block:testWithEmulatorContainer
+[Testing with a Spanner Emulator container](../../modules/gcloud/src/test/java/org/testcontainers/containers/SpannerEmulatorContainerTest.java) inside_block:testWithEmulatorContainer
 <!--/codeinclude-->
 
 See more examples:
