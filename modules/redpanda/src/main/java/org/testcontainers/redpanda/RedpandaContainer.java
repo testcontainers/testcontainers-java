@@ -71,7 +71,10 @@ public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
 
     private final List<String> superusers = new ArrayList<>();
 
+    @Deprecated
     private final Set<Supplier<Listener>> listenersValueSupplier = new HashSet<>();
+
+    private final Map<String, Supplier<String>> listeners = new HashMap<>();
 
     public RedpandaContainer(String image) {
         this(DockerImageName.parse(image));
@@ -109,6 +112,7 @@ public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
             .map(Supplier::get)
             .map(Listener::getAddress)
             .forEach(this::withNetworkAliases);
+        this.listeners.keySet().stream().map(listener -> listener.split(":")[0]).forEach(this::withNetworkAliases);
     }
 
     @SneakyThrows
@@ -212,9 +216,70 @@ public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
      * </ul>
      * @param listenerSupplier a supplier that will provide a listener
      * @return this {@link RedpandaContainer} instance
+     * @deprecated use {@link #withListener(String, Supplier)} instead
      */
+    @Deprecated
     public RedpandaContainer withListener(Supplier<String> listenerSupplier) {
         this.listenersValueSupplier.add(() -> Listener.fromNetworkAddress(listenerSupplier.get()));
+        return this;
+    }
+
+    /**
+     * Add a listener in the format {@code host:port}.
+     * Host will be included as a network alias.
+     * <p>
+     * Use it to register additional connections to the Kafka broker within the same container network.
+     * <p>
+     * The listener will be added to the list of default listeners.
+     * <p>
+     * Default listeners:
+     * <ul>
+     *     <li>0.0.0.0:9092</li>
+     *     <li>0.0.0.0:9093</li>
+     * </ul>
+     * <p>
+     * The listener will be added to the list of default advertised listeners.
+     * <p>
+     * Default advertised listeners:
+     * <ul>
+     *      <li>{@code container.getConfig().getHostName():9092}</li>
+     *      <li>{@code container.getHost():container.getMappedPort(9093)}</li>
+     * </ul>
+     * @param listener a listener with format {@code host:port}
+     * @return this {@link RedpandaContainer} instance
+     */
+    public RedpandaContainer withListener(String listener) {
+        this.listeners.put(listener, () -> listener);
+        return this;
+    }
+
+    /**
+     * Add a listener in the format {@code host:port} and a {@link Supplier} for the advertised listener.
+     * Host from listener will be included as a network alias.
+     * <p>
+     * Use it to register additional connections to the Kafka broker from outside the container network
+     * <p>
+     * The listener will be added to the list of default listeners.
+     * <p>
+     * Default listeners:
+     * <ul>
+     *     <li>0.0.0.0:9092</li>
+     *     <li>0.0.0.0:9093</li>
+     * </ul>
+     * <p>
+     * The {@link Supplier} will be added to the list of default advertised listeners.
+     * <p>
+     * Default advertised listeners:
+     * <ul>
+     *      <li>{@code container.getConfig().getHostName():9092}</li>
+     *      <li>{@code container.getHost():container.getMappedPort(9093)}</li>
+     * </ul>
+     * @param listener a supplier that will provide a listener
+     * @param advertisedListener a supplier that will provide a listener
+     * @return this {@link RedpandaContainer} instance
+     */
+    public RedpandaContainer withListener(String listener, Supplier<String> advertisedListener) {
+        this.listeners.put(listener, advertisedListener);
         return this;
     }
 
@@ -232,6 +297,12 @@ public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
     }
 
     private Transferable getRedpandaFile(Configuration cfg) {
+        Map<String, Object> kafkaApi = new HashMap<>();
+        kafkaApi.put("authenticationMethod", this.authenticationMethod);
+        kafkaApi.put("enableAuthorization", this.enableAuthorization);
+        kafkaApi.put("advertisedHost", getHost());
+        kafkaApi.put("advertisedPort", getMappedPort(9092));
+
         List<Map<String, Object>> listeners =
             this.listenersValueSupplier.stream()
                 .map(Supplier::get)
@@ -243,19 +314,44 @@ public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
                     return listenerMap;
                 })
                 .collect(Collectors.toList());
-
-        Map<String, Object> kafkaApi = new HashMap<>();
-        kafkaApi.put("authenticationMethod", this.authenticationMethod);
-        kafkaApi.put("enableAuthorization", this.enableAuthorization);
-        kafkaApi.put("advertisedHost", getHost());
-        kafkaApi.put("advertisedPort", getMappedPort(9092));
         kafkaApi.put("listeners", listeners);
+
+        List<Map<String, Object>> kafkaListeners =
+            this.listeners.keySet()
+                .stream()
+                .map(listener -> {
+                    Map<String, Object> listenerMap = new HashMap<>();
+                    listenerMap.put("name", listener.split(":")[0]);
+                    listenerMap.put("address", listener.split(":")[0]);
+                    listenerMap.put("port", listener.split(":")[1]);
+                    listenerMap.put("authentication_method", this.authenticationMethod);
+                    return listenerMap;
+                })
+                .collect(Collectors.toList());
+
+        List<Map<String, Object>> kafkaAdvertisedListeners =
+            this.listeners.entrySet()
+                .stream()
+                .map(entry -> {
+                    String advertisedListener = entry.getValue().get();
+                    Map<String, Object> listenerMap = new HashMap<>();
+                    listenerMap.put("name", entry.getKey().split(":")[0]);
+                    listenerMap.put("address", advertisedListener.split(":")[0]);
+                    listenerMap.put("port", advertisedListener.split(":")[1]);
+                    return listenerMap;
+                })
+                .collect(Collectors.toList());
+
+        Map<String, Object> kafka = new HashMap<>();
+        kafka.put("listeners", kafkaListeners);
+        kafka.put("advertisedListeners", kafkaAdvertisedListeners);
 
         Map<String, Object> schemaRegistry = new HashMap<>();
         schemaRegistry.put("authenticationMethod", this.schemaRegistryAuthenticationMethod);
 
         Map<String, Object> root = new HashMap<>();
         root.put("kafkaApi", kafkaApi);
+        root.put("kafka", kafka);
         root.put("schemaRegistry", schemaRegistry);
 
         String file = resolveTemplate(cfg, "redpanda.yaml.ftl", root);

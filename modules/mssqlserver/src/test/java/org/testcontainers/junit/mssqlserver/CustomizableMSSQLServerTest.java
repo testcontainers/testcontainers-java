@@ -18,7 +18,7 @@ public class CustomizableMSSQLServerTest extends AbstractContainerDatabaseTest {
     public void testSqlServerConnection() throws SQLException {
         try (
             MSSQLServerContainer<?> mssqlServerContainer = new MSSQLServerContainer<>(
-                DockerImageName.parse("mcr.microsoft.com/mssql/server:2017-CU12")
+                DockerImageName.parse("mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04")
             )
                 .withPassword(STRONG_PASSWORD)
         ) {
