@@ -50,19 +50,19 @@ That's where the MongoDBContainer might come in handy.
 The following example shows how to create a MongoDBAtlasLocalContainer:
 
 <!--codeinclude-->
-[Creating a MongoDB Atlas Local Container](../../../modules/mongodb/src/test/java/org/testcontainers/containers/MongoDBAtlasLocalContainerTest.java) inside_block:creatingAtlasLocalContainer
+[Creating a MongoDB Atlas Local Container](../../../modules/mongodb/src/test/java/org/testcontainers/mongodb/MongoDBAtlasLocalContainerTest.java) inside_block:creatingAtlasLocalContainer
 <!--/codeinclude-->
 
 And how to start it:
 
 <!--codeinclude-->
-[Start the Container](../../../modules/mongodb/src/test/java/org/testcontainers/containers/MongoDBAtlasLocalContainerTest.java) inside_block:startingAtlasLocalContainer
+[Start the Container](../../../modules/mongodb/src/test/java/org/testcontainers/mongodb/MongoDBAtlasLocalContainerTest.java) inside_block:startingAtlasLocalContainer
 <!--/codeinclude-->
 
 The connection string provided by the MongoDBAtlasLocalContainer's getConnectionString() method includes the dynamically allocated port:
 
 <!--codeinclude-->
-[Get the Connection String](../../../modules/mongodb/src/test/java/org/testcontainers/containers/MongoDBAtlasLocalContainerTest.java) inside_block:getConnectionStringAtlasLocalContainer
+[Get the Connection String](../../../modules/mongodb/src/test/java/org/testcontainers/mongodb/MongoDBAtlasLocalContainerTest.java) inside_block:getConnectionStringAtlasLocalContainer
 <!--/codeinclude-->
 
 e.g. `mongodb://localhost:12345/?directConnection=true`

@@ -1,4 +1,4 @@
-package org.testcontainers.containers;
+package org.testcontainers.mongodb;
 
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
@@ -89,9 +89,7 @@ public class AtlasLocalDataAccess implements AutoCloseable {
             .atMost(5, TimeUnit.SECONDS)
             .pollInterval(10, TimeUnit.MILLISECONDS)
             .pollInSameThread()
-            .until(
-                this::getIndexStatus,
-                "READY"::equalsIgnoreCase);
+            .until(this::getIndexStatus, "READY"::equalsIgnoreCase);
 
         log.info(
             "Atlas Search index AtlasSearchIndex on collection {} is ready (took {} milliseconds) to create.",

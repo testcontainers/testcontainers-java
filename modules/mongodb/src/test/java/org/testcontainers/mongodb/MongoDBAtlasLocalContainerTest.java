@@ -1,4 +1,4 @@
-package org.testcontainers.containers;
+package org.testcontainers.mongodb;
 
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -14,6 +14,7 @@ import static org.awaitility.Awaitility.await;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class MongoDBAtlasLocalContainerTest {
+
     private static final Logger log = getLogger(MongoDBAtlasLocalContainerTest.class);
 
     @Test
@@ -25,7 +26,14 @@ public class MongoDBAtlasLocalContainerTest {
             String connectionString = container.getConnectionString();
             assertThat(connectionString).isNotNull();
             assertThat(connectionString).startsWith("mongodb://");
-            assertThat(connectionString).isEqualTo(String.format("mongodb://localhost:%d/?directConnection=true", container.getFirstMappedPort()));
+            assertThat(connectionString)
+                .isEqualTo(
+                    String.format(
+                        "mongodb://%s:%d/?directConnection=true",
+                        container.getHost(),
+                        container.getFirstMappedPort()
+                    )
+                );
         }
     }
 
@@ -33,8 +41,9 @@ public class MongoDBAtlasLocalContainerTest {
     public void createAtlasIndexAndSearchIt() throws Exception {
         try (
             // creatingAtlasLocalContainer {
-            MongoDBAtlasLocalContainer atlasLocalContainer =
-                new MongoDBAtlasLocalContainer("mongodb/mongodb-atlas-local:7.0.9");
+            MongoDBAtlasLocalContainer atlasLocalContainer = new MongoDBAtlasLocalContainer(
+                "mongodb/mongodb-atlas-local:7.0.9"
+            );
             // }
         ) {
             // startingAtlasLocalContainer {
@@ -53,15 +62,18 @@ public class MongoDBAtlasLocalContainerTest {
                 atlasLocalDataAccess.insertData(new AtlasLocalDataAccess.TestData("tests", 123, true));
 
                 Instant start = now();
-                log.info("Waiting for Atlas Search to index the data by polling atlas search query (Atlas Search is eventually consistent)");
+                log.info(
+                    "Waiting for Atlas Search to index the data by polling atlas search query (Atlas Search is eventually consistent)"
+                );
                 await()
                     .atMost(5, TimeUnit.SECONDS)
                     .pollInterval(10, TimeUnit.MILLISECONDS)
                     .pollInSameThread()
-                    .until(
-                        () -> atlasLocalDataAccess.findAtlasSearch("test"),
-                        Objects::nonNull);
-                log.info("Atlas Search indexed the new data and was searchable after {}ms.", start.until(now(), ChronoUnit.MILLIS));
+                    .until(() -> atlasLocalDataAccess.findAtlasSearch("test"), Objects::nonNull);
+                log.info(
+                    "Atlas Search indexed the new data and was searchable after {}ms.",
+                    start.until(now(), ChronoUnit.MILLIS)
+                );
             }
         }
     }
