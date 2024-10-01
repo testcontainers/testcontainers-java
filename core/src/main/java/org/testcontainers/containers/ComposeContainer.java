@@ -87,7 +87,11 @@ public class ComposeContainer implements Startable {
                 composeFiles,
                 identifier,
                 COMPOSE_EXECUTABLE,
-                DockerImageName.parse(TestcontainersConfiguration.getInstance().getEnvVarOrUserProperty("compose.container.image",DEFAULT_DOCKER_IMAGE))
+                DockerImageName.parse(
+                    TestcontainersConfiguration
+                        .getInstance()
+                        .getEnvVarOrUserProperty("compose.container.image", DEFAULT_DOCKER_IMAGE)
+                )
             );
         this.project = this.composeDelegate.getProject();
     }
