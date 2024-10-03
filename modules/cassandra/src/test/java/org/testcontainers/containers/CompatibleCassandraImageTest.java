@@ -1,31 +1,40 @@
-package org.testcontainers.cassandra;
+package org.testcontainers.containers;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata;
-import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class CassandraDriver4Test {
+@RunWith(Parameterized.class)
+public class CompatibleCassandraImageTest {
 
-    @Rule
-    // container-definition {
-    public CassandraContainer cassandra = new CassandraContainer("cassandra:3.11.2");
+    @Parameterized.Parameters(name = "{0}")
+    public static String[] params() {
+        return new String[] { "cassandra:3.11.2", "cassandra:4.1.1" };
+    }
 
-    // }
+    @Parameterized.Parameter
+    public String imageName;
 
     @Test
     public void testCassandraGetContactPoint() {
+        try (CassandraContainer<?> cassandra = new CassandraContainer<>(this.imageName)) {
+            cassandra.start();
+            assertCassandraFunctionality(cassandra);
+        }
+    }
+
+    private void assertCassandraFunctionality(CassandraContainer<?> cassandra) {
         try (
-            // cql-session {
             CqlSession session = CqlSession
                 .builder()
                 .addContactPoint(cassandra.getContactPoint())
                 .withLocalDatacenter(cassandra.getLocalDatacenter())
                 .build()
-            // }
         ) {
             session.execute(
                 "CREATE KEYSPACE IF NOT EXISTS test WITH replication = \n" +
