@@ -6,12 +6,12 @@ This example connects to the Cassandra cluster:
 
 1. Define a container:
     <!--codeinclude-->
-    [Container definition](../../../modules/cassandra/src/test/java/org/testcontainers/cassandra/CassandraDriver4Test.java) inside_block:container-definition
+    [Container definition](../../../modules/cassandra/src/test/java/org/testcontainers/cassandra/CassandraContainerTest.java) inside_block:container-definition
     <!--/codeinclude-->
 
 2. Build a `CqlSession`:
     <!--codeinclude-->
-    [Building CqlSession](../../../modules/cassandra/src/test/java/org/testcontainers/cassandra/CassandraDriver4Test.java) inside_block:cql-session
+    [Building CqlSession](../../../modules/cassandra/src/test/java/org/testcontainers/cassandra/CassandraContainerTest.java) inside_block:cql-session
     <!--/codeinclude-->
 
 3. Define a container with custom `cassandra.yaml` located in a directory `cassandra-auth-required-configuration`:

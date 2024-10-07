@@ -1,7 +1,7 @@
 package com.example.kafkacluster;
 
 import lombok.SneakyThrows;
-import org.rnorth.ducttape.unreliables.Unreliables;
+import org.awaitility.Awaitility;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.KafkaContainer;
@@ -11,10 +11,11 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
 import java.util.Collection;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Provides an easy way to launch a Kafka cluster with multiple brokers.
@@ -87,10 +88,10 @@ public class KafkaContainerCluster implements Startable {
         // sequential start to avoid resource contention on CI systems with weaker hardware
         brokers.forEach(GenericContainer::start);
 
-        Unreliables.retryUntilTrue(
-            30,
-            TimeUnit.SECONDS,
-            () -> {
+        Awaitility
+            .await()
+            .atMost(Duration.ofSeconds(30))
+            .untilAsserted(() -> {
                 Container.ExecResult result =
                     this.zookeeper.execInContainer(
                             "sh",
@@ -101,9 +102,8 @@ public class KafkaContainerCluster implements Startable {
                         );
                 String brokers = result.getStdout();
 
-                return brokers != null && brokers.split(",").length == this.brokersNum;
-            }
-        );
+                assertThat(brokers.split(",")).hasSize(this.brokersNum);
+            });
     }
 
     @Override
