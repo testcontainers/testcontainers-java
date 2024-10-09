@@ -10,6 +10,7 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -26,7 +27,7 @@ public class ToxiproxyTest {
 
     // The target container - this could be anything
     @Rule
-    public GenericContainer<?> redis = new GenericContainer<>("redis:5.0.4")
+    public GenericContainer<?> redis = new GenericContainer<>("redis:6-alpine")
         .withExposedPorts(6379)
         .withNetwork(network)
         .withNetworkAliases("redis");
@@ -103,6 +104,7 @@ public class ToxiproxyTest {
         proxy.toxics().get("CUT_CONNECTION_DOWNSTREAM").remove();
         proxy.toxics().get("CUT_CONNECTION_UPSTREAM").remove();
 
+        jedis.close();
         // and with the connection re-established, expect success
         assertThat(jedis.get("somekey"))
             .as("access to the container works OK after re-establishing the connection")
@@ -113,7 +115,7 @@ public class ToxiproxyTest {
     @Test
     public void testMultipleProxiesCanBeCreated() throws IOException {
         try (
-            GenericContainer<?> secondRedis = new GenericContainer<>("redis:5.0.4")
+            GenericContainer<?> secondRedis = new GenericContainer<>("redis:6-alpine")
                 .withExposedPorts(6379)
                 .withNetwork(network)
                 .withNetworkAliases("redis2")
@@ -181,10 +183,10 @@ public class ToxiproxyTest {
         int expectedMinLatency,
         long expectedMaxLatency
     ) {
-        final long start = System.currentTimeMillis();
+        final long start = System.nanoTime();
         String s = jedis.get("somekey");
-        final long end = System.currentTimeMillis();
-        final long duration = end - start;
+        final long end = System.nanoTime();
+        final long duration = TimeUnit.NANOSECONDS.toMillis(end - start);
 
         assertThat(s).as(String.format("access to the container %s works OK", description)).isEqualTo("somevalue");
         assertThat(duration >= expectedMinLatency)

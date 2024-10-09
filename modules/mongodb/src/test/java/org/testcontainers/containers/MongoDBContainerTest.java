@@ -24,8 +24,8 @@ public class MongoDBContainerTest extends AbstractMongo {
     }
 
     @Test
-    public void supportsMongoDB_4_4() {
-        try (final MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:4.4")) {
+    public void supportsMongoDB_7_0() {
+        try (final MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:7.0")) {
             mongoDBContainer.start();
         }
     }

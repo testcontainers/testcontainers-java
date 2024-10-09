@@ -24,7 +24,12 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
 
     public static final char UNIX_PATH_SEPARATOR = ':';
 
-    public ContainerisedDockerCompose(DockerImageName dockerImageName, List<File> composeFiles, String identifier) {
+    public ContainerisedDockerCompose(
+        DockerImageName dockerImageName,
+        List<File> composeFiles,
+        String identifier,
+        List<String> fileCopyInclusions
+    ) {
         super(dockerImageName);
         addEnv(ENV_PROJECT_NAME, identifier);
 
@@ -43,7 +48,22 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
         final String composeFileEnvVariableValue = Joiner.on(UNIX_PATH_SEPARATOR).join(absoluteDockerComposeFiles); // we always need the UNIX path separator
         logger().debug("Set env COMPOSE_FILE={}", composeFileEnvVariableValue);
         addEnv(ENV_COMPOSE_FILE, composeFileEnvVariableValue);
-        withCopyFileToContainer(MountableFile.forHostPath(pwd), containerPwd);
+        if (fileCopyInclusions.isEmpty()) {
+            logger().info("Copying all files in {} into the container", pwd);
+            withCopyFileToContainer(MountableFile.forHostPath(pwd), containerPwd);
+        } else {
+            // Always copy the compose file itself
+            logger().info("Copying docker compose file: {}", dockerComposeBaseFile.getAbsolutePath());
+            withCopyFileToContainer(
+                MountableFile.forHostPath(dockerComposeBaseFile.getAbsolutePath()),
+                convertToUnixFilesystemPath(dockerComposeBaseFile.getAbsolutePath())
+            );
+            for (String pathToCopy : fileCopyInclusions) {
+                String hostPath = pwd + "/" + pathToCopy;
+                logger().info("Copying inclusion file: {}", hostPath);
+                withCopyFileToContainer(MountableFile.forHostPath(hostPath), convertToUnixFilesystemPath(hostPath));
+            }
+        }
 
         // Ensure that compose can access docker. Since the container is assumed to be running on the same machine
         //  as the docker daemon, just mapping the docker control socket is OK.
@@ -63,18 +83,16 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
     public void invoke() {
         super.start();
 
-        this.followOutput(new Slf4jLogConsumer(logger()));
+        followOutput(new Slf4jLogConsumer(logger()));
 
         // wait for the compose container to stop, which should only happen after it has spawned all the service containers
-        logger()
-            .info("Docker Compose container is running for command: {}", Joiner.on(" ").join(this.getCommandParts()));
-        while (this.isRunning()) {
+        logger().info("Docker Compose container is running for command: {}", Joiner.on(" ").join(getCommandParts()));
+        while (isRunning()) {
             logger().trace("Compose container is still running");
             Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
         }
-        logger().info("Docker Compose has finished running");
 
-        AuditLogger.doComposeLog(this.getCommandParts(), this.getEnv());
+        AuditLogger.doComposeLog(getCommandParts(), getEnv());
 
         final Integer exitCode = getDockerClient()
             .inspectContainerCmd(getContainerId())
@@ -87,9 +105,11 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
                 "Containerised Docker Compose exited abnormally with code " +
                 exitCode +
                 " whilst running command: " +
-                StringUtils.join(this.getCommandParts(), ' ')
+                StringUtils.join(getCommandParts(), ' ')
             );
         }
+
+        logger().info("Docker Compose has finished running");
     }
 
     private String convertToUnixFilesystemPath(String path) {
