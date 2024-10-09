@@ -11,6 +11,8 @@ import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
+import org.yaml.snakeyaml.nodes.Node;
+import org.yaml.snakeyaml.nodes.Tag;
 import org.yaml.snakeyaml.representer.Representer;
 import org.yaml.snakeyaml.resolver.Resolver;
 
@@ -44,13 +46,17 @@ class ParsedDockerComposeFile {
         LoaderOptions options = new LoaderOptions();
         options.setMaxAliasesForCollections(1_000);
         DumperOptions dumperOptions = new DumperOptions();
-        Yaml yaml = new Yaml(
-            new SafeConstructor(options),
-            new Representer(dumperOptions),
-            dumperOptions,
-            options,
-            new Resolver()
-        );
+
+        SafeConstructor constructor = new SafeConstructor(options) {
+            @Override
+            protected Object constructObject(Node node) {
+                if (node.getTag().equals(new Tag("!reset"))) {
+                    return null;
+                }
+                return super.constructObject(node);
+            }
+        };
+        Yaml yaml = new Yaml(constructor, new Representer(dumperOptions), dumperOptions, options, new Resolver());
         try (FileInputStream fileInputStream = FileUtils.openInputStream(composeFile)) {
             composeFileContent = yaml.load(fileInputStream);
         } catch (Exception e) {
