@@ -19,12 +19,12 @@ public class DockerComposeContainerWithServicesTest {
         "src/test/resources/compose-scaling-multiple-containers.yml"
     );
 
-    public static final File COMPOSE_FILE_WITH_HEALTHCHECK = new File(
-        "src/test/resources/docker-compose-healthcheck.yml"
-    );
-
     public static final File COMPOSE_FILE_WITH_INLINE_SCALE = new File(
         "src/test/resources/compose-with-inline-scale-test.yml"
+    );
+
+    public static final File COMPOSE_FILE_WITH_HEALTHCHECK = new File(
+        "src/test/resources/docker-compose-healthcheck.yml"
     );
 
     @Test

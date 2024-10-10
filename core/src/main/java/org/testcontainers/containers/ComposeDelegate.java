@@ -201,7 +201,7 @@ class ComposeDelegate {
         logConsumers
             .getOrDefault(serviceName, Collections.emptyList())
             .forEach(consumer -> followLogs(containerId, consumer));
-        serviceInstanceMap.put(serviceName, containerInstance);
+        serviceInstanceMap.putIfAbsent(serviceName, containerInstance);
     }
 
     private void waitUntilServiceStarted(String serviceName, ComposeServiceWaitStrategyTarget serviceInstance) {
@@ -384,6 +384,13 @@ class ComposeDelegate {
 
     String getServiceHost() {
         return this.ambassadorContainer.getHost();
+    }
+
+    void clear() {
+        this.logConsumers.clear();
+        this.ambassadorPortMappings.clear();
+        this.serviceInstanceMap.clear();
+        this.waitStrategyMap.clear();
     }
 
     enum ComposeVersion {

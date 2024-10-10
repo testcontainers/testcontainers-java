@@ -1,9 +1,0 @@
-version: "3.9"
-services:
-  redis:
-    image: redis:alpine
-    restart: always
-    expose:
-      - 6379
-    healthcheck:
-      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
