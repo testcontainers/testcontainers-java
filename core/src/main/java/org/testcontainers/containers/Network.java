@@ -34,6 +34,14 @@ public interface Network extends AutoCloseable, TestRule {
         return builder().build();
     }
 
+    static Network newNetwork(boolean initialize) {
+        Network network = newNetwork();
+        if (initialize) {
+            network.getId();
+        }
+        return network;
+    }
+
     static NetworkImpl.NetworkImplBuilder builder() {
         return NetworkImpl.builder();
     }
