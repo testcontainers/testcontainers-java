@@ -11,8 +11,11 @@ public enum Service {
     SMF_SSL("smf", 55443, "tcps", true);
 
     private final String name;
+
     private final Integer port;
+
     private final String protocol;
+
     private final boolean supportSSL;
 
     Service(String name, Integer port, String protocol, boolean supportSSL) {
