@@ -1,8 +1,11 @@
 package org.testcontainers.containers;
 
+import org.assertj.core.api.Assumptions;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.testcontainers.utility.CommandLine;
 
 import java.io.File;
 
@@ -17,9 +20,19 @@ public class ComposeProfilesOptionTest {
     }
 
     @Parameterized.Parameter
-    public boolean local;
+    public boolean localMode;
 
     public static final File COMPOSE_FILE = new File("src/test/resources/compose-profile-option/compose-test.yml");
+
+    @Before
+    public void setUp() {
+        if (this.localMode) {
+            Assumptions
+                .assumeThat(CommandLine.executableExists(ComposeContainer.COMPOSE_EXECUTABLE))
+                .as("docker executable exists")
+                .isTrue();
+        }
+    }
 
     @Test
     public void testProfileOption() {
