@@ -35,7 +35,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 public class RemoteDockerImage extends LazyFuture<String> {
 
-    private static final Duration PULL_RETRY_TIME_LIMIT = Duration.ofMinutes(2);
+    private static final Duration PULL_RETRY_TIME_LIMIT = Duration.ofMinutes(3);
 
     @ToString.Exclude
     private Future<DockerImageName> imageNameFuture;
