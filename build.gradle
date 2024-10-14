@@ -13,7 +13,7 @@ buildscript {
 plugins {
     id 'io.franzbecker.gradle-lombok' version '5.0.0'
     id 'com.github.johnrengelman.shadow' version '8.1.1'
-    id 'me.champeau.gradle.japicmp' version '0.4.3' apply false
+    id 'me.champeau.gradle.japicmp' version '0.4.4' apply false
     id 'com.diffplug.spotless' version '6.13.0' apply false
 }
 
