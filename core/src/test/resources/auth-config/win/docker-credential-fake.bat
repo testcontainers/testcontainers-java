@@ -30,5 +30,19 @@ if "%inputLine%" == "registrytoken.example.com" (
      echo }
      exit 0
 )
+if "%inputLine%" == "registrynoserverurl.example.com" (
+     echo {
+     echo   "Username": "username",
+     echo   "Secret": "secret"
+     echo }
+     exit 0
+)
+if "%inputLine%" == "registrynoserverurltoken.example.com" (
+     echo {
+     echo   "Username": "<token>",
+     echo   "Secret": "secret"
+     echo }
+     exit 0
+)
 
 exit 1
