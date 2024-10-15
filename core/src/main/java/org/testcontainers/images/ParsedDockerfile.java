@@ -29,17 +29,17 @@ public class ParsedDockerfile {
     private final Path dockerFilePath;
 
     @Getter
-    private Set<String> dependencyImageNames = Collections.emptySet();
+    private final Set<String> dependencyImageNames;
 
     public ParsedDockerfile(Path dockerFilePath) {
         this.dockerFilePath = dockerFilePath;
-        parse(read());
+        this.dependencyImageNames = parse(read());
     }
 
     @VisibleForTesting
     ParsedDockerfile(List<String> lines) {
         this.dockerFilePath = Paths.get("dummy.Dockerfile");
-        parse(lines);
+        this.dependencyImageNames = parse(lines);
     }
 
     private List<String> read() {
@@ -56,17 +56,17 @@ public class ParsedDockerfile {
         }
     }
 
-    private void parse(List<String> lines) {
-        dependencyImageNames =
-            lines
-                .stream()
-                .map(FROM_LINE_PATTERN::matcher)
-                .filter(Matcher::matches)
-                .map(matcher -> matcher.group("image"))
-                .collect(Collectors.toSet());
+    private Set<String> parse(List<String> lines) {
+        Set<String> imageNames = lines
+            .stream()
+            .map(FROM_LINE_PATTERN::matcher)
+            .filter(Matcher::matches)
+            .map(matcher -> matcher.group("image"))
+            .collect(Collectors.toSet());
 
-        if (!dependencyImageNames.isEmpty()) {
-            log.debug("Found dependency images in Dockerfile {}: {}", dockerFilePath, dependencyImageNames);
+        if (!imageNames.isEmpty()) {
+            log.debug("Found dependency images in Dockerfile {}: {}", dockerFilePath, imageNames);
         }
+        return imageNames;
     }
 }

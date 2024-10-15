@@ -22,7 +22,6 @@ import com.couchbase.client.java.Collection;
 import com.couchbase.client.java.json.JsonObject;
 import org.junit.Test;
 import org.testcontainers.containers.ContainerLaunchException;
-import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
 import java.util.function.Consumer;
@@ -33,51 +32,43 @@ import static org.awaitility.Awaitility.await;
 
 public class CouchbaseContainerTest {
 
-    private static final DockerImageName COUCHBASE_IMAGE_ENTERPRISE = DockerImageName.parse(
-        "couchbase/server:enterprise-7.0.3"
-    );
+    private static final String COUCHBASE_IMAGE_ENTERPRISE = "couchbase/server:enterprise-7.0.3";
 
-    private static final DockerImageName COUCHBASE_IMAGE_COMMUNITY = DockerImageName.parse(
-        "couchbase/server:community-7.0.2"
-    );
+    private static final String COUCHBASE_IMAGE_ENTERPRISE_RECENT = "couchbase/server:enterprise-7.6.2";
+
+    private static final String COUCHBASE_IMAGE_COMMUNITY = "couchbase/server:community-7.0.2";
+
+    private static final String COUCHBASE_IMAGE_COMMUNITY_RECENT = "couchbase/server:community-7.6.2";
 
     @Test
     public void testBasicContainerUsageForEnterpriseContainer() {
+        testBasicContainerUsage(COUCHBASE_IMAGE_ENTERPRISE);
+    }
+
+    @Test
+    public void testBasicContainerUsageForEnterpriseContainerRecent() {
+        testBasicContainerUsage(COUCHBASE_IMAGE_ENTERPRISE_RECENT);
+    }
+
+    @Test
+    public void testBasicContainerUsageForCommunityContainer() {
+        testBasicContainerUsage(COUCHBASE_IMAGE_COMMUNITY);
+    }
+
+    @Test
+    public void testBasicContainerUsageForCommunityContainerRecent() {
+        testBasicContainerUsage(COUCHBASE_IMAGE_COMMUNITY_RECENT);
+    }
+
+    private void testBasicContainerUsage(String couchbaseImage) {
         // bucket_definition {
         BucketDefinition bucketDefinition = new BucketDefinition("mybucket");
         // }
 
         try (
             // container_definition {
-            CouchbaseContainer container = new CouchbaseContainer(COUCHBASE_IMAGE_ENTERPRISE)
-                .withBucket(bucketDefinition)
+            CouchbaseContainer container = new CouchbaseContainer(couchbaseImage).withBucket(bucketDefinition)
             // }
-        ) {
-            setUpClient(
-                container,
-                cluster -> {
-                    Bucket bucket = cluster.bucket(bucketDefinition.getName());
-                    bucket.waitUntilReady(Duration.ofSeconds(10L));
-
-                    Collection collection = bucket.defaultCollection();
-
-                    collection.upsert("foo", JsonObject.create().put("key", "value"));
-
-                    JsonObject fooObject = collection.get("foo").contentAsObject();
-
-                    assertThat(fooObject.getString("key")).isEqualTo("value");
-                }
-            );
-        }
-    }
-
-    @Test
-    public void testBasicContainerUsageForCommunityContainer() {
-        BucketDefinition bucketDefinition = new BucketDefinition("mybucket");
-
-        try (
-            CouchbaseContainer container = new CouchbaseContainer(COUCHBASE_IMAGE_COMMUNITY)
-                .withBucket(bucketDefinition)
         ) {
             setUpClient(
                 container,

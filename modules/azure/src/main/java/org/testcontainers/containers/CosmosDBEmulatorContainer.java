@@ -27,7 +27,7 @@ public class CosmosDBEmulatorContainer extends GenericContainer<CosmosDBEmulator
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
         withExposedPorts(PORT);
-        waitingFor(Wait.forLogMessage("(?s).*Started\\r\\n$", 1));
+        waitingFor(Wait.forLogMessage(".*Started\\r\\n$", 1));
     }
 
     /**

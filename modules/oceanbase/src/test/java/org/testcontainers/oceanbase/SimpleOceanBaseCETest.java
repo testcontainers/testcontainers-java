@@ -19,9 +19,7 @@ public class SimpleOceanBaseCETest extends AbstractContainerDatabaseTest {
 
     @SuppressWarnings("resource")
     private OceanBaseCEContainer testContainer() {
-        return ((OceanBaseCEContainer) containerProvider.newInstance()).withEnv("MODE", "slim")
-            .withEnv("FASTBOOT", "true")
-            .withLogConsumer(new Slf4jLogConsumer(logger));
+        return ((OceanBaseCEContainer) containerProvider.newInstance()).withLogConsumer(new Slf4jLogConsumer(logger));
     }
 
     @Test
