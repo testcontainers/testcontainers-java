@@ -161,7 +161,8 @@ public class ComposeContainer extends FailureDetectingExternalResource implement
                 this.composeDelegate.getAmbassadorContainer().stop();
 
                 // Kill the services using docker
-                String cmd = "compose down";
+                String cmd = ComposeCommand.getDownCommand(ComposeDelegate.ComposeVersion.V2, this.options);
+
                 if (removeVolumes) {
                     cmd += " -v";
                 }
@@ -170,6 +171,7 @@ public class ComposeContainer extends FailureDetectingExternalResource implement
                 }
                 this.composeDelegate.runWithCompose(this.localCompose, cmd, this.env, this.filesInDirectory);
             } finally {
+                this.composeDelegate.clear();
                 this.project = this.composeDelegate.randomProjectId();
             }
         }

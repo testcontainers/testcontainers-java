@@ -10,7 +10,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
@@ -146,7 +145,7 @@ class ComposeDelegate {
             .distinct()
             .collect(Collectors.joining(" "));
 
-        String command = getUpCommand(optionsAsString(options));
+        String command = ComposeCommand.getUpCommand(this.composeVersion, options);
 
         if (build) {
             command += " --build";
@@ -162,25 +161,6 @@ class ComposeDelegate {
 
         // Run the docker compose container, which starts up the services
         runWithCompose(localCompose, command, env, fileCopyInclusions);
-    }
-
-    private String getUpCommand(String options) {
-        if (options == null || options.equals("")) {
-            return this.composeVersion == ComposeVersion.V1 ? "up -d" : "compose up -d";
-        }
-        String cmd = this.composeVersion == ComposeVersion.V1 ? "%s up -d" : "compose %s up -d";
-        return String.format(cmd, options);
-    }
-
-    private String optionsAsString(final Set<String> options) {
-        String optionsString = options.stream().collect(Collectors.joining(" "));
-        if (optionsString.length() != 0) {
-            // ensures that there is a space between the options and 'up' if options are passed.
-            return optionsString;
-        } else {
-            // otherwise two spaces would appear between 'docker-compose' and 'up'
-            return StringUtils.EMPTY;
-        }
     }
 
     void waitUntilServiceStarted(boolean tailChildContainers) {
@@ -404,6 +384,13 @@ class ComposeDelegate {
 
     String getServiceHost() {
         return this.ambassadorContainer.getHost();
+    }
+
+    void clear() {
+        this.logConsumers.clear();
+        this.ambassadorPortMappings.clear();
+        this.serviceInstanceMap.clear();
+        this.waitStrategyMap.clear();
     }
 
     enum ComposeVersion {

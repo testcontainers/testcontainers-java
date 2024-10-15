@@ -167,7 +167,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
                 this.composeDelegate.getAmbassadorContainer().stop();
 
                 // Kill the services using docker-compose
-                String cmd = "down";
+                String cmd = ComposeCommand.getDownCommand(ComposeDelegate.ComposeVersion.V1, this.options);
 
                 if (removeVolumes) {
                     cmd += " -v";
@@ -177,6 +177,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
                 }
                 this.composeDelegate.runWithCompose(this.localCompose, cmd, this.env, this.filesInDirectory);
             } finally {
+                this.composeDelegate.clear();
                 this.project = this.composeDelegate.randomProjectId();
             }
         }

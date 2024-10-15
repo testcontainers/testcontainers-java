@@ -23,6 +23,7 @@ body:
         - Consul
         - Couchbase
         - CrateDB
+        - Databend
         - DB2
         - Dynalite
         - Elasticsearch
@@ -60,6 +61,7 @@ body:
         - Solace
         - Solr
         - TiDB
+        - Timeplus
         - ToxiProxy
         - Trino
         - Vault
