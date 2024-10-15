@@ -201,7 +201,9 @@ public class RegistryAuthLocatorTest {
 
     @Test
     public void lookupAuthConfigUsingHelperNoServerUrlWithToken() throws URISyntaxException, IOException {
-        final RegistryAuthLocator authLocator = createTestAuthLocator("config-with-helper-no-server-url-using-token.json");
+        final RegistryAuthLocator authLocator = createTestAuthLocator(
+            "config-with-helper-no-server-url-using-token.json"
+        );
 
         final AuthConfig authConfig = authLocator.lookupAuthConfig(
             DockerImageName.parse("registrynoserverurltoken.example.com/org/repo"),
