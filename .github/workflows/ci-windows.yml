@@ -61,7 +61,7 @@ jobs:
       checks: write
     steps:
       - name: Create pending status
-        uses: actions/github-script@v7
+        uses: actions/github-script@0.9.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -83,7 +83,7 @@ jobs:
       - uses: ./.github/actions/setup-junit-report
 
       - name: Create success status
-        uses: actions/github-script@v7
+        uses: actions/github-script@0.9.0
         if: success()
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -98,7 +98,7 @@ jobs:
             })
 
       - name: Create failure status
-        uses: actions/github-script@v7
+        uses: actions/github-script@0.9.0
         if: failure()
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
