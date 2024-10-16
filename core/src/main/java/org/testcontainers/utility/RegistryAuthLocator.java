@@ -274,7 +274,7 @@ public class RegistryAuthLocator {
         }
 
         final String credentialProgramName = getCredentialProgramName(helperOrStoreName);
-        final CredsOutput data;
+        final CredentialOutput data;
 
         log.debug(
             "Executing docker credential provider: {} to locate auth config for: {}",
@@ -366,7 +366,7 @@ public class RegistryAuthLocator {
 
         String credentialsNotFoundMsg = null;
         try {
-            CredsOutput data = runCredentialProgram(notExistentFakeHostName, credentialHelperName);
+            CredentialOutput data = runCredentialProgram(notExistentFakeHostName, credentialHelperName);
 
             if (data.getStderr() != null && !data.getStderr().isEmpty()) {
                 credentialsNotFoundMsg = data.getStderr();
@@ -387,7 +387,7 @@ public class RegistryAuthLocator {
         return credentialsNotFoundMsg;
     }
 
-    private CredsOutput runCredentialProgram(String hostName, String credentialHelperName)
+    private CredentialOutput runCredentialProgram(String hostName, String credentialHelperName)
         throws InterruptedException, TimeoutException, IOException {
         String[] command = SystemUtils.IS_OS_WINDOWS
             ? new String[] { "cmd", "/c", credentialHelperName, "get" }
@@ -421,16 +421,16 @@ public class RegistryAuthLocator {
                 .execute();
         } catch (InvalidResultException e) {}
 
-        return new CredsOutput(stdout.toString(), stderr.toString());
+        return new CredentialOutput(stdout.toString(), stderr.toString());
     }
 
-    static class CredsOutput {
+    static class CredentialOutput {
 
         private final String stdout;
 
         private final String stderr;
 
-        public CredsOutput(String stdout, String stderr) {
+        public CredentialOutput(String stdout, String stderr) {
             this.stdout = stdout.trim();
             this.stderr = stderr.trim();
         }
