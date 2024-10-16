@@ -59,6 +59,7 @@ jobs:
     runs-on: self-hosted
     permissions:
       checks: write
+      statuses: write
     steps:
       - name: Create pending status
         uses: actions/github-script@v7
