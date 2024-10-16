@@ -320,13 +320,12 @@ public class RegistryAuthLocator {
 
         final String username = helperResponse.at("/Username").asText();
         final String password = helperResponse.at("/Secret").asText();
+        final String serverUrl = helperResponse.at("/ServerURL").asText();
+        final AuthConfig authConfig = new AuthConfig().withRegistryAddress(serverUrl.isEmpty() ? hostName : serverUrl);
         if ("<token>".equals(username)) {
-            return new AuthConfig().withIdentityToken(password);
+            return authConfig.withIdentityToken(password);
         } else {
-            return new AuthConfig()
-                .withRegistryAddress(helperResponse.at("/ServerURL").asText())
-                .withUsername(username)
-                .withPassword(password);
+            return authConfig.withUsername(username).withPassword(password);
         }
     }
 
