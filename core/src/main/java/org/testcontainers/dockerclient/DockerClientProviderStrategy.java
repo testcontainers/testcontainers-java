@@ -31,7 +31,6 @@ import java.io.File;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
-import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
@@ -207,14 +206,12 @@ public abstract class DockerClientProviderStrategy {
         }
 
         try (Socket socket = socketProvider.call()) {
-            Duration timeout = Duration.ofMillis(200);
             Awaitility
                 .await()
-                .atMost(TestcontainersConfiguration.getInstance().getClientPingTimeout(), TimeUnit.SECONDS)
-                .pollInterval(timeout)
+                .atMost(TestcontainersConfiguration.getInstance().getClientPingTimeout(), TimeUnit.SECONDS) // timeout after configured duration
+                .pollInterval(Duration.ofMillis(200)) // check state every 200ms
                 .pollDelay(Duration.ofSeconds(0)) // start checking immediately
-                .ignoreExceptionsInstanceOf(SocketTimeoutException.class)
-                .untilAsserted(() -> socket.connect(socketAddress, (int) timeout.toMillis()));
+                .untilAsserted(() -> socket.connect(socketAddress));
             return true;
         } catch (Exception e) {
             log.warn("DOCKER_HOST {} is not listening", dockerHost);
