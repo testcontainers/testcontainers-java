@@ -25,12 +25,12 @@ public class ClickHouseR2DBCDatabaseContainer implements R2DBCDatabaseContainer 
 
     @Override
     public void start() {
-        container.start();
+        this.container.start();
     }
 
     @Override
     public void stop() {
-        container.stop();
+        this.container.stop();
     }
 
     @Override
@@ -42,6 +42,7 @@ public class ClickHouseR2DBCDatabaseContainer implements R2DBCDatabaseContainer 
             .option(ConnectionFactoryOptions.DATABASE, container.getDatabaseName())
             .option(ConnectionFactoryOptions.USER, container.getUsername())
             .option(ConnectionFactoryOptions.PASSWORD, container.getPassword())
+            .option(ConnectionFactoryOptions.PROTOCOL, "http")
             .build();
     }
 }

@@ -40,6 +40,7 @@ public class ClickHouseR2DBCDatabaseContainerProvider implements R2DBCDatabaseCo
         if (!options.hasOption(ConnectionFactoryOptions.PASSWORD)) {
             builder.option(ConnectionFactoryOptions.PASSWORD, ClickHouseContainer.DEFAULT_PASSWORD);
         }
+        builder.option(ConnectionFactoryOptions.PROTOCOL, "http");
         return R2DBCDatabaseContainerProvider.super.getMetadata(builder.build());
     }
 }

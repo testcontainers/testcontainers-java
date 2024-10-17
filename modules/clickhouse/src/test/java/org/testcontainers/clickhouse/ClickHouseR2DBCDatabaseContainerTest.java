@@ -7,9 +7,7 @@ public class ClickHouseR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseC
 
     @Override
     protected ConnectionFactoryOptions getOptions(ClickHouseContainer container) {
-        ConnectionFactoryOptions options = ClickHouseR2DBCDatabaseContainer.getOptions(container);
-
-        return options;
+        return ClickHouseR2DBCDatabaseContainer.getOptions(container);
     }
 
     @Override
