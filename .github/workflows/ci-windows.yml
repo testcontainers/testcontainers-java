@@ -43,8 +43,8 @@ permissions:
   contents: read
 
 jobs:
-  core:
-    if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event.client_payload.slash_command.command == 'windows-test' }}
+  main:
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     runs-on: self-hosted
     permissions:
       checks: write
@@ -53,3 +53,62 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew.bat cleanTest testcontainers:test --no-daemon --continue --scan --no-build-cache
       - uses: ./.github/actions/setup-junit-report
+
+  pr:
+    if: ${{ github.event.client_payload.slash_command.command == 'windows-test' }}
+    runs-on: self-hosted
+    permissions:
+      checks: write
+      statuses: write
+    steps:
+      - name: Create pending status
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.payload.client_payload.pull_request.head.sha,
+              state: 'pending',
+              target_url: `https://github.com/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`,
+              context: 'CI - Windows',
+            })
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.event.client_payload.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.client_payload.pull_request.head.ref }}
+      - name: Build with Gradle
+        run: ./gradlew.bat cleanTest testcontainers:test --no-daemon --continue --scan --no-build-cache
+      - uses: ./.github/actions/setup-junit-report
+
+      - name: Create success status
+        uses: actions/github-script@v7
+        if: success()
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.payload.client_payload.pull_request.head.sha,
+              state: 'success',
+              target_url: `https://github.com/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`,
+              context: 'CI - Windows',
+            })
+
+      - name: Create failure status
+        uses: actions/github-script@v7
+        if: failure()
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.payload.client_payload.pull_request.head.sha,
+              state: 'failure',
+              target_url: `https://github.com/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`,
+              context: 'CI - Windows',
+            })
