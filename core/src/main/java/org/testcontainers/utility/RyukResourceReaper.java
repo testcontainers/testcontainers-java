@@ -31,7 +31,7 @@ class RyukResourceReaper extends ResourceReaper {
         .withConstantThroughput()
         .build();
 
-    private final AtomicBoolean started = new AtomicBoolean(false);
+    private static final AtomicBoolean started = new AtomicBoolean(false);
 
     private final RyukContainer ryukContainer = new RyukContainer();
 

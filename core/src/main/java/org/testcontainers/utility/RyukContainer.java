@@ -10,6 +10,7 @@ class RyukContainer extends GenericContainer<RyukContainer> {
 
     RyukContainer() {
         super("testcontainers/ryuk:0.9.0");
+        DockerClientFactory clientFactory = DockerClientFactory.instance();
         withExposedPorts(8080);
         withCreateContainerCmdModifier(cmd -> {
             cmd.withName("testcontainers-ryuk-" + DockerClientFactory.SESSION_ID);
@@ -17,12 +18,17 @@ class RyukContainer extends GenericContainer<RyukContainer> {
                 cmd
                     .getHostConfig()
                     .withAutoRemove(true)
-                    .withPrivileged(TestcontainersConfiguration.getInstance().isRyukPrivileged())
+                    .withPrivileged(
+                        TestcontainersConfiguration.getInstance().isRyukPrivileged() &&
+                        !clientFactory.isRunningWindowsContainers()
+                    )
                     .withBinds(
-                        new Bind(
-                            DockerClientFactory.instance().getRemoteDockerUnixSocketPath(),
-                            new Volume("/var/run/docker.sock")
-                        )
+                        clientFactory.isRunningWindowsContainers()
+                            ? new Bind("//./pipe/docker_engine", new Volume("//./pipe/docker_engine"))
+                            : new Bind(
+                                clientFactory.getRemoteDockerUnixSocketPath(),
+                                new Volume("/var/run/docker.sock")
+                            )
                     )
             );
         });
