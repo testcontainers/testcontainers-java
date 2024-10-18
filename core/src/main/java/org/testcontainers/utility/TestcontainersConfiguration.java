@@ -152,7 +152,7 @@ public class TestcontainersConfiguration {
     }
 
     public Integer getRyukTimeout() {
-        return Integer.parseInt(getEnvVarOrProperty("ryuk.container.timeout", "30"));
+        return Integer.parseInt(getEnvVarOrProperty("ryuk.container.timeout", "60"));
     }
 
     @Deprecated
