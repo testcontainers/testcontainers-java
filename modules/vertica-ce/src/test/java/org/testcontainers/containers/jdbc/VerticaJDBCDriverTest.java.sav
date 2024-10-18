@@ -1,0 +1,26 @@
+package org.testcontainers.containers.jdbc;
+
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.testcontainers.jdbc.AbstractJDBCDriverTest;
+
+import java.util.Arrays;
+import java.util.EnumSet;
+
+// disabled until I can figure out how to use ":jdbc-test"
+
+@RunWith(Parameterized.class)
+public class VerticaJDBCDriverTest extends AbstractJDBCDriverTest {
+
+    @Parameterized.Parameters(name = "{index} - {0}")
+    public static Iterable<Object[]> data() {
+        return Arrays.asList(
+                new Object[][] {
+                        {
+                                "jdbc:tc:vertica/vertica-ce:23.3.0-0://hostname/",
+                                EnumSet.of(Options.JDBCParams),
+                        },
+                }
+        );
+    }
+}
