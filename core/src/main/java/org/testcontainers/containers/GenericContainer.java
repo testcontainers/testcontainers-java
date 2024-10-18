@@ -34,8 +34,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
-import org.rnorth.ducttape.ratelimits.RateLimiter;
-import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
@@ -192,12 +190,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private List<Consumer<OutputFrame>> logConsumers = new ArrayList<>();
 
     private static final Set<String> AVAILABLE_IMAGE_NAME_CACHE = new HashSet<>();
-
-    private static final RateLimiter DOCKER_CLIENT_RATE_LIMITER = RateLimiterBuilder
-        .newBuilder()
-        .withRate(1, TimeUnit.SECONDS)
-        .withConstantThroughput()
-        .build();
 
     @Nullable
     private Map<String, String> tmpFsMapping;
