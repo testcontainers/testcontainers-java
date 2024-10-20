@@ -90,6 +90,9 @@ but does not allow starting privileged containers, you can turn off the Ryuk con
 
 ## Customizing image pull behaviour
 
+> **pull.timeout = 120**
+> By default Testcontainers will timeout if pull takes more than this duration (in seconds)
+
 > **pull.pause.timeout = 30**
 > By default Testcontainers will abort the pull of an image if the pull appears stalled (no data transferred) for longer than this duration (in seconds).
 

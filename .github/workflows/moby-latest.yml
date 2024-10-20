@@ -50,7 +50,7 @@ jobs:
             {
               "tc_project": "testcontainers-java",
               "tc_docker_install_type": "${{ matrix.install-docker-type }}",
-              "tc_github_action_url": "https://github.com/testcontainers/testcontainers-java/actions/runs/${{ env.GITHUB_RUN_ID }}/job/${{ env.GITHUB_RUN_NUMBER }}",
+              "tc_github_action_url": "${{ GITHUB_SERVER_URL }}/${{ GITHUB_REPOSITORY }}/actions/runs/${{ GITHUB_RUN_ID }}/job/${{ GITHUB_RUN_NUMBER }}",
               "tc_github_action_status": "FAILED",
               "tc_slack_channel_id": "${{ secrets.SLACK_DOCKER_LATEST_CHANNEL_ID }}"
             }
