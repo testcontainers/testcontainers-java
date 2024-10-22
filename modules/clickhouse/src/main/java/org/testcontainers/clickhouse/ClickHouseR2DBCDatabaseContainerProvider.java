@@ -1,16 +1,16 @@
-package org.testcontainers.containers;
+package org.testcontainers.clickhouse;
 
+import com.clickhouse.r2dbc.connection.ClickHouseConnectionFactoryProvider;
 import io.r2dbc.spi.ConnectionFactoryMetadata;
 import io.r2dbc.spi.ConnectionFactoryOptions;
-import org.mariadb.r2dbc.MariadbConnectionFactoryProvider;
 import org.testcontainers.r2dbc.R2DBCDatabaseContainer;
 import org.testcontainers.r2dbc.R2DBCDatabaseContainerProvider;
 
 import javax.annotation.Nullable;
 
-public class MariaDBR2DBCDatabaseContainerProvider implements R2DBCDatabaseContainerProvider {
+public class ClickHouseR2DBCDatabaseContainerProvider implements R2DBCDatabaseContainerProvider {
 
-    static final String DRIVER = MariadbConnectionFactoryProvider.MARIADB_DRIVER;
+    static final String DRIVER = ClickHouseConnectionFactoryProvider.CLICKHOUSE_DRIVER;
 
     @Override
     public boolean supports(ConnectionFactoryOptions options) {
@@ -19,14 +19,15 @@ public class MariaDBR2DBCDatabaseContainerProvider implements R2DBCDatabaseConta
 
     @Override
     public R2DBCDatabaseContainer createContainer(ConnectionFactoryOptions options) {
-        String image = MariaDBContainer.IMAGE + ":" + options.getRequiredValue(IMAGE_TAG_OPTION);
-        MariaDBContainer<?> container = new MariaDBContainer<>(image)
+        String image =
+            ClickHouseContainer.CLICKHOUSE_CLICKHOUSE_SERVER + ":" + options.getRequiredValue(IMAGE_TAG_OPTION);
+        ClickHouseContainer container = new ClickHouseContainer(image)
             .withDatabaseName((String) options.getRequiredValue(ConnectionFactoryOptions.DATABASE));
 
         if (Boolean.TRUE.equals(options.getValue(REUSABLE_OPTION))) {
             container.withReuse(true);
         }
-        return new MariaDBR2DBCDatabaseContainer(container);
+        return new ClickHouseR2DBCDatabaseContainer(container);
     }
 
     @Nullable
@@ -34,11 +35,12 @@ public class MariaDBR2DBCDatabaseContainerProvider implements R2DBCDatabaseConta
     public ConnectionFactoryMetadata getMetadata(ConnectionFactoryOptions options) {
         ConnectionFactoryOptions.Builder builder = options.mutate();
         if (!options.hasOption(ConnectionFactoryOptions.USER)) {
-            builder.option(ConnectionFactoryOptions.USER, MariaDBContainer.DEFAULT_USER);
+            builder.option(ConnectionFactoryOptions.USER, ClickHouseContainer.DEFAULT_USER);
         }
         if (!options.hasOption(ConnectionFactoryOptions.PASSWORD)) {
-            builder.option(ConnectionFactoryOptions.PASSWORD, MariaDBContainer.DEFAULT_PASSWORD);
+            builder.option(ConnectionFactoryOptions.PASSWORD, ClickHouseContainer.DEFAULT_PASSWORD);
         }
+        builder.option(ConnectionFactoryOptions.PROTOCOL, "http");
         return R2DBCDatabaseContainerProvider.super.getMetadata(builder.build());
     }
 }

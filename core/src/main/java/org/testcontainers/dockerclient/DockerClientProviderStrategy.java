@@ -214,7 +214,7 @@ public abstract class DockerClientProviderStrategy {
                 .untilAsserted(() -> socket.connect(socketAddress));
             return true;
         } catch (Exception e) {
-            log.warn("DOCKER_HOST {} is not listening", dockerHost);
+            log.warn("DOCKER_HOST {} is not listening", dockerHost, e);
             return false;
         }
     }
