@@ -14,6 +14,16 @@ subprojects {
         mavenCentral()
     }
 
+    test {
+        defaultCharacterEncoding = "UTF-8"
+        testLogging {
+            displayGranularity 1
+            showStackTraces = true
+            exceptionFormat = 'full'
+            events "STARTED", "PASSED", "FAILED", "SKIPPED"
+        }
+    }
+
     checkstyle {
         toolVersion = "9.3"
         configFile = rootProject.file('../config/checkstyle/checkstyle.xml')

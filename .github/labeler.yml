@@ -5,6 +5,10 @@
       - core/src/main/java/org/testcontainers/containers/ComposeDelegate.java
       - core/src/main/java/org/testcontainers/containers/DockerComposeContainer.java
       - core/src/main/java/org/testcontainers/containers/DockerComposeFiles.java
+      - core/src/test/java/org/testcontainers/containers/Compose*Test.java
+      - core/src/test/java/org/testcontainers/containers/DockerCompose*Test.java
+      - core/src/test/java/org/testcontainers/junit/Compose*Test.java
+      - core/src/test/java/org/testcontainers/junit/DockerCompose*Test.java
 "github_actions":
   - changed-files:
     - any-glob-to-any-file:
@@ -15,6 +19,10 @@
       - gradle/wrapper/*
       - gradlew
       - gradlew.bat
+"modules/activemq":
+  - changed-files:
+      - any-glob-to-any-file:
+          - modules/activemq/**/*
 "modules/azure":
   - changed-files:
     - any-glob-to-any-file:
@@ -23,6 +31,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/cassandra/**/*
+"modules/chromadb":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/chromadb/**/*
 "modules/clickhouse":
   - changed-files:
     - any-glob-to-any-file:
@@ -43,6 +55,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/cratedb/**/*
+"modules/databend":
+  - changed-files:
+      - any-glob-to-any-file:
+          - modules/databend/**/*
 "modules/db2":
   - changed-files:
     - any-glob-to-any-file:
@@ -59,6 +75,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/gcloud/**/*
+"modules/grafana":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/grafana/**/*
 "modules/hivemq":
   - changed-files:
     - any-glob-to-any-file:
@@ -79,6 +99,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/k3s/**/*
+"modules/k6":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/k6/**/*
 "modules/kafka":
   - changed-files:
     - any-glob-to-any-file:
@@ -91,6 +115,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/mariadb/**/*
+"modules/milvus":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/milvus/**/*
 "modules/minio":
   - changed-files:
     - any-glob-to-any-file:
@@ -119,6 +147,18 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/nginx/**/*
+"modules/oceanbase":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/oceanbase/**/*
+"modules/ollama":
+  - changed-files:
+      - any-glob-to-any-file:
+          - modules/ollama/**/*
+"modules/openfga":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/openfga/**/*
 "modules/oracle":
   - changed-files:
     - any-glob-to-any-file:
@@ -140,6 +180,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/pulsar/**/*
+"modules/qdrant":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/qdrant/**/*
 "modules/questdb":
   - changed-files:
     - any-glob-to-any-file:
@@ -176,6 +220,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/tidb/**/*
+"modules/timeplus":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/timeplus/**/*
 "modules/toxiproxy":
   - changed-files:
     - any-glob-to-any-file:
@@ -188,6 +236,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/vault/**/*
+"modules/weaviate":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/weaviate/**/*
 "modules/yugabytedb":
   - changed-files:
     - any-glob-to-any-file:

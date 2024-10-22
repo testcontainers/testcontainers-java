@@ -22,7 +22,7 @@ The started container will be terminated when the `ConnectionFactory` is closed.
 **Note that, unlike Testcontainers' JDBC URL support, it is not possible to specify an image tag in the 'scheme' part of the URL, and it is always necessary to specify a tag using `TC_IMAGE_TAG`.**
 
 So that the URL becomes:  
-`r2dbc:tc:mysql:///databasename?TC_IMAGE_TAG=5.7.34`
+`r2dbc:tc:mysql:///databasename?TC_IMAGE_TAG=8.0.36`
 
 !!! note
     We will use `///` (host-less URIs) from now on to emphasis the unimportance of the `host:port` pair.  
@@ -33,13 +33,17 @@ So that the URL becomes:
 
 ### R2DBC URL examples
 
+#### Using ClickHouse
+
+`r2dbc:tc:clickhouse:///databasename?TC_IMAGE_TAG=21.9.2-alpine`
+
 #### Using MySQL
 
-`r2dbc:tc:mysql:///databasename?TC_IMAGE_TAG=5.7.34`
+`r2dbc:tc:mysql:///databasename?TC_IMAGE_TAG=8.0.36`
 
 #### Using MariaDB
 
-`r2dbc:tc:mariadb:///databasename?TC_IMAGE_TAG=10.3.6`
+`r2dbc:tc:mariadb:///databasename?TC_IMAGE_TAG=10.3.39`
 
 #### Using PostgreSQL
 

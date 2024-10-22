@@ -20,6 +20,8 @@ import org.testcontainers.DockerClientFactory;
 import org.testcontainers.TestImages;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.images.builder.Transferable;
@@ -227,9 +229,9 @@ public class GenericContainerTest {
     @Test
     public void shouldReturnTheProvidedImage() {
         GenericContainer container = new GenericContainer(TestImages.REDIS_IMAGE);
-        assertThat(container.getImage().get()).isEqualTo("redis:3.0.2");
+        assertThat(container.getImage().get()).isEqualTo("redis:6-alpine");
         container.setImage(new RemoteDockerImage(TestImages.ALPINE_IMAGE));
-        assertThat(container.getImage().get()).isEqualTo("alpine:3.16");
+        assertThat(container.getImage().get()).isEqualTo("alpine:3.17");
     }
 
     @Test
@@ -253,6 +255,21 @@ public class GenericContainerTest {
         try (TcHelloWorldContainer container = new TcHelloWorldContainer("testcontainers/helloworld:1.1.0")) {
             container.start();
             assertThat(container.getNetworkAliases()).hasSize(1);
+        }
+    }
+
+    @Test
+    public void shouldRespectWaitStrategy() {
+        try (
+            HelloWorldLogStrategyContainer container = new HelloWorldLogStrategyContainer(
+                "testcontainers/helloworld:1.1.0"
+            )
+        ) {
+            container.setWaitStrategy(Wait.forLogMessage(".*Starting server on port.*", 1));
+            container.start();
+            assertThat((LogMessageWaitStrategy) container.getWaitStrategy())
+                .extracting("regEx", "times")
+                .containsExactly(".*Starting server on port.*", 1);
         }
     }
 
@@ -317,6 +334,15 @@ public class GenericContainerTest {
             HelloWorldContainerDef() {
                 addExposedTcpPort(8080);
             }
+        }
+    }
+
+    static class HelloWorldLogStrategyContainer extends GenericContainer<HelloWorldContainer> {
+
+        public HelloWorldLogStrategyContainer(String image) {
+            super(DockerImageName.parse(image));
+            withExposedPorts(8080);
+            waitingFor(Wait.forLogMessage(".*Starting server on port.*", 2));
         }
     }
 }

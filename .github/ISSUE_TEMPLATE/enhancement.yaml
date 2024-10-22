@@ -14,23 +14,29 @@ body:
       description: For which Testcontainers module does the enhancement proposal apply?
       options:
         - Core
+        - ActiveMQ
         - Azure
         - Cassandra
+        - ChromaDB
         - Clickhouse
         - CockroachDB
         - Consul
         - Couchbase
         - CrateDB
+        - Databend
         - DB2
         - Dynalite
         - Elasticsearch
         - GCloud
+        - Grafana
         - HiveMQ
         - InfluxDB
         - K3S
+        - K6
         - Kafka
         - LocalStack
         - MariaDB
+        - Milvus
         - MinIO
         - MockServer
         - MongoDB
@@ -38,12 +44,16 @@ body:
         - MySQL
         - Neo4j
         - NGINX
+        - OceanBase
+        - Ollama
+        - OpenFGA
         - Oracle Free
         - Oracle XE
         - OrientDB
         - PostgreSQL
         - Presto
         - Pulsar
+        - Qdrant
         - QuestDB
         - RabbitMQ
         - Redpanda
@@ -51,9 +61,11 @@ body:
         - Solace
         - Solr
         - TiDB
+        - Timeplus
         - ToxiProxy
         - Trino
         - Vault
+        - Weaviate
         - YugabyteDB
     validations:
       required: true

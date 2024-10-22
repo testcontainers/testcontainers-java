@@ -69,6 +69,15 @@ public class ScriptSplittingTest {
     }
 
     @Test
+    public void testSplittingEnquotedSemicolon() {
+        String script = "CREATE TABLE `bar;bar` (\n" + "  end_time VARCHAR(255)\n" + ");";
+
+        List<String> expected = Arrays.asList("CREATE TABLE `bar;bar` ( end_time VARCHAR(255) )");
+
+        splitAndCompare(script, expected);
+    }
+
+    @Test
     public void testUnusualSemicolonPlacement() {
         String script = "SELECT 1;;;;;SELECT 2;\n;SELECT 3\n; SELECT 4;\n SELECT 5";
 
@@ -320,10 +329,17 @@ public class ScriptSplittingTest {
             "        IF something_wrong THEN LEAVE rec_loop; END IF;\n" +
             "        do_something_else;\n" +
             "    END LOOP;\n" +
-            "END",
+            "END;",
             "CALL something();"
         );
         splitAndCompare(script, expected, "@");
+    }
+
+    @Test
+    public void oracleStyleBlocks() {
+        String script = "BEGIN END; /\n" + "BEGIN END;";
+        List<String> expected = Arrays.asList("BEGIN END;", "BEGIN END;");
+        splitAndCompare(script, expected, "/");
     }
 
     @Test

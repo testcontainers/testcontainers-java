@@ -33,6 +33,7 @@ import org.testcontainers.utility.TestcontainersConfiguration;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +42,7 @@ import java.util.ServiceLoader;
 import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * Singleton class that provides initialized Docker clients.
@@ -77,7 +79,7 @@ public class DockerClientFactory {
         return Collections.unmodifiableMap(labels);
     }
 
-    private static final DockerImageName TINY_IMAGE = DockerImageName.parse("alpine:3.16");
+    private static final DockerImageName TINY_IMAGE = DockerImageName.parse("alpine:3.17");
 
     private static DockerClientFactory instance;
 
@@ -145,7 +147,7 @@ public class DockerClientFactory {
         if (strategy != null) {
             return strategy;
         }
-
+        log.info("Testcontainers version: {}", DEFAULT_LABELS.get(TESTCONTAINERS_VERSION_LABEL));
         List<DockerClientProviderStrategy> configurationStrategies = new ArrayList<>();
         ServiceLoader.load(DockerClientProviderStrategy.class).forEach(configurationStrategies::add);
 
@@ -210,7 +212,8 @@ public class DockerClientFactory {
         Version version = client.versionCmd().exec();
         log.debug("Docker version: {}", version.getRawValues());
         activeApiVersion = version.getApiVersion();
-        log.info(
+
+        String serverInfo =
             "Connected to docker: \n" +
             "  Server Version: " +
             dockerInfo.getServerVersion() +
@@ -224,8 +227,18 @@ public class DockerClientFactory {
             "  Total Memory: " +
             dockerInfo.getMemTotal() /
             (1024 * 1024) +
-            " MB"
-        );
+            " MB";
+
+        String[] labels = dockerInfo.getLabels();
+        boolean hasLabels = labels != null && labels.length > 0;
+        if (hasLabels) {
+            String formattedLabels = Arrays
+                .stream(labels)
+                .map(label -> "    " + label)
+                .collect(Collectors.joining("\n"));
+            serverInfo += "\n  Labels: \n" + formattedLabels;
+        }
+        log.info(serverInfo);
 
         try {
             //noinspection deprecation
