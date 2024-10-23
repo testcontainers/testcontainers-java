@@ -102,6 +102,7 @@ nav:
           - modules/solace.md
           - modules/solr.md
           - modules/toxiproxy.md
+          - modules/typesense.md
           - modules/vault.md
           - modules/weaviate.md
           - modules/webdriver_containers.md

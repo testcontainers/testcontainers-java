@@ -262,6 +262,9 @@ labels:
   - name: modules/trino
     color: '#006b75'
 
+  - name: modules/typesense
+    color: '#006b75'
+
   - name: modules/vault
     color: '#006b75'
 
