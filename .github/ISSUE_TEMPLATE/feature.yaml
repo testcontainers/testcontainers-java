@@ -64,6 +64,7 @@ body:
         - Timeplus
         - ToxiProxy
         - Trino
+        - Typesense
         - Vault
         - Weaviate
         - YugabyteDB
