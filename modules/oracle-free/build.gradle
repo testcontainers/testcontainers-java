@@ -1,9 +1,6 @@
 description = "Testcontainers :: JDBC :: Oracle Database Free"
 
 dependencies {
-    annotationProcessor 'com.google.auto.service:auto-service:1.1.1'
-    compileOnly 'com.google.auto.service:auto-service:1.1.1'
-
     api project(':jdbc')
 
     compileOnly project(':r2dbc')

@@ -26,7 +26,6 @@ public class SimpleClickhouseTest extends AbstractContainerDatabaseTest {
     public static Object[][] data() {
         return new Object[][] { //
             { ClickhouseTestImages.CLICKHOUSE_IMAGE },
-            { ClickhouseTestImages.YANDEX_CLICKHOUSE_IMAGE },
         };
     }
 

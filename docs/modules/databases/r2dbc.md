@@ -33,6 +33,10 @@ So that the URL becomes:
 
 ### R2DBC URL examples
 
+#### Using ClickHouse
+
+`r2dbc:tc:clickhouse:///databasename?TC_IMAGE_TAG=21.9.2-alpine`
+
 #### Using MySQL
 
 `r2dbc:tc:mysql:///databasename?TC_IMAGE_TAG=8.0.36`

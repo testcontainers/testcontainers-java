@@ -1,8 +1,7 @@
 package org.testcontainers.junit;
 
-import com.google.common.util.concurrent.Uninterruptibles;
+import org.awaitility.Awaitility;
 import org.junit.Test;
-import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.TestImages;
 import org.testcontainers.containers.FixedHostPortGenericContainer;
 import org.testcontainers.containers.GenericContainer;
@@ -11,7 +10,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -71,7 +70,7 @@ public class FixedHostPortContainerTest {
                 .as("Port mapping does not seem to match given fixed port")
                 .isEqualTo(unusedHostPort);
 
-            final String content = this.readResponse(echoServer, unusedHostPort);
+            final String content = readResponse(echoServer, unusedHostPort);
             assertThat(content).as("Returned echo from fixed port does not match expected").isEqualTo(TEST_RESPONSE);
         }
     }
@@ -86,15 +85,11 @@ public class FixedHostPortContainerTest {
      */
     private String readResponse(GenericContainer container, Integer port) throws IOException {
         try (
-            final BufferedReader reader = Unreliables.retryUntilSuccess(
-                10,
-                TimeUnit.SECONDS,
-                () -> {
-                    Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
-                    final Socket socket = new Socket(container.getHost(), port);
-                    return new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                }
-            )
+            Socket socket = Awaitility
+                .await()
+                .pollDelay(Duration.ofSeconds(1))
+                .until(() -> new Socket(container.getHost(), port), Socket::isConnected);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))
         ) {
             return reader.readLine();
         }

@@ -208,6 +208,10 @@ public class TestcontainersConfiguration {
         return Integer.parseInt(getEnvVarOrProperty("pull.pause.timeout", "30"));
     }
 
+    public Integer getImagePullTimeout() {
+        return Integer.parseInt(getEnvVarOrProperty("pull.timeout", "120"));
+    }
+
     public String getImageSubstitutorClassName() {
         return getEnvVarOrProperty("image.substitutor", null);
     }

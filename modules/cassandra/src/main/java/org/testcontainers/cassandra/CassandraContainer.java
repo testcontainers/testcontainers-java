@@ -159,7 +159,7 @@ public class CassandraContainer extends GenericContainer<CassandraContainer> {
     /**
      * Retrieve an {@link InetSocketAddress} for connecting to the Cassandra container via the driver.
      *
-     * @return A InetSocketAddrss representation of this Cassandra container's host and port.
+     * @return A InetSocketAddress representation of this Cassandra container's host and port.
      */
     public InetSocketAddress getContactPoint() {
         return new InetSocketAddress(getHost(), getMappedPort(CQL_PORT));

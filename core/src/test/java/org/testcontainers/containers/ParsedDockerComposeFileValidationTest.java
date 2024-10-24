@@ -112,6 +112,19 @@ public class ParsedDockerComposeFileValidationTest {
     }
 
     @Test
+    public void shouldObtainImageNamesV2WithNoVersionTag() {
+        File file = new File("src/test/resources/docker-compose-imagename-parsing-v2-no-version.yml");
+        ParsedDockerComposeFile parsedFile = new ParsedDockerComposeFile(file);
+        assertThat(parsedFile.getServiceNameToImageNames())
+            .as("all defined images are found")
+            .contains(
+                entry("mysql", Sets.newHashSet("mysql")),
+                entry("redis", Sets.newHashSet("redis")),
+                entry("custom", Sets.newHashSet("postgres"))
+            );
+    }
+
+    @Test
     public void shouldObtainImageFromDockerfileBuild() {
         File file = new File("src/test/resources/docker-compose-imagename-parsing-dockerfile.yml");
         ParsedDockerComposeFile parsedFile = new ParsedDockerComposeFile(file);

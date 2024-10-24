@@ -177,6 +177,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
                 }
                 this.composeDelegate.runWithCompose(this.localCompose, cmd, this.env, this.filesInDirectory);
             } finally {
+                this.composeDelegate.clear();
                 this.project = this.composeDelegate.randomProjectId();
             }
         }

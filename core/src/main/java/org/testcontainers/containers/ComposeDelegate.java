@@ -386,6 +386,13 @@ class ComposeDelegate {
         return this.ambassadorContainer.getHost();
     }
 
+    void clear() {
+        this.logConsumers.clear();
+        this.ambassadorPortMappings.clear();
+        this.serviceInstanceMap.clear();
+        this.waitStrategyMap.clear();
+    }
+
     enum ComposeVersion {
         V1("_"),
 

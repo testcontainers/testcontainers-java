@@ -232,6 +232,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/trino/**/*
+"modules/typesense":
+  - changed-files:
+      - any-glob-to-any-file:
+          - modules/typesense/**/*
 "modules/vault":
   - changed-files:
     - any-glob-to-any-file:

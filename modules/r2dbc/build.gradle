@@ -5,9 +5,6 @@ plugins {
 description = "Testcontainers :: R2DBC"
 
 dependencies {
-    annotationProcessor 'com.google.auto.service:auto-service:1.1.1'
-    compileOnly 'com.google.auto.service:auto-service:1.1.1'
-
     api project(':testcontainers')
     api 'io.r2dbc:r2dbc-spi:0.9.0.RELEASE'
 
