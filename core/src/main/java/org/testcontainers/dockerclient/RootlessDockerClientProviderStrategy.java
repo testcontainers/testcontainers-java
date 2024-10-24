@@ -79,7 +79,7 @@ public final class RootlessDockerClientProviderStrategy extends DockerClientProv
 
     @Override
     protected boolean isApplicable() {
-        return SystemUtils.IS_OS_LINUX && getSocketPath() != null && Files.exists(getSocketPath());
+        return (SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_MAC) && getSocketPath() != null && Files.exists(getSocketPath());
     }
 
     @Override
