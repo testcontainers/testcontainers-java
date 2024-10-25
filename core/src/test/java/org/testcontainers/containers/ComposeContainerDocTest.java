@@ -14,8 +14,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ComposeContainerDocTest {
 
     private static final int REDIS_PORT = 6379;
+
     private static final int POSTGRES_PORT = 5432;
+
     private static final String DOCKER_COMPOSE_FILE_PATH = "src/test/resources/v2-compose-test-doc.yml";
+
     public static final String ENV_FILE_NAME = "v2-compose-test-doc.env";
 
     @Test
