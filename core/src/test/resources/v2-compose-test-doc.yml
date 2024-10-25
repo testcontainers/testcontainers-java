@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydatabase

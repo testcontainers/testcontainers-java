@@ -2,158 +2,114 @@
 
 ## Benefits
 
-Similar to generic containers support, it's also possible to run a bespoke set of services
-specified in a `docker-compose.yml` file.
+Similar to generic container support, it's also possible to run a bespoke set of services specified in a `docker-compose.yml` file. 
 
-This is intended to be useful on projects where Docker Compose is already used in dev or other environments to define
-services that an application may be dependent upon.
+This is especially useful for projects where Docker Compose  is already used in development or other environments to define services that an application may be dependent upon.
 
-Behind the scenes, Testcontainers actually launches a temporary Docker Compose client - in a container, of course, so
-it's not necessary to have it installed on all developer/test machines.
+The [`ComposeContainer`](http://static.javadoc.io/org.testcontainers/testcontainers/{{ latest_version }}/org/testcontainers/containers/ComposeContainer.html) leverages [Compose V2](https://www.docker.com/blog/announcing-compose-v2-general-availability/), making it easy to use the same dependencies from the development environment within tests.
 
 ## Example
 
-A single class rule, pointing to a `docker-compose.yml` file, should be sufficient to launch any number of services
-required by your tests:
-```java
-@ClassRule
-public static DockerComposeContainer environment =
-    new DockerComposeContainer(new File("src/test/resources/compose-test.yml"))
-            .withExposedService("redis_1", REDIS_PORT)
-            .withExposedService("elasticsearch_1", ELASTICSEARCH_PORT);
-```
+A single class `ComposeContainer`, defined based on a `docker-compose.yml` file, should be sufficient to launch any number of services required by our tests:
 
-In this example, `compose-test.yml` should have content such as:
+<!--codeinclude-->
+[Create a ComposeContainer](../../core/src/test/java/org/testcontainers/containers/ComposeContainerDocTest.java) inside_block:composeContainerConstructor
+<!--/codeinclude-->
+
+!!! note
+    Make sure the service names use a `-` rather than `_` as separator.
+
+In this example, Docker Compose file should have content such as:
 ```yaml
-redis:
-  image: redis
-elasticsearch:
-  image: elasticsearch
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: postgres
 ```
 
-Note that it is not necessary to define ports to be exposed in the YAML file; this would inhibit reuse/inclusion of the
-file in other contexts.
+Note that it is not necessary to define ports to be exposed in the YAML file, as this would inhibit the reuse/inclusion of the file in other contexts.
 
-Instead, Testcontainers will spin up a small 'ambassador' container, which will proxy
-between the Compose-managed containers and ports that are accessible to your tests. This is done using a separate, minimal
-container that runs socat as a TCP proxy.
+Instead, Testcontainers will spin up a small 'ambassador' container, which will proxy between the Compose-managed containers and ports that are accessible to our tests. This is done using a separate, minimal container that runs socat as a TCP proxy.
 
-## Accessing a container from tests
+## ComposeContainer vs DockerComposeContainer 
 
-The rule provides methods for discovering how your tests can interact with the containers:
+So far, we discussed [`ComposeContainer`](http://static.javadoc.io/org.testcontainers/testcontainers/{{ latest_version }}/org/testcontainers/containers/ComposeContainer.html), which is the equivalent of docker compose [version 2](https://www.docker.com/blog/announcing-compose-v2-general-availability/). 
+
+On the other hand, [`DockerComposeContainer`](http://static.javadoc.io/org.testcontainers/testcontainers/{{ latest_version }}/org/testcontainers/containers/DockerComposeContainer.html) utilizes Compose V1, which has been marked deprecated by Docker.
+
+The two APIs are quite similar, and most examples provided on this page can be applied to both of them.
+
+## Accessing a Container
+
+ComposeContainer provides methods for discovering how your tests can interact with the containers:
 
 * `getServiceHost(serviceName, servicePort)` returns the IP address where the container is listening (via an ambassador
     container)
 * `getServicePort(serviceName, servicePort)` returns the Docker mapped port for a port that has been exposed (via an
     ambassador container)
 
-For example, with the Redis example above, the following will allow your tests to access the Redis service:
-```java
-String redisUrl = environment.getServiceHost("redis_1", REDIS_PORT)
-                    + ":" +
-                  environment.getServicePort("redis_1", REDIS_PORT);
-```
+Let's use this API to create the URL that will enable our tests to access the Redis service:
+<!--codeinclude-->
+[Access a Service's host and port](../../core/src/test/java/org/testcontainers/containers/ComposeContainerDocTest.java) inside_block:getServiceHostAndPort
+<!--/codeinclude-->
 
-## Startup timeout
+## Wait Strategies and Startup Timeouts
 Ordinarily Testcontainers will wait for up to 60 seconds for each exposed container's first mapped network port to start listening.
 
 This simple measure provides a basic check whether a container is ready for use.
 
-There are overloaded `withExposedService` methods that take a `WaitStrategy` so you can specify a timeout strategy per container.
+There are overloaded `withExposedService` methods that take a [`WaitStrategy`](http://static.javadoc.io/org.testcontainers/testcontainers/{{ latest_version }}/org/testcontainers/containers/wait/strategy/WaitStrategy.html) where we can specify a timeout strategy per container. We can either use the fluent API to crate a custom strategy or use one of the already existing ones, accessible via the static factory methods from of the [`Wait`](http://static.javadoc.io/org.testcontainers/testcontainers/{{ latest_version }}/org/testcontainers/containers/wait/strategy/Wait.html) class. 
 
-### Waiting for startup examples
+For instance, we can wait for exposed port and set a custom timeout:
+<!--codeinclude-->
+[Wait for the exposed port and use a custom timeout](../../core/src/test/java/org/testcontainers/containers/ComposeContainerDocTest.java) inside_block:composeContainerWaitForPortWithTimeout
+<!--/codeinclude-->
 
-Waiting for exposed port to start listening:
-```java
-@ClassRule
-public static DockerComposeContainer environment =
-    new DockerComposeContainer(new File("src/test/resources/compose-test.yml"))
-            .withExposedService("redis_1", REDIS_PORT, 
-                Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(30)));
-```
+Needless to say, we can define different strategies for each service in our Docker Compose setup. 
 
-Wait for arbitrary status codes on an HTTPS endpoint:
-```java
-@ClassRule
-public static DockerComposeContainer environment =
-    new DockerComposeContainer(new File("src/test/resources/compose-test.yml"))
-            .withExposedService("elasticsearch_1", ELASTICSEARCH_PORT, 
-                Wait.forHttp("/all")
-                    .forStatusCode(200)
-                    .forStatusCode(401)
-                    .usingTls());
-```
+For example, our Redis container can wait for a successful redis-cli command, while Postgres waits for a specific log message:
 
-Separate wait strategies for each container:
-```java
-@ClassRule
-public static DockerComposeContainer environment =
-    new DockerComposeContainer(new File("src/test/resources/compose-test.yml"))
-            .withExposedService("redis_1", REDIS_PORT, Wait.forListeningPort())
-            .withExposedService("elasticsearch_1", ELASTICSEARCH_PORT, 
-                Wait.forHttp("/all")
-                    .forStatusCode(200)
-                    .forStatusCode(401)
-                    .usingTls());
-```
+<!--codeinclude-->
+[Wait for a custom command and a log message](../../core/src/test/java/org/testcontainers/containers/ComposeContainerDocTest.java) inside_block:composeContainerWithCombinedWaitStrategies
+<!--/codeinclude-->
 
-Alternatively, you can use `waitingFor(serviceName, waitStrategy)`, 
-for example if you need to wait on a log message from a service, but don't need to expose a port.
+!!! More on Wait Strategies
 
-```java
-@ClassRule
-public static DockerComposeContainer environment =
-    new DockerComposeContainer(new File("src/test/resources/compose-test.yml"))
-            .withExposedService("redis_1", REDIS_PORT, Wait.forListeningPort())
-            .waitingFor("db_1", Wait.forLogMessage("started", 1));
-```
+    Refer to the documentation to learn how to use the API to create tailor-made strategies for [waiting until containers are fully started and ready](../features/startup_and_waits.md).    
 
-## 'Local compose' mode
+## The 'Local Compose' Mode
 
-You can override Testcontainers' default behaviour and make it use a `docker-compose` binary installed on the local machine. 
-This will generally yield an experience that is closer to running docker-compose locally, with the caveat that Docker Compose needs to be present on dev and CI machines.
-```java
-public static DockerComposeContainer environment =
-    new DockerComposeContainer(new File("src/test/resources/compose-test.yml"))
-            .withExposedService("redis_1", REDIS_PORT, Wait.forListeningPort())
-            .waitingFor("db_1", Wait.forLogMessage("started", 1))
-            .withLocalCompose(true);
-```
+We can override Testcontainers' default behaviour and make it use a `docker-compose` binary installed on the local machine. 
 
-## Compose V2
+This will generally yield an experience that is closer to running _docker compose_ locally, with the caveat that Docker Compose needs to be present on dev and CI machines.
 
-[Compose V2 is GA](https://www.docker.com/blog/announcing-compose-v2-general-availability/) and it relies on the `docker` command itself instead of `docker-compose`.
-Testcontainers provides `ComposeContainer` if you want to use Compose V2.
+<!--codeinclude-->
+[Use ComposeContainer in 'Local Compose' mode](../../core/src/test/java/org/testcontainers/containers/ComposeContainerDocTest.java) inside_block:composeContainerWithLocalCompose
+<!--/codeinclude-->
 
-```java
-public static ComposeContainer environment =
-    new ComposeContainer(new File("src/test/resources/compose-test.yml"))
-            .withExposedService("redis-1", REDIS_PORT, Wait.forListeningPort())
-            .waitingFor("db-1", Wait.forLogMessage("started", 1));
-```
+## Build Working Directory
 
-!!! note
-    Make sure the service name use a `-` instead of `_` as separator using `ComposeContainer`.
+We can select what files should be copied only via `withCopyFilesInContainer`:
 
-## Build working directory
+<!--codeinclude-->
+[Use ComposeContainer in 'Local Compose' mode](../../core/src/test/java/org/testcontainers/containers/ComposeContainerDocTest.java) inside_block:composeContainerWithCopyFiles
+<!--/codeinclude-->
 
-You can select what files should be copied only via `withCopyFilesInContainer`:
-
-```java
-public static ComposeContainer environment =
-    new ComposeContainer(new File("compose.yml"))
-        .withCopyFilesInContainer(".env");
-```
-
-In this example, only `compose.yml` and `.env` are copied over into the container that will run the Docker Compose file.  
+In this example, only docker compose and env files are copied over into the container that will run the Docker Compose file.  
 By default, all files in the same directory as the compose file are copied over.
 
-This can be used with `DockerComposeContainer` and `ComposeContainer`.
-You can use file and directory references.
-They are always resolved relative to the directory where the compose file resides.
+We can use file and directory references. They are always resolved relative to the directory where the compose file resides.
+
+This can be used with [`DockerComposeContainer`](http://static.javadoc.io/org.testcontainers/testcontainers/{{ latest_version }}/org/testcontainers/containers/DockerComposeContainer.html) and [`ComposeContainer`](http://static.javadoc.io/org.testcontainers/testcontainers/{{ latest_version }}/org/testcontainers/containers/ComposeContainer.html).
 
 !!! note
-    This only work with containarized Compose, not with `Local Compose` mode.
+
+    This can be used with [`DockerComposeContainer`](http://static.javadoc.io/org.testcontainers/testcontainers/{{ latest_version }}/org/testcontainers/containers/DockerComposeContainer.html) and [`ComposeContainer`](http://static.javadoc.io/org.testcontainers/testcontainers/{{ latest_version }}/org/testcontainers/containers/ComposeContainer.html) - but **only in the containerized Compose (not with `Local Compose` mode)**.
 
 ## Using private repositories in Docker compose
 When Docker Compose is used in container mode (not local), it's needs to be made aware of Docker settings for private repositories. 
