@@ -130,4 +130,9 @@ public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContain
         this.databaseName = databaseName;
         return this;
     }
+
+    @Override
+	protected void waitUntilContainerStarted() {
+		this.getWaitStrategy().waitUntilReady(this);
+	}
 }
