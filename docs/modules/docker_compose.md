@@ -13,23 +13,24 @@ The [`ComposeContainer`](http://static.javadoc.io/org.testcontainers/testcontain
 A single class `ComposeContainer`, defined based on a `docker-compose.yml` file, should be sufficient to launch any number of services required by our tests:
 
 <!--codeinclude-->
-[Create a ComposeContainer](../../core/src/test/java/org/testcontainers/containers/ComposeContainerDocTest.java) inside_block:composeContainerConstructor
+[Create a ComposeContainer](../../core/src/test/java/org/testcontainers/junit/ComposeContainerTest.java) inside_block:composeContainerConstructor
 <!--/codeinclude-->
 
 !!! note
     Make sure the service names use a `-` rather than `_` as separator.
 
+
+```yaml
+!include ../../core/src/test/resources/composev2/compose-test.yml
+```
+
 In this example, Docker Compose file should have content such as:
 ```yaml
-version: '3.8'
-
 services:
   redis:
-    image: redis:7
-  postgres:
-    image: postgres:17-alpine
-    environment:
-      POSTGRES_USER: postgres
+    image: redis
+  db:
+    image: mysql:8.0.36
 ```
 
 Note that it is not necessary to define ports to be exposed in the YAML file, as this would inhibit the reuse/inclusion of the file in other contexts.
@@ -55,7 +56,7 @@ ComposeContainer provides methods for discovering how your tests can interact wi
 
 Let's use this API to create the URL that will enable our tests to access the Redis service:
 <!--codeinclude-->
-[Access a Service's host and port](../../core/src/test/java/org/testcontainers/containers/ComposeContainerDocTest.java) inside_block:getServiceHostAndPort
+[Access a Service's host and port](../../core/src/test/java/org/testcontainers/junit/ComposeContainerTest.java) inside_block:getServiceHostAndPort
 <!--/codeinclude-->
 
 ## Wait Strategies and Startup Timeouts
@@ -67,15 +68,15 @@ There are overloaded `withExposedService` methods that take a [`WaitStrategy`](h
 
 For instance, we can wait for exposed port and set a custom timeout:
 <!--codeinclude-->
-[Wait for the exposed port and use a custom timeout](../../core/src/test/java/org/testcontainers/containers/ComposeContainerDocTest.java) inside_block:composeContainerWaitForPortWithTimeout
+[Wait for the exposed port and use a custom timeout](../../core/src/test/java/org/testcontainers/junit/ComposeContainerWithWaitStrategies.java) inside_block:composeContainerWaitForPortWithTimeout
 <!--/codeinclude-->
 
 Needless to say, we can define different strategies for each service in our Docker Compose setup. 
 
-For example, our Redis container can wait for a successful redis-cli command, while Postgres waits for a specific log message:
+For example, our Redis container can wait for a successful redis-cli command, while our db service waits for a specific log message:
 
 <!--codeinclude-->
-[Wait for a custom command and a log message](../../core/src/test/java/org/testcontainers/containers/ComposeContainerDocTest.java) inside_block:composeContainerWithCombinedWaitStrategies
+[Wait for a custom command and a log message](../../core/src/test/java/org/testcontainers/junit/ComposeContainerWithWaitStrategies.java) inside_block:composeContainerWithCombinedWaitStrategies
 <!--/codeinclude-->
 
 !!! More on Wait Strategies
@@ -89,7 +90,7 @@ We can override Testcontainers' default behaviour and make it use a `docker-comp
 This will generally yield an experience that is closer to running _docker compose_ locally, with the caveat that Docker Compose needs to be present on dev and CI machines.
 
 <!--codeinclude-->
-[Use ComposeContainer in 'Local Compose' mode](../../core/src/test/java/org/testcontainers/containers/ComposeContainerDocTest.java) inside_block:composeContainerWithLocalCompose
+[Use ComposeContainer in 'Local Compose' mode](../../core/src/test/java/org/testcontainers/containers/ComposeProfilesOptionTest.java) inside_block:composeContainerWithLocalCompose
 <!--/codeinclude-->
 
 ## Build Working Directory
@@ -97,7 +98,7 @@ This will generally yield an experience that is closer to running _docker compos
 We can select what files should be copied only via `withCopyFilesInContainer`:
 
 <!--codeinclude-->
-[Use ComposeContainer in 'Local Compose' mode](../../core/src/test/java/org/testcontainers/containers/ComposeContainerDocTest.java) inside_block:composeContainerWithCopyFiles
+[Use ComposeContainer in 'Local Compose' mode](../../core/src/test/java/org/testcontainers/junit/ComposeContainerWithCopyFilesTest.java) inside_block:composeContainerWithCopyFiles
 <!--/codeinclude-->
 
 In this example, only docker compose and env files are copied over into the container that will run the Docker Compose file.  
