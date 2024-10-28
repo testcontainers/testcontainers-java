@@ -19,11 +19,6 @@ A single class `ComposeContainer`, defined based on a `docker-compose.yml` file,
 !!! note
     Make sure the service names use a `-` rather than `_` as separator.
 
-
-```yaml
-!include ../../core/src/test/resources/composev2/compose-test.yml
-```
-
 In this example, Docker Compose file should have content such as:
 ```yaml
 services:

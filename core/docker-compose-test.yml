@@ -1,7 +1,0 @@
-version: '2.2'
-services:
-  http:
-    build: .
-    image: python:latest
-    ports:
-    - 8080:8080
