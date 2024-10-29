@@ -8,6 +8,7 @@ import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Ports;
 import com.google.common.base.Preconditions;
+import java.nio.file.Path;
 import lombok.SneakyThrows;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
@@ -402,17 +403,38 @@ public interface ContainerState {
      */
     @SneakyThrows
     default <T> T copyFileFromContainer(String containerPath, ThrowingFunction<InputStream, T> function) {
+        return copyArchiveFromContainer(containerPath, (stream) -> {
+            try(
+                  TarArchiveInputStream tarStream = new TarArchiveInputStream(stream)
+                  ) {
+                tarStream.getNextTarEntry();
+                return function.apply(tarStream);
+            }
+        });
+    }
+
+    /**
+     * Copies an archive from the container at the specified path
+     * and processes it using the provided function.
+     * The path can be a file or directory and is automatically archived.
+     *
+     * @param containerPath the path inside the container to the file or directory to copy
+     * @param function a function that takes an {@link InputStream} of the copied
+     *                 archive and returns a result
+     * @return the result of applying the function to the InputStream
+     */
+    @SneakyThrows
+    default <T> T copyArchiveFromContainer(String containerPath, ThrowingFunction<InputStream, T> function) {
         if (getContainerId() == null) {
             throw new IllegalStateException("copyFileFromContainer can only be used when the Container is created.");
         }
-
         DockerClient dockerClient = getDockerClient();
         try (
-            InputStream inputStream = dockerClient.copyArchiveFromContainerCmd(getContainerId(), containerPath).exec();
-            TarArchiveInputStream tarInputStream = new TarArchiveInputStream(inputStream)
+              InputStream inputStream = dockerClient.copyArchiveFromContainerCmd(getContainerId(), containerPath).exec();
         ) {
-            tarInputStream.getNextTarEntry();
-            return function.apply(tarInputStream);
+            return function.apply(inputStream);
         }
     }
+
+
 }
