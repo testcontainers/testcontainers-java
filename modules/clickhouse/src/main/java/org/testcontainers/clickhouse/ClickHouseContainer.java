@@ -1,7 +1,7 @@
 package org.testcontainers.clickhouse;
 
 import org.testcontainers.containers.JdbcDatabaseContainer;
-import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
@@ -56,11 +56,14 @@ public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContain
         dockerImageName.assertCompatibleWith(CLICKHOUSE_IMAGE_NAME);
 
         addExposedPorts(HTTP_PORT, NATIVE_PORT);
-        this.waitStrategy =
-            new HttpWaitStrategy()
+        waitingFor(
+            Wait
+                .forHttp("/")
+                .forPort(HTTP_PORT)
                 .forStatusCode(200)
                 .forResponsePredicate("Ok."::equals)
-                .withStartupTimeout(Duration.ofMinutes(1));
+                .withStartupTimeout(Duration.ofMinutes(1))
+        );
     }
 
     @Override
@@ -132,7 +135,7 @@ public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContain
     }
 
     @Override
-	protected void waitUntilContainerStarted() {
-		this.getWaitStrategy().waitUntilReady(this);
-	}
+    protected void waitUntilContainerStarted() {
+        getWaitStrategy().waitUntilReady(this);
+    }
 }
