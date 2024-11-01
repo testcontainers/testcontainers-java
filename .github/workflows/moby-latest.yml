@@ -6,6 +6,9 @@ on:
     # nightly build, at 23:59 CEST
     - cron:  '59 23 * * *'
 
+env:
+  DEVELOCITY_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
+
 jobs:
   test_docker:
     strategy:
