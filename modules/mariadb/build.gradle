@@ -1,16 +1,13 @@
 description = "Testcontainers :: JDBC :: MariaDB"
 
 dependencies {
-    annotationProcessor 'com.google.auto.service:auto-service:1.1.1'
-    compileOnly 'com.google.auto.service:auto-service:1.1.1'
-
     api project(':jdbc')
 
     compileOnly project(':r2dbc')
     compileOnly 'org.mariadb:r2dbc-mariadb:1.0.3'
 
     testImplementation project(':jdbc-test')
-    testImplementation 'org.mariadb.jdbc:mariadb-java-client:3.3.2'
+    testImplementation 'org.mariadb.jdbc:mariadb-java-client:3.4.1'
 
     testImplementation testFixtures(project(':r2dbc'))
     testRuntimeOnly 'org.mariadb:r2dbc-mariadb:1.0.3'

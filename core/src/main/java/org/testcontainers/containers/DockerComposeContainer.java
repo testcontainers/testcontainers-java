@@ -68,6 +68,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
 
     private String project;
 
+    private List<String> filesInDirectory = new ArrayList<>();
+
     @Deprecated
     public DockerComposeContainer(File composeFile, String identifier) {
         this(identifier, composeFile);
@@ -140,7 +142,8 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
                     this.options,
                     this.services,
                     this.scalingPreferences,
-                    this.env
+                    this.env,
+                    this.filesInDirectory
                 );
             this.composeDelegate.startAmbassadorContainer();
             this.composeDelegate.waitUntilServiceStarted(this.tailChildContainers);
@@ -164,7 +167,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
                 this.composeDelegate.getAmbassadorContainer().stop();
 
                 // Kill the services using docker-compose
-                String cmd = "down";
+                String cmd = ComposeCommand.getDownCommand(ComposeDelegate.ComposeVersion.V1, this.options);
 
                 if (removeVolumes) {
                     cmd += " -v";
@@ -172,8 +175,9 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
                 if (removeImages != null) {
                     cmd += " --rmi " + removeImages.dockerRemoveImagesType();
                 }
-                this.composeDelegate.runWithCompose(this.localCompose, cmd, this.env);
+                this.composeDelegate.runWithCompose(this.localCompose, cmd, this.env, this.filesInDirectory);
             } finally {
+                this.composeDelegate.clear();
                 this.project = this.composeDelegate.randomProjectId();
             }
         }
@@ -352,6 +356,11 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
      */
     public SELF withStartupTimeout(Duration startupTimeout) {
         this.composeDelegate.setStartupTimeout(startupTimeout);
+        return self();
+    }
+
+    public SELF withCopyFilesInContainer(String... fileCopyInclusions) {
+        this.filesInDirectory = Arrays.asList(fileCopyInclusions);
         return self();
     }
 

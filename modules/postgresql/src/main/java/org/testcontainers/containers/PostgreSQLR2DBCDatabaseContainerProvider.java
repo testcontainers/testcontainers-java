@@ -1,6 +1,5 @@
 package org.testcontainers.containers;
 
-import com.google.auto.service.AutoService;
 import io.r2dbc.postgresql.PostgresqlConnectionFactoryProvider;
 import io.r2dbc.spi.ConnectionFactoryMetadata;
 import io.r2dbc.spi.ConnectionFactoryOptions;
@@ -9,7 +8,6 @@ import org.testcontainers.r2dbc.R2DBCDatabaseContainerProvider;
 
 import javax.annotation.Nullable;
 
-@AutoService(R2DBCDatabaseContainerProvider.class)
 public final class PostgreSQLR2DBCDatabaseContainerProvider implements R2DBCDatabaseContainerProvider {
 
     static final String DRIVER = PostgresqlConnectionFactoryProvider.POSTGRESQL_DRIVER;

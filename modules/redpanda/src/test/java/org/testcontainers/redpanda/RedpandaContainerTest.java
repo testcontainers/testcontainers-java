@@ -15,6 +15,7 @@ import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
+import org.testcontainers.containers.SocatContainer;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 
@@ -114,9 +115,36 @@ public class RedpandaContainerTest extends AbstractRedpanda {
     public void testUsageWithListener() throws Exception {
         try (
             Network network = Network.newNetwork();
-            // registerListener {
             RedpandaContainer redpanda = new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v23.1.7")
                 .withListener(() -> "redpanda:19092")
+                .withNetwork(network);
+            GenericContainer<?> kcat = new GenericContainer<>("confluentinc/cp-kcat:7.4.1")
+                .withCreateContainerCmdModifier(cmd -> {
+                    cmd.withEntrypoint("sh");
+                })
+                .withCopyToContainer(Transferable.of("Message produced by kcat"), "/data/msgs.txt")
+                .withNetwork(network)
+                .withCommand("-c", "tail -f /dev/null")
+        ) {
+            redpanda.start();
+            kcat.start();
+
+            kcat.execInContainer("kcat", "-b", "redpanda:19092", "-t", "msgs", "-P", "-l", "/data/msgs.txt");
+            String stdout = kcat
+                .execInContainer("kcat", "-b", "redpanda:19092", "-C", "-t", "msgs", "-c", "1")
+                .getStdout();
+
+            assertThat(stdout).contains("Message produced by kcat");
+        }
+    }
+
+    @Test
+    public void testUsageWithListenerInTheSameNetwork() throws Exception {
+        try (
+            Network network = Network.newNetwork();
+            // registerListener {
+            RedpandaContainer kafka = new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v23.1.7")
+                .withListener("kafka:19092")
                 .withNetwork(network);
             // }
             // createKCatContainer {
@@ -129,15 +157,39 @@ public class RedpandaContainerTest extends AbstractRedpanda {
                 .withCommand("-c", "tail -f /dev/null")
             // }
         ) {
-            redpanda.start();
+            kafka.start();
             kcat.start();
+
             // produceConsumeMessage {
-            kcat.execInContainer("kcat", "-b", "redpanda:19092", "-t", "msgs", "-P", "-l", "/data/msgs.txt");
+            kcat.execInContainer("kcat", "-b", "kafka:19092", "-t", "msgs", "-P", "-l", "/data/msgs.txt");
             String stdout = kcat
-                .execInContainer("kcat", "-b", "redpanda:19092", "-C", "-t", "msgs", "-c", "1")
+                .execInContainer("kcat", "-b", "kafka:19092", "-C", "-t", "msgs", "-c", "1")
                 .getStdout();
             // }
+
             assertThat(stdout).contains("Message produced by kcat");
+        }
+    }
+
+    @Test
+    public void testUsageWithListenerFromProxy() throws Exception {
+        try (
+            Network network = Network.newNetwork();
+            // createProxy {
+            SocatContainer socat = new SocatContainer().withNetwork(network).withTarget(2000, "kafka", 19092);
+            // }
+            // registerListenerAndAdvertisedListener {
+            RedpandaContainer kafka = new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v23.1.7")
+                .withListener("kafka:19092", () -> socat.getHost() + ":" + socat.getMappedPort(2000))
+                .withNetwork(network)
+            // }
+        ) {
+            socat.start();
+            kafka.start();
+            // produceConsumeMessageFromProxy {
+            String bootstrapServers = String.format("%s:%s", socat.getHost(), socat.getMappedPort(2000));
+            testKafkaFunctionality(bootstrapServers);
+            // }
         }
     }
 
@@ -153,7 +205,7 @@ public class RedpandaContainerTest extends AbstractRedpanda {
                 .enableAuthorization()
                 .enableSasl()
                 .withSuperuser("panda")
-                .withListener(() -> "my-panda:29092")
+                .withListener("my-panda:29092")
                 .withNetwork(network);
             GenericContainer<?> kcat = new GenericContainer<>("confluentinc/cp-kcat:7.4.1")
                 .withCreateContainerCmdModifier(cmd -> {

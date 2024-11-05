@@ -56,6 +56,7 @@ nav:
                 - modules/databases/couchbase.md
                 - modules/databases/clickhouse.md
                 - modules/databases/cratedb.md
+                - modules/databases/databend.md
                 - modules/databases/db2.md
                 - modules/databases/dynalite.md
                 - modules/databases/influxdb.md
@@ -72,6 +73,7 @@ nav:
                 - modules/databases/presto.md
                 - modules/databases/questdb.md
                 - modules/databases/tidb.md
+                - modules/databases/timeplus.md
                 - modules/databases/trino.md
                 - modules/databases/yugabytedb.md
           - modules/activemq.md
@@ -81,6 +83,7 @@ nav:
           - modules/docker_compose.md
           - modules/elasticsearch.md
           - modules/gcloud.md
+          - modules/grafana.md
           - modules/hivemq.md
           - modules/k3s.md
           - modules/k6.md
@@ -99,6 +102,7 @@ nav:
           - modules/solace.md
           - modules/solr.md
           - modules/toxiproxy.md
+          - modules/typesense.md
           - modules/vault.md
           - modules/weaviate.md
           - modules/webdriver_containers.md
@@ -132,4 +136,4 @@ nav:
           - bounty.md
 edit_uri: edit/main/docs/
 extra:
-    latest_version: 1.19.7
+    latest_version: 1.20.3

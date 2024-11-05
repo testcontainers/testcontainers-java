@@ -23,10 +23,12 @@ body:
         - CrateDB
         - Consul
         - Couchbase
+        - Databend
         - DB2
         - Dynalite
         - Elasticsearch
         - GCloud
+        - Grafana
         - HiveMQ
         - InfluxDB
         - K3S
@@ -59,8 +61,10 @@ body:
         - Solace
         - Solr
         - TiDB
+        - Timeplus
         - ToxiProxy
         - Trino
+        - Typesense
         - Vault
         - Weaviate
         - YugabyteDB
@@ -83,7 +87,7 @@ body:
     id: benefit
     attributes:
       label: Benefit
-      description: What's the benefit of addng this feature to the project?
+      description: What's the benefit of adding this feature to the project?
     validations:
       required: true
   - type: textarea

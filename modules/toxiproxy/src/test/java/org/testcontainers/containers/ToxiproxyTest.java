@@ -27,7 +27,7 @@ public class ToxiproxyTest {
 
     // The target container - this could be anything
     @Rule
-    public GenericContainer<?> redis = new GenericContainer<>("redis:5.0.4")
+    public GenericContainer<?> redis = new GenericContainer<>("redis:6-alpine")
         .withExposedPorts(6379)
         .withNetwork(network)
         .withNetworkAliases("redis");
@@ -104,6 +104,7 @@ public class ToxiproxyTest {
         proxy.toxics().get("CUT_CONNECTION_DOWNSTREAM").remove();
         proxy.toxics().get("CUT_CONNECTION_UPSTREAM").remove();
 
+        jedis.close();
         // and with the connection re-established, expect success
         assertThat(jedis.get("somekey"))
             .as("access to the container works OK after re-establishing the connection")
@@ -114,7 +115,7 @@ public class ToxiproxyTest {
     @Test
     public void testMultipleProxiesCanBeCreated() throws IOException {
         try (
-            GenericContainer<?> secondRedis = new GenericContainer<>("redis:5.0.4")
+            GenericContainer<?> secondRedis = new GenericContainer<>("redis:6-alpine")
                 .withExposedPorts(6379)
                 .withNetwork(network)
                 .withNetworkAliases("redis2")

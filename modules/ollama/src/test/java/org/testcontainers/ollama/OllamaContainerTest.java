@@ -44,11 +44,14 @@ public class OllamaContainerTest {
             // }
         }
         try (
+            // spotless:off
             // substitute {
             OllamaContainer ollama = new OllamaContainer(
-                DockerImageName.parse(newImageName).asCompatibleSubstituteFor("ollama/ollama")
+                DockerImageName.parse(newImageName)
+                    .asCompatibleSubstituteFor("ollama/ollama")
             )
             // }
+            // spotless:on
         ) {
             ollama.start();
             String modelName = given()
