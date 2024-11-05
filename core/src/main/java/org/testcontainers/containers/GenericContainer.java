@@ -435,9 +435,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 copyToTransferableContainerPathMap.forEach(this::copyFileToContainer);
             }
 
-            if (!reused) {
-                connectToPortForwardingNetwork(createCommand.getNetworkMode());
-            }
+            connectToPortForwardingNetwork(createCommand.getNetworkMode());
 
             if (!reused) {
                 containerIsCreated(containerId);
@@ -624,7 +622,14 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             .map(ContainerNetwork::getNetworkID)
             .ifPresent(networkId -> {
                 if (!Arrays.asList(networkId, "none", "host").contains(networkMode)) {
-                    dockerClient.connectToNetworkCmd().withContainerId(containerId).withNetworkId(networkId).exec();
+                    com.github.dockerjava.api.model.Network network =
+                        this.dockerClient.inspectNetworkCmd().withNetworkId(networkId).exec();
+                    if (!network.getContainers().containsKey(this.containerId)) {
+                        this.dockerClient.connectToNetworkCmd()
+                            .withContainerId(this.containerId)
+                            .withNetworkId(networkId)
+                            .exec();
+                    }
                 }
             });
     }
@@ -828,7 +833,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 withExtraHost(INTERNAL_HOST_HOSTNAME, it.getIpAddress());
             });
 
-        String[] extraHostsArray = extraHosts.stream().toArray(String[]::new);
+        String[] extraHostsArray = extraHosts.stream().distinct().toArray(String[]::new);
         createCommand.withExtraHosts(extraHostsArray);
 
         if (workingDirectory != null) {

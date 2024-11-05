@@ -16,6 +16,7 @@ import org.testcontainers.Testcontainers;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -94,29 +95,24 @@ public class ExposedHostTest {
     public void testExposedHostWithReusableContainerAndFixedNetworkName() throws IOException, InterruptedException {
         Testcontainers.exposeHostPorts(server.getAddress().getPort());
 
-        try (
-            GenericContainer<?> container = new GenericContainer<>(tinyContainerDef())
-                .withReuse(true)
-                .withNetwork(network)
-        ) {
-            container.start();
+        GenericContainer<?> container = new GenericContainer<>(tinyContainerDef()).withReuse(true).withNetwork(network);
+        container.start();
 
-            assertHttpResponseFromHost(container, server.getAddress().getPort());
+        assertHttpResponseFromHost(container, server.getAddress().getPort());
 
-            PortForwardingContainer.INSTANCE.reset();
-            Testcontainers.exposeHostPorts(server.getAddress().getPort());
+        PortForwardingContainer.INSTANCE.reset();
+        Testcontainers.exposeHostPorts(server.getAddress().getPort());
 
-            try (
-                GenericContainer<?> reusedContainer = new GenericContainer<>(tinyContainerDef())
-                    .withReuse(true)
-                    .withNetwork(network)
-            ) {
-                reusedContainer.start();
+        GenericContainer<?> reusedContainer = new GenericContainer<>(tinyContainerDef())
+            .withReuse(true)
+            .withNetwork(network);
+        reusedContainer.start();
 
-                assertThat(reusedContainer.getContainerId()).isEqualTo(container.getContainerId());
-                assertHttpResponseFromHost(reusedContainer, server.getAddress().getPort());
-            }
-        }
+        assertThat(reusedContainer.getContainerId()).isEqualTo(container.getContainerId());
+        assertHttpResponseFromHost(reusedContainer, server.getAddress().getPort());
+
+        container.stop();
+        reusedContainer.stop();
     }
 
     @Test
@@ -124,29 +120,24 @@ public class ExposedHostTest {
         throws IOException, InterruptedException {
         Testcontainers.exposeHostPorts(ImmutableMap.of(server.getAddress().getPort(), 1234));
 
-        try (
-            GenericContainer<?> container = new GenericContainer<>(tinyContainerDef())
-                .withReuse(true)
-                .withNetwork(network)
-        ) {
-            container.start();
+        GenericContainer<?> container = new GenericContainer<>(tinyContainerDef()).withReuse(true).withNetwork(network);
+        container.start();
 
-            assertHttpResponseFromHost(container, 1234);
+        assertHttpResponseFromHost(container, 1234);
 
-            PortForwardingContainer.INSTANCE.reset();
-            Testcontainers.exposeHostPorts(ImmutableMap.of(server.getAddress().getPort(), 1234));
+        PortForwardingContainer.INSTANCE.reset();
+        Testcontainers.exposeHostPorts(ImmutableMap.of(server.getAddress().getPort(), 1234));
 
-            try (
-                GenericContainer<?> reusedContainer = new GenericContainer<>(tinyContainerDef())
-                    .withReuse(true)
-                    .withNetwork(network)
-            ) {
-                reusedContainer.start();
+        GenericContainer<?> reusedContainer = new GenericContainer<>(tinyContainerDef())
+            .withReuse(true)
+            .withNetwork(network);
+        reusedContainer.start();
 
-                assertThat(reusedContainer.getContainerId()).isEqualTo(container.getContainerId());
-                assertHttpResponseFromHost(reusedContainer, 1234);
-            }
-        }
+        assertThat(reusedContainer.getContainerId()).isEqualTo(container.getContainerId());
+        assertHttpResponseFromHost(reusedContainer, 1234);
+
+        container.stop();
+        reusedContainer.stop();
     }
 
     @SneakyThrows
@@ -185,47 +176,30 @@ public class ExposedHostTest {
     }
 
     private static Network createReusableNetwork(UUID name) {
-        String id = DockerClientFactory
-            .instance()
-            .client()
-            .listNetworksCmd()
-            .exec()
-            .stream()
-            .filter(network -> {
-                return (
-                    network.getName().equals(name.toString()) &&
-                    network.getLabels().equals(DockerClientFactory.DEFAULT_LABELS)
-                );
-            })
-            .map(com.github.dockerjava.api.model.Network::getId)
-            .findFirst()
-            .orElseGet(() -> {
-                return DockerClientFactory
-                    .instance()
-                    .client()
-                    .createNetworkCmd()
-                    .withName(name.toString())
-                    .withCheckDuplicate(true)
-                    .withLabels(DockerClientFactory.DEFAULT_LABELS)
-                    .exec()
-                    .getId();
-            });
-
-        return new Network() {
-            @Override
-            public Statement apply(Statement base, Description description) {
-                return base;
-            }
-
+        String networkName = name.toString();
+        Network network = new Network() {
             @Override
             public String getId() {
-                return id;
+                return networkName;
             }
 
             @Override
-            public void close() {
-                // never close
+            public void close() {}
+
+            @Override
+            public Statement apply(Statement base, Description description) {
+                return null;
             }
         };
+
+        List<com.github.dockerjava.api.model.Network> networks = DockerClientFactory
+            .lazyClient()
+            .listNetworksCmd()
+            .withNameFilter(networkName)
+            .exec();
+        if (networks.isEmpty()) {
+            Network.builder().createNetworkCmdModifier(cmd -> cmd.withName(networkName)).build().getId();
+        }
+        return network;
     }
 }
