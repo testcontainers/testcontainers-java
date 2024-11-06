@@ -49,21 +49,6 @@ import static org.assertj.core.api.Assumptions.assumeThat;
 public class GenericContainerTest {
 
     @Test
-    public void testStartupTimeoutWithAttemptsNotLeakingContainers() {
-        try (
-            GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
-                .withStartupAttempts(3)
-                .waitingFor(
-                    Wait.forLogMessage("this text does not exist in logs", 1).withStartupTimeout(Duration.ofMillis(1))
-                )
-                .withCommand("tail", "-f", "/dev/null");
-        ) {
-            assertThatThrownBy(container::start).hasStackTraceContaining("Retry limit hit with exception");
-        }
-        assertThat(reportLeakedContainers()).isEmpty();
-    }
-
-    @Test
     public void shouldReportOOMAfterWait() {
         Info info = DockerClientFactory.instance().client().infoCmd().exec();
         // Poor man's rootless Docker detection :D
@@ -294,16 +279,33 @@ public class GenericContainerTest {
         }
     }
 
+    @Test
+    public void testStartupAttemptsDoesNotLeaveContainersRunningWhenWrongWaitStrategyIsUsed() {
+        try (
+            GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
+                .withLabel("waitstrategy", "wrong")
+                .withStartupAttempts(3)
+                .waitingFor(
+                    Wait.forLogMessage("this text does not exist in logs", 1).withStartupTimeout(Duration.ofMillis(1))
+                )
+                .withCommand("tail", "-f", "/dev/null");
+        ) {
+            assertThatThrownBy(container::start).hasStackTraceContaining("Retry limit hit with exception");
+        }
+        assertThat(reportLeakedContainers()).isEmpty();
+    }
+
     private static Optional<String> reportLeakedContainers() {
         @SuppressWarnings("resource") // Throws when close is attempted, as this is a global instance.
         DockerClient dockerClient = DockerClientFactory.lazyClient();
 
         List<Container> containers = dockerClient
             .listContainersCmd()
+            .withAncestorFilter(Collections.singletonList("alpine:3.17"))
             .withLabelFilter(
-                Collections.singletonMap(
-                    DockerClientFactory.TESTCONTAINERS_SESSION_ID_LABEL,
-                    DockerClientFactory.SESSION_ID
+                Arrays.asList(
+                    DockerClientFactory.TESTCONTAINERS_SESSION_ID_LABEL + "=" + DockerClientFactory.SESSION_ID,
+                    "waitstrategy=wrong"
                 )
             )
             // ignore status "exited" - for example, failed containers after using `withStartupAttempts()`
