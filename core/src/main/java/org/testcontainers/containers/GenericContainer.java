@@ -550,6 +550,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 } else {
                     logger().error("There are no stdout/stderr logs available for the failed container");
                 }
+                stop();
             }
 
             throw new ContainerLaunchException("Could not create/start container", e);
