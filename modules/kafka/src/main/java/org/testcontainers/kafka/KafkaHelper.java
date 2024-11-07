@@ -37,10 +37,7 @@ class KafkaHelper {
         Map<String, String> envVars = new HashMap<>();
         envVars.put("CLUSTER_ID", DEFAULT_CLUSTER_ID);
 
-        envVars.put(
-            "KAFKA_LISTENERS",
-            "PLAINTEXT://0.0.0.0:" + KAFKA_PORT + ",BROKER://0.0.0.0:9093,CONTROLLER://0.0.0.0:9094"
-        );
+        envVars.put("KAFKA_LISTENERS", "PLAINTEXT://:" + KAFKA_PORT + ",BROKER://:9093,CONTROLLER://:9094");
         envVars.put(
             "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP",
             "BROKER:PLAINTEXT,PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT"

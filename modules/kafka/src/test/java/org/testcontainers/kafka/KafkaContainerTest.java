@@ -13,7 +13,7 @@ public class KafkaContainerTest extends AbstractKafka {
     @Test
     public void testUsage() throws Exception {
         try ( // constructorWithVersion {
-            KafkaContainer kafka = new KafkaContainer("apache/kafka-native:3.8.0")
+            KafkaContainer kafka = new KafkaContainer("apache/kafka-native:3.9.0")
             // }
         ) {
             kafka.start();
