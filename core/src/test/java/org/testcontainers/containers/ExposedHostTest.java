@@ -25,8 +25,6 @@ public class ExposedHostTest {
 
     private static HttpServer server;
 
-    private static Network network;
-
     @BeforeClass
     public static void setUpClass() throws Exception {
         server = HttpServer.create(new InetSocketAddress(0), 0);
@@ -42,13 +40,11 @@ public class ExposedHostTest {
             }
         );
         server.start();
-        network = createReusableNetwork(UUID.randomUUID());
     }
 
     @AfterClass
     public static void tearDownClass() {
         server.stop(0);
-        DockerClientFactory.instance().client().removeNetworkCmd(network.getId()).exec();
     }
 
     @After
@@ -93,6 +89,7 @@ public class ExposedHostTest {
 
     @Test
     public void testExposedHostWithReusableContainerAndFixedNetworkName() throws IOException, InterruptedException {
+        Network network = createReusableNetwork(UUID.randomUUID());
         Testcontainers.exposeHostPorts(server.getAddress().getPort());
 
         GenericContainer<?> container = new GenericContainer<>(tinyContainerDef()).withReuse(true).withNetwork(network);
@@ -113,11 +110,13 @@ public class ExposedHostTest {
 
         container.stop();
         reusedContainer.stop();
+        DockerClientFactory.lazyClient().removeNetworkCmd(network.getId()).exec();
     }
 
     @Test
     public void testExposedHostOnFixedInternalPortsWithReusableContainerAndFixedNetworkName()
         throws IOException, InterruptedException {
+        Network network = createReusableNetwork(UUID.randomUUID());
         Testcontainers.exposeHostPorts(ImmutableMap.of(server.getAddress().getPort(), 1234));
 
         GenericContainer<?> container = new GenericContainer<>(tinyContainerDef()).withReuse(true).withNetwork(network);
@@ -138,6 +137,7 @@ public class ExposedHostTest {
 
         container.stop();
         reusedContainer.stop();
+        DockerClientFactory.lazyClient().removeNetworkCmd(network.getId()).exec();
     }
 
     @SneakyThrows
