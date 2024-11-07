@@ -7,13 +7,21 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.TestImages;
 import org.testcontainers.Testcontainers;
+import org.testcontainers.utility.TestcontainersConfiguration;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assumptions.assumeThat;
 
 public class ExposedHostTest {
 
@@ -33,7 +41,6 @@ public class ExposedHostTest {
                 }
             }
         );
-
         server.start();
     }
 
@@ -82,6 +89,61 @@ public class ExposedHostTest {
         assertResponse(new GenericContainer<>(tinyContainerDef()), 81);
     }
 
+    @Test
+    public void testExposedHostWithReusableContainerAndFixedNetworkName() throws IOException, InterruptedException {
+        assumeThat(TestcontainersConfiguration.getInstance().environmentSupportsReuse()).isTrue();
+        Network network = createReusableNetwork(UUID.randomUUID());
+        Testcontainers.exposeHostPorts(server.getAddress().getPort());
+
+        GenericContainer<?> container = new GenericContainer<>(tinyContainerDef()).withReuse(true).withNetwork(network);
+        container.start();
+
+        assertHttpResponseFromHost(container, server.getAddress().getPort());
+
+        PortForwardingContainer.INSTANCE.reset();
+        Testcontainers.exposeHostPorts(server.getAddress().getPort());
+
+        GenericContainer<?> reusedContainer = new GenericContainer<>(tinyContainerDef())
+            .withReuse(true)
+            .withNetwork(network);
+        reusedContainer.start();
+
+        assertThat(reusedContainer.getContainerId()).isEqualTo(container.getContainerId());
+        assertHttpResponseFromHost(reusedContainer, server.getAddress().getPort());
+
+        container.stop();
+        reusedContainer.stop();
+        DockerClientFactory.lazyClient().removeNetworkCmd(network.getId()).exec();
+    }
+
+    @Test
+    public void testExposedHostOnFixedInternalPortsWithReusableContainerAndFixedNetworkName()
+        throws IOException, InterruptedException {
+        assumeThat(TestcontainersConfiguration.getInstance().environmentSupportsReuse()).isTrue();
+        Network network = createReusableNetwork(UUID.randomUUID());
+        Testcontainers.exposeHostPorts(ImmutableMap.of(server.getAddress().getPort(), 1234));
+
+        GenericContainer<?> container = new GenericContainer<>(tinyContainerDef()).withReuse(true).withNetwork(network);
+        container.start();
+
+        assertHttpResponseFromHost(container, 1234);
+
+        PortForwardingContainer.INSTANCE.reset();
+        Testcontainers.exposeHostPorts(ImmutableMap.of(server.getAddress().getPort(), 1234));
+
+        GenericContainer<?> reusedContainer = new GenericContainer<>(tinyContainerDef())
+            .withReuse(true)
+            .withNetwork(network);
+        reusedContainer.start();
+
+        assertThat(reusedContainer.getContainerId()).isEqualTo(container.getContainerId());
+        assertHttpResponseFromHost(reusedContainer, 1234);
+
+        container.stop();
+        reusedContainer.stop();
+        DockerClientFactory.lazyClient().removeNetworkCmd(network.getId()).exec();
+    }
+
     @SneakyThrows
     protected void assertResponse(GenericContainer<?> container, int port) {
         try {
@@ -107,5 +169,41 @@ public class ExposedHostTest {
             setImage(TestImages.TINY_IMAGE);
             setCommand("top");
         }
+    }
+
+    private void assertHttpResponseFromHost(GenericContainer<?> container, int port)
+        throws IOException, InterruptedException {
+        String httpResponseFromHost = container
+            .execInContainer("wget", "-O", "-", "http://host.testcontainers.internal:" + port)
+            .getStdout();
+        assertThat(httpResponseFromHost).isEqualTo("Hello World!");
+    }
+
+    private static Network createReusableNetwork(UUID name) {
+        String networkName = name.toString();
+        Network network = new Network() {
+            @Override
+            public String getId() {
+                return networkName;
+            }
+
+            @Override
+            public void close() {}
+
+            @Override
+            public Statement apply(Statement base, Description description) {
+                return null;
+            }
+        };
+
+        List<com.github.dockerjava.api.model.Network> networks = DockerClientFactory
+            .lazyClient()
+            .listNetworksCmd()
+            .withNameFilter(networkName)
+            .exec();
+        if (networks.isEmpty()) {
+            Network.builder().createNetworkCmdModifier(cmd -> cmd.withName(networkName)).build().getId();
+        }
+        return network;
     }
 }
