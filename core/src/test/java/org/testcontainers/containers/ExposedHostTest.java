@@ -16,7 +16,9 @@ import org.testcontainers.Testcontainers;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -89,10 +91,16 @@ public class ExposedHostTest {
 
     @Test
     public void testExposedHostWithReusableContainerAndFixedNetworkName() throws IOException, InterruptedException {
+        Map<String, String> labels = new HashMap<>();
+        labels.put("exposeHostPorts", "samePorts");
+
         Network network = createReusableNetwork(UUID.randomUUID());
         Testcontainers.exposeHostPorts(server.getAddress().getPort());
 
-        GenericContainer<?> container = new GenericContainer<>(tinyContainerDef()).withReuse(true).withNetwork(network);
+        GenericContainer<?> container = new GenericContainer<>(tinyContainerDef())
+            .withLabels(labels)
+            .withReuse(true)
+            .withNetwork(network);
         container.start();
 
         assertHttpResponseFromHost(container, server.getAddress().getPort());
@@ -101,6 +109,7 @@ public class ExposedHostTest {
         Testcontainers.exposeHostPorts(server.getAddress().getPort());
 
         GenericContainer<?> reusedContainer = new GenericContainer<>(tinyContainerDef())
+            .withLabels(labels)
             .withReuse(true)
             .withNetwork(network);
         reusedContainer.start();
@@ -116,10 +125,16 @@ public class ExposedHostTest {
     @Test
     public void testExposedHostOnFixedInternalPortsWithReusableContainerAndFixedNetworkName()
         throws IOException, InterruptedException {
+        Map<String, String> labels = new HashMap<>();
+        labels.put("exposeHostPorts", "differentPorts");
+
         Network network = createReusableNetwork(UUID.randomUUID());
         Testcontainers.exposeHostPorts(ImmutableMap.of(server.getAddress().getPort(), 1234));
 
-        GenericContainer<?> container = new GenericContainer<>(tinyContainerDef()).withReuse(true).withNetwork(network);
+        GenericContainer<?> container = new GenericContainer<>(tinyContainerDef())
+            .withLabels(labels)
+            .withReuse(true)
+            .withNetwork(network);
         container.start();
 
         assertHttpResponseFromHost(container, 1234);
@@ -128,6 +143,7 @@ public class ExposedHostTest {
         Testcontainers.exposeHostPorts(ImmutableMap.of(server.getAddress().getPort(), 1234));
 
         GenericContainer<?> reusedContainer = new GenericContainer<>(tinyContainerDef())
+            .withLabels(labels)
             .withReuse(true)
             .withNetwork(network);
         reusedContainer.start();
