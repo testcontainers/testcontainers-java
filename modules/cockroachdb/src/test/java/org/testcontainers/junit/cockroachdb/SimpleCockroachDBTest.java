@@ -4,6 +4,7 @@ import org.junit.Test;
 import org.testcontainers.CockroachDBTestImages;
 import org.testcontainers.containers.CockroachContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
+import org.testcontainers.images.builder.Transferable;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -104,5 +105,26 @@ public class SimpleCockroachDBTest extends AbstractContainerDatabaseTest {
         assertThatThrownBy(() -> cockroachContainer.withDatabaseName("test_database"))
             .isInstanceOf(UnsupportedOperationException.class)
             .withFailMessage("Setting a databaseName in not supported in the versions below 22.1.0");
+    }
+
+    @Test
+    public void testInitializationScript() throws SQLException {
+        String sql =
+            "USE postgres; \n" +
+            "CREATE TABLE bar (foo VARCHAR(255)); \n" +
+            "INSERT INTO bar (foo) VALUES ('hello world');";
+
+        try (
+            CockroachContainer cockroach = new CockroachContainer(CockroachDBTestImages.COCKROACHDB_IMAGE)
+                .withCopyToContainer(Transferable.of(sql), "/docker-entrypoint-initdb.d/init.sql")
+                .withLogConsumer(outputFrame -> System.out.println(outputFrame.getUtf8String()))
+        ) { // CockroachDB is expected to be compatible with Postgres
+            cockroach.start();
+
+            ResultSet resultSet = performQuery(cockroach, "SELECT foo FROM bar");
+
+            String firstColumnValue = resultSet.getString(1);
+            assertThat(firstColumnValue).as("Value from init script should equal real value").isEqualTo("hello world");
+        }
     }
 }
