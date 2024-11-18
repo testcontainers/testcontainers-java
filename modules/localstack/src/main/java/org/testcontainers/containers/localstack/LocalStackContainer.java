@@ -203,7 +203,10 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
     @Override
     protected void containerIsStarting(InspectContainerResponse containerInfo) {
         String command = "#!/bin/bash\n";
-        command += "export LAMBDA_DOCKER_FLAGS=" + configureLambdaContainerLabels() + "\n";
+        command += "export LAMBDA_DOCKER_FLAGS=" + configureServiceContainerLabels("LAMBDA_DOCKER_FLAGS") + "\n";
+        command += "export ECS_DOCKER_FLAGS=" + configureServiceContainerLabels("ECS_DOCKER_FLAGS") + "\n";
+        command += "export EC2_DOCKER_FLAGS=" + configureServiceContainerLabels("EC2_DOCKER_FLAGS") + "\n";
+        command += "export BATCH_DOCKER_FLAGS=" + configureServiceContainerLabels("BATCH_DOCKER_FLAGS") + "\n";
         command += "/usr/local/bin/docker-entrypoint.sh\n";
         copyFileToContainer(Transferable.of(command, 0777), STARTER_SCRIPT);
     }
@@ -214,13 +217,13 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
      * chance.
      * @return the lambda container labels as a string
      */
-    private String configureLambdaContainerLabels() {
-        String lambdaDockerFlags = internalMarkerLabels();
-        String existingLambdaDockerFlags = getEnvMap().get("LAMBDA_DOCKER_FLAGS");
-        if (existingLambdaDockerFlags != null) {
-            lambdaDockerFlags = existingLambdaDockerFlags + " " + lambdaDockerFlags;
+    private String configureServiceContainerLabels(String existingEnvFlagKey) {
+        String internalMarkerFlags = internalMarkerLabels();
+        String existingFlags = getEnvMap().get(existingEnvFlagKey);
+        if (existingFlags != null) {
+             internalMarkerFlags = existingFlags + " " +  internalMarkerFlags;
         }
-        return "\"" + lambdaDockerFlags + "\"";
+        return "\"" +  internalMarkerFlags + "\"";
     }
 
     /**
