@@ -221,9 +221,9 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
         String internalMarkerFlags = internalMarkerLabels();
         String existingFlags = getEnvMap().get(existingEnvFlagKey);
         if (existingFlags != null) {
-             internalMarkerFlags = existingFlags + " " +  internalMarkerFlags;
+            internalMarkerFlags = existingFlags + " " + internalMarkerFlags;
         }
-        return "\"" +  internalMarkerFlags + "\"";
+        return "\"" + internalMarkerFlags + "\"";
     }
 
     /**
