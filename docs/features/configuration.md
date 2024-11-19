@@ -98,7 +98,7 @@ but does not allow starting privileged containers, you can turn off the Ryuk con
 
 ## Customizing client ping behaviour
 
-> **client.ping.timeout = 5**
+> **client.ping.timeout = 10**
 > Specifies for how long Testcontainers will try to connect to the Docker client to obtain valid info about the client before giving up and trying next strategy, if applicable (in seconds).
 
 ## Customizing Docker host detection
