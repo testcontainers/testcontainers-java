@@ -14,7 +14,7 @@ public class CockroachDBJDBCDriverTest extends AbstractJDBCDriverTest {
     public static Iterable<Object[]> data() {
         return Arrays.asList(
             new Object[][] { //
-                { "jdbc:tc:cockroach://hostname/databasename", EnumSet.noneOf(Options.class) },
+                { "jdbc:tc:cockroach:v21.2.17://hostname/databasename", EnumSet.noneOf(Options.class) },
             }
         );
     }
