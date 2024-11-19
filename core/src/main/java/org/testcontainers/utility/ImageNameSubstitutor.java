@@ -4,7 +4,9 @@ import com.google.common.annotations.VisibleForTesting;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.UnstableAPI;
 
+import java.util.ServiceLoader;
 import java.util.function.Function;
+import java.util.stream.StreamSupport;
 
 /**
  * An image name substitutor converts a Docker image name, as may be specified in code, to an alternative name.
@@ -25,26 +27,19 @@ public abstract class ImageNameSubstitutor implements Function<DockerImageName, 
     static ImageNameSubstitutor defaultImplementation = new DefaultImageNameSubstitutor();
 
     public static synchronized ImageNameSubstitutor instance() {
-        if (instance == null) {
-            final String configuredClassName = TestcontainersConfiguration.getInstance().getImageSubstitutorClassName();
+        return instance(Thread.currentThread().getContextClassLoader());
+    }
 
-            if (configuredClassName != null) {
-                log.debug("Attempting to instantiate an ImageNameSubstitutor with class: {}", configuredClassName);
-                ImageNameSubstitutor configuredInstance;
-                try {
-                    configuredInstance =
-                        (ImageNameSubstitutor) Thread
-                            .currentThread()
-                            .getContextClassLoader()
-                            .loadClass(configuredClassName)
-                            .getConstructor()
-                            .newInstance();
-                } catch (Exception e) {
-                    throw new IllegalArgumentException(
-                        "Configured Image Substitutor could not be loaded: " + configuredClassName,
-                        e
-                    );
-                }
+    @VisibleForTesting
+    static synchronized ImageNameSubstitutor instance(ClassLoader classLoader) {
+        if (instance == null) {
+            ImageNameSubstitutor configuredInstance = getImageNameSubstitutor(classLoader);
+
+            if (configuredInstance != null) {
+                log.debug(
+                    "Attempting to instantiate an ImageNameSubstitutor with class: {}",
+                    configuredInstance.getClass().getCanonicalName()
+                );
 
                 log.info("Found configured ImageNameSubstitutor: {}", configuredInstance.getDescription());
 
@@ -61,6 +56,26 @@ public abstract class ImageNameSubstitutor implements Function<DockerImageName, 
         }
 
         return instance;
+    }
+
+    private static ImageNameSubstitutor getImageNameSubstitutor(ClassLoader classLoader) {
+        final String configuredClassName = TestcontainersConfiguration.getInstance().getImageSubstitutorClassName();
+
+        if (configuredClassName != null) {
+            try {
+                return (ImageNameSubstitutor) classLoader.loadClass(configuredClassName).getConstructor().newInstance();
+            } catch (Exception e) {
+                throw new IllegalArgumentException(
+                    "Configured Image Substitutor could not be loaded: " + configuredClassName,
+                    e
+                );
+            }
+        }
+
+        return StreamSupport
+            .stream(ServiceLoader.load(ImageNameSubstitutor.class, classLoader).spliterator(), false)
+            .findFirst()
+            .orElse(null);
     }
 
     public static ImageNameSubstitutor noop() {

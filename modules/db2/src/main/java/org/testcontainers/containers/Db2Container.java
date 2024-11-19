@@ -1,5 +1,6 @@
 package org.testcontainers.containers;
 
+import com.github.dockerjava.api.model.Capability;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.LicenseAcceptance;
@@ -57,7 +58,7 @@ public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_NEW_IMAGE_NAME, DEFAULT_IMAGE_NAME);
 
-        withPrivilegedMode(true);
+        withCreateContainerCmdModifier(cmd -> cmd.withCapAdd(Capability.IPC_LOCK).withCapAdd(Capability.IPC_OWNER));
         this.waitStrategy =
             new LogMessageWaitStrategy()
                 .withRegEx(".*Setup has completed\\..*")

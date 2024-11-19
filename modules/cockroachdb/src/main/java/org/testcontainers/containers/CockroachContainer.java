@@ -1,6 +1,7 @@
 package org.testcontainers.containers;
 
-import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 
@@ -66,17 +67,29 @@ public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer
     public CockroachContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
-        isVersionGreaterThanOrEqualTo221 = isVersionGreaterThanOrEqualTo221(dockerImageName);
+        this.isVersionGreaterThanOrEqualTo221 = isVersionGreaterThanOrEqualTo221(dockerImageName);
+
+        WaitAllStrategy waitStrategy = new WaitAllStrategy();
+        waitStrategy.withStrategy(
+            Wait.forHttp("/health").forPort(REST_API_PORT).forStatusCode(200).withStartupTimeout(Duration.ofMinutes(1))
+        );
+        if (this.isVersionGreaterThanOrEqualTo221) {
+            waitStrategy.withStrategy(Wait.forSuccessfulCommand("[ -f ./init_success ] || { exit 1; }"));
+        }
 
         withExposedPorts(REST_API_PORT, DB_PORT);
-        waitingFor(
-            new HttpWaitStrategy()
-                .forPath("/health")
-                .forPort(REST_API_PORT)
-                .forStatusCode(200)
-                .withStartupTimeout(Duration.ofMinutes(1))
-        );
+        waitingFor(waitStrategy);
         withCommand("start-single-node --insecure");
+    }
+
+    @Override
+    protected void configure() {
+        withEnv("COCKROACH_USER", this.username);
+        withEnv("COCKROACH_PASSWORD", this.password);
+        if (this.password != null && !this.password.isEmpty()) {
+            withCommand("start-single-node");
+        }
+        withEnv("COCKROACH_DATABASE", this.databaseName);
     }
 
     @Override
@@ -123,21 +136,21 @@ public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer
     public CockroachContainer withUsername(String username) {
         validateIfVersionSupportsUsernameOrPasswordOrDatabase("username");
         this.username = username;
-        return withEnv("COCKROACH_USER", username);
+        return this;
     }
 
     @Override
     public CockroachContainer withPassword(String password) {
         validateIfVersionSupportsUsernameOrPasswordOrDatabase("password");
         this.password = password;
-        return withEnv("COCKROACH_PASSWORD", password).withCommand("start-single-node");
+        return this;
     }
 
     @Override
     public CockroachContainer withDatabaseName(final String databaseName) {
         validateIfVersionSupportsUsernameOrPasswordOrDatabase("databaseName");
         this.databaseName = databaseName;
-        return withEnv("COCKROACH_DATABASE", databaseName);
+        return this;
     }
 
     private boolean isVersionGreaterThanOrEqualTo221(DockerImageName dockerImageName) {
@@ -151,5 +164,10 @@ public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer
                 String.format("Setting a %s in not supported in the versions below 22.1.0", parameter)
             );
         }
+    }
+
+    @Override
+    protected void waitUntilContainerStarted() {
+        getWaitStrategy().waitUntilReady(this);
     }
 }

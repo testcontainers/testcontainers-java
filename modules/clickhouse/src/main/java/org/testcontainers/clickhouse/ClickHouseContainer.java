@@ -1,7 +1,7 @@
 package org.testcontainers.clickhouse;
 
 import org.testcontainers.containers.JdbcDatabaseContainer;
-import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
@@ -23,11 +23,13 @@ public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContain
 
     private static final String NAME = "clickhouse";
 
-    private static final DockerImageName CLICKHOUSE_IMAGE_NAME = DockerImageName.parse("clickhouse/clickhouse-server");
+    static final String CLICKHOUSE_CLICKHOUSE_SERVER = "clickhouse/clickhouse-server";
 
-    private static final Integer HTTP_PORT = 8123;
+    private static final DockerImageName CLICKHOUSE_IMAGE_NAME = DockerImageName.parse(CLICKHOUSE_CLICKHOUSE_SERVER);
 
-    private static final Integer NATIVE_PORT = 9000;
+    static final Integer HTTP_PORT = 8123;
+
+    static final Integer NATIVE_PORT = 9000;
 
     private static final String DRIVER_CLASS_NAME = "com.clickhouse.jdbc.ClickHouseDriver";
 
@@ -35,11 +37,15 @@ public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContain
 
     private static final String TEST_QUERY = "SELECT 1";
 
+    static final String DEFAULT_USER = "default";
+
+    static final String DEFAULT_PASSWORD = "";
+
     private String databaseName = "default";
 
-    private String username = "default";
+    private String username = DEFAULT_USER;
 
-    private String password = "";
+    private String password = DEFAULT_PASSWORD;
 
     public ClickHouseContainer(String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
@@ -50,11 +56,14 @@ public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContain
         dockerImageName.assertCompatibleWith(CLICKHOUSE_IMAGE_NAME);
 
         addExposedPorts(HTTP_PORT, NATIVE_PORT);
-        this.waitStrategy =
-            new HttpWaitStrategy()
+        waitingFor(
+            Wait
+                .forHttp("/")
+                .forPort(HTTP_PORT)
                 .forStatusCode(200)
                 .forResponsePredicate("Ok."::equals)
-                .withStartupTimeout(Duration.ofMinutes(1));
+                .withStartupTimeout(Duration.ofMinutes(1))
+        );
     }
 
     @Override
@@ -123,5 +132,10 @@ public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContain
     public ClickHouseContainer withDatabaseName(String databaseName) {
         this.databaseName = databaseName;
         return this;
+    }
+
+    @Override
+    protected void waitUntilContainerStarted() {
+        getWaitStrategy().waitUntilReady(this);
     }
 }

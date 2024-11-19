@@ -78,7 +78,7 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
             acceptLicense();
         }
 
-        addEnv("SA_PASSWORD", password);
+        addEnv("MSSQL_SA_PASSWORD", password);
     }
 
     /**

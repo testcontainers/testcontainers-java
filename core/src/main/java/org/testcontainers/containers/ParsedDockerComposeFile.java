@@ -7,9 +7,14 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.testcontainers.images.ParsedDockerfile;
+import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
+import org.yaml.snakeyaml.nodes.Node;
+import org.yaml.snakeyaml.nodes.Tag;
+import org.yaml.snakeyaml.representer.Representer;
+import org.yaml.snakeyaml.resolver.Resolver;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,10 +39,24 @@ class ParsedDockerComposeFile {
     private final File composeFile;
 
     @Getter
-    private Map<String, Set<String>> serviceNameToImageNames = new HashMap<>();
+    private final Map<String, Set<String>> serviceNameToImageNames = new HashMap<>();
 
     ParsedDockerComposeFile(File composeFile) {
-        Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
+        // The default is 50 and a big docker-compose.yml file can easily go above that number. 1,000 should give us some room
+        LoaderOptions options = new LoaderOptions();
+        options.setMaxAliasesForCollections(1_000);
+        DumperOptions dumperOptions = new DumperOptions();
+
+        SafeConstructor constructor = new SafeConstructor(options) {
+            @Override
+            protected Object constructObject(Node node) {
+                if (node.getTag().equals(new Tag("!reset"))) {
+                    return null;
+                }
+                return super.constructObject(node);
+            }
+        };
+        Yaml yaml = new Yaml(constructor, new Representer(dumperOptions), dumperOptions, options, new Resolver());
         try (FileInputStream fileInputStream = FileUtils.openInputStream(composeFile)) {
             composeFileContent = yaml.load(fileInputStream);
         } catch (Exception e) {
@@ -59,16 +78,16 @@ class ParsedDockerComposeFile {
 
     private void parseAndValidate() {
         final Map<String, ?> servicesMap;
-        if (composeFileContent.containsKey("version")) {
-            if ("2.0".equals(composeFileContent.get("version"))) {
-                log.warn(
-                    "Testcontainers may not be able to clean up networks spawned using Docker Compose v2.0 files. " +
-                    "Please see https://github.com/testcontainers/moby-ryuk/issues/2, and specify 'version: \"2.1\"' or " +
-                    "higher in {}",
-                    composeFileName
-                );
-            }
+        if (composeFileContent.containsKey("version") && "2.0".equals(composeFileContent.get("version"))) {
+            log.warn(
+                "Testcontainers may not be able to clean up networks spawned using Docker Compose v2.0 files. " +
+                "Please see https://github.com/testcontainers/moby-ryuk/issues/2, and specify 'version: \"2.1\"' or " +
+                "higher in {}",
+                composeFileName
+            );
+        }
 
+        if (composeFileContent.containsKey("services")) {
             final Object servicesElement = composeFileContent.get("services");
             if (servicesElement == null) {
                 log.debug(
@@ -82,7 +101,9 @@ class ParsedDockerComposeFile {
                 return;
             }
 
-            servicesMap = (Map<String, ?>) servicesElement;
+            @SuppressWarnings("unchecked")
+            Map<String, ?> temp = (Map<String, ?>) servicesElement;
+            servicesMap = temp;
         } else {
             servicesMap = composeFileContent;
         }
@@ -99,7 +120,8 @@ class ParsedDockerComposeFile {
                 break;
             }
 
-            final Map serviceDefinitionMap = (Map) serviceDefinition;
+            @SuppressWarnings("unchecked")
+            final Map<String, ?> serviceDefinitionMap = (Map<String, ?>) serviceDefinition;
 
             validateNoContainerNameSpecified(serviceName, serviceDefinitionMap);
             findServiceImageName(serviceName, serviceDefinitionMap);
@@ -107,7 +129,7 @@ class ParsedDockerComposeFile {
         }
     }
 
-    private void validateNoContainerNameSpecified(String serviceName, Map serviceDefinitionMap) {
+    private void validateNoContainerNameSpecified(String serviceName, Map<String, ?> serviceDefinitionMap) {
         if (serviceDefinitionMap.containsKey("container_name")) {
             throw new IllegalStateException(
                 String.format(
@@ -119,20 +141,21 @@ class ParsedDockerComposeFile {
         }
     }
 
-    private void findServiceImageName(String serviceName, Map serviceDefinitionMap) {
-        if (serviceDefinitionMap.containsKey("image") && serviceDefinitionMap.get("image") instanceof String) {
-            final String imageName = (String) serviceDefinitionMap.get("image");
+    private void findServiceImageName(String serviceName, Map<String, ?> serviceDefinitionMap) {
+        Object result = serviceDefinitionMap.get("image");
+        if (result instanceof String) {
+            final String imageName = (String) result;
             log.debug("Resolved dependency image for Docker Compose in {}: {}", composeFileName, imageName);
             serviceNameToImageNames.put(serviceName, Sets.newHashSet(imageName));
         }
     }
 
-    private void findImageNamesInDockerfile(String serviceName, Map serviceDefinitionMap) {
+    private void findImageNamesInDockerfile(String serviceName, Map<String, ?> serviceDefinitionMap) {
         final Object buildNode = serviceDefinitionMap.get("build");
         Path dockerfilePath = null;
 
         if (buildNode instanceof Map) {
-            final Map buildElement = (Map) buildNode;
+            final Map<?, ?> buildElement = (Map<?, ?>) buildNode;
             final Object dockerfileRelativePath = buildElement.get("dockerfile");
             final Object contextRelativePath = buildElement.get("context");
             if (dockerfileRelativePath instanceof String && contextRelativePath instanceof String) {

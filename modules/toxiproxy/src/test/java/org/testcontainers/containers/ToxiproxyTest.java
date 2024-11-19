@@ -104,6 +104,7 @@ public class ToxiproxyTest {
         proxy.toxics().get("CUT_CONNECTION_DOWNSTREAM").remove();
         proxy.toxics().get("CUT_CONNECTION_UPSTREAM").remove();
 
+        jedis.close();
         // and with the connection re-established, expect success
         assertThat(jedis.get("somekey"))
             .as("access to the container works OK after re-establishing the connection")

@@ -75,7 +75,10 @@ public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcD
         );
 
         addEnv("MYSQL_DATABASE", databaseName);
-        addEnv("MYSQL_USER", username);
+
+        if (!MARIADB_ROOT_USER.equalsIgnoreCase(this.username)) {
+            addEnv("MYSQL_USER", username);
+        }
         if (password != null && !password.isEmpty()) {
             addEnv("MYSQL_PASSWORD", password);
             addEnv("MYSQL_ROOT_PASSWORD", password);
