@@ -10,5 +10,6 @@ dependencies {
     testImplementation 'com.google.cloud:google-cloud-pubsub'
     testImplementation 'com.google.cloud:google-cloud-spanner'
     testImplementation 'com.google.cloud:google-cloud-bigtable'
+    testImplementation 'com.google.cloud:google-cloud-storage'
     testImplementation 'org.assertj:assertj-core:3.26.3'
 }

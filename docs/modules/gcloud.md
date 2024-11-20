@@ -5,7 +5,7 @@
 
 Testcontainers module for the Google Cloud Platform's [Cloud SDK](https://cloud.google.com/sdk/).
 
-Currently, the module supports `BigQuery`, `Bigtable`, `Datastore`, `Firestore`, `Spanner`, and `Pub/Sub` emulators. In order to use it, you should use the following classes:
+Currently, the module supports `BigQuery`, `Bigtable`, `Datastore`, `Firestore`, `Spanner`, `Pub/Sub`, and `CloudStorage` emulators. In order to use it, you should use the following classes:
 
 Class | Container Image
 -|-
@@ -15,6 +15,7 @@ DatastoreEmulatorContainer | [gcr.io/google.com/cloudsdktool/google-cloud-cli:em
 FirestoreEmulatorContainer | [gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators](https://gcr.io/google.com/cloudsdktool/google-cloud-cli)
 SpannerEmulatorContainer | [gcr.io/cloud-spanner-emulator/emulator](https://gcr.io/cloud-spanner-emulator/emulator)
 PubSubEmulatorContainer | [gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators](https://gcr.io/google.com/cloudsdktool/google-cloud-cli)
+CloudStorageEmulatorContainer | [hub.docker.com/r/fsouza/fake-gcs-server](https://hub.docker.com/r/fsouza/fake-gcs-server)
 
 ## Usage example
 
@@ -149,6 +150,15 @@ See more examples:
 
  * [Full sample code](https://github.com/testcontainers/testcontainers-java/tree/main/modules/gcloud/src/test/java/org/testcontainers/containers/PubSubEmulatorContainerTest.java)
  * [With Spring Boot](https://github.com/saturnism/testcontainers-gcloud-examples/tree/main/springboot/pubsub-example/src/test/java/com/example/springboot/pubsub/PubSubIntegrationTests.java)
+
+### CloudStorage
+
+Start the CloudStorage emulator and test against it:
+
+<!--codeinclude-->
+[Testing with a CloudStorage Emulator container](../../modules/gcloud/src/test/java/org/testcontainers/containers/CloudStorageEmulatorContainerTest.java) inside_block:testWithCloudStorageEmulatorContainer
+<!--/codeinclude-->
+
 
 ## Adding this module to your project dependencies
 
