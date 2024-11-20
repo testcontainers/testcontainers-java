@@ -15,7 +15,7 @@ import java.time.Duration;
  * Testcontainers implementation for Google Cloud Storage.
  * Default port: 4443
  * <p>
- * Supported image: {@code fsouza/fake-gcs-server}
+ * Supported image: {@code hub.docker.com/r/fsouza/fake-gcs-server}
  * <p>
  * @see <a href="https://github.com/fsouza/fake-gcs-server">fsouza/fake-gcs-server on GitHub</a>
  */
