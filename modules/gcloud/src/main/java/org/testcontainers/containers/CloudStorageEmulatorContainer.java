@@ -21,51 +21,60 @@ import java.time.Duration;
  */
 public class CloudStorageEmulatorContainer extends GenericContainer<CloudStorageEmulatorContainer> {
 
-	public static final DockerImageName DEFAULT_IMAGE = DockerImageName.parse("fsouza/fake-gcs-server");
-	public static final int EMULATOR_PORT = 4443;
+    public static final DockerImageName DEFAULT_IMAGE = DockerImageName.parse("fsouza/fake-gcs-server");
 
-	public CloudStorageEmulatorContainer(String image) {
-		this(DockerImageName.parse(image));
-	}
+    public static final int EMULATOR_PORT = 4443;
 
-	public CloudStorageEmulatorContainer(DockerImageName dockerImageName) {
-		super(dockerImageName);
-		dockerImageName.assertCompatibleWith(DEFAULT_IMAGE);
-		addExposedPorts(EMULATOR_PORT);
-		withCreateContainerCmdModifier(cmd -> cmd.withEntrypoint("/bin/fake-gcs-server", "-scheme", "http"));
-		waitingFor(new WaitStrategy() {
-			@Override
-			public void waitUntilReady(WaitStrategyTarget target) {
-				updateFakeGcsExternalUrl(getEmulatorHttpEndpoint());
-			}
+    public CloudStorageEmulatorContainer(String image) {
+        this(DockerImageName.parse(image));
+    }
 
-			@Override
-			public WaitStrategy withStartupTimeout(Duration startupTimeout) {
-				return getWaitStrategy().withStartupTimeout(startupTimeout);
-			}
-		});
-	}
+    public CloudStorageEmulatorContainer(DockerImageName dockerImageName) {
+        super(dockerImageName);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE);
+        addExposedPorts(EMULATOR_PORT);
+        withCreateContainerCmdModifier(cmd -> cmd.withEntrypoint("/bin/fake-gcs-server", "-scheme", "http"));
+        waitingFor(
+            new WaitStrategy() {
+                @Override
+                public void waitUntilReady(WaitStrategyTarget target) {
+                    updateFakeGcsExternalUrl(getEmulatorHttpEndpoint());
+                }
 
-	public String getEmulatorHttpEndpoint() {
-		return String.format("http://%s:%d", getHost(), getMappedPort(EMULATOR_PORT));
-	}
+                @Override
+                public WaitStrategy withStartupTimeout(Duration startupTimeout) {
+                    return getWaitStrategy().withStartupTimeout(startupTimeout);
+                }
+            }
+        );
+    }
+
+    public String getEmulatorHttpEndpoint() {
+        return String.format("http://%s:%d", getHost(), getMappedPort(EMULATOR_PORT));
+    }
 
     private static void updateFakeGcsExternalUrl(String gcsUrl) {
         String json = String.format("{ \"externalUrl\": \"%s\" }", gcsUrl);
 
-        HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(gcsUrl + "/_internal/config"))
-                .header("Content-Type", "application/json")
-                .PUT(HttpRequest.BodyPublishers.ofString(json))
-                .build();
+        HttpRequest req = HttpRequest
+            .newBuilder()
+            .uri(URI.create(gcsUrl + "/_internal/config"))
+            .header("Content-Type", "application/json")
+            .PUT(HttpRequest.BodyPublishers.ofString(json))
+            .build();
 
         try {
-            HttpResponse<Void> response = HttpClient.newBuilder().build()
-                    .send(req, HttpResponse.BodyHandlers.discarding());
+            HttpResponse<Void> response = HttpClient
+                .newBuilder()
+                .build()
+                .send(req, HttpResponse.BodyHandlers.discarding());
 
             if (response.statusCode() != 200) {
                 throw new RuntimeException(
-                        "error updating fake-gcs-server with external url, response status code " + response.statusCode() + " != 200");
+                    "error updating fake-gcs-server with external url, response status code " +
+                    response.statusCode() +
+                    " != 200"
+                );
             }
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
