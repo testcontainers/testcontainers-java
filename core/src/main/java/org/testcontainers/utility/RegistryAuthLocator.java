@@ -289,7 +289,10 @@ public class RegistryAuthLocator {
                 final String responseErrorMsg = data.getStdout();
 
                 if (!StringUtils.isBlank(responseErrorMsg)) {
-                    String credentialsNotFoundMsg = getGenericCredentialsNotFoundMsg(credentialProgramName);
+                    String credentialsNotFoundMsg = getGenericCredentialsNotFoundMsg(
+                        responseErrorMsg,
+                        credentialProgramName
+                    );
                     if (credentialsNotFoundMsg != null && credentialsNotFoundMsg.equals(responseErrorMsg)) {
                         log.info(
                             "Credential helper/store ({}) does not have credentials for {}",
@@ -346,46 +349,11 @@ public class RegistryAuthLocator {
         );
     }
 
-    private String getGenericCredentialsNotFoundMsg(String credentialHelperName) {
+    private String getGenericCredentialsNotFoundMsg(String credentialsNotFoundMsg, String credentialHelperName) {
         if (!CREDENTIALS_HELPERS_NOT_FOUND_MESSAGE_CACHE.containsKey(credentialHelperName)) {
-            String credentialsNotFoundMsg = discoverCredentialsHelperNotFoundMessage(credentialHelperName);
-            if (!StringUtils.isBlank(credentialsNotFoundMsg)) {
-                CREDENTIALS_HELPERS_NOT_FOUND_MESSAGE_CACHE.put(credentialHelperName, credentialsNotFoundMsg);
-            }
+            CREDENTIALS_HELPERS_NOT_FOUND_MESSAGE_CACHE.put(credentialHelperName, credentialsNotFoundMsg);
         }
-
         return CREDENTIALS_HELPERS_NOT_FOUND_MESSAGE_CACHE.get(credentialHelperName);
-    }
-
-    private String discoverCredentialsHelperNotFoundMessage(String credentialHelperName) {
-        // will do fake call to given credential helper to find out with which message
-        // it response when there are no credentials for given hostName
-
-        // hostName should be valid, but most probably not existing
-        // IF its not enough, then should probably run 'list' command first to be sure...
-        final String notExistentFakeHostName = "https://not.a.real.registry/url";
-
-        String credentialsNotFoundMsg = null;
-        try {
-            CredentialOutput data = runCredentialProgram(notExistentFakeHostName, credentialHelperName);
-
-            if (data.getStdout() != null && !data.getStdout().isEmpty()) {
-                credentialsNotFoundMsg = data.getStdout();
-
-                log.debug(
-                    "Got credentials not found error message from docker credential helper - {}",
-                    credentialsNotFoundMsg
-                );
-            }
-        } catch (Exception e) {
-            log.warn(
-                "Failure running docker credential helper ({}) with fake call, expected 'credentials not found' response. Exception message: {}",
-                credentialHelperName,
-                e.getMessage()
-            );
-        }
-
-        return credentialsNotFoundMsg;
     }
 
     private CredentialOutput runCredentialProgram(String hostName, String credentialHelperName)
