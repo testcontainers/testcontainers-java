@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.testcontainers.DockerClientFactory;
 import org.zeroturnaround.exec.InvalidResultException;
 import org.zeroturnaround.exec.ProcessExecutor;
+import org.zeroturnaround.exec.ProcessResult;
 import org.zeroturnaround.exec.stream.LogOutputStream;
 
 import java.io.ByteArrayInputStream;
@@ -284,11 +285,14 @@ public class RegistryAuthLocator {
 
         try {
             data = runCredentialProgram(hostName, credentialProgramName);
-            if (data.getStderr() != null && !data.getStderr().isEmpty()) {
-                final String responseErrorMsg = data.getStderr();
+            if (data.getExitValue() == 1) {
+                final String responseErrorMsg = data.getStdout();
 
                 if (!StringUtils.isBlank(responseErrorMsg)) {
-                    String credentialsNotFoundMsg = getGenericCredentialsNotFoundMsg(credentialProgramName);
+                    String credentialsNotFoundMsg = getGenericCredentialsNotFoundMsg(
+                        responseErrorMsg,
+                        credentialProgramName
+                    );
                     if (credentialsNotFoundMsg != null && credentialsNotFoundMsg.equals(responseErrorMsg)) {
                         log.info(
                             "Credential helper/store ({}) does not have credentials for {}",
@@ -300,15 +304,16 @@ public class RegistryAuthLocator {
                     }
 
                     log.debug(
-                        "Failure running docker credential helper/store ({}) with output '{}'",
+                        "Failure running docker credential helper/store ({}) with output '{}' and error '{}'",
                         credentialProgramName,
-                        responseErrorMsg
+                        responseErrorMsg,
+                        data.getStderr()
                     );
                 } else {
                     log.debug("Failure running docker credential helper/store ({})", credentialProgramName);
                 }
 
-                throw new InvalidResultException(data.getStderr(), null);
+                throw new InvalidResultException(data.getStdout(), null);
             }
         } catch (Exception e) {
             log.debug("Failure running docker credential helper/store ({})", credentialProgramName);
@@ -344,46 +349,11 @@ public class RegistryAuthLocator {
         );
     }
 
-    private String getGenericCredentialsNotFoundMsg(String credentialHelperName) {
+    private String getGenericCredentialsNotFoundMsg(String credentialsNotFoundMsg, String credentialHelperName) {
         if (!CREDENTIALS_HELPERS_NOT_FOUND_MESSAGE_CACHE.containsKey(credentialHelperName)) {
-            String credentialsNotFoundMsg = discoverCredentialsHelperNotFoundMessage(credentialHelperName);
-            if (!StringUtils.isBlank(credentialsNotFoundMsg)) {
-                CREDENTIALS_HELPERS_NOT_FOUND_MESSAGE_CACHE.put(credentialHelperName, credentialsNotFoundMsg);
-            }
+            CREDENTIALS_HELPERS_NOT_FOUND_MESSAGE_CACHE.put(credentialHelperName, credentialsNotFoundMsg);
         }
-
         return CREDENTIALS_HELPERS_NOT_FOUND_MESSAGE_CACHE.get(credentialHelperName);
-    }
-
-    private String discoverCredentialsHelperNotFoundMessage(String credentialHelperName) {
-        // will do fake call to given credential helper to find out with which message
-        // it response when there are no credentials for given hostName
-
-        // hostName should be valid, but most probably not existing
-        // IF its not enough, then should probably run 'list' command first to be sure...
-        final String notExistentFakeHostName = "https://not.a.real.registry/url";
-
-        String credentialsNotFoundMsg = null;
-        try {
-            CredentialOutput data = runCredentialProgram(notExistentFakeHostName, credentialHelperName);
-
-            if (data.getStderr() != null && !data.getStderr().isEmpty()) {
-                credentialsNotFoundMsg = data.getStderr();
-
-                log.debug(
-                    "Got credentials not found error message from docker credential helper - {}",
-                    credentialsNotFoundMsg
-                );
-            }
-        } catch (Exception e) {
-            log.warn(
-                "Failure running docker credential helper ({}) with fake call, expected 'credentials not found' response. Exception message: {}",
-                credentialHelperName,
-                e.getMessage()
-            );
-        }
-
-        return credentialsNotFoundMsg;
     }
 
     private CredentialOutput runCredentialProgram(String hostName, String credentialHelperName)
@@ -395,50 +365,55 @@ public class RegistryAuthLocator {
         StringBuffer stdout = new StringBuffer();
         StringBuffer stderr = new StringBuffer();
 
-        try {
-            new ProcessExecutor()
-                .command(command)
-                .redirectInput(new ByteArrayInputStream(hostName.getBytes()))
-                .redirectOutput(
-                    new LogOutputStream() {
-                        @Override
-                        protected void processLine(String line) {
-                            stdout.append(line).append(System.lineSeparator());
-                        }
+        ProcessResult processResult = new ProcessExecutor()
+            .command(command)
+            .redirectInput(new ByteArrayInputStream(hostName.getBytes()))
+            .redirectOutput(
+                new LogOutputStream() {
+                    @Override
+                    protected void processLine(String line) {
+                        stdout.append(line).append(System.lineSeparator());
                     }
-                )
-                .redirectError(
-                    new LogOutputStream() {
-                        @Override
-                        protected void processLine(String line) {
-                            stderr.append(line).append(System.lineSeparator());
-                        }
+                }
+            )
+            .redirectError(
+                new LogOutputStream() {
+                    @Override
+                    protected void processLine(String line) {
+                        stderr.append(line).append(System.lineSeparator());
                     }
-                )
-                .exitValueNormal()
-                .timeout(30, TimeUnit.SECONDS)
-                .execute();
-        } catch (InvalidResultException e) {}
+                }
+            )
+            .timeout(30, TimeUnit.SECONDS)
+            .execute();
+        int exitValue = processResult.getExitValue();
 
-        return new CredentialOutput(stdout.toString(), stderr.toString());
+        return new CredentialOutput(exitValue, stdout.toString(), stderr.toString());
     }
 
     static class CredentialOutput {
+
+        private final int exitValue;
 
         private final String stdout;
 
         private final String stderr;
 
-        public CredentialOutput(String stdout, String stderr) {
+        public CredentialOutput(int exitValue, String stdout, String stderr) {
+            this.exitValue = exitValue;
             this.stdout = stdout.trim();
             this.stderr = stderr.trim();
         }
 
-        public String getStdout() {
+        int getExitValue() {
+            return this.exitValue;
+        }
+
+        String getStdout() {
             return this.stdout;
         }
 
-        public String getStderr() {
+        String getStderr() {
             return this.stderr;
         }
     }
