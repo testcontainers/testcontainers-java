@@ -48,7 +48,7 @@ The two APIs are quite similar, and most examples provided on this page can be a
 
 ## Accessing a Container
 
-ComposeContainer provides methods for discovering how your tests can interact with the containers:
+`ComposeContainer` provides methods for discovering how your tests can interact with the containers:
 
 * `getServiceHost(serviceName, servicePort)` returns the IP address where the container is listening (via an ambassador
     container)
