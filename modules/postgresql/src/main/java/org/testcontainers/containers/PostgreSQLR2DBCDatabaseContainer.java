@@ -32,4 +32,17 @@ public final class PostgreSQLR2DBCDatabaseContainer implements R2DBCDatabaseCont
             .option(ConnectionFactoryOptions.PASSWORD, container.getPassword())
             .build();
     }
+
+    public static String getR2dbcUrl(PostgreSQLContainer<?> container) {
+        String additionalUrlParams = container.constructUrlParameters("?", "&");
+        return (
+            "r2dbc:postgresql://" +
+                container.getHost() +
+                ":" +
+                container.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT) +
+                "/" +
+                container.getDatabaseName() +
+                additionalUrlParams
+        );
+    }
 }

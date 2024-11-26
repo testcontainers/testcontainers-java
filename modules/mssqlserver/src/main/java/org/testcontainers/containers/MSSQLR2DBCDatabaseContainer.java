@@ -33,4 +33,9 @@ public class MSSQLR2DBCDatabaseContainer implements R2DBCDatabaseContainer {
             .option(ConnectionFactoryOptions.PASSWORD, container.getPassword())
             .build();
     }
+
+    public static String getR2dbcUrl(MSSQLServerContainer<?> container) {
+        String additionalUrlParams = container.constructUrlParameters(";", ";");
+        return "r2dbc:sqlserver://" + container.getHost() + ":" + container.getMappedPort(MSSQLServerContainer.MS_SQL_SERVER_PORT) + additionalUrlParams;
+    }
 }
