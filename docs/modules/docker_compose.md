@@ -2,7 +2,8 @@
 
 ## Benefits
 
-Similar to generic container support, it's also possible to run a bespoke set of services specified in a `docker-compose.yml` file. 
+Similar to generic container support, it's also possible to run a bespoke set of services specified in a 
+`docker-compose.yml` file. 
 
 This is especially useful for projects where Docker Compose is already used in development 
 or other environments to define services that an application may be dependent upon.
@@ -34,12 +35,12 @@ services:
 Note that it is not necessary to define ports to be exposed in the YAML file, 
 as this would inhibit the reuse/inclusion of the file in other contexts.
 
-Instead, Testcontainers will spin up a small 'ambassador' container, 
+Instead, Testcontainers will spin up a small `ambassador` container, 
 which will proxy between the Compose-managed containers and ports that are accessible to our tests. 
 
 ## ComposeContainer vs DockerComposeContainer 
 
-So far, we discussed `ComposeContainer`, which is the equivalent of docker compose [version 2](https://www.docker.com/blog/announcing-compose-v2-general-availability/). 
+So far, we discussed `ComposeContainer`, which supports docker compose [version 2](https://www.docker.com/blog/announcing-compose-v2-general-availability/). 
 
 On the other hand, `DockerComposeContainer` utilizes Compose V1, which has been marked deprecated by Docker.
 
@@ -83,9 +84,7 @@ while our db service waits for a specific log message:
 [Wait for a custom command and a log message](../../core/src/test/java/org/testcontainers/junit/ComposeContainerWithWaitStrategies.java) inside_block:composeContainerWithCombinedWaitStrategies
 <!--/codeinclude-->
 
-!!! More on Wait Strategies
 
-    Refer to the documentation to learn how to use the API to create tailor-made strategies for [waiting until containers are fully started and ready](../features/startup_and_waits.md).    
 
 ## The 'Local Compose' Mode
 
@@ -113,12 +112,11 @@ We can use file and directory references.
 They are always resolved relative to the directory where the compose file resides.
 
 !!! note
-
     This can be used with `DockerComposeContainer` and `ComposeContainer`, but **only in the containerized Compose (not with `Local Compose` mode)**.
 
 ## Using private repositories in Docker compose
-When Docker Compose is used in container mode (not local), 
-it needs to be made aware of Docker settings for private repositories. 
+When Docker Compose is used in container mode (not local), it needs to be made aware of Docker
+settings for private repositories. 
 By default, those setting are located in `$HOME/.docker/config.json`. 
 
 There are 3 ways to specify location of the `config.json` for Docker Compose:
