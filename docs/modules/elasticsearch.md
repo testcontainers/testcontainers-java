@@ -10,7 +10,9 @@ Note that it's based on the [official Docker image](https://www.elastic.co/guide
 You can start an elasticsearch container instance from any Java application by using:
 
 <!--codeinclude-->
-[HttpClient](../../modules/elasticsearch/src/test/java/org/testcontainers/elasticsearch/ElasticsearchContainerTest.java) inside_block:httpClientContainer
+[HttpClient](../../modules/elasticsearch/src/test/java/org/testcontainers/elasticsearch/ElasticsearchContainerTest.java) inside_block:httpClientContainer7
+[HttpClient with Elasticsearch 8](../../modules/elasticsearch/src/test/java/org/testcontainers/elasticsearch/ElasticsearchContainerTest.java) inside_block:httpClientContainer8
+[HttpClient with Elasticsearch 8 and SSL disabled](../../modules/elasticsearch/src/test/java/org/testcontainers/elasticsearch/ElasticsearchContainerTest.java) inside_block:httpClientContainerNoSSL8
 [TransportClient](../../modules/elasticsearch/src/test/java/org/testcontainers/elasticsearch/ElasticsearchContainerTest.java) inside_block:transportClientContainer
 <!--/codeinclude-->
 
@@ -26,15 +28,6 @@ You can turn on security by providing a password:
 
 <!--codeinclude-->
 [HttpClient](../../modules/elasticsearch/src/test/java/org/testcontainers/elasticsearch/ElasticsearchContainerTest.java) inside_block:httpClientSecuredContainer
-<!--/codeinclude-->
-
-## Choose your Elasticsearch license
-
-If you prefer to start a Docker image with the pure OSS version (which means with no security in older versions or
-other new and advanced features), you can use this instead:
-
-<!--codeinclude-->
-[Elasticsearch OSS](../../modules/elasticsearch/src/test/java/org/testcontainers/elasticsearch/ElasticsearchContainerTest.java) inside_block:ossContainer
 <!--/codeinclude-->
 
 ## Adding this module to your project dependencies

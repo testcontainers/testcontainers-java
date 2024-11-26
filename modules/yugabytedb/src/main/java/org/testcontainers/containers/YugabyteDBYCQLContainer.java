@@ -13,6 +13,15 @@ import java.util.Set;
 
 /**
  * Testcontainers implementation for YugabyteDB YCQL API.
+ * <p>
+ * Supported image: {@code yugabytedb/yugabyte}
+ * <p>
+ * Exposed ports:
+ * <ul>
+ *     <li>YCQL: 5433</li>
+ *     <li>Master dashboard: 7000</li>
+ *     <li>Tserver dashboard: 9000</li>
+ * </ul>
  *
  * @see <a href="https://docs.yugabyte.com/stable/api/ycql/">YCQL API</a>
  */

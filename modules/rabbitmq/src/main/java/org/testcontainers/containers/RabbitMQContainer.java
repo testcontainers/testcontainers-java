@@ -9,7 +9,6 @@ import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.IOException;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -17,12 +16,22 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Testcontainer for RabbitMQ.
+ * Testcontainers implementation for RabbitMQ.
+ * <p>
+ * Supported image: {@code rabbitmq}
+ * <p>
+ * Exposed ports:
+ * <ul>
+ *     <li>5671 (AMQPS)</li>
+ *     <li>5672 (AMQP)</li>
+ *     <li>15671 (HTTPS)</li>
+ *     <li>15672 (HTTP)</li>
+ * </ul>
  */
 public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
 
     /**
-     * The image defaults to the official RabbitmQ image: <a href="https://hub.docker.com/_/rabbitmq/">RabbitMQ</a>.
+     * The image defaults to the official RabbitMQ image: <a href="https://hub.docker.com/_/rabbitmq/">RabbitMQ</a>.
      */
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("rabbitmq");
 
@@ -44,7 +53,7 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
 
     /**
      * Creates a RabbitMQ container using the official RabbitMQ docker image.
-     * @deprecated use {@link RabbitMQContainer(DockerImageName)} instead
+     * @deprecated use {@link #RabbitMQContainer(DockerImageName)} instead
      */
     @Deprecated
     public RabbitMQContainer() {
@@ -66,14 +75,16 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
 
         addExposedPorts(DEFAULT_AMQP_PORT, DEFAULT_AMQPS_PORT, DEFAULT_HTTP_PORT, DEFAULT_HTTPS_PORT);
 
-        this.waitStrategy =
-            Wait.forLogMessage(".*Server startup complete.*", 1).withStartupTimeout(Duration.ofSeconds(60));
+        waitingFor(Wait.forLogMessage(".*Server startup complete.*", 1));
     }
 
     @Override
     protected void configure() {
-        if (adminPassword != null) {
-            addEnv("RABBITMQ_DEFAULT_PASS", adminPassword);
+        if (this.adminUsername != null) {
+            addEnv("RABBITMQ_DEFAULT_USER", this.adminUsername);
+        }
+        if (this.adminPassword != null) {
+            addEnv("RABBITMQ_DEFAULT_PASS", this.adminPassword);
         }
     }
 
@@ -95,11 +106,14 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
      * @return The admin password for the <code>admin</code> account
      */
     public String getAdminPassword() {
-        return adminPassword;
+        return this.adminPassword;
     }
 
+    /**
+     * @return The admin user for the <code>admin</code> account
+     */
     public String getAdminUsername() {
-        return adminUsername;
+        return this.adminUsername;
     }
 
     public Integer getAmqpPort() {
@@ -144,6 +158,17 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
      */
     public String getHttpsUrl() {
         return "https://" + getHost() + ":" + getHttpsPort();
+    }
+
+    /**
+     * Sets the user for the admin (default is <pre>guest</pre>)
+     *
+     * @param adminUsername The admin user.
+     * @return This container.
+     */
+    public RabbitMQContainer withAdminUser(final String adminUsername) {
+        this.adminUsername = adminUsername;
+        return this;
     }
 
     /**
@@ -206,6 +231,10 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
             .withCopyFileToContainer(keyFile, "/etc/rabbitmq/rabbitmq_key.pem");
     }
 
+    /**
+     * @deprecated use {@link #execInContainer(String...)} instead
+     */
+    @Deprecated
     public RabbitMQContainer withPluginsEnabled(String... pluginNames) {
         List<String> command = new ArrayList<>(Arrays.asList("rabbitmq-plugins", "enable"));
         command.addAll(Arrays.asList(pluginNames));
@@ -213,6 +242,10 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
         return self();
     }
 
+    /**
+     * @deprecated use {@link #execInContainer(String...)} instead
+     */
+    @Deprecated
     public RabbitMQContainer withBinding(String source, String destination) {
         values.add(
             Arrays.asList("rabbitmqadmin", "declare", "binding", "source=" + source, "destination=" + destination)
@@ -220,6 +253,10 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
         return self();
     }
 
+    /**
+     * @deprecated use {@link #execInContainer(String...)} instead
+     */
+    @Deprecated
     public RabbitMQContainer withBinding(String vhost, String source, String destination) {
         values.add(
             Arrays.asList(
@@ -234,6 +271,10 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
         return self();
     }
 
+    /**
+     * @deprecated use {@link #execInContainer(String...)} instead
+     */
+    @Deprecated
     public RabbitMQContainer withBinding(
         String source,
         String destination,
@@ -256,6 +297,10 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
         return self();
     }
 
+    /**
+     * @deprecated use {@link #execInContainer(String...)} instead
+     */
+    @Deprecated
     public RabbitMQContainer withBinding(
         String vhost,
         String source,
@@ -280,6 +325,10 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
         return self();
     }
 
+    /**
+     * @deprecated use {@link #execInContainer(String...)} instead
+     */
+    @Deprecated
     public RabbitMQContainer withParameter(String component, String name, String value) {
         values.add(
             Arrays.asList(
@@ -294,6 +343,10 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
         return self();
     }
 
+    /**
+     * @deprecated use {@link #execInContainer(String...)} instead
+     */
+    @Deprecated
     public RabbitMQContainer withPermission(String vhost, String user, String configure, String write, String read) {
         values.add(
             Arrays.asList(
@@ -310,11 +363,19 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
         return self();
     }
 
+    /**
+     * @deprecated use {@link #execInContainer(String...)} instead
+     */
+    @Deprecated
     public RabbitMQContainer withUser(String name, String password) {
         values.add(Arrays.asList("rabbitmqadmin", "declare", "user", "name=" + name, "password=" + password, "tags="));
         return self();
     }
 
+    /**
+     * @deprecated use {@link #execInContainer(String...)} instead
+     */
+    @Deprecated
     public RabbitMQContainer withUser(String name, String password, Set<String> tags) {
         values.add(
             Arrays.asList(
@@ -329,6 +390,10 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
         return self();
     }
 
+    /**
+     * @deprecated use {@link #execInContainer(String...)} instead
+     */
+    @Deprecated
     public RabbitMQContainer withPolicy(String name, String pattern, Map<String, Object> definition) {
         values.add(
             Arrays.asList(
@@ -343,6 +408,10 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
         return self();
     }
 
+    /**
+     * @deprecated use {@link #execInContainer(String...)} instead
+     */
+    @Deprecated
     public RabbitMQContainer withPolicy(String vhost, String name, String pattern, Map<String, Object> definition) {
         values.add(
             Arrays.asList(
@@ -358,6 +427,10 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
         return self();
     }
 
+    /**
+     * @deprecated use {@link #execInContainer(String...)} instead
+     */
+    @Deprecated
     public RabbitMQContainer withPolicy(
         String name,
         String pattern,
@@ -380,6 +453,10 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
         return self();
     }
 
+    /**
+     * @deprecated use {@link #execInContainer(String...)} instead
+     */
+    @Deprecated
     public RabbitMQContainer withOperatorPolicy(String name, String pattern, Map<String, Object> definition) {
         values.add(
             new ArrayList<>(
@@ -396,6 +473,10 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
         return self();
     }
 
+    /**
+     * @deprecated use {@link #execInContainer(String...)} instead
+     */
+    @Deprecated
     public RabbitMQContainer withOperatorPolicy(
         String name,
         String pattern,
@@ -418,16 +499,28 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
         return self();
     }
 
+    /**
+     * @deprecated use {@link #execInContainer(String...)} instead
+     */
+    @Deprecated
     public RabbitMQContainer withVhost(String name) {
         values.add(Arrays.asList("rabbitmqadmin", "declare", "vhost", "name=" + name));
         return self();
     }
 
+    /**
+     * @deprecated use {@link #execInContainer(String...)} instead
+     */
+    @Deprecated
     public RabbitMQContainer withVhost(String name, boolean tracing) {
         values.add(Arrays.asList("rabbitmqadmin", "declare", "vhost", "name=" + name, "tracing=" + tracing));
         return self();
     }
 
+    /**
+     * @deprecated use {@link #execInContainer(String...)} instead
+     */
+    @Deprecated
     public RabbitMQContainer withVhostLimit(String vhost, String name, int value) {
         values.add(
             Arrays.asList("rabbitmqadmin", "declare", "vhost_limit", "vhost=" + vhost, "name=" + name, "value=" + value)
@@ -435,16 +528,28 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
         return self();
     }
 
+    /**
+     * @deprecated use {@link #execInContainer(String...)} instead
+     */
+    @Deprecated
     public RabbitMQContainer withQueue(String name) {
         values.add(Arrays.asList("rabbitmqadmin", "declare", "queue", "name=" + name));
         return self();
     }
 
+    /**
+     * @deprecated use {@link #execInContainer(String...)} instead
+     */
+    @Deprecated
     public RabbitMQContainer withQueue(String vhost, String name) {
         values.add(Arrays.asList("rabbitmqadmin", "--vhost=" + vhost, "declare", "queue", "name=" + name));
         return self();
     }
 
+    /**
+     * @deprecated use {@link #execInContainer(String...)} instead
+     */
+    @Deprecated
     public RabbitMQContainer withQueue(
         String name,
         boolean autoDelete,
@@ -465,6 +570,10 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
         return self();
     }
 
+    /**
+     * @deprecated use {@link #execInContainer(String...)} instead
+     */
+    @Deprecated
     public RabbitMQContainer withQueue(
         String vhost,
         String name,
@@ -487,11 +596,19 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
         return self();
     }
 
+    /**
+     * @deprecated use {@link #execInContainer(String...)} instead
+     */
+    @Deprecated
     public RabbitMQContainer withExchange(String name, String type) {
         values.add(Arrays.asList("rabbitmqadmin", "declare", "exchange", "name=" + name, "type=" + type));
         return self();
     }
 
+    /**
+     * @deprecated use {@link #execInContainer(String...)} instead
+     */
+    @Deprecated
     public RabbitMQContainer withExchange(String vhost, String name, String type) {
         values.add(
             Arrays.asList("rabbitmqadmin", "--vhost=" + vhost, "declare", "exchange", "name=" + name, "type=" + type)
@@ -499,6 +616,10 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
         return self();
     }
 
+    /**
+     * @deprecated use {@link #execInContainer(String...)} instead
+     */
+    @Deprecated
     public RabbitMQContainer withExchange(
         String name,
         String type,
@@ -523,6 +644,10 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
         return self();
     }
 
+    /**
+     * @deprecated use {@link #execInContainer(String...)} instead
+     */
+    @Deprecated
     public RabbitMQContainer withExchange(
         String vhost,
         String name,

@@ -20,7 +20,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
-public class ContainerWithFileInHomeIT {
+class ContainerWithFileInHomeIT {
 
     @Test
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
@@ -35,7 +35,7 @@ public class ContainerWithFileInHomeIT {
 
         try (
             final HiveMQContainer hivemq = new HiveMQContainer(
-                DockerImageName.parse("hivemq/hivemq-ce").withTag("2021.3")
+                DockerImageName.parse("hivemq/hivemq-ce").withTag("2024.3")
             )
                 .withHiveMQConfig(MountableFile.forClasspathResource("/inMemoryConfig.xml"))
                 .withExtension(hiveMQExtension)

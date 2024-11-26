@@ -1,5 +1,8 @@
 package org.testcontainers.junit;
 
+import com.google.common.io.Files;
+import com.google.common.io.Resources;
+import org.junit.Before;
 import org.junit.Test;
 import org.testcontainers.TestImages;
 import org.testcontainers.containers.BindMode;
@@ -7,6 +10,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.SelinuxContext;
 import org.testcontainers.utility.MountableFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
@@ -14,21 +18,40 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class CopyFileToContainerTest {
 
-    private static String containerPath = "/tmp/mappable-resource/";
+    private static String destinationOnHost;
+
+    private static String directoryInContainer = "/tmp/mappable-resource/";
 
     private static String fileName = "test-resource.txt";
+
+    @Before
+    public void setup() throws IOException {
+        destinationOnHost = File.createTempFile("testcontainers", null).getAbsolutePath();
+    }
 
     @Test
     public void checkFileCopied() throws IOException, InterruptedException {
         try (
+            // copyToContainer {
             GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
                 .withCommand("sleep", "3000")
-                .withCopyFileToContainer(MountableFile.forClasspathResource("/mappable-resource/"), containerPath)
+                .withCopyFileToContainer(
+                    MountableFile.forClasspathResource("/mappable-resource/"),
+                    directoryInContainer
+                )
+            // }
         ) {
             container.start();
-            String filesList = container.execInContainer("ls", "/tmp/mappable-resource").getStdout();
+            String filesList = container.execInContainer("ls", directoryInContainer).getStdout();
             assertThat(filesList).as("file list contains the file").contains(fileName);
+
+            // copyFileFromContainer {
+            container.copyFileFromContainer(directoryInContainer + fileName, destinationOnHost);
+            // }
         }
+
+        assertThat(Files.toByteArray(new File(destinationOnHost)))
+            .isEqualTo(Resources.toByteArray(getClass().getResource("/mappable-resource/" + fileName)));
     }
 
     @Test
@@ -36,7 +59,7 @@ public class CopyFileToContainerTest {
         try (
             GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
                 .withCommand("sleep", "3000")
-                .withClasspathResourceMapping("/mappable-resource/", containerPath, BindMode.READ_ONLY)
+                .withClasspathResourceMapping("/mappable-resource/", directoryInContainer, BindMode.READ_ONLY)
         ) {
             container.start();
             String filesList = container.execInContainer("ls", "/tmp/mappable-resource").getStdout();

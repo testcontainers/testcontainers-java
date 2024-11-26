@@ -1,0 +1,11 @@
+services:
+  redis:
+    image: redis
+    profiles:
+      - cache
+  db:
+    image: mysql:8.0.36
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: "true"
+    profiles:
+      - db

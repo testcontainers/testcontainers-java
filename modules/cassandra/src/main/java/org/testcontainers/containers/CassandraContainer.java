@@ -19,10 +19,15 @@ import java.util.Optional;
 import javax.script.ScriptException;
 
 /**
- * Cassandra container
- *
  * Testcontainers implementation for Apache Cassandra.
+ * <p>
+ * Supported image: {@code cassandra}
+ * <p>
+ * Exposed ports: 9042
+ *
+ * @deprecated use {@link org.testcontainers.cassandra.CassandraContainer} instead.
  */
+@Deprecated
 public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends GenericContainer<SELF> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("cassandra");
@@ -223,7 +228,7 @@ public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends G
     /**
      * Retrieve an {@link InetSocketAddress} for connecting to the Cassandra container via the driver.
      *
-     * @return A InetSocketAddrss representation of this Cassandra container's host and port.
+     * @return A InetSocketAddress representation of this Cassandra container's host and port.
      */
     public InetSocketAddress getContactPoint() {
         return new InetSocketAddress(getHost(), getMappedPort(CQL_PORT));

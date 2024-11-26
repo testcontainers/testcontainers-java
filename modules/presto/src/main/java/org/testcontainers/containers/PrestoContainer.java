@@ -32,7 +32,7 @@ public class PrestoContainer<SELF extends PrestoContainer<SELF>> extends JdbcDat
     private String catalog = null;
 
     /**
-     * @deprecated use {@link PrestoContainer(DockerImageName)} instead
+     * @deprecated use {@link #PrestoContainer(DockerImageName)} instead
      */
     @Deprecated
     public PrestoContainer() {

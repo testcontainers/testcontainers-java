@@ -1,5 +1,6 @@
 package org.testcontainers.containers.localstack;
 
+import com.github.dockerjava.api.command.InspectContainerResponse;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -8,6 +9,7 @@ import org.rnorth.ducttape.Preconditions;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 
@@ -22,6 +24,10 @@ import java.util.stream.Collectors;
 
 /**
  * Testcontainers implementation for LocalStack.
+ * <p>
+ * Supported images: {@code localstack/localstack}, {@code localstack/localstack-pro}
+ * <p>
+ * Exposed ports: 4566
  */
 @Slf4j
 public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
@@ -42,6 +48,12 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
     private static final String DEFAULT_TAG = "0.11.2";
 
     private static final String DEFAULT_REGION = "us-east-1";
+
+    private static final String DEFAULT_AWS_ACCESS_KEY_ID = "test";
+
+    private static final String DEFAULT_AWS_SECRET_ACCESS_KEY = "test";
+
+    private static final String STARTER_SCRIPT = "/testcontainers_start.sh";
 
     @Deprecated
     public static final String VERSION = DEFAULT_TAG;
@@ -72,7 +84,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
     private final boolean isVersion2;
 
     /**
-     * @deprecated use {@link LocalStackContainer(DockerImageName)} instead
+     * @deprecated use {@link #LocalStackContainer(DockerImageName)} instead
      */
     @Deprecated
     public LocalStackContainer() {
@@ -80,7 +92,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
     }
 
     /**
-     * @deprecated use {@link LocalStackContainer(DockerImageName)} instead
+     * @deprecated use {@link #LocalStackContainer(DockerImageName)} instead
      */
     @Deprecated
     public LocalStackContainer(String version) {
@@ -97,7 +109,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
     /**
      * @param dockerImageName    image name to use for Localstack
      * @param useLegacyMode      if true, each AWS service is exposed on a different port
-     * @deprecated use {@link LocalStackContainer(DockerImageName)} instead
+     * @deprecated use {@link #LocalStackContainer(DockerImageName)} instead
      */
     @Deprecated
     public LocalStackContainer(final DockerImageName dockerImageName, boolean useLegacyMode) {
@@ -111,6 +123,13 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
 
         withFileSystemBind(DockerClientFactory.instance().getRemoteDockerUnixSocketPath(), "/var/run/docker.sock");
         waitingFor(Wait.forLogMessage(".*Ready\\.\n", 1));
+        withCreateContainerCmdModifier(cmd -> {
+            cmd.withEntrypoint(
+                "sh",
+                "-c",
+                "while [ ! -f " + STARTER_SCRIPT + " ]; do sleep 0.1; done; " + STARTER_SCRIPT
+            );
+        });
     }
 
     private static boolean isVersion2(String version) {
@@ -137,8 +156,10 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
         return true;
     }
 
-    private static boolean shouldRunInLegacyMode(String version) {
-        if (version.equals("latest")) {
+    static boolean shouldRunInLegacyMode(String version) {
+        // assume that the latest images are up-to-date
+        // also consider images with extra packages (like latest-bigdata) and service-specific images (like s3-latest)
+        if (version.equals("latest") || version.startsWith("latest-") || version.endsWith("-latest")) {
             return false;
         }
 
@@ -177,6 +198,53 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
         }
 
         exposePorts();
+    }
+
+    @Override
+    protected void containerIsStarting(InspectContainerResponse containerInfo) {
+        String command = "#!/bin/bash\n";
+        command += "export LAMBDA_DOCKER_FLAGS=" + configureServiceContainerLabels("LAMBDA_DOCKER_FLAGS") + "\n";
+        command += "export ECS_DOCKER_FLAGS=" + configureServiceContainerLabels("ECS_DOCKER_FLAGS") + "\n";
+        command += "export EC2_DOCKER_FLAGS=" + configureServiceContainerLabels("EC2_DOCKER_FLAGS") + "\n";
+        command += "export BATCH_DOCKER_FLAGS=" + configureServiceContainerLabels("BATCH_DOCKER_FLAGS") + "\n";
+        command += "/usr/local/bin/docker-entrypoint.sh\n";
+        copyFileToContainer(Transferable.of(command, 0777), STARTER_SCRIPT);
+    }
+
+    /**
+     * Configure the LocalStack container to include the default testcontainers labels on all spawned lambda containers
+     * Necessary to properly clean up lambda containers even if the LocalStack container is killed before it gets the
+     * chance.
+     * @return the lambda container labels as a string
+     */
+    private String configureServiceContainerLabels(String existingEnvFlagKey) {
+        String internalMarkerFlags = internalMarkerLabels();
+        String existingFlags = getEnvMap().get(existingEnvFlagKey);
+        if (existingFlags != null) {
+            internalMarkerFlags = existingFlags + " " + internalMarkerFlags;
+        }
+        return "\"" + internalMarkerFlags + "\"";
+    }
+
+    /**
+     * Provides a docker argument string including all default labels set on testcontainers containers (excluding reuse labels)
+     * @return Argument string in the format `-l key1=value1 -l key2=value2`
+     */
+    private String internalMarkerLabels() {
+        return getContainerInfo()
+            .getConfig()
+            .getLabels()
+            .entrySet()
+            .stream()
+            .filter(entry -> entry.getKey().startsWith(DockerClientFactory.TESTCONTAINERS_LABEL))
+            .filter(entry -> {
+                return (
+                    !entry.getKey().equals("org.testcontainers.hash") &&
+                    !entry.getKey().equals("org.testcontainers.copied_files.hash")
+                );
+            })
+            .map(entry -> String.format("-l %s=%s", entry.getKey(), entry.getValue()))
+            .collect(Collectors.joining(" "));
     }
 
     private void resolveHostname(String envVar) {
@@ -289,6 +357,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
 
     /**
      * Provides a default access key that is preconfigured to communicate with a given simulated service.
+     * <a href="https://github.com/localstack/localstack/blob/master/doc/interaction/README.md?plain=1#L32">AWS Access Key</a>
      * The access key can be used to construct AWS SDK v2 clients:
      * <pre><code>S3Client s3 = S3Client
              .builder()
@@ -302,11 +371,12 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
      * @return a default access key
      */
     public String getAccessKey() {
-        return "accesskey";
+        return this.getEnvMap().getOrDefault("AWS_ACCESS_KEY_ID", DEFAULT_AWS_ACCESS_KEY_ID);
     }
 
     /**
      * Provides a default secret key that is preconfigured to communicate with a given simulated service.
+     * <a href="https://github.com/localstack/localstack/blob/master/doc/interaction/README.md?plain=1#L32">AWS Secret Key</a>
      * The secret key can be used to construct AWS SDK v2 clients:
      * <pre><code>S3Client s3 = S3Client
              .builder()
@@ -320,7 +390,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
      * @return a default secret key
      */
     public String getSecretKey() {
-        return "secretkey";
+        return this.getEnvMap().getOrDefault("AWS_SECRET_ACCESS_KEY", DEFAULT_AWS_SECRET_ACCESS_KEY);
     }
 
     /**

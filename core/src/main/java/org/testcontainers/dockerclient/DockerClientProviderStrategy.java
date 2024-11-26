@@ -31,7 +31,6 @@ import java.io.File;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
-import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
@@ -39,10 +38,11 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -206,17 +206,15 @@ public abstract class DockerClientProviderStrategy {
         }
 
         try (Socket socket = socketProvider.call()) {
-            Duration timeout = Duration.ofMillis(200);
             Awaitility
                 .await()
-                .atMost(TestcontainersConfiguration.getInstance().getClientPingTimeout(), TimeUnit.SECONDS)
-                .pollInterval(timeout)
+                .atMost(TestcontainersConfiguration.getInstance().getClientPingTimeout(), TimeUnit.SECONDS) // timeout after configured duration
+                .pollInterval(Duration.ofMillis(200)) // check state every 200ms
                 .pollDelay(Duration.ofSeconds(0)) // start checking immediately
-                .ignoreExceptionsInstanceOf(SocketTimeoutException.class)
-                .untilAsserted(() -> socket.connect(socketAddress, (int) timeout.toMillis()));
+                .untilAsserted(() -> socket.connect(socketAddress));
             return true;
         } catch (Exception e) {
-            log.warn("DOCKER_HOST {} is not listening", dockerHost);
+            log.warn("DOCKER_HOST {} is not listening", dockerHost, e);
             return false;
         }
     }
@@ -408,14 +406,15 @@ public abstract class DockerClientProviderStrategy {
         if (configBuilder.build().getApiVersion() == RemoteApiVersion.UNKNOWN_VERSION) {
             configBuilder.withApiVersion(RemoteApiVersion.VERSION_1_32);
         }
+        Map<String, String> headers = new HashMap<>();
+        headers.put("x-tc-sid", DockerClientFactory.SESSION_ID);
+        headers.put("User-Agent", String.format("tc-java/%s", DockerClientFactory.TESTCONTAINERS_VERSION));
+
         return DockerClientImpl.getInstance(
             new AuthDelegatingDockerClientConfig(
                 configBuilder.withDockerHost(transportConfig.getDockerHost().toString()).build()
             ),
-            new HeadersAddingDockerHttpClient(
-                dockerHttpClient,
-                Collections.singletonMap("x-tc-sid", DockerClientFactory.SESSION_ID)
-            )
+            new HeadersAddingDockerHttpClient(dockerHttpClient, headers)
         );
     }
 

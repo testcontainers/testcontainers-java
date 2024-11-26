@@ -14,32 +14,44 @@ body:
       description: Is this feature related to any of the existing modules?
       options:
         - Core
+        - ActiveMQ
         - Azure
         - Cassandra
+        - ChromaDB
         - Clickhouse
         - CockroachDB
         - CrateDB
         - Consul
         - Couchbase
+        - Databend
         - DB2
         - Dynalite
         - Elasticsearch
         - GCloud
+        - Grafana
         - HiveMQ
         - InfluxDB
         - K3S
+        - K6
         - Kafka
         - LocalStack
         - MariaDB
+        - Milvus
+        - MinIO
         - MockServer
         - MongoDB
         - MSSQLServer
         - MySQL
         - Neo4j
         - NGINX
-        - Oracle-XE
+        - OceanBase
+        - Ollama
+        - OpenFGA
+        - Oracle Free
+        - Oracle XE
         - OrientDB
         - PostgreSQL
+        - Qdrant
         - QuestDB
         - Presto
         - Pulsar
@@ -49,9 +61,12 @@ body:
         - Solace
         - Solr
         - TiDB
+        - Timeplus
         - ToxiProxy
         - Trino
+        - Typesense
         - Vault
+        - Weaviate
         - YugabyteDB
         - New Module
   - type: textarea
@@ -72,7 +87,7 @@ body:
     id: benefit
     attributes:
       label: Benefit
-      description: What's the benefit of addng this feature to the project?
+      description: What's the benefit of adding this feature to the project?
     validations:
       required: true
   - type: textarea

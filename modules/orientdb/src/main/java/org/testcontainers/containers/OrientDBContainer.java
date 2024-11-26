@@ -9,7 +9,7 @@ import lombok.NonNull;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 
@@ -19,6 +19,17 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Optional;
 
+/**
+ * Testcontainers implementation for OrientDB.
+ * <p>
+ * Supported image: {@code orientdb}
+ * <p>
+ * Exposed ports:
+ * <ul>
+ *     <li>Database: 2424</li>
+ *     <li>Studio: 2480</li>
+ * </ul>
+ */
 public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrientDBContainer.class);
@@ -50,7 +61,7 @@ public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
     private ODatabaseSession session;
 
     /**
-     * @deprecated use {@link OrientDBContainer(DockerImageName)} instead
+     * @deprecated use {@link #OrientDBContainer(DockerImageName)} instead
      */
     @Deprecated
     public OrientDBContainer() {
@@ -68,7 +79,7 @@ public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
         serverPassword = DEFAULT_SERVER_PASSWORD;
         databaseName = DEFAULT_DATABASE_NAME;
 
-        waitStrategy = new LogMessageWaitStrategy().withRegEx(".*OrientDB Studio available.*");
+        waitStrategy = Wait.forLogMessage(".*OrientDB Studio available.*", 1);
 
         addExposedPorts(DEFAULT_BINARY_PORT, DEFAULT_HTTP_PORT);
     }

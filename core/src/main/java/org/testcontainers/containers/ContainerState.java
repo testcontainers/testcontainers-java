@@ -22,12 +22,12 @@ import org.testcontainers.utility.LogUtils;
 import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.ThrowingFunction;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -245,7 +245,7 @@ public interface ContainerState {
      * Run a command inside a running container, as though using "docker exec", and interpreting
      * the output as UTF8.
      * <p>
-     * @see ExecInContainerPattern#execInContainer(com.github.dockerjava.api.command.InspectContainerResponse, String...)
+     * @see #execInContainer(Charset, String...)
      */
     default Container.ExecResult execInContainer(String... command)
         throws UnsupportedOperationException, IOException, InterruptedException {
@@ -255,11 +255,60 @@ public interface ContainerState {
     /**
      * Run a command inside a running container, as though using "docker exec".
      * <p>
-     * @see ExecInContainerPattern#execInContainer(com.github.dockerjava.api.command.InspectContainerResponse, Charset, String...)
+     * @see ExecInContainerPattern#execInContainer(DockerClient, InspectContainerResponse, Charset, String...)
      */
     default Container.ExecResult execInContainer(Charset outputCharset, String... command)
         throws UnsupportedOperationException, IOException, InterruptedException {
         return ExecInContainerPattern.execInContainer(getDockerClient(), getContainerInfo(), outputCharset, command);
+    }
+
+    /**
+     * Run a command inside a running container as a given user, as using "docker exec -u user".
+     * <p>
+     * @see ExecInContainerPattern#execInContainerWithUser(DockerClient, InspectContainerResponse, String, String...)
+     * @deprecated use {@link #execInContainer(ExecConfig)}
+     */
+    @Deprecated
+    default Container.ExecResult execInContainerWithUser(String user, String... command)
+        throws UnsupportedOperationException, IOException, InterruptedException {
+        return ExecInContainerPattern.execInContainer(
+            getDockerClient(),
+            getContainerInfo(),
+            ExecConfig.builder().user(user).command(command).build()
+        );
+    }
+
+    /**
+     * Run a command inside a running container as a given user, as using "docker exec -u user".
+     * <p>
+     * @see ExecInContainerPattern#execInContainerWithUser(DockerClient, InspectContainerResponse, Charset, String, String...)
+     * @deprecated use {@link #execInContainer(Charset, ExecConfig)}
+     */
+    @Deprecated
+    default Container.ExecResult execInContainerWithUser(Charset outputCharset, String user, String... command)
+        throws UnsupportedOperationException, IOException, InterruptedException {
+        return ExecInContainerPattern.execInContainer(
+            getDockerClient(),
+            getContainerInfo(),
+            outputCharset,
+            ExecConfig.builder().user(user).command(command).build()
+        );
+    }
+
+    /**
+     * Run a command inside a running container, as though using "docker exec".
+     */
+    default Container.ExecResult execInContainer(ExecConfig execConfig)
+        throws UnsupportedOperationException, IOException, InterruptedException {
+        return ExecInContainerPattern.execInContainer(getDockerClient(), getContainerInfo(), execConfig);
+    }
+
+    /**
+     * Run a command inside a running container, as though using "docker exec".
+     */
+    default Container.ExecResult execInContainer(Charset outputCharset, ExecConfig execConfig)
+        throws UnsupportedOperationException, IOException, InterruptedException {
+        return ExecInContainerPattern.execInContainer(getDockerClient(), getContainerInfo(), outputCharset, execConfig);
     }
 
     /**
@@ -290,27 +339,37 @@ public interface ContainerState {
      * @param transferable file which is copied into the container
      * @param containerPath destination path inside the container
      */
-    @SneakyThrows(IOException.class)
+    @SneakyThrows({ IOException.class, InterruptedException.class })
     default void copyFileToContainer(Transferable transferable, String containerPath) {
         if (getContainerId() == null) {
             throw new IllegalStateException("copyFileToContainer can only be used with created / running container");
         }
 
         try (
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            TarArchiveOutputStream tarArchive = new TarArchiveOutputStream(byteArrayOutputStream)
+            PipedOutputStream pipedOutputStream = new PipedOutputStream();
+            PipedInputStream pipedInputStream = new PipedInputStream(pipedOutputStream);
+            TarArchiveOutputStream tarArchive = new TarArchiveOutputStream(pipedOutputStream)
         ) {
-            tarArchive.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
-            tarArchive.setBigNumberMode(TarArchiveOutputStream.BIGNUMBER_POSIX);
+            Thread thread = new Thread(() -> {
+                try {
+                    tarArchive.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
+                    tarArchive.setBigNumberMode(TarArchiveOutputStream.BIGNUMBER_POSIX);
 
-            transferable.transferTo(tarArchive, containerPath);
-            tarArchive.finish();
+                    transferable.transferTo(tarArchive, containerPath);
+                } finally {
+                    IOUtils.closeQuietly(tarArchive);
+                }
+            });
+
+            thread.start();
 
             getDockerClient()
                 .copyArchiveToContainerCmd(getContainerId())
-                .withTarInputStream(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()))
+                .withTarInputStream(pipedInputStream)
                 .withRemotePath("/")
                 .exec();
+
+            thread.join();
         }
     }
 

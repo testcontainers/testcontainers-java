@@ -35,7 +35,7 @@ public class ConnectionUrlDriversTests {
     public static Iterable<Object[]> data() {
         return Arrays.asList(
             new Object[][] {
-                { "jdbc:tc:mysql:5.7.34://hostname/test", "mysql", Optional.of("5.7.34"), "hostname/test", "test" },
+                { "jdbc:tc:mysql:8.0.36://hostname/test", "mysql", Optional.of("8.0.36"), "hostname/test", "test" },
                 { "jdbc:tc:mysql://hostname/test", "mysql", Optional.empty(), "hostname/test", "test" },
                 {
                     "jdbc:tc:postgresql:1.2.3://hostname/test",

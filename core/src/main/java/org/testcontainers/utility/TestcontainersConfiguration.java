@@ -138,7 +138,7 @@ public class TestcontainersConfiguration {
     }
 
     public boolean isRyukPrivileged() {
-        return Boolean.parseBoolean(getEnvVarOrProperty("ryuk.container.privileged", "false"));
+        return Boolean.parseBoolean(getEnvVarOrProperty("ryuk.container.privileged", "true"));
     }
 
     @Deprecated
@@ -181,7 +181,6 @@ public class TestcontainersConfiguration {
 
     @UnstableAPI
     public boolean environmentSupportsReuse() {
-        // specifically not supported as an environment variable or classpath property
         return Boolean.parseBoolean(getEnvVarOrUserProperty("testcontainers.reuse.enable", "false"));
     }
 
@@ -209,8 +208,16 @@ public class TestcontainersConfiguration {
         return Integer.parseInt(getEnvVarOrProperty("pull.pause.timeout", "30"));
     }
 
+    public Integer getImagePullTimeout() {
+        return Integer.parseInt(getEnvVarOrProperty("pull.timeout", "120"));
+    }
+
     public String getImageSubstitutorClassName() {
         return getEnvVarOrProperty("image.substitutor", null);
+    }
+
+    public String getImagePullPolicy() {
+        return getEnvVarOrProperty("pull.policy", null);
     }
 
     public Integer getClientPingTimeout() {

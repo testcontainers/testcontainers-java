@@ -67,6 +67,8 @@ public class ComposeContainer extends FailureDetectingExternalResource implement
 
     private String project;
 
+    private List<String> filesInDirectory = new ArrayList<>();
+
     public ComposeContainer(File... composeFiles) {
         this(Arrays.asList(composeFiles));
     }
@@ -134,7 +136,8 @@ public class ComposeContainer extends FailureDetectingExternalResource implement
                     this.options,
                     this.services,
                     this.scalingPreferences,
-                    this.env
+                    this.env,
+                    this.filesInDirectory
                 );
             this.composeDelegate.startAmbassadorContainer();
             this.composeDelegate.waitUntilServiceStarted(this.tailChildContainers);
@@ -158,15 +161,17 @@ public class ComposeContainer extends FailureDetectingExternalResource implement
                 this.composeDelegate.getAmbassadorContainer().stop();
 
                 // Kill the services using docker
-                String cmd = "compose down";
+                String cmd = ComposeCommand.getDownCommand(ComposeDelegate.ComposeVersion.V2, this.options);
+
                 if (removeVolumes) {
                     cmd += " -v";
                 }
                 if (removeImages != null) {
                     cmd += " --rmi " + removeImages.dockerRemoveImagesType();
                 }
-                this.composeDelegate.runWithCompose(this.localCompose, cmd);
+                this.composeDelegate.runWithCompose(this.localCompose, cmd, this.env, this.filesInDirectory);
             } finally {
+                this.composeDelegate.clear();
                 this.project = this.composeDelegate.randomProjectId();
             }
         }
@@ -349,6 +354,11 @@ public class ComposeContainer extends FailureDetectingExternalResource implement
      */
     public ComposeContainer withStartupTimeout(Duration startupTimeout) {
         this.composeDelegate.setStartupTimeout(startupTimeout);
+        return this;
+    }
+
+    public ComposeContainer withCopyFilesInContainer(String... fileCopyInclusions) {
+        this.filesInDirectory = Arrays.asList(fileCopyInclusions);
         return this;
     }
 

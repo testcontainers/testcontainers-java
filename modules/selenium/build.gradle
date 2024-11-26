@@ -6,14 +6,14 @@ dependencies {
     provided 'org.seleniumhq.selenium:selenium-remote-driver:4.10.0'
     provided 'org.seleniumhq.selenium:selenium-chrome-driver:4.10.0'
 
-    testImplementation platform('org.seleniumhq.selenium:selenium-bom:4.10.0')
+    testImplementation platform('org.seleniumhq.selenium:selenium-bom:4.13.0')
     testImplementation 'org.seleniumhq.selenium:selenium-firefox-driver'
     testImplementation 'org.seleniumhq.selenium:selenium-edge-driver'
     testImplementation 'org.seleniumhq.selenium:selenium-support'
 
     testImplementation 'org.mortbay.jetty:jetty:6.1.26'
     testImplementation project(':nginx')
-    testImplementation 'org.assertj:assertj-core:3.24.2'
+    testImplementation 'org.assertj:assertj-core:3.26.3'
 
-    compileOnly 'org.jetbrains:annotations:24.0.1'
+    compileOnly 'org.jetbrains:annotations:24.1.0'
 }

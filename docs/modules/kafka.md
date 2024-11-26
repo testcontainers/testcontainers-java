@@ -1,7 +1,16 @@
-# Kafka Containers
+# Kafka Module
 
 Testcontainers can be used to automatically instantiate and manage [Apache Kafka](https://kafka.apache.org) containers.
-More precisely Testcontainers uses the official Docker images for [Confluent OSS Platform](https://hub.docker.com/r/confluentinc/cp-kafka/)
+
+Currently, two different Kafka images are supported:
+
+* `org.testcontainers.kafka.ConfluentKafkaContainer` supports 
+[confluentinc/cp-kafka](https://hub.docker.com/r/confluentinc/cp-kafka/)
+* `org.testcontainers.kafka.KafkaContainer` supports [apache/kafka](https://hub.docker.com/r/apache/kafka/) and [apache/kafka-native](https://hub.docker.com/r/apache/kafka-native/)
+
+!!! note
+    `org.testcontainers.containers.KafkaContainer` is deprecated.
+    Please use `org.testcontainers.kafka.ConfluentKafkaContainer` or `org.testcontainers.kafka.KafkaContainer` instead, depending on the used image.
 
 ## Benefits
 
@@ -10,7 +19,10 @@ More precisely Testcontainers uses the official Docker images for [Confluent OSS
 
 ## Example
 
+### Using org.testcontainers.containers.KafkaContainer
+
 Create a `KafkaContainer` to use it in your tests:
+
 <!--codeinclude-->
 [Creating a KafkaContainer](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:constructorWithVersion
 <!--/codeinclude-->
@@ -23,9 +35,31 @@ Now your tests or any other process running on your machine can get access to ru
 [Bootstrap Servers](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:getBootstrapServers
 <!--/codeinclude-->
 
+### Using org.testcontainers.kafka.ConfluentKafkaContainer
+
+!!! note
+    Compatible with `confluentinc/cp-kafka` images version `7.4.0` and later.
+
+Create a `ConfluentKafkaContainer` to use it in your tests:
+
+<!--codeinclude-->
+[Creating a ConlfuentKafkaContainer](../../modules/kafka/src/test/java/org/testcontainers/kafka/ConfluentKafkaContainerTest.java) inside_block:constructorWithVersion
+<!--/codeinclude-->
+
+### Using org.testcontainers.kafka.KafkaContainer
+
+Create a `KafkaContainer` to use it in your tests:
+
+<!--codeinclude-->
+[Creating a KafkaContainer](../../modules/kafka/src/test/java/org/testcontainers/kafka/KafkaContainerTest.java) inside_block:constructorWithVersion
+<!--/codeinclude-->
+
 ## Options
         
 ### <a name="zookeeper"></a> Using external Zookeeper
+
+!!! note
+    Only available for `org.testcontainers.containers.KafkaContainer`
 
 If for some reason you want to use an externally running Zookeeper, then just pass its location during construction:
 <!--codeinclude-->
@@ -34,26 +68,37 @@ If for some reason you want to use an externally running Zookeeper, then just pa
 
 ### Using Kraft mode
 
-KRaft mode was declared production ready in 3.3.1 (confluentinc/cp-kafka:7.3.x)" 
+!!! note
+    Only available for `org.testcontainers.containers.KafkaContainer`
+
+KRaft mode was declared production ready in 3.3.1 (confluentinc/cp-kafka:7.3.x) 
 
 <!--codeinclude-->
 [Kraft mode](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:withKraftMode
 <!--/codeinclude-->
 
-See the [versions interoperability matrix](https://docs.confluent.io/platform/current/installation/versions-interoperability.html) for more details. 
+See the [versions interoperability matrix](https://docs.confluent.io/platform/current/installation/versions-interoperability.html) for more details.
 
-## Multi-container usage
+### Register listeners
 
-If your test needs to run some other Docker container which needs access to Kafka, do the following:
+There are scenarios where additional listeners are needed because the consumer/producer can be in another
+container in the same network or a different process where the port to connect differs from the default exposed port. E.g [Toxiproxy](../../modules/toxiproxy/).
 
-* Run your other container on the same network as Kafka container, e.g.:
 <!--codeinclude-->
-[Network](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:withKafkaNetwork
+[Register additional listener](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:registerListener
 <!--/codeinclude-->
-* Use `kafka.getNetworkAliases().get(0)+":9092"` as bootstrap server location. 
-Or just give your Kafka container a network alias of your liking.
 
-You will need to explicitly create a network and set it on the Kafka container as well as on your other containers that need to communicate with Kafka.
+Container defined in the same network:
+
+<!--codeinclude-->
+[Create kcat container](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:createKCatContainer
+<!--/codeinclude-->
+
+Client using the new registered listener:
+
+<!--codeinclude-->
+[Produce/Consume via new listener](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:produceConsumeMessage
+<!--/codeinclude-->
 
 ## Adding this module to your project dependencies
 

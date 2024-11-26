@@ -1,0 +1,8 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8080"
+    env_file:
+      - '.env'
+      - './test/.env'
