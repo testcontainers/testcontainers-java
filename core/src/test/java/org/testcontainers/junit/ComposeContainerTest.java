@@ -18,11 +18,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ComposeContainerTest extends BaseComposeTest {
 
     @Rule
+    // composeContainerConstructor {
     public ComposeContainer environment = new ComposeContainer(
         new File("src/test/resources/composev2/compose-test.yml")
     )
         .withExposedService("redis-1", REDIS_PORT)
         .withExposedService("db-1", 3306);
+
+    // }
 
     @Override
     protected ComposeContainer getEnvironment() {
@@ -30,9 +33,15 @@ public class ComposeContainerTest extends BaseComposeTest {
     }
 
     @Test
-    public void testGetServicePort() {
+    public void testGetServiceHostAndPort() {
+        // getServiceHostAndPort {
+        String serviceHost = environment.getServiceHost("redis-1", REDIS_PORT);
         int serviceWithInstancePort = environment.getServicePort("redis-1", REDIS_PORT);
+        // }
+
+        assertThat(serviceHost).as("Service host is not blank").isNotBlank();
         assertThat(serviceWithInstancePort).as("Port is set for service with instance number").isNotNull();
+
         int serviceWithoutInstancePort = environment.getServicePort("redis", REDIS_PORT);
         assertThat(serviceWithoutInstancePort).as("Port is set for service with instance number").isNotNull();
         assertThat(serviceWithoutInstancePort).as("Service ports are the same").isEqualTo(serviceWithInstancePort);

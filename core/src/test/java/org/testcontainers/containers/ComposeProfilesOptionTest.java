@@ -37,9 +37,11 @@ public class ComposeProfilesOptionTest {
     @Test
     public void testProfileOption() {
         try (
+            // composeContainerWithLocalCompose {
             ComposeContainer compose = new ComposeContainer(COMPOSE_FILE)
-                .withOptions("--profile=cache")
                 .withLocalCompose(true)
+                // }
+                .withOptions("--profile=cache")
         ) {
             compose.start();
             assertThat(compose.listChildContainers()).hasSize(1);

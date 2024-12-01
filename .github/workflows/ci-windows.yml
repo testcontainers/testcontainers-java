@@ -42,6 +42,9 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  DEVELOCITY_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
+
 jobs:
   main:
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
