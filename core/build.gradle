@@ -33,7 +33,7 @@ task jarFileTest(type: Test) {
     testClassesDirs = sourceSets.jarFileTest.output.classesDirs
     classpath = sourceSets.jarFileTest.runtimeClasspath
 
-    file(shadowJar.outputs.files.singleFile) // input for correct caching
+    inputs.file(shadowJar.outputs.files.singleFile) // input for correct caching
     systemProperty("jarFile", shadowJar.outputs.files.singleFile)
 
     dependsOn(shadowJar)
