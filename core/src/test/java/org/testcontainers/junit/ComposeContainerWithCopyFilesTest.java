@@ -49,11 +49,13 @@ public class ComposeContainerWithCopyFilesTest {
     @Test
     public void testWithFileCopyInclusionUsingDirectoryPath() throws IOException {
         try (
+            // composeContainerWithCopyFiles {
             ComposeContainer environment = new ComposeContainer(
                 new File("src/test/resources/compose-file-copy-inclusions/compose-test-only.yml")
             )
                 .withExposedService("app", 8080)
                 .withCopyFilesInContainer("Dockerfile", "EnvVariableRestEndpoint.java", "test")
+            // }
         ) {
             environment.start();
 

@@ -9,7 +9,6 @@ import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.IOException;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -76,14 +75,16 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
 
         addExposedPorts(DEFAULT_AMQP_PORT, DEFAULT_AMQPS_PORT, DEFAULT_HTTP_PORT, DEFAULT_HTTPS_PORT);
 
-        this.waitStrategy =
-            Wait.forLogMessage(".*Server startup complete.*", 1).withStartupTimeout(Duration.ofSeconds(60));
+        waitingFor(Wait.forLogMessage(".*Server startup complete.*", 1));
     }
 
     @Override
     protected void configure() {
-        if (adminPassword != null) {
-            addEnv("RABBITMQ_DEFAULT_PASS", adminPassword);
+        if (this.adminUsername != null) {
+            addEnv("RABBITMQ_DEFAULT_USER", this.adminUsername);
+        }
+        if (this.adminPassword != null) {
+            addEnv("RABBITMQ_DEFAULT_PASS", this.adminPassword);
         }
     }
 
@@ -105,11 +106,14 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
      * @return The admin password for the <code>admin</code> account
      */
     public String getAdminPassword() {
-        return adminPassword;
+        return this.adminPassword;
     }
 
+    /**
+     * @return The admin user for the <code>admin</code> account
+     */
     public String getAdminUsername() {
-        return adminUsername;
+        return this.adminUsername;
     }
 
     public Integer getAmqpPort() {
@@ -154,6 +158,17 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
      */
     public String getHttpsUrl() {
         return "https://" + getHost() + ":" + getHttpsPort();
+    }
+
+    /**
+     * Sets the user for the admin (default is <pre>guest</pre>)
+     *
+     * @param adminUsername The admin user.
+     * @return This container.
+     */
+    public RabbitMQContainer withAdminUser(final String adminUsername) {
+        this.adminUsername = adminUsername;
+        return this;
     }
 
     /**

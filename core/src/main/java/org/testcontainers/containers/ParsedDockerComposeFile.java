@@ -78,16 +78,16 @@ class ParsedDockerComposeFile {
 
     private void parseAndValidate() {
         final Map<String, ?> servicesMap;
-        if (composeFileContent.containsKey("version")) {
-            if ("2.0".equals(composeFileContent.get("version"))) {
-                log.warn(
-                    "Testcontainers may not be able to clean up networks spawned using Docker Compose v2.0 files. " +
-                    "Please see https://github.com/testcontainers/moby-ryuk/issues/2, and specify 'version: \"2.1\"' or " +
-                    "higher in {}",
-                    composeFileName
-                );
-            }
+        if (composeFileContent.containsKey("version") && "2.0".equals(composeFileContent.get("version"))) {
+            log.warn(
+                "Testcontainers may not be able to clean up networks spawned using Docker Compose v2.0 files. " +
+                "Please see https://github.com/testcontainers/moby-ryuk/issues/2, and specify 'version: \"2.1\"' or " +
+                "higher in {}",
+                composeFileName
+            );
+        }
 
+        if (composeFileContent.containsKey("services")) {
             final Object servicesElement = composeFileContent.get("services");
             if (servicesElement == null) {
                 log.debug(
