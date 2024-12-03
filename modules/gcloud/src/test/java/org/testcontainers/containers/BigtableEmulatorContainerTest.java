@@ -15,6 +15,7 @@ import com.google.cloud.bigtable.data.v2.BigtableDataSettings;
 import com.google.cloud.bigtable.data.v2.models.Row;
 import com.google.cloud.bigtable.data.v2.models.RowCell;
 import com.google.cloud.bigtable.data.v2.models.RowMutation;
+import com.google.cloud.bigtable.data.v2.models.TableId;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import org.junit.Rule;
@@ -23,7 +24,6 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -43,28 +43,26 @@ public class BigtableEmulatorContainerTest {
 
     @Test
     // testWithEmulatorContainer {
-    public void testSimple() throws IOException, InterruptedException, ExecutionException {
+    public void testSimple() throws IOException {
         ManagedChannel channel = ManagedChannelBuilder.forTarget(emulator.getEmulatorEndpoint()).usePlaintext().build();
 
         TransportChannelProvider channelProvider = FixedTransportChannelProvider.create(
             GrpcTransportChannel.create(channel)
         );
         NoCredentialsProvider credentialsProvider = NoCredentialsProvider.create();
-
-        try {
-            createTable(channelProvider, credentialsProvider, "test-table");
-
+        createTable(channelProvider, credentialsProvider, "test-table");
+        try (
             BigtableDataClient client = BigtableDataClient.create(
                 BigtableDataSettings
                     .newBuilderForEmulator(emulator.getHost(), emulator.getEmulatorPort())
                     .setProjectId(PROJECT_ID)
                     .setInstanceId(INSTANCE_ID)
                     .build()
-            );
+            )
+        ) {
+            client.mutateRow(RowMutation.create(TableId.of("test-table"), "1").setCell("name", "firstName", "Ray"));
 
-            client.mutateRow(RowMutation.create("test-table", "1").setCell("name", "firstName", "Ray"));
-
-            Row row = client.readRow("test-table", "1");
+            Row row = client.readRow(TableId.of("test-table"), "1");
             List<RowCell> cells = row.getCells("name", "firstName");
 
             assertThat(cells).isNotNull().hasSize(1);
