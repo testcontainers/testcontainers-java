@@ -24,12 +24,16 @@ public class AbstractPulsar {
     protected void testPulsarFunctionality(String pulsarBrokerUrl) throws Exception {
         try (
             PulsarClient client = PulsarClient.builder().serviceUrl(pulsarBrokerUrl).build();
-            Consumer consumer = client.newConsumer().topic(TEST_TOPIC).subscriptionName("test-subs").subscribe();
+            Consumer<byte[]> consumer = client
+                .newConsumer()
+                .topic(TEST_TOPIC)
+                .subscriptionName("test-subs")
+                .subscribe();
             Producer<byte[]> producer = client.newProducer().topic(TEST_TOPIC).create()
         ) {
             producer.send("test containers".getBytes());
-            CompletableFuture<Message> future = consumer.receiveAsync();
-            Message message = future.get(5, TimeUnit.SECONDS);
+            CompletableFuture<Message<byte[]>> future = consumer.receiveAsync();
+            Message<byte[]> message = future.get(5, TimeUnit.SECONDS);
 
             assertThat(new String(message.getData())).isEqualTo("test containers");
         }

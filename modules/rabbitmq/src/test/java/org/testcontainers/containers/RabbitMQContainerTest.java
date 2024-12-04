@@ -5,13 +5,15 @@ import com.google.common.collect.ImmutableSet;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.DeliverCallback;
 import org.junit.Test;
 import org.testcontainers.containers.RabbitMQContainer.SslVerification;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -19,6 +21,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.Collections;
+import java.util.concurrent.TimeoutException;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -40,32 +43,19 @@ public class RabbitMQContainerTest {
     @Test
     public void shouldCreateRabbitMQContainer() {
         try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
+            container.start();
+
             assertThat(container.getAdminPassword()).isEqualTo("guest");
             assertThat(container.getAdminUsername()).isEqualTo("guest");
 
-            container.start();
-
             assertThat(container.getAmqpsUrl())
-                .isEqualTo(
-                    String.format("amqps://%s:%d", container.getHost(), container.getMappedPort(DEFAULT_AMQPS_PORT))
-                );
+                .isEqualTo(String.format("amqps://%s:%d", container.getHost(), container.getAmqpsPort()));
             assertThat(container.getAmqpUrl())
-                .isEqualTo(
-                    String.format("amqp://%s:%d", container.getHost(), container.getMappedPort(DEFAULT_AMQP_PORT))
-                );
+                .isEqualTo(String.format("amqp://%s:%d", container.getHost(), container.getAmqpPort()));
             assertThat(container.getHttpsUrl())
-                .isEqualTo(
-                    String.format("https://%s:%d", container.getHost(), container.getMappedPort(DEFAULT_HTTPS_PORT))
-                );
+                .isEqualTo(String.format("https://%s:%d", container.getHost(), container.getHttpsPort()));
             assertThat(container.getHttpUrl())
-                .isEqualTo(
-                    String.format("http://%s:%d", container.getHost(), container.getMappedPort(DEFAULT_HTTP_PORT))
-                );
-
-            assertThat(container.getHttpsPort()).isEqualTo(container.getMappedPort(DEFAULT_HTTPS_PORT));
-            assertThat(container.getHttpPort()).isEqualTo(container.getMappedPort(DEFAULT_HTTP_PORT));
-            assertThat(container.getAmqpsPort()).isEqualTo(container.getMappedPort(DEFAULT_AMQPS_PORT));
-            assertThat(container.getAmqpPort()).isEqualTo(container.getMappedPort(DEFAULT_AMQP_PORT));
+                .isEqualTo(String.format("http://%s:%d", container.getHost(), container.getHttpPort()));
 
             assertThat(container.getLivenessCheckPortNumbers())
                 .containsExactlyInAnyOrder(
@@ -74,6 +64,24 @@ public class RabbitMQContainerTest {
                     container.getMappedPort(DEFAULT_HTTP_PORT),
                     container.getMappedPort(DEFAULT_HTTPS_PORT)
                 );
+
+            assertFunctionality(container);
+        }
+    }
+
+    @Test
+    public void shouldCreateRabbitMQContainerWithCustomCredentials() {
+        try (
+            RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)
+                .withAdminUser("admin")
+                .withAdminPassword("admin")
+        ) {
+            container.start();
+
+            assertThat(container.getAdminPassword()).isEqualTo("admin");
+            assertThat(container.getAdminUsername()).isEqualTo("admin");
+
+            assertFunctionality(container);
         }
     }
 
@@ -283,7 +291,7 @@ public class RabbitMQContainerTest {
 
         KeyStore ks = KeyStore.getInstance("PKCS12");
         ks.load(
-            new FileInputStream(new File(classLoader.getResource(keystoreFile).getFile())),
+            Files.newInputStream(new File(classLoader.getResource(keystoreFile).getFile()).toPath()),
             keystorePassword.toCharArray()
         );
         KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
@@ -291,7 +299,7 @@ public class RabbitMQContainerTest {
 
         KeyStore trustStore = KeyStore.getInstance("PKCS12");
         trustStore.load(
-            new FileInputStream(new File(classLoader.getResource(truststoreFile).getFile())),
+            Files.newInputStream(new File(classLoader.getResource(truststoreFile).getFile()).toPath()),
             truststorePassword.toCharArray()
         );
         TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
@@ -300,5 +308,28 @@ public class RabbitMQContainerTest {
         SSLContext c = SSLContext.getInstance("TLSv1.2");
         c.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
         return c;
+    }
+
+    private void assertFunctionality(RabbitMQContainer container) {
+        String queueName = "test-queue";
+        String text = "Hello World!";
+
+        ConnectionFactory factory = new ConnectionFactory();
+        factory.setHost(container.getHost());
+        factory.setPort(container.getAmqpPort());
+        factory.setUsername(container.getAdminUsername());
+        factory.setPassword(container.getAdminPassword());
+        try (Connection connection = factory.newConnection(); Channel channel = connection.createChannel()) {
+            channel.queueDeclare(queueName, false, false, false, null);
+            channel.basicPublish("", queueName, null, text.getBytes());
+
+            DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+                String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
+                assertThat(message).isEqualTo(text);
+            };
+            channel.basicConsume(queueName, true, deliverCallback, consumerTag -> {});
+        } catch (IOException | TimeoutException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

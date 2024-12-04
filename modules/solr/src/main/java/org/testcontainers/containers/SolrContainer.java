@@ -104,7 +104,7 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
     @SneakyThrows
     protected void configure() {
         if (configuration.getSolrSchema() != null && configuration.getSolrConfiguration() == null) {
-            throw new IllegalStateException("Solr needs to have a configuration is you want to use a schema");
+            throw new IllegalStateException("Solr needs to have a configuration if you want to use a schema");
         }
         // Generate Command Builder
         String command = "solr -f";
