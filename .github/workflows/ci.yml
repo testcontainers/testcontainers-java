@@ -50,9 +50,14 @@ jobs:
     runs-on: ubuntu-22.04
     permissions:
       checks: write
+    strategy:
+      matrix:
+        java: [ '17', '21' ]
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-build
+        with:
+          java-version: ${{ matrix.java }}
       - name: Build and test with Gradle
         run: |
           ./gradlew :testcontainers:check --no-daemon --continue --scan
