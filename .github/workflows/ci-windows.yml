@@ -53,6 +53,7 @@ jobs:
       checks: write
     steps:
       - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-build
       - name: Build with Gradle
         run: ./gradlew.bat cleanTest testcontainers:test --no-daemon --continue --scan --no-build-cache
       - uses: ./.github/actions/setup-junit-report
@@ -82,6 +83,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: ${{ github.event.client_payload.pull_request.head.repo.full_name }}
           ref: ${{ github.event.client_payload.pull_request.head.ref }}
+      - uses: ./.github/actions/setup-build
       - name: Build with Gradle
         run: ./gradlew.bat cleanTest testcontainers:test --no-daemon --continue --scan --no-build-cache
       - uses: ./.github/actions/setup-junit-report
