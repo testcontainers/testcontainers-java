@@ -1,8 +1,11 @@
 package org.testcontainers.containers;
 
 import io.r2dbc.spi.ConnectionFactoryOptions;
+import org.junit.Test;
 import org.testcontainers.r2dbc.AbstractR2DBCDatabaseContainerTest;
 import org.testcontainers.utility.DockerImageName;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class MariaDBR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseContainerTest<MariaDBContainer<?>> {
 
@@ -19,5 +22,24 @@ public class MariaDBR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseCont
     @Override
     protected MariaDBContainer<?> createContainer() {
         return new MariaDBContainer<>(DockerImageName.parse("mariadb:10.3.39"));
+    }
+
+    @Test
+    public void testGetR2DBCUrl() {
+        MariaDBContainer<?> container = createContainer();
+        container.start();
+
+        String expectedUrl =
+            "r2dbc:mariadb://" +
+            container.getHost() +
+            ":" +
+            container.getMappedPort(MariaDBContainer.MARIADB_PORT) +
+            "/" +
+            container.getDatabaseName() +
+            container.constructUrlParameters("?", "&");
+
+        String r2dbcUrl = MariaDBR2DBCDatabaseContainer.getR2dbcUrl(container);
+        assertThat(expectedUrl).isEqualTo(r2dbcUrl);
+        container.stop();
     }
 }

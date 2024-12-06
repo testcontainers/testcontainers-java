@@ -1,8 +1,11 @@
 package org.testcontainers.containers;
 
 import io.r2dbc.spi.ConnectionFactoryOptions;
+import org.junit.Test;
 import org.testcontainers.MySQLTestImages;
 import org.testcontainers.r2dbc.AbstractR2DBCDatabaseContainerTest;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class MySQLR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseContainerTest<MySQLContainer<?>> {
 
@@ -19,5 +22,24 @@ public class MySQLR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseContai
     @Override
     protected MySQLContainer<?> createContainer() {
         return new MySQLContainer<>(MySQLTestImages.MYSQL_80_IMAGE);
+    }
+
+    @Test
+    public void testGetR2DBCUrl() {
+        MySQLContainer<?> container = createContainer();
+        container.start();
+
+        String expectedUrl =
+            "r2dbc:mysql://" +
+            container.getHost() +
+            ":" +
+            container.getMappedPort(MySQLContainer.MYSQL_PORT) +
+            "/" +
+            container.getDatabaseName() +
+            container.constructUrlParameters("?", "&");
+
+        String r2dbcUrl = MySQLR2DBCDatabaseContainer.getR2dbcUrl(container);
+        assertThat(expectedUrl).isEqualTo(r2dbcUrl);
+        container.stop();
     }
 }
