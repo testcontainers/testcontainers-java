@@ -241,7 +241,7 @@ public class RegistryAuthLocatorTest {
 
         assertThat(discoveredMessage)
             .as("Not correct message discovered")
-            .isEqualTo("Fake credentials not found on credentials store 'https://not.a.real.registry/url'");
+            .isEqualTo("Fake credentials not found on credentials store 'registry2.example.com'");
     }
 
     @Test
