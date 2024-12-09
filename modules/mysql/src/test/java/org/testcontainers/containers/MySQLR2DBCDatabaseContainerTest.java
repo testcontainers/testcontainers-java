@@ -1,5 +1,7 @@
 package org.testcontainers.containers;
 
+import io.r2dbc.spi.ConnectionFactories;
+import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.ConnectionFactoryOptions;
 import org.junit.Test;
 import org.testcontainers.MySQLTestImages;
@@ -26,20 +28,23 @@ public class MySQLR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseContai
 
     @Test
     public void testGetR2DBCUrl() {
-        MySQLContainer<?> container = createContainer();
-        container.start();
+        try (MySQLContainer<?> container = createContainer()) {
+            container.start();
 
-        String expectedUrl =
-            "r2dbc:mysql://" +
-            container.getHost() +
-            ":" +
-            container.getMappedPort(MySQLContainer.MYSQL_PORT) +
-            "/" +
-            container.getDatabaseName() +
-            container.constructUrlParameters("?", "&");
+            String expectedUrl =
+                "r2dbc:mysql://" +
+                container.getHost() +
+                ":" +
+                container.getMappedPort(MySQLContainer.MYSQL_PORT) +
+                "/" +
+                container.getDatabaseName() +
+                container.constructUrlParameters("?", "&");
 
-        String r2dbcUrl = MySQLR2DBCDatabaseContainer.getR2dbcUrl(container);
-        assertThat(expectedUrl).isEqualTo(r2dbcUrl);
-        container.stop();
+            ConnectionFactory connectionFactory = ConnectionFactories.get(getOptions(container));
+            runTestQuery(connectionFactory);
+
+            String r2dbcUrl = MySQLR2DBCDatabaseContainer.getR2dbcUrl(container);
+            assertThat(expectedUrl).isEqualTo(r2dbcUrl);
+        }
     }
 }

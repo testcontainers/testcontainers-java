@@ -1,5 +1,7 @@
 package org.testcontainers.containers;
 
+import io.r2dbc.spi.ConnectionFactories;
+import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.ConnectionFactoryOptions;
 import org.junit.Test;
 import org.testcontainers.r2dbc.AbstractR2DBCDatabaseContainerTest;
@@ -26,20 +28,23 @@ public class MariaDBR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseCont
 
     @Test
     public void testGetR2DBCUrl() {
-        MariaDBContainer<?> container = createContainer();
-        container.start();
+        try (MariaDBContainer<?> container = createContainer()) {
+            container.start();
 
-        String expectedUrl =
-            "r2dbc:mariadb://" +
-            container.getHost() +
-            ":" +
-            container.getMappedPort(MariaDBContainer.MARIADB_PORT) +
-            "/" +
-            container.getDatabaseName() +
-            container.constructUrlParameters("?", "&");
+            String expectedUrl =
+                "r2dbc:mariadb://" +
+                container.getHost() +
+                ":" +
+                container.getMappedPort(MariaDBContainer.MARIADB_PORT) +
+                "/" +
+                container.getDatabaseName() +
+                container.constructUrlParameters("?", "&");
 
-        String r2dbcUrl = MariaDBR2DBCDatabaseContainer.getR2dbcUrl(container);
-        assertThat(expectedUrl).isEqualTo(r2dbcUrl);
-        container.stop();
+            ConnectionFactory connectionFactory = ConnectionFactories.get(getOptions(container));
+            runTestQuery(connectionFactory);
+
+            String r2dbcUrl = MariaDBR2DBCDatabaseContainer.getR2dbcUrl(container);
+            assertThat(expectedUrl).isEqualTo(r2dbcUrl);
+        }
     }
 }

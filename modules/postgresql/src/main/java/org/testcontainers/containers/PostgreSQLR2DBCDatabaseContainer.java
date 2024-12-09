@@ -37,12 +37,12 @@ public final class PostgreSQLR2DBCDatabaseContainer implements R2DBCDatabaseCont
         String additionalUrlParams = container.constructUrlParameters("?", "&");
         return (
             "r2dbc:postgresql://" +
-                container.getHost() +
-                ":" +
-                container.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT) +
-                "/" +
-                container.getDatabaseName() +
-                additionalUrlParams
+            container.getHost() +
+            ":" +
+            container.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT) +
+            "/" +
+            container.getDatabaseName() +
+            additionalUrlParams
         );
     }
 }

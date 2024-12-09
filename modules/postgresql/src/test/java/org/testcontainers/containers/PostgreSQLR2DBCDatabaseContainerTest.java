@@ -1,5 +1,7 @@
 package org.testcontainers.containers;
 
+import io.r2dbc.spi.ConnectionFactories;
+import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.ConnectionFactoryOptions;
 import org.junit.Test;
 import org.testcontainers.PostgreSQLTestImages;
@@ -33,20 +35,23 @@ public class PostgreSQLR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseC
 
     @Test
     public void testGetR2DBCUrl() {
-        PostgreSQLContainer<?> container = createContainer();
-        container.start();
+        try (PostgreSQLContainer<?> container = createContainer()) {
+            container.start();
 
-        String expectedUrl =
-            "r2dbc:postgresql://" +
-            container.getHost() +
-            ":" +
-            container.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT) +
-            "/" +
-            container.getDatabaseName() +
-            container.constructUrlParameters("?", "&");
+            String expectedUrl =
+                "r2dbc:postgresql://" +
+                container.getHost() +
+                ":" +
+                container.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT) +
+                "/" +
+                container.getDatabaseName() +
+                container.constructUrlParameters("?", "&");
 
-        String r2dbcUrl = PostgreSQLR2DBCDatabaseContainer.getR2dbcUrl(container);
-        assertThat(expectedUrl).isEqualTo(r2dbcUrl);
-        container.stop();
+            ConnectionFactory connectionFactory = ConnectionFactories.get(getOptions(container));
+            runTestQuery(connectionFactory);
+
+            String r2dbcUrl = PostgreSQLR2DBCDatabaseContainer.getR2dbcUrl(container);
+            assertThat(expectedUrl).isEqualTo(r2dbcUrl);
+        }
     }
 }

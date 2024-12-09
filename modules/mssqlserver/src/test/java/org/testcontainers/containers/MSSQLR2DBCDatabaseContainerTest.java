@@ -1,5 +1,7 @@
 package org.testcontainers.containers;
 
+import io.r2dbc.spi.ConnectionFactories;
+import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.ConnectionFactoryOptions;
 import org.junit.Test;
 import org.testcontainers.MSSQLServerTestImages;
@@ -26,18 +28,21 @@ public class MSSQLR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseContai
 
     @Test
     public void testGetR2DBCUrl() {
-        MSSQLServerContainer<?> container = createContainer();
-        container.start();
+        try (MSSQLServerContainer<?> container = createContainer()) {
+            container.start();
 
-        String expectedUrl =
-            "r2dbc:sqlserver://" +
-            container.getHost() +
-            ":" +
-            container.getMappedPort(MSSQLServerContainer.MS_SQL_SERVER_PORT) +
-            container.constructUrlParameters(";", ";");
+            String expectedUrl =
+                "r2dbc:sqlserver://" +
+                container.getHost() +
+                ":" +
+                container.getMappedPort(MSSQLServerContainer.MS_SQL_SERVER_PORT) +
+                container.constructUrlParameters(";", ";");
 
-        String r2dbcUrl = MSSQLR2DBCDatabaseContainer.getR2dbcUrl(container);
-        assertThat(expectedUrl).isEqualTo(r2dbcUrl);
-        container.stop();
+            ConnectionFactory connectionFactory = ConnectionFactories.get(getOptions(container));
+            runTestQuery(connectionFactory);
+
+            String r2dbcUrl = MSSQLR2DBCDatabaseContainer.getR2dbcUrl(container);
+            assertThat(expectedUrl).isEqualTo(r2dbcUrl);
+        }
     }
 }

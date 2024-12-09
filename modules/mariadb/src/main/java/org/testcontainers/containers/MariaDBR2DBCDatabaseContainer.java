@@ -36,7 +36,13 @@ public class MariaDBR2DBCDatabaseContainer implements R2DBCDatabaseContainer {
     public static String getR2dbcUrl(MariaDBContainer<?> container) {
         String additionalUrlParams = container.constructUrlParameters("?", "&");
         return (
-            "r2dbc:mariadb://" + container.getHost() + ":" + container.getMappedPort(MariaDBContainer.MARIADB_PORT) + "/" + container.getDatabaseName() + additionalUrlParams
+            "r2dbc:mariadb://" +
+            container.getHost() +
+            ":" +
+            container.getMappedPort(MariaDBContainer.MARIADB_PORT) +
+            "/" +
+            container.getDatabaseName() +
+            additionalUrlParams
         );
     }
 }
