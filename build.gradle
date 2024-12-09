@@ -14,7 +14,7 @@ plugins {
     id 'io.franzbecker.gradle-lombok' version '5.0.0'
     id 'com.gradleup.shadow' version '8.3.0'
     id 'me.champeau.gradle.japicmp' version '0.4.3' apply false
-    id 'com.diffplug.spotless' version '6.13.0' apply false
+    id 'com.diffplug.spotless' version '6.22.0' apply false
 }
 
 apply from: "$rootDir/gradle/ci-support.gradle"
@@ -26,6 +26,7 @@ captainHook {
 }
 
 subprojects {
+    apply plugin: 'java'
     apply plugin: 'java-library'
     apply plugin: 'idea'
     apply plugin: 'io.franzbecker.gradle-lombok'
@@ -35,9 +36,17 @@ subprojects {
 
     group = "org.testcontainers"
 
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
-    compileJava.options.encoding = 'UTF-8'
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(17)
+        }
+    }
+
+    tasks.withType(JavaCompile) {
+        options.release.set(8)
+        options.encoding = 'UTF-8'
+    }
+
     compileTestJava.options.encoding = 'UTF-8'
     javadoc.options.encoding = 'UTF-8'
 
@@ -126,7 +135,7 @@ subprojects {
     }
 
     checkstyle {
-        toolVersion = "9.3"
+        toolVersion = "10.12.4"
         configFile = rootProject.file('config/checkstyle/checkstyle.xml')
     }
 }
