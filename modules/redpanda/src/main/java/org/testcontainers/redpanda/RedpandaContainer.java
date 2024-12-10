@@ -45,15 +45,9 @@ public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
 
     private static final String IMAGE_NAME = "redpandadata/redpanda";
 
-    @Deprecated
-    private static final String REDPANDA_OLD_FULL_IMAGE_NAME = "docker.redpanda.com/vectorized/redpanda";
-
     private static final DockerImageName REDPANDA_IMAGE = DockerImageName.parse(REDPANDA_FULL_IMAGE_NAME);
 
     private static final DockerImageName IMAGE = DockerImageName.parse(IMAGE_NAME);
-
-    @Deprecated
-    private static final DockerImageName REDPANDA_OLD_IMAGE = DockerImageName.parse(REDPANDA_OLD_FULL_IMAGE_NAME);
 
     private static final int REDPANDA_PORT = 9092;
 
@@ -82,13 +76,12 @@ public class RedpandaContainer extends GenericContainer<RedpandaContainer> {
 
     public RedpandaContainer(DockerImageName imageName) {
         super(imageName);
-        imageName.assertCompatibleWith(REDPANDA_OLD_IMAGE, REDPANDA_IMAGE, IMAGE);
+        imageName.assertCompatibleWith(REDPANDA_IMAGE, IMAGE);
 
         boolean isLessThanBaseVersion = new ComparableVersion(imageName.getVersionPart()).isLessThan("v22.2.1");
         boolean isPublicCompatibleImage =
             REDPANDA_FULL_IMAGE_NAME.equals(imageName.getUnversionedPart()) ||
-            IMAGE_NAME.equals(imageName.getUnversionedPart()) ||
-            REDPANDA_OLD_FULL_IMAGE_NAME.equals(imageName.getUnversionedPart());
+            IMAGE_NAME.equals(imageName.getUnversionedPart());
         if (isPublicCompatibleImage && isLessThanBaseVersion) {
             throw new IllegalArgumentException("Redpanda version must be >= v22.2.1");
         }
