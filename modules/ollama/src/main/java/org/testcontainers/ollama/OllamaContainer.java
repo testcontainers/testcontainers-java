@@ -23,6 +23,7 @@ import java.util.Map;
 public class OllamaContainer extends GenericContainer<OllamaContainer> {
 
     private static final DockerImageName DOCKER_IMAGE_NAME = DockerImageName.parse("ollama/ollama");
+    private static final int OLLAMA_PORT = 11434;
 
     public OllamaContainer(String image) {
         this(DockerImageName.parse(image));
@@ -49,7 +50,7 @@ public class OllamaContainer extends GenericContainer<OllamaContainer> {
                 });
             }
         }
-        withExposedPorts(11434);
+        withExposedPorts(OLLAMA_PORT);
     }
 
     /**
@@ -74,7 +75,11 @@ public class OllamaContainer extends GenericContainer<OllamaContainer> {
         }
     }
 
+    public int getPort() {
+        return getMappedPort(OLLAMA_PORT);
+    }
+
     public String getEndpoint() {
-        return "http://" + getHost() + ":" + getMappedPort(11434);
+        return "http://" + getHost() + ":" + getPort();
     }
 }
