@@ -8,16 +8,3 @@ dependencies {
     testImplementation 'io.micrometer:micrometer-registry-otlp:1.13.4'
     testImplementation 'uk.org.webcompere:system-stubs-junit4:2.1.6'
 }
-
-test {
-    javaLauncher = javaToolchains.launcherFor {
-        languageVersion = JavaLanguageVersion.of(11)
-    }
-}
-
-compileTestJava {
-    javaCompiler = javaToolchains.compilerFor {
-        languageVersion = JavaLanguageVersion.of(11)
-    }
-    options.release.set(11)
-}
