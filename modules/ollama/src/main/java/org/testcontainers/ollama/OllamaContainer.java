@@ -23,6 +23,7 @@ import java.util.Map;
 public class OllamaContainer extends GenericContainer<OllamaContainer> {
 
     private static final DockerImageName DOCKER_IMAGE_NAME = DockerImageName.parse("ollama/ollama");
+
     private static final int OLLAMA_PORT = 11434;
 
     public OllamaContainer(String image) {
