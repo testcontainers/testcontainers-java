@@ -19,20 +19,3 @@ dependencies {
     testImplementation("ch.qos.logback:logback-classic:1.5.8")
     testImplementation 'org.assertj:assertj-core:3.26.3'
 }
-
-test {
-    useJUnitPlatform()
-    testLogging {
-        events "passed", "skipped", "failed"
-    }
-    javaLauncher = javaToolchains.launcherFor {
-        languageVersion = JavaLanguageVersion.of(11)
-    }
-}
-
-compileTestJava {
-    javaCompiler = javaToolchains.compilerFor {
-        languageVersion = JavaLanguageVersion.of(11)
-    }
-    options.release.set(11)
-}
