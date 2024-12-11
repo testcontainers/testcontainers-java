@@ -26,13 +26,13 @@ test {
         events "passed", "skipped", "failed"
     }
     javaLauncher = javaToolchains.launcherFor {
-        languageVersion = JavaLanguageVersion.of(17)
+        languageVersion = JavaLanguageVersion.of(11)
     }
 }
 
 compileTestJava {
     javaCompiler = javaToolchains.compilerFor {
-        languageVersion = JavaLanguageVersion.of(17)
+        languageVersion = JavaLanguageVersion.of(11)
     }
-    options.release.set(17)
+    options.release.set(11)
 }
