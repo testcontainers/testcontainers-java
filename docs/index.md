@@ -221,6 +221,8 @@ A huge thank you to our sponsors:
 * [Spark ClickHouse Connector](https://github.com/housepower/spark-clickhouse-connector) - Integration tests for Apache Spark with both single node ClickHouse instance and multi-node ClickHouse cluster.
 * [Quarkus](https://github.com/quarkusio/quarkus) - Testcontainers is used extensively for Quarkus' [DevServices](https://quarkus.io/guides/dev-services) feature.
 * [Apache Kyuubi](https://kyuubi.apache.org) - Integration testing with Trino as data source engine, Kafka, etc.
+* [Dash0](https://www.dash0.com) - Integration testing for OpenTelemetry Observability product.
+
 
 ## License
 
