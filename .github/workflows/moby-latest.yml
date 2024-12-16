@@ -13,8 +13,11 @@ jobs:
   test_docker:
     strategy:
       matrix:
-        install-docker-type: ["STABLE", "ROOTLESS", "ROOTFUL"]
-    name: "Core tests using Docker ${{ matrix.install-docker-type }}"
+        include:
+          - { install-docker-type: "STABLE", channel: stable, rootless: false }
+          - { install-docker-type: "ROOTLESS", channel: stable, rootless: true }
+          - { install-docker-type: "ROOTFUL", channel: test, rootless: false }
+    name: "Core tests using Docker ${{ matrix.install-docker-type }} (channel ${{ matrix.channel }})"
     runs-on: ubuntu-22.04
     continue-on-error: true
     steps:
@@ -22,28 +25,19 @@ jobs:
       - uses: ./.github/actions/setup-build
 
       - name: Install Stable Docker
-        if: ${{ matrix.install-docker-type == 'STABLE' }}
+        id: setup_docker
         uses: docker/setup-docker-action@v4
         with:
-          channel: stable
-
-      - name: Install Docker from the TEST channel
-        if: ${{ matrix.install-docker-type == 'ROOTFUL' }}
-        uses: docker/setup-docker-action@v4
-        with:
-          channel: test
-
-      - name: Setup rootless Docker
-        if: ${{ matrix.install-docker-type == 'ROOTLESS' }}
-        uses: docker/setup-docker-action@v4
-        with:
-          rootless: true
+          channel: ${{ matrix.channel }}
+          rootless: ${{ matrix.rootless }}
 
       - name: Check Docker version
         run: docker version
 
       - name: Build with Gradle
         run: ./gradlew cleanTest --no-daemon --continue --scan -Dscan.tag.DOCKER_${{ matrix.install-docker-type }} testcontainers:test -Dorg.gradle.caching=false
+        env:
+          DOCKER_HOST: ${{steps.setup_docker.outputs.sock}}
       - uses: ./.github/actions/setup-junit-report
 
       - name: Notify to Slack on failures
