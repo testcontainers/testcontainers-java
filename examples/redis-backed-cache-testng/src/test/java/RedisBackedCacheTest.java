@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class RedisBackedCacheTest {
 
-    private static GenericContainer<?> redis = new GenericContainer<>(DockerImageName.parse("redis:3.0.6"))
+    private static GenericContainer<?> redis = new GenericContainer<>(DockerImageName.parse("redis:6-alpine"))
         .withExposedPorts(6379);
 
     private Cache cache;

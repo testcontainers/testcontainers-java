@@ -53,5 +53,5 @@ jobs:
             -v "$PWD:$PWD" \
             -w "$PWD" \
             -e AUTO_APPLY_GIT_HOOKS=false \
-            openjdk:8-jdk-alpine \
+            eclipse-temurin:17-jdk-alpine \
             ./gradlew --no-daemon --continue --scan testcontainers:test --tests '*GenericContainerRuleTest'

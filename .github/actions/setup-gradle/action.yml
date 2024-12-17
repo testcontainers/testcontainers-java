@@ -4,10 +4,9 @@ runs:
   using: "composite"
   steps:
     - name: Setup Gradle Build Action
-      uses: gradle/gradle-build-action@v2
+      uses: gradle/actions/setup-gradle@v4
       with:
         gradle-home-cache-includes: |
           caches
           notifications
           jdks
-        gradle-home-cache-cleanup: true

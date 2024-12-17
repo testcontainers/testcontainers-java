@@ -1,6 +1,6 @@
 package org.testcontainers.containers;
 
-import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 /**
@@ -33,7 +33,7 @@ public class FirestoreEmulatorContainer extends GenericContainer<FirestoreEmulat
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, CLOUD_SDK_IMAGE_NAME);
 
         withExposedPorts(PORT);
-        setWaitStrategy(new LogMessageWaitStrategy().withRegEx("(?s).*running.*$"));
+        setWaitStrategy(Wait.forLogMessage(".*running.*$", 1));
         withCommand("/bin/sh", "-c", CMD);
     }
 

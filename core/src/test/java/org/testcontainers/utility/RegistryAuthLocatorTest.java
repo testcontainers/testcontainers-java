@@ -131,6 +131,9 @@ public class RegistryAuthLocatorTest {
             new AuthConfig()
         );
 
+        assertThat(authConfig.getRegistryAddress())
+            .as("Correct server URL is obtained from a credential store")
+            .isEqualTo("url");
         assertThat(authConfig.getIdentitytoken())
             .as("Correct identitytoken is obtained from a credential store")
             .isEqualTo("secret");
@@ -177,6 +180,45 @@ public class RegistryAuthLocatorTest {
     }
 
     @Test
+    public void lookupAuthConfigUsingHelperNoServerUrl() throws URISyntaxException, IOException {
+        final RegistryAuthLocator authLocator = createTestAuthLocator("config-with-helper-no-server-url.json");
+
+        final AuthConfig authConfig = authLocator.lookupAuthConfig(
+            DockerImageName.parse("registrynoserverurl.example.com/org/repo"),
+            new AuthConfig()
+        );
+
+        assertThat(authConfig.getRegistryAddress())
+            .as("Fallback (registry) server URL is used")
+            .isEqualTo("registrynoserverurl.example.com");
+        assertThat(authConfig.getUsername())
+            .as("Correct username is obtained from a credential store")
+            .isEqualTo("username");
+        assertThat(authConfig.getPassword())
+            .as("Correct secret is obtained from a credential store")
+            .isEqualTo("secret");
+    }
+
+    @Test
+    public void lookupAuthConfigUsingHelperNoServerUrlWithToken() throws URISyntaxException, IOException {
+        final RegistryAuthLocator authLocator = createTestAuthLocator(
+            "config-with-helper-no-server-url-using-token.json"
+        );
+
+        final AuthConfig authConfig = authLocator.lookupAuthConfig(
+            DockerImageName.parse("registrynoserverurltoken.example.com/org/repo"),
+            new AuthConfig()
+        );
+
+        assertThat(authConfig.getRegistryAddress())
+            .as("Fallback (registry) server URL is used")
+            .isEqualTo("registrynoserverurltoken.example.com");
+        assertThat(authConfig.getIdentitytoken())
+            .as("Correct identitytoken is obtained from a credential store")
+            .isEqualTo("secret");
+    }
+
+    @Test
     public void lookupAuthConfigWithCredentialsNotFound() throws URISyntaxException, IOException {
         Map<String, String> notFoundMessagesReference = new HashMap<>();
         final RegistryAuthLocator authLocator = createTestAuthLocator(
@@ -199,7 +241,7 @@ public class RegistryAuthLocatorTest {
 
         assertThat(discoveredMessage)
             .as("Not correct message discovered")
-            .isEqualTo("Fake credentials not found on credentials store 'https://not.a.real.registry/url'");
+            .isEqualTo("Fake credentials not found on credentials store 'registry2.example.com'");
     }
 
     @Test

@@ -5,13 +5,13 @@ buildscript {
         }
     }
     dependencies {
-        classpath "com.gradle.enterprise:com.gradle.enterprise.gradle.plugin:3.16"
-        classpath "com.gradle:common-custom-user-data-gradle-plugin:1.12.1"
-        classpath "org.gradle.toolchains:foojay-resolver:0.7.0"
+        classpath "com.gradle.enterprise:com.gradle.enterprise.gradle.plugin:3.18.2"
+        classpath "com.gradle:common-custom-user-data-gradle-plugin:2.0.2"
+        classpath "org.gradle.toolchains:foojay-resolver:0.8.0"
     }
 }
 
-apply plugin: 'com.gradle.enterprise'
+apply plugin: 'com.gradle.develocity'
 apply plugin: "com.gradle.common-custom-user-data-gradle-plugin"
 apply plugin: "org.gradle.toolchains.foojay-resolver-convention"
 
@@ -40,24 +40,20 @@ buildCache {
     local {
         enabled = !isCI
     }
-    remote(HttpBuildCache) {
-        push = isCI && !System.getenv("READ_ONLY_REMOTE_GRADLE_CACHE") && System.getenv("GRADLE_ENTERPRISE_CACHE_PASSWORD")
+    remote(develocity.buildCache) {
+        push = isCI && !System.getenv("READ_ONLY_REMOTE_GRADLE_CACHE") && System.getenv("DEVELOCITY_ACCESS_KEY")
         enabled = true
-        url = 'https://ge.testcontainers.org/cache/'
-        credentials {
-            username = 'ci'
-            password = System.getenv("GRADLE_ENTERPRISE_CACHE_PASSWORD")
-        }
     }
 }
 
-gradleEnterprise {
+develocity {
     buildScan {
         server = "https://ge.testcontainers.org/"
-        publishAlways()
-        publishIfAuthenticated()
+        publishing.onlyIf {
+            it.authenticated
+        }
         uploadInBackground = !isCI
-        captureTaskInputFiles = true
+        capture.fileFingerprints = true
     }
 
 }

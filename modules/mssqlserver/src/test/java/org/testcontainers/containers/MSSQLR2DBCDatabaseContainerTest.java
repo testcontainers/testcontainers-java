@@ -13,7 +13,7 @@ public class MSSQLR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseContai
 
     @Override
     protected String createR2DBCUrl() {
-        return "r2dbc:tc:sqlserver:///?TC_IMAGE_TAG=2017-CU12";
+        return "r2dbc:tc:sqlserver:///?TC_IMAGE_TAG=2022-CU14-ubuntu-22.04";
     }
 
     @Override

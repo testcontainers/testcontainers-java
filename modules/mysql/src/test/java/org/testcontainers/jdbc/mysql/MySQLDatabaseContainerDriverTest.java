@@ -16,7 +16,7 @@ public class MySQLDatabaseContainerDriverTest {
     @Test
     public void shouldRespectBothUrlPropertiesAndParameterProperties() throws SQLException {
         ContainerDatabaseDriver driver = new ContainerDatabaseDriver();
-        String url = "jdbc:tc:mysql:5.7.22://hostname/databasename?padCharsWithSpace=true";
+        String url = "jdbc:tc:mysql:8.0.36://hostname/databasename?padCharsWithSpace=true";
         Properties properties = new Properties();
         properties.setProperty("maxRows", "1");
 

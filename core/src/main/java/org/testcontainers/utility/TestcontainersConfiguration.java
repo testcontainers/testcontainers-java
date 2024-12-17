@@ -181,7 +181,6 @@ public class TestcontainersConfiguration {
 
     @UnstableAPI
     public boolean environmentSupportsReuse() {
-        // specifically not supported as an environment variable or classpath property
         return Boolean.parseBoolean(getEnvVarOrUserProperty("testcontainers.reuse.enable", "false"));
     }
 
@@ -207,6 +206,10 @@ public class TestcontainersConfiguration {
 
     public Integer getImagePullPauseTimeout() {
         return Integer.parseInt(getEnvVarOrProperty("pull.pause.timeout", "30"));
+    }
+
+    public Integer getImagePullTimeout() {
+        return Integer.parseInt(getEnvVarOrProperty("pull.timeout", "120"));
     }
 
     public String getImageSubstitutorClassName() {

@@ -27,6 +27,6 @@ public class DockerComposeFilesTest {
             )
         );
         assertThat(dockerComposeFiles.getDependencyImages())
-            .containsExactlyInAnyOrder("alpine:3.16", "redis:b", "mysql:b", "aservice:latest");
+            .containsExactlyInAnyOrder("alpine:3.17", "redis:b", "mysql:b", "aservice:latest");
     }
 }
