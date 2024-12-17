@@ -1,11 +1,33 @@
-# ScyllaDB Module
+# ScyllaDB
 
-## Usage example
+Testcontainers module for [ScyllaDB](https://hub.docker.com/r/scylladb/scylla)
 
-This example connects to a ScyllaDB Cluster, creates a keyspace and asserts that is has been created.
+## ScyllaDB's usage examples
+
+You can start a ScyllaDB container instance from any Java application by using:
 
 <!--codeinclude-->
-[Building CqlSession](../../../modules/scylladb/src/test/java/org/testcontainers/containers/ScyllaDBDriver4Test.java) inside_block:scylladb
+[Create container](../../../modules/scylladb/src/test/java/org/testcontainers/scylladb/ScyllaDBContainerTest.java) inside_block:container
+<!--/codeinclude-->
+
+### Building CqlSession
+
+<!--codeinclude-->
+[Using CQL port](../../../modules/scylladb/src/test/java/org/testcontainers/scylladb/ScyllaDBContainerTest.java) inside_block:session
+<!--/codeinclude-->
+
+<!--codeinclude-->
+[Using Shard Awareness port](../../../modules/scylladb/src/test/java/org/testcontainers/scylladb/ScyllaDBContainerTest.java) inside_block:shardAwarenessSession
+<!--/codeinclude-->
+
+### Alternator
+
+<!--codeinclude-->
+[Enabling Alternator](../../../modules/scylladb/src/test/java/org/testcontainers/scylladb/ScyllaDBContainerTest.java) inside_block:alternator
+<!--/codeinclude-->
+
+<!--codeinclude-->
+[DynamoDbClient with Alternator](../../../modules/scylladb/src/test/java/org/testcontainers/scylladb/ScyllaDBContainerTest.java) inside_block:dynamodDbClient
 <!--/codeinclude-->
 
 ## Adding this module to your project dependencies
