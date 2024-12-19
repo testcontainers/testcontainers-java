@@ -5,13 +5,94 @@ This module is INCUBATING. While it is ready for use and operational in the curr
 
 Testcontainers module for the Microsoft Azure's [SDK](https://github.com/Azure/azure-sdk-for-java).
 
-Currently, the module supports `CosmosDB` emulator. In order to use it, you should use the following class:
+Currently, the module supports `Azurite` and `CosmosDB` emulators. In order to use them, you should use the following classes:
 
 Class | Container Image
 -|-
+AzuriteContainer | [mcr.microsoft.com/azure-storage/azurite](https://github.com/microsoft/containerregistry)
 CosmosDBEmulatorContainer | [mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator](https://github.com/microsoft/containerregistry)
 
 ## Usage example
+
+### Azurite Storage Emulator
+
+#### Using Blobs
+
+Start Azurite Emulator during a test using Blob functionality:
+
+<!--codeinclude-->
+[Starting a Azurite Blob container](../../modules/azure/src/test/java/org/testcontainers/containers/AzuriteContainerTest.java) inside_block:blobEmulatorContainer
+<!--/codeinclude-->
+
+Get the connection string from the container:
+
+<!--codeinclude-->
+[Get connection string](../../modules/azure/src/test/java/org/testcontainers/containers/AzuriteContainerTest.java) inside_block:getBlobConnectionString
+<!--/codeinclude-->
+
+Build Azure Blob client:
+
+<!--codeinclude-->
+[Build Azure Blob Service client](../../modules/azure/src/test/java/org/testcontainers/containers/AzuriteContainerTest.java) inside_block:createBlobClient
+<!--/codeinclude-->
+
+Test against the Emulator:
+
+<!--codeinclude-->
+[Testing against Azurite container](../../modules/azure/src/test/java/org/testcontainers/containers/AzuriteContainerTest.java) inside_block:testWithBlobClient
+<!--/codeinclude-->
+
+#### Using Queues
+
+Start Azurite Emulator during a test using Queue functionality:
+
+<!--codeinclude-->
+[Starting a Azurite Queue container](../../modules/azure/src/test/java/org/testcontainers/containers/AzuriteContainerTest.java) inside_block:queueEmulatorContainer
+<!--/codeinclude-->
+
+Get the connection string from the container:
+
+<!--codeinclude-->
+[Get connection string](../../modules/azure/src/test/java/org/testcontainers/containers/AzuriteContainerTest.java) inside_block:getQueueConnectionString
+<!--/codeinclude-->
+
+Build Azure Queue client:
+
+<!--codeinclude-->
+[Build Azure Queue Service client](../../modules/azure/src/test/java/org/testcontainers/containers/AzuriteContainerTest.java) inside_block:createQueueClient
+<!--/codeinclude-->
+
+Test against the Emulator:
+
+<!--codeinclude-->
+[Testing against Azurite container](../../modules/azure/src/test/java/org/testcontainers/containers/AzuriteContainerTest.java) inside_block:testWithQueueClient
+<!--/codeinclude-->
+
+#### Using Table
+
+Start Azurite Emulator during a test using Table functionality:
+
+<!--codeinclude-->
+[Starting a Azurite Table container](../../modules/azure/src/test/java/org/testcontainers/containers/AzuriteContainerTest.java) inside_block:tableEmulatorContainer
+<!--/codeinclude-->
+
+Get the connection string from the container:
+
+<!--codeinclude-->
+[Get connection string](../../modules/azure/src/test/java/org/testcontainers/containers/AzuriteContainerTest.java) inside_block:getBlobConnectionString
+<!--/codeinclude-->
+
+Build Azure Table client:
+
+<!--codeinclude-->
+[Build Azure Table Service client](../../modules/azure/src/test/java/org/testcontainers/containers/AzuriteContainerTest.java) inside_block:createTableClient
+<!--/codeinclude-->
+
+Test against the Emulator:
+
+<!--codeinclude-->
+[Testing against Azurite container](../../modules/azure/src/test/java/org/testcontainers/containers/AzuriteContainerTest.java) inside_block:testWithTableClient
+<!--/codeinclude-->
 
 ### CosmosDB
 
