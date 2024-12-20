@@ -16,82 +16,43 @@ CosmosDBEmulatorContainer | [mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emula
 
 ### Azurite Storage Emulator
 
-#### Using Blobs
-
-Start Azurite Emulator during a test using Blob functionality:
+Start Azurite Emulator during a test:
 
 <!--codeinclude-->
-[Starting a Azurite Blob container](../../modules/azure/src/test/java/org/testcontainers/containers/AzuriteContainerTest.java) inside_block:blobEmulatorContainer
+[Starting a Azurite Blob container](../../modules/azure/src/test/java/org/testcontainers/azure/AzuriteContainerTest.java) inside_block:emulatorContainer
 <!--/codeinclude-->
+
+> [!TIP]
+> SSL configuration is possible using the `withSsl(File, String)` and  `withSsl(File, File)` methods.
 
 Get the connection string from the container:
 
 <!--codeinclude-->
-[Get connection string](../../modules/azure/src/test/java/org/testcontainers/containers/AzuriteContainerTest.java) inside_block:getBlobConnectionString
+[Get connection string](../../modules/azure/src/test/java/org/testcontainers/azure/AzuriteContainerTest.java) inside_block:getConnectionString
 <!--/codeinclude-->
+
+#### Using with Blob
 
 Build Azure Blob client:
 
 <!--codeinclude-->
-[Build Azure Blob Service client](../../modules/azure/src/test/java/org/testcontainers/containers/AzuriteContainerTest.java) inside_block:createBlobClient
+[Build Azure Blob Service client](../../modules/azure/src/test/java/org/testcontainers/azure/AzuriteContainerTest.java) inside_block:createBlobClient
 <!--/codeinclude-->
 
-Test against the Emulator:
-
-<!--codeinclude-->
-[Testing against Azurite container](../../modules/azure/src/test/java/org/testcontainers/containers/AzuriteContainerTest.java) inside_block:testWithBlobClient
-<!--/codeinclude-->
-
-#### Using Queues
-
-Start Azurite Emulator during a test using Queue functionality:
-
-<!--codeinclude-->
-[Starting a Azurite Queue container](../../modules/azure/src/test/java/org/testcontainers/containers/AzuriteContainerTest.java) inside_block:queueEmulatorContainer
-<!--/codeinclude-->
-
-Get the connection string from the container:
-
-<!--codeinclude-->
-[Get connection string](../../modules/azure/src/test/java/org/testcontainers/containers/AzuriteContainerTest.java) inside_block:getQueueConnectionString
-<!--/codeinclude-->
+#### Using with Queue
 
 Build Azure Queue client:
 
 <!--codeinclude-->
-[Build Azure Queue Service client](../../modules/azure/src/test/java/org/testcontainers/containers/AzuriteContainerTest.java) inside_block:createQueueClient
+[Build Azure Queue Service client](../../modules/azure/src/test/java/org/testcontainers/azure/AzuriteContainerTest.java) inside_block:createQueueClient
 <!--/codeinclude-->
 
-Test against the Emulator:
-
-<!--codeinclude-->
-[Testing against Azurite container](../../modules/azure/src/test/java/org/testcontainers/containers/AzuriteContainerTest.java) inside_block:testWithQueueClient
-<!--/codeinclude-->
-
-#### Using Table
-
-Start Azurite Emulator during a test using Table functionality:
-
-<!--codeinclude-->
-[Starting a Azurite Table container](../../modules/azure/src/test/java/org/testcontainers/containers/AzuriteContainerTest.java) inside_block:tableEmulatorContainer
-<!--/codeinclude-->
-
-Get the connection string from the container:
-
-<!--codeinclude-->
-[Get connection string](../../modules/azure/src/test/java/org/testcontainers/containers/AzuriteContainerTest.java) inside_block:getBlobConnectionString
-<!--/codeinclude-->
+#### Using with Table
 
 Build Azure Table client:
 
 <!--codeinclude-->
-[Build Azure Table Service client](../../modules/azure/src/test/java/org/testcontainers/containers/AzuriteContainerTest.java) inside_block:createTableClient
-<!--/codeinclude-->
-
-Test against the Emulator:
-
-<!--codeinclude-->
-[Testing against Azurite container](../../modules/azure/src/test/java/org/testcontainers/containers/AzuriteContainerTest.java) inside_block:testWithTableClient
+[Build Azure Table Service client](../../modules/azure/src/test/java/org/testcontainers/azure/AzuriteContainerTest.java) inside_block:createTableClient
 <!--/codeinclude-->
 
 ### CosmosDB
