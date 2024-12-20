@@ -86,9 +86,7 @@ public class AzuriteContainerTest {
 
     @Test
     public void testWithTableServiceClient() {
-        // getTableConnectionString {
         final String connectionString = emulator.getDefaultConnectionString();
-        // }
         testTable(connectionString);
     }
 
