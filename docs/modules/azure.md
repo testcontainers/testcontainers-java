@@ -22,8 +22,8 @@ Start Azurite Emulator during a test:
 [Starting a Azurite Blob container](../../modules/azure/src/test/java/org/testcontainers/azure/AzuriteContainerTest.java) inside_block:emulatorContainer
 <!--/codeinclude-->
 
-> [!TIP]
-> SSL configuration is possible using the `withSsl(File, String)` and  `withSsl(File, File)` methods.
+!!! note
+    SSL configuration is possible using the `withSsl(File, String)` and  `withSsl(File, File)` methods.
 
 Get the connection string from the container:
 
