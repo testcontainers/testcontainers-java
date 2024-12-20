@@ -10,7 +10,6 @@ import com.azure.storage.queue.QueueClient;
 import com.azure.storage.queue.QueueServiceClient;
 import com.azure.storage.queue.QueueServiceClientBuilder;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -20,6 +19,8 @@ import java.io.File;
 import java.net.URL;
 import java.util.Optional;
 import java.util.Properties;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class AzuriteContainerTest {
 
@@ -134,7 +135,7 @@ public class AzuriteContainerTest {
         // }
         final BlobContainerClient containerClient = blobServiceClient.createBlobContainer("test-container");
 
-        Assert.assertTrue(containerClient.exists());
+        assertThat(containerClient.exists()).isTrue();
     }
 
     private void testQueue(final String connectionString) {
@@ -145,7 +146,7 @@ public class AzuriteContainerTest {
         // }
         final QueueClient queueClient = queueServiceClient.createQueue("test-queue");
 
-        Assert.assertNotNull(queueClient.getQueueUrl());
+        assertThat(queueClient.getQueueUrl()).isNotNull();
     }
 
     private void testTable(final String connectionString) {
@@ -156,7 +157,7 @@ public class AzuriteContainerTest {
         // }
         final TableClient tableClient = tableServiceClient.createTable("testtable");
 
-        Assert.assertNotNull(tableClient.getTableEndpoint());
+        assertThat(tableClient.getTableEndpoint()).isNotNull();
     }
 
     private static File getResourceFile(final String resourceName) {
