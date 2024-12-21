@@ -1,4 +1,4 @@
-package org.testcontainers.containers;
+package org.testcontainers.azure;
 
 import com.azure.cosmos.CosmosAsyncClient;
 import com.azure.cosmos.CosmosClientBuilder;
@@ -46,8 +46,8 @@ public class CosmosDBEmulatorContainerTest {
     @Test
     public void testWithCosmosClient() throws Exception {
         // buildAndSaveNewKeyStore {
-        Path keyStoreFile = tempFolder.newFile("azure-cosmos-emulator.keystore").toPath();
-        KeyStore keyStore = emulator.buildNewKeyStore();
+        final Path keyStoreFile = tempFolder.newFile("azure-cosmos-emulator.keystore").toPath();
+        final KeyStore keyStore = emulator.buildNewKeyStore();
         keyStore.store(new FileOutputStream(keyStoreFile.toFile()), emulator.getEmulatorKey().toCharArray());
         // }
         // setSystemTrustStoreParameters {
@@ -56,7 +56,7 @@ public class CosmosDBEmulatorContainerTest {
         System.setProperty("javax.net.ssl.trustStoreType", "PKCS12");
         // }
         // buildClient {
-        CosmosAsyncClient client = new CosmosClientBuilder()
+        final CosmosAsyncClient client = new CosmosClientBuilder()
             .gatewayMode()
             .endpointDiscoveryEnabled(false)
             .endpoint(emulator.getEmulatorEndpoint())
@@ -64,9 +64,9 @@ public class CosmosDBEmulatorContainerTest {
             .buildAsyncClient();
         // }
         // testWithClientAgainstEmulatorContainer {
-        CosmosDatabaseResponse databaseResponse = client.createDatabaseIfNotExists("Azure").block();
+        final CosmosDatabaseResponse databaseResponse = client.createDatabaseIfNotExists("Azure").block();
         assertThat(databaseResponse.getStatusCode()).isEqualTo(201);
-        CosmosContainerResponse containerResponse = client
+        final CosmosContainerResponse containerResponse = client
             .getDatabase("Azure")
             .createContainerIfNotExists("ServiceContainer", "/name")
             .block();

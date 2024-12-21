@@ -1,4 +1,4 @@
-package org.testcontainers.containers;
+package org.testcontainers.azure;
 
 import okhttp3.Cache;
 import okhttp3.OkHttpClient;
