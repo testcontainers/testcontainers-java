@@ -5,11 +5,12 @@ This module is INCUBATING. While it is ready for use and operational in the curr
 
 Testcontainers module for the Microsoft Azure's [SDK](https://github.com/Azure/azure-sdk-for-java).
 
-Currently, the module supports `Azurite` and `CosmosDB` emulators. In order to use them, you should use the following classes:
+Currently, the module supports `Azurite`, `Azure Eventhubs` and `CosmosDB` emulators. In order to use them, you should use the following classes:
 
 Class | Container Image
 -|-
 AzuriteContainer | [mcr.microsoft.com/azure-storage/azurite](https://github.com/microsoft/containerregistry)
+AzureEventhubsEmulatorContainer | [mcr.microsoft.com/azure-messaging/eventhubs-emulator](https://github.com/microsoft/containerregistry)
 CosmosDBEmulatorContainer | [mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator](https://github.com/microsoft/containerregistry)
 
 ## Usage example
@@ -47,6 +48,24 @@ Build Azure Table client:
 
 <!--codeinclude-->
 [Build Azure Table Service client](../../modules/azure/src/test/java/org/testcontainers/azure/AzuriteContainerTest.java) inside_block:createTableClient
+<!--/codeinclude-->
+
+### Azure Eventhubs Emulator
+
+<!--codeinclude-->
+[Configuring the Azure Eventhubs Emulator container](../../modules/azure/src/test/resources/eventhubs_config.json)
+<!--/codeinclude-->
+
+Start Azure Eventhubs Emulator during a test:
+
+<!--codeinclude-->
+[Starting a Azure Eventhubs Emulator container](../../modules/azure/src/test/java/org/testcontainers/azure/AzureEventhubsEmulatorContainerTest.java) inside_block:emulatorContainer
+<!--/codeinclude-->
+
+Configure the consumer and the producer clients:
+
+<!--codeinclude-->
+[Configuring the clients](../../modules/azure/src/test/java/org/testcontainers/azure/AzureEventhubsEmulatorContainerTest.java) inside_block:createProducerAndConsumer
 <!--/codeinclude-->
 
 ### CosmosDB
