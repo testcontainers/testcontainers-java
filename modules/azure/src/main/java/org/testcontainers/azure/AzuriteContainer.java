@@ -33,7 +33,7 @@ public class AzuriteContainer extends GenericContainer<AzuriteContainer> {
     private static final int DEFAULT_TABLE_PORT = 10002;
 
     private static final String CONNECTION_STRING_FORMAT =
-            "DefaultEndpointsProtocol=%s;AccountName=%s;AccountKey=%s;BlobEndpoint=%s://%s:%d/%s;QueueEndpoint=%s://%s:%d/%s;TableEndpoint=%s://%s:%d/%s;";
+        "DefaultEndpointsProtocol=%s;AccountName=%s;AccountKey=%s;BlobEndpoint=%s://%s:%d/%s;QueueEndpoint=%s://%s:%d/%s;TableEndpoint=%s://%s:%d/%s;";
 
     /**
      * The account name of the default credentials.
@@ -44,10 +44,10 @@ public class AzuriteContainer extends GenericContainer<AzuriteContainer> {
      * The account key of the default credentials.
      */
     public static final String WELL_KNOWN_ACCOUNT_KEY =
-            "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==";
+        "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==";
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse(
-            "mcr.microsoft.com/azure-storage/azurite"
+        "mcr.microsoft.com/azure-storage/azurite"
     );
 
     private String host = DEFAULT_HOST;
@@ -143,22 +143,22 @@ public class AzuriteContainer extends GenericContainer<AzuriteContainer> {
     public String getConnectionString(final String accountName, final String accountKey) {
         final String protocol = cert != null ? "https" : "http";
         return String.format(
-                CONNECTION_STRING_FORMAT,
-                protocol,
-                accountName,
-                accountKey,
-                protocol,
-                host,
-                getMappedPort(DEFAULT_BLOB_PORT),
-                accountName,
-                protocol,
-                host,
-                getMappedPort(DEFAULT_QUEUE_PORT),
-                accountName,
-                protocol,
-                host,
-                getMappedPort(DEFAULT_TABLE_PORT),
-                accountName
+            CONNECTION_STRING_FORMAT,
+            protocol,
+            accountName,
+            accountKey,
+            protocol,
+            host,
+            getMappedPort(DEFAULT_BLOB_PORT),
+            accountName,
+            protocol,
+            host,
+            getMappedPort(DEFAULT_QUEUE_PORT),
+            accountName,
+            protocol,
+            host,
+            getMappedPort(DEFAULT_TABLE_PORT),
+            accountName
         );
     }
 
