@@ -1,10 +1,8 @@
 package org.testcontainers.azure;
 
-import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
-
-import java.io.File;
+import org.testcontainers.utility.MountableFile;
 
 /**
  * Testcontainers implementation for Azurite Emulator.
@@ -17,8 +15,6 @@ import java.io.File;
  *     <li>10001 (queue port)</li>
  *     <li>10002 (table port)</li>
  * </ul>
- * <p>
- * See command line options <a href="https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=visual-studio%2Cblob-storage#command-line-options">here</a>.
  */
 public class AzuriteContainer extends GenericContainer<AzuriteContainer> {
 
@@ -38,12 +34,12 @@ public class AzuriteContainer extends GenericContainer<AzuriteContainer> {
     /**
      * The account name of the default credentials.
      */
-    public static final String WELL_KNOWN_ACCOUNT_NAME = "devstoreaccount1";
+    private static final String WELL_KNOWN_ACCOUNT_NAME = "devstoreaccount1";
 
     /**
      * The account key of the default credentials.
      */
-    public static final String WELL_KNOWN_ACCOUNT_KEY =
+    private static final String WELL_KNOWN_ACCOUNT_KEY =
         "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==";
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse(
@@ -52,11 +48,11 @@ public class AzuriteContainer extends GenericContainer<AzuriteContainer> {
 
     private String host = DEFAULT_HOST;
 
-    private File cert = null;
+    private MountableFile cert = null;
 
     private String certExtension = null;
 
-    private File key = null;
+    private MountableFile key = null;
 
     private String pwd = null;
 
@@ -66,6 +62,7 @@ public class AzuriteContainer extends GenericContainer<AzuriteContainer> {
     public AzuriteContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        withExposedPorts(DEFAULT_BLOB_PORT, DEFAULT_QUEUE_PORT, DEFAULT_TABLE_PORT);
     }
 
     /**
@@ -75,7 +72,7 @@ public class AzuriteContainer extends GenericContainer<AzuriteContainer> {
      * @param password The password securing the certificate
      * @return this
      */
-    public AzuriteContainer withSsl(final File pfxCert, final String password) {
+    public AzuriteContainer withSsl(final MountableFile pfxCert, final String password) {
         cert = pfxCert;
         pwd = password;
         certExtension = ".pfx";
@@ -89,7 +86,7 @@ public class AzuriteContainer extends GenericContainer<AzuriteContainer> {
      * @param pemKey  The PEM key file
      * @return this
      */
-    public AzuriteContainer withSsl(final File pemCert, final File pemKey) {
+    public AzuriteContainer withSsl(final MountableFile pemCert, final MountableFile pemKey) {
         cert = pemCert;
         key = pemKey;
         certExtension = ".pem";
@@ -109,19 +106,15 @@ public class AzuriteContainer extends GenericContainer<AzuriteContainer> {
 
     @Override
     protected void configure() {
-        withEnv("AZURITE_ACCOUNTS", WELL_KNOWN_ACCOUNT_NAME + ":" + WELL_KNOWN_ACCOUNT_KEY);
         withCommand(getCommandLine());
         if (cert != null) {
-            final String certAbsolutePath = cert.getAbsolutePath();
-            logger().info("Using path for cert file: '{}'", certAbsolutePath);
-            withFileSystemBind(certAbsolutePath, "/cert" + certExtension, BindMode.READ_ONLY);
+            logger().info("Using path for cert file: '{}'", cert);
+            withCopyFileToContainer(cert, "/cert" + certExtension);
             if (key != null) {
-                final String keyAbsolutePath = key.getAbsolutePath();
-                logger().info("Using path for key file: '{}'", keyAbsolutePath);
-                withFileSystemBind(keyAbsolutePath, "/key.pem", BindMode.READ_ONLY);
+                logger().info("Using path for key file: '{}'", key);
+                withCopyFileToContainer(key, "/key.pem");
             }
         }
-        withExposedPorts(DEFAULT_BLOB_PORT, DEFAULT_QUEUE_PORT, DEFAULT_TABLE_PORT);
     }
 
     /**
@@ -164,10 +157,9 @@ public class AzuriteContainer extends GenericContainer<AzuriteContainer> {
 
     String getCommandLine() {
         final StringBuilder args = new StringBuilder("azurite");
-        args.append(" --blobHost ").append(ALLOW_ALL_CONNECTIONS).append(" --blobPort ").append(DEFAULT_BLOB_PORT);
-        args.append(" --queueHost ").append(ALLOW_ALL_CONNECTIONS).append(" --queuePort ").append(DEFAULT_QUEUE_PORT);
-        args.append(" --tableHost ").append(ALLOW_ALL_CONNECTIONS).append(" --tablePort ").append(DEFAULT_TABLE_PORT);
-        args.append(" --location ").append("/data");
+        args.append(" --blobHost ").append(ALLOW_ALL_CONNECTIONS);
+        args.append(" --queueHost ").append(ALLOW_ALL_CONNECTIONS);
+        args.append(" --tableHost ").append(ALLOW_ALL_CONNECTIONS);
         if (cert != null) {
             args.append(" --cert ").append("/cert").append(certExtension);
             if (pwd != null) {

@@ -11,24 +11,15 @@ import com.azure.storage.queue.QueueServiceClient;
 import com.azure.storage.queue.QueueServiceClientBuilder;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 
-import java.io.File;
-import java.net.URL;
-import java.util.Optional;
 import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class AzuriteContainerTest {
-
-    private static final File PFX_STORE_FILE = getResourceFile("/keystore.pfx");
-
-    private static final File PEM_CERT_FILE = getResourceFile("/certificate.pem");
-
-    private static final File PEM_KEY_FILE = getResourceFile("/key.pem");
 
     private static final String PASSWORD = "changeit";
 
@@ -39,7 +30,10 @@ public class AzuriteContainerTest {
     @BeforeClass
     public static void captureOriginalSystemProperties() {
         originalSystemProperties = (Properties) System.getProperties().clone();
-        System.setProperty("javax.net.ssl.trustStore", PFX_STORE_FILE.getAbsolutePath());
+        System.setProperty(
+            "javax.net.ssl.trustStore",
+            MountableFile.forClasspathResource("/keystore.pfx").getFilesystemPath()
+        );
         System.setProperty("javax.net.ssl.trustStorePassword", PASSWORD);
         System.setProperty("javax.net.ssl.trustStoreType", "PKCS12");
     }
@@ -49,119 +43,167 @@ public class AzuriteContainerTest {
         System.setProperties(originalSystemProperties);
     }
 
-    @Rule
-    // emulatorContainer {
-    public AzuriteContainer emulator = new AzuriteContainer(
-        DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite")
-    );
-
-    // }
-
-    @Rule
-    public AzuriteContainer pfxEmulator = new AzuriteContainer(
-        DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite")
-    )
-        .withSsl(PFX_STORE_FILE, PASSWORD)
-        .withHost(LOOPBACK_IP);
-
-    @Rule
-    public AzuriteContainer pemEmulator = new AzuriteContainer(
-        DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite")
-    )
-        .withSsl(PEM_CERT_FILE, PEM_KEY_FILE)
-        .withHost(LOOPBACK_IP);
-
     @Test
     public void testWithBlobServiceClient() {
-        // getConnectionString {
-        final String connectionString = emulator.getDefaultConnectionString();
-        // }
-        testBlob(connectionString);
+        try (
+            // emulatorContainer {
+            AzuriteContainer emulator = new AzuriteContainer(
+                DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:3.33.0")
+            );
+            // }
+        ) {
+            emulator.start();
+            testBlob(emulator);
+        }
     }
 
     @Test
     public void testWithQueueServiceClient() {
-        final String connectionString = emulator.getDefaultConnectionString();
-        testQueue(connectionString);
+        try (
+            AzuriteContainer emulator = new AzuriteContainer(
+                DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:3.33.0")
+            );
+        ) {
+            emulator.start();
+            testQueue(emulator);
+        }
     }
 
     @Test
     public void testWithTableServiceClient() {
-        final String connectionString = emulator.getDefaultConnectionString();
-        testTable(connectionString);
+        try (
+            AzuriteContainer emulator = new AzuriteContainer(
+                DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:3.33.0")
+            );
+        ) {
+            emulator.start();
+            testTable(emulator);
+        }
     }
 
     @Test
     public void testWithBlobServiceClientWithSslUsingPfx() {
-        final String connectionString = pfxEmulator.getDefaultConnectionString();
-        testBlob(connectionString);
+        try (
+            AzuriteContainer emulator = new AzuriteContainer(
+                DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:3.33.0")
+            )
+                .withSsl(MountableFile.forClasspathResource("/keystore.pfx"), PASSWORD)
+                .withHost(LOOPBACK_IP);
+        ) {
+            emulator.start();
+            testBlob(emulator);
+        }
     }
 
     @Test
     public void testWithQueueServiceClientWithSslUsingPfx() {
-        final String connectionString = pfxEmulator.getDefaultConnectionString();
-        testQueue(connectionString);
+        try (
+            AzuriteContainer emulator = new AzuriteContainer(
+                DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:3.33.0")
+            )
+                .withSsl(MountableFile.forClasspathResource("/keystore.pfx"), PASSWORD)
+                .withHost(LOOPBACK_IP);
+        ) {
+            emulator.start();
+            testQueue(emulator);
+        }
     }
 
     @Test
     public void testWithTableServiceClientWithSslUsingPfx() {
-        final String connectionString = pfxEmulator.getDefaultConnectionString();
-        testTable(connectionString);
+        try (
+            AzuriteContainer emulator = new AzuriteContainer(
+                DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:3.33.0")
+            )
+                .withSsl(MountableFile.forClasspathResource("/keystore.pfx"), PASSWORD)
+                .withHost(LOOPBACK_IP);
+        ) {
+            emulator.start();
+            testTable(emulator);
+        }
     }
 
     @Test
     public void testWithBlobServiceClientWithSslUsingPem() {
-        final String connectionString = pemEmulator.getDefaultConnectionString();
-        testBlob(connectionString);
+        try (
+            AzuriteContainer emulator = new AzuriteContainer(
+                DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:3.33.0")
+            )
+                .withSsl(
+                    MountableFile.forClasspathResource("/certificate.pem"),
+                    MountableFile.forClasspathResource("/key.pem")
+                )
+                .withHost(LOOPBACK_IP);
+        ) {
+            emulator.start();
+            testBlob(emulator);
+        }
     }
 
     @Test
     public void testWithQueueServiceClientWithSslUsingPem() {
-        final String connectionString = pemEmulator.getDefaultConnectionString();
-        testQueue(connectionString);
+        try (
+            AzuriteContainer emulator = new AzuriteContainer(
+                DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:3.33.0")
+            )
+                .withSsl(
+                    MountableFile.forClasspathResource("/certificate.pem"),
+                    MountableFile.forClasspathResource("/key.pem")
+                )
+                .withHost(LOOPBACK_IP);
+        ) {
+            emulator.start();
+            testQueue(emulator);
+        }
     }
 
     @Test
     public void testWithTableServiceClientWithSslUsingPem() {
-        final String connectionString = pemEmulator.getDefaultConnectionString();
-        testTable(connectionString);
+        try (
+            AzuriteContainer emulator = new AzuriteContainer(
+                DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:3.33.0")
+            )
+                .withSsl(
+                    MountableFile.forClasspathResource("/certificate.pem"),
+                    MountableFile.forClasspathResource("/key.pem")
+                )
+                .withHost(LOOPBACK_IP);
+        ) {
+            emulator.start();
+            testTable(emulator);
+        }
     }
 
-    private void testBlob(final String connectionString) {
+    private void testBlob(AzuriteContainer container) {
         // createBlobClient {
-        final BlobServiceClient blobServiceClient = new BlobServiceClientBuilder()
-            .connectionString(connectionString)
+        BlobServiceClient blobServiceClient = new BlobServiceClientBuilder()
+            .connectionString(container.getDefaultConnectionString())
             .buildClient();
         // }
-        final BlobContainerClient containerClient = blobServiceClient.createBlobContainer("test-container");
+        BlobContainerClient containerClient = blobServiceClient.createBlobContainer("test-container");
 
         assertThat(containerClient.exists()).isTrue();
     }
 
-    private void testQueue(final String connectionString) {
+    private void testQueue(AzuriteContainer container) {
         // createQueueClient {
-        final QueueServiceClient queueServiceClient = new QueueServiceClientBuilder()
-            .connectionString(connectionString)
+        QueueServiceClient queueServiceClient = new QueueServiceClientBuilder()
+            .connectionString(container.getDefaultConnectionString())
             .buildClient();
         // }
-        final QueueClient queueClient = queueServiceClient.createQueue("test-queue");
+        QueueClient queueClient = queueServiceClient.createQueue("test-queue");
 
         assertThat(queueClient.getQueueUrl()).isNotNull();
     }
 
-    private void testTable(final String connectionString) {
+    private void testTable(AzuriteContainer container) {
         // createTableClient {
-        final TableServiceClient tableServiceClient = new TableServiceClientBuilder()
-            .connectionString(connectionString)
+        TableServiceClient tableServiceClient = new TableServiceClientBuilder()
+            .connectionString(container.getDefaultConnectionString())
             .buildClient();
         // }
-        final TableClient tableClient = tableServiceClient.createTable("testtable");
+        TableClient tableClient = tableServiceClient.createTable("testtable");
 
         assertThat(tableClient.getTableEndpoint()).isNotNull();
-    }
-
-    private static File getResourceFile(final String resourceName) {
-        final URL resource = AzuriteContainerTest.class.getResource(resourceName);
-        return Optional.ofNullable(resource).map(URL::getFile).map(File::new).orElse(null);
     }
 }
