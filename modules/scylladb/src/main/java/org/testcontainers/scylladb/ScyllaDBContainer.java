@@ -3,8 +3,10 @@ package org.testcontainers.scylladb;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 
 import java.net.InetSocketAddress;
+import java.util.Optional;
 
 /**
  * Testcontainers implementation for ScyllaDB.
@@ -30,7 +32,11 @@ public class ScyllaDBContainer extends GenericContainer<ScyllaDBContainer> {
 
     private static final String COMMAND = "--developer-mode=1 --overprovisioned=1";
 
+    private static final String CONTAINER_CONFIG_LOCATION = "/etc/scylla";
+
     private boolean alternatorEnabled = false;
+
+    private String configLocation;
 
     public ScyllaDBContainer(String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
@@ -54,6 +60,18 @@ public class ScyllaDBContainer extends GenericContainer<ScyllaDBContainer> {
                 COMMAND + " --alternator-port=" + ALTERNATOR_PORT + " --alternator-write-isolation=always";
             withCommand(newCommand);
         }
+
+        // Map (effectively replace) directory in Docker with the content of resourceLocation if resource location is
+        // not null.
+        Optional
+            .ofNullable(configLocation)
+            .map(MountableFile::forClasspathResource)
+            .ifPresent(mountableFile -> withCopyFileToContainer(mountableFile, CONTAINER_CONFIG_LOCATION));
+    }
+
+    public ScyllaDBContainer withConfigurationOverride(String configLocation) {
+        this.configLocation = configLocation;
+        return this;
     }
 
     public ScyllaDBContainer withAlternator() {

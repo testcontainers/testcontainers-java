@@ -15,22 +15,34 @@ import software.amazon.awssdk.services.dynamodb.model.KeySchemaElement;
 import software.amazon.awssdk.services.dynamodb.model.KeyType;
 import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType;
 
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
+import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class ScyllaDBContainerTest {
 
-    private static final DockerImageName SCYLLADB_IMAGE = DockerImageName.parse("scylladb/scylla:5.2.9");
+    private static final DockerImageName SCYLLADB_IMAGE = DockerImageName.parse("scylladb/scylla:6.2");
 
     private static final String BASIC_QUERY = "SELECT release_version FROM system.local";
 
     @Test
     public void testSimple() {
         try ( // container {
-            ScyllaDBContainer scylladb = new ScyllaDBContainer("scylladb/scylla:5.2.9")
-            // }
+              ScyllaDBContainer scylladb = new ScyllaDBContainer(SCYLLADB_IMAGE)
+              // }
         ) {
             scylladb.start();
             // session {
@@ -40,6 +52,49 @@ public class ScyllaDBContainerTest {
                 .withLocalDatacenter("datacenter1")
                 .build();
             // }
+            ResultSet resultSet = session.execute(BASIC_QUERY);
+            assertThat(resultSet.wasApplied()).isTrue();
+            assertThat(resultSet.one().getString(0)).isNotNull();
+            assertThat(session.getMetadata().getNodes().values()).hasSize(1);
+        }
+    }
+
+    @Test
+    public void testSimpleSsl() throws NoSuchAlgorithmException, KeyStoreException, IOException, CertificateException, UnrecoverableKeyException, KeyManagementException {
+        try (
+            // custom_configuration {
+            ScyllaDBContainer scylladb = new ScyllaDBContainer(SCYLLADB_IMAGE)
+                .withConfigurationOverride("scylla-test-ssl")
+            // }
+        ) {
+
+            // sslContext {
+            String testResourcesDir = getClass().getClassLoader().getResource("scylla-test-ssl/").getPath();
+
+            KeyStore keyStore = KeyStore.getInstance("PKCS12");
+            keyStore.load(Files.newInputStream(Paths.get(testResourcesDir + "keystore.node0")), "scylla".toCharArray());
+
+            KeyStore trustStore = KeyStore.getInstance("PKCS12");
+            trustStore.load(Files.newInputStream(Paths.get(testResourcesDir + "truststore.node0")), "scylla".toCharArray());
+
+            KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+            keyManagerFactory.init(keyStore, "scylla".toCharArray());
+
+            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            trustManagerFactory.init(trustStore);
+
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
+            // }
+
+            scylladb.start();
+
+            CqlSession session = CqlSession
+                .builder()
+                .addContactPoint(scylladb.getContactPoint())
+                .withLocalDatacenter("datacenter1")
+                .withSslContext(sslContext)
+                .build();
             ResultSet resultSet = session.execute(BASIC_QUERY);
             assertThat(resultSet.wasApplied()).isTrue();
             assertThat(resultSet.one().getString(0)).isNotNull();
@@ -67,8 +122,8 @@ public class ScyllaDBContainerTest {
     @Test
     public void testAlternator() {
         try ( // alternator {
-            ScyllaDBContainer scylladb = new ScyllaDBContainer(SCYLLADB_IMAGE).withAlternator()
-            // }
+              ScyllaDBContainer scylladb = new ScyllaDBContainer(SCYLLADB_IMAGE).withAlternator()
+              // }
         ) {
             scylladb.start();
 
@@ -102,6 +157,17 @@ public class ScyllaDBContainerTest {
             assertThatThrownBy(scylladb::getAlternatorEndpoint)
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("Alternator is not enabled");
+        }
+    }
+
+    @Test
+    public void testSslConfiguration() {
+        try (ScyllaDBContainer scylladb = new ScyllaDBContainer(SCYLLADB_IMAGE)) {
+            scylladb.start();
+            assertThat(scylladb.getEnvMap().get("SCYLLA_SSL")).isEqualTo("1");
+            assertThat(scylladb.getEnvMap().get("SCYLLA_SSL_CERT_FILE")).isEqualTo("/etc/scylla/certs/scylla.crt");
+            assertThat(scylladb.getEnvMap().get("SCYLLA_SSL_KEY_FILE")).isEqualTo("/etc/scylla/certs/scylla.key");
+            assertThat(scylladb.getEnvMap().get("SCYLLA_SSL_CA_FILE")).isEqualTo("/etc/scylla/certs/ca.crt");
         }
     }
 }
