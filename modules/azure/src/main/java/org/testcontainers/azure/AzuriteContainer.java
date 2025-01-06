@@ -141,15 +141,15 @@ public class AzuriteContainer extends GenericContainer<AzuriteContainer> {
             accountName,
             accountKey,
             protocol,
-            host,
+            getHost(),
             getMappedPort(DEFAULT_BLOB_PORT),
             accountName,
             protocol,
-            host,
+            getHost(),
             getMappedPort(DEFAULT_QUEUE_PORT),
             accountName,
             protocol,
-            host,
+            getHost(),
             getMappedPort(DEFAULT_TABLE_PORT),
             accountName
         );

@@ -49,7 +49,7 @@ public class AzuriteContainerTest {
             // emulatorContainer {
             AzuriteContainer emulator = new AzuriteContainer(
                 DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:3.33.0")
-            );
+            )
             // }
         ) {
             emulator.start();
@@ -62,7 +62,7 @@ public class AzuriteContainerTest {
         try (
             AzuriteContainer emulator = new AzuriteContainer(
                 DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:3.33.0")
-            );
+            )
         ) {
             emulator.start();
             testQueue(emulator);
@@ -74,7 +74,7 @@ public class AzuriteContainerTest {
         try (
             AzuriteContainer emulator = new AzuriteContainer(
                 DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:3.33.0")
-            );
+            )
         ) {
             emulator.start();
             testTable(emulator);
@@ -88,7 +88,7 @@ public class AzuriteContainerTest {
                 DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:3.33.0")
             )
                 .withSsl(MountableFile.forClasspathResource("/keystore.pfx"), PASSWORD)
-                .withHost(LOOPBACK_IP);
+                .withHost(LOOPBACK_IP)
         ) {
             emulator.start();
             testBlob(emulator);
@@ -102,7 +102,7 @@ public class AzuriteContainerTest {
                 DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:3.33.0")
             )
                 .withSsl(MountableFile.forClasspathResource("/keystore.pfx"), PASSWORD)
-                .withHost(LOOPBACK_IP);
+                .withHost(LOOPBACK_IP)
         ) {
             emulator.start();
             testQueue(emulator);
@@ -116,7 +116,7 @@ public class AzuriteContainerTest {
                 DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:3.33.0")
             )
                 .withSsl(MountableFile.forClasspathResource("/keystore.pfx"), PASSWORD)
-                .withHost(LOOPBACK_IP);
+                .withHost(LOOPBACK_IP)
         ) {
             emulator.start();
             testTable(emulator);
@@ -133,7 +133,7 @@ public class AzuriteContainerTest {
                     MountableFile.forClasspathResource("/certificate.pem"),
                     MountableFile.forClasspathResource("/key.pem")
                 )
-                .withHost(LOOPBACK_IP);
+                .withHost(LOOPBACK_IP)
         ) {
             emulator.start();
             testBlob(emulator);
@@ -150,7 +150,7 @@ public class AzuriteContainerTest {
                     MountableFile.forClasspathResource("/certificate.pem"),
                     MountableFile.forClasspathResource("/key.pem")
                 )
-                .withHost(LOOPBACK_IP);
+                .withHost(LOOPBACK_IP)
         ) {
             emulator.start();
             testQueue(emulator);
@@ -167,7 +167,7 @@ public class AzuriteContainerTest {
                     MountableFile.forClasspathResource("/certificate.pem"),
                     MountableFile.forClasspathResource("/key.pem")
                 )
-                .withHost(LOOPBACK_IP);
+                .withHost(LOOPBACK_IP)
         ) {
             emulator.start();
             testTable(emulator);
