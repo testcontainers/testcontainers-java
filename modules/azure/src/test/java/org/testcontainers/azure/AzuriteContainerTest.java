@@ -23,8 +23,6 @@ public class AzuriteContainerTest {
 
     private static final String PASSWORD = "changeit";
 
-    private static final String LOOPBACK_IP = "127.0.0.1";
-
     private static Properties originalSystemProperties;
 
     @BeforeClass
@@ -88,7 +86,6 @@ public class AzuriteContainerTest {
                 DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:3.33.0")
             )
                 .withSsl(MountableFile.forClasspathResource("/keystore.pfx"), PASSWORD)
-                .withHost(LOOPBACK_IP)
         ) {
             emulator.start();
             testBlob(emulator);
@@ -102,7 +99,6 @@ public class AzuriteContainerTest {
                 DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:3.33.0")
             )
                 .withSsl(MountableFile.forClasspathResource("/keystore.pfx"), PASSWORD)
-                .withHost(LOOPBACK_IP)
         ) {
             emulator.start();
             testQueue(emulator);
@@ -116,7 +112,6 @@ public class AzuriteContainerTest {
                 DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:3.33.0")
             )
                 .withSsl(MountableFile.forClasspathResource("/keystore.pfx"), PASSWORD)
-                .withHost(LOOPBACK_IP)
         ) {
             emulator.start();
             testTable(emulator);
@@ -133,7 +128,6 @@ public class AzuriteContainerTest {
                     MountableFile.forClasspathResource("/certificate.pem"),
                     MountableFile.forClasspathResource("/key.pem")
                 )
-                .withHost(LOOPBACK_IP)
         ) {
             emulator.start();
             testBlob(emulator);
@@ -150,7 +144,6 @@ public class AzuriteContainerTest {
                     MountableFile.forClasspathResource("/certificate.pem"),
                     MountableFile.forClasspathResource("/key.pem")
                 )
-                .withHost(LOOPBACK_IP)
         ) {
             emulator.start();
             testQueue(emulator);
@@ -167,7 +160,6 @@ public class AzuriteContainerTest {
                     MountableFile.forClasspathResource("/certificate.pem"),
                     MountableFile.forClasspathResource("/key.pem")
                 )
-                .withHost(LOOPBACK_IP)
         ) {
             emulator.start();
             testTable(emulator);

@@ -46,8 +46,6 @@ public class AzuriteContainer extends GenericContainer<AzuriteContainer> {
         "mcr.microsoft.com/azure-storage/azurite"
     );
 
-    private String host = DEFAULT_HOST;
-
     private MountableFile cert = null;
 
     private String certExtension = null;
@@ -90,17 +88,6 @@ public class AzuriteContainer extends GenericContainer<AzuriteContainer> {
         cert = pemCert;
         key = pemKey;
         certExtension = ".pem";
-        return this;
-    }
-
-    /**
-     * Sets the hostname we want to use to connect to our emulator. (default: {@link #DEFAULT_HOST})
-     *
-     * @param host The host name
-     * @return this
-     */
-    public AzuriteContainer withHost(final String host) {
-        this.host = host;
         return this;
     }
 
