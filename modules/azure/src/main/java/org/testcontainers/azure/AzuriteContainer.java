@@ -18,8 +18,6 @@ import org.testcontainers.utility.MountableFile;
  */
 public class AzuriteContainer extends GenericContainer<AzuriteContainer> {
 
-    private static final String DEFAULT_HOST = "127.0.0.1";
-
     private static final String ALLOW_ALL_CONNECTIONS = "0.0.0.0";
 
     private static final int DEFAULT_BLOB_PORT = 10000;
