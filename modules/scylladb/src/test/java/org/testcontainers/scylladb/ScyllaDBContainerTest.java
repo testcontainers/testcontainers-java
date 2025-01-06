@@ -15,9 +15,6 @@ import software.amazon.awssdk.services.dynamodb.model.KeySchemaElement;
 import software.amazon.awssdk.services.dynamodb.model.KeyType;
 import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType;
 
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
@@ -28,6 +25,10 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -41,8 +42,8 @@ public class ScyllaDBContainerTest {
     @Test
     public void testSimple() {
         try ( // container {
-              ScyllaDBContainer scylladb = new ScyllaDBContainer(SCYLLADB_IMAGE)
-              // }
+            ScyllaDBContainer scylladb = new ScyllaDBContainer(SCYLLADB_IMAGE)
+            // }
         ) {
             scylladb.start();
             // session {
@@ -60,14 +61,14 @@ public class ScyllaDBContainerTest {
     }
 
     @Test
-    public void testSimpleSsl() throws NoSuchAlgorithmException, KeyStoreException, IOException, CertificateException, UnrecoverableKeyException, KeyManagementException {
+    public void testSimpleSsl()
+        throws NoSuchAlgorithmException, KeyStoreException, IOException, CertificateException, UnrecoverableKeyException, KeyManagementException {
         try (
             // custom_configuration {
             ScyllaDBContainer scylladb = new ScyllaDBContainer(SCYLLADB_IMAGE)
                 .withConfigurationOverride("scylla-test-ssl")
             // }
         ) {
-
             // sslContext {
             String testResourcesDir = getClass().getClassLoader().getResource("scylla-test-ssl/").getPath();
 
@@ -75,12 +76,19 @@ public class ScyllaDBContainerTest {
             keyStore.load(Files.newInputStream(Paths.get(testResourcesDir + "keystore.node0")), "scylla".toCharArray());
 
             KeyStore trustStore = KeyStore.getInstance("PKCS12");
-            trustStore.load(Files.newInputStream(Paths.get(testResourcesDir + "truststore.node0")), "scylla".toCharArray());
+            trustStore.load(
+                Files.newInputStream(Paths.get(testResourcesDir + "truststore.node0")),
+                "scylla".toCharArray()
+            );
 
-            KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+            KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(
+                KeyManagerFactory.getDefaultAlgorithm()
+            );
             keyManagerFactory.init(keyStore, "scylla".toCharArray());
 
-            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(
+                TrustManagerFactory.getDefaultAlgorithm()
+            );
             trustManagerFactory.init(trustStore);
 
             SSLContext sslContext = SSLContext.getInstance("TLS");
@@ -122,8 +130,8 @@ public class ScyllaDBContainerTest {
     @Test
     public void testAlternator() {
         try ( // alternator {
-              ScyllaDBContainer scylladb = new ScyllaDBContainer(SCYLLADB_IMAGE).withAlternator()
-              // }
+            ScyllaDBContainer scylladb = new ScyllaDBContainer(SCYLLADB_IMAGE).withAlternator()
+            // }
         ) {
             scylladb.start();
 
