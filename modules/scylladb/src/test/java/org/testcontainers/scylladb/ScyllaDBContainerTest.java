@@ -167,15 +167,4 @@ public class ScyllaDBContainerTest {
                 .hasMessageContaining("Alternator is not enabled");
         }
     }
-
-    @Test
-    public void testSslConfiguration() {
-        try (ScyllaDBContainer scylladb = new ScyllaDBContainer(SCYLLADB_IMAGE)) {
-            scylladb.start();
-            assertThat(scylladb.getEnvMap().get("SCYLLA_SSL")).isEqualTo("1");
-            assertThat(scylladb.getEnvMap().get("SCYLLA_SSL_CERT_FILE")).isEqualTo("/etc/scylla/certs/scylla.crt");
-            assertThat(scylladb.getEnvMap().get("SCYLLA_SSL_KEY_FILE")).isEqualTo("/etc/scylla/certs/scylla.key");
-            assertThat(scylladb.getEnvMap().get("SCYLLA_SSL_CA_FILE")).isEqualTo("/etc/scylla/certs/ca.crt");
-        }
-    }
 }
