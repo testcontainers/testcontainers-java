@@ -1,8 +1,10 @@
 package org.testcontainers.azure;
 
+import com.azure.core.util.BinaryData;
 import com.azure.data.tables.TableClient;
 import com.azure.data.tables.TableServiceClient;
 import com.azure.data.tables.TableServiceClientBuilder;
+import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
@@ -163,6 +165,87 @@ public class AzuriteContainerTest {
         ) {
             emulator.start();
             testTable(emulator);
+        }
+    }
+
+    @Test
+    public void testTwoAccountKeysWithBlobServiceClient() {
+        try (
+            // emulatorContainerWithTwoAccountKeys {
+            AzuriteContainer emulator = new AzuriteContainer(
+                DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:3.33.0")
+            )
+                .withEnv("AZURITE_ACCOUNTS", "account1:key1:key2")
+            // }
+        ) {
+            emulator.start();
+
+            String connectionString1 = emulator.getConnectionString("account1", "key1");
+            // the second accuont will have access to the same container using a different key
+            String connectionString2 = emulator.getConnectionString("account1", "key2");
+
+            BlobServiceClient blobServiceClient1 = new BlobServiceClientBuilder()
+                .connectionString(connectionString1)
+                .buildClient();
+
+            BlobContainerClient containerClient1 = blobServiceClient1.createBlobContainer("test-container");
+            BlobClient blobClient1 = containerClient1.getBlobClient("test-blob.txt");
+            blobClient1.upload(BinaryData.fromString("content"));
+            boolean existsWithAccount1 = blobClient1.exists();
+            String contentWithAccount1 = blobClient1.downloadContent().toString();
+
+            BlobServiceClient blobServiceClient2 = new BlobServiceClientBuilder()
+                .connectionString(connectionString2)
+                .buildClient();
+            BlobContainerClient containerClient2 = blobServiceClient2.getBlobContainerClient("test-container");
+            BlobClient blobClient2 = containerClient2.getBlobClient("test-blob.txt");
+            boolean existsWithAccount2 = blobClient2.exists();
+            String contentWithAccount2 = blobClient2.downloadContent().toString();
+
+            assertThat(existsWithAccount1).isTrue();
+            assertThat(contentWithAccount1).isEqualTo("content");
+            assertThat(existsWithAccount2).isTrue();
+            assertThat(contentWithAccount2).isEqualTo("content");
+        }
+    }
+
+    @Test
+    public void testMultipleAccountsWithBlobServiceClient() {
+        try (
+            // emulatorContainerWithMoreAccounts {
+            AzuriteContainer emulator = new AzuriteContainer(
+                DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:3.33.0")
+            )
+                .withEnv("AZURITE_ACCOUNTS", "account1:key1;account2:key2")
+            // }
+        ) {
+            emulator.start();
+
+            // useNonDefaultCredentials {
+            String connectionString1 = emulator.getConnectionString("account1", "key1");
+            // the second accuont will not have access to the same container
+            String connectionString2 = emulator.getConnectionString("account2", "key2");
+            // }
+            BlobServiceClient blobServiceClient1 = new BlobServiceClientBuilder()
+                .connectionString(connectionString1)
+                .buildClient();
+
+            BlobContainerClient containerClient1 = blobServiceClient1.createBlobContainer("test-container");
+            BlobClient blobClient1 = containerClient1.getBlobClient("test-blob.txt");
+            blobClient1.upload(BinaryData.fromString("content"));
+            boolean existsWithAccount1 = blobClient1.exists();
+            String contentWithAccount1 = blobClient1.downloadContent().toString();
+
+            BlobServiceClient blobServiceClient2 = new BlobServiceClientBuilder()
+                .connectionString(connectionString2)
+                .buildClient();
+            BlobContainerClient containerClient2 = blobServiceClient2.createBlobContainer("test-container");
+            BlobClient blobClient2 = containerClient2.getBlobClient("test-blob.txt");
+            boolean existsWithAccount2 = blobClient2.exists();
+
+            assertThat(existsWithAccount1).isTrue();
+            assertThat(contentWithAccount1).isEqualTo("content");
+            assertThat(existsWithAccount2).isFalse();
         }
     }
 

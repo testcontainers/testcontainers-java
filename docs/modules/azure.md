@@ -25,12 +25,29 @@ Start Azurite Emulator during a test:
 !!! note
     SSL configuration is possible using the `withSsl(MountableFile, String)` and  `withSsl(MountableFile, MountableFile)` methods.
 
+If the tested application needs to use more than one set of credentials, the container can be configured to use custom credentials.
+Please see some examples below.
+
+<!--codeinclude-->
+[Starting a Azurite Blob container with one account and two keys](../../modules/azure/src/test/java/org/testcontainers/azure/AzuriteContainerTest.java) inside_block:emulatorContainerWithTwoAccountKeys
+<!--/codeinclude-->
+
+<!--codeinclude-->
+[Starting a Azurite Blob container with more accounts and keys](../../modules/azure/src/test/java/org/testcontainers/azure/AzuriteContainerTest.java) inside_block:useEmulatorContainerWithMoreAccounts
+<!--/codeinclude-->
+
 #### Using with Blob
 
 Build Azure Blob client:
 
 <!--codeinclude-->
 [Build Azure Blob Service client](../../modules/azure/src/test/java/org/testcontainers/azure/AzuriteContainerTest.java) inside_block:createBlobClient
+<!--/codeinclude-->
+
+In case the application needs to use custom credentials, we can obtain them with a different method:
+
+<!--codeinclude-->
+[Obtain connection string with non-default credentials](../../modules/azure/src/test/java/org/testcontainers/azure/AzuriteContainerTest.java) inside_block:useNonDefaultCredentials
 <!--/codeinclude-->
 
 #### Using with Queue
@@ -41,6 +58,9 @@ Build Azure Queue client:
 [Build Azure Queue Service client](../../modules/azure/src/test/java/org/testcontainers/azure/AzuriteContainerTest.java) inside_block:createQueueClient
 <!--/codeinclude-->
 
+!!! note
+    We can use custom credentials the same way as defined in the Blob section.
+
 #### Using with Table
 
 Build Azure Table client:
@@ -48,6 +68,9 @@ Build Azure Table client:
 <!--codeinclude-->
 [Build Azure Table Service client](../../modules/azure/src/test/java/org/testcontainers/azure/AzuriteContainerTest.java) inside_block:createTableClient
 <!--/codeinclude-->
+
+!!! note
+    We can use custom credentials the same way as defined in the Blob section.
 
 ### CosmosDB
 
