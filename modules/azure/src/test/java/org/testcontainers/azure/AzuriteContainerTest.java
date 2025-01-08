@@ -14,7 +14,6 @@ import com.azure.storage.queue.QueueServiceClientBuilder;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import java.util.Properties;
@@ -47,36 +46,29 @@ public class AzuriteContainerTest {
     public void testWithBlobServiceClient() {
         try (
             // emulatorContainer {
-            AzuriteContainer emulator = new AzuriteContainer(
-                DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:3.33.0")
-            )
+            AzuriteContainer emulator = new AzuriteContainer("mcr.microsoft.com/azure-storage/azurite:3.33.0")
             // }
         ) {
             emulator.start();
+            assertThat(emulator.getConnectionString()).contains("BlobEndpoint=http://");
             testBlob(emulator);
         }
     }
 
     @Test
     public void testWithQueueServiceClient() {
-        try (
-            AzuriteContainer emulator = new AzuriteContainer(
-                DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:3.33.0")
-            )
-        ) {
+        try (AzuriteContainer emulator = new AzuriteContainer("mcr.microsoft.com/azure-storage/azurite:3.33.0")) {
             emulator.start();
+            assertThat(emulator.getConnectionString()).contains("QueueEndpoint=http://");
             testQueue(emulator);
         }
     }
 
     @Test
     public void testWithTableServiceClient() {
-        try (
-            AzuriteContainer emulator = new AzuriteContainer(
-                DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:3.33.0")
-            )
-        ) {
+        try (AzuriteContainer emulator = new AzuriteContainer("mcr.microsoft.com/azure-storage/azurite:3.33.0")) {
             emulator.start();
+            assertThat(emulator.getConnectionString()).contains("TableEndpoint=http://");
             testTable(emulator);
         }
     }
@@ -84,12 +76,11 @@ public class AzuriteContainerTest {
     @Test
     public void testWithBlobServiceClientWithSslUsingPfx() {
         try (
-            AzuriteContainer emulator = new AzuriteContainer(
-                DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:3.33.0")
-            )
+            AzuriteContainer emulator = new AzuriteContainer("mcr.microsoft.com/azure-storage/azurite:3.33.0")
                 .withSsl(MountableFile.forClasspathResource("/keystore.pfx"), PASSWORD)
         ) {
             emulator.start();
+            assertThat(emulator.getConnectionString()).contains("BlobEndpoint=https://");
             testBlob(emulator);
         }
     }
@@ -97,12 +88,11 @@ public class AzuriteContainerTest {
     @Test
     public void testWithQueueServiceClientWithSslUsingPfx() {
         try (
-            AzuriteContainer emulator = new AzuriteContainer(
-                DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:3.33.0")
-            )
+            AzuriteContainer emulator = new AzuriteContainer("mcr.microsoft.com/azure-storage/azurite:3.33.0")
                 .withSsl(MountableFile.forClasspathResource("/keystore.pfx"), PASSWORD)
         ) {
             emulator.start();
+            assertThat(emulator.getConnectionString()).contains("QueueEndpoint=https://");
             testQueue(emulator);
         }
     }
@@ -110,12 +100,11 @@ public class AzuriteContainerTest {
     @Test
     public void testWithTableServiceClientWithSslUsingPfx() {
         try (
-            AzuriteContainer emulator = new AzuriteContainer(
-                DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:3.33.0")
-            )
+            AzuriteContainer emulator = new AzuriteContainer("mcr.microsoft.com/azure-storage/azurite:3.33.0")
                 .withSsl(MountableFile.forClasspathResource("/keystore.pfx"), PASSWORD)
         ) {
             emulator.start();
+            assertThat(emulator.getConnectionString()).contains("TableEndpoint=https://");
             testTable(emulator);
         }
     }
@@ -123,15 +112,14 @@ public class AzuriteContainerTest {
     @Test
     public void testWithBlobServiceClientWithSslUsingPem() {
         try (
-            AzuriteContainer emulator = new AzuriteContainer(
-                DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:3.33.0")
-            )
+            AzuriteContainer emulator = new AzuriteContainer("mcr.microsoft.com/azure-storage/azurite:3.33.0")
                 .withSsl(
                     MountableFile.forClasspathResource("/certificate.pem"),
                     MountableFile.forClasspathResource("/key.pem")
                 )
         ) {
             emulator.start();
+            assertThat(emulator.getConnectionString()).contains("BlobEndpoint=https://");
             testBlob(emulator);
         }
     }
@@ -139,15 +127,14 @@ public class AzuriteContainerTest {
     @Test
     public void testWithQueueServiceClientWithSslUsingPem() {
         try (
-            AzuriteContainer emulator = new AzuriteContainer(
-                DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:3.33.0")
-            )
+            AzuriteContainer emulator = new AzuriteContainer("mcr.microsoft.com/azure-storage/azurite:3.33.0")
                 .withSsl(
                     MountableFile.forClasspathResource("/certificate.pem"),
                     MountableFile.forClasspathResource("/key.pem")
                 )
         ) {
             emulator.start();
+            assertThat(emulator.getConnectionString()).contains("QueueEndpoint=https://");
             testQueue(emulator);
         }
     }
@@ -155,15 +142,14 @@ public class AzuriteContainerTest {
     @Test
     public void testWithTableServiceClientWithSslUsingPem() {
         try (
-            AzuriteContainer emulator = new AzuriteContainer(
-                DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:3.33.0")
-            )
+            AzuriteContainer emulator = new AzuriteContainer("mcr.microsoft.com/azure-storage/azurite:3.33.0")
                 .withSsl(
                     MountableFile.forClasspathResource("/certificate.pem"),
                     MountableFile.forClasspathResource("/key.pem")
                 )
         ) {
             emulator.start();
+            assertThat(emulator.getConnectionString()).contains("TableEndpoint=https://");
             testTable(emulator);
         }
     }
@@ -171,17 +157,15 @@ public class AzuriteContainerTest {
     @Test
     public void testTwoAccountKeysWithBlobServiceClient() {
         try (
-            // emulatorContainerWithTwoAccountKeys {
-            AzuriteContainer emulator = new AzuriteContainer(
-                DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:3.33.0")
-            )
+            // withTwoAccountKeys {
+            AzuriteContainer emulator = new AzuriteContainer("mcr.microsoft.com/azure-storage/azurite:3.33.0")
                 .withEnv("AZURITE_ACCOUNTS", "account1:key1:key2")
             // }
         ) {
             emulator.start();
 
             String connectionString1 = emulator.getConnectionString("account1", "key1");
-            // the second accuont will have access to the same container using a different key
+            // the second account will have access to the same container using a different key
             String connectionString2 = emulator.getConnectionString("account1", "key2");
 
             BlobServiceClient blobServiceClient1 = new BlobServiceClientBuilder()
@@ -212,10 +196,8 @@ public class AzuriteContainerTest {
     @Test
     public void testMultipleAccountsWithBlobServiceClient() {
         try (
-            // emulatorContainerWithMoreAccounts {
-            AzuriteContainer emulator = new AzuriteContainer(
-                DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:3.33.0")
-            )
+            // withMoreAccounts {
+            AzuriteContainer emulator = new AzuriteContainer("mcr.microsoft.com/azure-storage/azurite:3.33.0")
                 .withEnv("AZURITE_ACCOUNTS", "account1:key1;account2:key2")
             // }
         ) {
@@ -223,7 +205,7 @@ public class AzuriteContainerTest {
 
             // useNonDefaultCredentials {
             String connectionString1 = emulator.getConnectionString("account1", "key1");
-            // the second accuont will not have access to the same container
+            // the second account will not have access to the same container
             String connectionString2 = emulator.getConnectionString("account2", "key2");
             // }
             BlobServiceClient blobServiceClient1 = new BlobServiceClientBuilder()
@@ -252,7 +234,7 @@ public class AzuriteContainerTest {
     private void testBlob(AzuriteContainer container) {
         // createBlobClient {
         BlobServiceClient blobServiceClient = new BlobServiceClientBuilder()
-            .connectionString(container.getDefaultConnectionString())
+            .connectionString(container.getConnectionString())
             .buildClient();
         // }
         BlobContainerClient containerClient = blobServiceClient.createBlobContainer("test-container");
@@ -263,7 +245,7 @@ public class AzuriteContainerTest {
     private void testQueue(AzuriteContainer container) {
         // createQueueClient {
         QueueServiceClient queueServiceClient = new QueueServiceClientBuilder()
-            .connectionString(container.getDefaultConnectionString())
+            .connectionString(container.getConnectionString())
             .buildClient();
         // }
         QueueClient queueClient = queueServiceClient.createQueue("test-queue");
@@ -274,7 +256,7 @@ public class AzuriteContainerTest {
     private void testTable(AzuriteContainer container) {
         // createTableClient {
         TableServiceClient tableServiceClient = new TableServiceClientBuilder()
-            .connectionString(container.getDefaultConnectionString())
+            .connectionString(container.getConnectionString())
             .buildClient();
         // }
         TableClient tableClient = tableServiceClient.createTable("testtable");

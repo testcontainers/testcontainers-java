@@ -11,9 +11,9 @@ import org.testcontainers.utility.MountableFile;
  * <p>
  * Exposed ports:
  * <ul>
- *     <li>10000 (blob port)</li>
- *     <li>10001 (queue port)</li>
- *     <li>10002 (table port)</li>
+ *     <li>Blob: 10000</li>
+ *     <li>Queue: 10001</li>
+ *     <li>Table: 10002</li>
  * </ul>
  */
 public class AzuriteContainer extends GenericContainer<AzuriteContainer> {
@@ -55,7 +55,14 @@ public class AzuriteContainer extends GenericContainer<AzuriteContainer> {
     /**
      * @param dockerImageName specified docker image name to run
      */
-    public AzuriteContainer(final DockerImageName dockerImageName) {
+    public AzuriteContainer(String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
+    }
+
+    /**
+     * @param dockerImageName specified docker image name to run
+     */
+    public AzuriteContainer(DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
         withExposedPorts(DEFAULT_BLOB_PORT, DEFAULT_QUEUE_PORT, DEFAULT_TABLE_PORT);
@@ -69,9 +76,9 @@ public class AzuriteContainer extends GenericContainer<AzuriteContainer> {
      * @return this
      */
     public AzuriteContainer withSsl(final MountableFile pfxCert, final String password) {
-        cert = pfxCert;
-        pwd = password;
-        certExtension = ".pfx";
+        this.cert = pfxCert;
+        this.pwd = password;
+        this.certExtension = ".pfx";
         return this;
     }
 
@@ -83,21 +90,21 @@ public class AzuriteContainer extends GenericContainer<AzuriteContainer> {
      * @return this
      */
     public AzuriteContainer withSsl(final MountableFile pemCert, final MountableFile pemKey) {
-        cert = pemCert;
-        key = pemKey;
-        certExtension = ".pem";
+        this.cert = pemCert;
+        this.key = pemKey;
+        this.certExtension = ".pem";
         return this;
     }
 
     @Override
     protected void configure() {
         withCommand(getCommandLine());
-        if (cert != null) {
-            logger().info("Using path for cert file: '{}'", cert);
-            withCopyFileToContainer(cert, "/cert" + certExtension);
-            if (key != null) {
-                logger().info("Using path for key file: '{}'", key);
-                withCopyFileToContainer(key, "/key.pem");
+        if (this.cert != null) {
+            logger().info("Using path for cert file: '{}'", this.cert);
+            withCopyFileToContainer(this.cert, "/cert" + this.certExtension);
+            if (this.key != null) {
+                logger().info("Using path for key file: '{}'", this.key);
+                withCopyFileToContainer(this.key, "/key.pem");
             }
         }
     }
@@ -107,7 +114,7 @@ public class AzuriteContainer extends GenericContainer<AzuriteContainer> {
      *
      * @return connection string
      */
-    public String getDefaultConnectionString() {
+    public String getConnectionString() {
         return getConnectionString(WELL_KNOWN_ACCOUNT_NAME, WELL_KNOWN_ACCOUNT_KEY);
     }
 
@@ -145,10 +152,10 @@ public class AzuriteContainer extends GenericContainer<AzuriteContainer> {
         args.append(" --blobHost ").append(ALLOW_ALL_CONNECTIONS);
         args.append(" --queueHost ").append(ALLOW_ALL_CONNECTIONS);
         args.append(" --tableHost ").append(ALLOW_ALL_CONNECTIONS);
-        if (cert != null) {
-            args.append(" --cert ").append("/cert").append(certExtension);
-            if (pwd != null) {
-                args.append(" --pwd ").append(pwd);
+        if (this.cert != null) {
+            args.append(" --cert ").append("/cert").append(this.certExtension);
+            if (this.pwd != null) {
+                args.append(" --pwd ").append(this.pwd);
             } else {
                 args.append(" --key ").append("/key.pem");
             }
