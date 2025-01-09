@@ -3,7 +3,9 @@ package org.testcontainers.scylladb;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import org.junit.Test;
+import org.testcontainers.containers.Container;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
@@ -62,7 +64,7 @@ public class ScyllaDBContainerTest {
 
     @Test
     public void testSimpleSsl()
-        throws NoSuchAlgorithmException, KeyStoreException, IOException, CertificateException, UnrecoverableKeyException, KeyManagementException {
+        throws InterruptedException, NoSuchAlgorithmException, KeyStoreException, IOException, CertificateException, UnrecoverableKeyException, KeyManagementException {
         try (
             // custom_configuration {
             ScyllaDBContainer scylladb = new ScyllaDBContainer(SCYLLADB_IMAGE)
@@ -107,6 +109,22 @@ public class ScyllaDBContainerTest {
             assertThat(resultSet.wasApplied()).isTrue();
             assertThat(resultSet.one().getString(0)).isNotNull();
             assertThat(session.getMetadata().getNodes().values()).hasSize(1);
+        }
+    }
+
+    @Test
+    public void testSimpleSslCqlsh() throws InterruptedException, IOException {
+        try (
+            ScyllaDBContainer scylladb = new ScyllaDBContainer(SCYLLADB_IMAGE)
+                .withConfigurationOverride("scylla-test-ssl")
+        ) {
+            scylladb.start();
+
+            // sslCqlsh {
+            scylladb.execInContainer("mv", "-f", "/etc/scylla/cqlshrc", "/root/.cassandra/cqlshrc");
+            Container.ExecResult execResult = scylladb.execInContainer("cqlsh", "--ssl", "-e", "select * from system_schema.keyspaces;");
+            assertThat(execResult.getStdout()).contains("keyspace_name");
+            // }
         }
     }
 

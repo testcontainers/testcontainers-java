@@ -25,6 +25,10 @@ You can start a ScyllaDB container instance from any Java application by using:
 <!--/codeinclude-->
 
 <!--codeinclude-->
+[Using SSL with cqlsh](../../../modules/scylladb/src/test/java/org/testcontainers/scylladb/ScyllaDBContainerTest.java) inside_block:sslCqlsh
+<!--/codeinclude-->
+
+<!--codeinclude-->
 [Using Shard Awareness port](../../../modules/scylladb/src/test/java/org/testcontainers/scylladb/ScyllaDBContainerTest.java) inside_block:shardAwarenessSession
 <!--/codeinclude-->
 
