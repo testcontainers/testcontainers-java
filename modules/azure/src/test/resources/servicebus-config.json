@@ -5,7 +5,7 @@
                 "Name": "sbemulatorns",
                 "Queues": [
                     {
-                        "Name": "queue.1",
+                        "Name": "our.queue",
                         "Properties": {
                             "DeadLetteringOnMessageExpiration": false,
                             "DefaultMessageTimeToLive": "PT1H",

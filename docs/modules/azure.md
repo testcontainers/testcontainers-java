@@ -5,12 +5,13 @@ This module is INCUBATING. While it is ready for use and operational in the curr
 
 Testcontainers module for the Microsoft Azure's [SDK](https://github.com/Azure/azure-sdk-for-java).
 
-Currently, the module supports `Azurite` and `CosmosDB` emulators. In order to use them, you should use the following classes:
+Currently, the module supports `Azurite`, `CosmosDB`, and `Servicebus` emulators. In order to use them, you should use the following classes:
 
 Class | Container Image
 -|-
 AzuriteContainer | [mcr.microsoft.com/azure-storage/azurite](https://github.com/microsoft/containerregistry)
 CosmosDBEmulatorContainer | [mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator](https://github.com/microsoft/containerregistry)
+AzureServicebusEmulatorContainer | [mcr.microsoft.com/azure-messaging/servicebus-emulator](https://github.com/microsoft/containerregistry)
 
 ## Usage example
 
@@ -103,6 +104,33 @@ Test against the Emulator:
 <!--codeinclude-->
 [Testing against Azure CosmosDB Emulator container](../../modules/azure/src/test/java/org/testcontainers/containers/CosmosDBEmulatorContainerTest.java) inside_block:testWithClientAgainstEmulatorContainer
 <!--/codeinclude-->
+
+### Azure service bus Emulator
+
+Start Azure service bus Emulator during a test:
+
+<!--codeinclude-->
+[Starting a Azure Service bus Emulator container](../../modules/azure/src/test/java/org/testcontainers/azure/AzureServicebusEmulatorContainerTest.java) inside_block:emulatorContainerDefaultConfig
+<!--/codeinclude-->
+
+!!! note
+    This starts the service bus emulator with the [default config](https://github.com/Azure/azure-service-bus-emulator-installer/blob/main/ServiceBus-Emulator/Config/Config.json)
+
+Start Azure service bus Emulator with custom config during a test:
+
+<!--codeinclude-->
+[Starting a Azure Service bus Emulator container with custom config](../../modules/azure/src/test/java/org/testcontainers/azure/AzureServicebusEmulatorContainerTest.java) inside_block:emulatorContainerCustomConfig
+<!--/codeinclude-->
+
+Build Azure Service bus sender client:
+
+<!--codeinclude-->
+[Testing against Azure Service bus Emulator container](../../modules/azure/src/test/java/org/testcontainers/azure/AzureServicebusEmulatorContainerTest.java) inside_block:buildClient
+<!--/codeinclude-->
+
+* See [Overview of the Azure Service Bus emulator](https://learn.microsoft.com/en-us/azure/service-bus-messaging/overview-emulator) for features and limitations.
+* [Test locally by using the Azure Service Bus emulator](https://learn.microsoft.com/en-us/azure/service-bus-messaging/test-locally-with-service-bus-emulator?tabs=docker-linux-container)
+
 
 ## Adding this module to your project dependencies
 
