@@ -110,17 +110,17 @@ Test against the Emulator:
 Start Azure service bus Emulator during a test:
 
 <!--codeinclude-->
-[Starting a Azure Service bus Emulator container](../../modules/azure/src/test/java/org/testcontainers/azure/AzureServicebusEmulatorContainerTest.java) inside_block:emulatorContainerDefaultConfig
+[Starting a Azure Service bus Emulator container with custom config](../../modules/azure/src/test/java/org/testcontainers/azure/AzureServicebusEmulatorContainerTest.java) inside_block:emulatorContainerCustomConfig
 <!--/codeinclude-->
 
 !!! note
-    This starts the service bus emulator with the [default config](https://github.com/Azure/azure-service-bus-emulator-installer/blob/main/ServiceBus-Emulator/Config/Config.json)
+    This starts the service bus emulator with a custom config.
+    To use [default config](https://github.com/Azure/azure-service-bus-emulator-installer/blob/main/ServiceBus-Emulator/Config/Config.json)
+    omit `withConfigFile(...)`.
 
-Start Azure service bus Emulator with custom config during a test:
-
-<!--codeinclude-->
-[Starting a Azure Service bus Emulator container with custom config](../../modules/azure/src/test/java/org/testcontainers/azure/AzureServicebusEmulatorContainerTest.java) inside_block:emulatorContainerCustomConfig
-<!--/codeinclude-->
+!!! note
+    The service bus emulator requires a database, so a [MSSQLServerContainer](../../modules/mssqlserver/src/main/java/org/testcontainers/containers/MSSQLServerContainer.java)
+    is started.
 
 Build Azure Service bus sender client:
 

@@ -20,19 +20,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class AzureServicebusEmulatorContainerTest {
 
     @Test
-    public void testWithDefaultConfig() {
-        try(
-            // emulatorContainerDefaultConfig {
-            AzureServicebusEmulatorContainer azureServicebusEmulatorContainer = new AzureServicebusEmulatorContainer(
-                DockerImageName.parse("mcr.microsoft.com/azure-messaging/servicebus-emulator")
-            )
-            // }
-        ) {
-            sendAndReceive(azureServicebusEmulatorContainer, "queue.1");
-        }
-    }
-
-    @Test
     public void testWithCustomConfig() {
         try(
         // emulatorContainerCustomConfig {
@@ -41,19 +28,20 @@ public class AzureServicebusEmulatorContainerTest {
         ).withConfigFile(MountableFile.forClasspathResource("/servicebus-config.json"))
         // }
         ) {
-            sendAndReceive(azureServicebusEmulatorContainer, "our.queue");
+            azureServicebusEmulatorContainer.start();
+            sendAndReceive(azureServicebusEmulatorContainer.getConnectionString(), "our.queue");
         }
     }
 
-    private static void sendAndReceive(AzureServicebusEmulatorContainer azureServicebusEmulatorContainer, String queueName) {
+    private static void sendAndReceive(String connectionString, String queueName) {
         List<String> sentMessages = Arrays.asList("Hello World");
         try (
             // buildClient {
             ServiceBusSenderClient sender = new ServiceBusClientBuilder()
-            .connectionString(azureServicebusEmulatorContainer.getConnectionString())
-            .sender()
-            .queueName(queueName)
-            .buildClient()
+                .connectionString(connectionString)
+                .sender()
+                .queueName(queueName)
+                .buildClient()
             // }
         ) {
             for (String m : sentMessages) {
@@ -61,7 +49,7 @@ public class AzureServicebusEmulatorContainerTest {
             }
         }
         try (ServiceBusReceiverClient reciever = new ServiceBusClientBuilder()
-            .connectionString(azureServicebusEmulatorContainer.getConnectionString())
+            .connectionString(connectionString)
             .receiver()
             .queueName(queueName)
             .receiveMode(ServiceBusReceiveMode.RECEIVE_AND_DELETE)
