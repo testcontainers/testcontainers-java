@@ -14,6 +14,7 @@ import org.testcontainers.AbstractKafka;
 import org.testcontainers.Testcontainers;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -229,7 +230,38 @@ public class KafkaContainerTest extends AbstractKafka {
         ) {
             kafka.start();
 
-            testSecureKafkaFunctionality(kafka.getBootstrapServers());
+            testSecurePlainKafkaFunctionality(kafka.getBootstrapServers());
+        }
+    }
+
+    @SneakyThrows
+    @Test
+    public void shouldConfigureAuthenticationWithSaslScramUsingJaas() {
+        try (
+            KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.7.0")) {
+                protected String commandKraft() {
+                    String command = "sed -i '/KAFKA_ZOOKEEPER_CONNECT/d' /etc/confluent/docker/configure\n";
+                    command +=
+                        "echo 'kafka-storage format --ignore-formatted -t \"" +
+                        "$CLUSTER_ID" +
+                        "\" --add-scram SCRAM-SHA-256=[name=admin,password=admin] -c /etc/kafka/kafka.properties' >> /etc/confluent/docker/configure\n";
+                    return command;
+                }
+            }
+                .withKraft()
+                .withEnv("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", "PLAINTEXT:SASL_PLAINTEXT,BROKER:SASL_PLAINTEXT")
+                .withEnv("KAFKA_LISTENER_NAME_PLAINTEXT_SASL_ENABLED_MECHANISMS", "SCRAM-SHA-256")
+                .withEnv("KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL", "SCRAM-SHA-256")
+                .withEnv("KAFKA_SASL_ENABLED_MECHANISMS", "SCRAM-SHA-256")
+                .withEnv("KAFKA_OPTS", "-Djava.security.auth.login.config=/etc/kafka/secrets/kafka_server_jaas.conf")
+                .withCopyFileToContainer(
+                    MountableFile.forClasspathResource("kafka_server_jaas.conf"),
+                    "/etc/kafka/secrets/kafka_server_jaas.conf"
+                )
+        ) {
+            kafka.start();
+
+            testSecureScramKafkaFunctionality(kafka.getBootstrapServers());
         }
     }
 
@@ -312,15 +344,5 @@ public class KafkaContainerTest extends AbstractKafka {
                         .hasCauseInstanceOf(SaslAuthenticationException.class);
                 });
         }
-    }
-
-    private static String getJaasConfig() {
-        String jaasConfig =
-            "org.apache.kafka.common.security.plain.PlainLoginModule required " +
-            "username=\"admin\" " +
-            "password=\"admin\" " +
-            "user_admin=\"admin\" " +
-            "user_test=\"secret\";";
-        return jaasConfig;
     }
 }
