@@ -73,22 +73,16 @@ public class ComposeContainer implements Startable {
     }
 
     public ComposeContainer(DockerImageName image, List<File> composeFiles) {
-        this(image,Base58.randomString(6).toLowerCase(),composeFiles);
+        this(image, Base58.randomString(6).toLowerCase(), composeFiles);
     }
 
     public ComposeContainer(DockerImageName image, String identifier, File... composeFiles) {
-        this(image,identifier, Arrays.asList(composeFiles));
+        this(image, identifier, Arrays.asList(composeFiles));
     }
 
     public ComposeContainer(DockerImageName image, String identifier, List<File> composeFiles) {
         this.composeDelegate =
-            new ComposeDelegate(
-                ComposeDelegate.ComposeVersion.V2,
-                composeFiles,
-                identifier,
-                COMPOSE_EXECUTABLE,
-                image
-            );
+            new ComposeDelegate(ComposeDelegate.ComposeVersion.V2, composeFiles, identifier, COMPOSE_EXECUTABLE, image);
         this.project = this.composeDelegate.getProject();
     }
 
@@ -98,8 +92,9 @@ public class ComposeContainer implements Startable {
      */
     @Deprecated
     public ComposeContainer(File... composeFiles) {
-        this(getDockerImageName(),Arrays.asList(composeFiles));
+        this(getDockerImageName(), Arrays.asList(composeFiles));
     }
+
     /**
      * @deprecated
      *  Use the new constructor ComposeContainer(DockerImageName image,List<File> composeFiles)
@@ -108,13 +103,14 @@ public class ComposeContainer implements Startable {
     public ComposeContainer(List<File> composeFiles) {
         this(getDockerImageName(), composeFiles);
     }
+
     /**
      * @deprecated
      *  Use the new constructor ComposeContainer(DockerImageName image, String identifier, File... composeFile)
      */
     @Deprecated
     public ComposeContainer(String identifier, File... composeFiles) {
-        this(getDockerImageName(),identifier, Arrays.asList(composeFiles));
+        this(getDockerImageName(), identifier, Arrays.asList(composeFiles));
     }
 
     /**
@@ -123,7 +119,7 @@ public class ComposeContainer implements Startable {
      */
     @Deprecated
     public ComposeContainer(String identifier, List<File> composeFiles) {
-       this(getDockerImageName(),identifier, composeFiles);
+        this(getDockerImageName(), identifier, composeFiles);
     }
 
     public static DockerImageName getDockerImageName() {
