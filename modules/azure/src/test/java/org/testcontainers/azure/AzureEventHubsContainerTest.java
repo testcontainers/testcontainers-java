@@ -24,14 +24,12 @@ public class AzureEventHubsContainerTest {
     @Rule
     // network {
     public Network network = Network.newNetwork();
-
     // }
 
     @Rule
     // azuriteContainer {
     public AzuriteContainer azuriteContainer = new AzuriteContainer("mcr.microsoft.com/azure-storage/azurite:3.33.0")
         .withNetwork(network);
-
     // }
 
     @Rule
@@ -43,7 +41,6 @@ public class AzureEventHubsContainerTest {
         .withNetwork(network)
         .withConfig(MountableFile.forClasspathResource("/eventhubs_config.json"))
         .withAzuriteContainer(azuriteContainer);
-
     // }
 
     @Test
