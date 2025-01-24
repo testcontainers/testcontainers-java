@@ -14,14 +14,11 @@ import org.testcontainers.utility.LicenseAcceptance;
  * Exposed ports:
  * <ul>
  *     <li>AMQP: 5672</li>
- *     <li>Kafka: 9092</li>
  * </ul>
  */
-public class AzureEventHubsEmulatorContainer extends GenericContainer<AzureEventHubsEmulatorContainer> {
+public class AzureEventHubsContainer extends GenericContainer<AzureEventHubsContainer> {
 
     private static final int DEFAULT_AMQP_PORT = 5672;
-
-    private static final int DEFAULT_KAFKA_PORT = 9092;
 
     private static final String CONNECTION_STRING_FORMAT =
         "Endpoint=sb://%s:%d;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;";
@@ -34,19 +31,17 @@ public class AzureEventHubsEmulatorContainer extends GenericContainer<AzureEvent
 
     private AzuriteContainer azuriteContainer;
 
-    private boolean useKafka;
-
     /**
      * @param dockerImageName specified docker image name to run
      */
-    public AzureEventHubsEmulatorContainer(final String dockerImageName) {
+    public AzureEventHubsContainer(final String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
     }
 
     /**
      * @param dockerImageName specified docker image name to run
      */
-    public AzureEventHubsEmulatorContainer(final DockerImageName dockerImageName) {
+    public AzureEventHubsContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
         waitingFor(Wait.forLogMessage(".*Emulator Service is Successfully Up!.*", 1));
@@ -59,7 +54,7 @@ public class AzureEventHubsEmulatorContainer extends GenericContainer<AzureEvent
      * @param azuriteContainer The Azurite container used by Event HUbs as a dependency
      * @return this
      */
-    public AzureEventHubsEmulatorContainer withAzuriteContainer(final AzuriteContainer azuriteContainer) {
+    public AzureEventHubsContainer withAzuriteContainer(final AzuriteContainer azuriteContainer) {
         this.azuriteContainer = azuriteContainer;
         dependsOn(this.azuriteContainer);
         return this;
@@ -71,7 +66,7 @@ public class AzureEventHubsEmulatorContainer extends GenericContainer<AzureEvent
      * @param config The file containing the broker configuration
      * @return this
      */
-    public AzureEventHubsEmulatorContainer withConfig(final Transferable config) {
+    public AzureEventHubsContainer withConfig(final Transferable config) {
         withCopyToContainer(config, "/Eventhubs_Emulator/ConfigFiles/Config.json");
         return this;
     }
@@ -81,18 +76,8 @@ public class AzureEventHubsEmulatorContainer extends GenericContainer<AzureEvent
      *
      * @return this
      */
-    public AzureEventHubsEmulatorContainer acceptLicense() {
+    public AzureEventHubsContainer acceptLicense() {
         return withEnv("ACCEPT_EULA", "Y");
-    }
-
-    /**
-     * Enables Kafka support.
-     *
-     * @return this
-     */
-    public AzureEventHubsEmulatorContainer enableKafka() {
-        this.useKafka = true;
-        return this;
     }
 
     @Override
@@ -112,10 +97,6 @@ public class AzureEventHubsEmulatorContainer extends GenericContainer<AzureEvent
             LicenseAcceptance.assertLicenseAccepted(this.getDockerImageName());
             acceptLicense();
         }
-        if (this.useKafka) {
-            //Kafka must expose with the fixed default port or the broker's advertised port won't match
-            this.addFixedExposedPort(DEFAULT_KAFKA_PORT, DEFAULT_KAFKA_PORT);
-        }
     }
 
     /**
@@ -125,14 +106,5 @@ public class AzureEventHubsEmulatorContainer extends GenericContainer<AzureEvent
      */
     public String getConnectionString() {
         return String.format(CONNECTION_STRING_FORMAT, getHost(), getMappedPort(DEFAULT_AMQP_PORT));
-    }
-
-    /**
-     * Returns the kafka bootstrap servers
-     *
-     * @return bootstrap servers
-     */
-    public String getBootstrapServers() {
-        return String.format(BOOTSTRAP_SERVERS_FORMAT, getHost(), getMappedPort(DEFAULT_KAFKA_PORT));
     }
 }

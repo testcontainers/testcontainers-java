@@ -82,15 +82,15 @@ Build Azure Table client:
 Start Azure Event Hubs Emulator during a test:
 
 <!--codeinclude-->
-[Setting up a network](../../modules/azure/src/test/java/org/testcontainers/azure/AzureEventHubsEmulatorContainerTest.java) inside_block:network
+[Setting up a network](../../modules/azure/src/test/java/org/testcontainers/azure/AzureEventHubsContainerTest.java) inside_block:network
 <!--/codeinclude-->
 
 <!--codeinclude-->
-[Starting an Azurite container as dependency](../../modules/azure/src/test/java/org/testcontainers/azure/AzureEventHubsEmulatorContainerTest.java) inside_block:azuriteContainer
+[Starting an Azurite container as dependency](../../modules/azure/src/test/java/org/testcontainers/azure/AzureEventHubsContainerTest.java) inside_block:azuriteContainer
 <!--/codeinclude-->
 
 <!--codeinclude-->
-[Starting an Azure Event Hubs Emulator container](../../modules/azure/src/test/java/org/testcontainers/azure/AzureEventHubsEmulatorContainerTest.java) inside_block:emulatorContainer
+[Starting an Azure Event Hubs Emulator container](../../modules/azure/src/test/java/org/testcontainers/azure/AzureEventHubsContainerTest.java) inside_block:emulatorContainer
 <!--/codeinclude-->
 
 #### Using Azure Event Hubs clients
@@ -98,15 +98,7 @@ Start Azure Event Hubs Emulator during a test:
 Configure the consumer and the producer clients:
 
 <!--codeinclude-->
-[Configuring the clients](../../modules/azure/src/test/java/org/testcontainers/azure/AzureEventHubsEmulatorContainerTest.java) inside_block:createProducerAndConsumer
-<!--/codeinclude-->
-
-#### Using Kafka clients
-
-Configure the consumer and the producer clients:
-
-<!--codeinclude-->
-[Obtaining the Kafka connection properties](../../modules/azure/src/test/java/org/testcontainers/azure/AzureEventHubsEmulatorContainerTest.java) inside_block:kafkaProperties
+[Configuring the clients](../../modules/azure/src/test/java/org/testcontainers/azure/AzureEventHubsContainerTest.java) inside_block:createProducerAndConsumer
 <!--/codeinclude-->
 
 ### CosmosDB
