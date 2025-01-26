@@ -17,6 +17,9 @@ import software.amazon.awssdk.services.dynamodb.model.KeySchemaElement;
 import software.amazon.awssdk.services.dynamodb.model.KeyType;
 import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType;
 
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
@@ -27,10 +30,6 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
-
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -44,8 +43,8 @@ public class ScyllaDBContainerTest {
     @Test
     public void testSimple() {
         try ( // container {
-            ScyllaDBContainer scylladb = new ScyllaDBContainer(SCYLLADB_IMAGE)
-            // }
+              ScyllaDBContainer scylladb = new ScyllaDBContainer(SCYLLADB_IMAGE)
+              // }
         ) {
             scylladb.start();
             // session {
@@ -64,22 +63,28 @@ public class ScyllaDBContainerTest {
 
     @Test
     public void testSimpleSsl()
-        throws InterruptedException, NoSuchAlgorithmException, KeyStoreException, IOException, CertificateException, UnrecoverableKeyException, KeyManagementException {
+        throws NoSuchAlgorithmException, KeyStoreException, IOException, CertificateException, UnrecoverableKeyException, KeyManagementException {
         try (
-            // custom_configuration {
+            // customConfiguration {
             ScyllaDBContainer scylladb = new ScyllaDBContainer(SCYLLADB_IMAGE)
                 .withConfigurationOverride("scylla-test-ssl")
             // }
         ) {
             // sslContext {
-            String testResourcesDir = getClass().getClassLoader().getResource("scylla-test-ssl/").getPath();
+            ScyllaDBContainer sslScylladb = scylladb.withSsl(
+                MountableFile.forClasspathResource("scylla-test-ssl/keys/scylla.cer.pem"),
+                MountableFile.forClasspathResource("scylla-test-ssl/keys/scylla.key.pem"),
+                MountableFile.forClasspathResource("scylla-test-ssl/keys/scylla.truststore")
+            );
+
+            String testResourcesDir = getClass().getClassLoader().getResource("scylla-test-ssl/keys/").getPath();
 
             KeyStore keyStore = KeyStore.getInstance("PKCS12");
-            keyStore.load(Files.newInputStream(Paths.get(testResourcesDir + "keystore.node0")), "scylla".toCharArray());
+            keyStore.load(Files.newInputStream(Paths.get(testResourcesDir + "scylla.keystore")), "scylla".toCharArray());
 
             KeyStore trustStore = KeyStore.getInstance("PKCS12");
             trustStore.load(
-                Files.newInputStream(Paths.get(testResourcesDir + "truststore.node0")),
+                Files.newInputStream(Paths.get(testResourcesDir + "scylla.truststore")),
                 "scylla".toCharArray()
             );
 
@@ -97,11 +102,11 @@ public class ScyllaDBContainerTest {
             sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
             // }
 
-            scylladb.start();
+            sslScylladb.start();
 
             CqlSession session = CqlSession
                 .builder()
-                .addContactPoint(scylladb.getContactPoint())
+                .addContactPoint(sslScylladb.getContactPoint())
                 .withLocalDatacenter("datacenter1")
                 .withSslContext(sslContext)
                 .build();
@@ -113,15 +118,20 @@ public class ScyllaDBContainerTest {
     }
 
     @Test
-    public void testSimpleSslCqlsh() throws InterruptedException, IOException {
+    public void testSimpleSslCqlsh() throws IllegalStateException, InterruptedException, IOException {
+        // sslConfiguration {
+        // }
         try (
             ScyllaDBContainer scylladb = new ScyllaDBContainer(SCYLLADB_IMAGE)
                 .withConfigurationOverride("scylla-test-ssl")
-        ) {
+                .withSsl(
+                    MountableFile.forClasspathResource("scylla-test-ssl/keys/scylla.cer.pem"),
+                    MountableFile.forClasspathResource("scylla-test-ssl/keys/scylla.key.pem"),
+                    MountableFile.forClasspathResource("scylla-test-ssl/keys/scylla.truststore")
+                )) {
             scylladb.start();
 
             // sslCqlsh {
-            scylladb.execInContainer("mv", "-f", "/etc/scylla/cqlshrc", "/root/.cassandra/cqlshrc");
             Container.ExecResult execResult = scylladb.execInContainer("cqlsh", "--ssl", "-e", "select * from system_schema.keyspaces;");
             assertThat(execResult.getStdout()).contains("keyspace_name");
             // }
@@ -148,8 +158,8 @@ public class ScyllaDBContainerTest {
     @Test
     public void testAlternator() {
         try ( // alternator {
-            ScyllaDBContainer scylladb = new ScyllaDBContainer(SCYLLADB_IMAGE).withAlternator()
-            // }
+              ScyllaDBContainer scylladb = new ScyllaDBContainer(SCYLLADB_IMAGE).withAlternator()
+              // }
         ) {
             scylladb.start();
 
@@ -185,4 +195,5 @@ public class ScyllaDBContainerTest {
                 .hasMessageContaining("Alternator is not enabled");
         }
     }
+
 }

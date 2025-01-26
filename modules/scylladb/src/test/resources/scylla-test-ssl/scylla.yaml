@@ -462,9 +462,9 @@ commitlog_total_space_in_mb: -1
 # enable or disable client/server encryption.
 client_encryption_options:
     enabled: true
-    certificate: /etc/scylla/node0.cer.pem
-    keyfile: /etc/scylla/node0.key.pem
-    truststore: /etc/scylla/truststore.node0
+    certificate: /etc/scylla/scylla.cer.pem
+    keyfile: /etc/scylla/scylla.key.pem
+    truststore: /etc/scylla/scylla.truststore
     truststore_password: scylla
 #    certficate_revocation_list: <not set>
 #    require_client_auth: False

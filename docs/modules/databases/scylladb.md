@@ -11,7 +11,7 @@ You can start a ScyllaDB container instance from any Java application by using:
 <!--/codeinclude-->
 
 <!--codeinclude-->
-[Custom config file](../../../modules/scylladb/src/test/java/org/testcontainers/scylladb/ScyllaDBContainerTest.java) inside_block:custom_configuration
+[Custom config file](../../../modules/scylladb/src/test/java/org/testcontainers/scylladb/ScyllaDBContainerTest.java) inside_block:customConfiguration
 <!--/codeinclude-->
 
 ### Building CqlSession
