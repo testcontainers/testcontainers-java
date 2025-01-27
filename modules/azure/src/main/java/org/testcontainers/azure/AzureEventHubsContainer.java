@@ -23,8 +23,6 @@ public class AzureEventHubsContainer extends GenericContainer<AzureEventHubsCont
     private static final String CONNECTION_STRING_FORMAT =
         "Endpoint=sb://%s:%d;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;";
 
-    private static final String BOOTSTRAP_SERVERS_FORMAT = "%s:%d";
-
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse(
         "mcr.microsoft.com/azure-messaging/eventhubs-emulator"
     );
@@ -77,7 +75,8 @@ public class AzureEventHubsContainer extends GenericContainer<AzureEventHubsCont
      * @return this
      */
     public AzureEventHubsContainer acceptLicense() {
-        return withEnv("ACCEPT_EULA", "Y");
+        withEnv("ACCEPT_EULA", "Y");
+        return this;
     }
 
     @Override
