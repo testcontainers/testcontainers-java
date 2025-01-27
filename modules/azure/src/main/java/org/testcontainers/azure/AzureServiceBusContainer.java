@@ -73,7 +73,8 @@ public class AzureServiceBusContainer extends GenericContainer<AzureServiceBusCo
      * @return this
      */
     public AzureServiceBusContainer acceptLicense() {
-        return withEnv("ACCEPT_EULA", "Y");
+        withEnv("ACCEPT_EULA", "Y");
+        return this;
     }
 
     @Override
