@@ -1,4 +1,4 @@
-name: Release
+name: Manual Release
 
 on:
   release:
@@ -42,7 +42,7 @@ jobs:
           cp build/libs/*.javadoc.jar release/
 
       - name: Upload Release Artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: release-artifacts
           path: release/
