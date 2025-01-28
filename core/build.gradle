@@ -1,4 +1,4 @@
-apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'com.gradleup.shadow'
 
 description = "Testcontainers Core"
 
@@ -63,8 +63,8 @@ tasks.japicmp {
 configurations.all {
     resolutionStrategy {
         // use lower Jackson version
-        force 'com.fasterxml.jackson.core:jackson-databind:2.8.8'
-        force 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.8.8'
+        force 'com.fasterxml.jackson.core:jackson-databind:2.18.2'
+        force 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.2'
     }
 }
 
@@ -88,8 +88,8 @@ dependencies {
 
     shaded 'org.awaitility:awaitility:4.2.0'
 
-    api platform('com.github.docker-java:docker-java-bom:3.4.0')
-    shaded platform('com.github.docker-java:docker-java-bom:3.4.0')
+    api platform('com.github.docker-java:docker-java-bom:3.4.1')
+    shaded platform('com.github.docker-java:docker-java-bom:3.4.1')
 
     api "com.github.docker-java:docker-java-api"
 
@@ -100,7 +100,7 @@ dependencies {
     api 'com.github.docker-java:docker-java-transport-zerodep'
 
     shaded 'com.google.guava:guava:33.3.1-jre'
-    shaded "org.yaml:snakeyaml:2.2"
+    shaded "org.yaml:snakeyaml:2.3"
 
     shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
 

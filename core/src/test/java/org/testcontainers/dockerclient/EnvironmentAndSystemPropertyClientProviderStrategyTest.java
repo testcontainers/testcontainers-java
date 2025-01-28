@@ -18,6 +18,7 @@ import java.nio.file.Path;
 import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -147,6 +148,8 @@ public class EnvironmentAndSystemPropertyClientProviderStrategyTest {
 
     @Test
     public void notApplicableWhenIgnoringUserPropertiesAndNotConfigured() {
+        assumeThat(System.getenv("DOCKER_HOST")).isNull();
+
         Mockito
             .doReturn("autoIgnoringUserProperties")
             .when(TestcontainersConfiguration.getInstance())

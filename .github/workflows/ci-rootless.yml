@@ -48,11 +48,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Setup rootless Docker
-        uses: ScribeMD/rootless-docker@0.2.2
-      - name: Remove Docket root socket
-        run: sudo rm -rf /var/run/docker.sock
+        uses: docker/setup-docker-action@v4
+        with:
+          rootless: true
       - name: Setup Gradle Build Action
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
       - name: Build with Gradle
         run: ./gradlew --no-daemon --scan testcontainers:test --tests '*GenericContainerRuleTest'
       - uses: ./.github/actions/setup-junit-report

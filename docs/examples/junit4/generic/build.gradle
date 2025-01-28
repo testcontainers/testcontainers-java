@@ -10,16 +10,3 @@ dependencies {
     testImplementation "org.seleniumhq.selenium:selenium-api:4.25.0"
     testImplementation 'org.assertj:assertj-core:3.26.3'
 }
-
-test {
-    javaLauncher = javaToolchains.launcherFor {
-        languageVersion = JavaLanguageVersion.of(11)
-    }
-}
-
-compileTestJava {
-    javaCompiler = javaToolchains.compilerFor {
-        languageVersion = JavaLanguageVersion.of(11)
-    }
-    options.release.set(11)
-}
