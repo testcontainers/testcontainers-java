@@ -33,16 +33,13 @@ jobs:
       - name: Run Gradle Build
         run: ./gradlew build --scan --no-daemon -i -x test
 
-      - name: Create Release Package
+      - name: Run Gradle Publish
         run: |
-          mkdir -p release
-          cp build/libs/*.jar release/
-          cp build/publications/mavenJava/*pom* release/
-          cp build/libs/*.sources.jar release/
-          cp build/libs/*.javadoc.jar release/
+          ./gradlew :testcontainers:publish \
+            -Pversion="${{ github.event.inputs.version }}" --scan --no-daemon -i
 
       - name: Upload Release Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: release-artifacts
-          path: release/
+          path: core/build/release-artifact
