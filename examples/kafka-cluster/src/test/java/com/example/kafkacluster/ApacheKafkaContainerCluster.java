@@ -48,9 +48,7 @@ public class ApacheKafkaContainerCluster implements Startable {
             IntStream
                 .range(0, brokersNum)
                 .mapToObj(brokerNum -> {
-                    return new KafkaContainer(
-                        DockerImageName.parse("apache/kafka").withTag(version)
-                    )
+                    return new KafkaContainer(DockerImageName.parse("apache/kafka").withTag(version))
                         .withNetwork(this.network)
                         .withNetworkAliases("broker-" + brokerNum)
                         .withEnv("CLUSTER_ID", clusterId)
