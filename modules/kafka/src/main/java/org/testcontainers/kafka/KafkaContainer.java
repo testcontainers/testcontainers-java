@@ -2,7 +2,6 @@ package org.testcontainers.kafka;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 
@@ -44,16 +43,13 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         withExposedPorts(KAFKA_PORT);
         withEnv(KafkaHelper.envVars());
 
-        withCommand("sh", "-c", "while [ ! -f " + STARTER_SCRIPT + " ]; do sleep 0.1; done; " + STARTER_SCRIPT);
-        waitingFor(Wait.forLogMessage(".*Transitioning from RECOVERY to RUNNING.*", 1));
+        withCommand(KafkaHelper.COMMAND);
+        waitingFor(KafkaHelper.WAIT_STRATEGY);
     }
 
     @Override
     protected void configure() {
         KafkaHelper.resolveListeners(this, this.listeners);
-
-        String controllerQuorumVoters = String.format("%s@localhost:9094", getEnvMap().get("KAFKA_NODE_ID"));
-        withEnv("KAFKA_CONTROLLER_QUORUM_VOTERS", controllerQuorumVoters);
     }
 
     @Override

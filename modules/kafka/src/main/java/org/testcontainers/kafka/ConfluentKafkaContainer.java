@@ -44,9 +44,6 @@ public class ConfluentKafkaContainer extends GenericContainer<ConfluentKafkaCont
     @Override
     protected void configure() {
         KafkaHelper.resolveListeners(this, this.listeners);
-
-        String controllerQuorumVoters = String.format("%s@localhost:9094", getEnvMap().get("KAFKA_NODE_ID"));
-        withEnv("KAFKA_CONTROLLER_QUORUM_VOTERS", controllerQuorumVoters);
     }
 
     @Override
