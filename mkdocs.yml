@@ -95,6 +95,7 @@ nav:
           - modules/nginx.md
           - modules/ollama.md
           - modules/openfga.md
+          - modules/pinecone.md
           - modules/pulsar.md
           - modules/qdrant.md
           - modules/rabbitmq.md

@@ -211,6 +211,9 @@ labels:
   - name: modules/orientdb
     color: '#006b75'
 
+  - name: modules/pinecone
+    color: '#006b75'
+
   - name: modules/postgres
     color: '#006b75'
 
