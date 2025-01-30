@@ -72,12 +72,12 @@ public class ScyllaDBContainerTest {
         ) {
             // sslContext {
             ScyllaDBContainer sslScylladb = scylladb.withSsl(
-                MountableFile.forClasspathResource("scylla-test-ssl/keys/scylla.cer.pem"),
-                MountableFile.forClasspathResource("scylla-test-ssl/keys/scylla.key.pem"),
-                MountableFile.forClasspathResource("scylla-test-ssl/keys/scylla.truststore")
+                MountableFile.forClasspathResource("keys/scylla.cer.pem"),
+                MountableFile.forClasspathResource("keys/scylla.key.pem"),
+                MountableFile.forClasspathResource("keys/scylla.truststore")
             );
 
-            String testResourcesDir = getClass().getClassLoader().getResource("scylla-test-ssl/keys/").getPath();
+            String testResourcesDir = getClass().getClassLoader().getResource("keys/").getPath();
 
             KeyStore keyStore = KeyStore.getInstance("PKCS12");
             keyStore.load(Files.newInputStream(Paths.get(testResourcesDir + "scylla.keystore")), "scylla".toCharArray());
@@ -125,9 +125,9 @@ public class ScyllaDBContainerTest {
             ScyllaDBContainer scylladb = new ScyllaDBContainer(SCYLLADB_IMAGE)
                 .withConfigurationOverride("scylla-test-ssl")
                 .withSsl(
-                    MountableFile.forClasspathResource("scylla-test-ssl/keys/scylla.cer.pem"),
-                    MountableFile.forClasspathResource("scylla-test-ssl/keys/scylla.key.pem"),
-                    MountableFile.forClasspathResource("scylla-test-ssl/keys/scylla.truststore")
+                    MountableFile.forClasspathResource("keys/scylla.cer.pem"),
+                    MountableFile.forClasspathResource("keys/scylla.key.pem"),
+                    MountableFile.forClasspathResource("keys/scylla.truststore")
                 )) {
             scylladb.start();
 

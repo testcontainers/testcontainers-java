@@ -75,9 +75,13 @@ public class ScyllaDBContainer extends GenericContainer<ScyllaDBContainer> {
     }
 
     public ScyllaDBContainer withSsl(MountableFile certificate, MountableFile keyfile, MountableFile truststore) {
+        return withSsl(certificate, keyfile)
+            .withCopyFileToContainer(truststore, "/etc/scylla/scylla.truststore");
+    }
+
+    public ScyllaDBContainer withSsl(MountableFile certificate, MountableFile keyfile) {
         return withCopyFileToContainer(certificate, "/etc/scylla/scylla.cer.pem")
             .withCopyFileToContainer(keyfile, "/etc/scylla/scylla.key.pem")
-            .withCopyFileToContainer(truststore, "/etc/scylla/scylla.truststore")
             .withEnv("SSL_CERTFILE", "/etc/scylla/scylla.cer.pem");
     }
 
