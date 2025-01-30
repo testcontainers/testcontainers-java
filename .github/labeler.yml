@@ -168,6 +168,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/orientdb/**/*
+"modules/pinecone":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/pinecone/**/*
 "modules/postgres":
   - changed-files:
     - any-glob-to-any-file:

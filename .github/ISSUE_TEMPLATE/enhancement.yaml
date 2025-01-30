@@ -50,6 +50,7 @@ body:
         - Oracle Free
         - Oracle XE
         - OrientDB
+        - Pinecone
         - PostgreSQL
         - Presto
         - Pulsar
