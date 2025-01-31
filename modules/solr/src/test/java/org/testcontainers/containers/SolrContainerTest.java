@@ -6,15 +6,27 @@ import org.apache.solr.client.solrj.impl.Http2SolrClient;
 import org.apache.solr.client.solrj.response.SolrPingResponse;
 import org.junit.After;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RunWith(Parameterized.class)
 public class SolrContainerTest {
 
-    private static final DockerImageName SOLR_IMAGE = DockerImageName.parse("solr:8.3.0");
+    @Parameterized.Parameters(name = "{0}")
+    public static DockerImageName[] getVersionsToTest() {
+        return new DockerImageName[] {
+            DockerImageName.parse("solr:8.11.4"),
+            DockerImageName.parse("solr:9.8.0")
+        };
+    }
+
+    @Parameterized.Parameter
+    public DockerImageName solrImage;
 
     private SolrClient client = null;
 
@@ -28,7 +40,7 @@ public class SolrContainerTest {
 
     @Test
     public void solrCloudTest() throws IOException, SolrServerException {
-        try (SolrContainer container = new SolrContainer(SOLR_IMAGE)) {
+        try (SolrContainer container = new SolrContainer(solrImage)) {
             container.start();
             SolrPingResponse response = getClient(container).ping("dummy");
             assertThat(response.getStatus()).isZero();
@@ -38,7 +50,7 @@ public class SolrContainerTest {
 
     @Test
     public void solrStandaloneTest() throws IOException, SolrServerException {
-        try (SolrContainer container = new SolrContainer(SOLR_IMAGE).withZookeeper(false)) {
+        try (SolrContainer container = new SolrContainer(solrImage).withZookeeper(false)) {
             container.start();
             SolrPingResponse response = getClient(container).ping("dummy");
             assertThat(response.getStatus()).isZero();
@@ -50,7 +62,7 @@ public class SolrContainerTest {
     public void solrCloudPingTest() throws IOException, SolrServerException {
         // solrContainerUsage {
         // Create the solr container.
-        SolrContainer container = new SolrContainer(SOLR_IMAGE);
+        SolrContainer container = new SolrContainer(solrImage);
 
         // Start the container. This step might take some time...
         container.start();
