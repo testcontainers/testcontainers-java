@@ -37,9 +37,9 @@ public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContain
 
     private static final String TEST_QUERY = "SELECT 1";
 
-    static final String DEFAULT_USER = "default";
+    static final String DEFAULT_USER = "test";
 
-    static final String DEFAULT_PASSWORD = "";
+    static final String DEFAULT_PASSWORD = "test";
 
     private String databaseName = "default";
 
