@@ -12,6 +12,7 @@ import com.datastax.oss.driver.api.core.session.ProgrammaticArguments;
 import com.datastax.oss.driver.internal.core.context.DefaultDriverContext;
 import com.datastax.oss.driver.internal.core.ssl.DefaultSslEngineFactory;
 import org.junit.Test;
+import org.testcontainers.containers.Container;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.utility.DockerImageName;
 
@@ -94,7 +95,7 @@ public class CassandraContainerTest {
             // with-ssl-config {
             CassandraContainer cassandraContainer = new CassandraContainer(CASSANDRA_IMAGE)
                 .withConfigurationOverride("cassandra-ssl-configuration")
-                .withSslClientConfig("client-ssl/cassandra.cer.pem", "client-ssl/cassandra.key.pem")
+                .withSsl("client-ssl/cassandra.cer.pem", "client-ssl/cassandra.key.pem")
             // }
         ) {
             cassandraContainer.start();
@@ -108,6 +109,27 @@ public class CassandraContainerTest {
             } catch (Exception e) {
                 fail(e);
             }
+        }
+    }
+
+    @Test
+    public void testSimpleSslCqlsh() {
+        try (
+            CassandraContainer cassandraContainer = new CassandraContainer(CASSANDRA_IMAGE)
+                .withConfigurationOverride("cassandra-ssl-configuration")
+                .withSsl("client-ssl/cassandra.cer.pem", "client-ssl/cassandra.key.pem")
+        ) {
+            cassandraContainer.start();
+
+            Container.ExecResult execResult = cassandraContainer.execInContainer(
+                "cqlsh",
+                "--ssl",
+                "-e",
+                "SELECT * FROM system_schema.keyspaces;"
+            );
+            assertThat(execResult.getStdout()).contains("keyspace_name");
+        } catch (Exception e) {
+            fail(e);
         }
     }
 

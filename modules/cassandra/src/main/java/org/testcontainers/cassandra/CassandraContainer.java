@@ -158,7 +158,7 @@ public class CassandraContainer extends GenericContainer<CassandraContainer> {
      * @param clientKeyFile  The client key required to execute CQL scripts.
      * @return The updated {@link CassandraContainer}.
      */
-    public CassandraContainer withSslClientConfig(String clientCertFile, String clientKeyFile) {
+    public CassandraContainer withSsl(String clientCertFile, String clientKeyFile) {
         this.clientCertFile = clientCertFile;
         this.clientKeyFile = clientKeyFile;
         return self();
