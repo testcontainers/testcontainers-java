@@ -50,6 +50,7 @@ body:
         - Oracle Free
         - Oracle XE
         - OrientDB
+        - Pinecone
         - PostgreSQL
         - Qdrant
         - QuestDB
@@ -57,6 +58,7 @@ body:
         - Pulsar
         - RabbitMQ
         - Redpanda
+        - ScyllaDB
         - Selenium
         - Solace
         - Solr
