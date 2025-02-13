@@ -8,7 +8,6 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
 
@@ -18,15 +17,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class SolrContainerTest {
 
     @Parameterized.Parameters(name = "{0}")
-    public static DockerImageName[] getVersionsToTest() {
-        return new DockerImageName[] {
-            DockerImageName.parse("solr:8.11.4"),
-            DockerImageName.parse("solr:9.8.0")
-        };
+    public static String[] getVersionsToTest() {
+        return new String[] { "solr:8.11.4", "solr:9.8.0" };
     }
 
     @Parameterized.Parameter
-    public DockerImageName solrImage;
+    public String solrImage;
 
     private SolrClient client = null;
 

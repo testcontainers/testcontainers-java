@@ -40,7 +40,6 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
 
     private SolrContainerConfiguration configuration;
 
-    // for version-specific adjustments
     private final ComparableVersion imageVersion;
 
     /**
