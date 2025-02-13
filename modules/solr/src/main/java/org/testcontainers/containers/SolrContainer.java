@@ -4,6 +4,7 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 
 import java.net.URL;
@@ -39,6 +40,8 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
 
     private SolrContainerConfiguration configuration;
 
+    private final ComparableVersion imageVersion;
+
     /**
      * @deprecated use {@link #SolrContainer(DockerImageName)} instead
      */
@@ -63,6 +66,7 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
                 .withRegEx(".*o\\.e\\.j\\.s\\.Server Started.*")
                 .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS));
         this.configuration = new SolrContainerConfiguration();
+        this.imageVersion = new ComparableVersion(dockerImageName.getVersionPart());
     }
 
     public SolrContainer withZookeeper(boolean zookeeper) {
@@ -114,7 +118,11 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
         // Configure Zookeeper
         if (configuration.isZookeeper()) {
             this.addExposedPort(ZOOKEEPER_PORT);
-            command = "-DzkRun -h localhost";
+            if (this.imageVersion.isGreaterThanOrEqualTo("9.7.0")) {
+                command = "-DzkRun --host localhost";
+            } else {
+                command = "-DzkRun -h localhost";
+            }
         }
 
         // Apply generated Command
