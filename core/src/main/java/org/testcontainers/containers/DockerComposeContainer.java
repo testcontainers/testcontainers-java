@@ -87,26 +87,47 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
         this.project = this.composeDelegate.getProject();
     }
 
+    /**
+     * @deprecated
+     *  Use the new constructor DockerComposeContainer(File composeFile, String identifier)
+     */
     @Deprecated
     public DockerComposeContainer(File composeFile, String identifier) {
         this(identifier, composeFile);
     }
 
+    /**
+     * @deprecated
+     *  Use the new constructor DockerComposeContainer(File... composeFiles)
+     */
     @Deprecated
     public DockerComposeContainer(File... composeFiles) {
         this(Arrays.asList(composeFiles));
     }
 
+    /**
+     * @deprecated
+     *  Use the new constructor DockerComposeContainer(List composeFiles)
+     */
     @Deprecated
     public DockerComposeContainer(List<File> composeFiles) {
         this(Base58.randomString(6).toLowerCase(), composeFiles);
     }
 
+    /**
+     * @deprecated
+     *  Use the new constructor DockerComposeContainer(String identifier,File... composeFiles)
+     */
     @Deprecated
     public DockerComposeContainer(String identifier, File... composeFiles) {
         this(identifier, Arrays.asList(composeFiles));
     }
 
+
+    /**
+     * @deprecated
+     *  Use the new constructor DockerComposeContainer(String identifier,List composeFiles)
+     */
     @Deprecated
     public DockerComposeContainer(String identifier, List<File> composeFiles) {
         this.composeDelegate =
