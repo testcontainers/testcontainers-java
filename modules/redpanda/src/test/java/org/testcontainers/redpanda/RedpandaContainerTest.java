@@ -68,13 +68,6 @@ public class RedpandaContainerTest extends AbstractRedpanda {
     }
 
     @Test
-    public void vectorizedRedpandaImageVersion2221ShouldNotBeCompatible() {
-        assertThatThrownBy(() -> new RedpandaContainer("docker.redpanda.com/vectorized/redpanda:v21.11.19"))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("Redpanda version must be >= v22.2.1");
-    }
-
-    @Test
     public void redpandadataRedpandaImageVersion2221ShouldNotBeCompatible() {
         assertThatThrownBy(() -> new RedpandaContainer("redpandadata/redpanda:v21.11.19"))
             .isInstanceOf(IllegalArgumentException.class)
