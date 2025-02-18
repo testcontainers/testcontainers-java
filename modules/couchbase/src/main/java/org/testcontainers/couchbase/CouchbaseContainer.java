@@ -343,9 +343,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     @Override
     protected void containerIsStarting(InspectContainerResponse containerInfo, boolean reused) {
-        if (reused) {
-            this.logger().debug("Couchbase container is being reused, assuming correct configuration.");
-        } else {
+        if (!reused) {
             containerIsStarting(containerInfo);
         }
     }
@@ -370,10 +368,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo, boolean reused) {
-        if (reused) {
-            logger()
-                .info("Couchbase container reused and ready! UI available at http://{}:{}", getHost(), getMappedPort(MGMT_PORT));
-        } else {
+        if (!reused) {
             this.containerIsStarted(containerInfo);
         }
     }
