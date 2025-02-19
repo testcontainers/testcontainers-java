@@ -14,7 +14,7 @@ import org.testcontainers.utility.LicenseAcceptance;
  * <p>
  * Exposed port: 5672
  */
-public class AzureServiceBusContainer extends GenericContainer<AzureServiceBusContainer> {
+public class ServiceBusEmulatorContainer extends GenericContainer<ServiceBusEmulatorContainer> {
 
     private static final String CONNECTION_STRING_FORMAT =
         "Endpoint=sb://%s:%d;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;";
@@ -30,14 +30,14 @@ public class AzureServiceBusContainer extends GenericContainer<AzureServiceBusCo
     /**
      * @param dockerImageName The specified docker image name to run
      */
-    public AzureServiceBusContainer(final String dockerImageName) {
+    public ServiceBusEmulatorContainer(final String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
     }
 
     /**
      * @param dockerImageName The specified docker image name to run
      */
-    public AzureServiceBusContainer(final DockerImageName dockerImageName) {
+    public ServiceBusEmulatorContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
         withExposedPorts(DEFAULT_PORT);
@@ -50,7 +50,7 @@ public class AzureServiceBusContainer extends GenericContainer<AzureServiceBusCo
      * @param msSqlServerContainer The MS SQL Server container used by Service Bus as a dependency
      * @return this
      */
-    public AzureServiceBusContainer withMsSqlServerContainer(final MSSQLServerContainer<?> msSqlServerContainer) {
+    public ServiceBusEmulatorContainer withMsSqlServerContainer(final MSSQLServerContainer<?> msSqlServerContainer) {
         dependsOn(msSqlServerContainer);
         this.msSqlServerContainer = msSqlServerContainer;
         return this;
@@ -62,7 +62,7 @@ public class AzureServiceBusContainer extends GenericContainer<AzureServiceBusCo
      * @param config The configuration
      * @return this
      */
-    public AzureServiceBusContainer withConfig(final Transferable config) {
+    public ServiceBusEmulatorContainer withConfig(final Transferable config) {
         withCopyToContainer(config, "/ServiceBus_Emulator/ConfigFiles/Config.json");
         return this;
     }
@@ -72,7 +72,7 @@ public class AzureServiceBusContainer extends GenericContainer<AzureServiceBusCo
      *
      * @return this
      */
-    public AzureServiceBusContainer acceptLicense() {
+    public ServiceBusEmulatorContainer acceptLicense() {
         withEnv("ACCEPT_EULA", "Y");
         return this;
     }

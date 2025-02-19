@@ -19,7 +19,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.waitAtMost;
 
-public class AzureEventHubsContainerTest {
+public class EventHubsEmulatorContainerTest {
 
     @Rule
     // network {
@@ -36,7 +36,7 @@ public class AzureEventHubsContainerTest {
 
     @Rule
     // emulatorContainer {
-    public AzureEventHubsContainer emulator = new AzureEventHubsContainer(
+    public EventHubsEmulatorContainer emulator = new EventHubsEmulatorContainer(
         "mcr.microsoft.com/azure-messaging/eventhubs-emulator:2.0.1"
     )
         .acceptLicense()

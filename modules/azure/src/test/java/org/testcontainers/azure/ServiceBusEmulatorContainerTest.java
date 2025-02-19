@@ -23,7 +23,7 @@ import java.util.function.Consumer;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
-public class AzureServiceBusContainerTest {
+public class ServiceBusEmulatorContainerTest {
 
     @Rule
     // network {
@@ -47,7 +47,7 @@ public class AzureServiceBusContainerTest {
 
     @Rule
     // emulatorContainer {
-    public AzureServiceBusContainer emulator = new AzureServiceBusContainer(
+    public ServiceBusEmulatorContainer emulator = new ServiceBusEmulatorContainer(
         "mcr.microsoft.com/azure-messaging/servicebus-emulator:1.0.1"
     )
         .acceptLicense()

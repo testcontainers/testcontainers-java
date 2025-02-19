@@ -16,7 +16,7 @@ import org.testcontainers.utility.LicenseAcceptance;
  *     <li>AMQP: 5672</li>
  * </ul>
  */
-public class AzureEventHubsContainer extends GenericContainer<AzureEventHubsContainer> {
+public class EventHubsEmulatorContainer extends GenericContainer<EventHubsEmulatorContainer> {
 
     private static final int DEFAULT_AMQP_PORT = 5672;
 
@@ -32,14 +32,14 @@ public class AzureEventHubsContainer extends GenericContainer<AzureEventHubsCont
     /**
      * @param dockerImageName specified docker image name to run
      */
-    public AzureEventHubsContainer(final String dockerImageName) {
+    public EventHubsEmulatorContainer(final String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
     }
 
     /**
      * @param dockerImageName specified docker image name to run
      */
-    public AzureEventHubsContainer(final DockerImageName dockerImageName) {
+    public EventHubsEmulatorContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
         waitingFor(Wait.forLogMessage(".*Emulator Service is Successfully Up!.*", 1));
@@ -52,7 +52,7 @@ public class AzureEventHubsContainer extends GenericContainer<AzureEventHubsCont
      * @param azuriteContainer The Azurite container used by Event HUbs as a dependency
      * @return this
      */
-    public AzureEventHubsContainer withAzuriteContainer(final AzuriteContainer azuriteContainer) {
+    public EventHubsEmulatorContainer withAzuriteContainer(final AzuriteContainer azuriteContainer) {
         this.azuriteContainer = azuriteContainer;
         dependsOn(this.azuriteContainer);
         return this;
@@ -64,7 +64,7 @@ public class AzureEventHubsContainer extends GenericContainer<AzureEventHubsCont
      * @param config The file containing the broker configuration
      * @return this
      */
-    public AzureEventHubsContainer withConfig(final Transferable config) {
+    public EventHubsEmulatorContainer withConfig(final Transferable config) {
         withCopyToContainer(config, "/Eventhubs_Emulator/ConfigFiles/Config.json");
         return this;
     }
@@ -74,7 +74,7 @@ public class AzureEventHubsContainer extends GenericContainer<AzureEventHubsCont
      *
      * @return this
      */
-    public AzureEventHubsContainer acceptLicense() {
+    public EventHubsEmulatorContainer acceptLicense() {
         withEnv("ACCEPT_EULA", "Y");
         return this;
     }
