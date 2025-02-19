@@ -1,13 +1,13 @@
 # Pinecone
 
-Testcontainers module for [Pinecone](https://github.com/orgs/pinecone-io/packages/container/package/pinecone-local).
+Testcontainers module for [Pinecone Local](https://github.com/orgs/pinecone-io/packages/container/package/pinecone-local).
 
-## PineconeContainer's usage examples
+## PineconeLocalContainer's usage examples
 
-You can start an Pinecone container instance from any Java application by using:
+You can start a Pinecone container instance from any Java application by using:
 
 <!--codeinclude-->
-[Pinecone container](../../modules/pinecone/src/test/java/org/testcontainers/pinecone/PineconeContainerTest.java) inside_block:container
+[Pinecone container](../../modules/pinecone/src/test/java/org/testcontainers/pinecone/PineconeLocalContainerTest.java) inside_block:container
 <!--/codeinclude-->
 
 ## Adding this module to your project dependencies

@@ -7,12 +7,12 @@ import org.openapitools.db_control.client.model.IndexModel;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class PineconeContainerTest {
+public class PineconeLocalContainerTest {
 
     @Test
     public void testSimple() {
         try ( // container {
-            PineconeContainer container = new PineconeContainer("ghcr.io/pinecone-io/pinecone-local:v0.7.0")
+            PineconeLocalContainer container = new PineconeLocalContainer("ghcr.io/pinecone-io/pinecone-local:v0.7.0")
             // }
         ) {
             container.start();

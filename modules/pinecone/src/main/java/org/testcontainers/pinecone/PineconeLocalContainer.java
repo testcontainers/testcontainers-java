@@ -8,7 +8,7 @@ import org.testcontainers.utility.DockerImageName;
  * <p>
  * Exposed port: 5080
  */
-public class PineconeContainer extends GenericContainer<PineconeContainer> {
+public class PineconeLocalContainer extends GenericContainer<PineconeLocalContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse(
         "ghcr.io/pinecone-io/pinecone-local"
@@ -16,11 +16,11 @@ public class PineconeContainer extends GenericContainer<PineconeContainer> {
 
     private static final int PORT = 5080;
 
-    public PineconeContainer(String dockerImageName) {
+    public PineconeLocalContainer(String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
     }
 
-    public PineconeContainer(DockerImageName dockerImageName) {
+    public PineconeLocalContainer(DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
