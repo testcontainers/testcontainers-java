@@ -26,6 +26,8 @@ public class LLdapContainer extends GenericContainer<LLdapContainer> {
 
     private static final int LDAP_PORT = 3890;
 
+    private static final int LDAPS_PORT = 6360;
+
     private static final int UI_PORT = 17170;
 
     public LLdapContainer(String image) {
@@ -45,11 +47,39 @@ public class LLdapContainer extends GenericContainer<LLdapContainer> {
         log.info("LLDAP container is ready! UI available at http://{}:{}", getHost(), getMappedPort(UI_PORT));
     }
 
+    public LLdapContainer withBaseDn(String baseDn) {
+        withEnv("LLDAP_LDAP_BASE_DN", baseDn);
+        return this;
+    }
+
+    public LLdapContainer withUserPass(String userPass) {
+        withEnv("LLDAP_LDAP_USER_PASS", userPass);
+        return this;
+    }
+
     public int getLdapPort() {
-        return getMappedPort(LDAP_PORT);
+        int port = getEnvMap().getOrDefault("LLDAP_LDAPS_OPTIONS__ENABLED", "false").equals("true")
+            ? LDAPS_PORT
+            : LDAP_PORT;
+        return getMappedPort(port);
     }
 
     public String getLdapUrl() {
-        return String.format("ldap://%s:%d", getHost(), getLdapPort());
+        String protocol = getEnvMap().getOrDefault("LLDAP_LDAPS_OPTIONS__ENABLED", "false").equals("true")
+            ? "ldaps"
+            : "ldap";
+        return String.format("%s://%s:%d", protocol, getHost(), getLdapPort());
+    }
+
+    public String getBaseDn() {
+        return getEnvMap().getOrDefault("LLDAP_LDAP_BASE_DN", "dc=example,dc=com");
+    }
+
+    public String getUser() {
+        return String.format("cn=admin,ou=people,%s", getBaseDn());
+    }
+
+    public String getUserPass() {
+        return getEnvMap().getOrDefault("LLDAP_LDAP_USER_PASS", "password");
     }
 }
