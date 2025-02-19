@@ -48,4 +48,8 @@ public class LLdapContainer extends GenericContainer<LLdapContainer> {
     public int getLdapPort() {
         return getMappedPort(LDAP_PORT);
     }
+
+    public String getLdapUrl() {
+        return String.format("ldap://%s:%d", getHost(), getLdapPort());
+    }
 }
