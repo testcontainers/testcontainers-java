@@ -89,6 +89,7 @@ nav:
           - modules/k3s.md
           - modules/k6.md
           - modules/kafka.md
+          - modules/ldap.md
           - modules/localstack.md
           - modules/milvus.md
           - modules/minio.md
