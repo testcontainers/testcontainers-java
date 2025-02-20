@@ -37,6 +37,8 @@ public class DatabendContainer extends JdbcDatabaseContainer<DatabendContainer> 
 
     private String password = "databend";
 
+    private boolean minioEnabled = true;
+
     public DatabendContainer(String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
     }
@@ -53,6 +55,7 @@ public class DatabendContainer extends JdbcDatabaseContainer<DatabendContainer> 
     protected void configure() {
         withEnv("QUERY_DEFAULT_USER", this.username);
         withEnv("QUERY_DEFAULT_PASSWORD", this.password);
+        withEnv("MINIO_ENABLED", this.minioEnabled);
     }
 
     @Override
@@ -93,6 +96,10 @@ public class DatabendContainer extends JdbcDatabaseContainer<DatabendContainer> 
         return this.databaseName;
     }
 
+    public boolean isMinioEnabled() {
+        return this.minioEnabled;
+    }
+
     @Override
     public String getTestQueryString() {
         return TEST_QUERY;
@@ -107,6 +114,11 @@ public class DatabendContainer extends JdbcDatabaseContainer<DatabendContainer> 
     @Override
     public DatabendContainer withPassword(String password) {
         this.password = password;
+        return this;
+    }
+
+    public DatabendContainer withMinioEnabled(boolean minioEnabled) {
+        this.minioEnabled = minioEnabled;
         return this;
     }
 }
