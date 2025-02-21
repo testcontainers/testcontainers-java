@@ -11,8 +11,8 @@ import org.apache.kafka.common.errors.TopicAuthorizationException;
 import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.testcontainers.AbstractKafka;
+import org.testcontainers.KCatContainer;
 import org.testcontainers.Testcontainers;
-import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
@@ -195,13 +195,7 @@ public class KafkaContainerTest extends AbstractKafka {
                 .withNetwork(network);
             // }
             // createKCatContainer {
-            GenericContainer<?> kcat = new GenericContainer<>("confluentinc/cp-kcat:7.9.0")
-                .withCreateContainerCmdModifier(cmd -> {
-                    cmd.withEntrypoint("sh");
-                })
-                .withCopyToContainer(Transferable.of("Message produced by kcat"), "/data/msgs.txt")
-                .withNetwork(network)
-                .withCommand("-c", "tail -f /dev/null")
+            KCatContainer kcat = new KCatContainer().withNetwork(network)
             // }
         ) {
             kafka.start();

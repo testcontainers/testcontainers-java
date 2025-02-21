@@ -13,10 +13,8 @@ import org.apache.kafka.common.errors.SaslAuthenticationException;
 import org.apache.kafka.common.errors.TopicAuthorizationException;
 import org.awaitility.Awaitility;
 import org.junit.Test;
-import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.SocatContainer;
-import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 
 import java.util.Collection;
@@ -111,13 +109,7 @@ public class RedpandaContainerTest extends AbstractRedpanda {
             RedpandaContainer redpanda = new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v23.1.7")
                 .withListener(() -> "redpanda:19092")
                 .withNetwork(network);
-            GenericContainer<?> kcat = new GenericContainer<>("confluentinc/cp-kcat:7.9.0")
-                .withCreateContainerCmdModifier(cmd -> {
-                    cmd.withEntrypoint("sh");
-                })
-                .withCopyToContainer(Transferable.of("Message produced by kcat"), "/data/msgs.txt")
-                .withNetwork(network)
-                .withCommand("-c", "tail -f /dev/null")
+            KCatContainer kcat = new KCatContainer().withNetwork(network)
         ) {
             redpanda.start();
             kcat.start();
@@ -141,13 +133,7 @@ public class RedpandaContainerTest extends AbstractRedpanda {
                 .withNetwork(network);
             // }
             // createKCatContainer {
-            GenericContainer<?> kcat = new GenericContainer<>("confluentinc/cp-kcat:7.9.0")
-                .withCreateContainerCmdModifier(cmd -> {
-                    cmd.withEntrypoint("sh");
-                })
-                .withCopyToContainer(Transferable.of("Message produced by kcat"), "/data/msgs.txt")
-                .withNetwork(network)
-                .withCommand("-c", "tail -f /dev/null")
+            KCatContainer kcat = new KCatContainer().withNetwork(network)
             // }
         ) {
             kafka.start();
@@ -200,13 +186,7 @@ public class RedpandaContainerTest extends AbstractRedpanda {
                 .withSuperuser("panda")
                 .withListener("my-panda:29092")
                 .withNetwork(network);
-            GenericContainer<?> kcat = new GenericContainer<>("confluentinc/cp-kcat:7.9.0")
-                .withCreateContainerCmdModifier(cmd -> {
-                    cmd.withEntrypoint("sh");
-                })
-                .withCopyToContainer(Transferable.of("Message produced by kcat"), "/data/msgs.txt")
-                .withNetwork(network)
-                .withCommand("-c", "tail -f /dev/null")
+            KCatContainer kcat = new KCatContainer().withNetwork(network)
         ) {
             redpanda.start();
 
