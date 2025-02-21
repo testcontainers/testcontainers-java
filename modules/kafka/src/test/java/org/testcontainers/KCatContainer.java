@@ -6,7 +6,7 @@ import org.testcontainers.images.builder.Transferable;
 public class KCatContainer extends GenericContainer<KCatContainer> {
 
     public KCatContainer() {
-        super("confluentinc/cp-kcat:7.4.1");
+        super("confluentinc/cp-kcat:7.9.0");
         withCreateContainerCmdModifier(cmd -> {
             cmd.withEntrypoint("sh");
         });
