@@ -111,7 +111,7 @@ public class RedpandaContainerTest extends AbstractRedpanda {
             RedpandaContainer redpanda = new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v23.1.7")
                 .withListener(() -> "redpanda:19092")
                 .withNetwork(network);
-            GenericContainer<?> kcat = new GenericContainer<>("confluentinc/cp-kcat:7.4.1")
+            GenericContainer<?> kcat = new GenericContainer<>("confluentinc/cp-kcat:7.9.0")
                 .withCreateContainerCmdModifier(cmd -> {
                     cmd.withEntrypoint("sh");
                 })
@@ -141,7 +141,7 @@ public class RedpandaContainerTest extends AbstractRedpanda {
                 .withNetwork(network);
             // }
             // createKCatContainer {
-            GenericContainer<?> kcat = new GenericContainer<>("confluentinc/cp-kcat:7.4.1")
+            GenericContainer<?> kcat = new GenericContainer<>("confluentinc/cp-kcat:7.9.0")
                 .withCreateContainerCmdModifier(cmd -> {
                     cmd.withEntrypoint("sh");
                 })
@@ -200,7 +200,7 @@ public class RedpandaContainerTest extends AbstractRedpanda {
                 .withSuperuser("panda")
                 .withListener("my-panda:29092")
                 .withNetwork(network);
-            GenericContainer<?> kcat = new GenericContainer<>("confluentinc/cp-kcat:7.4.1")
+            GenericContainer<?> kcat = new GenericContainer<>("confluentinc/cp-kcat:7.9.0")
                 .withCreateContainerCmdModifier(cmd -> {
                     cmd.withEntrypoint("sh");
                 })
