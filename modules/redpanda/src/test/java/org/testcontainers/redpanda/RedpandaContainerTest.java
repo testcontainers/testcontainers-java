@@ -68,13 +68,6 @@ public class RedpandaContainerTest extends AbstractRedpanda {
     }
 
     @Test
-    public void vectorizedRedpandaImageVersion2221ShouldNotBeCompatible() {
-        assertThatThrownBy(() -> new RedpandaContainer("docker.redpanda.com/vectorized/redpanda:v21.11.19"))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("Redpanda version must be >= v22.2.1");
-    }
-
-    @Test
     public void redpandadataRedpandaImageVersion2221ShouldNotBeCompatible() {
         assertThatThrownBy(() -> new RedpandaContainer("redpandadata/redpanda:v21.11.19"))
             .isInstanceOf(IllegalArgumentException.class)
@@ -118,7 +111,7 @@ public class RedpandaContainerTest extends AbstractRedpanda {
             RedpandaContainer redpanda = new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v23.1.7")
                 .withListener(() -> "redpanda:19092")
                 .withNetwork(network);
-            GenericContainer<?> kcat = new GenericContainer<>("confluentinc/cp-kcat:7.4.1")
+            GenericContainer<?> kcat = new GenericContainer<>("confluentinc/cp-kcat:7.9.0")
                 .withCreateContainerCmdModifier(cmd -> {
                     cmd.withEntrypoint("sh");
                 })
@@ -148,7 +141,7 @@ public class RedpandaContainerTest extends AbstractRedpanda {
                 .withNetwork(network);
             // }
             // createKCatContainer {
-            GenericContainer<?> kcat = new GenericContainer<>("confluentinc/cp-kcat:7.4.1")
+            GenericContainer<?> kcat = new GenericContainer<>("confluentinc/cp-kcat:7.9.0")
                 .withCreateContainerCmdModifier(cmd -> {
                     cmd.withEntrypoint("sh");
                 })
@@ -207,7 +200,7 @@ public class RedpandaContainerTest extends AbstractRedpanda {
                 .withSuperuser("panda")
                 .withListener("my-panda:29092")
                 .withNetwork(network);
-            GenericContainer<?> kcat = new GenericContainer<>("confluentinc/cp-kcat:7.4.1")
+            GenericContainer<?> kcat = new GenericContainer<>("confluentinc/cp-kcat:7.9.0")
                 .withCreateContainerCmdModifier(cmd -> {
                     cmd.withEntrypoint("sh");
                 })

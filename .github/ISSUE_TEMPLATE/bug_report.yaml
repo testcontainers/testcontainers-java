@@ -34,6 +34,7 @@ body:
         - K3S
         - K6
         - Kafka
+        - LDAP
         - LocalStack
         - MariaDB
         - Milvus
@@ -50,6 +51,7 @@ body:
         - Oracle Free
         - Oracle XE
         - OrientDB
+        - Pinecone
         - PostgreSQL
         - Presto
         - Pulsar
@@ -57,6 +59,7 @@ body:
         - QuestDB
         - RabbitMQ
         - Redpanda
+        - ScyllaDB
         - Selenium
         - Solace
         - Solr

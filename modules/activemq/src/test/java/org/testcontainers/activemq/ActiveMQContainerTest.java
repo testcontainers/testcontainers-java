@@ -3,7 +3,6 @@ package org.testcontainers.activemq;
 import jakarta.jms.Connection;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.Destination;
-import jakarta.jms.JMSException;
 import jakarta.jms.MessageConsumer;
 import jakarta.jms.MessageProducer;
 import jakarta.jms.Session;
@@ -17,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ActiveMQContainerTest {
 
     @Test
-    public void test() throws JMSException {
+    public void test() {
         try ( // container {
             ActiveMQContainer activemq = new ActiveMQContainer("apache/activemq-classic:5.18.3")
             // }
