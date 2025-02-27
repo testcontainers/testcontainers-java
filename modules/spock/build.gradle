@@ -23,6 +23,11 @@ dependencies {
     testCompileOnly 'org.jetbrains:annotations:24.1.0'
 }
 
+tasks.withType(GroovyCompile) {
+    options.release.set(8)
+    options.encoding = 'UTF-8'
+}
+
 sourceJar {
     /* allJava is default (see gradle/publishing.gradle:sourceJar)
        allSource contains both .java and .groovy files */
