@@ -18,7 +18,7 @@ public class LLdapContainerTest {
         ) {
             lldap.start();
             LDAPConnection connection = new LDAPConnection(lldap.getHost(), lldap.getLdapPort());
-            BindResult result = connection.bind(lldap.getUser(), lldap.getUserPass());
+            BindResult result = connection.bind(lldap.getUser(), lldap.getPassword());
             assertThat(result).isNotNull();
         }
     }
@@ -30,7 +30,7 @@ public class LLdapContainerTest {
 
             LDAPURL ldapUrl = new LDAPURL(lldap.getLdapUrl());
             LDAPConnection connection = new LDAPConnection(ldapUrl.getHost(), ldapUrl.getPort());
-            BindResult result = connection.bind(lldap.getUser(), lldap.getUserPass());
+            BindResult result = connection.bind(lldap.getUser(), lldap.getPassword());
             assertThat(result).isNotNull();
         }
     }
@@ -47,7 +47,7 @@ public class LLdapContainerTest {
 
             LDAPURL ldapUrl = new LDAPURL(lldap.getLdapUrl());
             LDAPConnection connection = new LDAPConnection(ldapUrl.getHost(), ldapUrl.getPort());
-            BindResult result = connection.bind(lldap.getUser(), lldap.getUserPass());
+            BindResult result = connection.bind(lldap.getUser(), lldap.getPassword());
             assertThat(result).isNotNull();
         }
     }
@@ -59,7 +59,7 @@ public class LLdapContainerTest {
 
             LDAPURL ldapUrl = new LDAPURL(lldap.getLdapUrl());
             LDAPConnection connection = new LDAPConnection(ldapUrl.getHost(), ldapUrl.getPort());
-            BindResult result = connection.bind(lldap.getUser(), lldap.getUserPass());
+            BindResult result = connection.bind(lldap.getUser(), lldap.getPassword());
             assertThat(result).isNotNull();
         }
     }
