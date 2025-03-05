@@ -53,6 +53,21 @@ public class FirestoreEmulatorContainerTest {
 
         assertThat(querySnapshot.getDocuments().get(0).getData()).containsEntry("first", "Ada");
     }
+
     // }
 
+    @Test
+    public void testWithFlags() {
+        try (
+            FirestoreEmulatorContainer emulator = new FirestoreEmulatorContainer(
+                "gcr.io/google.com/cloudsdktool/google-cloud-cli:465.0.0-emulators"
+            )
+                .withFlags("--database-mode datastore-mode")
+        ) {
+            emulator.start();
+
+            assertThat(emulator.getContainerInfo().getConfig().getCmd())
+                .anyMatch(e -> e.contains("--database-mode datastore-mode"));
+        }
+    }
 }
