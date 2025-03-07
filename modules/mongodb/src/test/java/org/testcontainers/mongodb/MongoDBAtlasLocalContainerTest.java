@@ -37,6 +37,26 @@ public class MongoDBAtlasLocalContainerTest {
     }
 
     @Test
+    public void getDatabaseConnectionString() {
+        try (
+            MongoDBAtlasLocalContainer container = new MongoDBAtlasLocalContainer("mongodb/mongodb-atlas-local:7.0.9")
+        ) {
+            container.start();
+            String databaseConnectionString = container.getDatabaseConnectionString();
+            assertThat(databaseConnectionString).isNotNull();
+            assertThat(databaseConnectionString).startsWith("mongodb://");
+            assertThat(databaseConnectionString)
+                .isEqualTo(
+                    String.format(
+                        "mongodb://%s:%d/test?directConnection=true",
+                        container.getHost(),
+                        container.getFirstMappedPort()
+                    )
+                );
+        }
+    }
+
+    @Test
     public void createAtlasIndexAndSearchIt() throws Exception {
         try (
             // creatingAtlasLocalContainer {
