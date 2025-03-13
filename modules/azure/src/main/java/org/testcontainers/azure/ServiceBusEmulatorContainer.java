@@ -41,6 +41,7 @@ public class ServiceBusEmulatorContainer extends GenericContainer<ServiceBusEmul
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
         withExposedPorts(DEFAULT_PORT);
+        withEnv("SQL_WAIT_INTERVAL", "0");
         waitingFor(Wait.forLogMessage(".*Emulator Service is Successfully Up!.*", 1));
     }
 

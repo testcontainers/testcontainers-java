@@ -48,7 +48,7 @@ public class ServiceBusEmulatorContainerTest {
     @Rule
     // emulatorContainer {
     public ServiceBusEmulatorContainer emulator = new ServiceBusEmulatorContainer(
-        "mcr.microsoft.com/azure-messaging/servicebus-emulator:1.0.1"
+        "mcr.microsoft.com/azure-messaging/servicebus-emulator:1.1.2"
     )
         .acceptLicense()
         .withConfig(MountableFile.forClasspathResource("/service-bus-config.json"))
