@@ -10,10 +10,12 @@ public class DependsOnTest {
 
     @Rule
     // dependsOn {
-    public GenericContainer<?> redis = new GenericContainer<>("redis:3.0.2").withExposedPorts(6379);
+    public GenericContainer<?> redis = new GenericContainer<>("redis:6-alpine").withExposedPorts(6379);
 
     @Rule
-    public GenericContainer<?> nginx = new GenericContainer<>("nginx:1.9.4").dependsOn(redis).withExposedPorts(80);
+    public GenericContainer<?> nginx = new GenericContainer<>("nginx:1.27.0-alpine3.19-slim")
+        .dependsOn(redis)
+        .withExposedPorts(80);
 
     // }
 

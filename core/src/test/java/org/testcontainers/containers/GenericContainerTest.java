@@ -5,9 +5,12 @@ import ch.qos.logback.core.read.ListAppender;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse.ContainerState;
+import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Info;
 import com.github.dockerjava.api.model.Ports;
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.experimental.FieldDefaults;
@@ -20,15 +23,20 @@ import org.testcontainers.DockerClientFactory;
 import org.testcontainers.TestImages;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
+import java.time.Duration;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -44,7 +52,7 @@ public class GenericContainerTest {
     public void shouldReportOOMAfterWait() {
         Info info = DockerClientFactory.instance().client().infoCmd().exec();
         // Poor man's rootless Docker detection :D
-        Assumptions.assumeThat(info.getSecurityOptions()).doesNotContain("rootless");
+        Assumptions.assumeThat(info.getSecurityOptions()).doesNotContain("name=rootless");
         try (
             GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
                 .withStartupCheckStrategy(new NoopStartupCheckStrategy())
@@ -227,7 +235,7 @@ public class GenericContainerTest {
     @Test
     public void shouldReturnTheProvidedImage() {
         GenericContainer container = new GenericContainer(TestImages.REDIS_IMAGE);
-        assertThat(container.getImage().get()).isEqualTo("redis:3.0.2");
+        assertThat(container.getImage().get()).isEqualTo("redis:6-alpine");
         container.setImage(new RemoteDockerImage(TestImages.ALPINE_IMAGE));
         assertThat(container.getImage().get()).isEqualTo("alpine:3.17");
     }
@@ -254,6 +262,78 @@ public class GenericContainerTest {
             container.start();
             assertThat(container.getNetworkAliases()).hasSize(1);
         }
+    }
+
+    @Test
+    public void shouldRespectWaitStrategy() {
+        try (
+            HelloWorldLogStrategyContainer container = new HelloWorldLogStrategyContainer(
+                "testcontainers/helloworld:1.1.0"
+            )
+        ) {
+            container.setWaitStrategy(Wait.forLogMessage(".*Starting server on port.*", 1));
+            container.start();
+            assertThat((LogMessageWaitStrategy) container.getWaitStrategy())
+                .extracting("regEx", "times")
+                .containsExactly(".*Starting server on port.*", 1);
+        }
+    }
+
+    @Test
+    public void testStartupAttemptsDoesNotLeaveContainersRunningWhenWrongWaitStrategyIsUsed() {
+        try (
+            GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
+                .withLabel("waitstrategy", "wrong")
+                .withStartupAttempts(3)
+                .waitingFor(
+                    Wait.forLogMessage("this text does not exist in logs", 1).withStartupTimeout(Duration.ofMillis(1))
+                )
+                .withCommand("tail", "-f", "/dev/null");
+        ) {
+            assertThatThrownBy(container::start).hasStackTraceContaining("Retry limit hit with exception");
+        }
+        assertThat(reportLeakedContainers()).isEmpty();
+    }
+
+    private static Optional<String> reportLeakedContainers() {
+        @SuppressWarnings("resource") // Throws when close is attempted, as this is a global instance.
+        DockerClient dockerClient = DockerClientFactory.lazyClient();
+
+        List<Container> containers = dockerClient
+            .listContainersCmd()
+            .withAncestorFilter(Collections.singletonList("alpine:3.17"))
+            .withLabelFilter(
+                Arrays.asList(
+                    DockerClientFactory.TESTCONTAINERS_SESSION_ID_LABEL + "=" + DockerClientFactory.SESSION_ID,
+                    "waitstrategy=wrong"
+                )
+            )
+            // ignore status "exited" - for example, failed containers after using `withStartupAttempts()`
+            .withStatusFilter(Arrays.asList("created", "restarting", "running", "paused"))
+            .exec()
+            .stream()
+            .collect(ImmutableList.toImmutableList());
+
+        if (containers.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(
+            String.format(
+                "Leaked containers: %s",
+                containers
+                    .stream()
+                    .map(container -> {
+                        return MoreObjects
+                            .toStringHelper("container")
+                            .add("id", container.getId())
+                            .add("image", container.getImage())
+                            .add("imageId", container.getImageId())
+                            .toString();
+                    })
+                    .collect(Collectors.joining(", ", "[", "]"))
+            )
+        );
     }
 
     static class NoopStartupCheckStrategy extends StartupCheckStrategy {
@@ -317,6 +397,15 @@ public class GenericContainerTest {
             HelloWorldContainerDef() {
                 addExposedTcpPort(8080);
             }
+        }
+    }
+
+    static class HelloWorldLogStrategyContainer extends GenericContainer<HelloWorldContainer> {
+
+        public HelloWorldLogStrategyContainer(String image) {
+            super(DockerImageName.parse(image));
+            withExposedPorts(8080);
+            waitingFor(Wait.forLogMessage(".*Starting server on port.*", 2));
         }
     }
 }

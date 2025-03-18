@@ -57,7 +57,7 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 
 #### Using OceanBase
 
-`jdbc:tc:oceanbasece:4.2.2:///databasename`
+`jdbc:tc:oceanbasece:4.2.1-lts:///databasename`
 
 #### Using Oracle
 
@@ -79,9 +79,17 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 
 `jdbc:tc:timescaledb:2.1.0-pg13:///databasename`
 
+#### Using PGVector
+
+`jdbc:tc:pgvector:pg16:///databasename`
+
 #### Using TiDB
 
 `jdbc:tc:tidb:v6.1.0:///databasename`
+
+#### Using Timeplus
+
+`jdbc:tc:timeplus:2.3.21:///databasename`
 
 #### Using Trino
 
@@ -127,7 +135,7 @@ By default database container is being stopped as soon as last connection is clo
 
  `jdbc:tc:mysql:8.0.36:///databasename?TC_DAEMON=true`
 
-With this parameter database container will keep running even when there're no open connections.
+With this parameter database container will keep running even when there's no open connections.
 
 
 ### Running container with tmpfs options

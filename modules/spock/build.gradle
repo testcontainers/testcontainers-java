@@ -6,7 +6,7 @@ description = "Testcontainers :: Spock-Extension"
 
 dependencies {
     api project(':testcontainers')
-    api 'org.spockframework:spock-core:2.3-groovy-4.0'
+    implementation 'org.spockframework:spock-core:2.3-groovy-4.0'
 
     testImplementation project(':selenium')
     testImplementation project(':mysql')
@@ -15,12 +15,18 @@ dependencies {
     testImplementation 'com.zaxxer:HikariCP:4.0.3'
     testImplementation 'org.apache.httpcomponents:httpclient:4.5.14'
 
-    testRuntimeOnly 'org.postgresql:postgresql:42.7.1'
+    testRuntimeOnly 'org.postgresql:postgresql:42.7.4'
     testRuntimeOnly 'mysql:mysql-connector-java:8.0.33'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.1'
-    testRuntimeOnly 'org.junit.platform:junit-platform-testkit:1.10.1'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.3'
+    testRuntimeOnly 'org.junit.platform:junit-platform-testkit:1.11.0'
 
     testCompileOnly 'org.jetbrains:annotations:24.1.0'
+}
+
+tasks.withType(GroovyCompile) {
+    sourceCompatibility = '1.8'
+    targetCompatibility = '1.8'
+    options.encoding = 'UTF-8'
 }
 
 sourceJar {

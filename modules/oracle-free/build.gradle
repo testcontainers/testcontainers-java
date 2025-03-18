@@ -1,32 +1,16 @@
 description = "Testcontainers :: JDBC :: Oracle Database Free"
 
 dependencies {
-    annotationProcessor 'com.google.auto.service:auto-service:1.1.1'
-    compileOnly 'com.google.auto.service:auto-service:1.1.1'
-
     api project(':jdbc')
 
     compileOnly project(':r2dbc')
     compileOnly 'com.oracle.database.r2dbc:oracle-r2dbc:1.2.0'
 
     testImplementation project(':jdbc-test')
-    testImplementation 'com.oracle.database.jdbc:ojdbc11:23.3.0.23.09'
+    testImplementation 'com.oracle.database.jdbc:ojdbc11:23.5.0.24.07'
 
     compileOnly 'org.jetbrains:annotations:24.1.0'
 
     testImplementation testFixtures(project(':r2dbc'))
     testRuntimeOnly 'com.oracle.database.r2dbc:oracle-r2dbc:1.2.0'
-}
-
-test {
-    javaLauncher = javaToolchains.launcherFor {
-        languageVersion = JavaLanguageVersion.of(11)
-    }
-}
-
-compileTestJava {
-    javaCompiler = javaToolchains.compilerFor {
-        languageVersion = JavaLanguageVersion.of(11)
-    }
-    options.release.set(11)
 }

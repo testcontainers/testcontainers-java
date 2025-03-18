@@ -79,7 +79,7 @@ public class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
             ResultSet resultSet = performQuery(mariadbCustomConfig, "show variables like 'auto_increment_increment'");
             String result = resultSet.getString("Value");
 
-            assertThat(result).as("Auto increment increment should be overriden by command line").isEqualTo("10");
+            assertThat(result).as("Auto increment increment should be overridden by command line").isEqualTo("10");
         }
     }
 
@@ -129,6 +129,18 @@ public class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
             mariadbCustomConfig.start();
 
             assertThatCustomIniFileWasUsed(mariadbCustomConfig);
+        }
+    }
+
+    @Test
+    public void testEmptyPasswordWithRootUser() throws SQLException {
+        try (MariaDBContainer<?> mysql = new MariaDBContainer<>("mariadb:11.2.4").withUsername("root")) {
+            mysql.start();
+
+            ResultSet resultSet = performQuery(mysql, "SELECT 1");
+            int resultSetInt = resultSet.getInt(1);
+
+            assertThat(resultSetInt).isEqualTo(1);
         }
     }
 

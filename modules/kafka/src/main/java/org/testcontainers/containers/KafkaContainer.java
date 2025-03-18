@@ -26,7 +26,11 @@ import java.util.stream.Collectors;
  *     <li>Kafka: 9093</li>
  *     <li>Zookeeper: 2181</li>
  * </ul>
+ *
+ * @deprecated use {@link org.testcontainers.kafka.ConfluentKafkaContainer} or
+ * {@link org.testcontainers.kafka.KafkaContainer} instead
  */
+@Deprecated
 public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("confluentinc/cp-kafka");
@@ -39,7 +43,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     private static final String DEFAULT_INTERNAL_TOPIC_RF = "1";
 
-    private static final String STARTER_SCRIPT = "/testcontainers_start.sh";
+    private static final String STARTER_SCRIPT = "/tmp/testcontainers_start.sh";
 
     // https://docs.confluent.io/platform/7.0.0/release-notes/index.html#ak-raft-kraft
     private static final String MIN_KRAFT_TAG = "7.0.0";
@@ -208,10 +212,10 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     }
 
     protected String commandZookeeper() {
-        String command = "echo 'clientPort=" + ZOOKEEPER_PORT + "' > zookeeper.properties\n";
-        command += "echo 'dataDir=/var/lib/zookeeper/data' >> zookeeper.properties\n";
-        command += "echo 'dataLogDir=/var/lib/zookeeper/log' >> zookeeper.properties\n";
-        command += "zookeeper-server-start zookeeper.properties &\n";
+        String command = "echo 'clientPort=" + ZOOKEEPER_PORT + "' > /tmp/zookeeper.properties\n";
+        command += "echo 'dataDir=/var/lib/zookeeper/data' >> /tmp/zookeeper.properties\n";
+        command += "echo 'dataLogDir=/var/lib/zookeeper/log' >> /tmp/zookeeper.properties\n";
+        command += "zookeeper-server-start /tmp/zookeeper.properties &\n";
         return command;
     }
 
@@ -323,27 +327,34 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         void withRaft() {
             this.envVars.computeIfAbsent("CLUSTER_ID", key -> clusterId);
             this.envVars.computeIfAbsent("KAFKA_NODE_ID", key -> getEnvVars().get("KAFKA_BROKER_ID"));
-            addEnvVar(
-                "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP",
-                String.format("%s,CONTROLLER:PLAINTEXT", getEnvVars().get("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP"))
-            );
-            addEnvVar(
-                "KAFKA_LISTENERS",
-                String.format("%s,CONTROLLER://0.0.0.0:9094", getEnvVars().get("KAFKA_LISTENERS"))
-            );
+            addEnvVar("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", kafkaListenerSecurityProtocolMap());
+            addEnvVar("KAFKA_LISTENERS", kafkaListeners());
             addEnvVar("KAFKA_PROCESS_ROLES", "broker,controller");
 
-            String firstNetworkAlias = getNetworkAliases().stream().findFirst().orElse(null);
-            String networkAlias = getNetwork() != null ? firstNetworkAlias : "localhost";
-            String controllerQuorumVoters = String.format(
-                "%s@%s:9094",
-                getEnvVars().get("KAFKA_NODE_ID"),
-                networkAlias
-            );
+            String controllerQuorumVoters = String.format("%s@localhost:9094", getEnvVars().get("KAFKA_NODE_ID"));
             this.envVars.computeIfAbsent("KAFKA_CONTROLLER_QUORUM_VOTERS", key -> controllerQuorumVoters);
             addEnvVar("KAFKA_CONTROLLER_LISTENER_NAMES", "CONTROLLER");
 
             setWaitStrategy(Wait.forLogMessage(".*Transitioning from RECOVERY to RUNNING.*", 1));
+        }
+
+        private String kafkaListenerSecurityProtocolMap() {
+            String kafkaListenerSecurityProtocolMapEnvVar = getEnvVars().get("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP");
+            String kafkaListenerSecurityProtocolMap = String.format(
+                "%s,CONTROLLER:PLAINTEXT",
+                kafkaListenerSecurityProtocolMapEnvVar
+            );
+            Set<String> listenerSecurityProtocolMap = new HashSet<>(
+                Arrays.asList(kafkaListenerSecurityProtocolMap.split(","))
+            );
+            return String.join(",", listenerSecurityProtocolMap);
+        }
+
+        private String kafkaListeners() {
+            String kafkaListenersEnvVar = getEnvVars().get("KAFKA_LISTENERS");
+            String kafkaListeners = String.format("%s,CONTROLLER://0.0.0.0:9094", kafkaListenersEnvVar);
+            Set<String> listeners = new HashSet<>(Arrays.asList(kafkaListeners.split(",")));
+            return String.join(",", listeners);
         }
     }
 }

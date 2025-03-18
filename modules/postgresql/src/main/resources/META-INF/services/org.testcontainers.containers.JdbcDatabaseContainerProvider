@@ -1,3 +1,4 @@
 org.testcontainers.containers.PostgreSQLContainerProvider
 org.testcontainers.containers.PostgisContainerProvider
 org.testcontainers.containers.TimescaleDBContainerProvider
+org.testcontainers.containers.PgVectorContainerProvider

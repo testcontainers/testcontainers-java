@@ -16,7 +16,7 @@ import org.testcontainers.containers.GenericContainer
 abstract class AbstractIntegrationTest {
 
     companion object {
-        val redisContainer = GenericContainer<Nothing>("redis:3-alpine")
+        val redisContainer = GenericContainer<Nothing>("redis:6-alpine")
                 .apply { withExposedPorts(6379) }
     }
 

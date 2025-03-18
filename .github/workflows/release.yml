@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   release:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-java
@@ -21,7 +21,7 @@ jobs:
         run: docker image prune -af
 
       - name: Setup Gradle Build Action
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Run Gradle Build
         run: ./gradlew build --scan --no-daemon -i -x test
