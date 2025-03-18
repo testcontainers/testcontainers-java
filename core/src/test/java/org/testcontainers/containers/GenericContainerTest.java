@@ -46,9 +46,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.Assumptions.assumeThat;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertEquals;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertNotNull;
-import static org.rnorth.visibleassertions.VisibleAssertions.assertTrue;
 
 public class GenericContainerTest {
 
@@ -269,12 +266,11 @@ public class GenericContainerTest {
                 .getPorts()
                 .getBindings();
 
-            assertEquals("Two TCP ports should have been exposed.", 2, container.getExposedPorts().size());
-            assertNotNull("withExposedPorts should have exposed UDP port", map.get(expectedPort));
-            assertTrue(
-                "UDP port 99 should have been mapped to a different port",
-                99 != Integer.valueOf(map.get(expectedPort)[0].getHostPortSpec())
-            );
+            assertThat(container.getExposedPorts()).as("Two TCP ports should have been exposed").hasSize(2);
+            assertThat(map.get(expectedPort)).as("withExposedPorts should have exposed UDP port").isNotEmpty();
+            assertThat(Integer.valueOf(map.get(expectedPort)[0].getHostPortSpec()))
+                .as("UDP port 99 should have been mapped to a different port")
+                .isNotEqualTo(99);
         }
     }
 
