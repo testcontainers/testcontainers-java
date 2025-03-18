@@ -23,15 +23,18 @@ body:
         - Consul
         - Couchbase
         - CrateDB
+        - Databend
         - DB2
         - Dynalite
         - Elasticsearch
         - GCloud
+        - Grafana
         - HiveMQ
         - InfluxDB
         - K3S
         - K6
         - Kafka
+        - LDAP
         - LocalStack
         - MariaDB
         - Milvus
@@ -48,6 +51,7 @@ body:
         - Oracle Free
         - Oracle XE
         - OrientDB
+        - Pinecone
         - PostgreSQL
         - Presto
         - Pulsar
@@ -55,12 +59,15 @@ body:
         - QuestDB
         - RabbitMQ
         - Redpanda
+        - ScyllaDB
         - Selenium
         - Solace
         - Solr
         - TiDB
+        - Timeplus
         - ToxiProxy
         - Trino
+        - Typesense
         - Vault
         - Weaviate
         - YugabyteDB

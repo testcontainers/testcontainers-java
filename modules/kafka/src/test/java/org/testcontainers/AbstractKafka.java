@@ -14,11 +14,12 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.config.SaslConfigs;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.rnorth.ducttape.unreliables.Unreliables;
+import org.awaitility.Awaitility;
 
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -28,7 +29,7 @@ import static org.assertj.core.api.Assertions.tuple;
 
 public class AbstractKafka {
 
-    private final ImmutableMap<String, String> properties = ImmutableMap.of(
+    private static final ImmutableMap<String, String> PLAIN_PROPERTIES = ImmutableMap.of(
         AdminClientConfig.SECURITY_PROTOCOL_CONFIG,
         "SASL_PLAINTEXT",
         SaslConfigs.SASL_MECHANISM,
@@ -37,16 +38,39 @@ public class AbstractKafka {
         "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"admin\" password=\"admin\";"
     );
 
+    private static final ImmutableMap<String, String> SCRAM_PROPERTIES = ImmutableMap.of(
+        AdminClientConfig.SECURITY_PROTOCOL_CONFIG,
+        "SASL_PLAINTEXT",
+        SaslConfigs.SASL_MECHANISM,
+        "SCRAM-SHA-256",
+        SaslConfigs.SASL_JAAS_CONFIG,
+        "org.apache.kafka.common.security.scram.ScramLoginModule required username=\"admin\" password=\"admin\";"
+    );
+
     protected void testKafkaFunctionality(String bootstrapServers) throws Exception {
         testKafkaFunctionality(bootstrapServers, false, 1, 1);
     }
 
-    protected void testSecureKafkaFunctionality(String bootstrapServers) throws Exception {
-        testKafkaFunctionality(bootstrapServers, true, 1, 1);
+    protected void testSecurePlainKafkaFunctionality(String bootstrapServers) throws Exception {
+        testKafkaFunctionality(bootstrapServers, true, PLAIN_PROPERTIES, 1, 1);
+    }
+
+    protected void testSecureScramKafkaFunctionality(String bootstrapServers) throws Exception {
+        testKafkaFunctionality(bootstrapServers, true, SCRAM_PROPERTIES, 1, 1);
     }
 
     protected void testKafkaFunctionality(String bootstrapServers, boolean authenticated, int partitions, int rf)
         throws Exception {
+        testKafkaFunctionality(bootstrapServers, authenticated, Collections.emptyMap(), partitions, rf);
+    }
+
+    protected void testKafkaFunctionality(
+        String bootstrapServers,
+        boolean authenticated,
+        Map<String, String> authProperties,
+        int partitions,
+        int rf
+    ) throws Exception {
         ImmutableMap<String, String> adminClientDefaultProperties = ImmutableMap.of(
             AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG,
             bootstrapServers
@@ -75,9 +99,9 @@ public class AbstractKafka {
         producerProperties.putAll(producerDefaultProperties);
 
         if (authenticated) {
-            adminClientProperties.putAll(this.properties);
-            consumerProperties.putAll(this.properties);
-            producerProperties.putAll(this.properties);
+            adminClientProperties.putAll(authProperties);
+            consumerProperties.putAll(authProperties);
+            producerProperties.putAll(authProperties);
         }
         try (
             AdminClient adminClient = AdminClient.create(adminClientProperties);
@@ -101,26 +125,29 @@ public class AbstractKafka {
 
             producer.send(new ProducerRecord<>(topicName, "testcontainers", "rulezzz")).get();
 
-            Unreliables.retryUntilTrue(
-                10,
-                TimeUnit.SECONDS,
-                () -> {
+            Awaitility
+                .await()
+                .atMost(Duration.ofSeconds(10))
+                .untilAsserted(() -> {
                     ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
-
-                    if (records.isEmpty()) {
-                        return false;
-                    }
 
                     assertThat(records)
                         .hasSize(1)
                         .extracting(ConsumerRecord::topic, ConsumerRecord::key, ConsumerRecord::value)
                         .containsExactly(tuple(topicName, "testcontainers", "rulezzz"));
-
-                    return true;
-                }
-            );
+                });
 
             consumer.unsubscribe();
         }
+    }
+
+    protected static String getJaasConfig() {
+        String jaasConfig =
+            "org.apache.kafka.common.security.plain.PlainLoginModule required " +
+            "username=\"admin\" " +
+            "password=\"admin\" " +
+            "user_admin=\"admin\" " +
+            "user_test=\"secret\";";
+        return jaasConfig;
     }
 }

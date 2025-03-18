@@ -34,8 +34,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
-import org.rnorth.ducttape.ratelimits.RateLimiter;
-import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
@@ -192,12 +190,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private List<Consumer<OutputFrame>> logConsumers = new ArrayList<>();
 
     private static final Set<String> AVAILABLE_IMAGE_NAME_CACHE = new HashSet<>();
-
-    private static final RateLimiter DOCKER_CLIENT_RATE_LIMITER = RateLimiterBuilder
-        .newBuilder()
-        .withRate(1, TimeUnit.SECONDS)
-        .withConstantThroughput()
-        .build();
 
     @Nullable
     private Map<String, String> tmpFsMapping;
@@ -558,6 +550,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 } else {
                     logger().error("There are no stdout/stderr logs available for the failed container");
                 }
+                stop();
             }
 
             throw new ContainerLaunchException("Could not create/start container", e);
@@ -630,7 +623,14 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             .map(ContainerNetwork::getNetworkID)
             .ifPresent(networkId -> {
                 if (!Arrays.asList(networkId, "none", "host").contains(networkMode)) {
-                    dockerClient.connectToNetworkCmd().withContainerId(containerId).withNetworkId(networkId).exec();
+                    com.github.dockerjava.api.model.Network network =
+                        this.dockerClient.inspectNetworkCmd().withNetworkId(networkId).exec();
+                    if (!network.getContainers().containsKey(this.containerId)) {
+                        this.dockerClient.connectToNetworkCmd()
+                            .withContainerId(this.containerId)
+                            .withNetworkId(networkId)
+                            .exec();
+                    }
                 }
             });
     }
@@ -834,7 +834,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 withExtraHost(INTERNAL_HOST_HOSTNAME, it.getIpAddress());
             });
 
-        String[] extraHostsArray = extraHosts.stream().toArray(String[]::new);
+        String[] extraHostsArray = extraHosts.stream().distinct().toArray(String[]::new);
         createCommand.withExtraHosts(extraHostsArray);
 
         if (workingDirectory != null) {
@@ -893,7 +893,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @Override
     public void setWaitStrategy(WaitStrategy waitStrategy) {
-        this.containerDef.setWaitStrategy(waitStrategy);
+        this.waitStrategy = waitStrategy;
     }
 
     /**

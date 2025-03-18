@@ -11,6 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 
 public class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
     static {
@@ -40,7 +41,7 @@ public class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
 
             ResultSet resultSet = performQuery(postgres, "SELECT current_setting('max_connections')");
             String result = resultSet.getString(1);
-            assertThat(result).as("max_connections should be overriden").isEqualTo("42");
+            assertThat(result).as("max_connections should be overridden").isEqualTo("42");
         }
     }
 
@@ -55,7 +56,17 @@ public class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
 
             ResultSet resultSet = performQuery(postgres, "SELECT current_setting('max_connections')");
             String result = resultSet.getString(1);
-            assertThat(result).as("max_connections should not be overriden").isNotEqualTo("42");
+            assertThat(result).as("max_connections should not be overridden").isNotEqualTo("42");
+        }
+    }
+
+    @Test
+    public void testMissingInitScript() {
+        try (
+            PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(PostgreSQLTestImages.POSTGRES_TEST_IMAGE)
+                .withInitScript(null)
+        ) {
+            assertThatNoException().isThrownBy(postgres::start);
         }
     }
 
@@ -71,6 +82,27 @@ public class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
 
             String firstColumnValue = resultSet.getString(1);
             assertThat(firstColumnValue).as("Value from init script should equal real value").isEqualTo("hello world");
+        }
+    }
+
+    @Test
+    public void testExplicitInitScripts() throws SQLException {
+        try (
+            PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(PostgreSQLTestImages.POSTGRES_TEST_IMAGE)
+                .withInitScripts("somepath/init_postgresql.sql", "somepath/init_postgresql_2.sql")
+        ) {
+            postgres.start();
+
+            ResultSet resultSet = performQuery(
+                postgres,
+                "SELECT foo AS value FROM bar UNION SELECT bar AS value FROM foo"
+            );
+
+            String columnValue1 = resultSet.getString(1);
+            resultSet.next();
+            String columnValue2 = resultSet.getString(1);
+            assertThat(columnValue1).as("Value from init script 1 should equal real value").isEqualTo("hello world");
+            assertThat(columnValue2).as("Value from init script 2 should equal real value").isEqualTo("hello world 2");
         }
     }
 

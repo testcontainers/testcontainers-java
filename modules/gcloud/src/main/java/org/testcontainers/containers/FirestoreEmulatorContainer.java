@@ -1,6 +1,6 @@
 package org.testcontainers.containers;
 
-import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 /**
@@ -24,6 +24,8 @@ public class FirestoreEmulatorContainer extends GenericContainer<FirestoreEmulat
 
     private static final int PORT = 8080;
 
+    private String flags;
+
     public FirestoreEmulatorContainer(String image) {
         this(DockerImageName.parse(image));
     }
@@ -33,8 +35,21 @@ public class FirestoreEmulatorContainer extends GenericContainer<FirestoreEmulat
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, CLOUD_SDK_IMAGE_NAME);
 
         withExposedPorts(PORT);
-        setWaitStrategy(new LogMessageWaitStrategy().withRegEx("(?s).*running.*$"));
-        withCommand("/bin/sh", "-c", CMD);
+        setWaitStrategy(Wait.forLogMessage(".*running.*$", 1));
+    }
+
+    @Override
+    protected void configure() {
+        String command = CMD;
+        if (this.flags != null && !this.flags.isEmpty()) {
+            command += " " + this.flags;
+        }
+        withCommand("/bin/sh", "-c", command);
+    }
+
+    public FirestoreEmulatorContainer withFlags(String flags) {
+        this.flags = flags;
+        return this;
     }
 
     /**

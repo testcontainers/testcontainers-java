@@ -10,7 +10,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
@@ -126,7 +125,8 @@ class ComposeDelegate {
         final Set<String> options,
         final List<String> services,
         final Map<String, Integer> scalingPreferences,
-        Map<String, String> env
+        Map<String, String> env,
+        List<String> fileCopyInclusions
     ) {
         // services that have been explicitly requested to be started. If empty, all services should be started.
         final String serviceNameArgs = Stream
@@ -145,7 +145,7 @@ class ComposeDelegate {
             .distinct()
             .collect(Collectors.joining(" "));
 
-        String command = getUpCommand(optionsAsString(options));
+        String command = ComposeCommand.getUpCommand(this.composeVersion, options);
 
         if (build) {
             command += " --build";
@@ -160,26 +160,7 @@ class ComposeDelegate {
         }
 
         // Run the docker compose container, which starts up the services
-        runWithCompose(localCompose, command, env);
-    }
-
-    private String getUpCommand(String options) {
-        if (options == null || options.equals("")) {
-            return this.composeVersion == ComposeVersion.V1 ? "up -d" : "compose up -d";
-        }
-        String cmd = this.composeVersion == ComposeVersion.V1 ? "%s up -d" : "compose %s up -d";
-        return String.format(cmd, options);
-    }
-
-    private String optionsAsString(final Set<String> options) {
-        String optionsString = options.stream().collect(Collectors.joining(" "));
-        if (optionsString.length() != 0) {
-            // ensures that there is a space between the options and 'up' if options are passed.
-            return optionsString;
-        } else {
-            // otherwise two spaces would appear between 'docker-compose' and 'up'
-            return StringUtils.EMPTY;
-        }
+        runWithCompose(localCompose, command, env, fileCopyInclusions);
     }
 
     void waitUntilServiceStarted(boolean tailChildContainers) {
@@ -237,10 +218,15 @@ class ComposeDelegate {
     }
 
     public void runWithCompose(boolean localCompose, String cmd) {
-        runWithCompose(localCompose, cmd, Collections.emptyMap());
+        runWithCompose(localCompose, cmd, Collections.emptyMap(), Collections.emptyList());
     }
 
-    public void runWithCompose(boolean localCompose, String cmd, Map<String, String> env) {
+    public void runWithCompose(
+        boolean localCompose,
+        String cmd,
+        Map<String, String> env,
+        List<String> fileCopyInclusions
+    ) {
         Preconditions.checkNotNull(composeFiles);
         Preconditions.checkArgument(!composeFiles.isEmpty(), "No docker compose file have been provided");
 
@@ -248,7 +234,8 @@ class ComposeDelegate {
         if (localCompose) {
             dockerCompose = new LocalDockerCompose(this.executable, composeFiles, project);
         } else {
-            dockerCompose = new ContainerisedDockerCompose(this.defaultImageName, composeFiles, project);
+            dockerCompose =
+                new ContainerisedDockerCompose(this.defaultImageName, composeFiles, project, fileCopyInclusions);
         }
 
         dockerCompose.withCommand(cmd).withEnv(env).invoke();
@@ -397,6 +384,13 @@ class ComposeDelegate {
 
     String getServiceHost() {
         return this.ambassadorContainer.getHost();
+    }
+
+    void clear() {
+        this.logConsumers.clear();
+        this.ambassadorPortMappings.clear();
+        this.serviceInstanceMap.clear();
+        this.waitStrategyMap.clear();
     }
 
     enum ComposeVersion {

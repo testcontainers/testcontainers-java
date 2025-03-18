@@ -15,7 +15,7 @@ public class CompatibleImageTest extends AbstractRedpanda {
 
     @Parameterized.Parameters(name = "{0}")
     public static String[] image() {
-        return new String[] { "docker.redpanda.com/vectorized/redpanda:v22.2.1", "redpandadata/redpanda:v22.2.1" };
+        return new String[] { "docker.redpanda.com/redpandadata/redpanda:v22.2.1", "redpandadata/redpanda:v22.2.1" };
     }
 
     @Test

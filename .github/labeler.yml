@@ -5,6 +5,10 @@
       - core/src/main/java/org/testcontainers/containers/ComposeDelegate.java
       - core/src/main/java/org/testcontainers/containers/DockerComposeContainer.java
       - core/src/main/java/org/testcontainers/containers/DockerComposeFiles.java
+      - core/src/test/java/org/testcontainers/containers/Compose*Test.java
+      - core/src/test/java/org/testcontainers/containers/DockerCompose*Test.java
+      - core/src/test/java/org/testcontainers/junit/Compose*Test.java
+      - core/src/test/java/org/testcontainers/junit/DockerCompose*Test.java
 "github_actions":
   - changed-files:
     - any-glob-to-any-file:
@@ -51,6 +55,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/cratedb/**/*
+"modules/databend":
+  - changed-files:
+      - any-glob-to-any-file:
+          - modules/databend/**/*
 "modules/db2":
   - changed-files:
     - any-glob-to-any-file:
@@ -67,6 +75,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/gcloud/**/*
+"modules/grafana":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/grafana/**/*
 "modules/hivemq":
   - changed-files:
     - any-glob-to-any-file:
@@ -95,6 +107,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/kafka/**/*
+"modules/ldap":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/ldap/**/*
 "modules/localstack":
   - changed-files:
     - any-glob-to-any-file:
@@ -156,6 +172,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/orientdb/**/*
+"modules/pinecone":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/pinecone/**/*
 "modules/postgres":
   - changed-files:
     - any-glob-to-any-file:
@@ -188,6 +208,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/redpanda/**/*
+"modules/scylladb":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/scylladb/**/*
 "modules/selenium":
   - changed-files:
     - any-glob-to-any-file:
@@ -208,6 +232,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/tidb/**/*
+"modules/timeplus":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/timeplus/**/*
 "modules/toxiproxy":
   - changed-files:
     - any-glob-to-any-file:
@@ -216,6 +244,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/trino/**/*
+"modules/typesense":
+  - changed-files:
+      - any-glob-to-any-file:
+          - modules/typesense/**/*
 "modules/vault":
   - changed-files:
     - any-glob-to-any-file:
