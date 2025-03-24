@@ -76,13 +76,13 @@ class SftpContainerTest {
             // ssh-keygen -t rsa -b 3072 -f ssh_host_rsa_key < /dev/null
             String hostKeyString =
                 "AAAAB3NzaC1yc2EAAAADAQABAAABgQCXMxVRzmFWxfrRB9XiZ/3HNM+xkYYE+IMGuOZD" +
-                    "04M2ezU25XjT6cPajzpFmzTxR2qEpRCKHeVnSG5nT6UXQp7760brTN7m5sDasbMnHgYh" +
-                    "fC/3of2k6qTR9X/JHRpgwzq5+6FtEe41w1H1dXoNIr4YTKnLijSp8MKqBtPPNUpzEVb9" +
-                    "5YKZGdCDoCbbYOyS/Dc8azUDo0mqM542J3nA2Sq9HCP0BAv43hrTAtCZodkB5wo18exb" +
-                    "fPKsjGtA3de2npybFoSRbavZmT8L/b2iHZX6FRaqLsbYGKtszCWu5OU7WBX5g5QVlLfO" +
-                    "nGQ+LsF6d6pX5LlMwEU14uu4gNPvZFOaZXtHNHZqnBcjd/sMaw5N/atFsPgtQ0vYnrEA" +
-                    "D6oDjj0uXMsnmgUWTZBi3q2GBWWPqhE+0ASb2xBQGa+tWWTVYbuuYlA7hUX0URK8FcLw" +
-                    "4UOYJjscDjnjlvQkghd2esP5NxV1NXkG2XYNHnf1E/tH4+AHJzy+qOQom7ehda96FZ8=";
+                "04M2ezU25XjT6cPajzpFmzTxR2qEpRCKHeVnSG5nT6UXQp7760brTN7m5sDasbMnHgYh" +
+                "fC/3of2k6qTR9X/JHRpgwzq5+6FtEe41w1H1dXoNIr4YTKnLijSp8MKqBtPPNUpzEVb9" +
+                "5YKZGdCDoCbbYOyS/Dc8azUDo0mqM542J3nA2Sq9HCP0BAv43hrTAtCZodkB5wo18exb" +
+                "fPKsjGtA3de2npybFoSRbavZmT8L/b2iHZX6FRaqLsbYGKtszCWu5OU7WBX5g5QVlLfO" +
+                "nGQ+LsF6d6pX5LlMwEU14uu4gNPvZFOaZXtHNHZqnBcjd/sMaw5N/atFsPgtQ0vYnrEA" +
+                "D6oDjj0uXMsnmgUWTZBi3q2GBWWPqhE+0ASb2xBQGa+tWWTVYbuuYlA7hUX0URK8FcLw" +
+                "4UOYJjscDjnjlvQkghd2esP5NxV1NXkG2XYNHnf1E/tH4+AHJzy+qOQom7ehda96FZ8=";
             HostKey hostKey = new HostKey(sftp.getHost(), Base64.getDecoder().decode(hostKeyString));
             jschSession.getHostKeyRepository().add(hostKey, null);
             jschSession.connect();
