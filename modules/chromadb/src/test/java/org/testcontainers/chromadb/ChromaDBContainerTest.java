@@ -27,4 +27,25 @@ public class ChromaDBContainerTest {
             given().baseUri(chroma.getEndpoint()).when().get("/api/v1/databases/test").then().statusCode(200);
         }
     }
+
+    @Test
+    public void testVersion2() {
+        try ( // container {
+            ChromaDBContainer chroma = new ChromaDBContainer("chromadb/chroma:1.0.0")
+            // }
+        ) {
+            chroma.start();
+
+            given()
+                .baseUri(chroma.getEndpoint())
+                .when()
+                .body("{\"name\": \"test\"}")
+                .contentType(ContentType.JSON)
+                .post("/api/v2/tenants")
+                .then()
+                .statusCode(200);
+
+            given().baseUri(chroma.getEndpoint()).when().get("/api/v2/tenants/test").then().statusCode(200);
+        }
+    }
 }
