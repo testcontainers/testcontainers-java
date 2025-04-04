@@ -30,7 +30,6 @@ public class ChromaDBContainer extends GenericContainer<ChromaDBContainer> {
 
     public ChromaDBContainer(DockerImageName dockerImageName, boolean isVersion2) {
         super(dockerImageName);
-
         String apiPath = isVersion2 ? "/api/v2/heartbeat" : "/api/v1/heartbeat";
         dockerImageName.assertCompatibleWith(DEFAULT_DOCKER_IMAGE, GHCR_DOCKER_IMAGE);
         withExposedPorts(8000);
