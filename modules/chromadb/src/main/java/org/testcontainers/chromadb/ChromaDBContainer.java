@@ -51,7 +51,7 @@ public class ChromaDBContainer extends GenericContainer<ChromaDBContainer> {
             return true;
         }
 
-        log.warn("Version {} is not a semantic version,", version);
+        log.warn("Version {} is less than 1.0.0 or not a semantic version.", version);
         return false;
     }
 }
