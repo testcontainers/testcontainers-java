@@ -19,10 +19,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class DockerComposeContainerCustomImageTest {
 
     public static final String DOCKER_IMAGE = "docker/compose:debian-1.29.2";
+
     private static final String COMPOSE_FILE_PATH = "src/test/resources/docker-compose-imagename-parsing-v1.yml";
 
     private DockerComposeContainer composeContainer;
+
     private TestLogAppender testLogAppender;
+
     private Logger rootLogger;
 
     @Before
