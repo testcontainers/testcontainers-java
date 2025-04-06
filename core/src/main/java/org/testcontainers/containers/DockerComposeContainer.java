@@ -147,7 +147,6 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> i
         this(identifier, Arrays.asList(composeFiles));
     }
 
-
     /**
      * @deprecated
      *  Use the new constructor DockerComposeContainer(String identifier,List composeFiles)

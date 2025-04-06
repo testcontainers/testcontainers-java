@@ -11,7 +11,6 @@ import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.DockerImageName;
-import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.io.File;
 import java.time.Duration;
@@ -67,6 +66,7 @@ public class ComposeContainer implements Startable {
     private String project;
 
     private List<String> filesInDirectory = new ArrayList<>();
+
     /**
      * Creates a new ComposeContainer with a random identifier using the specified Docker image and compose files.
      *

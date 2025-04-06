@@ -33,11 +33,11 @@ public class ComposeContainerTest {
         rootLogger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
         rootLogger.addAppender(testLogAppender);
         TestcontainersConfiguration.getInstance().updateUserConfig("compose.container.image", DOCKER_IMAGE);
-        composeContainer.stop();
     }
 
     @After
     public void tearDown() {
+        composeContainer.stop();
         rootLogger.detachAppender(testLogAppender);
         TestcontainersConfiguration.getInstance().updateUserConfig("compose.container.image", "");
         System.clearProperty("compose.container.image");
@@ -45,18 +45,15 @@ public class ComposeContainerTest {
 
     @Test
     public void testWithCustomDockerImage() {
-        composeContainer = new ComposeContainer(
-            DockerImageName.parse(DOCKER_IMAGE), new File(COMPOSE_FILE_PATH)
-        );
+        composeContainer = new ComposeContainer(DockerImageName.parse(DOCKER_IMAGE), new File(COMPOSE_FILE_PATH));
         composeContainer.start();
         verifyContainerCreation();
     }
 
     @Test
     public void testWithCustomDockerImageAndIdentifier() {
-        composeContainer = new ComposeContainer(
-            DockerImageName.parse(DOCKER_IMAGE), "myidentifier", new File(COMPOSE_FILE_PATH)
-        );
+        composeContainer =
+            new ComposeContainer(DockerImageName.parse(DOCKER_IMAGE), "myidentifier", new File(COMPOSE_FILE_PATH));
         composeContainer.start();
         verifyContainerCreation();
     }
@@ -64,11 +61,8 @@ public class ComposeContainerTest {
     private void verifyContainerCreation() {
         List<String> logs = testLogAppender.getLogs();
 
-        assertThat(logs)
-            .isNotNull()
-            .anyMatch(line -> line.contains("Creating container for image: " + DOCKER_IMAGE));
+        assertThat(logs).isNotNull().anyMatch(line -> line.contains("Creating container for image: " + DOCKER_IMAGE));
     }
-
 
     private static class TestLogAppender extends AppenderBase<ILoggingEvent> {
 
