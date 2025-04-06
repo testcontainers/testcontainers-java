@@ -17,6 +17,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class DockerComposeContainerCustomImageTest {
+
     public static final String DOCKER_IMAGE = "docker/compose:debian-1.29.2";
     private static final String COMPOSE_FILE_PATH = "src/test/resources/docker-compose-imagename-parsing-v1.yml";
 
@@ -43,14 +44,20 @@ public class DockerComposeContainerCustomImageTest {
 
     @Test
     public void testWithCustomDockerImage() {
-        composeContainer = new DockerComposeContainer(DockerImageName.parse(DOCKER_IMAGE),"testing", new File(COMPOSE_FILE_PATH));
+        composeContainer =
+            new DockerComposeContainer(DockerImageName.parse(DOCKER_IMAGE), "testing", new File(COMPOSE_FILE_PATH));
         composeContainer.start();
         verifyContainerCreation();
     }
 
     @Test
     public void testWithCustomDockerImageAndIdentifier() {
-        composeContainer = new DockerComposeContainer(DockerImageName.parse(DOCKER_IMAGE), "myidentifier", new File(COMPOSE_FILE_PATH));
+        composeContainer =
+            new DockerComposeContainer(
+                DockerImageName.parse(DOCKER_IMAGE),
+                "myidentifier",
+                new File(COMPOSE_FILE_PATH)
+            );
         composeContainer.start();
         verifyContainerCreation();
     }
@@ -58,9 +65,7 @@ public class DockerComposeContainerCustomImageTest {
     private void verifyContainerCreation() {
         List<String> logs = testLogAppender.getLogs();
 
-        assertThat(logs)
-            .isNotNull()
-            .anyMatch(line -> line.contains("Creating container for image: " + DOCKER_IMAGE));
+        assertThat(logs).isNotNull().anyMatch(line -> line.contains("Creating container for image: " + DOCKER_IMAGE));
     }
 
     private static class TestLogAppender extends AppenderBase<ILoggingEvent> {
