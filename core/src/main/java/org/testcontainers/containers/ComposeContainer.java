@@ -69,19 +69,45 @@ public class ComposeContainer extends FailureDetectingExternalResource implement
     private String project;
 
     private List<String> filesInDirectory = new ArrayList<>();
-
+    /**
+     * Creates a new ComposeContainer with a random identifier using the specified Docker image and compose files.
+     *
+     * @param image        The Docker image to use for the container
+     * @param composeFiles One or more Docker Compose configuration files
+     */
     public ComposeContainer(DockerImageName image, File... composeFiles) {
         this(image, Arrays.asList(composeFiles));
     }
 
+    /**
+     * Creates a new ComposeContainer with a random identifier using the specified Docker image and compose files.
+     *
+     * @param image        The Docker image to use for the container
+     * @param composeFiles A list of Docker Compose configuration files
+     */
     public ComposeContainer(DockerImageName image, List<File> composeFiles) {
         this(image, Base58.randomString(6).toLowerCase(), composeFiles);
     }
 
+    /**
+     * Creates a new ComposeContainer with the specified Docker image, identifier, and compose files.
+     *
+     * @param image        The Docker image to use for the container
+     * @param identifier   A unique identifier for this compose environment
+     * @param composeFiles One or more Docker Compose configuration files
+     */
     public ComposeContainer(DockerImageName image, String identifier, File... composeFiles) {
         this(image, identifier, Arrays.asList(composeFiles));
     }
 
+    /**
+     * Creates a new ComposeContainer with the specified Docker image, identifier, and compose files.
+     * This is the primary constructor that all other constructors delegate to.
+     *
+     * @param image        The Docker image to use for the container
+     * @param identifier   A unique identifier for this compose environment
+     * @param composeFiles A list of Docker Compose configuration files
+     */
     public ComposeContainer(DockerImageName image, String identifier, List<File> composeFiles) {
         this.composeDelegate =
             new ComposeDelegate(ComposeDelegate.ComposeVersion.V2, composeFiles, identifier, COMPOSE_EXECUTABLE, image);
