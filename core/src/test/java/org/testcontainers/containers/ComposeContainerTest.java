@@ -19,9 +19,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ComposeContainerTest {
 
     public static final String DOCKER_IMAGE = "docker:25.0.2";
+
     private static final String COMPOSE_FILE_PATH = "src/test/resources/docker-compose-imagename-parsing-v2.yml";
 
     private ComposeContainer composeContainer;
+
     private TestLogAppender testLogAppender;
 
     private Logger rootLogger;
