@@ -1,6 +1,6 @@
 # Solr Container
 
-This module helps running [solr](https://lucene.apache.org/solr/) using Testcontainers.
+This module helps running [solr](https://solr.apache.org/) using Testcontainers.
 
 Note that it's based on the [official Docker image](https://hub.docker.com/_/solr/).
 
