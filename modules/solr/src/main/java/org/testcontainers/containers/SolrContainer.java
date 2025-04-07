@@ -111,7 +111,7 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
             throw new IllegalStateException("Solr needs to have a configuration if you want to use a schema");
         }
         // Generate Command Builder
-        String command = "solr -f";
+        String command = "solr start -f";
         // Add Default Ports
         this.addExposedPort(SOLR_PORT);
 
