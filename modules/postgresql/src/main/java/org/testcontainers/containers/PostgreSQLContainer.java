@@ -60,7 +60,7 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
         this.waitStrategy =
             new LogMessageWaitStrategy()
                 .withRegEx(".*database system is ready to accept connections.*\\s")
-                .withTimes(2)
+                .withTimes(1)
                 .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS));
         this.setCommand("postgres", "-c", FSYNC_OFF_OPTION);
 
