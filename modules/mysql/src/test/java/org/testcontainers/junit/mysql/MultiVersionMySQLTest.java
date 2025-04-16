@@ -22,6 +22,7 @@ public class MultiVersionMySQLTest extends AbstractContainerDatabaseTest {
             MySQLTestImages.MYSQL_57_IMAGE,
             MySQLTestImages.MYSQL_80_IMAGE,
             MySQLTestImages.MYSQL_INNOVATION_IMAGE,
+            MySQLTestImages.MYSQL_93_IMAGE
         };
     }
 
