@@ -16,13 +16,23 @@ public class DockerModelRunnerContainerTest {
         String modelName = "ai/smollm2:360M-Q4_K_M";
 
         try (
+            // container {
             DockerModelRunnerContainer dmr = new DockerModelRunnerContainer("alpine/socat:1.7.4.3-r0")
-                .withModel(modelName)
+            // }
         ) {
             dmr.start();
 
-            Response response = RestAssured.get(dmr.getBaseEndpoint() + "/models").thenReturn();
-            assertThat(response.body().jsonPath().getList("tags.flatten()")).contains(modelName);
+            // pullModel {
+            RestAssured
+                .given()
+                .body(String.format("{\"from\":\"%s\"}", modelName))
+                .post(dmr.getBaseEndpoint() + "/models/create")
+                .then()
+                .statusCode(200);
+            // }
+
+            Response modelResponse = RestAssured.get(dmr.getBaseEndpoint() + "/models").thenReturn();
+            assertThat(modelResponse.body().jsonPath().getList("tags.flatten()")).contains(modelName);
 
             Response openAiResponse = RestAssured.get(dmr.getOpenAIEndpoint() + "/v1/models").prettyPeek().thenReturn();
             assertThat(openAiResponse.body().jsonPath().getList("data.id")).contains(modelName);
