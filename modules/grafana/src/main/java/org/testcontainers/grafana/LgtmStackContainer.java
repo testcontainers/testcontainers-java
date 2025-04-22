@@ -58,7 +58,7 @@ public class LgtmStackContainer extends GenericContainer<LgtmStackContainer> {
         return "http://" + getHost() + ":" + getMappedPort(OTLP_HTTP_PORT);
     }
 
-    public String getPromehteusHttpUrl() {
+    public String getPrometheusHttpUrl() {
         return "http://" + getHost() + ":" + getMappedPort(PROMETHEUS_PORT);
     }
 
