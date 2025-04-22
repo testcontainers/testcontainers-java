@@ -15,18 +15,20 @@ public class DockerModelRunnerContainer extends SocatContainer {
 
     private static final String MODEL_RUNNER_ENDPOINT = "model-runner.docker.internal";
 
+    private static final int PORT = 80;
+
     public DockerModelRunnerContainer(String image) {
         this(DockerImageName.parse(image));
     }
 
     public DockerModelRunnerContainer(DockerImageName image) {
         super(image);
-        withTarget(80, MODEL_RUNNER_ENDPOINT);
+        withTarget(PORT, MODEL_RUNNER_ENDPOINT);
         waitingFor(Wait.forHttp("/").forResponsePredicate(res -> res.contains("The service is running")));
     }
 
     public String getBaseEndpoint() {
-        return "http://" + getHost() + ":" + getMappedPort(80);
+        return "http://" + getHost() + ":" + getMappedPort(PORT);
     }
 
     public String getOpenAIEndpoint() {
