@@ -1,5 +1,7 @@
 package org.testcontainers.containers;
 
+import org.testcontainers.containers.wait.strategy.Wait;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -8,26 +10,29 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
-public class DockerModelRunnerContainer extends GenericContainer {
+public class DockerModelRunnerContainer extends GenericContainer<DockerModelRunnerContainer> {
 
     public static final String MODEL_RUNNER_ENDPOINT = "model-runner.docker.internal";
+
     private SocatContainer socat;
+
     private String model;
 
     @Override
     public void start() {
-        socat = new SocatContainer()
-            .withTarget(80, MODEL_RUNNER_ENDPOINT, 80);
-        socat.start();
+        this.socat =
+            new SocatContainer()
+                .withTarget(80, MODEL_RUNNER_ENDPOINT)
+                .waitingFor(Wait.forHttp("/").forResponsePredicate(res -> res.contains("The service is running")));
+        this.socat.start();
         pullModel();
     }
 
     private void pullModel() {
-        logger().info("Pulling model: {}. Please be patient, no progress bar yet!", model);
+        logger().info("Pulling model: {}. Please be patient, no progress bar yet!", this.model);
         try {
-            // Construct JSON payload
-            String json = String.format("{\"from\":\"%s\"}", model);
-            String endpoint = "http://" + socat.getHost() + ":" + socat.getMappedPort(80) + "/models/create";
+            String json = String.format("{\"from\":\"%s\"}", this.model);
+            String endpoint = "http://" + this.socat.getHost() + ":" + this.socat.getMappedPort(80) + "/models/create";
 
             URL url = new URL(endpoint);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -40,7 +45,11 @@ public class DockerModelRunnerContainer extends GenericContainer {
                 os.write(input, 0, input.length);
             }
 
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
+            try (
+                BufferedReader br = new BufferedReader(
+                    new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8)
+                )
+            ) {
                 StringBuilder response = new StringBuilder();
                 String responseLine;
                 while ((responseLine = br.readLine()) != null) {
@@ -56,16 +65,19 @@ public class DockerModelRunnerContainer extends GenericContainer {
 
     @Override
     public void stop() {
-        socat.stop();
+        this.socat.stop();
+    }
+
+    public String getBaseEndpoint() {
+        return "http://" + this.socat.getHost() + ":" + this.socat.getMappedPort(80);
     }
 
     public String getOpenAIEndpoint() {
-        return "http://" + socat.getHost() + ":" + socat.getMappedPort(80) + "/engines";
+        return getBaseEndpoint() + "/engines";
     }
 
     public DockerModelRunnerContainer withModel(String modelName) {
         this.model = modelName;
         return this;
     }
-
 }
