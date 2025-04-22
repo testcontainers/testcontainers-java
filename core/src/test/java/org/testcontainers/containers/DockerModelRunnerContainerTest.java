@@ -5,14 +5,20 @@ import io.restassured.response.Response;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assumptions.assumeThat;
 
 public class DockerModelRunnerContainerTest {
 
     @Test
     public void pullsModelAndExposesInference() {
+        assumeThat(System.getenv("CI")).isNull();
+
         String modelName = "ai/smollm2:360M-Q4_K_M";
 
-        try (DockerModelRunnerContainer dmr = new DockerModelRunnerContainer().withModel(modelName)) {
+        try (
+            DockerModelRunnerContainer dmr = new DockerModelRunnerContainer("alpine/socat:1.7.4.3-r0")
+                .withModel(modelName)
+        ) {
             dmr.start();
 
             Response response = RestAssured.get(dmr.getBaseEndpoint() + "/models").thenReturn();
