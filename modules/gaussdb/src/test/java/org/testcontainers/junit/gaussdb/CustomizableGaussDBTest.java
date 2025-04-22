@@ -16,19 +16,20 @@ public class CustomizableGaussDBTest extends AbstractContainerDatabaseTest {
 
     private static final String USER = "bar";
 
+    // At least one uppercase, lowercase, numeric, special character, and password length(8).
     private static final String PWD = "GaussDB@123";
 
     @Test
     public void testSimple() throws SQLException {
         try (
-            GaussDBContainer<?> postgres = new GaussDBContainer<>(GaussDBTestImages.GAUSSDB_TEST_IMAGE)
+            GaussDBContainer<?> gaussDBContainer = new GaussDBContainer<>(GaussDBTestImages.GAUSSDB_TEST_IMAGE)
                 .withDatabaseName(DB_NAME)
                 .withUsername(USER)
                 .withPassword(PWD)
         ) {
-            postgres.start();
+            gaussDBContainer.start();
 
-            ResultSet resultSet = performQuery(postgres, "SELECT 1");
+            ResultSet resultSet = performQuery(gaussDBContainer, "SELECT 1");
 
             int resultSetInt = resultSet.getInt(1);
             assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);

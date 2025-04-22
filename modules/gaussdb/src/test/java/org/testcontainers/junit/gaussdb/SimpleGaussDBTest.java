@@ -21,10 +21,8 @@ public class SimpleGaussDBTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSimple() throws SQLException {
-        try (GaussDBContainer<?> gaussdb = new GaussDBContainer<>(GaussDBTestImages.GAUSSDB_TEST_IMAGE)
-            .withEnv("GS_PASSWORD", "Enmo@123")) {
+        try (GaussDBContainer<?> gaussdb = new GaussDBContainer<>(GaussDBTestImages.GAUSSDB_TEST_IMAGE)) {
             gaussdb.start();
-            System.out.println(gaussdb.getLogs());
 
             ResultSet resultSet = performQuery(gaussdb, "SELECT 1");
             int resultSetInt = resultSet.getInt(1);
@@ -37,7 +35,7 @@ public class SimpleGaussDBTest extends AbstractContainerDatabaseTest {
     public void testCommandOverride() throws SQLException {
         try (
             GaussDBContainer<?> gauss = new GaussDBContainer<>(GaussDBTestImages.GAUSSDB_TEST_IMAGE)
-//                .withCommand("gaussdb", "-c", "max_connections=42")
+                .withCommand("gaussdb", "-N", "42")
         ) {
             gauss.start();
 
@@ -51,7 +49,7 @@ public class SimpleGaussDBTest extends AbstractContainerDatabaseTest {
     public void testUnsetCommand() throws SQLException {
         try (
             GaussDBContainer<?> gaussdb = new GaussDBContainer<>(GaussDBTestImages.GAUSSDB_TEST_IMAGE)
-                .withCommand("gaussdb -c max_connections=42")
+                .withCommand("gaussdb", "-N", "42")
                 .withCommand()
         ) {
             gaussdb.start();

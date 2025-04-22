@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * This test belongs in the jdbc module, as it is focused on testing the behaviour of {@link org.testcontainers.containers.JdbcDatabaseContainer}.
- * However, the need to use the {@link org.testcontainers.containers.GaussDBContainerProvider} (due to the jdbc:tc:postgresql) URL forces it to live here in
+ * However, the need to use the {@link org.testcontainers.containers.GaussDBContainerProvider} (due to the jdbc:tc:gaussdb) URL forces it to live here in
  * the mysql module, to avoid circular dependencies.
  * TODO: Move to the jdbc module and either (a) implement a barebones {@link org.testcontainers.containers.JdbcDatabaseContainerProvider} for testing, or (b) refactor into a unit test.
  */

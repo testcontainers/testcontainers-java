@@ -15,7 +15,7 @@ public class GaussDBJDBCDriverTest extends AbstractJDBCDriverTest {
         return Arrays.asList(
             new Object[][] {
                 {
-                    "jdbc:tc:gaussdb:///postgres?user=gaussdb&password=Enmo@123",
+                    "jdbc:tc:gaussdb://hostname/databasename?user=someuser&password=Enmo@123",
                     EnumSet.of(Options.JDBCParams),
                 },
             }

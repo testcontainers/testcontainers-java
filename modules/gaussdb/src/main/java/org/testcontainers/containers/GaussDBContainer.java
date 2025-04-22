@@ -1,19 +1,21 @@
 package org.testcontainers.containers;
 
 import org.jetbrains.annotations.NotNull;
-import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.containers.wait.strategy.WaitStrategy;
+import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
- * Testcontainers implementation for PostgreSQL.
+ * Testcontainers implementation for GaussDB.
  * <p>
- * Supported images: {@code postgres}, {@code pgvector/pgvector}
+ * Supported images: {@code opengauss/opengauss}
  * <p>
- * Exposed ports: 5432
+ * Exposed ports: 8000
  */
 public class GaussDBContainer<SELF extends GaussDBContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
 
@@ -21,23 +23,22 @@ public class GaussDBContainer<SELF extends GaussDBContainer<SELF>> extends JdbcD
 
     public static final String IMAGE = "opengauss/opengauss";
 
-    public static final String DEFAULT_TAG = "latest";
+    public static final String DEFAULT_TAG = "7.0.0-RC1.B023";
 
-    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("opengauss/opengauss").asCompatibleSubstituteFor("gaussdb");
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse(IMAGE);
 
-    public static final Integer GaussDB_PORT = 5432;
+    public static final Integer GaussDB_PORT = 8000;
 
-    static final String DEFAULT_USER = "gaussdb";
+    public static final String DEFAULT_USER_NAME = "test";
 
-    static final String DEFAULT_PASSWORD = "Enmo@123";
+    // At least one uppercase, lowercase, numeric, special character, and password length(8).
+    public static final String DEFAULT_PASSWORD = "Test@123";
 
-    private String databaseName = "postgres";
+    private String databaseName = "gaussdb";
 
-    private String username = "gaussdb";
+    private String username = DEFAULT_USER_NAME;
 
-    private String password = "Enmo@123";
-
-    private static final String FSYNC_OFF_OPTION = "fsync=off";
+    private String password = DEFAULT_PASSWORD;
 
     /**
      * @deprecated use {@link #GaussDBContainer(DockerImageName)} or {@link #GaussDBContainer(String)} instead
@@ -53,19 +54,25 @@ public class GaussDBContainer<SELF extends GaussDBContainer<SELF>> extends JdbcD
 
     public GaussDBContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
-        this.withEnv("GS_PASSWORD", "Enmo@123")
-            .withDatabaseName("postgres");
-        // Comment out the test error code for the time being
-//        this.waitStrategy
-//            =
-//            new LogMessageWaitStrategy()
-//                .withRegEx(".*can not read GAUSS_WARNING_TYPE env.*\\s")
-//                .withTimes(1)
-//                .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS));
-//        this.setCommand("-c", FSYNC_OFF_OPTION);
+        setWaitStrategy(new WaitStrategy() {
+            @Override
+            public void waitUntilReady(WaitStrategyTarget waitStrategyTarget) {
+                Wait.forListeningPort().waitUntilReady(waitStrategyTarget);
+                try {
+                    // Open Gauss will set up users and password when ports are ready.
+                    Wait.forLogMessage(".*gs_ctl stopped.*", 1).waitUntilReady(waitStrategyTarget);
+                    // Not enough and no idea
+                    TimeUnit.SECONDS.sleep(3);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
 
-        addExposedPort(GaussDB_PORT);
+            @Override
+            public WaitStrategy withStartupTimeout(Duration duration) {
+                return GenericContainer.DEFAULT_WAIT_STRATEGY.withStartupTimeout(duration);
+            }
+        });
     }
 
     /**
@@ -81,11 +88,13 @@ public class GaussDBContainer<SELF extends GaussDBContainer<SELF>> extends JdbcD
 
     @Override
     protected void configure() {
-        // Disable Postgres driver use of java.util.logging to reduce noise at startup time
+        // Disable GaussDB driver use of java.util.logging to reduce noise at startup time
         withUrlParam("loggerLevel", "OFF");
-        addEnv("POSTGRES_DB", databaseName);
-        addEnv("POSTGRES_USER", username);
-        addEnv("POSTGRES_PASSWORD", password);
+        addExposedPorts(GaussDB_PORT);
+        addEnv("GS_DB", databaseName);
+        addEnv("GS_PORT", String.valueOf(GaussDB_PORT));
+        addEnv("GS_USERNAME", username);
+        addEnv("GS_PASSWORD", password);
     }
 
     @Override

@@ -10,8 +10,8 @@ public class GaussDBConnectionURLTest {
 
     @Test
     public void shouldCorrectlyAppendQueryString() {
-        GaussDBContainer<?> postgres = new FixedJdbcUrlPostgreSQLContainer();
-        String connectionUrl = postgres.constructUrlForConnection("?stringtype=unspecified&stringtype=unspecified");
+        GaussDBContainer<?> gaussDB = new FixedJdbcUrlGaussDBContainer();
+        String connectionUrl = gaussDB.constructUrlForConnection("?stringtype=unspecified&stringtype=unspecified");
         String queryString = connectionUrl.substring(connectionUrl.indexOf('?'));
 
         assertThat(queryString)
@@ -23,8 +23,8 @@ public class GaussDBConnectionURLTest {
 
     @Test
     public void shouldCorrectlyAppendQueryStringWhenNoBaseParams() {
-        GaussDBContainer<?> postgres = new NoParamsUrlPostgreSQLContainer();
-        String connectionUrl = postgres.constructUrlForConnection("?stringtype=unspecified&stringtype=unspecified");
+        GaussDBContainer<?> gaussDB = new NoParamsUrlGaussDBContainer();
+        String connectionUrl = gaussDB.constructUrlForConnection("?stringtype=unspecified&stringtype=unspecified");
         String queryString = connectionUrl.substring(connectionUrl.indexOf('?'));
 
         assertThat(queryString)
@@ -36,26 +36,26 @@ public class GaussDBConnectionURLTest {
 
     @Test
     public void shouldReturnOriginalURLWhenEmptyQueryString() {
-        GaussDBContainer<?> postgres = new FixedJdbcUrlPostgreSQLContainer();
-        String connectionUrl = postgres.constructUrlForConnection("");
+        GaussDBContainer<?> gaussDB = new FixedJdbcUrlGaussDBContainer();
+        String connectionUrl = gaussDB.constructUrlForConnection("");
 
-        assertThat(postgres.getJdbcUrl()).as("Query String remains unchanged").isEqualTo(connectionUrl);
+        assertThat(gaussDB.getJdbcUrl()).as("Query String remains unchanged").isEqualTo(connectionUrl);
     }
 
     @Test
     public void shouldRejectInvalidQueryString() {
         assertThat(
             catchThrowable(() -> {
-                new NoParamsUrlPostgreSQLContainer().constructUrlForConnection("stringtype=unspecified");
+                new NoParamsUrlGaussDBContainer().constructUrlForConnection("stringtype=unspecified");
             })
         )
             .as("Fails when invalid query string provided")
             .isInstanceOf(IllegalArgumentException.class);
     }
 
-    static class FixedJdbcUrlPostgreSQLContainer extends GaussDBContainer<FixedJdbcUrlPostgreSQLContainer> {
+    static class FixedJdbcUrlGaussDBContainer extends GaussDBContainer<FixedJdbcUrlGaussDBContainer> {
 
-        public FixedJdbcUrlPostgreSQLContainer() {
+        public FixedJdbcUrlGaussDBContainer() {
             super(GaussDBTestImages.GAUSSDB_TEST_IMAGE);
         }
 
@@ -70,15 +70,15 @@ public class GaussDBConnectionURLTest {
         }
     }
 
-    static class NoParamsUrlPostgreSQLContainer extends GaussDBContainer<FixedJdbcUrlPostgreSQLContainer> {
+    static class NoParamsUrlGaussDBContainer extends GaussDBContainer<FixedJdbcUrlGaussDBContainer> {
 
-        public NoParamsUrlPostgreSQLContainer() {
+        public NoParamsUrlGaussDBContainer() {
             super(GaussDBTestImages.GAUSSDB_TEST_IMAGE);
         }
 
         @Override
         public String getJdbcUrl() {
-            return "jdbc:postgresql://host:port/database";
+            return "jdbc:gaussdb://host:port/database";
         }
     }
 }
