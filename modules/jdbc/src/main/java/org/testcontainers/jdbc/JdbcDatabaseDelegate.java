@@ -68,8 +68,8 @@ public class JdbcDatabaseDelegate extends AbstractDatabaseDelegate<Statement> {
     @Override
     protected void closeConnectionQuietly(Statement statement) {
         try {
-            connection.close();
             statement.close();
+            connection.close();
         } catch (Exception e) {
             log.error("Could not close JDBC connection", e);
         }
