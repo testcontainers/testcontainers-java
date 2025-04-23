@@ -82,6 +82,7 @@ nav:
           - modules/chromadb.md
           - modules/consul.md
           - modules/docker_compose.md
+          - modules/docker_model_runner.md
           - modules/elasticsearch.md
           - modules/gcloud.md
           - modules/grafana.md

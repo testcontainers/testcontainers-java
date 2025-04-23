@@ -8,3 +8,9 @@ dependencies {
     testImplementation 'io.micrometer:micrometer-registry-otlp:1.13.4'
     testImplementation 'uk.org.webcompere:system-stubs-junit4:2.1.6'
 }
+
+tasks.japicmp {
+    methodExcludes = [
+        "org.testcontainers.grafana.LgtmStackContainer#getPromehteusHttpUrl()"
+    ]
+}

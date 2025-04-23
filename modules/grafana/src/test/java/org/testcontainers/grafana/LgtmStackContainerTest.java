@@ -46,7 +46,7 @@ public class LgtmStackContainerTest {
                     Response response = RestAssured
                         .given()
                         .queryParam("query", "test_counter_total{job=\"testcontainers\"}")
-                        .get(String.format("%s/api/v1/query", lgtm.getPromehteusHttpUrl()))
+                        .get(String.format("%s/api/v1/query", lgtm.getPrometheusHttpUrl()))
                         .prettyPeek()
                         .thenReturn();
                     assertThat(response.getStatusCode()).isEqualTo(200);

@@ -17,6 +17,10 @@ public class MongoDBAtlasLocalContainer extends GenericContainer<MongoDBAtlasLoc
 
     private static final int MONGODB_INTERNAL_PORT = 27017;
 
+    private static final String MONGODB_DATABASE_NAME_DEFAULT = "test";
+
+    private static final String DIRECT_CONNECTION = "directConnection=true";
+
     public MongoDBAtlasLocalContainer(final String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
     }
@@ -33,6 +37,32 @@ public class MongoDBAtlasLocalContainer extends GenericContainer<MongoDBAtlasLoc
      * Get the connection string to MongoDB.
      */
     public String getConnectionString() {
-        return String.format("mongodb://%s:%d/?directConnection=true", getHost(), getMappedPort(MONGODB_INTERNAL_PORT));
+        return baseConnectionString() + "/?" + DIRECT_CONNECTION;
+    }
+
+    private String baseConnectionString() {
+        return String.format("mongodb://%s:%d", getHost(), getMappedPort(MONGODB_INTERNAL_PORT));
+    }
+
+    /**
+     * Gets a database specific connection string for the default {@value #MONGODB_DATABASE_NAME_DEFAULT} database.
+     *
+     * @return a database specific connection string.
+     */
+    public String getDatabaseConnectionString() {
+        return getDatabaseConnectionString(MONGODB_DATABASE_NAME_DEFAULT);
+    }
+
+    /**
+     * Gets a database specific connection string for a provided <code>databaseName</code>.
+     *
+     * @param databaseName a database name.
+     * @return a database specific connection string.
+     */
+    public String getDatabaseConnectionString(final String databaseName) {
+        if (!isRunning()) {
+            throw new IllegalStateException("MongoDBContainer should be started first");
+        }
+        return baseConnectionString() + "/" + databaseName + "?" + DIRECT_CONNECTION;
     }
 }
