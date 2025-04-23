@@ -111,7 +111,7 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
             throw new IllegalStateException("Solr needs to have a configuration if you want to use a schema");
         }
         // Generate Command Builder
-        String command = "solr -f";
+        String command = "solr start -f";
         // Add Default Ports
         this.addExposedPort(SOLR_PORT);
 
@@ -143,7 +143,7 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
     @SneakyThrows
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
         if (!configuration.isZookeeper()) {
-            ExecResult result = execInContainer("solr", "create_core", "-c", configuration.getCollectionName());
+            ExecResult result = execInContainer("solr", "create", "-c", configuration.getCollectionName());
             if (result.getExitCode() != 0) {
                 throw new IllegalStateException(
                     "Unable to create solr core:\nStdout: " + result.getStdout() + "\nStderr:" + result.getStderr()
