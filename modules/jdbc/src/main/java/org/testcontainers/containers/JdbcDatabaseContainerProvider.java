@@ -66,7 +66,13 @@ public abstract class JdbcDatabaseContainerProvider {
 
         final String databaseName = connectionUrl.getDatabaseName().orElse("test");
         final String user = connectionUrl.getQueryParameters().getOrDefault(userParamName, "test");
-        final String password = connectionUrl.getQueryParameters().getOrDefault(pwdParamName, "test");
+        final String password;
+        if ("gaussdb".equalsIgnoreCase(connectionUrl.getDatabaseType())){
+            // At least one uppercase, lowercase, numeric, special character, and password length(8).
+            password = connectionUrl.getQueryParameters().getOrDefault(pwdParamName, "Test@123");
+        }else {
+            password = connectionUrl.getQueryParameters().getOrDefault(pwdParamName, "test");
+        }
 
         final JdbcDatabaseContainer<?> instance;
         if (connectionUrl.getImageTag().isPresent()) {

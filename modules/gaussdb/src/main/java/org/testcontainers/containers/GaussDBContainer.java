@@ -9,6 +9,7 @@ import org.testcontainers.utility.DockerImageName;
 import java.time.Duration;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 /**
  * Testcontainers implementation for GaussDB.
@@ -39,6 +40,10 @@ public class GaussDBContainer<SELF extends GaussDBContainer<SELF>> extends JdbcD
     private String username = DEFAULT_USER_NAME;
 
     private String password = DEFAULT_PASSWORD;
+
+    private static final String PASSWORD_REGEX = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!*(),.?\":{}|<>]).{8,}$";
+
+    private static final Pattern PASSWORD_PATTERN = Pattern.compile(PASSWORD_REGEX);
 
     /**
      * @deprecated use {@link #GaussDBContainer(DockerImageName)} or {@link #GaussDBContainer(String)} instead
@@ -150,6 +155,9 @@ public class GaussDBContainer<SELF extends GaussDBContainer<SELF>> extends JdbcD
 
     @Override
     public SELF withPassword(final String password) {
+        if (!PASSWORD_PATTERN.matcher(password).matches()){
+            throw new ContainerLaunchException("The password should contain at least one uppercase, lowercase, numeric, special character, and password length(8).");
+        }
         this.password = password;
         return self();
     }
