@@ -71,6 +71,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/elasticsearch/**/*
+"modules/gaussdb":
+    - changed-files:
+        - any-glob-to-any-file:
+            - modules/gcloud/**/*
 "modules/gcloud":
   - changed-files:
     - any-glob-to-any-file:

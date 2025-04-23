@@ -27,6 +27,7 @@ body:
         - DB2
         - Dynalite
         - Elasticsearch
+        - GaussDB
         - GCloud
         - Grafana
         - HiveMQ
