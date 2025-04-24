@@ -13,9 +13,3 @@ dependencies {
     testImplementation 'io.opentelemetry:opentelemetry-sdk'
     testImplementation 'io.opentelemetry:opentelemetry-exporter-otlp'
 }
-
-tasks.japicmp {
-    methodExcludes = [
-        "org.testcontainers.grafana.LgtmStackContainer#getPromehteusHttpUrl()"
-    ]
-}
