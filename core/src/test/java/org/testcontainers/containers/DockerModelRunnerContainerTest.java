@@ -10,10 +10,8 @@ import static org.assertj.core.api.Assumptions.assumeThat;
 public class DockerModelRunnerContainerTest {
 
     @Test
-    public void pullsModelAndExposesInference() {
+    public void checkStatus() {
         assumeThat(System.getenv("CI")).isNull();
-
-        String modelName = "ai/smollm2:360M-Q4_K_M";
 
         try (
             // container {
@@ -22,14 +20,24 @@ public class DockerModelRunnerContainerTest {
         ) {
             dmr.start();
 
+            Response modelResponse = RestAssured.get(dmr.getBaseEndpoint() + "/status").thenReturn();
+            assertThat(modelResponse.body().asString()).contains("The service is running");
+        }
+    }
+
+    @Test
+    public void pullsModelAndExposesInference() {
+        assumeThat(System.getenv("CI")).isNull();
+
+        String modelName = "ai/smollm2:360M-Q4_K_M";
+
+        try (
             // pullModel {
-            RestAssured
-                .given()
-                .body(String.format("{\"from\":\"%s\"}", modelName))
-                .post(dmr.getBaseEndpoint() + "/models/create")
-                .then()
-                .statusCode(200);
+            DockerModelRunnerContainer dmr = new DockerModelRunnerContainer("alpine/socat:1.7.4.3-r0")
+                .withModel(modelName)
             // }
+        ) {
+            dmr.start();
 
             Response modelResponse = RestAssured.get(dmr.getBaseEndpoint() + "/models").thenReturn();
             assertThat(modelResponse.body().jsonPath().getList("tags.flatten()")).contains(modelName);
