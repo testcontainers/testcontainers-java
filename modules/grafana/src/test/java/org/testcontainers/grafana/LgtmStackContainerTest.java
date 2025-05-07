@@ -73,7 +73,6 @@ public class LgtmStackContainerTest {
                 .setLoggerProvider(loggerProvider)
                 .build();
 
-            // Metrics
             String version = RestAssured
                 .get(String.format("http://%s:%s/api/health", lgtm.getHost(), lgtm.getMappedPort(3000)))
                 .jsonPath()
@@ -86,7 +85,6 @@ public class LgtmStackContainerTest {
                 .execute(() -> new OtlpMeterRegistry(otlpConfig, Clock.SYSTEM));
             Counter.builder("test.counter").register(meterRegistry).increment(2);
 
-            // Logs
             Logger logger = openTelemetry.getSdkLoggerProvider().loggerBuilder("test").build();
             logger
                 .logRecordBuilder()
@@ -94,7 +92,6 @@ public class LgtmStackContainerTest {
                 .setAttribute(AttributeKey.stringKey("job"), "test-job")
                 .emit();
 
-            // Traces
             Tracer tracer = openTelemetry.getTracer("test");
             Span span = tracer.spanBuilder("test").startSpan();
             span.end();
