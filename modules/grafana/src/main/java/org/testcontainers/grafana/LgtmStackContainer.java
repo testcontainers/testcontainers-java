@@ -31,6 +31,8 @@ public class LgtmStackContainer extends GenericContainer<LgtmStackContainer> {
 
     private static final int OTLP_HTTP_PORT = 4318;
 
+    private static final int LOKI_PORT = 3100;
+
     private static final int TEMPO_PORT = 3200;
 
     private static final int PROMETHEUS_PORT = 9090;
@@ -42,7 +44,7 @@ public class LgtmStackContainer extends GenericContainer<LgtmStackContainer> {
     public LgtmStackContainer(DockerImageName image) {
         super(image);
         image.assertCompatibleWith(DEFAULT_IMAGE_NAME);
-        withExposedPorts(GRAFANA_PORT, TEMPO_PORT, OTLP_GRPC_PORT, OTLP_HTTP_PORT, PROMETHEUS_PORT);
+        withExposedPorts(GRAFANA_PORT, TEMPO_PORT, LOKI_PORT, OTLP_GRPC_PORT, OTLP_HTTP_PORT, PROMETHEUS_PORT);
         waitingFor(
             Wait.forLogMessage(".*The OpenTelemetry collector and the Grafana LGTM stack are up and running.*\\s", 1)
         );
@@ -59,6 +61,10 @@ public class LgtmStackContainer extends GenericContainer<LgtmStackContainer> {
 
     public String getTempoUrl() {
         return "http://" + getHost() + ":" + getMappedPort(TEMPO_PORT);
+    }
+
+    public String getLokiUrl() {
+        return "http://" + getHost() + ":" + getMappedPort(LOKI_PORT);
     }
 
     public String getOtlpHttpUrl() {
