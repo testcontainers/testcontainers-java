@@ -86,22 +86,6 @@ public class LgtmStackContainerTest {
                 .execute(() -> new OtlpMeterRegistry(otlpConfig, Clock.SYSTEM));
             Counter.builder("test.counter").register(meterRegistry).increment(2);
 
-            Awaitility
-                .given()
-                .pollInterval(Duration.ofSeconds(2))
-                .atMost(Duration.ofSeconds(5))
-                .ignoreExceptions()
-                .untilAsserted(() -> {
-                    Response response = RestAssured
-                        .given()
-                        .queryParam("query", "test_counter_total{job=\"testcontainers\"}")
-                        .get(String.format("%s/api/v1/query", lgtm.getPrometheusHttpUrl()))
-                        .prettyPeek()
-                        .thenReturn();
-                    assertThat(response.getStatusCode()).isEqualTo(200);
-                    assertThat(response.body().jsonPath().getList("data.result[0].value")).contains("2");
-                });
-
             // Logs
             Logger logger = openTelemetry.getSdkLoggerProvider().loggerBuilder("test").build();
             logger
@@ -109,23 +93,6 @@ public class LgtmStackContainerTest {
                 .setBody("Test log!")
                 .setAttribute(AttributeKey.stringKey("job"), "test-job")
                 .emit();
-
-            Awaitility
-                .given()
-                .pollInterval(Duration.ofSeconds(2))
-                .atMost(Duration.ofSeconds(5))
-                .ignoreExceptions()
-                .untilAsserted(() -> {
-                    Response response = RestAssured
-                        .given()
-                        .queryParam("query", "{service_name=\"unknown_service:java\"}")
-                        .get(String.format("%s/loki/api/v1/query_range", lgtm.getLokiUrl()))
-                        .prettyPeek()
-                        .thenReturn();
-                    assertThat(response.getStatusCode()).isEqualTo(200);
-                    assertThat(response.body().jsonPath().getString("data.result[0].values[0][1]"))
-                        .isEqualTo("Test log!");
-                });
 
             // Traces
             Tracer tracer = openTelemetry.getTracer("test");
@@ -138,13 +105,32 @@ public class LgtmStackContainerTest {
                 .atMost(Duration.ofSeconds(5))
                 .ignoreExceptions()
                 .untilAsserted(() -> {
-                    Response response = RestAssured
+                    Response metricResponse = RestAssured
+                        .given()
+                        .queryParam("query", "test_counter_total{job=\"testcontainers\"}")
+                        .get(String.format("%s/api/v1/query", lgtm.getPrometheusHttpUrl()))
+                        .prettyPeek()
+                        .thenReturn();
+                    assertThat(metricResponse.getStatusCode()).isEqualTo(200);
+                    assertThat(metricResponse.body().jsonPath().getList("data.result[0].value")).contains("2");
+
+                    Response logResponse = RestAssured
+                        .given()
+                        .queryParam("query", "{service_name=\"unknown_service:java\"}")
+                        .get(String.format("%s/loki/api/v1/query_range", lgtm.getLokiUrl()))
+                        .prettyPeek()
+                        .thenReturn();
+                    assertThat(logResponse.getStatusCode()).isEqualTo(200);
+                    assertThat(logResponse.body().jsonPath().getString("data.result[0].values[0][1]"))
+                        .isEqualTo("Test log!");
+
+                    Response traceResponse = RestAssured
                         .given()
                         .get(String.format("%s/api/search", lgtm.getTempoUrl()))
                         .prettyPeek()
                         .thenReturn();
-                    assertThat(response.getStatusCode()).isEqualTo(200);
-                    assertThat(response.body().jsonPath().getString("traces[0].rootServiceName"))
+                    assertThat(traceResponse.getStatusCode()).isEqualTo(200);
+                    assertThat(traceResponse.body().jsonPath().getString("traces[0].rootServiceName"))
                         .isEqualTo("test-service");
                 });
 
