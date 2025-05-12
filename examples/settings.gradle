@@ -20,7 +20,6 @@ includeBuild '..'
 
 // explicit include to allow Dependabot to autodiscover subprojects
 include 'kafka-cluster'
-include 'linked-container'
 include 'neo4j-container'
 include 'redis-backed-cache'
 include 'redis-backed-cache-testng'

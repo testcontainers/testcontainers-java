@@ -4,6 +4,7 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 
 import java.net.URL;
@@ -39,6 +40,8 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
 
     private SolrContainerConfiguration configuration;
 
+    private final ComparableVersion imageVersion;
+
     /**
      * @deprecated use {@link #SolrContainer(DockerImageName)} instead
      */
@@ -63,6 +66,7 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
                 .withRegEx(".*o\\.e\\.j\\.s\\.Server Started.*")
                 .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS));
         this.configuration = new SolrContainerConfiguration();
+        this.imageVersion = new ComparableVersion(dockerImageName.getVersionPart());
     }
 
     public SolrContainer withZookeeper(boolean zookeeper) {
@@ -107,14 +111,18 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
             throw new IllegalStateException("Solr needs to have a configuration if you want to use a schema");
         }
         // Generate Command Builder
-        String command = "solr -f";
+        String command = "solr start -f";
         // Add Default Ports
         this.addExposedPort(SOLR_PORT);
 
         // Configure Zookeeper
         if (configuration.isZookeeper()) {
             this.addExposedPort(ZOOKEEPER_PORT);
-            command = "-DzkRun -h localhost";
+            if (this.imageVersion.isGreaterThanOrEqualTo("9.7.0")) {
+                command = "-DzkRun --host localhost";
+            } else {
+                command = "-DzkRun -h localhost";
+            }
         }
 
         // Apply generated Command
@@ -135,7 +143,7 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
     @SneakyThrows
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
         if (!configuration.isZookeeper()) {
-            ExecResult result = execInContainer("solr", "create_core", "-c", configuration.getCollectionName());
+            ExecResult result = execInContainer("solr", "create", "-c", configuration.getCollectionName());
             if (result.getExitCode() != 0) {
                 throw new IllegalStateException(
                     "Unable to create solr core:\nStdout: " + result.getStdout() + "\nStderr:" + result.getStderr()

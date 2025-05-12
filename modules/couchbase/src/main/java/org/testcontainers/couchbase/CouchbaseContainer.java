@@ -342,6 +342,13 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     }
 
     @Override
+    protected void containerIsStarting(InspectContainerResponse containerInfo, boolean reused) {
+        if (!reused) {
+            containerIsStarting(containerInfo);
+        }
+    }
+
+    @Override
     protected void containerIsStarting(final InspectContainerResponse containerInfo) {
         logger().debug("Couchbase container is starting, performing configuration.");
 
@@ -356,6 +363,13 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
         if (enabledServices.contains(CouchbaseService.INDEX)) {
             timePhase("configureIndexer", this::configureIndexer);
+        }
+    }
+
+    @Override
+    protected void containerIsStarted(InspectContainerResponse containerInfo, boolean reused) {
+        if (!reused) {
+            this.containerIsStarted(containerInfo);
         }
     }
 

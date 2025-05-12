@@ -72,6 +72,7 @@ nav:
                 - modules/databases/postgres.md
                 - modules/databases/presto.md
                 - modules/databases/questdb.md
+                - modules/databases/scylladb.md
                 - modules/databases/tidb.md
                 - modules/databases/timeplus.md
                 - modules/databases/trino.md
@@ -81,6 +82,7 @@ nav:
           - modules/chromadb.md
           - modules/consul.md
           - modules/docker_compose.md
+          - modules/docker_model_runner.md
           - modules/elasticsearch.md
           - modules/gcloud.md
           - modules/grafana.md
@@ -88,6 +90,7 @@ nav:
           - modules/k3s.md
           - modules/k6.md
           - modules/kafka.md
+          - modules/ldap.md
           - modules/localstack.md
           - modules/milvus.md
           - modules/minio.md
@@ -95,6 +98,7 @@ nav:
           - modules/nginx.md
           - modules/ollama.md
           - modules/openfga.md
+          - modules/pinecone.md
           - modules/pulsar.md
           - modules/qdrant.md
           - modules/rabbitmq.md
@@ -136,4 +140,4 @@ nav:
           - bounty.md
 edit_uri: edit/main/docs/
 extra:
-    latest_version: 1.20.4
+    latest_version: 1.21.0

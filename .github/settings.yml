@@ -169,6 +169,9 @@ labels:
   - name: modules/kafka
     color: '#006b75'
 
+  - name: modules/ldap
+    color: '#006b75'
+
   - name: modules/localstack
     color: '#006b75'
 
@@ -209,6 +212,9 @@ labels:
     color: '#006b75'
 
   - name: modules/orientdb
+    color: '#006b75'
+
+  - name: modules/pinecone
     color: '#006b75'
 
   - name: modules/postgres
