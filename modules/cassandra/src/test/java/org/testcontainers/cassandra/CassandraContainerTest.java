@@ -88,8 +88,7 @@ public class CassandraContainerTest {
             CassandraContainer cassandraContainer = new CassandraContainer(CASSANDRA_IMAGE)
                 .withInitScript("unknown_script.cql")
         ) {
-            assertThat(catchThrowable(cassandraContainer::start))
-                .isInstanceOf(ContainerLaunchException.class);
+            assertThat(catchThrowable(cassandraContainer::start)).isInstanceOf(ContainerLaunchException.class);
         }
     }
 
