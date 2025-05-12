@@ -79,9 +79,9 @@ public class CassandraContainer extends GenericContainer<CassandraContainer> {
      * Load init script content and apply it to the database if initScriptPath is set
      */
     private void runInitScriptIfRequired() {
-        if (initScriptPath != null) {
+        if (this.initScriptPath != null) {
             try {
-                final MountableFile originalInitScript = MountableFile.forClasspathResource(initScriptPath);
+                final MountableFile originalInitScript = MountableFile.forClasspathResource(this.initScriptPath);
                 // The init script is executed as is by the cqlsh command, so copy it into the container. The name
                 // of the script is generic since it's not important to keep the original name.
                 copyFileToContainer(originalInitScript, DEFAULT_INIT_SCRIPT_FILENAME);
@@ -89,13 +89,15 @@ public class CassandraContainer extends GenericContainer<CassandraContainer> {
             } catch (IllegalArgumentException e) {
                 // MountableFile.forClasspathResource will throw an IllegalArgumentException if the resource cannot
                 // be found.
-                logger().warn("Could not load classpath init script: {}", initScriptPath);
+                logger().warn("Could not load classpath init script: {}", this.initScriptPath);
                 throw new ScriptLoadException(
-                    "Could not load classpath init script: " + initScriptPath + ". Resource not found.", e);
+                    "Could not load classpath init script: " + this.initScriptPath + ". Resource not found.",
+                    e
+                );
             } catch (ScriptUtils.ScriptStatementFailedException e) {
-                logger().error("Error while executing init script: {}", initScriptPath, e);
+                logger().error("Error while executing init script: {}", this.initScriptPath, e);
                 throw new ScriptUtils.UncategorizedScriptException(
-                    "Error while executing init script: " + initScriptPath,
+                    "Error while executing init script: " + this.initScriptPath,
                     e
                 );
             }
