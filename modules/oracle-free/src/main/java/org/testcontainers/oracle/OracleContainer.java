@@ -64,9 +64,18 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
         this(DockerImageName.parse(dockerImageName));
     }
 
+    public OracleContainer(Future<String> image) {
+        super(image);
+        preconfigure();
+    }
+
     public OracleContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        preconfigure();
+    }
+
+    private void preconfigure() {
         waitingFor(
             Wait
                 .forLogMessage(".*DATABASE IS READY TO USE!.*\\s", 1)
