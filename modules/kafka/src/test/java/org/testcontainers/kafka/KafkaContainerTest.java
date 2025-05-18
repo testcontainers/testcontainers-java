@@ -25,9 +25,11 @@ public class KafkaContainerTest extends AbstractKafka {
     public void testUsageWithListener() throws Exception {
         try (
             Network network = Network.newNetwork();
+            // registerListener {
             KafkaContainer kafka = new KafkaContainer("apache/kafka-native:3.8.0")
                 .withListener("kafka:19092")
                 .withNetwork(network);
+            // }
             KCatContainer kcat = new KCatContainer().withNetwork(network)
         ) {
             kafka.start();
