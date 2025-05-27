@@ -2,11 +2,8 @@ package org.testcontainers.kafka;
 
 import org.junit.Test;
 import org.testcontainers.AbstractKafka;
-import org.testcontainers.KCatContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.SocatContainer;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class KafkaContainerTest extends AbstractKafka {
 
@@ -22,7 +19,22 @@ public class KafkaContainerTest extends AbstractKafka {
     }
 
     @Test
-    public void testUsageWithListener() throws Exception {
+    public void testUsageWithNetworkAlias() {
+        try (
+            // registerAlias {
+            Network network = Network.newNetwork();
+            KafkaContainer kafka = new KafkaContainer("apache/kafka-native:3.8.0")
+                .withNetworkAliases("kafka")
+                .withNetwork(network);
+            // }
+        ) {
+            kafka.start();
+            assertKafka("kafka:9092", network);
+        }
+    }
+
+    @Test
+    public void testUsageWithListener() {
         try (
             Network network = Network.newNetwork();
             // registerListener {
@@ -30,17 +42,9 @@ public class KafkaContainerTest extends AbstractKafka {
                 .withListener("kafka:19092")
                 .withNetwork(network);
             // }
-            KCatContainer kcat = new KCatContainer().withNetwork(network)
         ) {
             kafka.start();
-            kcat.start();
-
-            kcat.execInContainer("kcat", "-b", "kafka:19092", "-t", "msgs", "-P", "-l", "/data/msgs.txt");
-            String stdout = kcat
-                .execInContainer("kcat", "-b", "kafka:19092", "-C", "-t", "msgs", "-c", "1")
-                .getStdout();
-
-            assertThat(stdout).contains("Message produced by kcat");
+            assertKafka("kafka:19092", network);
         }
     }
 

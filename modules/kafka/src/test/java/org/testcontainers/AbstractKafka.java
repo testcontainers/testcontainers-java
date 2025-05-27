@@ -1,6 +1,7 @@
 package org.testcontainers;
 
 import com.google.common.collect.ImmutableMap;
+import lombok.SneakyThrows;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -15,6 +16,7 @@ import org.apache.kafka.common.config.SaslConfigs;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.awaitility.Awaitility;
+import org.testcontainers.containers.Network;
 
 import java.time.Duration;
 import java.util.Collection;
@@ -149,5 +151,17 @@ public class AbstractKafka {
             "user_admin=\"admin\" " +
             "user_test=\"secret\";";
         return jaasConfig;
+    }
+
+    @SneakyThrows
+    protected void assertKafka(String listener, Network network) {
+        try (KCatContainer kcat = new KCatContainer().withNetwork(network)) {
+            kcat.start();
+
+            kcat.execInContainer("kcat", "-b", listener, "-t", "msgs", "-P", "-l", "/data/msgs.txt");
+            String stdout = kcat.execInContainer("kcat", "-b", listener, "-C", "-t", "msgs", "-c", "1").getStdout();
+
+            assertThat(stdout).contains("Message produced by kcat");
+        }
     }
 }
