@@ -33,9 +33,7 @@ public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContain
 
     private static final String LEGACY_DRIVER_CLASS_NAME = "ru.yandex.clickhouse.ClickHouseDriver";
 
-    private static final String LEGACY_V1_DRIVER_CLASS_NAME = "com.clickhouse.jdbc.ClickHouseDriver";
-
-    private static final String DRIVER_CLASS_NAME = "com.clickhouse.jdbc.Driver";
+    private static final String DRIVER_CLASS_NAME = "com.clickhouse.jdbc.ClickHouseDriver";
 
     private static final String JDBC_URL_PREFIX = "jdbc:" + NAME + "://";
 
@@ -81,21 +79,15 @@ public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContain
 
     @Override
     public String getDriverClassName() {
-        if (supportsNewDriver && isClassLoaded(DRIVER_CLASS_NAME)) {
-            return DRIVER_CLASS_NAME;
-        } else if (isClassLoaded(LEGACY_V1_DRIVER_CLASS_NAME)) {
-            return LEGACY_V1_DRIVER_CLASS_NAME;
-        } else {
-            return LEGACY_DRIVER_CLASS_NAME;
-        }
-    }
-
-    public static boolean isClassLoaded(String driverClassName) {
         try {
-            Class.forName(driverClassName);
-            return true;
+            if (supportsNewDriver) {
+                Class.forName(DRIVER_CLASS_NAME);
+                return DRIVER_CLASS_NAME;
+            } else {
+                return LEGACY_DRIVER_CLASS_NAME;
+            }
         } catch (ClassNotFoundException e) {
-            return false;
+            return LEGACY_DRIVER_CLASS_NAME;
         }
     }
 
@@ -106,7 +98,7 @@ public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContain
 
     @Override
     public String getJdbcUrl() {
-        return JDBC_URL_PREFIX + getHost() + ":" + getMappedPort(HTTP_PORT) + "/" + databaseName + constructUrlParameters("?", "&");
+        return JDBC_URL_PREFIX + getHost() + ":" + getMappedPort(HTTP_PORT) + "/" + databaseName;
     }
 
     @Override

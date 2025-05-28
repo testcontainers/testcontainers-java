@@ -80,20 +80,11 @@ public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContain
 
     @Override
     public String getDriverClassName() {
-
-        if (isClassLoaded(DRIVER_CLASS_NAME)) {
-            return DRIVER_CLASS_NAME;
-        } else {
-            return LEGACY_V1_RIVER_CLASS_NAME;
-        }
-    }
-
-    public static boolean isClassLoaded(String driverClassName) {
         try {
-            Class.forName(driverClassName);
-            return true;
+            Class.forName(DRIVER_CLASS_NAME);
+            return DRIVER_CLASS_NAME;
         } catch (ClassNotFoundException e) {
-            return false;
+            return LEGACY_V1_RIVER_CLASS_NAME;
         }
     }
 
