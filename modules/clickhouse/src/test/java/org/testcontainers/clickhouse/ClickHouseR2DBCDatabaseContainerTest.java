@@ -12,11 +12,11 @@ public class ClickHouseR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseC
 
     @Override
     protected String createR2DBCUrl() {
-        return "r2dbc:tc:clickhouse:///db?TC_IMAGE_TAG=21.9.2-alpine";
+        return "r2dbc:tc:clickhouse:///db?TC_IMAGE_TAG=21.11.11-alpine";
     }
 
     @Override
     protected ClickHouseContainer createContainer() {
-        return new ClickHouseContainer("clickhouse/clickhouse-server:21.9.2-alpine");
+        return new ClickHouseContainer("clickhouse/clickhouse-server:21.11.11-alpine");
     }
 }
