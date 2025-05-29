@@ -29,7 +29,7 @@ public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContain
 
     static final Integer NATIVE_PORT = 9000;
 
-    private static final String LEGACY_V1_RIVER_CLASS_NAME = "com.clickhouse.jdbc.ClickHouseDriver";
+    private static final String LEGACY_V1_DRIVER_CLASS_NAME = "com.clickhouse.jdbc.ClickHouseDriver";
 
     private static final String DRIVER_CLASS_NAME = "com.clickhouse.jdbc.Driver";
 
@@ -84,7 +84,7 @@ public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContain
             Class.forName(DRIVER_CLASS_NAME);
             return DRIVER_CLASS_NAME;
         } catch (ClassNotFoundException e) {
-            return LEGACY_V1_RIVER_CLASS_NAME;
+            return LEGACY_V1_DRIVER_CLASS_NAME;
         }
     }
 
