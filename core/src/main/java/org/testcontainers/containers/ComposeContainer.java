@@ -69,28 +69,85 @@ public class ComposeContainer extends FailureDetectingExternalResource implement
 
     private List<String> filesInDirectory = new ArrayList<>();
 
-    public ComposeContainer(File... composeFiles) {
-        this(Arrays.asList(composeFiles));
+    /**
+     * Creates a new ComposeContainer with a random identifier using the specified Docker image and compose files.
+     *
+     * @param image        The Docker image to use for the container
+     * @param composeFiles One or more Docker Compose configuration files
+     */
+    public ComposeContainer(DockerImageName image, File... composeFiles) {
+        this(image, Arrays.asList(composeFiles));
     }
 
-    public ComposeContainer(List<File> composeFiles) {
-        this(Base58.randomString(6).toLowerCase(), composeFiles);
+    /**
+     * Creates a new ComposeContainer with a random identifier using the specified Docker image and compose files.
+     *
+     * @param image        The Docker image to use for the container
+     * @param composeFiles A list of Docker Compose configuration files
+     */
+    public ComposeContainer(DockerImageName image, List<File> composeFiles) {
+        this(image, Base58.randomString(6).toLowerCase(), composeFiles);
     }
 
-    public ComposeContainer(String identifier, File... composeFiles) {
-        this(identifier, Arrays.asList(composeFiles));
+    /**
+     * Creates a new ComposeContainer with the specified Docker image, identifier, and compose files.
+     *
+     * @param image        The Docker image to use for the container
+     * @param identifier   A unique identifier for this compose environment
+     * @param composeFiles One or more Docker Compose configuration files
+     */
+    public ComposeContainer(DockerImageName image, String identifier, File... composeFiles) {
+        this(image, identifier, Arrays.asList(composeFiles));
     }
 
-    public ComposeContainer(String identifier, List<File> composeFiles) {
+    /**
+     * Creates a new ComposeContainer with the specified Docker image, identifier, and compose files.
+     * This is the primary constructor that all other constructors delegate to.
+     *
+     * @param image        The Docker image to use for the container
+     * @param identifier   A unique identifier for this compose environment
+     * @param composeFiles A list of Docker Compose configuration files
+     */
+    public ComposeContainer(DockerImageName image, String identifier, List<File> composeFiles) {
         this.composeDelegate =
-            new ComposeDelegate(
-                ComposeDelegate.ComposeVersion.V2,
-                composeFiles,
-                identifier,
-                COMPOSE_EXECUTABLE,
-                DEFAULT_IMAGE_NAME
-            );
+            new ComposeDelegate(ComposeDelegate.ComposeVersion.V2, composeFiles, identifier, COMPOSE_EXECUTABLE, image);
         this.project = this.composeDelegate.getProject();
+    }
+
+    /**
+     * @deprecated
+     *  Use the new constructor ComposeContainer(DockerImageName image, File... composeFiles)
+     */
+    @Deprecated
+    public ComposeContainer(File... composeFiles) {
+        this(DEFAULT_IMAGE_NAME, Arrays.asList(composeFiles));
+    }
+
+    /**
+     * @deprecated
+     *  Use the new constructor ComposeContainer(DockerImageName image,List composeFiles)
+     */
+    @Deprecated
+    public ComposeContainer(List<File> composeFiles) {
+        this(DEFAULT_IMAGE_NAME, composeFiles);
+    }
+
+    /**
+     * @deprecated
+     *  Use the new constructor ComposeContainer(DockerImageName image, String identifier, File... composeFile)
+     */
+    @Deprecated
+    public ComposeContainer(String identifier, File... composeFiles) {
+        this(DEFAULT_IMAGE_NAME, identifier, Arrays.asList(composeFiles));
+    }
+
+    /**
+     * @deprecated
+     * Use the new constructor ComposeContainer(DockerImageName image,String identifier, List composeFiles)
+     */
+    @Deprecated
+    public ComposeContainer(String identifier, List<File> composeFiles) {
+        this(DEFAULT_IMAGE_NAME, identifier, composeFiles);
     }
 
     @Override
