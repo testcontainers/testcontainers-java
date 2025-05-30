@@ -69,7 +69,7 @@ configurations.all {
 }
 
 dependencies {
-    api 'junit:junit:4.13.2'
+    implementation 'junit:junit:4.13.2' // originally had api scope
     api 'org.slf4j:slf4j-api:1.7.36'
     compileOnly 'org.jetbrains:annotations:24.1.0'
     testCompileOnly 'org.jetbrains:annotations:24.1.0'

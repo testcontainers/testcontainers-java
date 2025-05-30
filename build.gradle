@@ -132,6 +132,11 @@ subprojects {
 
     dependencies {
         testImplementation 'ch.qos.logback:logback-classic:1.3.14'
+
+        if (project.path != ':testcontainers') {
+            // for compiling classes which extend GenericContainer, etc
+            compileOnly 'junit:junit:4.13.2'
+        }
     }
 
     checkstyle {
