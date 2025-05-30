@@ -186,6 +186,19 @@ public class KafkaContainerTest extends AbstractKafka {
     }
 
     @Test
+    public void testUsageWithNetworkAlias() {
+        try (
+            Network network = Network.newNetwork();
+            KafkaContainer kafka = new KafkaContainer(KAFKA_KRAFT_TEST_IMAGE)
+                .withNetworkAliases("mykafka")
+                .withNetwork(network)
+        ) {
+            kafka.start();
+            assertKafka("mykafka:9092", network);
+        }
+    }
+
+    @Test
     public void testUsageWithListener() throws Exception {
         try (
             Network network = Network.newNetwork();
