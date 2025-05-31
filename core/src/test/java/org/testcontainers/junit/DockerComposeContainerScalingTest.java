@@ -6,6 +6,7 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.containers.DockerComposeContainer;
+import org.testcontainers.junit4.TestcontainersRule;
 import org.testcontainers.utility.TestEnvironment;
 import redis.clients.jedis.Jedis;
 
@@ -28,13 +29,13 @@ public class DockerComposeContainerScalingTest {
     }
 
     @Rule
-    public DockerComposeContainer environment = new DockerComposeContainer(
-        new File("src/test/resources/scaled-compose-test.yml")
-    )
-        .withScaledService("redis", 3)
-        .withExposedService("redis", REDIS_PORT) // implicit '_1'
-        .withExposedService("redis_2", REDIS_PORT) // explicit service index
-        .withExposedService("redis", 3, REDIS_PORT); // explicit service index via parameter
+    public TestcontainersRule<DockerComposeContainer> environment = new TestcontainersRule<>(
+        new DockerComposeContainer(new File("src/test/resources/scaled-compose-test.yml"))
+            .withScaledService("redis", 3)
+            .withExposedService("redis", REDIS_PORT) // implicit '_1'
+            .withExposedService("redis_2", REDIS_PORT) // explicit service index
+            .withExposedService("redis", 3, REDIS_PORT) // explicit service index via parameter
+    );
 
     @Before
     public void setupClients() {
@@ -42,7 +43,10 @@ public class DockerComposeContainerScalingTest {
             String name = String.format("redis_%d", i + 1);
 
             clients[i] =
-                new Jedis(environment.getServiceHost(name, REDIS_PORT), environment.getServicePort(name, REDIS_PORT));
+                new Jedis(
+                    environment.get().getServiceHost(name, REDIS_PORT),
+                    environment.get().getServicePort(name, REDIS_PORT)
+                );
         }
     }
 

@@ -5,6 +5,7 @@ dependencies {
     api project(':jdbc')
 
     testImplementation project(':jdbc-test')
+    testImplementation 'junit:junit:4.13.2'
     testRuntimeOnly 'com.timeplus:timeplus-native-jdbc:2.0.5'
     testImplementation 'org.assertj:assertj-core:3.26.3'
 }

@@ -26,6 +26,7 @@ import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.SelinuxContext;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
+import org.testcontainers.junit4.TestcontainersRule;
 import org.testcontainers.utility.Base58;
 
 import java.io.BufferedReader;
@@ -79,75 +80,88 @@ public class GenericContainerRuleTest {
      * Redis
      */
     @ClassRule
-    public static GenericContainer<?> redis = new GenericContainer<>(TestImages.REDIS_IMAGE)
-        .withExposedPorts(REDIS_PORT);
+    public static TestcontainersRule<GenericContainer<?>> redis = new TestcontainersRule<>(
+        new GenericContainer<>(TestImages.REDIS_IMAGE).withExposedPorts(REDIS_PORT)
+    );
 
     /**
      * RabbitMQ
      */
     @ClassRule
-    public static GenericContainer<?> rabbitMq = new GenericContainer<>(TestImages.RABBITMQ_IMAGE)
-        .withExposedPorts(RABBITMQ_PORT);
+    public static TestcontainersRule<GenericContainer<?>> rabbitMq = new TestcontainersRule<>(
+        new GenericContainer<>(TestImages.RABBITMQ_IMAGE).withExposedPorts(RABBITMQ_PORT)
+    );
 
     /**
      * MongoDB
      */
     @ClassRule
-    public static GenericContainer<?> mongo = new GenericContainer<>(TestImages.MONGODB_IMAGE)
-        .withExposedPorts(MONGO_PORT);
+    public static TestcontainersRule<GenericContainer<?>> mongo = new TestcontainersRule<>(
+        new GenericContainer<>(TestImages.MONGODB_IMAGE).withExposedPorts(MONGO_PORT)
+    );
 
     /**
      * Pass an environment variable to the container, then run a shell script that exposes the variable in a quick and
      * dirty way for testing.
      */
     @ClassRule
-    public static GenericContainer<?> alpineEnvVar = new GenericContainer<>(TestImages.ALPINE_IMAGE)
-        .withExposedPorts(80)
-        .withEnv("MAGIC_NUMBER", "4")
-        .withEnv("MAGIC_NUMBER", oldValue -> oldValue.orElse("") + "2")
-        .withCommand("/bin/sh", "-c", "while true; do echo \"$MAGIC_NUMBER\" | nc -l -p 80; done");
+    public static TestcontainersRule<GenericContainer<?>> alpineEnvVar = new TestcontainersRule<>(
+        new GenericContainer<>(TestImages.ALPINE_IMAGE)
+            .withExposedPorts(80)
+            .withEnv("MAGIC_NUMBER", "4")
+            .withEnv("MAGIC_NUMBER", oldValue -> oldValue.orElse("") + "2")
+            .withCommand("/bin/sh", "-c", "while true; do echo \"$MAGIC_NUMBER\" | nc -l -p 80; done")
+    );
 
     /**
      * Pass environment variables to the container, then run a shell script that exposes the variables in a quick and
      * dirty way for testing.
      */
     @ClassRule
-    public static GenericContainer<?> alpineEnvVarFromMap = new GenericContainer<>(TestImages.ALPINE_IMAGE)
-        .withExposedPorts(80)
-        .withEnv(ImmutableMap.of("FIRST", "42", "SECOND", "50"))
-        .withCommand("/bin/sh", "-c", "while true; do echo \"$FIRST and $SECOND\" | nc -l -p 80; done");
+    public static TestcontainersRule<GenericContainer<?>> alpineEnvVarFromMap = new TestcontainersRule<>(
+        new GenericContainer<>(TestImages.ALPINE_IMAGE)
+            .withExposedPorts(80)
+            .withEnv(ImmutableMap.of("FIRST", "42", "SECOND", "50"))
+            .withCommand("/bin/sh", "-c", "while true; do echo \"$FIRST and $SECOND\" | nc -l -p 80; done")
+    );
 
     /**
      * Map a file on the classpath to a file in the container, and then expose the content for testing.
      */
     @ClassRule
-    public static GenericContainer<?> alpineClasspathResource = new GenericContainer<>(TestImages.ALPINE_IMAGE)
-        .withExposedPorts(80)
-        .withClasspathResourceMapping("mappable-resource/test-resource.txt", "/content.txt", BindMode.READ_ONLY)
-        .withCommand("/bin/sh", "-c", "while true; do cat /content.txt | nc -l -p 80; done");
+    public static TestcontainersRule<GenericContainer<?>> alpineClasspathResource = new TestcontainersRule<>(
+        new GenericContainer<>(TestImages.ALPINE_IMAGE)
+            .withExposedPorts(80)
+            .withClasspathResourceMapping("mappable-resource/test-resource.txt", "/content.txt", BindMode.READ_ONLY)
+            .withCommand("/bin/sh", "-c", "while true; do cat /content.txt | nc -l -p 80; done")
+    );
 
     /**
      * Map a file on the classpath to a file in the container, and then expose the content for testing.
      */
     @ClassRule
-    public static GenericContainer<?> alpineClasspathResourceSelinux = new GenericContainer<>(TestImages.ALPINE_IMAGE)
-        .withExposedPorts(80)
-        .withClasspathResourceMapping(
-            "mappable-resource/test-resource.txt",
-            "/content.txt",
-            BindMode.READ_WRITE,
-            SelinuxContext.SHARED
-        )
-        .withCommand("/bin/sh", "-c", "while true; do cat /content.txt | nc -l -p 80; done");
+    public static TestcontainersRule<GenericContainer<?>> alpineClasspathResourceSelinux = new TestcontainersRule<>(
+        new GenericContainer<>(TestImages.ALPINE_IMAGE)
+            .withExposedPorts(80)
+            .withClasspathResourceMapping(
+                "mappable-resource/test-resource.txt",
+                "/content.txt",
+                BindMode.READ_WRITE,
+                SelinuxContext.SHARED
+            )
+            .withCommand("/bin/sh", "-c", "while true; do cat /content.txt | nc -l -p 80; done")
+    );
 
     /**
      * Create a container with an extra host entry and expose the content of /etc/hosts for testing.
      */
     @ClassRule
-    public static GenericContainer<?> alpineExtrahost = new GenericContainer<>(TestImages.ALPINE_IMAGE)
-        .withExposedPorts(80)
-        .withExtraHost("somehost", "192.168.1.10")
-        .withCommand("/bin/sh", "-c", "while true; do cat /etc/hosts | nc -l -p 80; done");
+    public static TestcontainersRule<GenericContainer<?>> alpineExtrahost = new TestcontainersRule<>(
+        new GenericContainer<>(TestImages.ALPINE_IMAGE)
+            .withExposedPorts(80)
+            .withExtraHost("somehost", "192.168.1.10")
+            .withCommand("/bin/sh", "-c", "while true; do cat /etc/hosts | nc -l -p 80; done")
+    );
 
     @Test
     public void testIsRunning() {
@@ -182,8 +196,8 @@ public class GenericContainerRuleTest {
     @Test
     public void simpleRabbitMqTest() throws IOException, TimeoutException {
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost(rabbitMq.getHost());
-        factory.setPort(rabbitMq.getMappedPort(RABBITMQ_PORT));
+        factory.setHost(rabbitMq.get().getHost());
+        factory.setPort(rabbitMq.get().getMappedPort(RABBITMQ_PORT));
         Connection connection = factory.newConnection();
 
         Channel channel = connection.createChannel();
@@ -231,7 +245,7 @@ public class GenericContainerRuleTest {
 
     @Test
     public void simpleMongoDbTest() {
-        MongoClient mongoClient = new MongoClient(mongo.getHost(), mongo.getMappedPort(MONGO_PORT));
+        MongoClient mongoClient = new MongoClient(mongo.get().getHost(), mongo.get().getMappedPort(MONGO_PORT));
         MongoDatabase database = mongoClient.getDatabase("test");
         MongoCollection<Document> collection = database.getCollection("testCollection");
 
@@ -244,14 +258,14 @@ public class GenericContainerRuleTest {
 
     @Test
     public void environmentAndCustomCommandTest() throws IOException {
-        String line = getReaderForContainerPort80(alpineEnvVar).readLine();
+        String line = getReaderForContainerPort80(alpineEnvVar.get()).readLine();
 
         assertThat(line).as("An environment variable can be passed into a command").isEqualTo("42");
     }
 
     @Test
     public void environmentFromMapTest() throws IOException {
-        String line = getReaderForContainerPort80(alpineEnvVarFromMap).readLine();
+        String line = getReaderForContainerPort80(alpineEnvVarFromMap.get()).readLine();
 
         assertThat(line).as("Environment variables can be passed into a command from a map").isEqualTo("42 and 50");
     }
@@ -299,7 +313,7 @@ public class GenericContainerRuleTest {
     public void customClasspathResourceMappingTest() throws IOException {
         // Note: This functionality doesn't work if you are running your build inside a Docker container;
         // in that case this test will fail.
-        String line = getReaderForContainerPort80(alpineClasspathResource).readLine();
+        String line = getReaderForContainerPort80(alpineClasspathResource.get()).readLine();
 
         assertThat(line)
             .as("Resource on the classpath can be mapped using calls to withClasspathResourceMapping")
@@ -308,7 +322,7 @@ public class GenericContainerRuleTest {
 
     @Test
     public void customClasspathResourceMappingWithSelinuxTest() throws IOException {
-        String line = getReaderForContainerPort80(alpineClasspathResourceSelinux).readLine();
+        String line = getReaderForContainerPort80(alpineClasspathResourceSelinux.get()).readLine();
         assertThat(line)
             .as("Resource on the classpath can be mapped using calls to withClasspathResourceMappingSelinux")
             .isEqualTo("FOOBAR");
@@ -316,7 +330,7 @@ public class GenericContainerRuleTest {
 
     @Test
     public void exceptionThrownWhenMappedPortNotFound() {
-        assertThat(catchThrowable(() -> redis.getMappedPort(666)))
+        assertThat(catchThrowable(() -> redis.get().getMappedPort(666)))
             .as("When the requested port is not mapped, getMappedPort() throws an exception")
             .isInstanceOf(IllegalArgumentException.class);
     }
@@ -359,7 +373,7 @@ public class GenericContainerRuleTest {
 
     @Test
     public void extraHostTest() throws IOException {
-        BufferedReader br = getReaderForContainerPort80(alpineExtrahost);
+        BufferedReader br = getReaderForContainerPort80(alpineExtrahost.get());
 
         // read hosts file from container
         StringBuffer hosts = new StringBuffer();
@@ -411,19 +425,19 @@ public class GenericContainerRuleTest {
 
     @Test
     public void addExposedPortAfterWithExposedPortsTest() {
-        redis.addExposedPort(8987);
-        assertThat(redis.getExposedPorts()).as("Both ports should be exposed").hasSize(2);
-        assertThat(redis.getExposedPorts()).as("withExposedPort should be exposed").contains(REDIS_PORT);
-        assertThat(redis.getExposedPorts()).as("addExposedPort should be exposed").contains(8987);
+        redis.get().addExposedPort(8987);
+        assertThat(redis.get().getExposedPorts()).as("Both ports should be exposed").hasSize(2);
+        assertThat(redis.get().getExposedPorts()).as("withExposedPort should be exposed").contains(REDIS_PORT);
+        assertThat(redis.get().getExposedPorts()).as("addExposedPort should be exposed").contains(8987);
     }
 
     @Test
     public void addingExposedPortTwiceShouldNotFail() {
-        redis.addExposedPort(8987);
-        redis.addExposedPort(8987);
-        assertThat(redis.getExposedPorts()).as("Both ports should be exposed").hasSize(2); // 2 ports = de-duplicated port 8897 and original port 6379
-        assertThat(redis.getExposedPorts()).as("withExposedPort should be exposed").contains(REDIS_PORT);
-        assertThat(redis.getExposedPorts()).as("addExposedPort should be exposed").contains(8987);
+        redis.get().addExposedPort(8987);
+        redis.get().addExposedPort(8987);
+        assertThat(redis.get().getExposedPorts()).as("Both ports should be exposed").hasSize(2); // 2 ports = de-duplicated port 8897 and original port 6379
+        assertThat(redis.get().getExposedPorts()).as("withExposedPort should be exposed").contains(REDIS_PORT);
+        assertThat(redis.get().getExposedPorts()).as("addExposedPort should be exposed").contains(8987);
     }
 
     @Test

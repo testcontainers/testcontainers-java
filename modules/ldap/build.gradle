@@ -3,6 +3,7 @@ description = "Testcontainers :: LDAP"
 dependencies {
     api project(':testcontainers')
 
+    testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.assertj:assertj-core:3.26.3'
     testImplementation 'com.unboundid:unboundid-ldapsdk:7.0.2'
 }

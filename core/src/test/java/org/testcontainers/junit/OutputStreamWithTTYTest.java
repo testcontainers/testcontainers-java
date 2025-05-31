@@ -11,6 +11,7 @@ import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.output.ToStringConsumer;
 import org.testcontainers.containers.output.WaitingConsumer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
+import org.testcontainers.junit4.TestcontainersRule;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -23,10 +24,12 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 public class OutputStreamWithTTYTest {
 
     @Rule
-    public GenericContainer<?> container = new GenericContainer<>(TestImages.ALPINE_IMAGE)
-        .withCommand("ls -1")
-        .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
-        .withCreateContainerCmdModifier(command -> command.withTty(true));
+    public TestcontainersRule<GenericContainer<?>> container = new TestcontainersRule<>(
+        new GenericContainer<>(TestImages.ALPINE_IMAGE)
+            .withCommand("ls -1")
+            .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
+            .withCreateContainerCmdModifier(command -> command.withTty(true))
+    );
 
     @Rule
     public Timeout globalTimeout = Timeout.seconds(10);
@@ -35,7 +38,7 @@ public class OutputStreamWithTTYTest {
     public void testFetchStdout() throws TimeoutException {
         WaitingConsumer consumer = new WaitingConsumer();
 
-        container.followOutput(consumer, OutputFrame.OutputType.STDOUT);
+        container.get().followOutput(consumer, OutputFrame.OutputType.STDOUT);
 
         consumer.waitUntil(
             frame -> {
@@ -50,7 +53,7 @@ public class OutputStreamWithTTYTest {
     public void testFetchStdoutWithTimeout() {
         WaitingConsumer consumer = new WaitingConsumer();
 
-        container.followOutput(consumer, OutputFrame.OutputType.STDOUT);
+        container.get().followOutput(consumer, OutputFrame.OutputType.STDOUT);
 
         assertThat(
             catchThrowable(() -> {
@@ -73,7 +76,7 @@ public class OutputStreamWithTTYTest {
     public void testFetchStdoutWithNoLimit() throws TimeoutException {
         WaitingConsumer consumer = new WaitingConsumer();
 
-        container.followOutput(consumer, OutputFrame.OutputType.STDOUT);
+        container.get().followOutput(consumer, OutputFrame.OutputType.STDOUT);
 
         consumer.waitUntil(frame -> {
             return frame.getType() == OutputFrame.OutputType.STDOUT && frame.getUtf8String().contains("home");
@@ -86,7 +89,7 @@ public class OutputStreamWithTTYTest {
         Slf4jLogConsumer logConsumer = new Slf4jLogConsumer(log);
 
         Consumer<OutputFrame> composedConsumer = logConsumer.andThen(waitingConsumer);
-        container.followOutput(composedConsumer);
+        container.get().followOutput(composedConsumer);
 
         waitingConsumer.waitUntil(frame -> {
             return frame.getType() == OutputFrame.OutputType.STDOUT && frame.getUtf8String().contains("home");
@@ -99,7 +102,7 @@ public class OutputStreamWithTTYTest {
         ToStringConsumer toStringConsumer = new ToStringConsumer();
 
         Consumer<OutputFrame> composedConsumer = toStringConsumer.andThen(waitingConsumer);
-        container.followOutput(composedConsumer);
+        container.get().followOutput(composedConsumer);
 
         waitingConsumer.waitUntilEnd(4, TimeUnit.SECONDS);
 

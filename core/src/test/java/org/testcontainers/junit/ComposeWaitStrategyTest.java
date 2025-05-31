@@ -3,7 +3,6 @@ package org.testcontainers.junit;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.Description;
 import org.mockito.Mockito;
 import org.testcontainers.containers.ComposeContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -37,7 +36,7 @@ public class ComposeWaitStrategyTest {
         environment.withExposedService("redis-1", REDIS_PORT, Wait.forListeningPort());
 
         try {
-            environment.starting(Description.createTestDescription(Object.class, "name"));
+            environment.start();
         } catch (RuntimeException e) {
             fail("Docker compose should start after waiting for listening port with failed with: " + e);
         }
@@ -51,7 +50,7 @@ public class ComposeWaitStrategyTest {
             .withTailChildContainers(true);
 
         try {
-            environment.starting(Description.createTestDescription(Object.class, "name"));
+            environment.start();
         } catch (RuntimeException e) {
             fail("Docker compose should start after waiting for listening port with failed with: " + e);
         }
@@ -64,7 +63,7 @@ public class ComposeWaitStrategyTest {
             REDIS_PORT,
             Wait.forHttp("/test").withStartupTimeout(Duration.ofSeconds(10))
         );
-        assertThat(catchThrowable(() -> environment.starting(Description.createTestDescription(Object.class, "name"))))
+        assertThat(catchThrowable(() -> environment.start()))
             .as("waiting on an invalid http path times out")
             .isInstanceOf(RuntimeException.class);
     }
@@ -83,7 +82,7 @@ public class ComposeWaitStrategyTest {
             )
             .withTailChildContainers(true);
 
-        assertThat(catchThrowable(() -> environment.starting(Description.createTestDescription(Object.class, "name"))))
+        assertThat(catchThrowable(() -> environment.start()))
             .as("waiting on one failing strategy to time out")
             .isInstanceOf(RuntimeException.class);
     }
