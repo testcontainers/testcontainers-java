@@ -3,6 +3,7 @@ description = "Testcontainers :: Kafka"
 dependencies {
     api project(':testcontainers')
 
+    testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.apache.kafka:kafka-clients:3.8.0'
     testImplementation 'org.assertj:assertj-core:3.26.3'
     testImplementation 'com.google.guava:guava:23.0'

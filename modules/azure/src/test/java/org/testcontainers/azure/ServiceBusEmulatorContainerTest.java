@@ -13,6 +13,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.containers.Network;
+import org.testcontainers.junit4.TestcontainersRule;
 import org.testcontainers.utility.MountableFile;
 
 import java.util.List;
@@ -27,43 +28,43 @@ public class ServiceBusEmulatorContainerTest {
 
     @Rule
     // network {
-    public Network network = Network.newNetwork();
+    public TestcontainersRule<Network> network = new TestcontainersRule<>(Network.newNetwork());
 
     // }
 
     @Rule
     // sqlContainer {
-    public MSSQLServerContainer<?> mssqlServerContainer = new MSSQLServerContainer<>(
-        "mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04"
-    )
-        .acceptLicense()
-        .withPassword("yourStrong(!)Password")
-        .withCreateContainerCmdModifier(cmd -> {
-            cmd.getHostConfig().withCapAdd(Capability.SYS_PTRACE);
-        })
-        .withNetwork(network);
+    public TestcontainersRule<MSSQLServerContainer<?>> mssqlServerContainer = new TestcontainersRule<>(
+        new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04")
+            .acceptLicense()
+            .withPassword("yourStrong(!)Password")
+            .withCreateContainerCmdModifier(cmd -> {
+                cmd.getHostConfig().withCapAdd(Capability.SYS_PTRACE);
+            })
+            .withNetwork(network.get())
+    );
 
     // }
 
     @Rule
     // emulatorContainer {
-    public ServiceBusEmulatorContainer emulator = new ServiceBusEmulatorContainer(
-        "mcr.microsoft.com/azure-messaging/servicebus-emulator:1.1.2"
-    )
-        .acceptLicense()
-        .withConfig(MountableFile.forClasspathResource("/service-bus-config.json"))
-        .withNetwork(network)
-        .withMsSqlServerContainer(mssqlServerContainer);
+    public TestcontainersRule<ServiceBusEmulatorContainer> emulator = new TestcontainersRule<>(
+        new ServiceBusEmulatorContainer("mcr.microsoft.com/azure-messaging/servicebus-emulator:1.1.2")
+            .acceptLicense()
+            .withConfig(MountableFile.forClasspathResource("/service-bus-config.json"))
+            .withNetwork(network.get())
+            .withMsSqlServerContainer(mssqlServerContainer.get())
+    );
 
     // }
 
     @Test
     public void testWithClient() {
-        assertThat(emulator.getConnectionString()).startsWith("Endpoint=sb://");
+        assertThat(emulator.get().getConnectionString()).startsWith("Endpoint=sb://");
 
         // senderClient {
         ServiceBusSenderClient senderClient = new ServiceBusClientBuilder()
-            .connectionString(emulator.getConnectionString())
+            .connectionString(emulator.get().getConnectionString())
             .sender()
             .queueName("queue.1")
             .buildClient();
@@ -86,7 +87,7 @@ public class ServiceBusEmulatorContainerTest {
         Consumer<ServiceBusErrorContext> errorConsumer = e -> Assertions.fail("Unexpected error: " + e);
         // processorClient {
         ServiceBusProcessorClient processorClient = new ServiceBusClientBuilder()
-            .connectionString(emulator.getConnectionString())
+            .connectionString(emulator.get().getConnectionString())
             .processor()
             .queueName("queue.1")
             .processMessage(messageConsumer)

@@ -7,6 +7,7 @@ import io.restassured.RestAssured;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit4.TestcontainersRule;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -23,12 +24,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ConsulContainerTest {
 
     @ClassRule
-    public static ConsulContainer consulContainer = new ConsulContainer("hashicorp/consul:1.15")
-        .withConsulCommand("kv put config/testing1 value123");
+    public static TestcontainersRule<ConsulContainer> consulContainer = new TestcontainersRule<>(
+        new ConsulContainer("hashicorp/consul:1.15").withConsulCommand("kv put config/testing1 value123")
+    );
 
     @Test
     public void readFirstPropertyPathWithCli() throws IOException, InterruptedException {
-        GenericContainer.ExecResult result = consulContainer.execInContainer("consul", "kv", "get", "config/testing1");
+        GenericContainer.ExecResult result = consulContainer
+            .get()
+            .execInContainer("consul", "kv", "get", "config/testing1");
         final String output = result.getStdout().replaceAll("\\r?\\n", "");
         assertThat(output).contains("value123");
     }
@@ -48,8 +52,8 @@ public class ConsulContainerTest {
     @Test
     public void writeAndReadMultipleValuesUsingClient() {
         final ConsulClient consulClient = new ConsulClient(
-            consulContainer.getHost(),
-            consulContainer.getFirstMappedPort()
+            consulContainer.get().getHost(),
+            consulContainer.get().getFirstMappedPort()
         );
 
         final Map<String, String> properties = new HashMap<>();
@@ -70,6 +74,6 @@ public class ConsulContainerTest {
     }
 
     private String getHostAndPort() {
-        return consulContainer.getHost() + ":" + consulContainer.getMappedPort(8500);
+        return consulContainer.get().getHost() + ":" + consulContainer.get().getMappedPort(8500);
     }
 }

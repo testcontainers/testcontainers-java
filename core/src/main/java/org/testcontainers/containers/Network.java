@@ -4,8 +4,6 @@ import com.github.dockerjava.api.command.CreateNetworkCmd;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Singular;
-import org.junit.rules.ExternalResource;
-import org.junit.rules.TestRule;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.utility.ResourceReaper;
 
@@ -17,7 +15,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
-public interface Network extends AutoCloseable, TestRule {
+public interface Network extends AutoCloseable {
     Network SHARED = new NetworkImpl(false, null, Collections.emptySet(), null) {
         @Override
         public void close() {
@@ -40,7 +38,7 @@ public interface Network extends AutoCloseable, TestRule {
 
     @Builder
     @Getter
-    class NetworkImpl extends ExternalResource implements Network {
+    class NetworkImpl implements Network {
 
         private final String name = UUID.randomUUID().toString();
 
@@ -98,11 +96,6 @@ public interface Network extends AutoCloseable, TestRule {
             createNetworkCmd.withLabels(labels);
 
             return createNetworkCmd.exec().getId();
-        }
-
-        @Override
-        protected void after() {
-            close();
         }
 
         @Override

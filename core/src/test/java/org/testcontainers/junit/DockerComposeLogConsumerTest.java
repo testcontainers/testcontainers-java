@@ -1,7 +1,6 @@
 package org.testcontainers.junit;
 
 import org.junit.Test;
-import org.junit.runner.Description;
 import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.output.OutputFrame.OutputType;
 import org.testcontainers.containers.output.WaitingConsumer;
@@ -22,7 +21,7 @@ public class DockerComposeLogConsumerTest {
             .withLogConsumer("redis_1", logConsumer);
 
         try {
-            environment.starting(Description.EMPTY);
+            environment.start();
             logConsumer.waitUntil(
                 frame -> {
                     return (
@@ -34,7 +33,7 @@ public class DockerComposeLogConsumerTest {
                 TimeUnit.SECONDS
             );
         } finally {
-            environment.finished(Description.EMPTY);
+            environment.close();
         }
     }
 }

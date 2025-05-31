@@ -1,6 +1,9 @@
 # JUnit 4 Quickstart
 
-It's easy to add Testcontainers to your project - let's walk through a quick example to see how.
+This example shows the way you could use Testcontainers with JUnit 4.
+
+!!! note
+    JUnit 4 is in [maintenance mode since 2025-05-31](https://github.com/junit-team/junit4), so we recommend using JUnit 5 or newer versions instead.
 
 Let's imagine we have a simple program that has a dependency on Redis, and we want to add some tests for it.
 In our imaginary program, there is a `RedisBackedCache` class which stores data in Redis.
@@ -23,7 +26,8 @@ First, add Testcontainers as a dependency as follows:
 
 === "Gradle"
     ```groovy
-    testImplementation "org.testcontainers:testcontainers:{{latest_version}}"
+    testImplementation("org.testcontainers:testcontainers:{{latest_version}}")
+    testImplementation("org.testcontainers:junit4:{{latest_version}}")
     ```
 === "Maven"
     ```xml
@@ -33,18 +37,26 @@ First, add Testcontainers as a dependency as follows:
         <version>{{latest_version}}</version>
         <scope>test</scope>
     </dependency>
+    <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>junit4</artifactId>
+        <version>{{latest_version}}</version>
+        <scope>test</scope>
+    </dependency>
     ```
 
 ## 2. Get Testcontainers to run a Redis container during our tests
 
-Simply add the following to the body of our test class:
+Add the following to the body of our test class:
 
 <!--codeinclude-->
 [JUnit 4 Rule](../examples/junit4/redis/src/test/java/quickstart/RedisBackedCacheIntTest.java) inside_block:rule
 <!--/codeinclude-->
 
 The `@Rule` annotation tells JUnit to notify this field about various events in the test lifecycle.
-In this case, our rule object is a Testcontainers `GenericContainer`, configured to use a specific Redis image from Docker Hub, and configured to expose a port.
+Wrap the containers with `new TestContainersRule(...)` so the containers start and stop, according to the test lifecycle.
+In this case, our rule object is not `static`, so the container will start and stop with every test.
+The test configures `GenericContainer` to use a specific Redis image from Docker Hub, and to expose a port.
 
 If we run our test as-is, then regardless of the actual test outcome, we'll see logs showing us that Testcontainers:
 

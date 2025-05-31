@@ -9,6 +9,7 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.testcontainers.Testcontainers;
 import org.testcontainers.containers.BrowserWebDriverContainer;
+import org.testcontainers.junit4.TestcontainersRule;
 
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -50,15 +51,16 @@ public class HostPortExposedTest {
     }
 
     @Rule
-    public BrowserWebDriverContainer<?> browser = new BrowserWebDriverContainer<>()
-        .withCapabilities(new ChromeOptions());
+    public TestcontainersRule<BrowserWebDriverContainer<?>> browser = new TestcontainersRule<>(
+        new BrowserWebDriverContainer<>().withCapabilities(new ChromeOptions())
+    );
 
     @Test
     public void testContainerRunningAgainstExposedHostPort() {
         // useHostExposedPort {
         final String rootUrl = String.format("http://host.testcontainers.internal:%d/", localServerPort);
 
-        final RemoteWebDriver webDriver = new RemoteWebDriver(this.browser.getSeleniumAddress(), new ChromeOptions());
+        final RemoteWebDriver webDriver = new RemoteWebDriver(browser.get().getSeleniumAddress(), new ChromeOptions());
         webDriver.get(rootUrl);
         // }
 
