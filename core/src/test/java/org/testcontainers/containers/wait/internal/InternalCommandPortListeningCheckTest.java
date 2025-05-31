@@ -9,6 +9,7 @@ import org.rnorth.ducttape.TimeoutException;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
+import org.testcontainers.junit4.TestcontainersRule;
 
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
@@ -30,21 +31,23 @@ public class InternalCommandPortListeningCheckTest {
     }
 
     @Rule
-    public GenericContainer container;
+    public TestcontainersRule<GenericContainer<?>> container;
 
     public InternalCommandPortListeningCheckTest(String dockerfile) {
         container =
-            new GenericContainer(
-                new ImageFromDockerfile()
-                    .withFileFromClasspath("Dockerfile", dockerfile)
-                    .withFileFromClasspath("nginx.conf", "internal-port-check-dockerfile/nginx.conf")
+            new TestcontainersRule<>(
+                new GenericContainer(
+                    new ImageFromDockerfile()
+                        .withFileFromClasspath("Dockerfile", dockerfile)
+                        .withFileFromClasspath("nginx.conf", "internal-port-check-dockerfile/nginx.conf")
+                )
             );
     }
 
     @Test
     public void singleListening() {
         final InternalCommandPortListeningCheck check = new InternalCommandPortListeningCheck(
-            container,
+            container.get(),
             ImmutableSet.of(8080)
         );
 
@@ -54,7 +57,7 @@ public class InternalCommandPortListeningCheckTest {
     @Test
     public void nonListening() {
         final InternalCommandPortListeningCheck check = new InternalCommandPortListeningCheck(
-            container,
+            container.get(),
             ImmutableSet.of(8080, 1234)
         );
 
@@ -67,7 +70,7 @@ public class InternalCommandPortListeningCheckTest {
     @Test
     public void lowAndHighPortListening() {
         final InternalCommandPortListeningCheck check = new InternalCommandPortListeningCheck(
-            container,
+            container.get(),
             ImmutableSet.of(100, 8080)
         );
 

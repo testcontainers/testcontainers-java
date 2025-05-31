@@ -9,7 +9,7 @@ Add a `@Rule` or `@ClassRule` annotated field to your test class, e.g.:
 ```java
 public class SimpleMySQLTest {
     @Rule
-    public MySQLContainer mysql = new MySQLContainer();
+    public TestcontainersRule<MySQLContainer> mysql = new TestcontainersRule<>(new MySQLContainer());
     
     // [...]
 }

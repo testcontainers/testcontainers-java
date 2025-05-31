@@ -6,6 +6,8 @@ dependencies {
     // TODO use JDK's HTTP client and/or Apache HttpClient5
     shaded 'com.squareup.okhttp3:okhttp:4.12.0'
 
+    testImplementation project(':junit4')
+    testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.assertj:assertj-core:3.26.3'
     testImplementation 'com.azure:azure-cosmos:4.63.3'
     testImplementation 'com.azure:azure-storage-blob:12.29.0'

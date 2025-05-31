@@ -20,6 +20,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import org.junit.Rule;
 import org.junit.Test;
+import org.testcontainers.junit4.TestcontainersRule;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
@@ -35,8 +36,10 @@ public class BigtableEmulatorContainerTest {
 
     @Rule
     // emulatorContainer {
-    public BigtableEmulatorContainer emulator = new BigtableEmulatorContainer(
-        DockerImageName.parse("gcr.io/google.com/cloudsdktool/google-cloud-cli:441.0.0-emulators")
+    public TestcontainersRule<BigtableEmulatorContainer> emulator = new TestcontainersRule<>(
+        new BigtableEmulatorContainer(
+            DockerImageName.parse("gcr.io/google.com/cloudsdktool/google-cloud-cli:441.0.0-emulators")
+        )
     );
 
     // }
@@ -44,7 +47,10 @@ public class BigtableEmulatorContainerTest {
     @Test
     // testWithEmulatorContainer {
     public void testSimple() throws IOException {
-        ManagedChannel channel = ManagedChannelBuilder.forTarget(emulator.getEmulatorEndpoint()).usePlaintext().build();
+        ManagedChannel channel = ManagedChannelBuilder
+            .forTarget(emulator.get().getEmulatorEndpoint())
+            .usePlaintext()
+            .build();
 
         TransportChannelProvider channelProvider = FixedTransportChannelProvider.create(
             GrpcTransportChannel.create(channel)
@@ -54,7 +60,7 @@ public class BigtableEmulatorContainerTest {
         try (
             BigtableDataClient client = BigtableDataClient.create(
                 BigtableDataSettings
-                    .newBuilderForEmulator(emulator.getHost(), emulator.getEmulatorPort())
+                    .newBuilderForEmulator(emulator.get().getHost(), emulator.get().getEmulatorPort())
                     .setProjectId(PROJECT_ID)
                     .setInstanceId(INSTANCE_ID)
                     .build()

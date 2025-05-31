@@ -24,6 +24,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import org.junit.Rule;
 import org.junit.Test;
+import org.testcontainers.junit4.TestcontainersRule;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
@@ -36,8 +37,10 @@ public class PubSubEmulatorContainerTest {
 
     @Rule
     // emulatorContainer {
-    public PubSubEmulatorContainer emulator = new PubSubEmulatorContainer(
-        DockerImageName.parse("gcr.io/google.com/cloudsdktool/google-cloud-cli:441.0.0-emulators")
+    public TestcontainersRule<PubSubEmulatorContainer> emulator = new TestcontainersRule<>(
+        new PubSubEmulatorContainer(
+            DockerImageName.parse("gcr.io/google.com/cloudsdktool/google-cloud-cli:441.0.0-emulators")
+        )
     );
 
     // }
@@ -45,7 +48,7 @@ public class PubSubEmulatorContainerTest {
     @Test
     // testWithEmulatorContainer {
     public void testSimple() throws IOException {
-        String hostport = emulator.getEmulatorEndpoint();
+        String hostport = emulator.get().getEmulatorEndpoint();
         ManagedChannel channel = ManagedChannelBuilder.forTarget(hostport).usePlaintext().build();
         try {
             TransportChannelProvider channelProvider = FixedTransportChannelProvider.create(

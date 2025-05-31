@@ -6,6 +6,7 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.TestImages;
+import org.testcontainers.junit4.TestcontainersRule;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -15,22 +16,24 @@ public class NetworkTest {
     public static class WithRules {
 
         @Rule
-        public Network network = Network.newNetwork();
+        public TestcontainersRule<Network> network = new TestcontainersRule<>(Network.newNetwork());
 
         @Rule
-        public GenericContainer<?> foo = new GenericContainer<>(TestImages.TINY_IMAGE)
-            .withNetwork(network)
-            .withNetworkAliases("foo")
-            .withCommand("/bin/sh", "-c", "while true ; do printf 'HTTP/1.1 200 OK\\n\\nyay' | nc -l -p 8080; done");
+        public TestcontainersRule<GenericContainer<?>> foo = new TestcontainersRule<>(
+            new GenericContainer<>(TestImages.TINY_IMAGE)
+                .withNetwork(network.get())
+                .withNetworkAliases("foo")
+                .withCommand("/bin/sh", "-c", "while true ; do printf 'HTTP/1.1 200 OK\\n\\nyay' | nc -l -p 8080; done")
+        );
 
         @Rule
-        public GenericContainer<?> bar = new GenericContainer<>(TestImages.TINY_IMAGE)
-            .withNetwork(network)
-            .withCommand("top");
+        public TestcontainersRule<GenericContainer<?>> bar = new TestcontainersRule<>(
+            new GenericContainer<>(TestImages.TINY_IMAGE).withNetwork(network.get()).withCommand("top")
+        );
 
         @Test
         public void testNetworkSupport() throws Exception {
-            String response = bar.execInContainer("wget", "-O", "-", "http://foo:8080").getStdout();
+            String response = bar.get().execInContainer("wget", "-O", "-", "http://foo:8080").getStdout();
             assertThat(response).as("received response").isEqualTo("yay");
         }
     }

@@ -10,6 +10,7 @@ import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.output.ToStringConsumer;
 import org.testcontainers.containers.output.WaitingConsumer;
+import org.testcontainers.junit4.TestcontainersRule;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -24,8 +25,9 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 public class OutputStreamTest {
 
     @Rule
-    public GenericContainer container = new GenericContainer(TestImages.ALPINE_IMAGE)
-        .withCommand("ping -c 5 127.0.0.1");
+    public TestcontainersRule<GenericContainer<?>> container = new TestcontainersRule<>(
+        new GenericContainer(TestImages.ALPINE_IMAGE).withCommand("ping -c 5 127.0.0.1")
+    );
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OutputStreamTest.class);
 
@@ -33,7 +35,7 @@ public class OutputStreamTest {
     public void testFetchStdout() throws TimeoutException {
         WaitingConsumer consumer = new WaitingConsumer();
 
-        container.followOutput(consumer, OutputFrame.OutputType.STDOUT);
+        container.get().followOutput(consumer, OutputFrame.OutputType.STDOUT);
 
         consumer.waitUntil(
             frame -> frame.getType() == OutputFrame.OutputType.STDOUT && frame.getUtf8String().contains("seq=2"),
@@ -46,7 +48,7 @@ public class OutputStreamTest {
     public void testFetchStdoutWithTimeout() {
         WaitingConsumer consumer = new WaitingConsumer();
 
-        container.followOutput(consumer, OutputFrame.OutputType.STDOUT);
+        container.get().followOutput(consumer, OutputFrame.OutputType.STDOUT);
 
         assertThat(
             catchThrowable(() -> {
@@ -69,7 +71,7 @@ public class OutputStreamTest {
     public void testFetchStdoutWithNoLimit() throws TimeoutException {
         WaitingConsumer consumer = new WaitingConsumer();
 
-        container.followOutput(consumer, OutputFrame.OutputType.STDOUT);
+        container.get().followOutput(consumer, OutputFrame.OutputType.STDOUT);
 
         consumer.waitUntil(frame -> {
             return frame.getType() == OutputFrame.OutputType.STDOUT && frame.getUtf8String().contains("seq=2");
@@ -82,7 +84,7 @@ public class OutputStreamTest {
         Slf4jLogConsumer logConsumer = new Slf4jLogConsumer(LOGGER);
 
         Consumer<OutputFrame> composedConsumer = logConsumer.andThen(waitingConsumer);
-        container.followOutput(composedConsumer);
+        container.get().followOutput(composedConsumer);
 
         waitingConsumer.waitUntil(frame -> {
             return frame.getType() == OutputFrame.OutputType.STDOUT && frame.getUtf8String().contains("seq=2");
@@ -95,7 +97,7 @@ public class OutputStreamTest {
         ToStringConsumer toStringConsumer = new ToStringConsumer();
 
         Consumer<OutputFrame> composedConsumer = toStringConsumer.andThen(waitingConsumer);
-        container.followOutput(composedConsumer);
+        container.get().followOutput(composedConsumer);
 
         waitingConsumer.waitUntilEnd(30, TimeUnit.SECONDS);
 

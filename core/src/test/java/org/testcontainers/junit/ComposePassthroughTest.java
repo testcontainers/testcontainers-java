@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.testcontainers.containers.ComposeContainer;
 import org.testcontainers.containers.ContainerState;
 import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy;
+import org.testcontainers.junit4.TestcontainersRule;
 import org.testcontainers.utility.TestEnvironment;
 
 import java.io.File;
@@ -25,11 +26,11 @@ public class ComposePassthroughTest {
     }
 
     @Rule
-    public ComposeContainer compose = new ComposeContainer(
-        new File("src/test/resources/v2-compose-test-passthrough.yml")
-    )
-        .withEnv("foo", "bar")
-        .withExposedService("alpine-1", 3000, waitStrategy);
+    public TestcontainersRule<ComposeContainer> compose = new TestcontainersRule<>(
+        new ComposeContainer(new File("src/test/resources/v2-compose-test-passthrough.yml"))
+            .withEnv("foo", "bar")
+            .withExposedService("alpine-1", 3000, waitStrategy)
+    );
 
     @Test
     public void testContainerInstanceProperties() {

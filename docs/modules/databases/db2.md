@@ -13,12 +13,13 @@ Running DB2 as a stand-in for in a test:
 public class SomeTest {
 
     @ClassRule
-    public Db2Container db2 = new Db2Container()
-        .acceptLicense();
+    public TestcontainersRule<Db2Container> db2 = new TestcontainersRule<>(
+        new Db2Container().acceptLicense()
+    );
     
     @Test
     public void someTestMethod() {
-        String url = db2.getJdbcUrl();
+        String url = db2.get().getJdbcUrl();
 
         ... create a connection and run test as normal
     }

@@ -6,6 +6,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
+import org.testcontainers.junit4.TestcontainersRule;
 import org.testcontainers.utility.DockerImageName;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -14,26 +15,30 @@ public class WaitStrategiesTest {
 
     @Rule
     // waitForNetworkListening {
-    public GenericContainer nginx = new GenericContainer(DockerImageName.parse("nginx:1.27.0-alpine3.19-slim")) //
-        .withExposedPorts(80);
+    public TestcontainersRule<GenericContainer<?>> nginx = new TestcontainersRule<>(
+        new GenericContainer(DockerImageName.parse("nginx:1.27.0-alpine3.19-slim")) //
+            .withExposedPorts(80)
+    );
 
     // }
 
     @Rule
     // waitForSimpleHttp {
-    public GenericContainer nginxWithHttpWait = new GenericContainer(
-        DockerImageName.parse("nginx:1.27.0-alpine3.19-slim")
-    )
-        .withExposedPorts(80)
-        .waitingFor(Wait.forHttp("/"));
+    public TestcontainersRule<GenericContainer<?>> nginxWithHttpWait = new TestcontainersRule<>(
+        new GenericContainer(DockerImageName.parse("nginx:1.27.0-alpine3.19-slim"))
+            .withExposedPorts(80)
+            .waitingFor(Wait.forHttp("/"))
+    );
 
     // }
 
     @Rule
     // logMessageWait {
-    public GenericContainer containerWithLogWait = new GenericContainer(DockerImageName.parse("redis:6-alpine"))
-        .withExposedPorts(6379)
-        .waitingFor(Wait.forLogMessage(".*Ready to accept connections.*\\n", 1));
+    public TestcontainersRule<GenericContainer<?>> containerWithLogWait = new TestcontainersRule<>(
+        new GenericContainer(DockerImageName.parse("redis:6-alpine"))
+            .withExposedPorts(6379)
+            .waitingFor(Wait.forLogMessage(".*Ready to accept connections.*\\n", 1))
+    );
 
     // }
 
@@ -71,8 +76,8 @@ public class WaitStrategiesTest {
 
     @Test
     public void testContainersAllStarted() {
-        assertThat(nginx.isRunning()).isTrue();
-        assertThat(nginxWithHttpWait.isRunning()).isTrue();
-        assertThat(containerWithLogWait.isRunning()).isTrue();
+        assertThat(nginx.get().isRunning()).isTrue();
+        assertThat(nginxWithHttpWait.get().isRunning()).isTrue();
+        assertThat(containerWithLogWait.get().isRunning()).isTrue();
     }
 }

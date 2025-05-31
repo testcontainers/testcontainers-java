@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit4.TestcontainersRule;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
@@ -18,8 +19,10 @@ public class CmdModifierTest {
 
     // hostname {
     @Rule
-    public GenericContainer theCache = new GenericContainer<>(DockerImageName.parse("redis:6-alpine"))
-        .withCreateContainerCmdModifier(cmd -> cmd.withHostName("the-cache"));
+    public TestcontainersRule<GenericContainer<?>> theCache = new TestcontainersRule<>(
+        new GenericContainer<>(DockerImageName.parse("redis:6-alpine"))
+            .withCreateContainerCmdModifier(cmd -> cmd.withHostName("the-cache"))
+    );
 
     // }
 
@@ -30,25 +33,28 @@ public class CmdModifierTest {
     private long memorySwapInBytes = 64l * 1024l * 1024l;
 
     @Rule
-    public GenericContainer memoryLimitedRedis = new GenericContainer<>(DockerImageName.parse("redis:6-alpine"))
-        .withCreateContainerCmdModifier(cmd -> {
-            cmd.getHostConfig()
-                .withMemory(memoryInBytes)
-                .withMemorySwap(memorySwapInBytes);
-        });
+    public TestcontainersRule<GenericContainer<?>> memoryLimitedRedis = new TestcontainersRule<>(
+        new GenericContainer<>(DockerImageName.parse("redis:6-alpine"))
+            .withCreateContainerCmdModifier(cmd -> {
+                cmd.getHostConfig()
+                    .withMemory(memoryInBytes)
+                    .withMemorySwap(memorySwapInBytes);
+            }));
 
     // }
     // spotless:on
 
     @Test
     public void testHostnameModified() throws IOException, InterruptedException {
-        final Container.ExecResult execResult = theCache.execInContainer("hostname");
+        final Container.ExecResult execResult = theCache.get().execInContainer("hostname");
         assertThat(execResult.getStdout().trim()).isEqualTo("the-cache");
     }
 
     @Test
     public void testMemoryLimitModified() throws IOException, InterruptedException {
-        final Container.ExecResult execResult = memoryLimitedRedis.execInContainer("cat", getMemoryLimitFilePath());
+        final Container.ExecResult execResult = memoryLimitedRedis
+            .get()
+            .execInContainer("cat", getMemoryLimitFilePath());
         assertThat(execResult.getStdout().trim()).isEqualTo(String.valueOf(memoryInBytes));
     }
 

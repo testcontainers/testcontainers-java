@@ -8,6 +8,7 @@ import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.Key;
 import org.junit.Rule;
 import org.junit.Test;
+import org.testcontainers.junit4.TestcontainersRule;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
@@ -18,8 +19,10 @@ public class DatastoreEmulatorContainerTest {
 
     @Rule
     // creatingDatastoreEmulatorContainer {
-    public DatastoreEmulatorContainer emulator = new DatastoreEmulatorContainer(
-        DockerImageName.parse("gcr.io/google.com/cloudsdktool/google-cloud-cli:441.0.0-emulators")
+    public TestcontainersRule<DatastoreEmulatorContainer> emulator = new TestcontainersRule<>(
+        new DatastoreEmulatorContainer(
+            DockerImageName.parse("gcr.io/google.com/cloudsdktool/google-cloud-cli:441.0.0-emulators")
+        )
     );
 
     // }
@@ -29,10 +32,10 @@ public class DatastoreEmulatorContainerTest {
     public void testSimple() {
         DatastoreOptions options = DatastoreOptions
             .newBuilder()
-            .setHost(emulator.getEmulatorEndpoint())
+            .setHost(emulator.get().getEmulatorEndpoint())
             .setCredentials(NoCredentials.getInstance())
             .setRetrySettings(ServiceOptions.getNoRetrySettings())
-            .setProjectId(emulator.getProjectId())
+            .setProjectId(emulator.get().getProjectId())
             .build();
         Datastore datastore = options.getService();
 

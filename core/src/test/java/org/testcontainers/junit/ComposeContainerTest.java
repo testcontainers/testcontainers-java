@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.testcontainers.containers.ComposeContainer;
 import org.testcontainers.containers.ContainerState;
 import org.testcontainers.containers.DockerComposeContainer;
+import org.testcontainers.junit4.TestcontainersRule;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,30 +20,30 @@ public class ComposeContainerTest extends BaseComposeTest {
 
     @Rule
     // composeContainerConstructor {
-    public ComposeContainer environment = new ComposeContainer(
-        new File("src/test/resources/composev2/compose-test.yml")
-    )
-        .withExposedService("redis-1", REDIS_PORT)
-        .withExposedService("db-1", 3306);
+    public TestcontainersRule<ComposeContainer> environment = new TestcontainersRule<>(
+        new ComposeContainer(new File("src/test/resources/composev2/compose-test.yml"))
+            .withExposedService("redis-1", REDIS_PORT)
+            .withExposedService("db-1", 3306)
+    );
 
     // }
 
     @Override
     protected ComposeContainer getEnvironment() {
-        return environment;
+        return environment.get();
     }
 
     @Test
     public void testGetServiceHostAndPort() {
         // getServiceHostAndPort {
-        String serviceHost = environment.getServiceHost("redis-1", REDIS_PORT);
-        int serviceWithInstancePort = environment.getServicePort("redis-1", REDIS_PORT);
+        String serviceHost = environment.get().getServiceHost("redis-1", REDIS_PORT);
+        int serviceWithInstancePort = environment.get().getServicePort("redis-1", REDIS_PORT);
         // }
 
         assertThat(serviceHost).as("Service host is not blank").isNotBlank();
         assertThat(serviceWithInstancePort).as("Port is set for service with instance number").isNotNull();
 
-        int serviceWithoutInstancePort = environment.getServicePort("redis", REDIS_PORT);
+        int serviceWithoutInstancePort = environment.get().getServicePort("redis", REDIS_PORT);
         assertThat(serviceWithoutInstancePort).as("Port is set for service with instance number").isNotNull();
         assertThat(serviceWithoutInstancePort).as("Service ports are the same").isEqualTo(serviceWithInstancePort);
     }
@@ -50,7 +51,7 @@ public class ComposeContainerTest extends BaseComposeTest {
     @Test
     public void shouldRetrieveContainerByServiceName() {
         String existingServiceName = "db-1";
-        Optional<ContainerState> result = environment.getContainerByServiceName(existingServiceName);
+        Optional<ContainerState> result = environment.get().getContainerByServiceName(existingServiceName);
         assertThat(result)
             .as(String.format("Container should be found by service name %s", existingServiceName))
             .isPresent();
@@ -62,7 +63,7 @@ public class ComposeContainerTest extends BaseComposeTest {
     @Test
     public void shouldReturnEmptyResultOnNoneExistingService() {
         String notExistingServiceName = "db-256";
-        Optional<ContainerState> result = environment.getContainerByServiceName(notExistingServiceName);
+        Optional<ContainerState> result = environment.get().getContainerByServiceName(notExistingServiceName);
         assertThat(result)
             .as(String.format("No container should be found under service name %s", notExistingServiceName))
             .isNotPresent();

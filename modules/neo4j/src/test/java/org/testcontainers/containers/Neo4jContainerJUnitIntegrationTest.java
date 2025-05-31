@@ -6,6 +6,7 @@ import org.neo4j.driver.AuthTokens;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.GraphDatabase;
 import org.neo4j.driver.Session;
+import org.testcontainers.junit4.TestcontainersRule;
 
 import java.util.Collections;
 
@@ -18,15 +19,20 @@ import static org.assertj.core.api.Assertions.fail;
 public class Neo4jContainerJUnitIntegrationTest {
 
     @ClassRule
-    public static Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4");
+    public static TestcontainersRule<Neo4jContainer<?>> neo4jContainer = new TestcontainersRule<>(
+        new Neo4jContainer<>("neo4j:4.4")
+    );
 
     @Test
     public void shouldStart() {
-        boolean actual = neo4jContainer.isRunning();
+        boolean actual = neo4jContainer.get().isRunning();
         assertThat(actual).isTrue();
 
         try (
-            Driver driver = GraphDatabase.driver(neo4jContainer.getBoltUrl(), AuthTokens.basic("neo4j", "password"));
+            Driver driver = GraphDatabase.driver(
+                neo4jContainer.get().getBoltUrl(),
+                AuthTokens.basic("neo4j", "password")
+            );
             Session session = driver.session()
         ) {
             long one = session.run("RETURN 1", Collections.emptyMap()).next().get(0).asLong();
@@ -38,7 +44,7 @@ public class Neo4jContainerJUnitIntegrationTest {
 
     @Test
     public void shouldReturnBoltUrl() {
-        String actual = neo4jContainer.getBoltUrl();
+        String actual = neo4jContainer.get().getBoltUrl();
 
         assertThat(actual).isNotNull();
         assertThat(actual).startsWith("bolt://");
@@ -46,7 +52,7 @@ public class Neo4jContainerJUnitIntegrationTest {
 
     @Test
     public void shouldReturnHttpUrl() {
-        String actual = neo4jContainer.getHttpUrl();
+        String actual = neo4jContainer.get().getHttpUrl();
 
         assertThat(actual).isNotNull();
         assertThat(actual).startsWith("http://");

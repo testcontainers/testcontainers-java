@@ -1,13 +1,13 @@
 package org.testcontainers.junit.jupiter;
 
-import org.junit.AssumptionViolatedException;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.opentest4j.TestAbortedException;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 // The order of @ExtendsWith and @Testcontainers is crucial in order for the tests
 @Testcontainers
@@ -31,7 +31,7 @@ class TestLifecycleAwareExceptionCapturingTest {
     @Order(2)
     void should_have_captured_thrownException() {
         Throwable capturedThrowable = startedTestContainer.getCapturedThrowable();
-        assertThat(capturedThrowable).isInstanceOf(AssumptionViolatedException.class);
+        assertThat(capturedThrowable).isInstanceOf(TestAbortedException.class);
         assertThat(capturedThrowable.getMessage()).isEqualTo("got: <false>, expected: is <true>");
     }
 }

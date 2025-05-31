@@ -7,8 +7,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.TestImages;
 import org.testcontainers.Testcontainers;
@@ -189,11 +187,6 @@ public class ExposedHostTest {
 
             @Override
             public void close() {}
-
-            @Override
-            public Statement apply(Statement base, Description description) {
-                return null;
-            }
         };
 
         List<com.github.dockerjava.api.model.Network> networks = DockerClientFactory

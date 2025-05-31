@@ -9,6 +9,7 @@ import org.testcontainers.containers.BrowserWebDriverContainer;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.junit4.TestcontainersRule;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
@@ -21,16 +22,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class BaseWebDriverContainerTest {
 
     @ClassRule
-    public static Network NETWORK = Network.newNetwork();
+    public static TestcontainersRule<Network> NETWORK = new TestcontainersRule<>(Network.newNetwork());
 
     @ClassRule
-    public static GenericContainer<?> HELLO_WORLD = new GenericContainer<>(
-        DockerImageName.parse("testcontainers/helloworld:1.1.0")
-    )
-        .withNetwork(NETWORK)
-        .withNetworkAliases("helloworld")
-        .withExposedPorts(8080, 8081)
-        .waitingFor(new HttpWaitStrategy());
+    public static TestcontainersRule<GenericContainer<?>> HELLO_WORLD = new TestcontainersRule<>(
+        new GenericContainer<>(DockerImageName.parse("testcontainers/helloworld:1.1.0"))
+            .withNetwork(NETWORK.get())
+            .withNetworkAliases("helloworld")
+            .withExposedPorts(8080, 8081)
+            .waitingFor(new HttpWaitStrategy())
+    );
 
     protected static void doSimpleExplore(BrowserWebDriverContainer<?> rule, Capabilities capabilities) {
         RemoteWebDriver driver = new RemoteWebDriver(rule.getSeleniumAddress(), capabilities);

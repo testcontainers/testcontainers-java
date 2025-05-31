@@ -3,6 +3,8 @@ description = "Testcontainers :: MockServer"
 dependencies {
     api project(':testcontainers')
 
+    testImplementation project(':junit4')
+    testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.mock-server:mockserver-client-java:5.15.0'
     testImplementation 'org.assertj:assertj-core:3.26.3'
 }

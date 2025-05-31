@@ -5,8 +5,6 @@ import com.google.common.annotations.VisibleForTesting;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.SystemUtils;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
@@ -30,9 +28,7 @@ import java.util.function.Consumer;
  * Container which launches Docker Compose, for the purposes of launching a defined set of containers.
  */
 @Slf4j
-public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
-    extends FailureDetectingExternalResource
-    implements Startable {
+public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> implements Startable {
 
     private final Map<String, Integer> scalingPreferences = new HashMap<>();
 
@@ -97,32 +93,6 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>>
                 DEFAULT_IMAGE_NAME
             );
         this.project = this.composeDelegate.getProject();
-    }
-
-    @Override
-    @Deprecated
-    public Statement apply(Statement base, Description description) {
-        return super.apply(base, description);
-    }
-
-    @Override
-    @Deprecated
-    public void starting(Description description) {
-        start();
-    }
-
-    @Override
-    @Deprecated
-    protected void succeeded(Description description) {}
-
-    @Override
-    @Deprecated
-    protected void failed(Throwable e, Description description) {}
-
-    @Override
-    @Deprecated
-    public void finished(Description description) {
-        stop();
     }
 
     @Override

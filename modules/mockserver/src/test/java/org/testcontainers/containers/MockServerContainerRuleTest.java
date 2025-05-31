@@ -3,6 +3,7 @@ package org.testcontainers.containers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockserver.client.MockServerClient;
+import org.testcontainers.junit4.TestcontainersRule;
 import org.testcontainers.utility.DockerImageName;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,7 +18,9 @@ public class MockServerContainerRuleTest {
         .withTag("mockserver-" + MockServerClient.class.getPackage().getImplementationVersion());
 
     @Rule
-    public MockServerContainer mockServer = new MockServerContainer(MOCKSERVER_IMAGE);
+    public TestcontainersRule<MockServerContainer> mockServer = new TestcontainersRule<>(
+        new MockServerContainer(MOCKSERVER_IMAGE)
+    );
 
     // }
 
@@ -25,7 +28,10 @@ public class MockServerContainerRuleTest {
     public void shouldReturnExpectation() throws Exception {
         // testSimpleExpectation {
         try (
-            MockServerClient mockServerClient = new MockServerClient(mockServer.getHost(), mockServer.getServerPort())
+            MockServerClient mockServerClient = new MockServerClient(
+                mockServer.get().getHost(),
+                mockServer.get().getServerPort()
+            )
         ) {
             mockServerClient
                 .when(request().withPath("/person").withQueryStringParameter("name", "peter"))
@@ -33,7 +39,7 @@ public class MockServerContainerRuleTest {
 
             // ...a GET request to '/person?name=peter' returns "Peter the person!"
 
-            assertThat(SimpleHttpClient.responseFromMockserver(mockServer, "/person?name=peter"))
+            assertThat(SimpleHttpClient.responseFromMockserver(mockServer.get(), "/person?name=peter"))
                 .as("Expectation returns expected response body")
                 .contains("Peter the person");
         }

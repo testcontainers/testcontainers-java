@@ -6,6 +6,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 import org.testcontainers.images.builder.Transferable;
+import org.testcontainers.junit4.TestcontainersRule;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
@@ -17,13 +18,15 @@ public class KubectlContainerTest {
     public static Network network = Network.SHARED;
 
     @ClassRule
-    public static K3sContainer k3s = new K3sContainer(DockerImageName.parse("rancher/k3s:v1.21.3-k3s1"))
-        .withNetwork(network)
-        .withNetworkAliases("k3s");
+    public static TestcontainersRule<K3sContainer> k3s = new TestcontainersRule<>(
+        new K3sContainer(DockerImageName.parse("rancher/k3s:v1.21.3-k3s1"))
+            .withNetwork(network)
+            .withNetworkAliases("k3s")
+    );
 
     @Test
     public void shouldExposeKubeConfigForNetworkAlias() throws Exception {
-        String kubeConfigYaml = k3s.generateInternalKubeConfigYaml("k3s");
+        String kubeConfigYaml = k3s.get().generateInternalKubeConfigYaml("k3s");
 
         try (
             GenericContainer<?> kubectlContainer = new GenericContainer<>("rancher/kubectl:v1.23.3")
@@ -40,6 +43,6 @@ public class KubectlContainerTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowAnExceptionForUnknownNetworkAlias() {
-        k3s.generateInternalKubeConfigYaml("not-set-network-alias");
+        k3s.get().generateInternalKubeConfigYaml("not-set-network-alias");
     }
 }

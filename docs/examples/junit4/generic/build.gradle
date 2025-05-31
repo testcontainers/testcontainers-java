@@ -3,6 +3,7 @@ description = "Examples for docs"
 dependencies {
     testImplementation "junit:junit:4.13.2"
     testImplementation project(":testcontainers")
+    testImplementation project(':junit4')
     testImplementation project(":selenium")
     testImplementation project(":mysql")
 

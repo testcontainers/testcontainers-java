@@ -11,6 +11,7 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.testcontainers.Testcontainers;
 import org.testcontainers.containers.BrowserWebDriverContainer;
+import org.testcontainers.junit4.TestcontainersRule;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -21,9 +22,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class LocalServerWebDriverContainerTest {
 
     @Rule
-    public BrowserWebDriverContainer<?> chrome = new BrowserWebDriverContainer<>()
-        .withAccessToHost(true)
-        .withCapabilities(new ChromeOptions());
+    public TestcontainersRule<BrowserWebDriverContainer<?>> chrome = new TestcontainersRule<>(
+        new BrowserWebDriverContainer<>().withAccessToHost(true).withCapabilities(new ChromeOptions())
+    );
 
     private int localPort;
 
@@ -44,7 +45,7 @@ public class LocalServerWebDriverContainerTest {
     @Test
     public void testConnection() {
         // getWebDriver {
-        RemoteWebDriver driver = new RemoteWebDriver(chrome.getSeleniumAddress(), new ChromeOptions());
+        RemoteWebDriver driver = new RemoteWebDriver(chrome.get().getSeleniumAddress(), new ChromeOptions());
         // }
 
         // Construct a URL that the browser container can access

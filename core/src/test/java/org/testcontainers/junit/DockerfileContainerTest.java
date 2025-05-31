@@ -8,6 +8,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
+import org.testcontainers.junit4.TestcontainersRule;
 
 import java.io.IOException;
 
@@ -19,21 +20,27 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class DockerfileContainerTest {
 
     @Rule
-    public GenericContainer dslContainer = new GenericContainer(
-        new ImageFromDockerfile("tcdockerfile/nginx", false)
-            .withDockerfileFromBuilder(builder -> {
-                builder
-                    .from("alpine:3.2") //
-                    .run("apk add --update nginx")
-                    .cmd("nginx", "-g", "daemon off;")
-                    .build();
-            })
-    )
-        .withExposedPorts(80);
+    public TestcontainersRule<GenericContainer<?>> dslContainer = new TestcontainersRule<>(
+        new GenericContainer(
+            new ImageFromDockerfile("tcdockerfile/nginx", false)
+                .withDockerfileFromBuilder(builder -> {
+                    builder
+                        .from("alpine:3.2") //
+                        .run("apk add --update nginx")
+                        .cmd("nginx", "-g", "daemon off;")
+                        .build();
+                })
+        )
+            .withExposedPorts(80)
+    );
 
     @Test
     public void simpleDslTest() throws IOException {
-        String address = String.format("http://%s:%s", dslContainer.getHost(), dslContainer.getMappedPort(80));
+        String address = String.format(
+            "http://%s:%s",
+            dslContainer.get().getHost(),
+            dslContainer.get().getMappedPort(80)
+        );
 
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
         HttpGet get = new HttpGet(address);

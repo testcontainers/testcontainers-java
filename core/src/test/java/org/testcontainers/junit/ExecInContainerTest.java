@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.testcontainers.TestImages;
 import org.testcontainers.containers.ExecConfig;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit4.TestcontainersRule;
 import org.testcontainers.utility.TestEnvironment;
 
 import java.util.Collections;
@@ -15,7 +16,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ExecInContainerTest {
 
     @ClassRule
-    public static GenericContainer<?> redis = new GenericContainer<>(TestImages.REDIS_IMAGE).withExposedPorts(6379);
+    public static TestcontainersRule<GenericContainer<?>> redis = new TestcontainersRule<>(
+        new GenericContainer<>(TestImages.REDIS_IMAGE).withExposedPorts(6379)
+    );
 
     @Test
     public void shouldExecuteCommand() throws Exception {
@@ -24,7 +27,7 @@ public class ExecInContainerTest {
         // Once they resolve the issue, this clause can be removed.
         Assume.assumeTrue(TestEnvironment.dockerExecutionDriverSupportsExec());
 
-        final GenericContainer.ExecResult result = redis.execInContainer("redis-cli", "role");
+        final GenericContainer.ExecResult result = redis.get().execInContainer("redis-cli", "role");
         assertThat(result.getStdout())
             .as("Output for \"redis-cli role\" command should start with \"master\"")
             .startsWith("master");
@@ -39,7 +42,7 @@ public class ExecInContainerTest {
         // Once they resolve the issue, this clause can be removed.
         Assume.assumeTrue(TestEnvironment.dockerExecutionDriverSupportsExec());
 
-        final GenericContainer.ExecResult result = redis.execInContainerWithUser("redis", "whoami");
+        final GenericContainer.ExecResult result = redis.get().execInContainerWithUser("redis", "whoami");
         assertThat(result.getStdout())
             .as("Output for \"whoami\" command should start with \"redis\"")
             .startsWith("redis");
@@ -51,9 +54,9 @@ public class ExecInContainerTest {
     public void shouldExecuteCommandWithWorkdir() throws Exception {
         Assume.assumeTrue(TestEnvironment.dockerExecutionDriverSupportsExec());
 
-        final GenericContainer.ExecResult result = redis.execInContainer(
-            ExecConfig.builder().workDir("/opt").command(new String[] { "pwd" }).build()
-        );
+        final GenericContainer.ExecResult result = redis
+            .get()
+            .execInContainer(ExecConfig.builder().workDir("/opt").command(new String[] { "pwd" }).build());
         assertThat(result.getStdout()).startsWith("/opt");
     }
 
@@ -61,13 +64,15 @@ public class ExecInContainerTest {
     public void shouldExecuteCommandWithEnvVars() throws Exception {
         Assume.assumeTrue(TestEnvironment.dockerExecutionDriverSupportsExec());
 
-        final GenericContainer.ExecResult result = redis.execInContainer(
-            ExecConfig
-                .builder()
-                .envVars(Collections.singletonMap("TESTCONTAINERS", "JAVA"))
-                .command(new String[] { "env" })
-                .build()
-        );
+        final GenericContainer.ExecResult result = redis
+            .get()
+            .execInContainer(
+                ExecConfig
+                    .builder()
+                    .envVars(Collections.singletonMap("TESTCONTAINERS", "JAVA"))
+                    .command(new String[] { "env" })
+                    .build()
+            );
         assertThat(result.getStdout()).contains("TESTCONTAINERS=JAVA");
     }
 }

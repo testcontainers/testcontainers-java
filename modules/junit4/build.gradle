@@ -1,0 +1,9 @@
+description = "Testcontainers :: Cassandra"
+
+dependencies {
+    api project(":testcontainers")
+    api 'junit:junit:4.13.2'
+
+    testImplementation 'com.datastax.oss:java-driver-core:4.17.0'
+    testImplementation 'org.assertj:assertj-core:3.26.3'
+}

@@ -13,6 +13,7 @@ import org.testcontainers.containers.ContainerState;
 import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
+import org.testcontainers.junit4.TestcontainersRule;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -38,27 +39,29 @@ public class AuthenticatedImagePullTest {
      * Containerised docker image registry, with simple hardcoded credentials
      */
     @ClassRule
-    public static DockerRegistryContainer authenticatedRegistry = new DockerRegistryContainer(
-        new ImageFromDockerfile()
-            .withDockerfileFromBuilder(builder -> {
-                builder
-                    .from(TestImages.DOCKER_REGISTRY_IMAGE.asCanonicalNameString())
-                    .run("htpasswd -Bbn testuser notasecret > /htpasswd")
-                    .env("REGISTRY_AUTH", "htpasswd")
-                    .env("REGISTRY_AUTH_HTPASSWD_PATH", "/htpasswd")
-                    .env("REGISTRY_AUTH_HTPASSWD_REALM", "Test");
-            })
+    public static TestcontainersRule<DockerRegistryContainer> authenticatedRegistry = new TestcontainersRule<>(
+        new DockerRegistryContainer(
+            new ImageFromDockerfile()
+                .withDockerfileFromBuilder(builder -> {
+                    builder
+                        .from(TestImages.DOCKER_REGISTRY_IMAGE.asCanonicalNameString())
+                        .run("htpasswd -Bbn testuser notasecret > /htpasswd")
+                        .env("REGISTRY_AUTH", "htpasswd")
+                        .env("REGISTRY_AUTH_HTPASSWD_PATH", "/htpasswd")
+                        .env("REGISTRY_AUTH_HTPASSWD_REALM", "Test");
+                })
+        )
     );
 
     private static RegistryAuthLocator originalAuthLocatorSingleton;
 
-    private final DockerImageName testImageName = authenticatedRegistry.createImage();
+    private final DockerImageName testImageName = authenticatedRegistry.get().createImage();
 
     @BeforeClass
     public static void beforeClass() throws Exception {
         originalAuthLocatorSingleton = RegistryAuthLocator.instance();
 
-        String testRegistryAddress = authenticatedRegistry.getEndpoint();
+        String testRegistryAddress = authenticatedRegistry.get().getEndpoint();
 
         final AuthConfig authConfig = new AuthConfig()
             .withUsername("testuser")

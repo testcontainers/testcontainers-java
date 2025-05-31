@@ -10,6 +10,7 @@ import com.azure.messaging.eventhubs.models.PartitionEvent;
 import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.containers.Network;
+import org.testcontainers.junit4.TestcontainersRule;
 import org.testcontainers.utility.MountableFile;
 
 import java.time.Duration;
@@ -23,26 +24,27 @@ public class EventHubsEmulatorContainerTest {
 
     @Rule
     // network {
-    public Network network = Network.newNetwork();
+    public TestcontainersRule<Network> network = new TestcontainersRule<>(Network.newNetwork());
 
     // }
 
     @Rule
     // azuriteContainer {
-    public AzuriteContainer azuriteContainer = new AzuriteContainer("mcr.microsoft.com/azure-storage/azurite:3.33.0")
-        .withNetwork(network);
+    public TestcontainersRule<AzuriteContainer> azuriteContainer = new TestcontainersRule<>(
+        new AzuriteContainer("mcr.microsoft.com/azure-storage/azurite:3.33.0").withNetwork(network.get())
+    );
 
     // }
 
     @Rule
     // emulatorContainer {
-    public EventHubsEmulatorContainer emulator = new EventHubsEmulatorContainer(
-        "mcr.microsoft.com/azure-messaging/eventhubs-emulator:2.0.1"
-    )
-        .acceptLicense()
-        .withNetwork(network)
-        .withConfig(MountableFile.forClasspathResource("/eventhubs_config.json"))
-        .withAzuriteContainer(azuriteContainer);
+    public TestcontainersRule<EventHubsEmulatorContainer> emulator = new TestcontainersRule<>(
+        new EventHubsEmulatorContainer("mcr.microsoft.com/azure-messaging/eventhubs-emulator:2.0.1")
+            .acceptLicense()
+            .withNetwork(network.get())
+            .withConfig(MountableFile.forClasspathResource("/eventhubs_config.json"))
+            .withAzuriteContainer(azuriteContainer.get())
+    );
 
     // }
 
@@ -51,12 +53,12 @@ public class EventHubsEmulatorContainerTest {
         try (
             // createProducerAndConsumer {
             EventHubProducerClient producer = new EventHubClientBuilder()
-                .connectionString(emulator.getConnectionString())
+                .connectionString(emulator.get().getConnectionString())
                 .fullyQualifiedNamespace("emulatorNs1")
                 .eventHubName("eh1")
                 .buildProducerClient();
             EventHubConsumerClient consumer = new EventHubClientBuilder()
-                .connectionString(emulator.getConnectionString())
+                .connectionString(emulator.get().getConnectionString())
                 .fullyQualifiedNamespace("emulatorNs1")
                 .eventHubName("eh1")
                 .consumerGroup("cg1")

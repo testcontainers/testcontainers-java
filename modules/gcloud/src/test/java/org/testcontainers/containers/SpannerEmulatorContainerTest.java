@@ -16,6 +16,7 @@ import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
 import org.junit.Rule;
 import org.junit.Test;
+import org.testcontainers.junit4.TestcontainersRule;
 import org.testcontainers.utility.DockerImageName;
 
 import java.util.Arrays;
@@ -27,8 +28,8 @@ public class SpannerEmulatorContainerTest {
 
     @Rule
     // emulatorContainer {
-    public SpannerEmulatorContainer emulator = new SpannerEmulatorContainer(
-        DockerImageName.parse("gcr.io/cloud-spanner-emulator/emulator:1.4.0")
+    public TestcontainersRule<SpannerEmulatorContainer> emulator = new TestcontainersRule<>(
+        new SpannerEmulatorContainer(DockerImageName.parse("gcr.io/cloud-spanner-emulator/emulator:1.4.0"))
     );
 
     // }
@@ -44,7 +45,7 @@ public class SpannerEmulatorContainerTest {
     public void testSimple() throws ExecutionException, InterruptedException {
         SpannerOptions options = SpannerOptions
             .newBuilder()
-            .setEmulatorHost(emulator.getEmulatorGrpcEndpoint())
+            .setEmulatorHost(emulator.get().getEmulatorGrpcEndpoint())
             .setCredentials(NoCredentials.getInstance())
             .setProjectId(PROJECT_NAME)
             .build();

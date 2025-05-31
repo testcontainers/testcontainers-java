@@ -9,6 +9,7 @@ import org.testcontainers.DockerRegistryContainer;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
+import org.testcontainers.junit4.TestcontainersRule;
 import org.testcontainers.utility.DockerImageName;
 
 import static org.assertj.core.api.Assertions.fail;
@@ -17,9 +18,11 @@ import static org.mockito.ArgumentMatchers.any;
 public class ImagePullPolicyTest {
 
     @ClassRule
-    public static DockerRegistryContainer registry = new DockerRegistryContainer();
+    public static TestcontainersRule<DockerRegistryContainer> registry = new TestcontainersRule<>(
+        new DockerRegistryContainer()
+    );
 
-    private final DockerImageName imageName = registry.createImage();
+    private final DockerImageName imageName = registry.get().createImage();
 
     @Test
     public void pullsByDefault() {

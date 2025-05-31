@@ -12,6 +12,7 @@ import com.amazonaws.services.dynamodbv2.model.TableDescription;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.testcontainers.junit4.TestcontainersRule;
 import org.testcontainers.utility.DockerImageName;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,14 +25,16 @@ public class DynaliteContainerTest {
     );
 
     @Rule
-    public DynaliteContainer dynamoDB = new DynaliteContainer(DYNALITE_IMAGE);
+    public TestcontainersRule<DynaliteContainer> dynamoDB = new TestcontainersRule<>(
+        new DynaliteContainer(DYNALITE_IMAGE)
+    );
 
     @Test
     public void simpleTestWithManualClientCreation() {
         final AmazonDynamoDB client = AmazonDynamoDBClientBuilder
             .standard()
-            .withEndpointConfiguration(dynamoDB.getEndpointConfiguration())
-            .withCredentials(dynamoDB.getCredentials())
+            .withEndpointConfiguration(dynamoDB.get().getEndpointConfiguration())
+            .withCredentials(dynamoDB.get().getCredentials())
             .build();
 
         runTest(client);
@@ -39,7 +42,7 @@ public class DynaliteContainerTest {
 
     @Test
     public void simpleTestWithProvidedClient() {
-        final AmazonDynamoDB client = dynamoDB.getClient();
+        final AmazonDynamoDB client = dynamoDB.get().getClient();
 
         runTest(client);
     }

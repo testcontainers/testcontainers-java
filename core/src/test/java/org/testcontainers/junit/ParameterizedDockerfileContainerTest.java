@@ -6,6 +6,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
+import org.testcontainers.junit4.TestcontainersRule;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -19,21 +20,23 @@ public class ParameterizedDockerfileContainerTest {
     private final String expectedVersion;
 
     @Rule
-    public GenericContainer container;
+    public TestcontainersRule<GenericContainer<?>> container;
 
     public ParameterizedDockerfileContainerTest(String baseImage, String expectedVersion) {
         container =
-            new GenericContainer(
-                new ImageFromDockerfile()
-                    .withDockerfileFromBuilder(builder -> {
-                        builder
-                            .from(baseImage)
-                            // Could potentially customise the image here, e.g. adding files, running
-                            //  commands, etc.
-                            .build();
-                    })
-            )
-                .withCommand("top");
+            new TestcontainersRule<>(
+                new GenericContainer<>(
+                    new ImageFromDockerfile()
+                        .withDockerfileFromBuilder(builder -> {
+                            builder
+                                .from(baseImage)
+                                // Could potentially customise the image here, e.g. adding files, running
+                                //  commands, etc.
+                                .build();
+                        })
+                )
+                    .withCommand("top")
+            );
         this.expectedVersion = expectedVersion;
     }
 
@@ -50,7 +53,7 @@ public class ParameterizedDockerfileContainerTest {
 
     @Test
     public void simpleTest() throws Exception {
-        final String release = container.execInContainer("cat", "/etc/alpine-release").getStdout();
+        final String release = container.get().execInContainer("cat", "/etc/alpine-release").getStdout();
 
         assertThat(release).as("/etc/alpine-release starts with " + expectedVersion).startsWith(expectedVersion);
     }

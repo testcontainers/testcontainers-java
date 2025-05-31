@@ -10,6 +10,7 @@ import com.google.cloud.firestore.QuerySnapshot;
 import com.google.cloud.firestore.WriteResult;
 import org.junit.Rule;
 import org.junit.Test;
+import org.testcontainers.junit4.TestcontainersRule;
 import org.testcontainers.utility.DockerImageName;
 
 import java.util.HashMap;
@@ -22,8 +23,10 @@ public class FirestoreEmulatorContainerTest {
 
     @Rule
     // emulatorContainer {
-    public FirestoreEmulatorContainer emulator = new FirestoreEmulatorContainer(
-        DockerImageName.parse("gcr.io/google.com/cloudsdktool/google-cloud-cli:441.0.0-emulators")
+    public TestcontainersRule<FirestoreEmulatorContainer> emulator = new TestcontainersRule<>(
+        new FirestoreEmulatorContainer(
+            DockerImageName.parse("gcr.io/google.com/cloudsdktool/google-cloud-cli:441.0.0-emulators")
+        )
     );
 
     // }
@@ -34,7 +37,7 @@ public class FirestoreEmulatorContainerTest {
         FirestoreOptions options = FirestoreOptions
             .getDefaultInstance()
             .toBuilder()
-            .setHost(emulator.getEmulatorEndpoint())
+            .setHost(emulator.get().getEmulatorEndpoint())
             .setCredentials(NoCredentials.getInstance())
             .setProjectId("test-project")
             .build();

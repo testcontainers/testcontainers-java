@@ -5,6 +5,7 @@ import eu.rekawek.toxiproxy.ToxiproxyClient;
 import eu.rekawek.toxiproxy.model.ToxicDirection;
 import org.junit.Rule;
 import org.junit.Test;
+import org.testcontainers.junit4.TestcontainersRule;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
@@ -23,25 +24,29 @@ public class ToxiproxyTest {
     // creatingProxy {
     // Create a common docker network so that containers can communicate
     @Rule
-    public Network network = Network.newNetwork();
+    public TestcontainersRule<Network> network = new TestcontainersRule<>(Network.newNetwork());
 
     // The target container - this could be anything
     @Rule
-    public GenericContainer<?> redis = new GenericContainer<>("redis:6-alpine")
+    public TestcontainersRule<GenericContainer<?>> redis = new TestcontainersRule<>(
+        new GenericContainer<>("redis:6-alpine")
         .withExposedPorts(6379)
-        .withNetwork(network)
-        .withNetworkAliases("redis");
+        .withNetwork(network.get())
+        .withNetworkAliases("redis")
+    );
 
     // Toxiproxy container, which will be used as a TCP proxy
     @Rule
-    public ToxiproxyContainer toxiproxy = new ToxiproxyContainer("ghcr.io/shopify/toxiproxy:2.5.0")
-        .withNetwork(network);
+    public TestcontainersRule<ToxiproxyContainer> toxiproxy = new TestcontainersRule<>(
+        new ToxiproxyContainer("ghcr.io/shopify/toxiproxy:2.5.0")
+        .withNetwork(network.get())
+    );
     // }
     // spotless:on
 
     @Test
     public void testDirect() {
-        final Jedis jedis = createJedis(redis.getHost(), redis.getFirstMappedPort());
+        final Jedis jedis = createJedis(redis.get().getHost(), redis.get().getFirstMappedPort());
         jedis.set("somekey", "somevalue");
 
         final String s = jedis.get("somekey");
@@ -51,13 +56,16 @@ public class ToxiproxyTest {
     @Test
     public void testLatencyViaProxy() throws IOException {
         // obtainProxyObject {
-        final ToxiproxyClient toxiproxyClient = new ToxiproxyClient(toxiproxy.getHost(), toxiproxy.getControlPort());
+        final ToxiproxyClient toxiproxyClient = new ToxiproxyClient(
+            toxiproxy.get().getHost(),
+            toxiproxy.get().getControlPort()
+        );
         final Proxy proxy = toxiproxyClient.createProxy("redis", "0.0.0.0:8666", "redis:6379");
         // }
 
         // obtainProxiedHostAndPortForHostMachine {
-        final String ipAddressViaToxiproxy = toxiproxy.getHost();
-        final int portViaToxiproxy = toxiproxy.getMappedPort(8666);
+        final String ipAddressViaToxiproxy = toxiproxy.get().getHost();
+        final int portViaToxiproxy = toxiproxy.get().getMappedPort(8666);
         // }
 
         final Jedis jedis = createJedis(ipAddressViaToxiproxy, portViaToxiproxy);
@@ -79,9 +87,12 @@ public class ToxiproxyTest {
 
     @Test
     public void testConnectionCut() throws IOException {
-        final ToxiproxyClient toxiproxyClient = new ToxiproxyClient(toxiproxy.getHost(), toxiproxy.getControlPort());
+        final ToxiproxyClient toxiproxyClient = new ToxiproxyClient(
+            toxiproxy.get().getHost(),
+            toxiproxy.get().getControlPort()
+        );
         final Proxy proxy = toxiproxyClient.createProxy("redis", "0.0.0.0:8666", "redis:6379");
-        final Jedis jedis = createJedis(toxiproxy.getHost(), toxiproxy.getMappedPort(8666));
+        final Jedis jedis = createJedis(toxiproxy.get().getHost(), toxiproxy.get().getMappedPort(8666));
         jedis.set("somekey", "somevalue");
 
         assertThat(jedis.get("somekey"))
@@ -117,20 +128,20 @@ public class ToxiproxyTest {
         try (
             GenericContainer<?> secondRedis = new GenericContainer<>("redis:6-alpine")
                 .withExposedPorts(6379)
-                .withNetwork(network)
+                .withNetwork(network.get())
                 .withNetworkAliases("redis2")
         ) {
             secondRedis.start();
 
             final ToxiproxyClient toxiproxyClient = new ToxiproxyClient(
-                toxiproxy.getHost(),
-                toxiproxy.getControlPort()
+                toxiproxy.get().getHost(),
+                toxiproxy.get().getControlPort()
             );
             final Proxy firstProxy = toxiproxyClient.createProxy("redis1", "0.0.0.0:8666", "redis:6379");
             toxiproxyClient.createProxy("redis2", "0.0.0.0:8667", "redis2:6379");
 
-            final Jedis firstJedis = createJedis(toxiproxy.getHost(), toxiproxy.getMappedPort(8666));
-            final Jedis secondJedis = createJedis(toxiproxy.getHost(), toxiproxy.getMappedPort(8667));
+            final Jedis firstJedis = createJedis(toxiproxy.get().getHost(), toxiproxy.get().getMappedPort(8666));
+            final Jedis secondJedis = createJedis(toxiproxy.get().getHost(), toxiproxy.get().getMappedPort(8667));
 
             firstJedis.set("somekey", "somevalue");
             secondJedis.set("somekey", "somevalue");
@@ -152,27 +163,27 @@ public class ToxiproxyTest {
 
     @Test
     public void testOriginalAndMappedPorts() {
-        final ToxiproxyContainer.ContainerProxy proxy = toxiproxy.getProxy("hostname", 7070);
+        final ToxiproxyContainer.ContainerProxy proxy = toxiproxy.get().getProxy("hostname", 7070);
 
         final int portViaToxiproxy = proxy.getOriginalProxyPort();
         assertThat(portViaToxiproxy).as("original port is correct").isEqualTo(8666);
 
-        final ToxiproxyContainer.ContainerProxy proxy1 = toxiproxy.getProxy("hostname1", 8080);
+        final ToxiproxyContainer.ContainerProxy proxy1 = toxiproxy.get().getProxy("hostname1", 8080);
         assertThat(proxy1.getOriginalProxyPort()).as("original port is correct").isEqualTo(8667);
         assertThat(proxy1.getProxyPort())
             .as("mapped port is correct")
-            .isEqualTo(toxiproxy.getMappedPort(proxy1.getOriginalProxyPort()));
+            .isEqualTo(toxiproxy.get().getMappedPort(proxy1.getOriginalProxyPort()));
 
-        final ToxiproxyContainer.ContainerProxy proxy2 = toxiproxy.getProxy("hostname2", 9090);
+        final ToxiproxyContainer.ContainerProxy proxy2 = toxiproxy.get().getProxy("hostname2", 9090);
         assertThat(proxy2.getOriginalProxyPort()).as("original port is correct").isEqualTo(8668);
         assertThat(proxy2.getProxyPort())
             .as("mapped port is correct")
-            .isEqualTo(toxiproxy.getMappedPort(proxy2.getOriginalProxyPort()));
+            .isEqualTo(toxiproxy.get().getMappedPort(proxy2.getOriginalProxyPort()));
     }
 
     @Test
     public void testProxyName() {
-        final ToxiproxyContainer.ContainerProxy proxy = toxiproxy.getProxy("hostname", 7070);
+        final ToxiproxyContainer.ContainerProxy proxy = toxiproxy.get().getProxy("hostname", 7070);
 
         assertThat(proxy.getName()).as("proxy name is hostname and port").isEqualTo("hostname:7070");
     }

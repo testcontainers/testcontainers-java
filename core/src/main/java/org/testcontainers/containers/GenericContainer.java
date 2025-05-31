@@ -32,8 +32,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
@@ -52,8 +50,6 @@ import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.lifecycle.Startables;
-import org.testcontainers.lifecycle.TestDescription;
-import org.testcontainers.lifecycle.TestLifecycleAware;
 import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.CommandLine;
 import org.testcontainers.utility.DockerImageName;
@@ -106,7 +102,6 @@ import static org.awaitility.Awaitility.await;
  */
 @Data
 public class GenericContainer<SELF extends GenericContainer<SELF>>
-    extends FailureDetectingExternalResource
     implements Container<SELF>, AutoCloseable, WaitStrategyTarget, Startable {
 
     public static final int CONTAINER_RUNNING_TIMEOUT_SEC = 30;
@@ -1051,57 +1046,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public void addExposedPorts(int... ports) {
         this.containerDef.addExposedTcpPorts(ports);
-    }
-
-    private TestDescription toDescription(Description description) {
-        return new TestDescription() {
-            @Override
-            public String getTestId() {
-                return description.getDisplayName();
-            }
-
-            @Override
-            public String getFilesystemFriendlyName() {
-                return description.getClassName() + "-" + description.getMethodName();
-            }
-        };
-    }
-
-    @Override
-    @Deprecated
-    public Statement apply(Statement base, Description description) {
-        return super.apply(base, description);
-    }
-
-    @Override
-    @Deprecated
-    protected void starting(Description description) {
-        if (this instanceof TestLifecycleAware) {
-            ((TestLifecycleAware) this).beforeTest(toDescription(description));
-        }
-        this.start();
-    }
-
-    @Override
-    @Deprecated
-    protected void succeeded(Description description) {
-        if (this instanceof TestLifecycleAware) {
-            ((TestLifecycleAware) this).afterTest(toDescription(description), Optional.empty());
-        }
-    }
-
-    @Override
-    @Deprecated
-    protected void failed(Throwable e, Description description) {
-        if (this instanceof TestLifecycleAware) {
-            ((TestLifecycleAware) this).afterTest(toDescription(description), Optional.of(e));
-        }
-    }
-
-    @Override
-    @Deprecated
-    protected void finished(Description description) {
-        this.stop();
     }
 
     /**

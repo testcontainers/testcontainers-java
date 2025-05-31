@@ -9,6 +9,7 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.testcontainers.junit4.TestcontainersRule;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.FileOutputStream;
@@ -37,8 +38,10 @@ public class CosmosDBEmulatorContainerTest {
 
     @Rule
     // emulatorContainer {
-    public CosmosDBEmulatorContainer emulator = new CosmosDBEmulatorContainer(
-        DockerImageName.parse("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:latest")
+    public TestcontainersRule<CosmosDBEmulatorContainer> emulator = new TestcontainersRule<>(
+        new CosmosDBEmulatorContainer(
+            DockerImageName.parse("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:latest")
+        )
     );
 
     // }
@@ -47,20 +50,20 @@ public class CosmosDBEmulatorContainerTest {
     public void testWithCosmosClient() throws Exception {
         // buildAndSaveNewKeyStore {
         Path keyStoreFile = tempFolder.newFile("azure-cosmos-emulator.keystore").toPath();
-        KeyStore keyStore = emulator.buildNewKeyStore();
-        keyStore.store(new FileOutputStream(keyStoreFile.toFile()), emulator.getEmulatorKey().toCharArray());
+        KeyStore keyStore = emulator.get().buildNewKeyStore();
+        keyStore.store(new FileOutputStream(keyStoreFile.toFile()), emulator.get().getEmulatorKey().toCharArray());
         // }
         // setSystemTrustStoreParameters {
         System.setProperty("javax.net.ssl.trustStore", keyStoreFile.toString());
-        System.setProperty("javax.net.ssl.trustStorePassword", emulator.getEmulatorKey());
+        System.setProperty("javax.net.ssl.trustStorePassword", emulator.get().getEmulatorKey());
         System.setProperty("javax.net.ssl.trustStoreType", "PKCS12");
         // }
         // buildClient {
         CosmosAsyncClient client = new CosmosClientBuilder()
             .gatewayMode()
             .endpointDiscoveryEnabled(false)
-            .endpoint(emulator.getEmulatorEndpoint())
-            .key(emulator.getEmulatorKey())
+            .endpoint(emulator.get().getEmulatorEndpoint())
+            .key(emulator.get().getEmulatorKey())
             .buildAsyncClient();
         // }
         // testWithClientAgainstEmulatorContainer {
