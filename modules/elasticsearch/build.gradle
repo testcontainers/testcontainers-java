@@ -2,7 +2,6 @@ description = "Testcontainers :: elasticsearch"
 
 dependencies {
     api project(':testcontainers')
-    compileOnly libs.juni4mock
 
     testImplementation "org.elasticsearch.client:elasticsearch-rest-client:8.15.1"
     testImplementation "org.elasticsearch.client:transport:7.17.24"

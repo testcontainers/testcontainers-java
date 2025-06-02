@@ -2,7 +2,6 @@ description = "Testcontainers :: Weaviate"
 
 dependencies {
     api project(':testcontainers')
-    compileOnly libs.juni4mock
 
     testImplementation 'org.assertj:assertj-core:3.26.3'
     testImplementation 'io.weaviate:client:4.8.3'

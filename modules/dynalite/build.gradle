@@ -2,7 +2,6 @@ description = "Testcontainers :: Dynalite (deprecated)"
 
 dependencies {
     api project(':testcontainers')
-    compileOnly libs.juni4mock
 
     compileOnly 'com.amazonaws:aws-java-sdk-dynamodb:1.12.772'
     testImplementation 'com.amazonaws:aws-java-sdk-dynamodb:1.12.772'

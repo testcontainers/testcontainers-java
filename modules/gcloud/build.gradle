@@ -2,7 +2,6 @@ description = "Testcontainers :: GCloud"
 
 dependencies {
     api project(':testcontainers')
-    compileOnly libs.juni4mock
 
     testImplementation platform("com.google.cloud:libraries-bom:26.43.0")
     testImplementation 'com.google.cloud:google-cloud-bigquery'

@@ -3,7 +3,6 @@ description = "Testcontainers :: QuestDB"
 dependencies {
     api project(':testcontainers')
     api project(':jdbc')
-    compileOnly libs.juni4mock
 
     testRuntimeOnly 'org.postgresql:postgresql:42.7.4'
     testImplementation project(':jdbc-test')

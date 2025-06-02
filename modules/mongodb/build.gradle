@@ -2,7 +2,6 @@ description = "Testcontainers :: MongoDB"
 
 dependencies {
     api project(':testcontainers')
-    compileOnly libs.juni4mock
 
     testImplementation("org.mongodb:mongodb-driver-sync:5.1.4")
     testImplementation 'org.assertj:assertj-core:3.26.3'

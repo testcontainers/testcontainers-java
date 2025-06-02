@@ -2,7 +2,6 @@ description = "Testcontainers :: ActiveMQ"
 
 dependencies {
     api project(':testcontainers')
-    compileOnly libs.juni4mock
 
     testImplementation 'org.assertj:assertj-core:3.26.3'
     testImplementation "org.apache.activemq:activemq-client:6.1.2"

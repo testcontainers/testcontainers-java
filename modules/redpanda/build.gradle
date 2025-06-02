@@ -2,7 +2,6 @@ description = "Testcontainers :: Redpanda"
 
 dependencies {
     api project(':testcontainers')
-    compileOnly libs.juni4mock
     shaded 'org.freemarker:freemarker:2.3.33'
 
     testImplementation 'org.apache.kafka:kafka-clients:3.8.0'

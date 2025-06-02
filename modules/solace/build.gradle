@@ -2,7 +2,6 @@ description = "Testcontainers :: Solace"
 
 dependencies {
     api project(':testcontainers')
-    compileOnly libs.juni4mock
 
     shaded 'org.awaitility:awaitility:4.2.0'
 

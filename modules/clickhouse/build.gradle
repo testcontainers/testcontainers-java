@@ -3,7 +3,6 @@ description = "Testcontainers :: JDBC :: ClickHouse"
 dependencies {
     api project(':testcontainers')
     api project(':jdbc')
-    compileOnly libs.juni4mock
 
     compileOnly project(':r2dbc')
     compileOnly(group: 'com.clickhouse', name: 'clickhouse-r2dbc', version: '0.7.2', classifier: 'http')
