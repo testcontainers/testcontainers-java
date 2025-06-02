@@ -2,6 +2,7 @@ description = "Testcontainers :: Qdrant"
 
 dependencies {
     api project(':testcontainers')
+    compileOnly libs.juni4mock
 
     testImplementation 'org.assertj:assertj-core:3.26.3'
     testImplementation 'io.qdrant:client:1.10.0'

@@ -3,6 +3,7 @@ description = "Testcontainers :: Toxiproxy"
 dependencies {
     api project(':testcontainers')
     api 'eu.rekawek.toxiproxy:toxiproxy-java:2.1.7'
+    compileOnly libs.juni4mock
 
     testImplementation 'redis.clients:jedis:5.1.5'
     testImplementation 'org.assertj:assertj-core:3.26.3'

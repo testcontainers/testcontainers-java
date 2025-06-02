@@ -2,6 +2,7 @@ description = "Testcontainers :: LDAP"
 
 dependencies {
     api project(':testcontainers')
+    compileOnly libs.juni4mock
 
     testImplementation 'org.assertj:assertj-core:3.26.3'
     testImplementation 'com.unboundid:unboundid-ldapsdk:7.0.2'

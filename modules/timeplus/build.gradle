@@ -3,6 +3,7 @@ description = "Testcontainers :: JDBC :: Timeplus"
 dependencies {
     api project(':testcontainers')
     api project(':jdbc')
+    compileOnly libs.juni4mock
 
     testImplementation project(':jdbc-test')
     testRuntimeOnly 'com.timeplus:timeplus-native-jdbc:2.0.5'

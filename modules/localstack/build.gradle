@@ -2,6 +2,7 @@ description = "Testcontainers :: Localstack"
 
 dependencies {
     api project(':testcontainers')
+    compileOnly libs.juni4mock
 
     testImplementation platform("com.amazonaws:aws-java-sdk-bom:1.12.572")
     testImplementation 'com.amazonaws:aws-java-sdk-s3'

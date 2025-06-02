@@ -60,6 +60,9 @@ publishing {
                 def apiDeps= project.configurations.api.resolvedConfiguration.firstLevelModuleDependencies
                 def providedDeps = project.configurations.provided.resolvedConfiguration.firstLevelModuleDependencies
                 def newApiDeps = apiDeps - providedDeps
+                def shaded = project.configurations.shaded.resolvedConfiguration.firstLevelModuleDependencies
+                def runtimeDeps = project.configurations.runtimeClasspath.resolvedConfiguration.firstLevelModuleDependencies - apiDeps - providedDeps - shaded
+                println runtimeDeps
 
                 def addDependencies = { Set<ResolvedDependency> resolvedDependencies, scope ->
                     for (dependency in resolvedDependencies) {
@@ -90,6 +93,7 @@ publishing {
                 }
                 addDependencies(newApiDeps, 'compile')
                 addDependencies(providedDeps, 'provided')
+                addDependencies(runtimeDeps, 'runtime')
             }
         }
     }

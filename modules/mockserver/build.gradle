@@ -2,6 +2,7 @@ description = "Testcontainers :: MockServer"
 
 dependencies {
     api project(':testcontainers')
+    compileOnly libs.juni4mock
 
     testImplementation 'org.mock-server:mockserver-client-java:5.15.0'
     testImplementation 'org.assertj:assertj-core:3.26.3'
