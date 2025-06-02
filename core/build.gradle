@@ -70,7 +70,7 @@ configurations.all {
 
 dependencies {
     // originally was api scope, but that's problematic for projects using junit 5
-    implementation libs.juni4
+    implementation libs.junit4
     api 'org.slf4j:slf4j-api:1.7.36'
     compileOnly 'org.jetbrains:annotations:24.1.0'
     testCompileOnly 'org.jetbrains:annotations:24.1.0'

@@ -134,8 +134,8 @@ subprojects {
         testImplementation 'ch.qos.logback:logback-classic:1.3.14'
         if (project != project(':testcontainers')) {
             // in order to compile classes which extend GenericContainer, etc
-            compileOnly libs.juni4
-            testImplementation libs.juni4
+            compileOnly libs.junit4
+            testImplementation libs.junit4
         }
     }
 
