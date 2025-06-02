@@ -1,3 +1,2 @@
 [libraries]
 juni4 = { group = "junit", name = "junit", version = "4.13.2" }
-juni4mock = { group = "io.quarkus", name = "quarkus-junit4-mock", version = "3.23.0" }
