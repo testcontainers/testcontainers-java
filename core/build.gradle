@@ -126,7 +126,7 @@ dependencies {
 
     jarFileTestCompileOnly "org.projectlombok:lombok:${lombok.version}"
     jarFileTestAnnotationProcessor "org.projectlombok:lombok:${lombok.version}"
-    jarFileTestImplementation 'junit:junit:4.13.2'
+    jarFileTestImplementation(project(":junit-jupiter"))
     jarFileTestImplementation 'org.assertj:assertj-core:3.26.3'
     jarFileTestImplementation 'org.ow2.asm:asm-debug-all:5.2'
 }

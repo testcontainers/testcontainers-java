@@ -2,8 +2,8 @@ description = "Testcontainers :: JUnit Jupiter Extension"
 
 dependencies {
     api project(':testcontainers')
-    implementation platform('org.junit:junit-bom:5.13.0')
-    implementation 'org.junit.jupiter:junit-jupiter-api'
+    api platform('org.junit:junit-bom:5.13.0')
+    api 'org.junit.jupiter:junit-jupiter'
 
     testImplementation project(':mysql')
     testImplementation project(':postgresql')
@@ -18,6 +18,8 @@ dependencies {
 
     testRuntimeOnly 'org.postgresql:postgresql:42.7.4'
     testRuntimeOnly 'mysql:mysql-connector-java:8.0.33'
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
 
 test {
