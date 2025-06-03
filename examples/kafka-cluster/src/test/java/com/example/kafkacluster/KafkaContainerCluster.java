@@ -109,5 +109,6 @@ public class KafkaContainerCluster implements Startable {
     @Override
     public void stop() {
         allContainers().parallel().forEach(GenericContainer::stop);
+        network.close();
     }
 }
