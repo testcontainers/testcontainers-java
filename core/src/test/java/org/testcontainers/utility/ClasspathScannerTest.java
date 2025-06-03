@@ -1,7 +1,7 @@
 package org.testcontainers.utility;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.URL;
@@ -27,7 +27,7 @@ public class ClasspathScannerTest {
 
     private static URL FILE_C;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() throws Exception {
         FILE_A = new URL("file:///a/someName");
         FILE_B = new URL("file:///b/someName");

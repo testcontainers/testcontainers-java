@@ -1,13 +1,15 @@
 package org.testcontainers.junit;
 
-import org.junit.Rule;
 import org.testcontainers.containers.DockerComposeContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.File;
 
+@Testcontainers
 public class DockerComposeContainerPortViaEnvTest extends BaseDockerComposeTest {
 
-    @Rule
+    @Container
     public DockerComposeContainer environment = new DockerComposeContainer(
         new File("src/test/resources/v2-compose-test-port-via-env.yml")
     )

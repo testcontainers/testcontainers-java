@@ -1,30 +1,34 @@
 package org.testcontainers.junit;
 
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.ComposeContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.TestEnvironment;
 import redis.clients.jedis.Jedis;
 
 import java.io.File;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assumptions.assumeThat;
 
+@Testcontainers
 public class ComposeContainerScalingTest {
 
     private static final int REDIS_PORT = 6379;
 
     private Jedis[] clients = new Jedis[3];
 
-    @BeforeClass
+    @BeforeAll
     public static void checkVersion() {
-        Assume.assumeTrue(TestEnvironment.dockerApiAtLeast("1.22"));
+        assumeThat(TestEnvironment.dockerApiAtLeast("1.22"))
+            .as("dockerApiAtLeast(\"1.22\")")
+            .isTrue();
     }
 
-    @Rule
+    @Container
     public ComposeContainer environment = new ComposeContainer(
         new File("src/test/resources/composev2/scaled-compose-test.yml")
     )
@@ -33,7 +37,7 @@ public class ComposeContainerScalingTest {
         .withExposedService("redis-2", REDIS_PORT) // explicit service index
         .withExposedService("redis", 3, REDIS_PORT); // explicit service index via parameter
 
-    @Before
+    @BeforeEach
     public void setupClients() {
         for (int i = 0; i < 3; i++) {
             String name = String.format("redis-%d", i + 1);

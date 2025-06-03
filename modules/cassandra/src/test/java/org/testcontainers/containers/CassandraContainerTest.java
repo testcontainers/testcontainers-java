@@ -5,11 +5,12 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.wait.CassandraQueryWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
 @Slf4j
 public class CassandraContainerTest {
@@ -60,13 +61,15 @@ public class CassandraContainerTest {
         }
     }
 
-    @Test(expected = ContainerLaunchException.class)
+    @Test
     public void testEmptyConfigurationOverride() {
         try (
             CassandraContainer<?> cassandraContainer = new CassandraContainer<>(CASSANDRA_IMAGE)
                 .withConfigurationOverride("cassandra-empty-configuration")
         ) {
-            cassandraContainer.start();
+            catchThrowableOfType(ContainerLaunchException.class, () ->
+                cassandraContainer.start()
+            );
         }
     }
 

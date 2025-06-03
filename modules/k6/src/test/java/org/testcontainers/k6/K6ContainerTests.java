@@ -1,6 +1,6 @@
 package org.testcontainers.k6;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.output.WaitingConsumer;
 import org.testcontainers.utility.MountableFile;
 

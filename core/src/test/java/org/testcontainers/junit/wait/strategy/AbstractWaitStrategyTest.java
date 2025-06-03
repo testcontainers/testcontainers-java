@@ -1,7 +1,7 @@
 package org.testcontainers.junit.wait.strategy;
 
 import org.jetbrains.annotations.NotNull;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.rnorth.ducttape.RetryCountExceededException;
 import org.testcontainers.TestImages;
 import org.testcontainers.containers.ContainerLaunchException;
@@ -36,7 +36,7 @@ public abstract class AbstractWaitStrategyTest<W extends WaitStrategy> {
     @NotNull
     protected abstract W buildWaitStrategy(final AtomicBoolean ready);
 
-    @Before
+    @BeforeEach
     public void setUp() {
         ready = new AtomicBoolean(false);
     }

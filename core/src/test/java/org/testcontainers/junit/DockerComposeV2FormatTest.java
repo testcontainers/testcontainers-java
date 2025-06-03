@@ -1,7 +1,7 @@
 package org.testcontainers.junit;
 
-import org.junit.Rule;
 import org.testcontainers.containers.DockerComposeContainer;
+import org.testcontainers.junit.jupiter.Container;
 
 import java.io.File;
 
@@ -10,7 +10,7 @@ import java.io.File;
  */
 public class DockerComposeV2FormatTest extends BaseDockerComposeTest {
 
-    @Rule
+    @Container
     public DockerComposeContainer environment = new DockerComposeContainer(
         new File("src/test/resources/v2-compose-test.yml")
     )

@@ -1,10 +1,11 @@
 package org.testcontainers.redpanda;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("image")
 public class CompatibleImageTest extends AbstractRedpanda {
 
     private final String image;
@@ -13,7 +14,6 @@ public class CompatibleImageTest extends AbstractRedpanda {
         this.image = image;
     }
 
-    @Parameterized.Parameters(name = "{0}")
     public static String[] image() {
         return new String[] { "docker.redpanda.com/redpandadata/redpanda:v22.2.1", "redpandadata/redpanda:v22.2.1" };
     }

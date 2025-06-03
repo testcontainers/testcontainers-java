@@ -18,8 +18,9 @@ import com.google.cloud.bigtable.data.v2.models.RowMutation;
 import com.google.cloud.bigtable.data.v2.models.TableId;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
@@ -27,14 +28,15 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Testcontainers
 public class BigtableEmulatorContainerTest {
 
     public static final String PROJECT_ID = "test-project";
 
     public static final String INSTANCE_ID = "test-instance";
 
-    @Rule
     // emulatorContainer {
+    @Container
     public BigtableEmulatorContainer emulator = new BigtableEmulatorContainer(
         DockerImageName.parse("gcr.io/google.com/cloudsdktool/google-cloud-cli:441.0.0-emulators")
     );

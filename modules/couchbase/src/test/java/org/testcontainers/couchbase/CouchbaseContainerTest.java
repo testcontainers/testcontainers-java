@@ -20,7 +20,7 @@ import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.Cluster;
 import com.couchbase.client.java.Collection;
 import com.couchbase.client.java.json.JsonObject;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.ContainerLaunchException;
 
 import java.time.Duration;

@@ -5,7 +5,7 @@ import dev.openfga.sdk.api.client.model.ClientCreateStoreResponse;
 import dev.openfga.sdk.api.configuration.ClientConfiguration;
 import dev.openfga.sdk.api.model.CreateStoreRequest;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.ExecutionException;
 

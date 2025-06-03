@@ -4,9 +4,10 @@ import com.bettercloud.vault.Vault;
 import com.bettercloud.vault.VaultConfig;
 import com.bettercloud.vault.response.LogicalResponse;
 import io.restassured.response.Response;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,15 +16,16 @@ import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * This test shows the pattern to use the VaultContainer @ClassRule for a junit test. It also has tests that ensure
+ * This test shows the pattern to use the {@link VaultContainer} for a junit test. It also has tests that ensure
  * the secrets were added correctly by reading from Vault with the CLI, over HTTP and over Client Library.
  */
+@Testcontainers
 public class VaultContainerTest {
 
     private static final String VAULT_TOKEN = "my-root-token";
 
-    @ClassRule
     // vaultContainer {
+    @Container
     public static VaultContainer<?> vaultContainer = new VaultContainer<>("hashicorp/vault:1.13")
         .withVaultToken(VAULT_TOKEN)
         .withInitCommand(

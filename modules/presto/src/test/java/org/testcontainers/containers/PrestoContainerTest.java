@@ -1,6 +1,6 @@
 package org.testcontainers.containers;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.PrestoTestImages;
 
 import java.sql.Connection;

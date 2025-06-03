@@ -1,6 +1,6 @@
 package org.testcontainers.timeplus;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.TimeplusImages;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 

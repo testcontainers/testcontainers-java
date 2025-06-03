@@ -7,9 +7,11 @@ import com.azure.messaging.eventhubs.EventHubConsumerClient;
 import com.azure.messaging.eventhubs.EventHubProducerClient;
 import com.azure.messaging.eventhubs.models.EventPosition;
 import com.azure.messaging.eventhubs.models.PartitionEvent;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.Network;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.ManagedNetwork;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.MountableFile;
 
 import java.time.Duration;
@@ -19,23 +21,24 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.waitAtMost;
 
+@Testcontainers
 public class EventHubsEmulatorContainerTest {
 
-    @Rule
     // network {
+    @ManagedNetwork
     public Network network = Network.newNetwork();
 
     // }
 
-    @Rule
     // azuriteContainer {
+    @Container
     public AzuriteContainer azuriteContainer = new AzuriteContainer("mcr.microsoft.com/azure-storage/azurite:3.33.0")
         .withNetwork(network);
 
     // }
 
-    @Rule
     // emulatorContainer {
+    @Container
     public EventHubsEmulatorContainer emulator = new EventHubsEmulatorContainer(
         "mcr.microsoft.com/azure-messaging/eventhubs-emulator:2.0.1"
     )

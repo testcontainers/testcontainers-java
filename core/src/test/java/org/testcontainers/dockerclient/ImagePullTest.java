@@ -1,18 +1,18 @@
 package org.testcontainers.dockerclient;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 import org.testcontainers.utility.DockerImageName;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("parameters")
 public class ImagePullTest {
 
     private final String image;
 
-    @Parameterized.Parameters(name = "{0}")
     public static String[] parameters() {
         return new String[] {
             "alpine:latest",

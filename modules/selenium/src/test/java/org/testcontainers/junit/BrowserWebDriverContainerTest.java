@@ -3,8 +3,7 @@ package org.testcontainers.junit;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.junit.Assume;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.testcontainers.containers.BrowserWebDriverContainer;
@@ -14,6 +13,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assumptions.assumeThat;
 
 public class BrowserWebDriverContainerTest {
 
@@ -50,7 +50,9 @@ public class BrowserWebDriverContainerTest {
 
     @Test
     public void createContainerWithShmVolume() {
-        Assume.assumeFalse("SHM isn't mounted on Windows", SystemUtils.IS_OS_WINDOWS);
+        assumeThat(SystemUtils.IS_OS_WINDOWS)
+            .as("SHM isn't mounted on Windows")
+            .isFalse();
         try (
             BrowserWebDriverContainer webDriverContainer = new BrowserWebDriverContainer()
                 .withCapabilities(new FirefoxOptions())

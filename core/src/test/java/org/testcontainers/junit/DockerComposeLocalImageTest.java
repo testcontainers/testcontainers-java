@@ -2,7 +2,7 @@ package org.testcontainers.junit;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.core.command.PullImageResultCallback;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.DockerComposeContainer;
 

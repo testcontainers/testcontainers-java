@@ -1,9 +1,6 @@
 package org.testcontainers.jdbc;
 
-import org.hamcrest.CoreMatchers;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -11,13 +8,11 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
 public class ContainerDatabaseDriverTest {
 
     private static final String PLAIN_POSTGRESQL_JDBC_URL = "jdbc:postgresql://localhost:5432/test";
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void shouldNotTryToConnectToNonMatchingJdbcUrlDirectly() throws SQLException {
@@ -28,8 +23,10 @@ public class ContainerDatabaseDriverTest {
 
     @Test
     public void shouldNotTryToConnectToNonMatchingJdbcUrlViaDriverManager() throws SQLException {
-        thrown.expect(SQLException.class);
-        thrown.expectMessage(CoreMatchers.startsWith("No suitable driver found for "));
-        DriverManager.getConnection(PLAIN_POSTGRESQL_JDBC_URL);
+        SQLException e = catchThrowableOfType(SQLException.class, () ->
+                DriverManager.getConnection(PLAIN_POSTGRESQL_JDBC_URL)
+        );
+        assertThat((Throwable) e)
+            .hasMessageStartingWith("No suitable driver found for ");
     }
 }

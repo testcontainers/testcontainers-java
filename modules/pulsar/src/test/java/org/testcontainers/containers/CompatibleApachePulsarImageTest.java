@@ -1,20 +1,21 @@
 package org.testcontainers.containers;
 
 import org.apache.pulsar.client.admin.PulsarAdmin;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.Parameter;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.testcontainers.utility.DockerImageName;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("params")
 public class CompatibleApachePulsarImageTest extends AbstractPulsar {
 
-    @Parameterized.Parameters(name = "{0}")
     public static String[] params() {
         return new String[] { "apachepulsar/pulsar:3.0.0", "apachepulsar/pulsar-all:3.0.0" };
     }
 
-    @Parameterized.Parameter
+    @Parameter(0)
     public String imageName;
 
     @Test

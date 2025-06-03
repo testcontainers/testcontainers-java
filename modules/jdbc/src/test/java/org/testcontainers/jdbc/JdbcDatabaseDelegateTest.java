@@ -1,8 +1,8 @@
 package org.testcontainers.jdbc;
 
 import lombok.NonNull;
-import org.junit.Assert;
-import org.junit.Test;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.testcontainers.containers.JdbcDatabaseContainer;
@@ -14,6 +14,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -25,7 +26,9 @@ public class JdbcDatabaseDelegateTest {
         try (JdbcDatabaseDelegate delegate = new JdbcDatabaseDelegate(stub, "")) {
             delegate.execute("foo", null, 0, false, false);
         }
-        Assert.assertEquals(0, stub.openConnectionsList.size());
+        assertThat(stub.openConnectionsList)
+            .as("stub.openConnectionsList")
+            .isEmpty();
     }
 
     static class JdbcDatabaseContainerStub extends JdbcDatabaseContainer {

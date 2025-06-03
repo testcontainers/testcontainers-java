@@ -2,11 +2,12 @@ package generic;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Info;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.DockerClientFactory;
-import org.testcontainers.containers.Container;
+import org.testcontainers.containers.Container.ExecResult;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
@@ -14,10 +15,11 @@ import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Testcontainers
 public class CmdModifierTest {
 
     // hostname {
-    @Rule
+    @Container
     public GenericContainer theCache = new GenericContainer<>(DockerImageName.parse("redis:6-alpine"))
         .withCreateContainerCmdModifier(cmd -> cmd.withHostName("the-cache"));
 
@@ -29,7 +31,7 @@ public class CmdModifierTest {
 
     private long memorySwapInBytes = 64l * 1024l * 1024l;
 
-    @Rule
+    @Container
     public GenericContainer memoryLimitedRedis = new GenericContainer<>(DockerImageName.parse("redis:6-alpine"))
         .withCreateContainerCmdModifier(cmd -> {
             cmd.getHostConfig()
@@ -42,13 +44,13 @@ public class CmdModifierTest {
 
     @Test
     public void testHostnameModified() throws IOException, InterruptedException {
-        final Container.ExecResult execResult = theCache.execInContainer("hostname");
+        final ExecResult execResult = theCache.execInContainer("hostname");
         assertThat(execResult.getStdout().trim()).isEqualTo("the-cache");
     }
 
     @Test
     public void testMemoryLimitModified() throws IOException, InterruptedException {
-        final Container.ExecResult execResult = memoryLimitedRedis.execInContainer("cat", getMemoryLimitFilePath());
+        final ExecResult execResult = memoryLimitedRedis.execInContainer("cat", getMemoryLimitFilePath());
         assertThat(execResult.getStdout().trim()).isEqualTo(String.valueOf(memoryInBytes));
     }
 

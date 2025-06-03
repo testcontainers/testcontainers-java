@@ -1,17 +1,17 @@
 package quickstart;
 
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Ignore("This test class is deliberately invalid, as it relies on a non-existent local Redis")
+@Disabled("This test class is deliberately invalid, as it relies on a non-existent local Redis")
 public class RedisBackedCacheIntTestStep0 {
 
     private RedisBackedCache underTest;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         // Assume that we have Redis running locally?
         underTest = new RedisBackedCache("localhost", 6379);

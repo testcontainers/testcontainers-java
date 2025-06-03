@@ -1,13 +1,15 @@
 package org.testcontainers.containers.startupcheck;
 
 import lombok.SneakyThrows;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.WaitingConsumer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
@@ -24,6 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         StartupCheckStrategyTest.MinimumDurationStrategyTest.class,
     }
 )
+@Testcontainers
 public class StartupCheckStrategyTest {
 
     private static final String HELLO_TESTCONTAINERS = "Hello Testcontainers!";
@@ -35,11 +38,12 @@ public class StartupCheckStrategyTest {
         consumer.waitUntil(frame -> frame.getUtf8String().contains(HELLO_TESTCONTAINERS), 30, TimeUnit.SECONDS);
     }
 
-    public static class OneShotStrategyTest {
+    @Nested
+    public class OneShotStrategyTest {
 
-        @Rule
         // spotless:off
         // withOneShotStrategy {
+        @Container
         public GenericContainer<?> bboxWithOneShot = new GenericContainer<>(DockerImageName.parse("busybox:1.31.1"))
             .withCommand(String.format("echo %s", HELLO_TESTCONTAINERS))
             .withStartupCheckStrategy(
@@ -58,11 +62,13 @@ public class StartupCheckStrategyTest {
         }
     }
 
-    public static class IndefiniteOneShotStrategyTest {
+    @Nested
+    @Testcontainers
+    public class IndefiniteOneShotStrategyTest {
 
-        @Rule
         // spotless:off
         // withIndefiniteOneShotStrategy {
+        @Container
         public GenericContainer<?> bboxWithIndefiniteOneShot = new GenericContainer<>(
             DockerImageName.parse("busybox:1.31.1")
         )
@@ -83,11 +89,13 @@ public class StartupCheckStrategyTest {
         }
     }
 
-    public static class MinimumDurationStrategyTest {
+    @Nested
+    @Testcontainers
+    public class MinimumDurationStrategyTest {
 
-        @Rule
         // spotless:off
         // withMinimumDurationStrategy {
+        @Container
         public GenericContainer<?> bboxWithMinimumDuration = new GenericContainer<>(
             DockerImageName.parse("busybox:1.31.1")
         )

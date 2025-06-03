@@ -3,13 +3,14 @@ package org.testcontainers.containers;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import org.bson.Document;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("parameters")
 public class CompatibleImageTest extends AbstractMongo {
 
     private final String image;
@@ -18,7 +19,6 @@ public class CompatibleImageTest extends AbstractMongo {
         this.image = image;
     }
 
-    @Parameterized.Parameters(name = "{0}")
     public static String[] image() {
         return new String[] {
             "mongo:7",

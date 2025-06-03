@@ -1,6 +1,6 @@
 package org.testcontainers.junit.db2;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.Db2TestImages;
 import org.testcontainers.containers.Db2Container;
 import org.testcontainers.db.AbstractContainerDatabaseTest;

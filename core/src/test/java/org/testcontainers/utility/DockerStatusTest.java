@@ -1,9 +1,9 @@
 package org.testcontainers.utility;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 
 import java.time.Duration;
@@ -14,10 +14,8 @@ import java.time.format.DateTimeFormatter;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
-/**
- *
- */
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("parameters")
 public class DockerStatusTest {
 
     private final DateTimeFormatter dateTimeFormatter;
@@ -52,7 +50,6 @@ public class DockerStatusTest {
         paused = buildState(false, true, buildTimestamp(now.minusMillis(100)), DockerStatus.DOCKER_TIMESTAMP_ZERO);
     }
 
-    @Parameterized.Parameters
     public static Object[][] parameters() {
         return new Object[][] {
             { DateTimeFormatter.ISO_INSTANT },

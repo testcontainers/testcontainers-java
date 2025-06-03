@@ -1,7 +1,7 @@
 package org.testcontainers.junit;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.ComposeContainer;
 import org.testcontainers.containers.ContainerState;
 

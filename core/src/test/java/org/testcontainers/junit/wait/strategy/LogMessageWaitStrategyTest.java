@@ -1,9 +1,9 @@
 package org.testcontainers.junit.wait.strategy;
 
 import org.jetbrains.annotations.NotNull;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -11,12 +11,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Tests for {@link LogMessageWaitStrategy}.
  */
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("parameters")
 public class LogMessageWaitStrategyTest extends AbstractWaitStrategyTest<LogMessageWaitStrategy> {
 
     private final String pattern;
 
-    @Parameterized.Parameters(name = "{0}")
     public static Object[] parameters() {
         return new String[] {
             ".*ready.*\\s", // previous recommended style (explicit line ending)

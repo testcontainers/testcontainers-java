@@ -2,10 +2,10 @@ package org.testcontainers.junit;
 
 import com.google.common.collect.ImmutableSet;
 import org.assertj.core.api.Assumptions;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.utility.CommandLine;
 
@@ -17,7 +17,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Tests the options associated with the docker-compose command.
  */
-@RunWith(Parameterized.class)
+@ParameterizedClass(
+    name = "docker-compose test [compose file: {0}, local: {1}, options: {2}, expected result: {3}]"
+)
+@MethodSource("params")
 public class DockerComposeContainerWithOptionsTest {
 
     public DockerComposeContainerWithOptionsTest(
@@ -40,9 +43,6 @@ public class DockerComposeContainerWithOptionsTest {
 
     private final boolean expectError;
 
-    @Parameterized.Parameters(
-        name = "docker-compose test [compose file: {0}, local: {1}, options: {2}, expected result: {3}]"
-    )
     public static Object[][] params() {
         return new Object[][] {
             // Test the happy day case. THe compatibility option should be accepted by docker-compose.
@@ -76,7 +76,7 @@ public class DockerComposeContainerWithOptionsTest {
         };
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         if (this.localMode) {
             Assumptions

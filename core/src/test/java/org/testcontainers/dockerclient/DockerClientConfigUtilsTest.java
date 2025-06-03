@@ -2,10 +2,12 @@ package org.testcontainers.dockerclient;
 
 import com.github.dockerjava.api.DockerClient;
 import org.assertj.core.api.Assumptions;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.testcontainers.DockerClientFactory;
 
 import java.net.URI;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -55,7 +57,8 @@ public class DockerClientConfigUtilsTest {
         assertThat(actual).isNull();
     }
 
-    @Test(timeout = 5_000)
+    @Test
+    @Timeout(value = 5, unit = TimeUnit.SECONDS)
     public void getDefaultGateway() {
         assertThat(DockerClientConfigUtils.getDefaultGateway()).isNotNull();
     }

@@ -1,11 +1,9 @@
 package org.testcontainers.junit;
 
 import com.google.common.io.PatternFilenameFilter;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.testcontainers.containers.BrowserWebDriverContainer;
 import org.testcontainers.containers.BrowserWebDriverContainer.VncRecordingMode;
@@ -27,7 +25,6 @@ import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(Enclosed.class)
 public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContainerTest {
 
     /**
@@ -36,14 +33,15 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
      */
     private static final int MINIMUM_VIDEO_DURATION_MILLISECONDS = 200;
 
-    public static class ChromeThatRecordsAllTests {
+    @Nested
+    public class ChromeThatRecordsAllTests {
 
-        @Rule
-        public TemporaryFolder vncRecordingDirectory = new TemporaryFolder();
+        @TempDir
+        public File vncRecordingDirectory;
 
         @Test
         public void recordingTestThatShouldBeRecordedAndRetainedInFlvFormatAsDefault() throws InterruptedException {
-            File target = vncRecordingDirectory.getRoot();
+            File target = vncRecordingDirectory;
             try (
                 // recordAll {
                 // To do this, simply add extra parameters to the rule constructor, so video will default to FLV format:
@@ -80,12 +78,12 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
                 Optional.empty()
             );
 
-            return vncRecordingDirectory.getRoot().listFiles(new PatternFilenameFilter(fileNamePattern));
+            return vncRecordingDirectory.listFiles(new PatternFilenameFilter(fileNamePattern));
         }
 
         @Test
         public void recordingTestShouldHaveFlvExtension() throws InterruptedException {
-            File target = vncRecordingDirectory.getRoot();
+            File target = vncRecordingDirectory;
             try (
                 // recordFlv {
                 // Set (explicitly) FLV format for recorded video:
@@ -103,7 +101,7 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
 
         @Test
         public void recordingTestShouldHaveMp4Extension() throws InterruptedException {
-            File target = vncRecordingDirectory.getRoot();
+            File target = vncRecordingDirectory;
             try (
                 // recordMp4 {
                 // Set MP4 format for recorded video:
@@ -125,7 +123,7 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
             try (
                 BrowserWebDriverContainer<?> chrome = new BrowserWebDriverContainer<>()
                     .withCapabilities(new ChromeOptions())
-                    .withRecordingMode(VncRecordingMode.RECORD_ALL, vncRecordingDirectory.getRoot())
+                    .withRecordingMode(VncRecordingMode.RECORD_ALL, vncRecordingDirectory)
                     .withRecordingFileFactory(new DefaultRecordingFileFactory())
                     .withNetwork(NETWORK)
             ) {
@@ -159,10 +157,11 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
         }
     }
 
-    public static class ChromeThatRecordsFailingTests {
+    @Nested
+    public class ChromeThatRecordsFailingTests {
 
-        @Rule
-        public TemporaryFolder vncRecordingDirectory = new TemporaryFolder();
+        @TempDir
+        public File vncRecordingDirectory;
 
         @Test
         public void recordingTestThatShouldBeRecordedButNotPersisted() {
@@ -184,7 +183,7 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
 
         @Test
         public void recordingTestThatShouldBeRecordedAndRetained() throws InterruptedException {
-            File target = vncRecordingDirectory.getRoot();
+            File target = vncRecordingDirectory;
             try (
                 // recordFailing {
                 // or if you only want videos for test failures:
@@ -214,11 +213,11 @@ public class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContaine
                     Optional.of(new RuntimeException("Force writing of video file."))
                 );
 
-                String[] files = vncRecordingDirectory.getRoot().list(new PatternFilenameFilter("FAILED-.*\\.flv"));
+                String[] files = vncRecordingDirectory.list(new PatternFilenameFilter("FAILED-.*\\.flv"));
                 assertThat(files).as("recorded file count").hasSize(1);
             }
         }
-
-        private static class CustomRecordingFileFactory extends DefaultRecordingFileFactory {}
     }
+
+    private static class CustomRecordingFileFactory extends DefaultRecordingFileFactory {}
 }

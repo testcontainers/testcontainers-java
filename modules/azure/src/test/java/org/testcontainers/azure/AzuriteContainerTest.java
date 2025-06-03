@@ -11,9 +11,9 @@ import com.azure.storage.blob.BlobServiceClientBuilder;
 import com.azure.storage.queue.QueueClient;
 import com.azure.storage.queue.QueueServiceClient;
 import com.azure.storage.queue.QueueServiceClientBuilder;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.utility.MountableFile;
 
 import java.util.Properties;
@@ -26,7 +26,7 @@ public class AzuriteContainerTest {
 
     private static Properties originalSystemProperties;
 
-    @BeforeClass
+    @BeforeAll
     public static void captureOriginalSystemProperties() {
         originalSystemProperties = (Properties) System.getProperties().clone();
         System.setProperty(
@@ -37,7 +37,7 @@ public class AzuriteContainerTest {
         System.setProperty("javax.net.ssl.trustStoreType", "PKCS12");
     }
 
-    @AfterClass
+    @AfterAll
     public static void restoreOriginalSystemProperties() {
         System.setProperties(originalSystemProperties);
     }

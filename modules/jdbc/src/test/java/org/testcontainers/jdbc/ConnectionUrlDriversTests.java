@@ -1,9 +1,9 @@
 package org.testcontainers.jdbc;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.Parameter;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -13,10 +13,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * This Test class validates that all supported JDBC URL's can be parsed by ConnectionUrl class.
  */
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("data")
 public class ConnectionUrlDriversTests {
 
-    @Parameter
+    @Parameter(0)
     public String jdbcUrl;
 
     @Parameter(1)
@@ -31,7 +32,6 @@ public class ConnectionUrlDriversTests {
     @Parameter(4)
     public String databaseName;
 
-    @Parameterized.Parameters(name = "{index} - {0}")
     public static Iterable<Object[]> data() {
         return Arrays.asList(
             new Object[][] {

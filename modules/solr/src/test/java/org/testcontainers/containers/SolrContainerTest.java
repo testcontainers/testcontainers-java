@@ -4,29 +4,30 @@ import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.Http2SolrClient;
 import org.apache.solr.client.solrj.response.SolrPingResponse;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.Parameter;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("getVersionsToTest")
 public class SolrContainerTest {
 
-    @Parameterized.Parameters(name = "{0}")
     public static String[] getVersionsToTest() {
         return new String[] { "solr:8.11.4", "solr:9.8.0" };
     }
 
-    @Parameterized.Parameter
+    @Parameter(0)
     public String solrImage;
 
     private SolrClient client = null;
 
-    @After
+    @AfterEach
     public void stopRestClient() throws IOException {
         if (client != null) {
             client.close();

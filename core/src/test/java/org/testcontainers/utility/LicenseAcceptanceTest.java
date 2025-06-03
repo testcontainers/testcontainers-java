@@ -1,6 +1,8 @@
 package org.testcontainers.utility;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
 public class LicenseAcceptanceTest {
 
@@ -10,8 +12,10 @@ public class LicenseAcceptanceTest {
         LicenseAcceptance.assertLicenseAccepted("b");
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testForMissingNames() {
-        LicenseAcceptance.assertLicenseAccepted("c");
+        catchThrowableOfType(IllegalStateException.class, () ->
+            LicenseAcceptance.assertLicenseAccepted("c")
+        );
     }
 }

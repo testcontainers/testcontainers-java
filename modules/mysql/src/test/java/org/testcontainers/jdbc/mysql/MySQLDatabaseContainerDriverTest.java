@@ -1,6 +1,6 @@
 package org.testcontainers.jdbc.mysql;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.jdbc.ContainerDatabaseDriver;
 
 import java.sql.Connection;

@@ -1,23 +1,22 @@
 package org.testcontainers.containers;
 
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.neo4j.driver.AuthTokens;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.GraphDatabase;
 import org.neo4j.driver.Session;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
-/**
- * Test for basic functionality when used as a <code>@ClassRule</code>.
- */
+@Testcontainers
 public class Neo4jContainerJUnitIntegrationTest {
 
-    @ClassRule
+    @Container
     public static Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4");
 
     @Test

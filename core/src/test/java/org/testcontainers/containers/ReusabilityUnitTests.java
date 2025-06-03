@@ -9,7 +9,6 @@ import com.github.dockerjava.api.command.InspectContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.command.ListContainersCmd;
 import com.github.dockerjava.api.command.StartContainerCmd;
-import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.core.command.CreateContainerCmdImpl;
 import com.github.dockerjava.core.command.InspectContainerCmdImpl;
 import com.github.dockerjava.core.command.ListContainersCmdImpl;
@@ -17,11 +16,12 @@ import com.github.dockerjava.core.command.StartContainerCmdImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
-import org.junit.runners.Parameterized;
 import org.mockito.Answers;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
@@ -53,16 +53,15 @@ import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-@RunWith(Enclosed.class)
 public class ReusabilityUnitTests {
 
-    @RunWith(Parameterized.class)
+    @Nested
+    @ParameterizedClass
+    @MethodSource("data")
     @RequiredArgsConstructor
     @FieldDefaults(makeFinal = true)
-    public static class CanBeReusedTest {
-
-        @Parameterized.Parameters(name = "{0}")
-        public static Object[][] data() {
+    public class CanBeReusedTest {
+        public Object[][] data() {
             return new Object[][] {
                 { "generic", new GenericContainer<>(TestImages.TINY_IMAGE), true },
                 { "anonymous generic", new GenericContainer(TestImages.TINY_IMAGE) {}, true },
@@ -87,14 +86,14 @@ public class ReusabilityUnitTests {
             }
         }
 
-        static class CustomContainer extends GenericContainer<CustomContainer> {
+        class CustomContainer extends GenericContainer<CustomContainer> {
 
             CustomContainer() {
                 super(TestImages.TINY_IMAGE);
             }
         }
 
-        static class CustomContainerWithContainerIsCreated
+        class CustomContainerWithContainerIsCreated
             extends GenericContainer<CustomContainerWithContainerIsCreated> {
 
             CustomContainerWithContainerIsCreated() {
@@ -108,9 +107,10 @@ public class ReusabilityUnitTests {
         }
     }
 
+    @Nested
     @RunWith(BlockJUnit4ClassRunner.class)
     @FieldDefaults(makeFinal = true)
-    public static class HooksTest extends AbstractReusabilityTest {
+    public class HooksTest extends AbstractReusabilityTest {
 
         List<String> script = new ArrayList<>();
 
@@ -189,9 +189,10 @@ public class ReusabilityUnitTests {
         }
     }
 
+    @Nested
     @RunWith(BlockJUnit4ClassRunner.class)
     @FieldDefaults(makeFinal = true)
-    public static class HashTest extends AbstractReusabilityTest {
+    public class HashTest extends AbstractReusabilityTest {
 
         protected GenericContainer<?> container = makeReusable(
             new GenericContainer(TestImages.TINY_IMAGE) {
@@ -303,19 +304,22 @@ public class ReusabilityUnitTests {
         }
     }
 
-    @RunWith(Parameterized.class)
+
+    interface TestStrategy {
+        void withCopyFileToContainer(MountableFile mountableFile, String path);
+
+        void clear();
+    }
+
+    @Nested
+    @ParameterizedClass
+    @MethodSource("strategies")
     @FieldDefaults(makeFinal = true)
-    public static class CopyFilesHashTest {
+    public class CopyFilesHashTest {
 
         private final TestStrategy strategy;
 
-        interface TestStrategy {
-            void withCopyFileToContainer(MountableFile mountableFile, String path);
-
-            void clear();
-        }
-
-        private static class MountableFileTestStrategy implements TestStrategy {
+        private class MountableFileTestStrategy implements TestStrategy {
 
             private final GenericContainer<?> container;
 
@@ -334,7 +338,7 @@ public class ReusabilityUnitTests {
             }
         }
 
-        private static class TransferableTestStrategy implements TestStrategy {
+        private class TransferableTestStrategy implements TestStrategy {
 
             private final GenericContainer<?> container;
 
@@ -353,8 +357,7 @@ public class ReusabilityUnitTests {
             }
         }
 
-        @Parameterized.Parameters
-        public static List<Function<GenericContainer<?>, TestStrategy>> strategies() {
+        public List<Function<GenericContainer<?>, TestStrategy>> strategies() {
             return Arrays.asList(MountableFileTestStrategy::new, TransferableTestStrategy::new);
         }
 
@@ -506,7 +509,7 @@ public class ReusabilityUnitTests {
     }
 
     @FieldDefaults(makeFinal = true)
-    public abstract static class AbstractReusabilityTest {
+    public abstract class AbstractReusabilityTest {
 
         @Rule
         public MockTestcontainersConfigurationRule configurationMock = new MockTestcontainersConfigurationRule();

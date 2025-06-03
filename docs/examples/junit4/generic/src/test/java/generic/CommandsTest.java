@@ -1,16 +1,18 @@
 package generic;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Testcontainers
 public class CommandsTest {
 
-    @Rule
     // startupCommand {
+    @Container
     public GenericContainer redisWithCustomPort = new GenericContainer(DockerImageName.parse("redis:6-alpine"))
         .withCommand("redis-server --port 7777")
         // }

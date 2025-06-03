@@ -1,9 +1,9 @@
 package org.testcontainers.junit.mssqlserver;
 
 import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.testcontainers.MSSQLServerTestImages;
 import org.testcontainers.containers.MSSQLServerContainer;
 
@@ -16,7 +16,8 @@ import static org.assertj.core.api.Assertions.fail;
  * Tests if the password passed to the container satisfied the password policy described at
  * https://docs.microsoft.com/en-us/sql/relational-databases/security/password-policy?view=sql-server-2017
  */
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("data")
 public class CustomPasswordMSSQLServerTest {
 
     private static String UPPER_CASE_LETTERS = "ABCDE";
@@ -36,7 +37,6 @@ public class CustomPasswordMSSQLServerTest {
         this.valid = valid;
     }
 
-    @Parameterized.Parameters
     public static Collection<Object[]> data() {
         return Arrays.asList(
             new Object[][] {

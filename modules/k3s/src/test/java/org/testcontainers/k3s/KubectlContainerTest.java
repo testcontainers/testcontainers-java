@@ -1,22 +1,27 @@
 package org.testcontainers.k3s;
 
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 import org.testcontainers.images.builder.Transferable;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.ManagedNetwork;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
+@Testcontainers
 public class KubectlContainerTest {
 
+    @ManagedNetwork
     public static Network network = Network.SHARED;
 
-    @ClassRule
+    @Container
     public static K3sContainer k3s = new K3sContainer(DockerImageName.parse("rancher/k3s:v1.21.3-k3s1"))
         .withNetwork(network)
         .withNetworkAliases("k3s");
@@ -38,8 +43,10 @@ public class KubectlContainerTest {
         }
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void shouldThrowAnExceptionForUnknownNetworkAlias() {
-        k3s.generateInternalKubeConfigYaml("not-set-network-alias");
+        catchThrowableOfType(IllegalArgumentException.class, () ->
+            k3s.generateInternalKubeConfigYaml("not-set-network-alias")
+        );
     }
 }

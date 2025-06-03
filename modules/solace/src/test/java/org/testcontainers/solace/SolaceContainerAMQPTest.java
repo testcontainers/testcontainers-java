@@ -1,8 +1,7 @@
 package org.testcontainers.solace;
 
 import org.apache.qpid.jms.JmsConnectionFactory;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,6 +18,7 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 public class SolaceContainerAMQPTest {
 
@@ -57,7 +57,7 @@ public class SolaceContainerAMQPTest {
             connection.start();
             return session;
         } catch (Exception e) {
-            Assert.fail("Error connecting and setting up session! " + e.getMessage());
+            fail("Error connecting and setting up session! " + e.getMessage());
             return null;
         }
     }

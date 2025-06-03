@@ -1,19 +1,21 @@
 package org.testcontainers.utility;
 
-import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.Parameter;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.ThrowableAssert.catchThrowableOfType;
 
-@RunWith(Enclosed.class)
 public class DockerImageNameTest {
 
-    @RunWith(Parameterized.class)
+    @Nested
+    @ParameterizedClass
+    @MethodSource("getNames")
     public static class ValidNames {
 
-        @Parameterized.Parameters(name = "{0}")
         public static String[] getNames() {
             return new String[] {
                 "myname:latest",
@@ -30,7 +32,7 @@ public class DockerImageNameTest {
             };
         }
 
-        @Parameterized.Parameter
+        @Parameter(0)
         public String imageName;
 
         @Test
@@ -39,10 +41,11 @@ public class DockerImageNameTest {
         }
     }
 
-    @RunWith(Parameterized.class)
+    @Nested
+    @ParameterizedClass
+    @MethodSource("getNames")
     public static class InvalidNames {
 
-        @Parameterized.Parameters(name = "{0}")
         public static String[] getNames() {
             return new String[] {
                 ":latest",
@@ -53,19 +56,22 @@ public class DockerImageNameTest {
             };
         }
 
-        @Parameterized.Parameter
+        @Parameter(0)
         public String imageName;
 
-        @Test(expected = IllegalArgumentException.class)
+        @Test
         public void testInvalidNameRejected() {
-            DockerImageName.parse(imageName).assertValid();
+            catchThrowableOfType(IllegalArgumentException.class, () ->
+                DockerImageName.parse(imageName).assertValid()
+            );
         }
     }
 
-    @RunWith(Parameterized.class)
+    @Nested
+    @ParameterizedClass(name = "{0}{1}{2}{3}{4}")
+    @MethodSource("getNames")
     public static class Parsing {
 
-        @Parameterized.Parameters(name = "{0}{1}{2}{3}{4}")
         public static String[][] getNames() {
             return new String[][] {
                 { "", "", "myname", ":", null },
@@ -92,19 +98,19 @@ public class DockerImageNameTest {
             };
         }
 
-        @Parameterized.Parameter(0)
+        @Parameter(0)
         public String registry;
 
-        @Parameterized.Parameter(1)
+        @Parameter(1)
         public String registrySeparator;
 
-        @Parameterized.Parameter(2)
+        @Parameter(2)
         public String repo;
 
-        @Parameterized.Parameter(3)
+        @Parameter(3)
         public String versionSeparator;
 
-        @Parameterized.Parameter(4)
+        @Parameter(4)
         public String version;
 
         @Test
