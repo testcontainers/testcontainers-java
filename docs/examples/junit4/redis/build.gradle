@@ -5,5 +5,6 @@ dependencies {
 
     testImplementation "junit:junit:4.13.2"
     testImplementation project(":testcontainers")
+    testImplementation project(":junit-vintage")
     testImplementation 'org.assertj:assertj-core:3.26.3'
 }

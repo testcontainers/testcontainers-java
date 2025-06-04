@@ -6,6 +6,8 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.TestImages;
+import org.testcontainers.junit.vintage.Container;
+import org.testcontainers.junit.vintage.Testcontainers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -18,12 +20,15 @@ public class NetworkTest {
         public Network network = Network.newNetwork();
 
         @Rule
+        public Testcontainers containers = new Testcontainers(this);
+
+        @Container
         public GenericContainer<?> foo = new GenericContainer<>(TestImages.TINY_IMAGE)
             .withNetwork(network)
             .withNetworkAliases("foo")
             .withCommand("/bin/sh", "-c", "while true ; do printf 'HTTP/1.1 200 OK\\n\\nyay' | nc -l -p 8080; done");
 
-        @Rule
+        @Container
         public GenericContainer<?> bar = new GenericContainer<>(TestImages.TINY_IMAGE)
             .withNetwork(network)
             .withCommand("top");
