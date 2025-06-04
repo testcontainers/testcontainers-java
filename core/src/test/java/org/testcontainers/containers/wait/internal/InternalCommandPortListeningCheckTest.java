@@ -2,23 +2,26 @@ package org.testcontainers.containers.wait.internal;
 
 import com.google.common.collect.ImmutableSet;
 import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.rnorth.ducttape.TimeoutException;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.fail;
 
-@RunWith(Parameterized.class)
+@Testcontainers
+@ParameterizedClass
+@MethodSource("data")
 public class InternalCommandPortListeningCheckTest {
 
-    @Parameterized.Parameters(name = "{index} - {0}")
     public static Iterable<Object[]> data() {
         return Arrays.asList(
             new Object[][] {
@@ -29,7 +32,7 @@ public class InternalCommandPortListeningCheckTest {
         );
     }
 
-    @Rule
+    @Container
     public GenericContainer container;
 
     public InternalCommandPortListeningCheckTest(String dockerfile) {

@@ -1,20 +1,22 @@
 package org.testcontainers.junit;
 
-import org.junit.Assume;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.TestImages;
 import org.testcontainers.containers.ExecConfig;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.TestEnvironment;
 
 import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assumptions.assumeThat;
 
+@Testcontainers
 public class ExecInContainerTest {
 
-    @ClassRule
+    @Container
     public static GenericContainer<?> redis = new GenericContainer<>(TestImages.REDIS_IMAGE).withExposedPorts(6379);
 
     @Test
@@ -22,7 +24,9 @@ public class ExecInContainerTest {
         // The older "lxc" execution driver doesn't support "exec". At the time of writing (2016/03/29),
         // that's the case for CircleCI.
         // Once they resolve the issue, this clause can be removed.
-        Assume.assumeTrue(TestEnvironment.dockerExecutionDriverSupportsExec());
+        assumeThat(TestEnvironment.dockerExecutionDriverSupportsExec())
+            .as("dockerExecutionDriverSupportsExec")
+            .isTrue();
 
         final GenericContainer.ExecResult result = redis.execInContainer("redis-cli", "role");
         assertThat(result.getStdout())

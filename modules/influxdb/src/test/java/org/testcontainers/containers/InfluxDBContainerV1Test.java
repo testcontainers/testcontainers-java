@@ -5,7 +5,7 @@ import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.Point;
 import org.influxdb.dto.Query;
 import org.influxdb.dto.QueryResult;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.utility.DockerImageName;
 
 import java.util.concurrent.TimeUnit;

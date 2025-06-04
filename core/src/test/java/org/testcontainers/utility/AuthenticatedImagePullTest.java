@@ -2,10 +2,9 @@ package org.testcontainers.utility;
 
 import com.github.dockerjava.api.model.AuthConfig;
 import org.intellij.lang.annotations.Language;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.testcontainers.DockerRegistryContainer;
 import org.testcontainers.TestImages;
@@ -13,6 +12,8 @@ import org.testcontainers.containers.ContainerState;
 import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -32,12 +33,13 @@ import static org.mockito.Mockito.when;
  * {@link RegistryAuthLocatorTest} covers actual credential scenarios at a lower level, which are
  * impractical to test end-to-end.
  */
+@Testcontainers
 public class AuthenticatedImagePullTest {
 
     /**
      * Containerised docker image registry, with simple hardcoded credentials
      */
-    @ClassRule
+    @Container
     public static DockerRegistryContainer authenticatedRegistry = new DockerRegistryContainer(
         new ImageFromDockerfile()
             .withDockerfileFromBuilder(builder -> {
@@ -54,7 +56,7 @@ public class AuthenticatedImagePullTest {
 
     private final DockerImageName testImageName = authenticatedRegistry.createImage();
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         originalAuthLocatorSingleton = RegistryAuthLocator.instance();
 
@@ -77,7 +79,7 @@ public class AuthenticatedImagePullTest {
             .thenReturn(authConfig);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() {
         RegistryAuthLocator.setInstance(originalAuthLocatorSingleton);
     }

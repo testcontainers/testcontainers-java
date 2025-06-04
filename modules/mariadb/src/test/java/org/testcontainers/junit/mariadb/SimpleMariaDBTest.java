@@ -1,7 +1,7 @@
 package org.testcontainers.junit.mariadb;
 
 import org.apache.commons.lang3.SystemUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.MariaDBTestImages;
 import org.testcontainers.containers.MariaDBContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;

@@ -3,12 +3,10 @@ package org.testcontainers.containers;
 import com.google.common.collect.ImmutableMap;
 import com.sun.net.httpserver.HttpServer;
 import lombok.SneakyThrows;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.TestImages;
 import org.testcontainers.Testcontainers;
@@ -27,7 +25,7 @@ public class ExposedHostTest {
 
     private static HttpServer server;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
         server = HttpServer.create(new InetSocketAddress(0), 0);
         server.createContext(
@@ -44,12 +42,12 @@ public class ExposedHostTest {
         server.start();
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
         server.stop(0);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         PortForwardingContainer.INSTANCE.reset();
     }
@@ -189,11 +187,6 @@ public class ExposedHostTest {
 
             @Override
             public void close() {}
-
-            @Override
-            public Statement apply(Statement base, Description description) {
-                return null;
-            }
         };
 
         List<com.github.dockerjava.api.model.Network> networks = DockerClientFactory

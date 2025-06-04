@@ -21,9 +21,7 @@ dependencies {
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.testcontainers:testcontainers")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
-
-
+    testImplementation("org.junit.jupiter:junit-jupiter:5.13.0")
 }
 
 tasks.withType<KotlinCompile> {

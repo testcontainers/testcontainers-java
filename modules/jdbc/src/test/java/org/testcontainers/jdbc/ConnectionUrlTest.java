@@ -1,15 +1,13 @@
 package org.testcontainers.jdbc;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
+
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
 public class ConnectionUrlTest {
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void testConnectionUrl1() {
@@ -83,9 +81,10 @@ public class ConnectionUrlTest {
             .containsEntry("TC_INITSCRIPT", "somepath/init_mysql.sql");
 
         //Parameter sets are unmodifiable
-        thrown.expect(UnsupportedOperationException.class);
-        url.getContainerParameters().remove("TC_INITSCRIPT");
-        url.getQueryParameters().remove("a");
+        Map<String, String> containerParameters = url.getContainerParameters();
+        catchThrowableOfType(UnsupportedOperationException.class, () -> containerParameters.remove("TC_INITSCRIPT"));
+        Map<String, String> queryParameters = url.getQueryParameters();
+        catchThrowableOfType(UnsupportedOperationException.class, () -> queryParameters.remove("a"));
     }
 
     @Test

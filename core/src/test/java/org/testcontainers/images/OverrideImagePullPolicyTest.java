@@ -1,28 +1,30 @@
 package org.testcontainers.images;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.testcontainers.DockerRegistryContainer;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.FakeImagePullPolicy;
 import org.testcontainers.utility.MockTestcontainersConfigurationRule;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Testcontainers
 public class OverrideImagePullPolicyTest {
 
-    @Rule
+    @Container
     public MockTestcontainersConfigurationRule config = new MockTestcontainersConfigurationRule();
 
     private ImagePullPolicy originalInstance;
 
     private ImagePullPolicy originalDefaultImplementation;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         this.originalInstance = PullPolicy.instance;
         this.originalDefaultImplementation = PullPolicy.defaultImplementation;
@@ -30,7 +32,7 @@ public class OverrideImagePullPolicyTest {
         PullPolicy.defaultImplementation = Mockito.mock(ImagePullPolicy.class);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         PullPolicy.instance = originalInstance;
         PullPolicy.defaultImplementation = originalDefaultImplementation;

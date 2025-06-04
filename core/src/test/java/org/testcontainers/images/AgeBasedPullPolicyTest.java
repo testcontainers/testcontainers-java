@@ -1,6 +1,6 @@
 package org.testcontainers.images;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;

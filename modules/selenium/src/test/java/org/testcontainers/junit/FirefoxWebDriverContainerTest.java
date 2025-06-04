@@ -1,24 +1,23 @@
 package org.testcontainers.junit;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.testcontainers.containers.BrowserWebDriverContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
-/**
- *
- */
+@Testcontainers
 public class FirefoxWebDriverContainerTest extends BaseWebDriverContainerTest {
 
     // junitRule {
-    @Rule
+    @Container
     public BrowserWebDriverContainer<?> firefox = new BrowserWebDriverContainer<>()
         .withCapabilities(new FirefoxOptions())
         // }
         .withNetwork(NETWORK);
 
-    @Before
+    @BeforeEach
     public void checkBrowserIsIndeedFirefox() {
         assertBrowserNameIs(firefox, "firefox", new FirefoxOptions());
     }

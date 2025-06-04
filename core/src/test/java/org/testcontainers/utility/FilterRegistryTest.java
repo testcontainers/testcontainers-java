@@ -1,6 +1,6 @@
 package org.testcontainers.utility;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.utility.ResourceReaper.FilterRegistry;
 
 import java.io.ByteArrayInputStream;

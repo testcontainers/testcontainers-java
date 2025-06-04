@@ -1,6 +1,6 @@
 package org.testcontainers.ollama;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.DockerImageName;
 

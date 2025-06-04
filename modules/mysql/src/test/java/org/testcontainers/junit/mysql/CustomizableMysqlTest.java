@@ -1,6 +1,6 @@
 package org.testcontainers.junit.mysql;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.MySQLTestImages;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;

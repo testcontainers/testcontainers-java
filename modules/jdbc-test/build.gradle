@@ -1,6 +1,9 @@
 dependencies {
     api project(':jdbc')
 
+    api platform("org.junit:junit-bom:5.13.0")
+    api 'org.junit.jupiter:junit-jupiter'
+
     api 'com.google.guava:guava:33.3.1-jre'
     api 'org.apache.commons:commons-lang3:3.17.0'
     api 'com.zaxxer:HikariCP-java6:2.3.13'

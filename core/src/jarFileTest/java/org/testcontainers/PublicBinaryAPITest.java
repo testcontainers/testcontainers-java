@@ -2,12 +2,10 @@ package org.testcontainers;
 
 import lombok.RequiredArgsConstructor;
 import org.assertj.core.api.Assertions;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -27,12 +25,13 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assumptions.assumeThat;
 
 /**
  * This test checks that we don't expose any shaded class in our public API.
- * We use {@link Parameterized} runner here to create a test per public class in Testcontainers' JAR file.
  */
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("data")
 @RequiredArgsConstructor
 public class PublicBinaryAPITest extends AbstractJarFileTest {
 
@@ -46,7 +45,6 @@ public class PublicBinaryAPITest extends AbstractJarFileTest {
         Assertions.registerFormatterForType(MethodNode.class, it -> it.name + it.desc);
     }
 
-    @Parameters(name = "{0}")
     public static List<Object[]> data() throws Exception {
         List<Object[]> result = new ArrayList<>();
 
@@ -89,7 +87,7 @@ public class PublicBinaryAPITest extends AbstractJarFileTest {
 
     private final ClassNode classNode;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         switch (classNode.name) {
             // Necessary evil
@@ -97,7 +95,7 @@ public class PublicBinaryAPITest extends AbstractJarFileTest {
             case "org/testcontainers/dockerclient/DockerClientProviderStrategy":
             case "org/testcontainers/dockerclient/WindowsClientProviderStrategy":
             case "org/testcontainers/utility/DynamicPollInterval":
-                Assume.assumeTrue(false);
+                assumeThat(true).isFalse();
         }
     }
 

@@ -23,7 +23,7 @@ First, add Testcontainers as a dependency as follows:
 
 === "Gradle"
     ```groovy
-    testImplementation "org.junit.jupiter:junit-jupiter:5.8.1"
+    testImplementation "org.junit.jupiter:junit-jupiter:5.13.0"
     testImplementation "org.testcontainers:testcontainers:{{latest_version}}"
     testImplementation "org.testcontainers:junit-jupiter:{{latest_version}}"
     ```

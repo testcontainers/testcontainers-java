@@ -1,6 +1,6 @@
 package org.testcontainers.junit.mysql;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.MySQLTestImages;
@@ -27,7 +27,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
 public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
@@ -111,7 +111,7 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
         }
     }
 
-    @Test(expected = ContainerLaunchException.class)
+    @Test
     public void testEmptyPasswordWithNonRootUser() {
         try (
             MySQLContainer<?> container = new MySQLContainer<>(MySQLTestImages.MYSQL_80_IMAGE)
@@ -120,8 +120,9 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
                 .withPassword("")
                 .withEnv("MYSQL_ROOT_HOST", "%")
         ) {
-            container.start();
-            fail("ContainerLaunchException expected to be thrown");
+            catchThrowableOfType(ContainerLaunchException.class, () ->
+                container.start()
+            );
         }
     }
 

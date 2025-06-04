@@ -1,7 +1,7 @@
 package org.testcontainers.containers;
 
 import lombok.NonNull;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 import java.sql.Connection;

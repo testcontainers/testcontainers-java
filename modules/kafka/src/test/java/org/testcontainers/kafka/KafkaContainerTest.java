@@ -1,6 +1,6 @@
 package org.testcontainers.kafka;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.AbstractKafka;
 import org.testcontainers.KCatContainer;
 import org.testcontainers.containers.Network;

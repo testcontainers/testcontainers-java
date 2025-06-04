@@ -5,7 +5,7 @@ import com.github.dockerjava.api.DockerClient;
 import lombok.SneakyThrows;
 import org.awaitility.Awaitility;
 import org.awaitility.core.ConditionFactory;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.zeroturnaround.exec.ProcessExecutor;

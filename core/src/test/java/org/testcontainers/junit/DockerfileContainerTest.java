@@ -4,10 +4,11 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.IOException;
 
@@ -16,9 +17,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Simple test case / demonstration of creating a fresh container image from a Dockerfile DSL
  */
+@Testcontainers
 public class DockerfileContainerTest {
 
-    @Rule
+    @Container
     public GenericContainer dslContainer = new GenericContainer(
         new ImageFromDockerfile("tcdockerfile/nginx", false)
             .withDockerfileFromBuilder(builder -> {

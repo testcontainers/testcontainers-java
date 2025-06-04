@@ -1,10 +1,13 @@
 package org.testcontainers.containers.output;
 
 import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.testcontainers.containers.Container.ExecResult;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
+
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -32,7 +35,8 @@ public class ToStringConsumerTest {
         }
     }
 
-    @Test(timeout = 60_000L)
+    @Test
+    @Timeout(value = 60, unit = TimeUnit.SECONDS)
     public void newlines_are_not_added_to_exec_output_with_tty() throws Exception {
         try (GenericContainer<?> container = new GenericContainer<>("alpine:3.17")) {
             container.withCreateContainerCmdModifier(cmd -> {

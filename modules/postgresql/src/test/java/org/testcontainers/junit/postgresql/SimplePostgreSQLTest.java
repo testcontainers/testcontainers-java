@@ -1,6 +1,6 @@
 package org.testcontainers.junit.postgresql;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.PostgreSQLTestImages;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;

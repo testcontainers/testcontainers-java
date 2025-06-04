@@ -1,9 +1,10 @@
 package org.testcontainers.containers;
 
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.Parameter;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.testcontainers.MySQLTestImages;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.utility.DockerImageName;
@@ -13,10 +14,10 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 @Slf4j
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("params")
 public class MySQLRootAccountTest {
 
-    @Parameterized.Parameters(name = "{0}")
     public static DockerImageName[] params() {
         return new DockerImageName[] {
             MySQLTestImages.MYSQL_57_IMAGE,
@@ -25,7 +26,7 @@ public class MySQLRootAccountTest {
         };
     }
 
-    @Parameterized.Parameter
+    @Parameter(0)
     public DockerImageName image;
 
     @Test

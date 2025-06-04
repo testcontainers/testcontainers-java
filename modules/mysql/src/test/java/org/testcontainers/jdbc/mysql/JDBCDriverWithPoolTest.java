@@ -5,9 +5,9 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.tomcat.jdbc.pool.PoolProperties;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.testcontainers.jdbc.ContainerDatabaseDriver;
 import org.vibur.dbcp.ViburDBCPDataSource;
 
@@ -29,7 +29,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * the mysql module, to avoid circular dependencies.
  * TODO: Move to the jdbc module and either (a) implement a barebones {@link org.testcontainers.containers.JdbcDatabaseContainerProvider} for testing, or (b) refactor into a unit test.
  */
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("parameters")
 public class JDBCDriverWithPoolTest {
 
     public static final String URL =
@@ -37,7 +38,6 @@ public class JDBCDriverWithPoolTest {
 
     private final DataSource dataSource;
 
-    @Parameterized.Parameters
     public static Iterable<Supplier<DataSource>> dataSourceSuppliers() {
         return Arrays.asList(
             JDBCDriverWithPoolTest::getTomcatDataSourceWithDriverClassName,

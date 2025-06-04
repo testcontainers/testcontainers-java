@@ -2,7 +2,7 @@ package org.testcontainers.milvus;
 
 import io.milvus.client.MilvusServiceClient;
 import io.milvus.param.ConnectParam;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.Wait;

@@ -1,12 +1,13 @@
 package org.testcontainers.utility;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -20,19 +21,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.eq;
 
+@Testcontainers
 public class ImageNameSubstitutorTest {
 
-    @Rule
-    public TemporaryFolder tempFolder = new TemporaryFolder();
+    @TempDir
+    public Path tempFolder;
 
-    @Rule
+    @Container
     public MockTestcontainersConfigurationRule config = new MockTestcontainersConfigurationRule();
 
     private ImageNameSubstitutor originalInstance;
 
     private ImageNameSubstitutor originalDefaultImplementation;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         originalInstance = ImageNameSubstitutor.instance;
         originalDefaultImplementation = ImageNameSubstitutor.defaultImplementation;
@@ -46,7 +48,7 @@ public class ImageNameSubstitutorTest {
         Mockito.doReturn("default implementation").when(ImageNameSubstitutor.defaultImplementation).getDescription();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         ImageNameSubstitutor.instance = originalInstance;
         ImageNameSubstitutor.defaultImplementation = originalDefaultImplementation;
@@ -96,7 +98,7 @@ public class ImageNameSubstitutorTest {
 
     @Test
     public void testImageNameSubstitutorFromServiceLoader() throws IOException {
-        Path tempDir = this.tempFolder.newFolder("image-name-substitutor-test").toPath();
+        Path tempDir = tempFolder.resolve("image-name-substitutor-test");
         Path metaInfDir = Paths.get(tempDir.toString(), "META-INF", "services");
         Files.createDirectories(metaInfDir);
 

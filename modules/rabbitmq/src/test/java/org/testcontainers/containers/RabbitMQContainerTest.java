@@ -6,7 +6,7 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.RabbitMQContainer.SslVerification;
 import org.testcontainers.utility.MountableFile;
 

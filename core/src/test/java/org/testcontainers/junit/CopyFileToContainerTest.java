@@ -2,8 +2,8 @@ package org.testcontainers.junit;
 
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.TestImages;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
@@ -24,7 +24,7 @@ public class CopyFileToContainerTest {
 
     private static String fileName = "test-resource.txt";
 
-    @Before
+    @BeforeEach
     public void setup() throws IOException {
         destinationOnHost = File.createTempFile("testcontainers", null).getAbsolutePath();
     }

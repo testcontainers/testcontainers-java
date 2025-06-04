@@ -1,7 +1,7 @@
 package org.testcontainers.images;
 
 import com.github.dockerjava.api.command.InspectImageResponse;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 

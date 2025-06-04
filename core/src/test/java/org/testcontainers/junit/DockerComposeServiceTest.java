@@ -1,16 +1,17 @@
 package org.testcontainers.junit;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.DockerComposeContainer;
+import org.testcontainers.junit.jupiter.Container;
 
 import java.io.File;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
 public class DockerComposeServiceTest extends BaseDockerComposeTest {
 
-    @Rule
+    @Container
     public DockerComposeContainer environment = new DockerComposeContainer(
         new File("src/test/resources/compose-test.yml")
     )
@@ -22,9 +23,11 @@ public class DockerComposeServiceTest extends BaseDockerComposeTest {
         return environment;
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testDbIsNotStarting() {
-        environment.getServicePort("db_1", 10001);
+        catchThrowableOfType(IllegalArgumentException.class, () ->
+            environment.getServicePort("db_1", 10001)
+        );
     }
 
     @Test

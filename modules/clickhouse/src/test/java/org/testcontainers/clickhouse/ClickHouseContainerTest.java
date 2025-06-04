@@ -1,6 +1,6 @@
 package org.testcontainers.clickhouse;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.ClickhouseTestImages;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 

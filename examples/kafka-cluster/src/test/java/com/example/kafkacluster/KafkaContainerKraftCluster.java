@@ -102,5 +102,6 @@ public class KafkaContainerKraftCluster implements Startable {
     @Override
     public void stop() {
         this.brokers.stream().parallel().forEach(GenericContainer::stop);
+        this.network.close();
     }
 }

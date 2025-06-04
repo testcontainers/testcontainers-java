@@ -3,11 +3,10 @@ package org.testcontainers.containers;
 import com.google.common.util.concurrent.Uninterruptibles;
 import org.apache.commons.lang3.SystemUtils;
 import org.assertj.core.api.Assumptions;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.utility.CommandLine;
 
@@ -18,7 +17,8 @@ import java.net.Socket;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass(name = "{index}: local[{0}], composeFiles[{2}], expectedEnvVar[{1}]")
+@MethodSource("data")
 public class ComposeOverridesTest {
 
     private static final String DOCKER_EXECUTABLE = SystemUtils.IS_OS_WINDOWS ? "docker.exe" : "docker";
@@ -49,7 +49,6 @@ public class ComposeOverridesTest {
         this.composeFiles = composeFiles;
     }
 
-    @Parameters(name = "{index}: local[{0}], composeFiles[{2}], expectedEnvVar[{1}]")
     public static Iterable<Object[]> data() {
         return Arrays.asList(
             new Object[][] {
@@ -61,7 +60,7 @@ public class ComposeOverridesTest {
         );
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         if (localMode) {
             Assumptions

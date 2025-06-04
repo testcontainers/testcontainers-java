@@ -1,7 +1,7 @@
 package org.testcontainers.images.builder;
 
 import com.github.dockerjava.api.exception.DockerClientException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 import org.testcontainers.utility.DockerImageName;
