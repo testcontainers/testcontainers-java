@@ -1,0 +1,11 @@
+description = "Testcontainers :: JUnit4 Rule"
+
+dependencies {
+    api project(":testcontainers")
+    api 'junit:junit:4.13.2'
+    implementation platform('org.junit:junit-bom:5.10.3')
+    implementation 'org.junit.jupiter:junit-jupiter-api'
+
+    testImplementation 'com.datastax.oss:java-driver-core:4.17.0'
+    testImplementation 'org.assertj:assertj-core:3.26.3'
+}

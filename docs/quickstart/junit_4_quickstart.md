@@ -1,10 +1,13 @@
 # JUnit 4 Quickstart
 
-It's easy to add Testcontainers to your project - let's walk through a quick example to see how.
+This example shows the way you could use Testcontainers with JUnit 4.
+
+!!! note
+    JUnit 4 is in [maintenance mode since 2025-05-31](https://github.com/junit-team/junit4), so we recommend using JUnit 5 or newer versions instead.
 
 Let's imagine we have a simple program that has a dependency on Redis, and we want to add some tests for it.
 In our imaginary program, there is a `RedisBackedCache` class which stores data in Redis.
- 
+
 You can see an example test that could have been written for it (without using Testcontainers):
 
 <!--codeinclude-->
@@ -15,7 +18,7 @@ Notice that the existing test has a problem - it's relying on a local installati
 This may work if we were sure that every developer and CI machine had Redis installed, but would fail otherwise.
 We might also have problems if we attempted to run tests in parallel, such as state bleeding between tests, or port clashes.
 
-Let's start from here, and see how to improve the test with Testcontainers:  
+Let's start from here, and see how to improve the test with Testcontainers:
 
 ## 1. Add Testcontainers as a test-scoped dependency
 
@@ -23,7 +26,8 @@ First, add Testcontainers as a dependency as follows:
 
 === "Gradle"
     ```groovy
-    testImplementation "org.testcontainers:testcontainers:{{latest_version}}"
+    testImplementation("org.testcontainers:testcontainers:{{latest_version}}")
+    testImplementation("org.testcontainers:junit-vintage:{{latest_version}}")
     ```
 === "Maven"
     ```xml
@@ -33,18 +37,26 @@ First, add Testcontainers as a dependency as follows:
         <version>{{latest_version}}</version>
         <scope>test</scope>
     </dependency>
+    <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>junit-vintage</artifactId>
+        <version>{{latest_version}}</version>
+        <scope>test</scope>
+    </dependency>
     ```
 
 ## 2. Get Testcontainers to run a Redis container during our tests
 
-Simply add the following to the body of our test class:
+Add the following to the body of our test class:
 
 <!--codeinclude-->
 [JUnit 4 Rule](../examples/junit4/redis/src/test/java/quickstart/RedisBackedCacheIntTest.java) inside_block:rule
 <!--/codeinclude-->
 
 The `@Rule` annotation tells JUnit to notify this field about various events in the test lifecycle.
-In this case, our rule object is a Testcontainers `GenericContainer`, configured to use a specific Redis image from Docker Hub, and configured to expose a port.
+Wrap the containers with `new TestContainersRule(...)` so the containers start and stop, according to the test lifecycle.
+In this case, our rule object is not `static`, so the container will start and stop with every test.
+The test configures `GenericContainer` to use a specific Redis image from Docker Hub, and to expose a port.
 
 If we run our test as-is, then regardless of the actual test outcome, we'll see logs showing us that Testcontainers:
 
@@ -66,9 +78,9 @@ We can do this in our test `setUp` method, to set up our component under test:
 <!--/codeinclude-->
 
 !!! tip
-    Notice that we also ask Testcontainers for the container's actual address with `redis.getHost();`, 
+    Notice that we also ask Testcontainers for the container's actual address with `redis.getHost();`,
     rather than hard-coding `localhost`. `localhost` may work in some environments but not others - for example it may
-    not work on your current or future CI environment. As such, **avoid hard-coding** the address, and use 
+    not work on your current or future CI environment. As such, **avoid hard-coding** the address, and use
     `getHost()` instead.
 
 ## 4. Run the tests!
@@ -80,4 +92,3 @@ Let's look at our complete test class to see how little we had to add to get up 
 <!--codeinclude-->
 [RedisBackedCacheIntTest](../examples/junit4/redis/src/test/java/quickstart/RedisBackedCacheIntTest.java) block:RedisBackedCacheIntTest
 <!--/codeinclude-->
-
