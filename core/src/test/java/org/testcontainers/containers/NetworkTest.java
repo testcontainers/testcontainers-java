@@ -7,6 +7,7 @@ import org.junit.runner.RunWith;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.TestImages;
 import org.testcontainers.junit.vintage.Container;
+import org.testcontainers.junit.vintage.TemporaryNetwork;
 import org.testcontainers.junit.vintage.Testcontainers;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,7 +18,7 @@ public class NetworkTest {
     public static class WithRules {
 
         @Rule
-        public Network network = Network.newNetwork();
+        public TemporaryNetwork network = new TemporaryNetwork(Network.newNetwork());
 
         @Rule
         public Testcontainers containers = new Testcontainers(this);
