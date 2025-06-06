@@ -5,6 +5,7 @@ import org.junit.platform.commons.support.HierarchyTraversalMode;
 import org.junit.platform.commons.support.ModifierSupport;
 import org.junit.platform.commons.support.ReflectionSupport;
 import org.junit.runner.Description;
+import org.junit.runners.model.MultipleFailureException;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
@@ -97,7 +98,9 @@ public final class Testcontainers extends FailureDetectingExternalResource {
     }
 
     @Override
-    protected void finished(Description description, List<Throwable> errors) {
+    protected void finished(Description description) throws Exception {
+        List<Throwable> errors = new ArrayList<Throwable>();
+
         forEachReversed(
             startedContainers,
             startable -> {
@@ -108,6 +111,8 @@ public final class Testcontainers extends FailureDetectingExternalResource {
                 }
             }
         );
+
+        MultipleFailureException.assertEmpty(errors);
     }
 
     private List<Startable> findContainers(Description description) {
