@@ -12,9 +12,8 @@ import java.util.List;
 /**
  * {@link TestRule} which is called before and after each test, and also is notified on success/failure.
  *
- * This mimics the behaviour of TestWatcher to some degree, but failures occurring in this rule do not
- * contribute to the overall failure count (which can otherwise cause strange negative test success
- * figures).
+ * This mimics the behaviour of TestWatcher to some degree, but failures occurring in {@code starting()}
+ * prevent the test from being run.
  */
 class FailureDetectingExternalResource implements TestRule {
 
@@ -28,12 +27,14 @@ class FailureDetectingExternalResource implements TestRule {
                 try {
                     starting(description);
                     base.evaluate();
-                    succeeded(description);
+                    notifySucceeded(description, errors);
+                } catch (org.junit.internal.AssumptionViolatedException e) {
+                    // Do nothing.
                 } catch (Throwable e) {
                     errors.add(e);
-                    failed(e, description);
+                    notifyFailed(e, description, errors);
                 } finally {
-                    finished(description, errors);
+                    notifyFinished(description, errors);
                 }
 
                 MultipleFailureException.assertEmpty(errors);
@@ -48,6 +49,30 @@ class FailureDetectingExternalResource implements TestRule {
     protected void failed(Throwable e, Description description) {}
 
     protected void finished(Description description, List<Throwable> errors) {}
+
+    private void notifySucceeded(Description description, List<Throwable> errors) {
+        try {
+            succeeded(description);
+        } catch (Throwable e) {
+            errors.add(e);
+        }
+    }
+
+    private void notifyFailed(Throwable failure, Description description, List<Throwable> errors) {
+        try {
+            failed(failure, description);
+        } catch (Throwable e) {
+            errors.add(e);
+        }
+    }
+
+    private void notifyFinished(Description description, List<Throwable> errors) {
+        try {
+            finished(description, errors);
+        } catch (Throwable e) {
+            errors.add(e);
+        }
+    }
 
     protected static final TestDescription toTestDescription(Description description) {
         return new TestDescription() {
