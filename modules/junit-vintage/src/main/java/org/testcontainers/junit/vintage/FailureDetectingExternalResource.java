@@ -8,6 +8,7 @@ import org.testcontainers.lifecycle.TestDescription;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * {@link TestRule} which is called before and after each test, and also is notified on success/failure.
@@ -23,18 +24,20 @@ class FailureDetectingExternalResource implements TestRule {
             @Override
             public void evaluate() throws Throwable {
                 List<Throwable> errors = new ArrayList<Throwable>();
+                Optional<Throwable> failure = Optional.empty();
 
                 try {
                     starting(description);
                     base.evaluate();
                     notifySucceeded(description, errors);
                 } catch (org.junit.internal.AssumptionViolatedException e) {
-                    // Do nothing.
+                    failure = Optional.of(e);
                 } catch (Throwable e) {
+                    failure = Optional.of(e);
                     errors.add(e);
-                    notifyFailed(e, description, errors);
+                    notifyFailed(e, description);
                 } finally {
-                    notifyFinished(description, errors);
+                    notifyFinished(failure, description, errors);
                 }
 
                 MultipleFailureException.assertEmpty(errors);
@@ -46,9 +49,9 @@ class FailureDetectingExternalResource implements TestRule {
 
     protected void succeeded(Description description) throws Throwable {}
 
-    protected void failed(Throwable e, Description description) {}
+    protected void failed(Throwable e, Description description) throws Throwable {}
 
-    protected void finished(Description description, List<Throwable> errors) {}
+    protected void finished(Description description) throws Throwable {}
 
     private void notifySucceeded(Description description, List<Throwable> errors) {
         try {
@@ -58,19 +61,22 @@ class FailureDetectingExternalResource implements TestRule {
         }
     }
 
-    private void notifyFailed(Throwable failure, Description description, List<Throwable> errors) {
+    private void notifyFailed(Throwable failure, Description description) {
         try {
             failed(failure, description);
         } catch (Throwable e) {
-            errors.add(e);
+            failure.addSuppressed(e);
         }
     }
 
-    private void notifyFinished(Description description, List<Throwable> errors) {
+    private void notifyFinished(Optional<Throwable> failure, Description description, List<Throwable> errors) {
         try {
-            finished(description, errors);
+            finished(description);
         } catch (Throwable e) {
-            errors.add(e);
+            failure.ifPresent(f -> f.addSuppressed(e)); // ifPresentOrElse() requires Java 9
+            if (!failure.isPresent()) {
+                errors.add(e);
+            }
         }
     }
 
