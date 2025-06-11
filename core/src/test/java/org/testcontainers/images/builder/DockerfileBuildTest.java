@@ -1,8 +1,8 @@
 package org.testcontainers.images.builder;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 
@@ -13,7 +13,8 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("parameters")
 public class DockerfileBuildTest {
 
     static final Path RESOURCE_PATH = Paths.get("src/test/resources/dockerfile-build-test");
@@ -22,7 +23,6 @@ public class DockerfileBuildTest {
 
     public ImageFromDockerfile image;
 
-    @Parameterized.Parameters
     public static Object[][] parameters() {
         Map<String, String> buildArgs = new HashMap<>(4);
         buildArgs.put("BUILD_IMAGE", "alpine:3.16");

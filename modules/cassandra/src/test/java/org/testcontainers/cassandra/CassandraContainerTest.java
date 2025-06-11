@@ -3,12 +3,13 @@ package org.testcontainers.cassandra;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.utility.DockerImageName;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
 public class CassandraContainerTest {
 
@@ -61,13 +62,15 @@ public class CassandraContainerTest {
         }
     }
 
-    @Test(expected = ContainerLaunchException.class)
+    @Test
     public void testEmptyConfigurationOverride() {
         try (
             CassandraContainer cassandraContainer = new CassandraContainer(CASSANDRA_IMAGE)
                 .withConfigurationOverride("cassandra-empty-configuration")
         ) {
-            cassandraContainer.start();
+            catchThrowableOfType(ContainerLaunchException.class, () ->
+                cassandraContainer.start()
+            );
         }
     }
 
@@ -106,13 +109,15 @@ public class CassandraContainerTest {
         }
     }
 
-    @Test(expected = ContainerLaunchException.class)
+    @Test
     public void testInitScriptWithError() {
         try (
             CassandraContainer cassandraContainer = new CassandraContainer(CASSANDRA_IMAGE)
                 .withInitScript("initial-with-error.cql")
         ) {
-            cassandraContainer.start();
+            catchThrowableOfType(ContainerLaunchException.class, () ->
+                cassandraContainer.start()
+            );
         }
     }
 

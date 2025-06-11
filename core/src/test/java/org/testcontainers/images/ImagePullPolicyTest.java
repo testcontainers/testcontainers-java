@@ -1,22 +1,24 @@
 package org.testcontainers.images;
 
 import com.github.dockerjava.api.exception.NotFoundException;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.DockerRegistryContainer;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 
+@Testcontainers
 public class ImagePullPolicyTest {
 
-    @ClassRule
+    @Container
     public static DockerRegistryContainer registry = new DockerRegistryContainer();
 
     private final DockerImageName imageName = registry.createImage();

@@ -1,8 +1,9 @@
 package org.testcontainers.junit.mysql;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.Parameter;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.testcontainers.MySQLTestImages;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
@@ -13,10 +14,10 @@ import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("params")
 public class MultiVersionMySQLTest extends AbstractContainerDatabaseTest {
 
-    @Parameterized.Parameters(name = "{0}")
     public static DockerImageName[] params() {
         return new DockerImageName[] {
             MySQLTestImages.MYSQL_57_IMAGE,
@@ -25,7 +26,7 @@ public class MultiVersionMySQLTest extends AbstractContainerDatabaseTest {
         };
     }
 
-    @Parameterized.Parameter
+    @Parameter(0)
     public DockerImageName dockerImageName;
 
     @Test

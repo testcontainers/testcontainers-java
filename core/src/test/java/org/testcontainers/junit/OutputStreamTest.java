@@ -1,7 +1,7 @@
 package org.testcontainers.junit;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.TestImages;
@@ -10,6 +10,8 @@ import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.output.ToStringConsumer;
 import org.testcontainers.containers.output.WaitingConsumer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -21,15 +23,17 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 /**
  * Simple test for following container output.
  */
+@Testcontainers
 public class OutputStreamTest {
 
-    @Rule
+    @Container
     public GenericContainer container = new GenericContainer(TestImages.ALPINE_IMAGE)
         .withCommand("ping -c 5 127.0.0.1");
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OutputStreamTest.class);
 
-    @Test(timeout = 60_000L)
+    @Test
+    @Timeout(value = 60, unit = TimeUnit.SECONDS)
     public void testFetchStdout() throws TimeoutException {
         WaitingConsumer consumer = new WaitingConsumer();
 
@@ -42,7 +46,8 @@ public class OutputStreamTest {
         );
     }
 
-    @Test(timeout = 60_000L)
+    @Test
+    @Timeout(value = 60, unit = TimeUnit.SECONDS)
     public void testFetchStdoutWithTimeout() {
         WaitingConsumer consumer = new WaitingConsumer();
 
@@ -65,7 +70,8 @@ public class OutputStreamTest {
             .isInstanceOf(TimeoutException.class);
     }
 
-    @Test(timeout = 60_000L)
+    @Test
+    @Timeout(value = 60, unit = TimeUnit.SECONDS)
     public void testFetchStdoutWithNoLimit() throws TimeoutException {
         WaitingConsumer consumer = new WaitingConsumer();
 
@@ -76,7 +82,8 @@ public class OutputStreamTest {
         });
     }
 
-    @Test(timeout = 60_000L)
+    @Test
+    @Timeout(value = 60, unit = TimeUnit.SECONDS)
     public void testLogConsumer() throws TimeoutException {
         WaitingConsumer waitingConsumer = new WaitingConsumer();
         Slf4jLogConsumer logConsumer = new Slf4jLogConsumer(LOGGER);
@@ -89,7 +96,8 @@ public class OutputStreamTest {
         });
     }
 
-    @Test(timeout = 60_000L)
+    @Test
+    @Timeout(value = 60, unit = TimeUnit.SECONDS)
     public void testToStringConsumer() throws TimeoutException {
         WaitingConsumer waitingConsumer = new WaitingConsumer();
         ToStringConsumer toStringConsumer = new ToStringConsumer();

@@ -1,7 +1,7 @@
 package org.testcontainers.jdbc;
 
-import org.junit.AfterClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 
 import java.sql.Connection;
@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class DatabaseDriverShutdownTest {
 
-    @AfterClass
+    @AfterAll
     public static void testCleanup() {
         ContainerDatabaseDriver.killContainers();
     }

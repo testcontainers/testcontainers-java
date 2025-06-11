@@ -1,6 +1,6 @@
 package org.testcontainers.typesense;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.typesense.api.Client;
 import org.typesense.api.Configuration;
 import org.typesense.resources.Node;

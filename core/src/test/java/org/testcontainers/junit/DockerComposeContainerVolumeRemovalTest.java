@@ -1,8 +1,8 @@
 package org.testcontainers.junit;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.DockerComposeContainer;
 
@@ -15,7 +15,8 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass(name = "removeVolumes = {0}")
+@MethodSource("params")
 public class DockerComposeContainerVolumeRemovalTest {
 
     public DockerComposeContainerVolumeRemovalTest(
@@ -30,7 +31,6 @@ public class DockerComposeContainerVolumeRemovalTest {
 
     public final boolean shouldVolumesBePresentAfterRunning;
 
-    @Parameterized.Parameters(name = "removeVolumes = {0}")
     public static Object[][] params() {
         return new Object[][] { { true, false }, { false, true } };
     }

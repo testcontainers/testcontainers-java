@@ -1,29 +1,31 @@
 package org.testcontainers.containers;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.TestImages;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.ManagedNetwork;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(Enclosed.class)
+@Testcontainers
 public class NetworkTest {
 
-    public static class WithRules {
+    @Nested
+    public class WithRules {
 
-        @Rule
+        @ManagedNetwork
         public Network network = Network.newNetwork();
 
-        @Rule
+        @Container
         public GenericContainer<?> foo = new GenericContainer<>(TestImages.TINY_IMAGE)
             .withNetwork(network)
             .withNetworkAliases("foo")
             .withCommand("/bin/sh", "-c", "while true ; do printf 'HTTP/1.1 200 OK\\n\\nyay' | nc -l -p 8080; done");
 
-        @Rule
+        @Container
         public GenericContainer<?> bar = new GenericContainer<>(TestImages.TINY_IMAGE)
             .withNetwork(network)
             .withCommand("top");
@@ -35,7 +37,8 @@ public class NetworkTest {
         }
     }
 
-    public static class WithoutRules {
+    @Nested
+    public class WithoutRules {
 
         @Test
         public void testNetworkSupport() throws Exception {

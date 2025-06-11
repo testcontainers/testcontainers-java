@@ -1,25 +1,27 @@
 package quickstart;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Testcontainers
 public class RedisBackedCacheIntTest {
 
     private RedisBackedCache underTest;
 
     // rule {
-    @Rule
+    @Container
     public GenericContainer redis = new GenericContainer(DockerImageName.parse("redis:6-alpine"))
         .withExposedPorts(6379);
 
     // }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         String address = redis.getHost();
         Integer port = redis.getFirstMappedPort();

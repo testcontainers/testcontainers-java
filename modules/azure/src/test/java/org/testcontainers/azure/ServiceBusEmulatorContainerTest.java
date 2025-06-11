@@ -9,10 +9,12 @@ import com.azure.messaging.servicebus.ServiceBusReceivedMessageContext;
 import com.azure.messaging.servicebus.ServiceBusSenderClient;
 import com.github.dockerjava.api.model.Capability;
 import org.assertj.core.api.Assertions;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.containers.Network;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.ManagedNetwork;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.MountableFile;
 
 import java.util.List;
@@ -23,16 +25,17 @@ import java.util.function.Consumer;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
+@Testcontainers
 public class ServiceBusEmulatorContainerTest {
 
-    @Rule
     // network {
+    @ManagedNetwork
     public Network network = Network.newNetwork();
 
     // }
 
-    @Rule
     // sqlContainer {
+    @Container
     public MSSQLServerContainer<?> mssqlServerContainer = new MSSQLServerContainer<>(
         "mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04"
     )
@@ -45,8 +48,8 @@ public class ServiceBusEmulatorContainerTest {
 
     // }
 
-    @Rule
     // emulatorContainer {
+    @Container
     public ServiceBusEmulatorContainer emulator = new ServiceBusEmulatorContainer(
         "mcr.microsoft.com/azure-messaging/servicebus-emulator:1.1.2"
     )

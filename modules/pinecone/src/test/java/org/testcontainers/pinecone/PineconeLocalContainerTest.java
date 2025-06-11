@@ -1,7 +1,7 @@
 package org.testcontainers.pinecone;
 
 import io.pinecone.clients.Pinecone;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.openapitools.db_control.client.model.DeletionProtection;
 import org.openapitools.db_control.client.model.IndexModel;
 

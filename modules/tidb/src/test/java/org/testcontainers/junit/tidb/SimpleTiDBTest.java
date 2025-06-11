@@ -1,6 +1,6 @@
 package org.testcontainers.junit.tidb;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.TiDBTestImages;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 import org.testcontainers.tidb.TiDBContainer;

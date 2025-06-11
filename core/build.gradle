@@ -69,7 +69,13 @@ configurations.all {
 }
 
 dependencies {
-    api 'junit:junit:4.13.2'
+    constraints {
+        testCompileOnly('junit:junit') {
+            version {
+                rejectAll()
+            }
+        }
+    }
     api 'org.slf4j:slf4j-api:1.7.36'
     compileOnly 'org.jetbrains:annotations:24.1.0'
     testCompileOnly 'org.jetbrains:annotations:24.1.0'
@@ -125,7 +131,7 @@ dependencies {
 
     jarFileTestCompileOnly "org.projectlombok:lombok:${lombok.version}"
     jarFileTestAnnotationProcessor "org.projectlombok:lombok:${lombok.version}"
-    jarFileTestImplementation 'junit:junit:4.13.2'
+    jarFileTestImplementation(project(":junit-jupiter"))
     jarFileTestImplementation 'org.assertj:assertj-core:3.26.3'
     jarFileTestImplementation 'org.ow2.asm:asm-debug-all:5.2'
 }

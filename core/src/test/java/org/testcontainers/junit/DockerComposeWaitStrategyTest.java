@@ -1,8 +1,8 @@
 package org.testcontainers.junit;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.Description;
 import org.mockito.Mockito;
 import org.testcontainers.containers.DockerComposeContainer;
@@ -22,12 +22,12 @@ public class DockerComposeWaitStrategyTest {
 
     private DockerComposeContainer<?> environment;
 
-    @Before
+    @BeforeEach
     public final void setUp() {
         environment = new DockerComposeContainer<>(new File("src/test/resources/compose-test.yml"));
     }
 
-    @After
+    @AfterEach
     public final void cleanUp() {
         environment.stop();
     }

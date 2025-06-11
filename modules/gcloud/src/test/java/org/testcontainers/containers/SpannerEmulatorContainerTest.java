@@ -14,8 +14,9 @@ import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 import java.util.Arrays;
@@ -23,10 +24,11 @@ import java.util.concurrent.ExecutionException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Testcontainers
 public class SpannerEmulatorContainerTest {
 
-    @Rule
     // emulatorContainer {
+    @Container
     public SpannerEmulatorContainer emulator = new SpannerEmulatorContainer(
         DockerImageName.parse("gcr.io/cloud-spanner-emulator/emulator:1.4.0")
     );

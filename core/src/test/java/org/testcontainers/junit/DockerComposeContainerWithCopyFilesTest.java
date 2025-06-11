@@ -1,7 +1,7 @@
 package org.testcontainers.junit;
 
 import io.restassured.RestAssured;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.DockerComposeContainer;
 
 import java.io.File;

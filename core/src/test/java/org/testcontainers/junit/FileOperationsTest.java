@@ -4,9 +4,8 @@ import com.github.dockerjava.api.exception.NotFoundException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.CountingOutputStream;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.testcontainers.TestImages;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
@@ -20,11 +19,12 @@ import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
 public class FileOperationsTest {
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    public File temporaryFolder;
 
     @Test
     public void copyFileToContainerFileTest() throws Exception {
@@ -36,7 +36,7 @@ public class FileOperationsTest {
             final MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");
             alpineCopyToContainer.copyFileToContainer(mountableFile, "/test.txt");
 
-            File actualFile = new File(temporaryFolder.getRoot().getAbsolutePath() + "/test_copy_to_container.txt");
+            File actualFile = new File(temporaryFolder.getAbsolutePath() + "/test_copy_to_container.txt");
             alpineCopyToContainer.copyFileFromContainer("/test.txt", actualFile.getPath());
 
             File expectedFile = new File(mountableFile.getResolvedPath());
@@ -46,7 +46,7 @@ public class FileOperationsTest {
 
     @Test
     public void copyLargeFilesToContainer() throws Exception {
-        File tempFile = temporaryFolder.newFile();
+        File tempFile = new File(temporaryFolder, "copyLargeFilesToContainer.bin");
         try (
             GenericContainer<?> alpineCopyToContainer = new GenericContainer<>(TestImages.ALPINE_IMAGE) //
                 .withCommand("sleep", "infinity")
@@ -91,7 +91,7 @@ public class FileOperationsTest {
             final MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");
             alpineCopyToContainer.copyFileToContainer(mountableFile, "/home/");
 
-            File actualFile = new File(temporaryFolder.getRoot().getAbsolutePath() + "/test_copy_to_container.txt");
+            File actualFile = new File(temporaryFolder.getAbsolutePath() + "/test_copy_to_container.txt");
             alpineCopyToContainer.copyFileFromContainer("/home/test_copy_to_container.txt", actualFile.getPath());
 
             File expectedFile = new File(mountableFile.getResolvedPath());
@@ -109,7 +109,7 @@ public class FileOperationsTest {
             final MountableFile mountableFile = MountableFile.forClasspathResource("mappable-resource/");
             alpineCopyToContainer.copyFileToContainer(mountableFile, "/home/test/");
 
-            File actualFile = new File(temporaryFolder.getRoot().getAbsolutePath() + "/test_copy_to_container.txt");
+            File actualFile = new File(temporaryFolder.getAbsolutePath() + "/test_copy_to_container.txt");
             alpineCopyToContainer.copyFileFromContainer("/home/test/test-resource.txt", actualFile.getPath());
 
             File expectedFile = new File(mountableFile.getResolvedPath() + "/test-resource.txt");
@@ -117,14 +117,16 @@ public class FileOperationsTest {
         }
     }
 
-    @Test(expected = NotFoundException.class)
+    @Test
     public void copyFromContainerShouldFailBecauseNoFileTest() throws NotFoundException {
         try (
             GenericContainer alpineCopyToContainer = new GenericContainer(TestImages.ALPINE_IMAGE) //
                 .withCommand("top")
         ) {
             alpineCopyToContainer.start();
-            alpineCopyToContainer.copyFileFromContainer("/home/test.txt", "src/test/resources/copy-from/test.txt");
+            catchThrowableOfType(NotFoundException.class, () ->
+                alpineCopyToContainer.copyFileFromContainer("/home/test.txt", "src/test/resources/copy-from/test.txt")
+            );
         }
     }
 
@@ -138,7 +140,7 @@ public class FileOperationsTest {
             final MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");
             alpineCopyToContainer.copyFileToContainer(mountableFile, "/home/");
 
-            File actualFile = new File(temporaryFolder.getRoot().getAbsolutePath() + "/test_copy_from_container.txt");
+            File actualFile = new File(temporaryFolder.getAbsolutePath() + "/test_copy_from_container.txt");
             alpineCopyToContainer.copyFileFromContainer("/home/test_copy_to_container.txt", actualFile.getPath());
 
             File expectedFile = new File(mountableFile.getResolvedPath());

@@ -1,6 +1,6 @@
 package org.testcontainers.images.builder.dockerfile.statement;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class SingleArgumentStatementTest extends AbstractStatementTest {
 

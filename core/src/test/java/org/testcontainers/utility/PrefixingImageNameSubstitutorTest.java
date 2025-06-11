@@ -1,7 +1,7 @@
 package org.testcontainers.utility;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -15,7 +15,7 @@ public class PrefixingImageNameSubstitutorTest {
 
     private PrefixingImageNameSubstitutor underTest;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         mockConfiguration = mock(TestcontainersConfiguration.class);
         underTest = new PrefixingImageNameSubstitutor(mockConfiguration);

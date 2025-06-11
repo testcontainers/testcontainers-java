@@ -3,9 +3,8 @@ package org.testcontainers.containers;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import lombok.SneakyThrows;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -18,8 +17,8 @@ import static org.assertj.core.api.Assertions.entry;
 
 public class ParsedDockerComposeFileValidationTest {
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    public File temporaryFolder;
 
     @Test
     public void shouldValidate() {
@@ -152,7 +151,7 @@ public class ParsedDockerComposeFileValidationTest {
 
     @Test
     public void shouldSupportALotOfAliases() throws Exception {
-        File file = temporaryFolder.newFile();
+        File file = new File(temporaryFolder, "test.yml");
         try (PrintWriter writer = new PrintWriter(file)) {
             writer.println("x-entry: &entry");
             writer.println("  key: value");

@@ -1,7 +1,7 @@
 package org.testcontainers.containers.wait.strategy;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
@@ -15,7 +15,7 @@ public class DockerHealthcheckWaitStrategyTest {
 
     private GenericContainer container;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         // Using a Dockerfile here, since Dockerfile builder DSL doesn't support HEALTHCHECK
         container =

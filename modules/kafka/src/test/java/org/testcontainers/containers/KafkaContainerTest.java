@@ -9,7 +9,7 @@ import org.apache.kafka.common.config.SaslConfigs;
 import org.apache.kafka.common.errors.SaslAuthenticationException;
 import org.apache.kafka.common.errors.TopicAuthorizationException;
 import org.awaitility.Awaitility;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.AbstractKafka;
 import org.testcontainers.Testcontainers;
 import org.testcontainers.images.builder.Transferable;

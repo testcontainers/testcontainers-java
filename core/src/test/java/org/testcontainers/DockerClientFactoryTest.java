@@ -1,8 +1,9 @@
 package org.testcontainers;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.dockerclient.LogToStringContainerCallback;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MockTestcontainersConfigurationRule;
 
@@ -12,9 +13,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * Test for {@link DockerClientFactory}.
  */
+@Testcontainers
 public class DockerClientFactoryTest {
 
-    @Rule
+    @Container
     public MockTestcontainersConfigurationRule configurationMock = new MockTestcontainersConfigurationRule();
 
     @Test

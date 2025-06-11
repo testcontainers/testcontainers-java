@@ -1,6 +1,6 @@
 package org.testcontainers.junit.cratedb;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.CrateDBTestImages;
 import org.testcontainers.cratedb.CrateDBContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;

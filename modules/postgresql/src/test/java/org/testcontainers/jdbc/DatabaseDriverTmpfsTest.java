@@ -1,6 +1,6 @@
 package org.testcontainers.jdbc;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 

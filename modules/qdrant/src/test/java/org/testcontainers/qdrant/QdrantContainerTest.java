@@ -3,7 +3,7 @@ package org.testcontainers.qdrant;
 import io.qdrant.client.QdrantClient;
 import io.qdrant.client.QdrantGrpcClient;
 import io.qdrant.client.grpc.QdrantOuterClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.images.builder.Transferable;
 
 import java.util.UUID;

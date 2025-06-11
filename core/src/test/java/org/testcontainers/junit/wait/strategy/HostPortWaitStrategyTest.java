@@ -1,12 +1,12 @@
 package org.testcontainers.junit.wait.strategy;
 
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.TestImages;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.Duration;
 
@@ -14,13 +14,14 @@ import java.time.Duration;
  * Test wait strategy with overloaded waitingFor methods.
  * Other implementations of WaitStrategy are tested through backwards compatible wait strategy tests
  */
-@RunWith(Enclosed.class)
+@Testcontainers
 public class HostPortWaitStrategyTest {
 
-    public static class DefaultHostPortWaitStrategyTest {
+    @Nested
+    public class DefaultHostPortWaitStrategyTest {
 
-        @ClassRule
-        public static GenericContainer<?> container = new GenericContainer<>(TestImages.ALPINE_IMAGE)
+        @Container
+        public GenericContainer<?> container = new GenericContainer<>(TestImages.ALPINE_IMAGE)
             .withExposedPorts()
             .withCommand("sh", "-c", "while true; do nc -lp 8080; done")
             .withExposedPorts(8080)
@@ -30,10 +31,11 @@ public class HostPortWaitStrategyTest {
         public void testWaiting() {}
     }
 
-    public static class ExplicitHostPortWaitStrategyTest {
+    @Nested
+    public class ExplicitHostPortWaitStrategyTest {
 
-        @ClassRule
-        public static GenericContainer<?> container = new GenericContainer<>(TestImages.ALPINE_IMAGE)
+        @Container
+        public GenericContainer<?> container = new GenericContainer<>(TestImages.ALPINE_IMAGE)
             .withExposedPorts()
             .withCommand("sh", "-c", "while true; do nc -lp 8080; done")
             .withExposedPorts(8080)
