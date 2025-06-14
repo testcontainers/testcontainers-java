@@ -35,7 +35,7 @@ So that the URL becomes:
 
 #### Using ClickHouse
 
-`r2dbc:tc:clickhouse:///databasename?TC_IMAGE_TAG=21.9.2-alpine`
+`r2dbc:tc:clickhouse:///databasename?TC_IMAGE_TAG=21.11.11-alpine`
 
 #### Using MySQL
 

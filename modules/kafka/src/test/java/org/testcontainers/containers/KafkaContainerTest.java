@@ -189,11 +189,9 @@ public class KafkaContainerTest extends AbstractKafka {
     public void testUsageWithListener() throws Exception {
         try (
             Network network = Network.newNetwork();
-            // registerListener {
             KafkaContainer kafka = new KafkaContainer(KAFKA_KRAFT_TEST_IMAGE)
                 .withListener(() -> "kafka:19092")
                 .withNetwork(network);
-            // }
             // createKCatContainer {
             GenericContainer<?> kcat = new GenericContainer<>("confluentinc/cp-kcat:7.9.0")
                 .withCreateContainerCmdModifier(cmd -> {

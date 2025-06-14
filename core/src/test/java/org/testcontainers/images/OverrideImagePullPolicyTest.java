@@ -51,4 +51,20 @@ public class OverrideImagePullPolicyTest {
             container.stop();
         }
     }
+
+    @Test
+    public void alwaysPullConfigurationTest() {
+        Mockito
+            .doReturn(AlwaysPullPolicy.class.getCanonicalName())
+            .when(TestcontainersConfiguration.getInstance())
+            .getImagePullPolicy();
+
+        try (DockerRegistryContainer registry = new DockerRegistryContainer()) {
+            registry.start();
+            GenericContainer<?> container = new GenericContainer<>(registry.createImage()).withExposedPorts(8080);
+            container.start();
+            assertThat(container.getImage().imagePullPolicy).isInstanceOf(AlwaysPullPolicy.class);
+            container.stop();
+        }
+    }
 }

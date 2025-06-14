@@ -40,7 +40,7 @@ public class PullPolicy {
                         .currentThread()
                         .getContextClassLoader()
                         .loadClass(imagePullPolicyClassName)
-                        .getConstructor()
+                        .getDeclaredConstructor()
                         .newInstance();
             } catch (Exception e) {
                 throw new IllegalArgumentException(

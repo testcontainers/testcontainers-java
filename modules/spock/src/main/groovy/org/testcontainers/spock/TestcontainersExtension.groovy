@@ -7,8 +7,23 @@ import org.spockframework.runtime.model.SpecInfo
 
 class TestcontainersExtension extends AbstractAnnotationDrivenExtension<Testcontainers> {
 
+	private final DockerAvailableDetector dockerDetector
+
+	TestcontainersExtension() {
+		this(new DockerAvailableDetector())
+	}
+
+	TestcontainersExtension(DockerAvailableDetector dockerDetector) {
+		this.dockerDetector = dockerDetector
+	}
+
 	@Override
 	void visitSpecAnnotation(Testcontainers annotation, SpecInfo spec) {
+		if (annotation.disabledWithoutDocker()) {
+			if (!dockerDetector.isDockerAvailable()) {
+				spec.skip("disabledWithoutDocker is true and Docker is not available")
+			}
+		}
 		def listener = new ErrorListener()
 		def interceptor = new TestcontainersMethodInterceptor(spec, listener)
 		spec.addSetupSpecInterceptor(interceptor)
