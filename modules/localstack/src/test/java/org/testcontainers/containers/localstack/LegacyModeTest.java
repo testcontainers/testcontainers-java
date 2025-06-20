@@ -3,11 +3,11 @@ package org.testcontainers.containers.localstack;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.github.dockerjava.api.DockerClient;
 import lombok.AllArgsConstructor;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.localstack.LocalStackContainer.Service;
 import org.testcontainers.images.RemoteDockerImage;
@@ -17,12 +17,14 @@ import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(Enclosed.class)
+// TODO: junit5
 public class LegacyModeTest {
 
     private static DockerImageName LOCALSTACK_CUSTOM_TAG = LocalstackTestImages.LOCALSTACK_IMAGE.withTag("custom");
 
-    @RunWith(Parameterized.class)
+    @Nested
+    @ParameterizedClass
+    @MethodSource("constructors")
     @AllArgsConstructor
     public static class Off {
 
@@ -30,7 +32,6 @@ public class LegacyModeTest {
 
         private final LocalStackContainer localstack;
 
-        @Parameterized.Parameters(name = "{0}")
         public static Iterable<Object[]> constructors() {
             return Arrays.asList(
                 new Object[][] {
@@ -75,7 +76,9 @@ public class LegacyModeTest {
         }
     }
 
-    @RunWith(Parameterized.class)
+    @Nested
+    @ParameterizedClass
+    @MethodSource("constructors")
     @AllArgsConstructor
     public static class On {
 
@@ -83,7 +86,7 @@ public class LegacyModeTest {
 
         private final LocalStackContainer localstack;
 
-        @BeforeClass
+        @BeforeAll
         public static void createCustomTag() {
             DockerClient dockerClient = DockerClientFactory.instance().client();
             dockerClient
@@ -95,7 +98,6 @@ public class LegacyModeTest {
                 .exec();
         }
 
-        @Parameterized.Parameters(name = "{0}")
         public static Iterable<Object[]> constructors() {
             return Arrays.asList(
                 new Object[][] {
@@ -140,7 +142,8 @@ public class LegacyModeTest {
         }
     }
 
-    @RunWith(Parameterized.class)
+    @ParameterizedClass
+    @MethodSource("constructors")
     @AllArgsConstructor
     public static class LegacyModeUnitTest {
 
@@ -148,7 +151,6 @@ public class LegacyModeTest {
 
         private final boolean shouldUseLegacyMode;
 
-        @Parameterized.Parameters(name = "{0} - {1}")
         public static Iterable<Object[]> constructors() {
             return Arrays.asList(
                 new Object[][] {

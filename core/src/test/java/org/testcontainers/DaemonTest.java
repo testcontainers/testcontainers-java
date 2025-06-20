@@ -1,6 +1,6 @@
 package org.testcontainers;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 
 import java.io.File;

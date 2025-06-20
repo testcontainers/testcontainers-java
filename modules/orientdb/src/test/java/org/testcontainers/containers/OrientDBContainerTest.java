@@ -1,7 +1,7 @@
 package org.testcontainers.containers;
 
 import com.orientechnologies.orient.core.db.ODatabaseSession;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 

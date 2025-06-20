@@ -2,12 +2,13 @@ package org.testcontainers.dockerclient;
 
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.transport.SSLConfig;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.MockTestcontainersConfigurationRule;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
@@ -27,17 +28,18 @@ import static org.mockito.ArgumentMatchers.isNull;
  * Test that we can use Testcontainers configuration file to override settings. We assume that docker-java has test
  * coverage for detection of environment variables (e.g. DOCKER_HOST) and its own properties config file.
  */
+@Testcontainers
 @RunWith(MockitoJUnitRunner.class)
 public class EnvironmentAndSystemPropertyClientProviderStrategyTest {
 
-    @Rule
+    @Container
     public MockTestcontainersConfigurationRule mockConfig = new MockTestcontainersConfigurationRule();
 
     private URI defaultDockerHost;
 
     private com.github.dockerjava.core.SSLConfig defaultSSLConfig;
 
-    @Before
+    @BeforeEach
     public void checkEnvironmentClear() {
         // If docker-java picks up non-default settings from the environment, our test needs to know to expect those
         DefaultDockerClientConfig defaultConfig = DefaultDockerClientConfig.createDefaultConfigBuilder().build();

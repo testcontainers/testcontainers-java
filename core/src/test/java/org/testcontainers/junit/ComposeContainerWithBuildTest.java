@@ -1,9 +1,9 @@
 package org.testcontainers.junit;
 
 import com.github.dockerjava.api.model.Container;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ComposeContainer;
@@ -15,7 +15,8 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass(name = "removeMode = {0}")
+@MethodSource("params")
 public class ComposeContainerWithBuildTest {
 
     public ComposeContainerWithBuildTest(
@@ -34,7 +35,6 @@ public class ComposeContainerWithBuildTest {
 
     public final boolean shouldPulledImageBePresentAfterRunning;
 
-    @Parameterized.Parameters(name = "removeMode = {0}")
     public static Object[][] params() {
         return new Object[][] {
             { null, true, true },

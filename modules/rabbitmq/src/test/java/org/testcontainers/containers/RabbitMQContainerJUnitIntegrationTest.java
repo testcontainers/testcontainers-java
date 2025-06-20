@@ -1,16 +1,15 @@
 package org.testcontainers.containers;
 
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Test for basic functionality when used as a <code>@ClassRule</code>.
- */
+@Testcontainers
 public class RabbitMQContainerJUnitIntegrationTest {
 
-    @ClassRule
+    @Container
     public static RabbitMQContainer rabbitMQContainer = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE);
 
     @Test

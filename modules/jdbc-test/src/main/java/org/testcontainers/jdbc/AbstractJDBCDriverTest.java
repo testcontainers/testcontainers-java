@@ -4,9 +4,9 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.lang3.SystemUtils;
-import org.junit.AfterClass;
-import org.junit.Test;
-import org.junit.runners.Parameterized.Parameter;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.Parameter;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -27,7 +27,7 @@ public class AbstractJDBCDriverTest {
         PmdKnownBroken,
     }
 
-    @Parameter
+    @Parameter(0)
     public String jdbcUrl;
 
     @Parameter(1)
@@ -39,7 +39,7 @@ public class AbstractJDBCDriverTest {
         connection.createStatement().execute("CREATE TABLE my_counter (\n" + "  n INT\n" + ");");
     }
 
-    @AfterClass
+    @AfterAll
     public static void testCleanup() {
         ContainerDatabaseDriver.killContainers();
     }

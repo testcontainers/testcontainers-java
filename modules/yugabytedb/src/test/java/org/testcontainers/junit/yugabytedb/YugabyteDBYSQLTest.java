@@ -1,6 +1,6 @@
 package org.testcontainers.junit.yugabytedb;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.YugabyteDBYSQLContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 import org.testcontainers.utility.DockerImageName;

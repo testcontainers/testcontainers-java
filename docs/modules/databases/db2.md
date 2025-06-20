@@ -12,7 +12,7 @@ Running DB2 as a stand-in for in a test:
 ```java
 public class SomeTest {
 
-    @ClassRule
+    @Сontainer
     public Db2Container db2 = new Db2Container()
         .acceptLicense();
     

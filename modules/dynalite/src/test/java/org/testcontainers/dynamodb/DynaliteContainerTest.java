@@ -9,21 +9,23 @@ import com.amazonaws.services.dynamodbv2.model.KeyType;
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType;
 import com.amazonaws.services.dynamodbv2.model.TableDescription;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Ignore("Image is not compatible with the latest Docker version provided by GH Actions")
+@Testcontainers
+@Disabled("Image is not compatible with the latest Docker version provided by GH Actions")
 public class DynaliteContainerTest {
 
     private static final DockerImageName DYNALITE_IMAGE = DockerImageName.parse(
         "quay.io/testcontainers/dynalite:v1.2.1-1"
     );
 
-    @Rule
+    @Container
     public DynaliteContainer dynamoDB = new DynaliteContainer(DYNALITE_IMAGE);
 
     @Test

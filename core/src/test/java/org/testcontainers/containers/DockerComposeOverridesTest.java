@@ -2,11 +2,10 @@ package org.testcontainers.containers;
 
 import com.google.common.util.concurrent.Uninterruptibles;
 import org.assertj.core.api.Assumptions;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.utility.CommandLine;
 
@@ -17,7 +16,8 @@ import java.net.Socket;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass(name = "{index}: local[{0}], composeFiles[{2}], expectedEnvVar[{1}]")
+@MethodSource("data")
 public class DockerComposeOverridesTest {
 
     private static final File BASE_COMPOSE_FILE = new File("src/test/resources/docker-compose-base.yml");
@@ -46,7 +46,6 @@ public class DockerComposeOverridesTest {
         this.composeFiles = composeFiles;
     }
 
-    @Parameters(name = "{index}: local[{0}], composeFiles[{2}], expectedEnvVar[{1}]")
     public static Iterable<Object[]> data() {
         return Arrays.asList(
             new Object[][] {
@@ -58,7 +57,7 @@ public class DockerComposeOverridesTest {
         );
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         if (localMode) {
             Assumptions

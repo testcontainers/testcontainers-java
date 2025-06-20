@@ -1,15 +1,15 @@
 package org.testcontainers.utility;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass(name = "Parsed version: {0}={1}")
+@MethodSource("data")
 public class ComparableVersionTest {
 
     private final int[] expected;
@@ -26,7 +26,6 @@ public class ComparableVersionTest {
         assertThat(ComparableVersion.parseVersion(given)).containsExactly(expected);
     }
 
-    @Parameters(name = "Parsed version: {0}={1}")
     public static Iterable<Object[]> data() {
         return Arrays.asList(
             new Object[][] {

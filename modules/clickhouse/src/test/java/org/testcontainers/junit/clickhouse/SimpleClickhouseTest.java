@@ -1,8 +1,8 @@
 package org.testcontainers.junit.clickhouse;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.testcontainers.ClickhouseTestImages;
 import org.testcontainers.containers.ClickHouseContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
@@ -13,7 +13,8 @@ import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("data")
 public class SimpleClickhouseTest extends AbstractContainerDatabaseTest {
 
     private final DockerImageName imageName;
@@ -22,7 +23,6 @@ public class SimpleClickhouseTest extends AbstractContainerDatabaseTest {
         this.imageName = imageName;
     }
 
-    @Parameterized.Parameters(name = "{0}")
     public static Object[][] data() {
         return new Object[][] { //
             { ClickhouseTestImages.CLICKHOUSE_IMAGE },

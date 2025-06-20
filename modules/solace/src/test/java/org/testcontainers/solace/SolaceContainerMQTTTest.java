@@ -6,8 +6,7 @@ import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,6 +14,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 public class SolaceContainerMQTTTest {
 
@@ -52,7 +52,7 @@ public class SolaceContainerMQTTTest {
             mqttClient.connect(connOpts);
             return mqttClient;
         } catch (Exception e) {
-            Assert.fail("Error connecting and setting up session! " + e.getMessage());
+            fail("Error connecting and setting up session! " + e.getMessage());
             return null;
         }
     }

@@ -33,15 +33,15 @@ import com.amazonaws.waiters.WaiterParameters;
 import com.github.dockerjava.api.DockerClient;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.localstack.LocalStackContainer.Service;
+import org.testcontainers.junit.jupiter.ManagedNetwork;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -74,13 +74,14 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Localstack from within a Docker network.
  */
 @Slf4j
-@RunWith(Enclosed.class)
+@Testcontainers
 public class LocalstackContainerTest {
 
+    @Nested
     public static class WithoutNetwork {
 
         // without_network {
-        @ClassRule
+        @org.testcontainers.junit.jupiter.Container
         public static LocalStackContainer localstack = new LocalStackContainer(LocalstackTestImages.LOCALSTACK_IMAGE)
             .withServices(
                 Service.S3,
@@ -263,12 +264,14 @@ public class LocalstackContainerTest {
         }
     }
 
+    @Nested
     public static class WithNetwork {
 
         // with_network {
+        @ManagedNetwork
         private static Network network = Network.newNetwork();
 
-        @ClassRule
+        @org.testcontainers.junit.jupiter.Container
         public static LocalStackContainer localstackInDockerNetwork = new LocalStackContainer(
             LocalstackTestImages.LOCALSTACK_IMAGE
         )
@@ -278,7 +281,7 @@ public class LocalstackContainerTest {
 
         // }
 
-        @ClassRule
+        @org.testcontainers.junit.jupiter.Container
         public static GenericContainer<?> awsCliInDockerNetwork = new GenericContainer<>(
             LocalstackTestImages.AWS_CLI_IMAGE
         )
@@ -353,12 +356,13 @@ public class LocalstackContainerTest {
         }
     }
 
+    @Nested
     public static class WithRegion {
 
         // with_region {
         private static String region = "eu-west-1";
 
-        @ClassRule
+        @org.testcontainers.junit.jupiter.Container
         public static LocalStackContainer localstack = new LocalStackContainer(LocalstackTestImages.LOCALSTACK_IMAGE)
             .withEnv("DEFAULT_REGION", region)
             .withServices(Service.S3);
@@ -377,9 +381,10 @@ public class LocalstackContainerTest {
         }
     }
 
+    @Nested
     public static class WithoutServices {
 
-        @ClassRule
+        @org.testcontainers.junit.jupiter.Container
         public static LocalStackContainer localstack = new LocalStackContainer(
             LocalstackTestImages.LOCALSTACK_0_13_IMAGE
         );
@@ -403,18 +408,20 @@ public class LocalstackContainerTest {
         }
     }
 
+    @Nested
     public static class WithVersion2 {
 
+        @ManagedNetwork
         private static Network network = Network.newNetwork();
 
-        @ClassRule
+        @org.testcontainers.junit.jupiter.Container
         public static LocalStackContainer localstack = new LocalStackContainer(
             DockerImageName.parse("localstack/localstack:2.0")
         )
             .withNetwork(network)
             .withNetworkAliases("localstack");
 
-        @ClassRule
+        @org.testcontainers.junit.jupiter.Container
         public static GenericContainer<?> awsCliInDockerNetwork = new GenericContainer<>(
             LocalstackTestImages.AWS_CLI_IMAGE
         )
@@ -475,9 +482,10 @@ public class LocalstackContainerTest {
         }
     }
 
+    @Nested
     public static class S3SkipSignatureValidation {
 
-        @ClassRule
+        @org.testcontainers.junit.jupiter.Container
         public static LocalStackContainer localstack = new LocalStackContainer(
             LocalstackTestImages.LOCALSTACK_2_3_IMAGE
         )
@@ -525,9 +533,10 @@ public class LocalstackContainerTest {
         }
     }
 
+    @Nested
     public static class LambdaContainerLabels {
 
-        @ClassRule
+        @org.testcontainers.junit.jupiter.Container
         public static LocalStackContainer localstack = new LocalStackContainer(
             LocalstackTestImages.LOCALSTACK_2_3_IMAGE
         );

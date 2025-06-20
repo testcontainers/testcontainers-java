@@ -1,11 +1,12 @@
 package org.testcontainers.junit;
 
 import lombok.Cleanup;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.NginxContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
@@ -20,6 +21,7 @@ import java.net.URLConnection;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Testcontainers
 public class SimpleNginxTest {
 
     private static final DockerImageName NGINX_IMAGE = DockerImageName.parse("nginx:1.27.0-alpine3.19-slim");
@@ -27,7 +29,7 @@ public class SimpleNginxTest {
     private static String tmpDirectory = System.getProperty("user.home") + "/.tmp-test-container";
 
     // creatingContainer {
-    @Rule
+    @Container
     public NginxContainer<?> nginx = new NginxContainer<>(NGINX_IMAGE)
         .withCopyFileToContainer(MountableFile.forHostPath(tmpDirectory), "/usr/share/nginx/html")
         .waitingFor(new HttpWaitStrategy());
@@ -35,7 +37,7 @@ public class SimpleNginxTest {
     // }
 
     @SuppressWarnings({ "Duplicates", "ResultOfMethodCallIgnored" })
-    @BeforeClass
+    @BeforeAll
     public static void setupContent() throws Exception {
         // addCustomContent {
         // Create a temporary dir

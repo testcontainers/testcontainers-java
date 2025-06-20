@@ -1,11 +1,13 @@
 package org.testcontainers.junit;
 
 import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -13,12 +15,14 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Simple test case / demonstration of creating a fresh container image from a Dockerfile DSL when the test
  * is parameterized.
  */
-@RunWith(Parameterized.class)
+@Testcontainers
+@ParameterizedClass
+@MethodSource("data")
 public class ParameterizedDockerfileContainerTest {
 
     private final String expectedVersion;
 
-    @Rule
+    @Container
     public GenericContainer container;
 
     public ParameterizedDockerfileContainerTest(String baseImage, String expectedVersion) {
@@ -37,7 +41,6 @@ public class ParameterizedDockerfileContainerTest {
         this.expectedVersion = expectedVersion;
     }
 
-    @Parameterized.Parameters(name = "{0}")
     public static Object[][] data() {
         return new Object[][] { //
             { "alpine:3.12", "3.12" },

@@ -1,7 +1,7 @@
 package org.testcontainers.containers.startupcheck;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.TestImages;
 import org.testcontainers.containers.GenericContainer;
 
@@ -17,7 +17,7 @@ public class IsRunningStartupCheckStrategyTest {
     }
 
     @Test
-    @Ignore("This test can fail to throw an AssertionError if the container doesn't fail quickly enough")
+    @Disabled("This test can fail to throw an AssertionError if the container doesn't fail quickly enough")
     public void testCommandQuickExitFailure() {
         try (GenericContainer container = new GenericContainer<>(TestImages.TINY_IMAGE).withCommand("/bin/false")) {
             assertThatThrownBy(container::start)

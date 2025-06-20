@@ -1,7 +1,7 @@
 package org.testcontainers.images.builder.dockerfile.statement;
 
 import com.google.common.collect.ImmutableMap;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 

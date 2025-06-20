@@ -2,8 +2,8 @@ package org.testcontainers.junit;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.testcontainers.TestImages;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.OutputFrame;
@@ -11,6 +11,8 @@ import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.output.ToStringConsumer;
 import org.testcontainers.containers.output.WaitingConsumer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -20,16 +22,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
 @Slf4j
+@Testcontainers
+@Timeout(value = 10, unit = TimeUnit.SECONDS)
 public class OutputStreamWithTTYTest {
 
-    @Rule
+    @Container
     public GenericContainer<?> container = new GenericContainer<>(TestImages.ALPINE_IMAGE)
         .withCommand("ls -1")
         .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
         .withCreateContainerCmdModifier(command -> command.withTty(true));
-
-    @Rule
-    public Timeout globalTimeout = Timeout.seconds(10);
 
     @Test
     public void testFetchStdout() throws TimeoutException {

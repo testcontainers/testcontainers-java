@@ -307,8 +307,8 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     /**
      * Obtain a RemoteWebDriver instance that is bound to an instance of the browser running inside a new container.
      * <p>
-     * All containers and drivers will be automatically shut down after the test method finishes (if used as a @Rule) or the test
-     * class (if used as a @ClassRule)
+     * All containers and drivers will be automatically shut down after the test method finishes (if used as a instance
+     * field) or the test class (if used as a static field)
      *
      * @return a new Remote Web Driver instance
      * @deprecated use {@link #getSeleniumAddress()} instead

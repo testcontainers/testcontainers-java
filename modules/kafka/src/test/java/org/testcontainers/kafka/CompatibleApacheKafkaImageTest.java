@@ -1,19 +1,20 @@
 package org.testcontainers.kafka;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.Parameter;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.testcontainers.AbstractKafka;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("params")
 public class CompatibleApacheKafkaImageTest extends AbstractKafka {
 
-    @Parameterized.Parameters(name = "{0}")
     public static String[] params() {
         return new String[] { "apache/kafka:3.8.0", "apache/kafka-native:3.8.0" };
     }
 
-    @Parameterized.Parameter
+    @Parameter(0)
     public String imageName;
 
     @Test

@@ -5,8 +5,6 @@ import com.google.common.annotations.VisibleForTesting;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.SystemUtils;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
@@ -31,7 +29,7 @@ import java.util.function.Consumer;
  * It uses either Compose V2 contained within the Docker binary, or a containerised version of Compose V2.
  */
 @Slf4j
-public class ComposeContainer extends FailureDetectingExternalResource implements Startable {
+public class ComposeContainer implements Startable {
 
     private final Map<String, Integer> scalingPreferences = new HashMap<>();
 
@@ -91,32 +89,6 @@ public class ComposeContainer extends FailureDetectingExternalResource implement
                 DEFAULT_IMAGE_NAME
             );
         this.project = this.composeDelegate.getProject();
-    }
-
-    @Override
-    @Deprecated
-    public Statement apply(Statement base, Description description) {
-        return super.apply(base, description);
-    }
-
-    @Override
-    @Deprecated
-    public void starting(Description description) {
-        start();
-    }
-
-    @Override
-    @Deprecated
-    protected void succeeded(Description description) {}
-
-    @Override
-    @Deprecated
-    protected void failed(Throwable e, Description description) {}
-
-    @Override
-    @Deprecated
-    public void finished(Description description) {
-        stop();
     }
 
     @Override

@@ -1,6 +1,5 @@
 package org.testcontainers.junit;
 
-import org.junit.ClassRule;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.WebElement;
@@ -9,21 +8,22 @@ import org.testcontainers.containers.BrowserWebDriverContainer;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.ManagedNetwork;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- *
- */
+@Testcontainers
 public class BaseWebDriverContainerTest {
 
-    @ClassRule
+    @ManagedNetwork
     public static Network NETWORK = Network.newNetwork();
 
-    @ClassRule
+    @Container
     public static GenericContainer<?> HELLO_WORLD = new GenericContainer<>(
         DockerImageName.parse("testcontainers/helloworld:1.1.0")
     )

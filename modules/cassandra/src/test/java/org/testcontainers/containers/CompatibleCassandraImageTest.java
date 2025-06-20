@@ -3,21 +3,22 @@ package org.testcontainers.containers;
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.Parameter;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("params")
 public class CompatibleCassandraImageTest {
 
-    @Parameterized.Parameters(name = "{0}")
     public static String[] params() {
         return new String[] { "cassandra:3.11.2", "cassandra:4.1.1" };
     }
 
-    @Parameterized.Parameter
+    @Parameter(0)
     public String imageName;
 
     @Test

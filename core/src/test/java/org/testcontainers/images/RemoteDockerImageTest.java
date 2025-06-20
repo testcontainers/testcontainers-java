@@ -1,12 +1,14 @@
 package org.testcontainers.images;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.LazyFuture;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,7 +31,8 @@ public class RemoteDockerImageTest {
         assertThat(remoteDockerImage.toString()).contains("imageName=java.lang.RuntimeException: arbitrary");
     }
 
-    @Test(timeout = 5000L)
+    @Test
+    @Timeout(value = 5, unit = TimeUnit.SECONDS)
     public void toStringDoesntResolveImageNameFuture() {
         CompletableFuture<String> imageNameFuture = new CompletableFuture<>();
 
@@ -47,7 +50,8 @@ public class RemoteDockerImageTest {
         assertThat(remoteDockerImage.toString()).contains("imageName=" + imageName);
     }
 
-    @Test(timeout = 5000L)
+    @Test
+    @Timeout(value = 5, unit = TimeUnit.SECONDS)
     public void toStringDoesntResolveLazyFuture() throws Exception {
         String imageName = Base58.randomString(8).toLowerCase();
         AtomicBoolean resolved = new AtomicBoolean(false);

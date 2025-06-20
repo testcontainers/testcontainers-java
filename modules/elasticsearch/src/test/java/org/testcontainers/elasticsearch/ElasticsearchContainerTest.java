@@ -16,8 +16,8 @@ import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.TransportAddress;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
@@ -59,7 +59,7 @@ public class ElasticsearchContainerTest {
 
     private RestClient anonymousClient = null;
 
-    @After
+    @AfterEach
     public void stopRestClient() throws IOException {
         if (client != null) {
             client.close();
