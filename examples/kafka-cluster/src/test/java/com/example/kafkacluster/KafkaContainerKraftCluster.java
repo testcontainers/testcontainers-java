@@ -25,12 +25,12 @@ public class KafkaContainerKraftCluster implements Startable {
     private final Collection<KafkaContainer> brokers;
 
     public KafkaContainerKraftCluster(String confluentPlatformVersion, int brokersNum, int internalTopicsRf) {
-        if (brokersNum < 0) {
+        if (brokersNum <= 0) {
             throw new IllegalArgumentException("brokersNum '" + brokersNum + "' must be greater than 0");
         }
-        if (internalTopicsRf < 0 || internalTopicsRf > brokersNum) {
+        if (internalTopicsRf <= 0 || internalTopicsRf > brokersNum) {
             throw new IllegalArgumentException(
-                "internalTopicsRf '" + internalTopicsRf + "' must be less than brokersNum and greater than 0"
+                "internalTopicsRf '" + internalTopicsRf + "' must be less than or equal to brokersNum and greater than 0"
             );
         }
 
@@ -101,6 +101,6 @@ public class KafkaContainerKraftCluster implements Startable {
 
     @Override
     public void stop() {
-        this.brokers.stream().parallel().forEach(GenericContainer::stop);
+        this.brokers.parallelStream().forEach(GenericContainer::stop);
     }
 }
