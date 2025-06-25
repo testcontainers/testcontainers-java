@@ -30,7 +30,7 @@ import java.util.Set;
  */
 @Slf4j
 @EqualsAndHashCode
-class ParsedDockerComposeFile {
+public class ParsedDockerComposeFile {
 
     private final Map<String, Object> composeFileContent;
 
