@@ -7,3 +7,9 @@ dependencies {
     testImplementation 'redis.clients:jedis:5.1.5'
     testImplementation 'org.assertj:assertj-core:3.26.3'
 }
+
+tasks.japicmp {
+    classExcludes = [
+        "org.testcontainers.containers.ToxiproxyContainer"
+    ]
+}

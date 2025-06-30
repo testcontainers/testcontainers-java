@@ -6,3 +6,9 @@ dependencies {
     testImplementation "org.elasticsearch.client:transport:7.17.24"
     testImplementation 'org.assertj:assertj-core:3.26.3'
 }
+
+tasks.japicmp {
+    classExcludes = [
+        "org.testcontainers.elasticsearch.ElasticsearchContainer"
+    ]
+}

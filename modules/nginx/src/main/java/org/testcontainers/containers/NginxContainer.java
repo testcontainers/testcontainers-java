@@ -16,16 +16,6 @@ public class NginxContainer<SELF extends NginxContainer<SELF>>
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("nginx");
 
-    private static final String DEFAULT_TAG = "1.9.4";
-
-    /**
-     * @deprecated use {@link #NginxContainer(DockerImageName)} instead
-     */
-    @Deprecated
-    public NginxContainer() {
-        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
-    }
-
     public NginxContainer(String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
     }

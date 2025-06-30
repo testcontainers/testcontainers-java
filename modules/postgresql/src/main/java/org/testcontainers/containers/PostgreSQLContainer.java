@@ -41,14 +41,6 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
 
     private static final String FSYNC_OFF_OPTION = "fsync=off";
 
-    /**
-     * @deprecated use {@link #PostgreSQLContainer(DockerImageName)} or {@link #PostgreSQLContainer(String)} instead
-     */
-    @Deprecated
-    public PostgreSQLContainer() {
-        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
-    }
-
     public PostgreSQLContainer(final String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
     }

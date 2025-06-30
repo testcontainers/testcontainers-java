@@ -30,8 +30,6 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
         "mongodb/mongodb-enterprise-server"
     );
 
-    private static final String DEFAULT_TAG = "4.0.10";
-
     private static final int CONTAINER_EXIT_CODE_OK = 0;
 
     private static final int AWAIT_INIT_REPLICA_SET_ATTEMPTS = 60;
@@ -41,14 +39,6 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
     private static final String STARTER_SCRIPT = "/testcontainers_start.sh";
 
     private boolean shardingEnabled;
-
-    /**
-     * @deprecated use {@link #MongoDBContainer(DockerImageName)} instead
-     */
-    @Deprecated
-    public MongoDBContainer() {
-        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
-    }
 
     public MongoDBContainer(@NonNull final String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));

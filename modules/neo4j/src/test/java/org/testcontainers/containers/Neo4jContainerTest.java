@@ -74,7 +74,9 @@ public class Neo4jContainerTest {
     @Test
     public void shouldFailOnCopyDatabaseForDefaultNeo4j4Image() {
         assertThatIllegalArgumentException()
-            .isThrownBy(() -> new Neo4jContainer<>().withDatabase(MountableFile.forClasspathResource("/test-graph.db")))
+            .isThrownBy(() -> {
+                new Neo4jContainer<>("neo4j:4.4.1").withDatabase(MountableFile.forClasspathResource("/test-graph.db"));
+            })
             .withMessage("Copying database folder is not supported for Neo4j instances with version 4.0 or higher.");
     }
 

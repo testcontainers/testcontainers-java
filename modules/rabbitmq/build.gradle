@@ -6,3 +6,9 @@ dependencies {
     testImplementation 'org.assertj:assertj-core:3.26.3'
     compileOnly 'org.jetbrains:annotations:24.1.0'
 }
+
+tasks.japicmp {
+    classExcludes = [
+        "org.testcontainers.containers.RabbitMQContainer"
+    ]
+}
