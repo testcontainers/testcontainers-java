@@ -54,6 +54,18 @@ Create a `KafkaContainer` to use it in your tests:
 [Creating a KafkaContainer](../../modules/kafka/src/test/java/org/testcontainers/kafka/KafkaContainerTest.java) inside_block:constructorWithVersion
 <!--/codeinclude-->
 
+### withNetworkAliases
+
+The first alias host name defined using `withNetworkAliases` configures port 9092 on the network set by `withNetwork`. Example for `kafka:9092`:
+
+<!--codeinclude-->
+[Creating a KafkaContainer](../../modules/kafka/src/test/java/org/testcontainers/kafka/KafkaContainerTest.java) inside_block:registerAlias
+<!--/codeinclude-->
+
+This works with `org.testcontainers.kafka.KafkaContainer` and `org.testcontainers.kafka.ConfluentKafkaContainer` but not with deprecated `org.testcontainers.containers.KafkaContainer`.
+
+It only works if `withListener` is not used and `KAFKA_BROKER_ID` environment variable is not set.
+
 ## Options
         
 ### <a name="zookeeper"></a> Using external Zookeeper
