@@ -39,6 +39,7 @@ dependencies {
 
 tasks.japicmp {
     classExcludes = [
-        "org.testcontainers.containers.Neo4jContainer"
+        "org.testcontainers.containers.Neo4jContainer",
+        "org.testcontainers.containers.Neo4jLabsPlugin"
     ]
 }

@@ -39,7 +39,7 @@ public class Neo4jContainerTest {
         try (
             // spotless:off
             // withoutAuthentication {
-            Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4")
+            Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4")
                 .withoutAuthentication()
             // }
             // spotless:on
@@ -58,7 +58,7 @@ public class Neo4jContainerTest {
         assumeThat(DockerClientFactory.instance().getInfo().getArchitecture()).isNotEqualTo("aarch64");
         try (
             // copyDatabase {
-            Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:3.5.30")
+            Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:3.5.30")
                 .withDatabase(MountableFile.forClasspathResource("/test-graph.db"))
             // }
         ) {
@@ -75,7 +75,7 @@ public class Neo4jContainerTest {
     public void shouldFailOnCopyDatabaseForDefaultNeo4j4Image() {
         assertThatIllegalArgumentException()
             .isThrownBy(() -> {
-                new Neo4jContainer<>("neo4j:4.4.1").withDatabase(MountableFile.forClasspathResource("/test-graph.db"));
+                new Neo4jContainer("neo4j:4.4.1").withDatabase(MountableFile.forClasspathResource("/test-graph.db"));
             })
             .withMessage("Copying database folder is not supported for Neo4j instances with version 4.0 or higher.");
     }
@@ -84,7 +84,7 @@ public class Neo4jContainerTest {
     public void shouldFailOnCopyDatabaseForCustomNeo4j4Image() {
         assertThatIllegalArgumentException()
             .isThrownBy(() -> {
-                new Neo4jContainer<>("neo4j:4.4.1").withDatabase(MountableFile.forClasspathResource("/test-graph.db"));
+                new Neo4jContainer("neo4j:4.4.1").withDatabase(MountableFile.forClasspathResource("/test-graph.db"));
             })
             .withMessage("Copying database folder is not supported for Neo4j instances with version 4.0 or higher.");
     }
@@ -93,7 +93,7 @@ public class Neo4jContainerTest {
     public void shouldFailOnCopyDatabaseForCustomNonSemverNeo4j4Image() {
         assertThatIllegalArgumentException()
             .isThrownBy(() -> {
-                new Neo4jContainer<>("neo4j:latest").withDatabase(MountableFile.forClasspathResource("/test-graph.db"));
+                new Neo4jContainer("neo4j:latest").withDatabase(MountableFile.forClasspathResource("/test-graph.db"));
             })
             .withMessage("Copying database folder is not supported for Neo4j instances with version 4.0 or higher.");
     }
@@ -102,7 +102,7 @@ public class Neo4jContainerTest {
     public void shouldCopyPlugins() {
         try (
             // registerPluginsPath {
-            Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4")
+            Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4")
                 .withPlugins(MountableFile.forClasspathResource("/custom-plugins"))
             // }
         ) {
@@ -117,7 +117,7 @@ public class Neo4jContainerTest {
     public void shouldCopyPlugin() {
         try (
             // registerPluginsJar {
-            Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4")
+            Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4")
                 .withPlugins(MountableFile.forClasspathResource("/custom-plugins/hello-world.jar"))
             // }
         ) {
@@ -142,7 +142,7 @@ public class Neo4jContainerTest {
         String expectedImageName = "neo4j:4.4-enterprise";
 
         assertThatExceptionOfType(IllegalStateException.class)
-            .isThrownBy(() -> new Neo4jContainer<>("neo4j:4.4").withEnterpriseEdition())
+            .isThrownBy(() -> new Neo4jContainer("neo4j:4.4").withEnterpriseEdition())
             .withMessageContaining("The image " + expectedImageName + " requires you to accept a license agreement.");
     }
 
@@ -152,7 +152,7 @@ public class Neo4jContainerTest {
 
         try (
             // enterpriseEdition {
-            Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4")
+            Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4")
                 .withEnterpriseEdition()
                 // }
                 .withAdminPassword("Picard123")
@@ -172,7 +172,7 @@ public class Neo4jContainerTest {
     @Test
     public void shouldAddConfigToEnvironment() {
         // neo4jConfiguration {
-        Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4")
+        Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4")
             .withNeo4jConfig("dbms.security.procedures.unrestricted", "apoc.*,algo.*")
             .withNeo4jConfig("dbms.tx_log.rotation.size", "42M");
         // }
@@ -184,7 +184,7 @@ public class Neo4jContainerTest {
 
     @Test
     public void shouldRespectEnvironmentAuth() {
-        Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4").withEnv("NEO4J_AUTH", "neo4j/secret");
+        Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4").withEnv("NEO4J_AUTH", "neo4j/secret");
 
         neo4jContainer.configure();
 
@@ -194,7 +194,7 @@ public class Neo4jContainerTest {
     @Test
     public void shouldSetCustomPasswordCorrectly() {
         // withAdminPassword {
-        Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4").withAdminPassword("verySecret");
+        Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4").withAdminPassword("verySecret");
         // }
 
         neo4jContainer.configure();
@@ -204,7 +204,7 @@ public class Neo4jContainerTest {
 
     @Test
     public void containerAdminPasswordOverrulesEnvironmentAuth() {
-        Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4")
+        Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4")
             .withEnv("NEO4J_AUTH", "neo4j/secret")
             .withAdminPassword("anotherSecret");
 
@@ -215,7 +215,7 @@ public class Neo4jContainerTest {
 
     @Test
     public void containerWithoutAuthenticationOverrulesEnvironmentAuth() {
-        Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4")
+        Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4")
             .withEnv("NEO4J_AUTH", "neo4j/secret")
             .withoutAuthentication();
 
@@ -226,7 +226,7 @@ public class Neo4jContainerTest {
 
     @Test
     public void shouldRespectAlreadyDefinedPortMappingsBolt() {
-        Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4").withExposedPorts(7687);
+        Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4").withExposedPorts(7687);
 
         neo4jContainer.configure();
 
@@ -235,7 +235,7 @@ public class Neo4jContainerTest {
 
     @Test
     public void shouldRespectAlreadyDefinedPortMappingsHttp() {
-        Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4").withExposedPorts(7474);
+        Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4").withExposedPorts(7474);
 
         neo4jContainer.configure();
 
@@ -244,7 +244,7 @@ public class Neo4jContainerTest {
 
     @Test
     public void shouldRespectAlreadyDefinedPortMappingsWithoutHttps() {
-        Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4").withExposedPorts(7687, 7474);
+        Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4").withExposedPorts(7687, 7474);
 
         neo4jContainer.configure();
 
@@ -253,7 +253,7 @@ public class Neo4jContainerTest {
 
     @Test
     public void shouldDefaultExportBoltHttpAndHttps() {
-        Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4");
+        Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4");
 
         neo4jContainer.configure();
 
@@ -262,67 +262,16 @@ public class Neo4jContainerTest {
 
     @Test
     public void shouldRespectCustomWaitStrategy() {
-        Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4").waitingFor(new CustomDummyWaitStrategy());
+        Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4").waitingFor(new CustomDummyWaitStrategy());
 
         neo4jContainer.configure();
 
         assertThat(neo4jContainer.getWaitStrategy()).isInstanceOf(CustomDummyWaitStrategy.class);
     }
 
-    // Test for deprecated functionality to be still alive, if `Neo4jLabsPlugin` gets removed, remove this test.
-    @Test
-    public void shouldConfigureSingleLabsPluginByType() {
-        try (
-            Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4").withLabsPlugins(Neo4jLabsPlugin.APOC)
-        ) {
-            // needs to get called explicitly for setup
-            neo4jContainer.configure();
-
-            assertThat(neo4jContainer.getEnvMap()).containsEntry("NEO4JLABS_PLUGINS", "[\"apoc\"]");
-        }
-    }
-
-    // Test for deprecated functionality to be still alive, if `Neo4jLabsPlugin` gets removed, remove this test.
-    @Test
-    public void shouldConfigureMultipleLabsPluginsByType() {
-        try (
-            Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4")
-                .withLabsPlugins(Neo4jLabsPlugin.APOC, Neo4jLabsPlugin.BLOOM);
-        ) {
-            // needs to get called explicitly for setup
-            neo4jContainer.configure();
-
-            assertThat(neo4jContainer.getEnvMap().get("NEO4JLABS_PLUGINS"))
-                .containsAnyOf("[\"apoc\",\"bloom\"]", "[\"bloom\",\"apoc\"]");
-        }
-    }
-
-    // Test for deprecated functionality to be still alive, if `Neo4jContainer#withLabsPlugins` gets removed, remove this test.
-    @Test
-    public void shouldConfigureSingleLabsPlugin() {
-        try (Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4").withLabsPlugins("apoc")) {
-            // needs to get called explicitly for setup
-            neo4jContainer.configure();
-
-            assertThat(neo4jContainer.getEnvMap()).containsEntry("NEO4JLABS_PLUGINS", "[\"apoc\"]");
-        }
-    }
-
-    // Test for deprecated functionality to be still alive, if `Neo4jContainer#withLabsPlugins` gets removed, remove this test.
-    @Test
-    public void shouldConfigureMultipleLabsPlugins() {
-        try (Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4").withLabsPlugins("apoc", "bloom");) {
-            // needs to get called explicitly for setup
-            neo4jContainer.configure();
-
-            assertThat(neo4jContainer.getEnvMap().get("NEO4JLABS_PLUGINS"))
-                .containsAnyOf("[\"apoc\",\"bloom\"]", "[\"bloom\",\"apoc\"]");
-        }
-    }
-
     @Test
     public void shouldConfigureSinglePluginByName() {
-        try (Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4").withPlugins("apoc")) {
+        try (Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4").withPlugins("apoc")) {
             // needs to get called explicitly for setup
             neo4jContainer.configure();
 
@@ -334,7 +283,7 @@ public class Neo4jContainerTest {
     public void shouldConfigureMultiplePluginsByName() {
         try (
             // configureLabsPlugins {
-            Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4") //
+            Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4") //
                 .withPlugins("apoc", "bloom");
             // }
         ) {
@@ -350,7 +299,7 @@ public class Neo4jContainerTest {
     public void shouldCreateRandomUuidBasedPasswords() {
         try (
             // withRandomPassword {
-            Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4").withRandomPassword();
+            Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4").withRandomPassword();
             // }
         ) {
             // It will throw an exception if it's not UUID parsable.
@@ -363,7 +312,7 @@ public class Neo4jContainerTest {
 
     @Test
     public void shouldWarnOnPasswordTooShort() {
-        try (Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.4");) {
+        try (Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4");) {
             Logger logger = (Logger) DockerLoggerFactory.getLogger("neo4j:4.4");
             TestLogAppender testLogAppender = new TestLogAppender();
             logger.addAppender(testLogAppender);
@@ -403,7 +352,7 @@ public class Neo4jContainerTest {
         }
     }
 
-    private static Driver getDriver(Neo4jContainer<?> container) {
+    private static Driver getDriver(Neo4jContainer container) {
         AuthToken authToken = AuthTokens.none();
         if (container.getAdminPassword() != null) {
             authToken = AuthTokens.basic("neo4j", container.getAdminPassword());
