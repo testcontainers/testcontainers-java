@@ -9,3 +9,9 @@ dependencies {
     testImplementation 'org.awaitility:awaitility:4.2.0'
     testImplementation 'org.assertj:assertj-core:3.26.3'
 }
+
+tasks.japicmp {
+    classExcludes = [
+        "org.testcontainers.couchbase.CouchbaseContainer"
+    ]
+}

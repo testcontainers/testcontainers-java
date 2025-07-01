@@ -12,3 +12,9 @@ dependencies {
     testImplementation 'software.amazon.awssdk:s3:2.28.6'
     testImplementation 'org.assertj:assertj-core:3.26.3'
 }
+
+tasks.japicmp {
+    classExcludes = [
+        "org.testcontainers.containers.localstack.LocalStackContainer"
+    ]
+}

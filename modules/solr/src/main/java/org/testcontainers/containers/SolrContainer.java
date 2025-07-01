@@ -28,12 +28,6 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("solr");
 
-    @Deprecated
-    public static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
-
-    @Deprecated
-    public static final String DEFAULT_TAG = "8.3.0";
-
     public static final Integer ZOOKEEPER_PORT = 9983;
 
     public static final Integer SOLR_PORT = 8983;
@@ -42,17 +36,6 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
 
     private final ComparableVersion imageVersion;
 
-    /**
-     * @deprecated use {@link #SolrContainer(DockerImageName)} instead
-     */
-    @Deprecated
-    public SolrContainer() {
-        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
-    }
-
-    /**
-     * @deprecated use {@link #SolrContainer(DockerImageName)} instead
-     */
     public SolrContainer(final String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
     }

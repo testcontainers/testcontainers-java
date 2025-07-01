@@ -35,8 +35,6 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
      */
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("rabbitmq");
 
-    private static final String DEFAULT_TAG = "3.7.25-management-alpine";
-
     private static final int DEFAULT_AMQP_PORT = 5672;
 
     private static final int DEFAULT_AMQPS_PORT = 5671;
@@ -50,15 +48,6 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
     private String adminUsername = "guest";
 
     private final List<List<String>> values = new ArrayList<>();
-
-    /**
-     * Creates a RabbitMQ container using the official RabbitMQ docker image.
-     * @deprecated use {@link #RabbitMQContainer(DockerImageName)} instead
-     */
-    @Deprecated
-    public RabbitMQContainer() {
-        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
-    }
 
     /**
      * Creates a RabbitMQ container using a specific docker image.

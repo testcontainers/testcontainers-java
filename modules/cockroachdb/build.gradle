@@ -7,3 +7,9 @@ dependencies {
     testRuntimeOnly 'org.postgresql:postgresql:42.7.4'
     testImplementation 'org.assertj:assertj-core:3.26.3'
 }
+
+tasks.japicmp {
+    classExcludes = [
+        "org.testcontainers.containers.CockroachContainer"
+    ]
+}

@@ -41,14 +41,6 @@ public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcD
 
     private static final String MY_CNF_CONFIG_OVERRIDE_PARAM_NAME = "TC_MY_CNF";
 
-    /**
-     * @deprecated use {@link #MariaDBContainer(DockerImageName)} instead
-     */
-    @Deprecated
-    public MariaDBContainer() {
-        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
-    }
-
     public MariaDBContainer(String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
     }

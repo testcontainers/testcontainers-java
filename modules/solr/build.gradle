@@ -8,3 +8,9 @@ dependencies {
     testImplementation 'org.apache.solr:solr-solrj:8.11.3'
     testImplementation 'org.assertj:assertj-core:3.26.3'
 }
+
+tasks.japicmp {
+    classExcludes = [
+        "org.testcontainers.containers.SolrContainer"
+    ]
+}

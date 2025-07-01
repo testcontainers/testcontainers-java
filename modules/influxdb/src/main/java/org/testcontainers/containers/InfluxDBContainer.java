@@ -24,11 +24,6 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Gen
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("influxdb");
 
-    private static final String DEFAULT_TAG = "1.4.3";
-
-    @Deprecated
-    public static final String VERSION = DEFAULT_TAG;
-
     private static final int NO_CONTENT_STATUS_CODE = 204;
 
     @Getter
@@ -65,14 +60,6 @@ public class InfluxDBContainer<SELF extends InfluxDBContainer<SELF>> extends Gen
     private Optional<String> adminToken = Optional.empty();
 
     private final boolean isAtLeastMajorVersion2;
-
-    /**
-     * @deprecated use {@link #InfluxDBContainer(DockerImageName)} instead
-     */
-    @Deprecated
-    public InfluxDBContainer() {
-        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
-    }
 
     /**
      * @deprecated use {@link #InfluxDBContainer(DockerImageName)} instead

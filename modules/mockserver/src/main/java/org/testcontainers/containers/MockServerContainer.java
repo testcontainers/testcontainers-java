@@ -20,14 +20,6 @@ public class MockServerContainer extends GenericContainer<MockServerContainer> {
      * @deprecated use {@link #MockServerContainer(DockerImageName)} instead
      */
     @Deprecated
-    public MockServerContainer() {
-        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
-    }
-
-    /**
-     * @deprecated use {@link #MockServerContainer(DockerImageName)} instead
-     */
-    @Deprecated
     public MockServerContainer(String version) {
         this(DEFAULT_IMAGE_NAME.withTag("mockserver-" + version));
     }

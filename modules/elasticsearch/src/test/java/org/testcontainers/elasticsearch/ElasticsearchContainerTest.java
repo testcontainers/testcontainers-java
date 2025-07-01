@@ -77,7 +77,7 @@ public class ElasticsearchContainerTest {
     public void elasticsearchDeprecatedCtorTest() throws IOException {
         // Create the elasticsearch container.
         try (
-            ElasticsearchContainer container = new ElasticsearchContainer().withEnv("foo", "bar") // dummy env for compiler checking correct generics usage
+            ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE).withEnv("foo", "bar") // dummy env for compiler checking correct generics usage
         ) {
             // Start the container. This step might take some time...
             container.start();

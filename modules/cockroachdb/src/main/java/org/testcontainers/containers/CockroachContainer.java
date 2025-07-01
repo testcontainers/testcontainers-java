@@ -52,14 +52,6 @@ public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer
 
     private boolean isVersionGreaterThanOrEqualTo221;
 
-    /**
-     * @deprecated use {@link #CockroachContainer(DockerImageName)} instead
-     */
-    @Deprecated
-    public CockroachContainer() {
-        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
-    }
-
     public CockroachContainer(final String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
     }
