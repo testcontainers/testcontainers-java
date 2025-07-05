@@ -4,10 +4,25 @@ package org.testcontainers.solace;
  * Services that are supported by Testcontainers implementation
  */
 public enum Service {
+    /**
+     * Advanced Message Queuing Protocol
+     */
     AMQP("amqp", 5672, "amqp", false),
+    /**
+     * Message Queuing Telemetry Transport
+     */
     MQTT("mqtt", 1883, "tcp", false),
+    /**
+     * Representational State Transfer
+     */
     REST("rest", 9000, "http", false),
+    /**
+     * Solace Message Format
+     */
     SMF("smf", 55555, "tcp", true),
+    /**
+     * Solace Message Format with SSL
+     */
     SMF_SSL("smf", 55443, "tcps", true);
 
     private final String name;
