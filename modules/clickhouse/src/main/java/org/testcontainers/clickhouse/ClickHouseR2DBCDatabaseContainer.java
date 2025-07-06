@@ -6,7 +6,7 @@ import org.testcontainers.r2dbc.R2DBCDatabaseContainer;
 /**
  * ClickHouse R2DBC support
  */
-public class ClickHouseR2DBCDatabaseContainer implements R2DBCDatabaseContainer {
+public class ClickHouseR2DBCDatabaseContainer extends R2DBCDatabaseContainer<ClickHouseR2DBCDatabaseContainer> {
 
     private final ClickHouseContainer container;
 
