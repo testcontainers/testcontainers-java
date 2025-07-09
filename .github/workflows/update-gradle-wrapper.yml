@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Update Gradle Wrapper
-        uses: gradle-update/update-gradle-wrapper-action@9268373d69bd0974b6318eb3b512b8e025060bbe # v1.0.13
+        uses: gradle-update/update-gradle-wrapper-action@512b1875f3b6270828abfe77b247d5895a2da1e5 # v1.0.13
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           labels: dependencies
