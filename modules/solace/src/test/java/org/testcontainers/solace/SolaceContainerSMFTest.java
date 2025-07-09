@@ -56,12 +56,10 @@ public class SolaceContainerSMFTest {
     @Test
     public void testSolaceContainerWithCreateFlow() {
         try (
-            // solaceContainerSetup {
             SolaceContainer solaceContainer = new SolaceContainer("solace/solace-pubsub-standard:10.25.0")
                 .withCredentials("user", "pass")
                 .withTopic(TOPIC.getName(), Service.SMF)
                 .withVpn("test_vpn")
-            // }
         ) {
             solaceContainer.start();
             JCSMPSession session = createSessionWithBasicAuth(solaceContainer);

@@ -254,7 +254,7 @@ public class SolaceContainer extends GenericContainer<SolaceContainer> {
     /**
      * Adds the topic configuration
      *
-     * @param topic   Name of the topic
+     * @param topic Name of the topic
      * @param service Service to be supported on provided topic
      * @return This container.
      */
@@ -279,7 +279,7 @@ public class SolaceContainer extends GenericContainer<SolaceContainer> {
      * Sets the solace server ceritificates
      *
      * @param certFile Server certificate
-     * @param caFile   Certified Authority certificate
+     * @param caFile Certified Authority certificate
      * @return This container.
      */
     public SolaceContainer withClientCert(final MountableFile certFile, final MountableFile caFile) {
