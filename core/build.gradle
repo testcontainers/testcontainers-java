@@ -121,7 +121,7 @@ dependencies {
     testImplementation files('testlib/repo/fakejar/fakejar/0/fakejar-0.jar')
 
     testImplementation 'org.assertj:assertj-core:3.27.3'
-    testImplementation 'io.rest-assured:rest-assured:5.5.0'
+    testImplementation 'io.rest-assured:rest-assured:5.5.5'
 
     jarFileTestCompileOnly "org.projectlombok:lombok:${lombok.version}"
     jarFileTestAnnotationProcessor "org.projectlombok:lombok:${lombok.version}"
