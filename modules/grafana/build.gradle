@@ -4,7 +4,7 @@ dependencies {
     api project(':testcontainers')
 
     testImplementation 'org.assertj:assertj-core:3.27.3'
-    testImplementation 'io.rest-assured:rest-assured:5.5.0'
+    testImplementation 'io.rest-assured:rest-assured:5.5.5'
     testImplementation 'io.micrometer:micrometer-registry-otlp:1.13.4'
     testImplementation 'uk.org.webcompere:system-stubs-junit4:2.1.6'
 
