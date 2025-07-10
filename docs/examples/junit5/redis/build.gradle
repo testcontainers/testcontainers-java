@@ -3,9 +3,10 @@ description = "Examples for docs"
 dependencies {
     api "io.lettuce:lettuce-core:6.4.0.RELEASE"
 
-    testImplementation "org.junit.jupiter:junit-jupiter-api:5.11.0"
-    testImplementation "org.junit.jupiter:junit-jupiter-params:5.10.3"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.11.0"
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.3'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.10.3'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.3'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.3'
     testImplementation project(":testcontainers")
     testImplementation project(":junit-jupiter")
     testImplementation 'org.assertj:assertj-core:3.27.3'
