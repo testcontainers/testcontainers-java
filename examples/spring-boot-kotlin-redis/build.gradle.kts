@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id("org.springframework.boot") version "2.7.10"
+    id("org.springframework.boot") version "2.7.18"
     kotlin("jvm") version "1.8.22"
     kotlin("plugin.spring") version "1.8.22"
 }
@@ -21,9 +21,7 @@ dependencies {
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.testcontainers:testcontainers")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
-
-
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.8.2")
 }
 
 tasks.withType<KotlinCompile> {

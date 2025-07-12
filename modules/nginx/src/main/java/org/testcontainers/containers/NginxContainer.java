@@ -1,30 +1,17 @@
 package org.testcontainers.containers;
 
 import org.jetbrains.annotations.NotNull;
-import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Set;
 
-public class NginxContainer<SELF extends NginxContainer<SELF>>
-    extends GenericContainer<SELF>
-    implements LinkableContainer {
+public class NginxContainer extends GenericContainer<NginxContainer> {
 
     private static final int NGINX_DEFAULT_PORT = 80;
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("nginx");
-
-    private static final String DEFAULT_TAG = "1.9.4";
-
-    /**
-     * @deprecated use {@link #NginxContainer(DockerImageName)} instead
-     */
-    @Deprecated
-    public NginxContainer() {
-        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
-    }
 
     public NginxContainer(String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
@@ -59,7 +46,7 @@ public class NginxContainer<SELF extends NginxContainer<SELF>>
     }
 
     @Deprecated
-    public SELF withCustomContent(String htmlContentPath) {
+    public NginxContainer withCustomContent(String htmlContentPath) {
         this.setCustomContent(htmlContentPath);
         return self();
     }

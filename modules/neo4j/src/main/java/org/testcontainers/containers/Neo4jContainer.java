@@ -31,7 +31,7 @@ import java.util.stream.Stream;
  *     <li>HTTPS: 7473</li>
  * </ul>
  */
-public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContainer<S> {
+public class Neo4jContainer extends GenericContainer<Neo4jContainer> {
 
     /**
      * The image defaults to the official Neo4j image: <a href="https://hub.docker.com/_/neo4j/">Neo4j</a>.
@@ -82,15 +82,6 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
     private static final WaitStrategy WAIT_FOR_HTTP = new HttpWaitStrategy()
         .forPort(DEFAULT_HTTP_PORT)
         .forStatusCodeMatching(response -> response == HttpURLConnection.HTTP_OK);
-
-    /**
-     * Creates a Neo4jContainer using the official Neo4j docker image.
-     * @deprecated use {@link #Neo4jContainer(DockerImageName)} instead
-     */
-    @Deprecated
-    public Neo4jContainer() {
-        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
-    }
 
     /**
      * Creates a Neo4jContainer using a specific docker image.
@@ -214,7 +205,7 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
      *
      * @return This container.
      */
-    public S withEnterpriseEdition() {
+    public Neo4jContainer withEnterpriseEdition() {
         if (!standardImage) {
             throw new IllegalStateException(
                 String.format("Cannot use enterprise version with alternative image %s.", getDockerImageName())
@@ -236,7 +227,7 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
      * @param adminPassword The admin password for the default database account.
      * @return This container.
      */
-    public S withAdminPassword(final String adminPassword) {
+    public Neo4jContainer withAdminPassword(final String adminPassword) {
         if (adminPassword != null && adminPassword.length() < 8) {
             logger().warn("Your provided admin password is too short and will not work with Neo4j 5.3+.");
         }
@@ -249,7 +240,7 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
      *
      * @return This container.
      */
-    public S withoutAuthentication() {
+    public Neo4jContainer withoutAuthentication() {
         return withAdminPassword(null);
     }
 
@@ -273,7 +264,7 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
      * @throws IllegalArgumentException If the database version is not 3.5.
      * @return This container.
      */
-    public S withDatabase(MountableFile graphDb) {
+    public Neo4jContainer withDatabase(MountableFile graphDb) {
         if (!isNeo4jDatabaseVersionSupportingDbCopy()) {
             throw new IllegalArgumentException(
                 "Copying database folder is not supported for Neo4j instances with version 4.0 or higher."
@@ -292,7 +283,7 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
      * @param plugins
      * @return This container.
      */
-    public S withPlugins(MountableFile plugins) {
+    public Neo4jContainer withPlugins(MountableFile plugins) {
         return withCopyFileToContainer(plugins, "/var/lib/neo4j/plugins/");
     }
 
@@ -304,7 +295,7 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
      * @param value The value to set
      * @return This container.
      */
-    public S withNeo4jConfig(String key, String value) {
+    public Neo4jContainer withNeo4jConfig(String key, String value) {
         addEnv(formatConfigurationKey(key), value);
         return self();
     }
@@ -314,31 +305,6 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
      */
     public String getAdminPassword() {
         return adminPassword;
-    }
-
-    /**
-     * Registers one or more {@link Neo4jLabsPlugin} for download and server startup.
-     *
-     * @param neo4jLabsPlugins The Neo4j plugins that should get started with the server.
-     * @return This container.
-     * @deprecated {@link Neo4jLabsPlugin} were deprecated due to naming changes that cannot be solved by this enumeration.
-     * Please use the {@link Neo4jContainer#withPlugins(String...)} method.
-     */
-    public S withLabsPlugins(Neo4jLabsPlugin... neo4jLabsPlugins) {
-        List<String> pluginNames = Arrays
-            .stream(neo4jLabsPlugins)
-            .map(plugin -> plugin.pluginName)
-            .collect(Collectors.toList());
-
-        this.labsPlugins.addAll(pluginNames);
-        return self();
-    }
-
-    /**
-     * @deprecated Please use {@link Neo4jContainer#withPlugins(String...)} for named plugins.
-     */
-    public S withLabsPlugins(String... neo4jLabsPlugins) {
-        return this.withPlugins(neo4jLabsPlugins);
     }
 
     /**
@@ -352,7 +318,7 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
      * @param plugins The Neo4j plugins that should get started with the server.
      * @return This container.
      */
-    public S withPlugins(String... plugins) {
+    public Neo4jContainer withPlugins(String... plugins) {
         this.labsPlugins.addAll(Arrays.asList(plugins));
         return self();
     }
@@ -385,7 +351,7 @@ public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContaine
         return false;
     }
 
-    public S withRandomPassword() {
+    public Neo4jContainer withRandomPassword() {
         return withAdminPassword(UUID.randomUUID().toString());
     }
 }

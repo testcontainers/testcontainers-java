@@ -15,6 +15,7 @@ plugins {
     id 'com.gradleup.shadow' version '8.3.0'
     id 'me.champeau.gradle.japicmp' version '0.4.3' apply false
     id 'com.diffplug.spotless' version '6.22.0' apply false
+    id 'org.jreleaser' version '1.18.0' apply false
 }
 
 apply from: "$rootDir/gradle/ci-support.gradle"
@@ -135,7 +136,7 @@ subprojects {
     }
 
     checkstyle {
-        toolVersion = "10.12.4"
+        toolVersion = "10.23.0"
         configFile = rootProject.file('config/checkstyle/checkstyle.xml')
     }
 }

@@ -79,7 +79,12 @@ public class LLdapContainer extends GenericContainer<LLdapContainer> {
         return String.format("cn=admin,ou=people,%s", getBaseDn());
     }
 
+    @Deprecated
     public String getUserPass() {
+        return getEnvMap().getOrDefault("LLDAP_LDAP_USER_PASS", "password");
+    }
+
+    public String getPassword() {
         return getEnvMap().getOrDefault("LLDAP_LDAP_USER_PASS", "password");
     }
 }

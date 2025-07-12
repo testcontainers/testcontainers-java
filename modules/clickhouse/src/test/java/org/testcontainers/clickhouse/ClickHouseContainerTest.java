@@ -13,7 +13,7 @@ public class ClickHouseContainerTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSimple() throws SQLException {
-        try (ClickHouseContainer clickhouse = new ClickHouseContainer("clickhouse/clickhouse-server:21.9.2-alpine")) {
+        try (ClickHouseContainer clickhouse = new ClickHouseContainer("clickhouse/clickhouse-server:21.11-alpine")) {
             clickhouse.start();
 
             ResultSet resultSet = performQuery(clickhouse, "SELECT 1");
@@ -26,11 +26,12 @@ public class ClickHouseContainerTest extends AbstractContainerDatabaseTest {
     @Test
     public void customCredentialsWithUrlParams() throws SQLException {
         try (
-            ClickHouseContainer clickhouse = new ClickHouseContainer("clickhouse/clickhouse-server:21.9.2-alpine")
+            ClickHouseContainer clickhouse = new ClickHouseContainer("clickhouse/clickhouse-server:21.11.2-alpine")
                 .withUsername("default")
                 .withPassword("")
                 .withDatabaseName("test")
-                .withUrlParam("max_result_rows", "5")
+                // The new driver uses the prefix `clickhouse_setting_` for session settings
+                .withUrlParam("clickhouse_setting_max_result_rows", "5")
         ) {
             clickhouse.start();
 

@@ -82,6 +82,8 @@ nav:
           - modules/chromadb.md
           - modules/consul.md
           - modules/docker_compose.md
+          - modules/docker_mcp_gateway.md
+          - modules/docker_model_runner.md
           - modules/elasticsearch.md
           - modules/gcloud.md
           - modules/grafana.md
@@ -139,4 +141,4 @@ nav:
           - bounty.md
 edit_uri: edit/main/docs/
 extra:
-    latest_version: 1.20.5
+    latest_version: 1.21.3

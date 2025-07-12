@@ -30,6 +30,13 @@ jobs:
         run: |
           ./gradlew publish \
             -Pversion="${{github.event.release.tag_name}}" --scan --no-daemon -i
+
+      - name: Run Gradle Deploy
+        run: |
+          ./gradlew jreleaserDeploy -Pversion="${{github.event.release.tag_name}}" --scan --no-daemon -i
         env:
-          OSSRH_USERNAME: ${{secrets.OSSRH_USERNAME}}
-          OSSRH_PASSWORD: ${{secrets.OSSRH_PASSWORD}}
+          JRELEASER_GPG_PUBLIC_KEY: ${{ vars.GPG_PUBLIC_KEY }}
+          JRELEASER_GPG_SECRET_KEY: ${{ secrets.GPG_SIGNING_KEY }}
+          JRELEASER_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          JRELEASER_MAVENCENTRAL_USERNAME: ${{ secrets.JRELEASER_MAVENCENTRAL_USERNAME }}
+          JRELEASER_MAVENCENTRAL_PASSWORD: ${{ secrets.JRELEASER_MAVENCENTRAL_PASSWORD }}
