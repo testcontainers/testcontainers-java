@@ -7,7 +7,7 @@ import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.r2dbc.R2DBCDatabaseContainer;
 
 @RequiredArgsConstructor
-public class MSSQLR2DBCDatabaseContainer implements R2DBCDatabaseContainer {
+public class MSSQLR2DBCDatabaseContainer extends R2DBCDatabaseContainer<MSSQLR2DBCDatabaseContainer> {
 
     @Delegate(types = Startable.class)
     private final MSSQLServerContainer<?> container;

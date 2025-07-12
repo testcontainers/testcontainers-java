@@ -7,7 +7,7 @@ import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.r2dbc.R2DBCDatabaseContainer;
 
 @RequiredArgsConstructor
-public class MySQLR2DBCDatabaseContainer implements R2DBCDatabaseContainer {
+public class MySQLR2DBCDatabaseContainer extends R2DBCDatabaseContainer<MySQLR2DBCDatabaseContainer> {
 
     @Delegate(types = Startable.class)
     private final MySQLContainer<?> container;

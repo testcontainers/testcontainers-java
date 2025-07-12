@@ -7,7 +7,7 @@ import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.r2dbc.R2DBCDatabaseContainer;
 
 @RequiredArgsConstructor
-public final class PostgreSQLR2DBCDatabaseContainer implements R2DBCDatabaseContainer {
+public final class PostgreSQLR2DBCDatabaseContainer extends R2DBCDatabaseContainer<PostgreSQLR2DBCDatabaseContainer> {
 
     @Delegate(types = Startable.class)
     private final PostgreSQLContainer<?> container;
