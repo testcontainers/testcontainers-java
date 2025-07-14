@@ -4,7 +4,7 @@ dependencies {
     api project(":testcontainers")
 
     // Synchronize with the jackson version, must match major and minor version
-    shaded 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.19.0'
+    shaded 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.18.4'
 
     testImplementation 'io.fabric8:kubernetes-client:6.13.1'
     testImplementation 'io.kubernetes:client-java:21.0.1-legacy'

@@ -62,8 +62,8 @@ tasks.japicmp {
 
 configurations.all {
     resolutionStrategy {
-        force 'com.fasterxml.jackson.core:jackson-databind:2.19.0'
-        force 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.19.0'
+        force 'com.fasterxml.jackson.core:jackson-databind:2.18.4'
+        force 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.4'
     }
 }
 
@@ -87,8 +87,8 @@ dependencies {
 
     shaded 'org.awaitility:awaitility:4.2.0'
 
-    api platform('com.github.docker-java:docker-java-bom:3.4.2')
-    shaded platform('com.github.docker-java:docker-java-bom:3.4.2')
+    api platform('com.github.docker-java:docker-java-bom:3.5.3')
+    shaded platform('com.github.docker-java:docker-java-bom:3.5.3')
 
     api "com.github.docker-java:docker-java-api"
 
