@@ -1,6 +1,6 @@
 # Docker MCP Gateway
 
-Testcontainers module for [Docker MCP Gateway](https://hub.docker.com/r/docker/agents_gateway).
+Testcontainers module for [Docker MCP Gateway](https://hub.docker.com/r/docker/mcp-gateway).
 
 ## DockerMcpGatewayContainer's usage examples
 
