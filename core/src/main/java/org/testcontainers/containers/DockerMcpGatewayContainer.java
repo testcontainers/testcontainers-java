@@ -14,7 +14,7 @@ import java.util.Map;
 /**
  * Testcontainers implementation of the Docker MCP Gateway container.
  * <p>
- * Supported images: {@code docker/agents_gateway}
+ * Supported images: {@code docker/mcp-gateway}
  * <p>
  * Exposed ports: 8811
  */
@@ -22,11 +22,7 @@ public class DockerMcpGatewayContainer extends GenericContainer<DockerMcpGateway
 
     private static final String DOCKER_MCP_GATEWAY_IMAGE = "docker/mcp-gateway";
 
-    private static final String DOCKER_AGENTS_GATEWAY_IMAGE = "docker/agents_gateway";
-
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse(DOCKER_MCP_GATEWAY_IMAGE);
-
-    private static final DockerImageName DOCKER_AGENTS_IMAGE_NAME = DockerImageName.parse(DOCKER_AGENTS_GATEWAY_IMAGE);
 
     private static final int DEFAULT_PORT = 8811;
 
@@ -44,7 +40,7 @@ public class DockerMcpGatewayContainer extends GenericContainer<DockerMcpGateway
 
     public DockerMcpGatewayContainer(DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, DOCKER_AGENTS_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
         withExposedPorts(DEFAULT_PORT);
         withFileSystemBind(DockerClientFactory.instance().getRemoteDockerUnixSocketPath(), "/var/run/docker.sock");
         waitingFor(Wait.forLogMessage(".*Start sse server on port.*", 1));
