@@ -8,7 +8,7 @@ dependencies {
     testImplementation 'io.micrometer:micrometer-registry-otlp:1.15.1'
     testImplementation 'uk.org.webcompere:system-stubs-junit4:2.1.8'
 
-    testImplementation platform('io.opentelemetry:opentelemetry-bom:1.51.0')
+    testImplementation platform('io.opentelemetry:opentelemetry-bom:1.52.0')
     testImplementation 'io.opentelemetry:opentelemetry-api'
     testImplementation 'io.opentelemetry:opentelemetry-sdk'
     testImplementation 'io.opentelemetry:opentelemetry-exporter-otlp'
