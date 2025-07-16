@@ -62,9 +62,8 @@ tasks.japicmp {
 
 configurations.all {
     resolutionStrategy {
-        // use lower Jackson version
-        force 'com.fasterxml.jackson.core:jackson-databind:2.8.8'
-        force 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.8.8'
+        force 'com.fasterxml.jackson.core:jackson-databind:2.18.4'
+        force 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.4'
     }
 }
 
@@ -88,8 +87,8 @@ dependencies {
 
     shaded 'org.awaitility:awaitility:4.3.0'
 
-    api platform('com.github.docker-java:docker-java-bom:3.4.2')
-    shaded platform('com.github.docker-java:docker-java-bom:3.4.2')
+    api platform('com.github.docker-java:docker-java-bom:3.5.3')
+    shaded platform('com.github.docker-java:docker-java-bom:3.5.3')
 
     api "com.github.docker-java:docker-java-api"
 
@@ -100,7 +99,7 @@ dependencies {
     api 'com.github.docker-java:docker-java-transport-zerodep'
 
     shaded 'com.google.guava:guava:33.3.1-jre'
-    shaded "org.yaml:snakeyaml:1.33"
+    shaded "org.yaml:snakeyaml:2.4"
 
     shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
 
