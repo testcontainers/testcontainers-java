@@ -16,7 +16,7 @@ dependencies {
     testImplementation 'org.assertj:assertj-core:3.27.3'
     testImplementation 'org.junit.jupiter:junit-jupiter'
 
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.3'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.13.3'
     testRuntimeOnly 'org.postgresql:postgresql:42.7.7'
     testRuntimeOnly 'mysql:mysql-connector-java:8.0.33'
 }
