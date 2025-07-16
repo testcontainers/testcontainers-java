@@ -12,7 +12,7 @@ dependencies {
     shaded("net.lingala.zip4j:zip4j:2.11.5")
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.13.3'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.3'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.13.3'
     testImplementation(project(":junit-jupiter"))
     testImplementation("com.hivemq:hivemq-extension-sdk:4.41.0")
     testImplementation("com.hivemq:hivemq-mqtt-client:1.3.7")
