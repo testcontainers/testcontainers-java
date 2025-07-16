@@ -6,7 +6,7 @@ dependencies {
     api "com.orientechnologies:orientdb-client:3.2.42"
 
     testImplementation 'org.assertj:assertj-core:3.27.3'
-    testImplementation 'org.apache.tinkerpop:gremlin-driver:3.7.2'
+    testImplementation 'org.apache.tinkerpop:gremlin-driver:3.7.3'
     testImplementation "com.orientechnologies:orientdb-gremlin:3.2.42"
 }
 
