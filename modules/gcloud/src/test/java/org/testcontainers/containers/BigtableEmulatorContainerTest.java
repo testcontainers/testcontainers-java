@@ -12,6 +12,7 @@ import com.google.cloud.bigtable.admin.v2.stub.BigtableTableAdminStubSettings;
 import com.google.cloud.bigtable.admin.v2.stub.EnhancedBigtableTableAdminStub;
 import com.google.cloud.bigtable.data.v2.BigtableDataClient;
 import com.google.cloud.bigtable.data.v2.BigtableDataSettings;
+import com.google.cloud.bigtable.data.v2.internal.TableAdminRequestContext;
 import com.google.cloud.bigtable.data.v2.models.Row;
 import com.google.cloud.bigtable.data.v2.models.RowCell;
 import com.google.cloud.bigtable.data.v2.models.RowMutation;
@@ -80,12 +81,14 @@ public class BigtableEmulatorContainerTest {
         CredentialsProvider credentialsProvider,
         String tableName
     ) throws IOException {
+        TableAdminRequestContext requestContext = TableAdminRequestContext.create(PROJECT_ID, INSTANCE_ID);
         EnhancedBigtableTableAdminStub stub = EnhancedBigtableTableAdminStub.createEnhanced(
             BigtableTableAdminStubSettings
                 .newBuilder()
                 .setTransportChannelProvider(channelProvider)
                 .setCredentialsProvider(credentialsProvider)
-                .build()
+                .build(),
+            requestContext
         );
 
         try (BigtableTableAdminClient client = BigtableTableAdminClient.create(PROJECT_ID, INSTANCE_ID, stub)) {
