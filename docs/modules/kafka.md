@@ -85,7 +85,7 @@ There are scenarios where additional listeners are needed because the consumer/p
 container in the same network or a different process where the port to connect differs from the default exposed port. E.g [Toxiproxy](../../modules/toxiproxy/).
 
 <!--codeinclude-->
-[Register additional listener](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:registerListener
+[Register additional listener](../../modules/kafka/src/test/java/org/testcontainers/kafka/KafkaContainerTest.java) inside_block:registerListener
 <!--/codeinclude-->
 
 Container defined in the same network:

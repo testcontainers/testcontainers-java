@@ -63,14 +63,6 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     private boolean usingSid = false;
 
-    /**
-     * @deprecated use {@link #OracleContainer(DockerImageName)} instead
-     */
-    @Deprecated
-    public OracleContainer() {
-        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
-    }
-
     public OracleContainer(String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
     }

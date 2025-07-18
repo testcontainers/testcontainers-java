@@ -65,11 +65,19 @@ public class SolaceContainer extends GenericContainer<SolaceContainer> {
         this(DockerImageName.parse(dockerImageName));
     }
 
+    /**
+     * Create a new solace container with the specified docker image.
+     *
+     * @param dockerImageName the image name that should be used.
+     */
     public SolaceContainer(DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
         withCreateContainerCmdModifier(cmd -> {
-            cmd.getHostConfig().withShmSize(SHM_SIZE).withUlimits(new Ulimit[] { new Ulimit("nofile", 2448L, 6592L) });
+            cmd
+                .getHostConfig()
+                .withShmSize(SHM_SIZE)
+                .withUlimits(new Ulimit[] { new Ulimit("nofile", 2448L, 1048576L) });
         });
         this.waitStrategy = Wait.forLogMessage(SOLACE_READY_MESSAGE, 1).withStartupTimeout(Duration.ofSeconds(60));
         withExposedPorts(8080);
@@ -102,6 +110,17 @@ public class SolaceContainer extends GenericContainer<SolaceContainer> {
         if (!vpn.equals(DEFAULT_VPN)) {
             updateConfigScript(scriptBuilder, "create message-vpn " + vpn);
             updateConfigScript(scriptBuilder, "no shutdown");
+            updateConfigScript(scriptBuilder, "exit");
+            updateConfigScript(scriptBuilder, "client-profile default message-vpn " + vpn);
+            updateConfigScript(scriptBuilder, "message-spool");
+            updateConfigScript(scriptBuilder, "allow-guaranteed-message-send");
+            updateConfigScript(scriptBuilder, "allow-guaranteed-message-receive");
+            updateConfigScript(scriptBuilder, "allow-guaranteed-endpoint-create");
+            updateConfigScript(scriptBuilder, "allow-guaranteed-endpoint-create-durability all");
+            updateConfigScript(scriptBuilder, "exit");
+            updateConfigScript(scriptBuilder, "exit");
+            updateConfigScript(scriptBuilder, "message-spool message-vpn " + vpn);
+            updateConfigScript(scriptBuilder, "max-spool-usage 60000");
             updateConfigScript(scriptBuilder, "exit");
         }
 
