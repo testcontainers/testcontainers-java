@@ -56,4 +56,13 @@ public class ClickHouseContainerTest extends AbstractContainerDatabaseTest {
             assertThat(resultSetInt).isEqualTo(1);
         }
     }
+
+    @Test
+    public void getHttpUrlTest() {
+        try (ClickHouseContainer clickhouse = new ClickHouseContainer(ClickhouseTestImages.CLICKHOUSE_24_12_IMAGE)) {
+            clickhouse.start();
+            assertThat(clickhouse.getHttpUrl()).isEqualTo("http://" + clickhouse.getHost() + ":" + clickhouse.getMappedPort(ClickHouseContainer.HTTP_PORT));
+        }
+    }
+
 }
