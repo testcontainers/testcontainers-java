@@ -260,7 +260,7 @@ public class TestcontainersExtension
      * thereby letting the JUnit automatically stop containers once the current
      * {@link ExtensionContext} is closed.
      */
-    private static class StoreAdapter implements CloseableResource {
+    private static class StoreAdapter implements CloseableResource, AutoCloseable {
 
         @Getter
         private String key;
