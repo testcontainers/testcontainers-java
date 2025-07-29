@@ -1,13 +1,20 @@
 package org.testcontainers.clickhouse;
 
+import com.clickhouse.client.api.Client;
+import com.clickhouse.client.api.data_formats.ClickHouseBinaryFormatReader;
+import com.clickhouse.client.api.query.QueryResponse;
 import org.junit.Test;
 import org.testcontainers.ClickhouseTestImages;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 public class ClickHouseContainerTest extends AbstractContainerDatabaseTest {
 
@@ -58,10 +65,25 @@ public class ClickHouseContainerTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void getHttpUrlTest() {
-        try (ClickHouseContainer clickhouse = new ClickHouseContainer(ClickhouseTestImages.CLICKHOUSE_24_12_IMAGE)) {
-            clickhouse.start();
-            assertThat(clickhouse.getHttpUrl()).isEqualTo("http://" + clickhouse.getHost() + ":" + clickhouse.getMappedPort(ClickHouseContainer.HTTP_PORT));
+    public void testGetHttpMethodWithHttpClient() {
+        ClickHouseContainer clickhouse = new ClickHouseContainer(ClickhouseTestImages.CLICKHOUSE_24_12_IMAGE);
+        clickhouse.start();
+        Client client = new Client.Builder()
+            .addEndpoint(clickhouse.getHttpUrl())
+            .setUsername(clickhouse.getUsername())
+            .setPassword(clickhouse.getPassword())
+            .build();
+        try {
+            QueryResponse queryResponse = client.query("SELECT 1").get(1, TimeUnit.MINUTES);
+            ClickHouseBinaryFormatReader reader = client.newBinaryFormatReader(queryResponse);
+            reader.next();
+            int result = reader.getInteger(1);
+            assertThat(result).isEqualTo(1);
+        } catch (ExecutionException | InterruptedException | TimeoutException e) {
+            fail("Cannot get sql result:" + e);
+        } finally {
+            clickhouse.close();
+            client.close();
         }
     }
 
