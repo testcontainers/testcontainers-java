@@ -7,7 +7,7 @@ import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.r2dbc.R2DBCDatabaseContainer;
 
 @RequiredArgsConstructor
-public class MariaDBR2DBCDatabaseContainer implements R2DBCDatabaseContainer {
+public class MariaDBR2DBCDatabaseContainer extends R2DBCDatabaseContainer<MariaDBR2DBCDatabaseContainer> {
 
     @Delegate(types = Startable.class)
     private final MariaDBContainer<?> container;
