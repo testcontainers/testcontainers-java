@@ -86,5 +86,4 @@ public class ClickHouseContainerTest extends AbstractContainerDatabaseTest {
             client.close();
         }
     }
-
 }
