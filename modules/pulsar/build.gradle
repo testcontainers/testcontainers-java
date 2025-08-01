@@ -3,7 +3,7 @@ description = "Testcontainers :: Pulsar"
 dependencies {
     api project(':testcontainers')
 
-    testImplementation platform("org.apache.pulsar:pulsar-bom:4.0.5")
+    testImplementation platform("org.apache.pulsar:pulsar-bom:4.0.6")
     testImplementation 'org.apache.pulsar:pulsar-client'
     testImplementation 'org.apache.pulsar:pulsar-client-admin'
     testImplementation 'org.assertj:assertj-core:3.27.3'
