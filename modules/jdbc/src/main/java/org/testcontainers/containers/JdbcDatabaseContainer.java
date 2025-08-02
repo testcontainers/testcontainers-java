@@ -67,7 +67,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
     }
 
     /**
-     * @return the name of the actual JDBC driver to use
+     * @return R2DBC driver name (e.g., "postgresql", "mysql", etc.)
      */
     public abstract String getDriverClassName();
 
@@ -77,8 +77,20 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
     public abstract String getJdbcUrl();
 
     /**
-     * @return the database name
+     * @return an R2DBC-compliant connection URL.
+     * Example: r2dbc:postgresql://user:password@localhost:5432/dbname
      */
+    public String getR2dbcUrl(){
+        String driver = getR2dbcDriverName();
+        String user = getUsername();
+        String pw = getPassword();
+        String host = getHost();
+        Integer port = getFirstMappedPort(getExposedPorts().get(0));
+        String db = getDatabaseName();
+
+        
+    return String.format("r2dbc:%s://%s:%s@%s:%d/%s", driver, user, pw, host, port, db);
+    }
     public String getDatabaseName() {
         throw new UnsupportedOperationException();
     }

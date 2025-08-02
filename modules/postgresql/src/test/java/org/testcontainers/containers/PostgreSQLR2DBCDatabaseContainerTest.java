@@ -20,7 +20,8 @@ public class PostgreSQLR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseC
         );
         // }
         // spotless:on
-
+        System.out.println("Generated R2DBC URL: " + container.getR2dbcUrl());
+        assertTrue(container.getR2dbcUrl().startsWith("r2dbc:postgresql://"));
         return options;
     }
 
