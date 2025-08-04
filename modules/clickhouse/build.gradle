@@ -13,6 +13,7 @@ dependencies {
 
     testImplementation 'org.apache.httpcomponents.client5:httpclient5:5.4.2'
     testImplementation 'org.assertj:assertj-core:3.27.3'
+    testImplementation 'com.clickhouse:client-v2:0.9.0'
     testImplementation testFixtures(project(':r2dbc'))
     testRuntimeOnly(group: 'com.clickhouse', name: 'clickhouse-r2dbc', version: '0.7.2', classifier: 'http')
 }
