@@ -23,8 +23,8 @@ include "testcontainers"
 project(':testcontainers').projectDir = "$rootDir/core" as File
 
 file('modules').eachDir { dir ->
-    include dir.name
-    project(":${dir.name}").projectDir = dir
+    include "testcontainers-${dir.name}"
+    project(":testcontainers-${dir.name}").projectDir = dir
 }
 
 include ':docs:examples:junit4:generic'

@@ -17,7 +17,7 @@ dependencies {
     testImplementation platform('io.cucumber:cucumber-bom:7.27.0')
     testImplementation 'io.cucumber:cucumber-java'
     testImplementation 'io.cucumber:cucumber-junit-platform-engine'
-    testImplementation 'org.testcontainers:selenium'
+    testImplementation 'org.testcontainers:testcontainers-selenium'
     testImplementation 'org.assertj:assertj-core:3.27.3'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.3'
 }
