@@ -2,10 +2,10 @@ description = "Testcontainers :: QuestDB"
 
 dependencies {
     api project(':testcontainers')
-    api project(':jdbc')
+    api project(':testcontainers-jdbc')
 
     testRuntimeOnly 'org.postgresql:postgresql:42.7.7'
-    testImplementation project(':jdbc-test')
+    testImplementation project(':testcontainers-jdbc-test')
     testImplementation 'org.assertj:assertj-core:3.27.3'
     testImplementation 'org.questdb:questdb:9.0.1'
     testImplementation 'org.awaitility:awaitility:4.3.0'
