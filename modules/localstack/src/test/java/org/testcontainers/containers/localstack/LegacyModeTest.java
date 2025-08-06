@@ -1,6 +1,5 @@
 package org.testcontainers.containers.localstack;
 
-import com.amazonaws.client.builder.AwsClientBuilder;
 import com.github.dockerjava.api.DockerClient;
 import lombok.AllArgsConstructor;
 import org.junit.BeforeClass;
@@ -20,7 +19,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(Enclosed.class)
 public class LegacyModeTest {
 
-    private static DockerImageName LOCALSTACK_CUSTOM_TAG = LocalstackTestImages.LOCALSTACK_IMAGE.withTag("custom");
+    private static DockerImageName LOCALSTACK_CUSTOM_TAG = DockerImageName
+        .parse("localstack/localstack:0.12.8")
+        .withTag("custom");
 
     @RunWith(Parameterized.class)
     @AllArgsConstructor
@@ -54,21 +55,9 @@ public class LegacyModeTest {
                 assertThat(localstack.getEndpointOverride(Service.SQS).toString())
                     .as("Endpoint overrides are different")
                     .isEqualTo(localstack.getEndpointOverride(Service.S3).toString());
-                assertThat(
-                    new AwsClientBuilder.EndpointConfiguration(
-                        localstack.getEndpointOverride(Service.SQS).toString(),
-                        localstack.getRegion()
-                    )
-                        .getServiceEndpoint()
-                )
+                assertThat(localstack.getEndpointOverride(Service.SQS).toString())
                     .as("Endpoint configuration have different endpoints")
-                    .isEqualTo(
-                        new AwsClientBuilder.EndpointConfiguration(
-                            localstack.getEndpointOverride(Service.S3).toString(),
-                            localstack.getRegion()
-                        )
-                            .getServiceEndpoint()
-                    );
+                    .isEqualTo(localstack.getEndpointOverride(Service.S3).toString());
             } finally {
                 localstack.stop();
             }
@@ -119,21 +108,9 @@ public class LegacyModeTest {
                 assertThat(localstack.getEndpointOverride(Service.SQS).toString())
                     .as("Endpoint overrides are different")
                     .isNotEqualTo(localstack.getEndpointOverride(Service.S3).toString());
-                assertThat(
-                    new AwsClientBuilder.EndpointConfiguration(
-                        localstack.getEndpointOverride(Service.SQS).toString(),
-                        localstack.getRegion()
-                    )
-                        .getServiceEndpoint()
-                )
+                assertThat(localstack.getEndpointOverride(Service.SQS).toString())
                     .as("Endpoint configuration have different endpoints")
-                    .isNotEqualTo(
-                        new AwsClientBuilder.EndpointConfiguration(
-                            localstack.getEndpointOverride(Service.S3).toString(),
-                            localstack.getRegion()
-                        )
-                            .getServiceEndpoint()
-                    );
+                    .isNotEqualTo(localstack.getEndpointOverride(Service.S3).toString());
             } finally {
                 localstack.stop();
             }
