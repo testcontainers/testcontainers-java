@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.With;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.testcontainers.utility.Versioning.Sha256Versioning;
@@ -234,9 +235,16 @@ public final class DockerImageName {
      */
     public boolean isCompatibleWith(DockerImageName other) {
         // Make sure we always compare against a version of the image name containing the LIBRARY_PREFIX
-        String finalImageName;
+        if (isImageNameAbsent()) {
+            return false;
+        }
+
+        String finalImageName = "";
+        if (StringUtils.isNotBlank(this.registry)) {
+            finalImageName = this.registry + "/";
+        }
         if (this.repository.startsWith(LIBRARY_PREFIX)) {
-            finalImageName = this.repository;
+            finalImageName = finalImageName + this.repository;
         } else {
             finalImageName = LIBRARY_PREFIX + this.repository;
         }
@@ -249,7 +257,19 @@ public final class DockerImageName {
             return false;
         }
 
+        if (isImageWithDigest()) {
+            return true;
+        }
+
         return this.compatibleSubstituteFor.isCompatibleWith(other);
+    }
+
+    private boolean isImageNameAbsent() {
+        return this.repository.equals(LIBRARY_PREFIX);
+    }
+
+    private boolean isImageWithDigest() {
+        return !(this.versioning instanceof Versioning.AnyVersion) && this.versioning.isValid();
     }
 
     /**
