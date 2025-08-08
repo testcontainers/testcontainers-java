@@ -92,9 +92,63 @@ public class DockerImageNameCompatibilityTest {
     }
 
     @Test
+    public void testAssertMethodAcceptsPathCompatibleDigestSuffix() {
+        DockerImageName subject = DockerImageName.parse("foo@sha256:301bcb60b8a3ee4ab7e147932723e3abd1cef53516ce5210b39fd9fe5e3602ae");
+        subject.assertCompatibleWith(DockerImageName.parse("foo"));
+    }
+
+    @Test
+    public void testAssertMethodAcceptsPathInCompatibleDigestSuffix() {
+        DockerImageName subject = DockerImageName.parse("foo@301bcb60b8a3ee4ab7e147932723e3abd1cef53516ce5210b39fd9fe5e3602ae");
+        assertThatThrownBy(() -> subject.assertCompatibleWith(DockerImageName.parse("foo")))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("Failed to verify that image 'foo@301bcb60b8a3ee4ab7e147932723e3abd1cef53516ce5210b39fd9fe5e3602ae' is a compatible substitute for 'foo'");
+    }
+
+    @Test
+    public void testAssertMethodAcceptsPathCompatibleLibraryPrefixAndDigestSuffix() {
+        DockerImageName subject = DockerImageName.parse("library/foo@sha256:301bcb60b8a3ee4ab7e147932723e3abd1cef53516ce5210b39fd9fe5e3602ae");
+        subject.assertCompatibleWith(DockerImageName.parse("foo"));
+    }
+
+    @Test
+    public void testAssertMethodAcceptsPathCompatibleFullLibraryPrefixAndDigestSuffix() {
+        DockerImageName subject = DockerImageName.parse("foo.registry/library/foo@sha256:301bcb60b8a3ee4ab7e147932723e3abd1cef53516ce5210b39fd9fe5e3602ae");
+        subject.assertCompatibleWith(DockerImageName.parse("foo"));
+    }
+
+    @Test
+    public void testAssertMethodAcceptsFullLibraryPrefix() {
+        DockerImageName subject = DockerImageName.parse("foo.registry/library/foo");
+        subject.assertCompatibleWith(DockerImageName.parse("foo"));
+    }
+
+    @Test
     public void testAssertMethodAcceptsCompatibleLibraryPrefix() {
         DockerImageName subject = DockerImageName.parse("library/foo");
         subject.assertCompatibleWith(DockerImageName.parse("foo"));
+    }
+
+    @Test
+    public void testAssertMethodAcceptsCompatibleLibraryPrefixAndLatestSuffix() {
+        DockerImageName subject = DockerImageName.parse("library/foo:latest");
+        subject.assertCompatibleWith(DockerImageName.parse("foo"));
+    }
+
+    @Test
+    public void testAssertMethodRejectsIncompatibleWithAbsentImageName() {
+        DockerImageName subject = DockerImageName.parse("foo.registry/library/");
+        assertThatThrownBy(() -> subject.assertCompatibleWith(DockerImageName.parse("foo")))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("Failed to verify that image 'foo.registry/library/' is a compatible substitute for 'foo'");
+    }
+
+    @Test
+    public void testAssertMethodRejectsIncompatibleWithOnlyRegistryName() {
+        DockerImageName subject = DockerImageName.parse("foo.registry");
+        assertThatThrownBy(() -> subject.assertCompatibleWith(DockerImageName.parse("foo")))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("Failed to verify that image 'foo.registry' is a compatible substitute for 'foo'");
     }
 
     @Test
