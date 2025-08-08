@@ -1,29 +1,105 @@
-# Testcontainers
+Testcontainers for Java
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.testcontainers/testcontainers/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.testcontainers/testcontainers)
+Testcontainers is an open-source Java library that makes it easy to write integration tests with real dependencies
+java.testcontainers.org
+. It lets you run “throwaway” Docker containers (for databases, web browsers, message brokers, etc.) during JUnit or Spock tests, without manual setup. You simply declare the test dependencies in code and Testcontainers handles starting and stopping the containers automatically
+testcontainers.com
+. This means there’s no need for fixed ports, environment configuration, or complex mocks – all you need is Docker
+testcontainers.com
+. Testcontainers works with popular JVM test frameworks (e.g. JUnit 4, JUnit 5/Jupiter, Spock)
+java.testcontainers.org
+.
+Key Features
 
-[![Netlify Status](https://api.netlify.com/api/v1/badges/189f28a2-7faa-42ff-b03c-738142079cc9/deploy-status)](https://app.netlify.com/sites/testcontainers/deploys)
+    Real containerized dependencies: Enables using actual services (e.g. MySQL, PostgreSQL, Oracle, Redis, Kafka, etc.) in tests, started from Docker images. For example, you can run a PostgreSQL or MySQL container to test your data layer against a real database
+    java.testcontainers.org
+    .
 
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=main&repo=33816473&machine=standardLinux32gb&devcontainer_path=.devcontainer%2Fdevcontainer.json&location=EastUs)
+    Application integration tests: Run your application (or parts of it) with its dependencies (databases, message queues, caches) in isolated containers, ensuring tests use a clean, known environment
+    java.testcontainers.org
+    .
 
-[![Revved up by Develocity](https://img.shields.io/badge/Revved%20up%20by-Develocity-06A0CE?logo=Gradle&labelColor=02303A)](https://ge.testcontainers.org/scans)
+    UI/Acceptance tests: Supports containerized Selenium-compatible browsers (Chrome, Firefox, etc.) for UI tests, with each test getting a fresh browser instance (including optional video recording)
+    java.testcontainers.org
+    .
 
-> Testcontainers is a Java library that supports JUnit tests, providing lightweight, throwaway instances of common databases, Selenium web browsers, or anything else that can run in a Docker container.
+    Extensible modules: Many specialized modules are available (for databases, queues, cloud services, etc.). You can also use GenericContainer to define any Docker image as a test resource, or write custom containers. Testcontainers’ [GenericContainer] base class lets you create custom container tests as needed
+    java.testcontainers.org
+    .
 
-![Testcontainers logo](docs/logo.png)
+Installation
 
-# [Read the documentation here](https://java.testcontainers.org)
+Add the Testcontainers core library to your project’s test dependencies. For example, with Maven in pom.xml:
 
-## License
+<dependency>
+  <groupId>org.testcontainers</groupId>
+  <artifactId>testcontainers</artifactId>
+  <version>1.21.3</version>
+  <scope>test</scope>
+</dependency>
 
-See [LICENSE](LICENSE).
+java.testcontainers.org
 
-## Copyright
+Or with Gradle (Groovy DSL):
 
-Copyright (c) 2015 - 2021 Richard North and other authors.
+testImplementation "org.testcontainers:testcontainers:1.21.3"
 
-MS SQL Server module is (c) 2017 - 2021 G DATA Software AG and other authors.
+Additionally, if you use JUnit 5 you should include the JUnit Jupiter integration:
 
-Hashicorp Vault module is (c) 2017 - 2021 Capital One Services, LLC and other authors.
+testImplementation "org.testcontainers:junit-jupiter:1.21.3"
 
-See [contributors](https://github.com/testcontainers/testcontainers-java/graphs/contributors) for all contributors.
+java.testcontainers.org
+
+This pulls Testcontainers (and its transitive dependencies) from Maven Central. For managing multiple Testcontainers modules, you can also use the official Bill of Materials (testcontainers-bom) to avoid specifying versions on each dependency
+java.testcontainers.org
+.
+Usage Example
+
+Below is a simple JUnit 5 example. We annotate the test class with @Testcontainers and declare a @Container field. Testcontainers will start the container before the tests and stop it afterward automatically:
+
+@Testcontainers
+public class ExampleRedisTest {
+    @Container
+    public static GenericContainer<?> redis =
+        new GenericContainer<>("redis:6-alpine")
+            .withExposedPorts(6379);
+
+    @Test
+    public void testRedisConnection() {
+        String address = redis.getHost();
+        Integer port = redis.getFirstMappedPort();
+        // ... use the Redis container in assertions ...
+    }
+}
+
+This shows a JUnit 5 test that launches a Redis container for testing. (Adapted from the official quickstart guide
+java.testcontainers.org
+.) You could similarly use specific containers, e.g. PostgreSQLContainer, MySQLContainer, BrowserWebDriverContainer, etc. Testcontainers will pull the Docker image, start the container, wait until it’s ready, and then tear it down when tests complete.
+Contributing
+
+Testcontainers is a community-driven open-source project and welcomes contributions. See the CONTRIBUTING.md file for guidelines on reporting issues or submitting pull requests. (The repository is part of the GitHub Sponsors program, and sponsor-bounties may be available on issues
+raw.githubusercontent.com
+.) You can also find contribution tips and documentation guidelines in the project docs
+raw.githubusercontent.com
+raw.githubusercontent.com
+.
+License
+
+This project is licensed under the MIT License (see the LICENSE file)
+github.com
+.
+Copyright
+
+© 2015–2021 Richard North and other authors.
+MS SQL Server module © 2017–2021 G DATA Software AG and other authors.
+HashiCorp Vault module © 2017–2021 Capital One Services, LLC and other authors.
+See the CONTRIBUTORS list for all contributors
+github.com
+.
+
+References: Official Testcontainers documentation and GitHub repo
+java.testcontainers.org
+testcontainers.com
+java.testcontainers.org
+github.com
+.
