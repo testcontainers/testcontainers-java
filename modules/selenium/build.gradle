@@ -12,7 +12,7 @@ dependencies {
     testImplementation 'org.seleniumhq.selenium:selenium-support'
 
     testImplementation 'org.mortbay.jetty:jetty:6.1.26'
-    testImplementation project(':nginx')
+    testImplementation project(':testcontainers-nginx')
     testImplementation 'org.assertj:assertj-core:3.27.3'
 
     compileOnly 'org.jetbrains:annotations:26.0.2'

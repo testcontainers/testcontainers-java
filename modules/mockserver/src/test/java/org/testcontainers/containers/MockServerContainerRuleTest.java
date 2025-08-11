@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.mockserver.client.MockServerClient;
 import org.testcontainers.utility.DockerImageName;
 
+import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
@@ -33,7 +34,9 @@ public class MockServerContainerRuleTest {
 
             // ...a GET request to '/person?name=peter' returns "Peter the person!"
 
-            assertThat(SimpleHttpClient.responseFromMockserver(mockServer, "/person?name=peter"))
+            assertThat(
+                given().baseUri(mockServer.getEndpoint()).get("/person?name=peter").then().extract().body().asString()
+            )
                 .as("Expectation returns expected response body")
                 .contains("Peter the person");
         }

@@ -101,6 +101,10 @@ public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContain
         );
     }
 
+    public String getHttpUrl() {
+        return "http://" + getHost() + ":" + getMappedPort(HTTP_PORT);
+    }
+
     @Override
     public String getUsername() {
         return username;
