@@ -30,7 +30,9 @@ public class ApacheKafkaContainerCluster implements Startable {
         }
         if (internalTopicsRf <= 0 || internalTopicsRf > brokersNum) {
             throw new IllegalArgumentException(
-                "internalTopicsRf '" + internalTopicsRf + "' must be less than or equal to brokersNum and greater than 0"
+                "internalTopicsRf '" +
+                internalTopicsRf +
+                "' must be less than or equal to brokersNum and greater than 0"
             );
         }
 
