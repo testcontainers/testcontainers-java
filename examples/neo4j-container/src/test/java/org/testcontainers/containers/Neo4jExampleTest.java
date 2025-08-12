@@ -27,7 +27,7 @@ import static org.assertj.core.api.Assertions.fail;
 class Neo4jExampleTest {
 
     @Container
-    private static Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>(DockerImageName.parse("neo4j:4.4"))
+    private static Neo4jContainer neo4jContainer = new Neo4jContainer(DockerImageName.parse("neo4j:4.4"))
         .withoutAuthentication(); // Disable password
 
     @Test

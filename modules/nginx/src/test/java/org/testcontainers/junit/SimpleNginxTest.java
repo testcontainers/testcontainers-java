@@ -28,7 +28,7 @@ public class SimpleNginxTest {
 
     // creatingContainer {
     @Rule
-    public NginxContainer<?> nginx = new NginxContainer<>(NGINX_IMAGE)
+    public NginxContainer nginx = new NginxContainer(NGINX_IMAGE)
         .withCopyFileToContainer(MountableFile.forHostPath(tmpDirectory), "/usr/share/nginx/html")
         .waitingFor(new HttpWaitStrategy());
 
@@ -64,7 +64,7 @@ public class SimpleNginxTest {
         assertHasCorrectExposedAndLivenessCheckPorts(nginx);
     }
 
-    private void assertHasCorrectExposedAndLivenessCheckPorts(NginxContainer<?> nginxContainer) throws Exception {
+    private void assertHasCorrectExposedAndLivenessCheckPorts(NginxContainer nginxContainer) {
         assertThat(nginxContainer.getExposedPorts()).containsExactly(80);
         assertThat(nginxContainer.getLivenessCheckPortNumbers()).containsExactly(nginxContainer.getMappedPort(80));
     }

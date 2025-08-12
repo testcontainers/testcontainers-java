@@ -27,7 +27,7 @@ public class SolaceContainerMQTTTest {
     @Test
     public void testSolaceContainer() {
         try (
-            SolaceContainer solaceContainer = new SolaceContainer("solace/solace-pubsub-standard:10.2")
+            SolaceContainer solaceContainer = new SolaceContainer("solace/solace-pubsub-standard:10.25.0")
                 .withTopic(TOPIC_NAME, Service.MQTT)
                 .withVpn("mqtt-vpn")
         ) {

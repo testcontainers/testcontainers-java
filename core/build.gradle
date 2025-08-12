@@ -62,23 +62,22 @@ tasks.japicmp {
 
 configurations.all {
     resolutionStrategy {
-        // use lower Jackson version
-        force 'com.fasterxml.jackson.core:jackson-databind:2.8.8'
-        force 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.8.8'
+        force 'com.fasterxml.jackson.core:jackson-databind:2.18.4'
+        force 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.4'
     }
 }
 
 dependencies {
     api 'junit:junit:4.13.2'
     api 'org.slf4j:slf4j-api:1.7.36'
-    compileOnly 'org.jetbrains:annotations:24.1.0'
-    testCompileOnly 'org.jetbrains:annotations:24.1.0'
+    compileOnly 'org.jetbrains:annotations:26.0.2'
+    testCompileOnly 'org.jetbrains:annotations:26.0.2'
     api 'org.apache.commons:commons-compress:1.24.0'
     api ('org.rnorth.duct-tape:duct-tape:1.0.8') {
         exclude(group: 'org.jetbrains', module: 'annotations')
     }
 
-    provided('com.google.cloud.tools:jib-core:0.23.0') {
+    provided('com.google.cloud.tools:jib-core:0.27.3') {
         exclude group: 'com.google.guava', module: 'guava'
         exclude group: 'com.fasterxml.jackson.datatype', module: 'jackson-datatype-jsr310'
         exclude group: 'com.fasterxml.jackson.core', module: 'jackson-core'
@@ -86,10 +85,10 @@ dependencies {
         exclude group: 'org.apache.commons', module: 'commons-compress'
     }
 
-    shaded 'org.awaitility:awaitility:4.2.0'
+    shaded 'org.awaitility:awaitility:4.3.0'
 
-    api platform('com.github.docker-java:docker-java-bom:3.4.2')
-    shaded platform('com.github.docker-java:docker-java-bom:3.4.2')
+    api platform('com.github.docker-java:docker-java-bom:3.5.3')
+    shaded platform('com.github.docker-java:docker-java-bom:3.5.3')
 
     api "com.github.docker-java:docker-java-api"
 
@@ -100,18 +99,18 @@ dependencies {
     api 'com.github.docker-java:docker-java-transport-zerodep'
 
     shaded 'com.google.guava:guava:33.3.1-jre'
-    shaded "org.yaml:snakeyaml:1.33"
+    shaded "org.yaml:snakeyaml:2.4"
 
     shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
 
     shaded 'org.zeroturnaround:zt-exec:1.12'
 
-    testImplementation('com.google.cloud.tools:jib-core:0.23.0')  {
+    testImplementation('com.google.cloud.tools:jib-core:0.27.3')  {
         exclude group: 'com.google.guava', module: 'guava'
     }
     testImplementation 'org.apache.httpcomponents:httpclient:4.5.14'
-    testImplementation 'redis.clients:jedis:5.1.5'
-    testImplementation 'com.rabbitmq:amqp-client:5.22.0'
+    testImplementation 'redis.clients:jedis:6.1.0'
+    testImplementation 'com.rabbitmq:amqp-client:5.26.0'
     testImplementation 'org.mongodb:mongo-java-driver:3.12.14'
 
     testImplementation ('org.mockito:mockito-core:4.11.0') {
@@ -120,13 +119,13 @@ dependencies {
     // Synthetic JAR used for MountableFileTest and DirectoryTarResourceTest
     testImplementation files('testlib/repo/fakejar/fakejar/0/fakejar-0.jar')
 
-    testImplementation 'org.assertj:assertj-core:3.26.3'
-    testImplementation 'io.rest-assured:rest-assured:5.5.0'
+    testImplementation 'org.assertj:assertj-core:3.27.4'
+    testImplementation 'io.rest-assured:rest-assured:5.5.5'
 
     jarFileTestCompileOnly "org.projectlombok:lombok:${lombok.version}"
     jarFileTestAnnotationProcessor "org.projectlombok:lombok:${lombok.version}"
     jarFileTestImplementation 'junit:junit:4.13.2'
-    jarFileTestImplementation 'org.assertj:assertj-core:3.26.3'
+    jarFileTestImplementation 'org.assertj:assertj-core:3.27.4'
     jarFileTestImplementation 'org.ow2.asm:asm-debug-all:5.2'
 }
 

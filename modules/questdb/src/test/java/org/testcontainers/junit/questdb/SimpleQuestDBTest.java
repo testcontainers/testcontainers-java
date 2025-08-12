@@ -57,7 +57,7 @@ public class SimpleQuestDBTest extends AbstractContainerDatabaseTest {
     }
 
     private static void populateByInfluxLineProtocol(QuestDBContainer questdb, int rowCount) {
-        try (Sender sender = Sender.builder().address(questdb.getIlpUrl()).build()) {
+        try (Sender sender = Sender.builder(Sender.Transport.TCP).address(questdb.getIlpUrl()).build()) {
             for (int i = 0; i < rowCount; i++) {
                 sender
                     .table(TABLE_NAME)

@@ -44,14 +44,6 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
         Pattern.compile("[^a-zA-Z0-9]+", Pattern.CASE_INSENSITIVE),
     };
 
-    /**
-     * @deprecated use {@link #MSSQLServerContainer(DockerImageName)} instead
-     */
-    @Deprecated
-    public MSSQLServerContainer() {
-        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
-    }
-
     public MSSQLServerContainer(final String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
     }
