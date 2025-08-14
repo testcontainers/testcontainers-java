@@ -1,5 +1,15 @@
 # CrateDB Module
 
+Testcontainers module for [CrateDB](https://hub.docker.com/_/crate)
+
+## Usage example
+
+You can start a CrateDB container instance from any Java application by using:
+
+<!--codeinclude-->
+[Container definition](../../../modules/cratedb/src/test/java/org/testcontainers/junit/cratedb/SimpleCrateDBTest.java) inside_block:container
+<!--/codeinclude-->
+
 See [Database containers](./index.md) for documentation and usage that is common to all relational database container types.
 
 ## Adding this module to your project dependencies

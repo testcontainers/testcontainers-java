@@ -20,7 +20,10 @@ public class ClickHouseContainerTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSimple() throws SQLException {
-        try (ClickHouseContainer clickhouse = new ClickHouseContainer("clickhouse/clickhouse-server:21.11-alpine")) {
+        try ( // container {
+            ClickHouseContainer clickhouse = new ClickHouseContainer("clickhouse/clickhouse-server:21.11-alpine")
+            // }
+        ) {
             clickhouse.start();
 
             ResultSet resultSet = performQuery(clickhouse, "SELECT 1");

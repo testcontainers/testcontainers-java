@@ -1,13 +1,16 @@
 # Oracle-XE Module
 
-See [Database containers](./index.md) for documentation and usage that is common to all relational database container types.
+Testcontainers module for [Oracle XE](https://hub.docker.com/r/gvenzl/oracle-xe)
 
 ## Usage example
 
-You can use `OracleContainer` like any other JDBC container:
+You can start an Oracle-XE container instance from any Java application by using:
+
 <!--codeinclude-->
-[Container creation](../../../modules/oracle-xe/src/test/java/org/testcontainers/junit/oracle/SimpleOracleTest.java) inside_block:constructor
+[Container creation](../../../modules/oracle-xe/src/test/java/org/testcontainers/junit/oracle/SimpleOracleTest.java) inside_block:container
 <!--/codeinclude-->
+
+See [Database containers](./index.md) for documentation and usage that is common to all relational database container types.
 
 ## Adding this module to your project dependencies
 

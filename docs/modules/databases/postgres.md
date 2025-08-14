@@ -1,5 +1,15 @@
 # Postgres Module
 
+Testcontainers module for [PostgresSQL](https://hub.docker.com/_/postgres)
+
+## Usage example
+
+You can start a PostgreSQL container instance from any Java application by using:
+
+<!--codeinclude-->
+[Container creation](../../../modules/postgresql/src/test/java/org/testcontainers/junit/postgresql/SimplePostgreSQLTest.java) inside_block:container
+<!--/codeinclude-->
+
 See [Database containers](./index.md) for documentation and usage that is common to all relational database container types.
 
 ## Compatible images

@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.fail;
 
 public class SimpleOracleTest extends AbstractContainerDatabaseTest {
 
-    public static final DockerImageName ORACLE_DOCKER_IMAGE_NAME = DockerImageName.parse(
+    private static final DockerImageName ORACLE_DOCKER_IMAGE_NAME = DockerImageName.parse(
         "gvenzl/oracle-free:slim-faststart"
     );
 
@@ -33,7 +33,10 @@ public class SimpleOracleTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testDefaultSettings() throws SQLException {
-        try (OracleContainer oracle = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME)) {
+        try ( // container {
+            OracleContainer oracle = new OracleContainer("gvenzl/oracle-free:slim-faststart")
+            // }
+        ) {
             runTest(oracle, "freepdb1", "test", "test");
 
             // Match against the last '/'
@@ -52,12 +55,10 @@ public class SimpleOracleTest extends AbstractContainerDatabaseTest {
     @Test
     public void testPluggableDatabaseAndCustomUser() throws SQLException {
         try (
-            // constructor {
             OracleContainer oracle = new OracleContainer("gvenzl/oracle-free:slim-faststart")
                 .withDatabaseName("testDB")
                 .withUsername("testUser")
                 .withPassword("testPassword")
-            // }
         ) {
             runTest(oracle, "testDB", "testUser", "testPassword");
         }

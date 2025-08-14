@@ -27,9 +27,7 @@ public class YugabyteDBYSQLTest extends AbstractContainerDatabaseTest {
             )
             // }
         ) {
-            // startingYSQLContainer {
             ysqlContainer.start();
-            // }
             assertThat(performQuery(ysqlContainer, "SELECT 1").getInt(1))
                 .as("A sample test query succeeds")
                 .isEqualTo(1);

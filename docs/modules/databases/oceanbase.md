@@ -1,5 +1,15 @@
 # OceanBase Module
 
+Testcontainers module for [OceanBase](https://hub.docker.com/r/oceanbase/oceanbase-ce)
+
+## Usage example
+
+You can start an OceanBase container instance from any Java application by using:
+
+<!--codeinclude-->
+[Container definition](../../../modules/oceanbase/src/test/java/org/testcontainers/oceanbase/SimpleOceanBaseCETest.java) inside_block:container
+<!--/codeinclude-->
+
 See [Database containers](./index.md) for documentation and usage that is common to all relational database container types.
 
 ## Adding this module to your project dependencies

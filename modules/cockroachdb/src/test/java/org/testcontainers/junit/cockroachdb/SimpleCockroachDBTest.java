@@ -22,7 +22,10 @@ public class SimpleCockroachDBTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSimple() throws SQLException {
-        try (CockroachContainer cockroach = new CockroachContainer(CockroachDBTestImages.COCKROACHDB_IMAGE)) {
+        try ( // container {
+            CockroachContainer cockroach = new CockroachContainer("cockroachdb/cockroach:v22.2.3")
+            // }
+        ) {
             cockroach.start();
 
             ResultSet resultSet = performQuery(cockroach, "SELECT 1");

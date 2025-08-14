@@ -13,7 +13,10 @@ public class TrinoContainerTest {
 
     @Test
     public void testSimple() throws Exception {
-        try (TrinoContainer trino = new TrinoContainer(TrinoTestImages.TRINO_TEST_IMAGE)) {
+        try ( // container {
+            TrinoContainer trino = new TrinoContainer("trinodb/trino:352")
+            // }
+        ) {
             trino.start();
             try (
                 Connection connection = trino.createConnection();
