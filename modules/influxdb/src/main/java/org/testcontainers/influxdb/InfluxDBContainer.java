@@ -7,7 +7,6 @@ import com.github.dockerjava.zerodep.shaded.org.apache.hc.client5.http.classic.m
 import com.github.dockerjava.zerodep.shaded.org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import com.github.dockerjava.zerodep.shaded.org.apache.hc.client5.http.impl.classic.HttpClients;
 import com.github.dockerjava.zerodep.shaded.org.apache.hc.core5.http.HttpStatus;
-import lombok.Getter;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
@@ -23,22 +22,6 @@ import static java.lang.String.format;
  * Supported image: {@code influxdb}
  * <p>
  * Exposed ports: 8181
- * <p>
- * This container provides a instance of InfluxDB 3.x for integration testing.
- * It supports both authenticated and non-authenticated modes.
- * </p>
- *
- * <p>
- * <strong>Example usage:</strong>
- * <pre>{@code
- * try (InfluxDBContainer influxDB = new InfluxDBContainer("influxdb:3-core")) {
- *     influxDB.start();
- *     String url = influxDB.getUrl();
- *     String token = influxDB.getToken();
- *     // Use InfluxDB client with the obtained URL and token
- * }
- * }</pre>
- * </p>
  */
 public class InfluxDBContainer extends GenericContainer<InfluxDBContainer> {
 
@@ -52,7 +35,6 @@ public class InfluxDBContainer extends GenericContainer<InfluxDBContainer> {
     /**
      * The authentication token for InfluxDB 3.
      */
-    @Getter
     private String token;
 
     private boolean isAuthDisable;
@@ -147,5 +129,9 @@ public class InfluxDBContainer extends GenericContainer<InfluxDBContainer> {
         if (!isAuthDisable) {
             this.token = createToken();
         }
+    }
+
+    public String getToken() {
+        return token;
     }
 }

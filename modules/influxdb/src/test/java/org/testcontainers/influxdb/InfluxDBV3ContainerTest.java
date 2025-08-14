@@ -1,9 +1,9 @@
-package org.testcontainers.containers;
+package org.testcontainers.influxdb;
 
 import com.influxdb.v3.client.InfluxDBClient;
 import com.influxdb.v3.client.Point;
 import org.junit.Test;
-import org.testcontainers.influxdb.InfluxDBContainer;
+import org.testcontainers.containers.InfluxDBTestUtils;
 
 import java.math.BigInteger;
 import java.time.Instant;
@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
-public class InfluxDBContainerV3Test {
+public class InfluxDBV3ContainerTest {
 
     @Test
     public void createInfluxDBContainerV3WithAuthTokenTest() {
