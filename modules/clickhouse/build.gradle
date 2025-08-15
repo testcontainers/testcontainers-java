@@ -10,7 +10,6 @@ dependencies {
     testImplementation project(':testcontainers-jdbc-test')
     testRuntimeOnly(group: 'com.clickhouse', name: 'clickhouse-jdbc', version: '0.9.1', classifier: 'all')
 
-    testImplementation 'org.apache.httpcomponents.client5:httpclient5:5.4.2'
     testImplementation 'org.assertj:assertj-core:3.27.3'
     testImplementation 'com.clickhouse:client-v2:0.9.1'
     testImplementation testFixtures(project(':testcontainers-r2dbc'))
