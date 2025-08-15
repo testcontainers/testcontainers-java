@@ -14,7 +14,10 @@ public class SimpleTiDBTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSimple() throws SQLException {
-        try (TiDBContainer tidb = new TiDBContainer(TiDBTestImages.TIDB_IMAGE)) {
+        try ( // container {
+            TiDBContainer tidb = new TiDBContainer("pingcap/tidb:v6.1.0")
+            // }
+        ) {
             tidb.start();
 
             ResultSet resultSet = performQuery(tidb, "SELECT 1");
