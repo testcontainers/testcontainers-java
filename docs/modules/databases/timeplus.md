@@ -10,6 +10,12 @@ You can start a Timeplus container instance from any Java application by using:
 [Container creation](../../../modules/timeplus/src/test/java/org/testcontainers/timeplus/TimeplusContainerTest.java) inside_block:container
 <!--/codeinclude-->
 
+### Testcontainers JDBC URL
+
+`jdbc:tc:timeplus:2.3.21:///databasename`
+
+See [JDBC](./jdbc.md) for documentation.
+
 ## Adding this module to your project dependencies
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:

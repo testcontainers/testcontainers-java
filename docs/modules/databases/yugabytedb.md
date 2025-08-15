@@ -17,6 +17,12 @@ YugabyteDB supports two APIs.
 [Creating a YSQL container](../../../modules/yugabytedb/src/test/java/org/testcontainers/junit/yugabytedb/YugabyteDBYSQLTest.java) inside_block:creatingYSQLContainer
 <!--/codeinclude-->
 
+### Testcontainers JDBC URL
+
+`jdbc:tc:yugabyte:2.14.4.0-b26:///databasename`
+
+See [JDBC](./jdbc.md) for documentation.
+
 ### YCQL API
 
 <!--codeinclude-->

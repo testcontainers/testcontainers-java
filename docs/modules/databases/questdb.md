@@ -13,6 +13,12 @@ You can start a QuestDB container instance from any Java application by using:
 See [Database containers](./index.md) for documentation and usage that is common to all relational database container
 types.
 
+### Testcontainers JDBC URL
+
+`jdbc:tc:questdb:6.5.3:///databasename`
+
+See [JDBC](./jdbc.md) for documentation.
+
 ## Adding this module to your project dependencies
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
