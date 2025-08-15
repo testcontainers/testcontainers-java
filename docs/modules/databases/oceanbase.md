@@ -12,6 +12,12 @@ You can start an OceanBase container instance from any Java application by using
 
 See [Database containers](./index.md) for documentation and usage that is common to all relational database container types.
 
+### Testcontainers JDBC URL
+
+`jdbc:tc:oceanbasece:4.2.1-lts:///databasename`
+
+See [JDBC](./jdbc.md) for documentation.
+
 ## Adding this module to your project dependencies
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:

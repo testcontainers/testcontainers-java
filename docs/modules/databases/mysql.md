@@ -12,6 +12,12 @@ You can start a MySQL container instance from any Java application by using:
 
 See [Database containers](./index.md) for documentation and usage that is common to all relational database container types.
 
+### Testcontainers JDBC URL
+
+`jdbc:tc:mysql:8.0.36:///databasename`
+
+See [JDBC](./jdbc.md) for documentation.
+
 ## Overriding MySQL my.cnf settings
 
 For MySQL databases, it is possible to override configuration settings using resources on the classpath. Assuming `somepath/mysql_conf_override`

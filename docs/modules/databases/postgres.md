@@ -12,6 +12,15 @@ You can start a PostgreSQL container instance from any Java application by using
 
 See [Database containers](./index.md) for documentation and usage that is common to all relational database container types.
 
+### Testcontainers JDBC URL
+
+* PostgreSQL: `jdbc:tc:postgresql:9.6.8:///databasename`
+* PostGIS: `jdbc:tc:postgis:9.6-2.5:///databasename`
+* TimescaleDB: `jdbc:tc:timescaledb:2.1.0-pg13:///databasename`
+* PGvector: `jdbc:tc:pgvector:pg16:///databasename`
+
+See [JDBC](./jdbc.md) for documentation.
+
 ## Compatible images
 
 `PostgreSQLContainer` can also be used with the following images:
