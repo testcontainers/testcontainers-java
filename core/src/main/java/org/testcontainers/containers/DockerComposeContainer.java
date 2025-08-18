@@ -66,18 +66,17 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> i
     private List<String> filesInDirectory = new ArrayList<>();
 
     /**
-     * Creates a new DockerComposeContainer with the specified Docker image, identifier, and a single compose file.
+     * Creates a new DockerComposeContainer using the specified Docker image and compose files.
      *
      * @param image        The Docker image to use for the container
-     * @param identifier   A unique identifier for this compose environment
-     * @param composeFile  A Docker Compose configuration file
+     * @param composeFiles One or more Docker Compose configuration files
      */
-    public DockerComposeContainer(DockerImageName image, String identifier, File composeFile) {
-        this(image, identifier, Collections.singletonList(composeFile));
+    public DockerComposeContainer(DockerImageName image, File... composeFiles) {
+        this(image, Arrays.asList(composeFiles));
     }
 
     /**
-     * Creates a new DockerComposeContainer with a random identifier using the specified Docker image and compose files.
+     * Creates a new DockerComposeContainer using the specified Docker image and compose files.
      *
      * @param image        The Docker image to use for the container
      * @param composeFiles A list of Docker Compose configuration files
@@ -98,8 +97,18 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> i
     }
 
     /**
+     * Creates a new DockerComposeContainer with the specified Docker image, identifier, and a single compose file.
+     *
+     * @param image        The Docker image to use for the container
+     * @param identifier   A unique identifier for this compose environment
+     * @param composeFile  A Docker Compose configuration file
+     */
+    public DockerComposeContainer(DockerImageName image, String identifier, File composeFile) {
+        this(image, identifier, Collections.singletonList(composeFile));
+    }
+
+    /**
      * Creates a new DockerComposeContainer with the specified Docker image, identifier, and compose files.
-     * This is the primary constructor that all other constructors delegate to.
      *
      * @param image        The Docker image to use for the container
      * @param identifier   A unique identifier for this compose environment
@@ -112,46 +121,41 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> i
     }
 
     /**
-     * @deprecated
-     *  Use the new constructor DockerComposeContainer(File composeFile, String identifier)
+     * Use the new constructor {@link #DockerComposeContainer(DockerImageName image, String identifier, File composeFile)}
      */
-    @Deprecated
     public DockerComposeContainer(File composeFile, String identifier) {
         this(identifier, composeFile);
+        this.localCompose = true;
     }
 
     /**
-     * @deprecated
-     *  Use the new constructor DockerComposeContainer(File... composeFiles)
+     * Use the new constructor {@link #DockerComposeContainer(DockerImageName image, List composeFiles)}
      */
-    @Deprecated
     public DockerComposeContainer(File... composeFiles) {
         this(Arrays.asList(composeFiles));
+        this.localCompose = true;
     }
 
     /**
-     * @deprecated
-     *  Use the new constructor DockerComposeContainer(List composeFiles)
+     * Use the new constructor {@link #DockerComposeContainer(DockerImageName image, List composeFiles)}
      */
     @Deprecated
     public DockerComposeContainer(List<File> composeFiles) {
         this(Base58.randomString(6).toLowerCase(), composeFiles);
+        this.localCompose = true;
     }
 
     /**
-     * @deprecated
-     *  Use the new constructor DockerComposeContainer(String identifier,File... composeFiles)
+     * Use the new constructor {@link #DockerComposeContainer(DockerImageName image, String identifier, File... composeFiles)}
      */
-    @Deprecated
     public DockerComposeContainer(String identifier, File... composeFiles) {
         this(identifier, Arrays.asList(composeFiles));
+        this.localCompose = true;
     }
 
     /**
-     * @deprecated
-     *  Use the new constructor DockerComposeContainer(String identifier,List composeFiles)
+     * Use the new constructor {@link #DockerComposeContainer(DockerImageName image, String identifier, List composeFiles)}
      */
-    @Deprecated
     public DockerComposeContainer(String identifier, List<File> composeFiles) {
         this.composeDelegate =
             new ComposeDelegate(
@@ -162,6 +166,7 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> i
                 DockerImageName.parse("docker/compose:1.29.2")
             );
         this.project = this.composeDelegate.getProject();
+        this.localCompose = true;
     }
 
     @Override
@@ -300,16 +305,6 @@ public class DockerComposeContainer<SELF extends DockerComposeContainer<SELF>> i
 
     public SELF withEnv(Map<String, String> env) {
         env.forEach(this.env::put);
-        return self();
-    }
-
-    /**
-     * Use a local Docker Compose binary instead of a container.
-     *
-     * @return this instance, for chaining
-     */
-    public SELF withLocalCompose(boolean localCompose) {
-        this.localCompose = localCompose;
         return self();
     }
 

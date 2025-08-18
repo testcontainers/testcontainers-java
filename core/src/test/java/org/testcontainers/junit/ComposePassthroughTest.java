@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.ComposeContainer;
 import org.testcontainers.containers.ContainerState;
 import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.TestEnvironment;
 
 import java.io.File;
@@ -26,6 +27,7 @@ class ComposePassthroughTest {
 
     @AutoClose
     public ComposeContainer compose = new ComposeContainer(
+        DockerImageName.parse("docker:24.0.2"),
         new File("src/test/resources/v2-compose-test-passthrough.yml")
     )
         .withEnv("foo", "bar")

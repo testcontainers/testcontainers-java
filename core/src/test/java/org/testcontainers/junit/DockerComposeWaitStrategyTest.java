@@ -7,6 +7,7 @@ import org.mockito.Mockito;
 import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
 import java.time.Duration;
@@ -23,7 +24,11 @@ class DockerComposeWaitStrategyTest {
 
     @BeforeEach
     public final void setUp() {
-        environment = new DockerComposeContainer<>(new File("src/test/resources/compose-test.yml"));
+        environment =
+            new DockerComposeContainer<>(
+                DockerImageName.parse("docker:24.0.2"),
+                new File("src/test/resources/compose-test.yml")
+            );
     }
 
     @AfterEach

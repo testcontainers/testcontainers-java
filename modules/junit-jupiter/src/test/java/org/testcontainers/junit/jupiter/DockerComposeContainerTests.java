@@ -7,6 +7,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
 
@@ -17,6 +18,7 @@ class DockerComposeContainerTests {
 
     @Container
     private DockerComposeContainer composeContainer = new DockerComposeContainer(
+        DockerImageName.parse("docker:24.0.2"),
         new File("src/test/resources/docker-compose.yml")
     )
         .withExposedService("whoami_1", 80, Wait.forHttp("/"));

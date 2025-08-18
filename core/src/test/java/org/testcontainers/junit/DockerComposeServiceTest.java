@@ -3,6 +3,7 @@ package org.testcontainers.junit;
 import org.junit.jupiter.api.AutoClose;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.DockerComposeContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
 
@@ -13,6 +14,7 @@ class DockerComposeServiceTest extends BaseDockerComposeTest {
 
     @AutoClose
     public DockerComposeContainer environment = new DockerComposeContainer(
+        DockerImageName.parse("docker:24.0.2"),
         new File("src/test/resources/compose-test.yml")
     )
         .withServices("redis")

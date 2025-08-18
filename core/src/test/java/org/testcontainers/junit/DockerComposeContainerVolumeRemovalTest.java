@@ -4,6 +4,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.DockerComposeContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
 import java.util.LinkedHashSet;
@@ -27,7 +28,10 @@ class DockerComposeContainerVolumeRemovalTest {
 
         final AtomicReference<String> volumeName = new AtomicReference<>("");
         try (
-            DockerComposeContainer environment = new DockerComposeContainer<>(composeFile)
+            DockerComposeContainer environment = new DockerComposeContainer<>(
+                DockerImageName.parse("docker:24.0.2"),
+                composeFile
+            )
                 .withExposedService("redis", 6379)
                 .withRemoveVolumes(removeVolumes)
                 .withRemoveImages(DockerComposeContainer.RemoveImages.ALL)

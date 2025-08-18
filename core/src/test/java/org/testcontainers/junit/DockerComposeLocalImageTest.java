@@ -5,6 +5,7 @@ import com.github.dockerjava.core.command.PullImageResultCallback;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.DockerComposeContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
 
@@ -15,6 +16,7 @@ class DockerComposeLocalImageTest {
         tagImage("redis:6-alpine", "redis-local", "latest");
 
         DockerComposeContainer composeContainer = new DockerComposeContainer(
+            DockerImageName.parse("docker:24.0.2"),
             new File("src/test/resources/local-compose-test.yml")
         )
             .withExposedService("redis", 6379);

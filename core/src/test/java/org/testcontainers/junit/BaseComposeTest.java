@@ -58,7 +58,7 @@ public abstract class BaseComposeTest {
 
         assertThat(jedis.get("test")).as("Tests use fresh container instances").isEqualTo("3");
         // if these end up using the same container one of the test methods will fail.
-        // However, @Rule creates a separate DockerComposeContainer instance per test, so this just shouldn't happen
+        // However, @Rule creates a separate ComposeContainer instance per test, so this just shouldn't happen
     }
 
     @BeforeEach
