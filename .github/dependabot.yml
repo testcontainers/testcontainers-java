@@ -161,9 +161,6 @@ updates:
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
-    ignore:
-      - dependency-name: "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml"
-        update-types: [ "version-update:semver-minor", "version-update:semver-patch" ]
   - package-ecosystem: "gradle"
     directory: "/modules/kafka"
     schedule:

@@ -1,6 +1,22 @@
 # MariaDB Module
 
+Testcontainers module for [MariaDB](https://hub.docker.com/_/mariadb)
+
+## Usage example
+
+You can start a MySQL container instance from any Java application by using:
+
+<!--codeinclude-->
+[Container definition](../../../modules/mariadb/src/test/java/org/testcontainers/junit/mariadb/SimpleMariaDBTest.java) inside_block:container
+<!--/codeinclude-->
+
 See [Database containers](./index.md) for documentation and usage that is common to all relational database container types.
+
+### Testcontainers JDBC URL
+
+`jdbc:tc:mariadb:10.3.39:///databasename`
+
+See [JDBC](./jdbc.md) for documentation.
 
 ## MariaDB `root` user password
 

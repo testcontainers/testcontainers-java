@@ -21,7 +21,10 @@ public class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSimple() throws SQLException {
-        try (PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(PostgreSQLTestImages.POSTGRES_TEST_IMAGE)) {
+        try ( // container {
+            PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:9.6.12")
+            // }
+        ) {
             postgres.start();
 
             ResultSet resultSet = performQuery(postgres, "SELECT 1");

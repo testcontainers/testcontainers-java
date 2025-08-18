@@ -111,4 +111,20 @@ public class ConnectionUrlTest {
 
         assertThat(url.isInDaemonMode()).as("Daemon flag is set to true.").isTrue();
     }
+
+    @Test
+    public void testHostLessConnectionUrl() {
+        String urlString = "jdbc:tc:mysql:8.0.36:///databasename?a=b&c=d";
+        ConnectionUrl url = ConnectionUrl.newInstance(urlString);
+
+        assertThat(url.getDatabaseType()).as("Database Type value is as expected").isEqualTo("mysql");
+        assertThat(url.getImageTag()).as("Database Image tag value is as expected").contains("8.0.36");
+        assertThat(url.getQueryString()).as("Query String value is as expected").contains("?a=b&c=d");
+        assertThat(url.getDatabaseHost()).as("Database Host value is as expected").isEmpty();
+        assertThat(url.getDatabasePort()).as("Database Port value is as expected").isEmpty();
+        assertThat(url.getDatabaseName()).as("Database Name value is as expected").contains("databasename");
+
+        assertThat(url.getQueryParameters()).as("Parameter a is captured").containsEntry("a", "b");
+        assertThat(url.getQueryParameters()).as("Parameter c is captured").containsEntry("c", "d");
+    }
 }

@@ -17,10 +17,6 @@ public LocalStackContainer localstack = new LocalStackContainer(localstackImage)
 ## Creating a client using AWS SDK
 
 <!--codeinclude-->
-[AWS SDK V1](../../modules/localstack/src/test/java/org/testcontainers/containers/localstack/LocalstackContainerTest.java) inside_block:with_aws_sdk_v1
-<!--/codeinclude-->
-
-<!--codeinclude-->
 [AWS SDK V2](../../modules/localstack/src/test/java/org/testcontainers/containers/localstack/LocalstackContainerTest.java) inside_block:with_aws_sdk_v2
 <!--/codeinclude-->
 

@@ -12,7 +12,10 @@ public class DatabendContainerTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSimple() throws SQLException {
-        try (DatabendContainer databend = new DatabendContainer("datafuselabs/databend:v1.2.615")) {
+        try ( // container {
+            DatabendContainer databend = new DatabendContainer("datafuselabs/databend:v1.2.615")
+            // }
+        ) {
             databend.start();
 
             ResultSet resultSet = performQuery(databend, "SELECT 1");

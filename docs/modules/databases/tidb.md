@@ -1,6 +1,22 @@
 # TiDB Module
 
+Testcontainers module for [TiDB](https://hub.docker.com/r/pingcap/tidb)
+
+## Usage example
+
+You can start a TiDB container instance from any Java application by using:
+
+<!--codeinclude-->
+[Container creation](../../../modules/tidb/src/test/java/org/testcontainers/junit/tidb/SimpleTiDBTest.java) inside_block:container
+<!--/codeinclude-->
+
 See [Database containers](./index.md) for documentation and usage that is common to all relational database container types.
+
+### Testcontainers JDBC URL
+
+`jdbc:tc:tidb:v6.1.0:///databasename`
+
+See [JDBC](./jdbc.md) for documentation.
 
 ## Adding this module to your project dependencies
 

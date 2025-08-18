@@ -13,7 +13,10 @@ public class TimeplusContainerTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSimple() throws SQLException {
-        try (TimeplusContainer timeplus = new TimeplusContainer(TimeplusImages.TIMEPLUS_IMAGE)) {
+        try ( // container {
+            TimeplusContainer timeplus = new TimeplusContainer("timeplus/timeplusd:2.3.21")
+            // }
+        ) {
             timeplus.start();
 
             ResultSet resultSet = performQuery(timeplus, "SELECT 1");

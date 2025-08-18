@@ -46,7 +46,7 @@ jobs:
     permissions:
       checks: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Setup rootless Docker
         uses: docker/setup-docker-action@v4
         with:

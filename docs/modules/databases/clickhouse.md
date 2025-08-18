@@ -1,5 +1,21 @@
 # Clickhouse Module
 
+Testcontainers module for [ClickHouse](https://hub.docker.com/r/clickhouse/clickhouse-server)
+
+## Usage example
+
+You can start a ClickHouse container instance from any Java application by using:
+
+<!--codeinclude-->
+[Container definition](../../../modules/clickhouse/src/test/java/org/testcontainers/clickhouse/ClickHouseContainerTest.java) inside_block:container
+<!--/codeinclude-->
+
+### Testcontainers JDBC URL
+
+`jdbc:tc:clickhouse:18.10.3:///databasename`
+
+See [JDBC](./jdbc.md) for documentation.
+
 ## Adding this module to your project dependencies
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:

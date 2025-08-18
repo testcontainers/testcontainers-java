@@ -25,7 +25,10 @@ public class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSimple() throws SQLException {
-        try (MariaDBContainer<?> mariadb = new MariaDBContainer<>(MariaDBTestImages.MARIADB_IMAGE)) {
+        try ( // container {
+            MariaDBContainer<?> mariadb = new MariaDBContainer<>("mariadb:10.3.39")
+            // }
+        ) {
             mariadb.start();
 
             ResultSet resultSet = performQuery(mariadb, "SELECT 1");

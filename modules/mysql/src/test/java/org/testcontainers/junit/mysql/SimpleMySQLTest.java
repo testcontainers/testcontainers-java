@@ -36,9 +36,9 @@ public class SimpleMySQLTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSimple() throws SQLException {
-        try (
-            MySQLContainer<?> mysql = new MySQLContainer<>(MySQLTestImages.MYSQL_80_IMAGE)
-                .withLogConsumer(new Slf4jLogConsumer(logger))
+        try ( // container {
+            MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.0.36")
+            // }
         ) {
             mysql.start();
 

@@ -1,35 +1,5 @@
 package org.testcontainers.containers.localstack;
 
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.client.builder.AwsClientBuilder;
-import com.amazonaws.services.kms.AWSKMS;
-import com.amazonaws.services.kms.AWSKMSClientBuilder;
-import com.amazonaws.services.kms.model.CreateKeyRequest;
-import com.amazonaws.services.kms.model.CreateKeyResult;
-import com.amazonaws.services.kms.model.Tag;
-import com.amazonaws.services.lambda.AWSLambda;
-import com.amazonaws.services.lambda.AWSLambdaClientBuilder;
-import com.amazonaws.services.lambda.model.CreateFunctionRequest;
-import com.amazonaws.services.lambda.model.CreateFunctionResult;
-import com.amazonaws.services.lambda.model.FunctionCode;
-import com.amazonaws.services.lambda.model.GetFunctionRequest;
-import com.amazonaws.services.lambda.model.InvokeRequest;
-import com.amazonaws.services.lambda.model.InvokeResult;
-import com.amazonaws.services.lambda.model.Runtime;
-import com.amazonaws.services.logs.AWSLogs;
-import com.amazonaws.services.logs.AWSLogsClientBuilder;
-import com.amazonaws.services.logs.model.CreateLogGroupRequest;
-import com.amazonaws.services.logs.model.LogGroup;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.Bucket;
-import com.amazonaws.services.s3.model.ObjectListing;
-import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.sqs.AmazonSQS;
-import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
-import com.amazonaws.services.sqs.model.CreateQueueResult;
-import com.amazonaws.waiters.WaiterParameters;
 import com.github.dockerjava.api.DockerClient;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
@@ -45,19 +15,46 @@ import org.testcontainers.containers.localstack.LocalStackContainer.Service;
 import org.testcontainers.utility.DockerImageName;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.cloudwatchlogs.CloudWatchLogsClient;
+import software.amazon.awssdk.services.cloudwatchlogs.model.CreateLogGroupRequest;
+import software.amazon.awssdk.services.cloudwatchlogs.model.DescribeLogGroupsResponse;
+import software.amazon.awssdk.services.kms.KmsClient;
+import software.amazon.awssdk.services.kms.model.CreateKeyRequest;
+import software.amazon.awssdk.services.kms.model.CreateKeyResponse;
+import software.amazon.awssdk.services.kms.model.Tag;
+import software.amazon.awssdk.services.lambda.LambdaClient;
+import software.amazon.awssdk.services.lambda.model.CreateFunctionRequest;
+import software.amazon.awssdk.services.lambda.model.CreateFunctionResponse;
+import software.amazon.awssdk.services.lambda.model.FunctionCode;
+import software.amazon.awssdk.services.lambda.model.GetFunctionConfigurationRequest;
+import software.amazon.awssdk.services.lambda.model.InvokeRequest;
+import software.amazon.awssdk.services.lambda.model.InvokeResponse;
+import software.amazon.awssdk.services.lambda.model.Runtime;
+import software.amazon.awssdk.services.lambda.waiters.LambdaWaiter;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.Bucket;
+import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
+import software.amazon.awssdk.services.sqs.SqsClient;
+import software.amazon.awssdk.services.sqs.model.CreateQueueRequest;
+import software.amazon.awssdk.services.sqs.model.CreateQueueResponse;
+import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest;
+import software.amazon.awssdk.services.sqs.model.SendMessageRequest;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
+import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -82,6 +79,7 @@ public class LocalstackContainerTest {
         // without_network {
         @ClassRule
         public static LocalStackContainer localstack = new LocalStackContainer(LocalstackTestImages.LOCALSTACK_IMAGE)
+            .withEnv("SQS_ENDPOINT_STRATEGY", "dynamic")
             .withServices(
                 Service.S3,
                 Service.SQS,
@@ -94,42 +92,39 @@ public class LocalstackContainerTest {
 
         @Test
         public void s3TestOverBridgeNetwork() throws IOException {
-            // with_aws_sdk_v1 {
-            AmazonS3 s3 = AmazonS3ClientBuilder
-                .standard()
-                .withEndpointConfiguration(
-                    new AwsClientBuilder.EndpointConfiguration(
-                        localstack.getEndpoint().toString(),
-                        localstack.getRegion()
+            S3Client s3 = S3Client
+                .builder()
+                .endpointOverride(localstack.getEndpoint())
+                .credentialsProvider(
+                    StaticCredentialsProvider.create(
+                        AwsBasicCredentials.create(localstack.getAccessKey(), localstack.getSecretKey())
                     )
                 )
-                .withCredentials(
-                    new AWSStaticCredentialsProvider(
-                        new BasicAWSCredentials(localstack.getAccessKey(), localstack.getSecretKey())
-                    )
-                )
+                .region(Region.of(localstack.getRegion()))
                 .build();
-            // }
 
             final String bucketName = "foo";
-            s3.createBucket(bucketName);
-            s3.putObject(bucketName, "bar", "baz");
+            s3.createBucket(CreateBucketRequest.builder().bucket(bucketName).build());
+            s3.putObject(
+                PutObjectRequest.builder().bucket(bucketName).key("bar").build(),
+                software.amazon.awssdk.core.sync.RequestBody.fromString("baz")
+            );
 
-            final List<Bucket> buckets = s3.listBuckets();
-            final Optional<Bucket> maybeBucket = buckets
-                .stream()
-                .filter(b -> b.getName().equals(bucketName))
-                .findFirst();
+            final List<Bucket> buckets = s3.listBuckets().buckets();
+            final Optional<Bucket> maybeBucket = buckets.stream().filter(b -> b.name().equals(bucketName)).findFirst();
             assertThat(maybeBucket).as("The created bucket is present").isPresent();
             final Bucket bucket = maybeBucket.get();
 
-            assertThat(bucket.getName()).as("The created bucket has the right name").isEqualTo(bucketName);
+            assertThat(bucket.name()).as("The created bucket has the right name").isEqualTo(bucketName);
 
-            final ObjectListing objectListing = s3.listObjects(bucketName);
-            assertThat(objectListing.getObjectSummaries()).as("The created bucket has 1 item in it").hasSize(1);
+            final ListObjectsV2Response objectListing = s3.listObjectsV2(
+                ListObjectsV2Request.builder().bucket(bucketName).build()
+            );
+            assertThat(objectListing.contents()).as("The created bucket has 1 item in it").hasSize(1);
 
-            final S3Object object = s3.getObject(bucketName, "bar");
-            final String content = IOUtils.toString(object.getObjectContent(), StandardCharsets.UTF_8);
+            final String content = s3
+                .getObjectAsBytes(GetObjectRequest.builder().bucket(bucketName).key("bar").build())
+                .asString(StandardCharsets.UTF_8);
             assertThat(content).as("The object can be retrieved").isEqualTo("baz");
         }
 
@@ -157,86 +152,73 @@ public class LocalstackContainerTest {
 
         @Test
         public void sqsTestOverBridgeNetwork() {
-            AmazonSQS sqs = AmazonSQSClientBuilder
-                .standard()
-                .withEndpointConfiguration(
-                    new AwsClientBuilder.EndpointConfiguration(
-                        localstack.getEndpoint().toString(),
-                        localstack.getRegion()
+            SqsClient sqs = SqsClient
+                .builder()
+                .endpointOverride(localstack.getEndpoint())
+                .credentialsProvider(
+                    StaticCredentialsProvider.create(
+                        AwsBasicCredentials.create(localstack.getAccessKey(), localstack.getSecretKey())
                     )
                 )
-                .withCredentials(
-                    new AWSStaticCredentialsProvider(
-                        new BasicAWSCredentials(localstack.getAccessKey(), localstack.getSecretKey())
-                    )
-                )
+                .region(Region.of(localstack.getRegion()))
                 .build();
 
-            CreateQueueResult queueResult = sqs.createQueue("baz");
-            String fooQueueUrl = queueResult.getQueueUrl();
-            assertThat(fooQueueUrl)
-                .as("Created queue has external hostname URL")
-                .contains("http://" + localstack.getHost() + ":" + localstack.getMappedPort(LocalStackContainer.PORT));
+            CreateQueueResponse queueResult = sqs.createQueue(CreateQueueRequest.builder().queueName("baz").build());
+            String fooQueueUrl = queueResult.queueUrl();
 
-            sqs.sendMessage(fooQueueUrl, "test");
+            sqs.sendMessage(SendMessageRequest.builder().queueUrl(fooQueueUrl).messageBody("test").build());
             final long messageCount = sqs
-                .receiveMessage(fooQueueUrl)
-                .getMessages()
+                .receiveMessage(ReceiveMessageRequest.builder().queueUrl(fooQueueUrl).build())
+                .messages()
                 .stream()
-                .filter(message -> message.getBody().equals("test"))
+                .filter(message -> message.body().equals("test"))
                 .count();
             assertThat(messageCount).as("the sent message can be received").isEqualTo(1L);
         }
 
         @Test
         public void cloudWatchLogsTestOverBridgeNetwork() {
-            AWSLogs logs = AWSLogsClientBuilder
-                .standard()
-                .withEndpointConfiguration(
-                    new AwsClientBuilder.EndpointConfiguration(
-                        localstack.getEndpoint().toString(),
-                        localstack.getRegion()
+            CloudWatchLogsClient logs = CloudWatchLogsClient
+                .builder()
+                .endpointOverride(localstack.getEndpoint())
+                .credentialsProvider(
+                    StaticCredentialsProvider.create(
+                        AwsBasicCredentials.create(localstack.getAccessKey(), localstack.getSecretKey())
                     )
                 )
-                .withCredentials(
-                    new AWSStaticCredentialsProvider(
-                        new BasicAWSCredentials(localstack.getAccessKey(), localstack.getSecretKey())
-                    )
-                )
+                .region(Region.of(localstack.getRegion()))
                 .build();
 
-            logs.createLogGroup(new CreateLogGroupRequest("foo"));
+            logs.createLogGroup(CreateLogGroupRequest.builder().logGroupName("foo").build());
 
-            List<LogGroup> groups = logs.describeLogGroups().getLogGroups();
-            assertThat(groups).as("One log group should be created").hasSize(1);
-            assertThat(groups.get(0).getLogGroupName()).as("Name of created log group is [foo]").isEqualTo("foo");
+            DescribeLogGroupsResponse response = logs.describeLogGroups();
+            assertThat(response.logGroups()).as("One log group should be created").hasSize(1);
+            assertThat(response.logGroups().get(0).logGroupName())
+                .as("Name of created log group is [foo]")
+                .isEqualTo("foo");
         }
 
         @Test
         public void kmsKeyCreationTest() {
-            AWSKMS awskms = AWSKMSClientBuilder
-                .standard()
-                .withEndpointConfiguration(
-                    new AwsClientBuilder.EndpointConfiguration(
-                        localstack.getEndpoint().toString(),
-                        localstack.getRegion()
+            KmsClient kms = KmsClient
+                .builder()
+                .endpointOverride(localstack.getEndpoint())
+                .credentialsProvider(
+                    StaticCredentialsProvider.create(
+                        AwsBasicCredentials.create(localstack.getAccessKey(), localstack.getSecretKey())
                     )
                 )
-                .withCredentials(
-                    new AWSStaticCredentialsProvider(
-                        new BasicAWSCredentials(localstack.getAccessKey(), localstack.getSecretKey())
-                    )
-                )
+                .region(Region.of(localstack.getRegion()))
                 .build();
 
-            String desc = String.format("AWS CMK Description");
-            Tag createdByTag = new Tag().withTagKey("CreatedBy").withTagValue("StorageService");
-            CreateKeyRequest req = new CreateKeyRequest().withDescription(desc).withTags(createdByTag);
-            CreateKeyResult key = awskms.createKey(req);
+            String desc = "AWS CMK Description";
+            Tag createdByTag = Tag.builder().tagKey("CreatedBy").tagValue("StorageService").build();
+            CreateKeyRequest req = CreateKeyRequest.builder().description(desc).tags(createdByTag).build();
+            CreateKeyResponse key = kms.createKey(req);
 
             assertThat(desc)
                 .as("AWS KMS Customer Managed Key should be created ")
-                .isEqualTo(key.getKeyMetadata().getDescription());
+                .isEqualTo(key.keyMetadata().description());
         }
 
         @Test
@@ -245,21 +227,6 @@ public class LocalstackContainerTest {
             assertThat(localstack.getEndpointOverride(Service.SQS).toString())
                 .as("Endpoint overrides are different")
                 .isEqualTo(localstack.getEndpointOverride(Service.S3).toString());
-            assertThat(
-                new AwsClientBuilder.EndpointConfiguration(
-                    localstack.getEndpointOverride(Service.SQS).toString(),
-                    localstack.getRegion()
-                )
-                    .getServiceEndpoint()
-            )
-                .as("Endpoint configuration have different endpoints")
-                .isEqualTo(
-                    new AwsClientBuilder.EndpointConfiguration(
-                        localstack.getEndpointOverride(Service.S3).toString(),
-                        localstack.getRegion()
-                    )
-                        .getServiceEndpoint()
-                );
         }
     }
 
@@ -270,7 +237,7 @@ public class LocalstackContainerTest {
 
         @ClassRule
         public static LocalStackContainer localstackInDockerNetwork = new LocalStackContainer(
-            LocalstackTestImages.LOCALSTACK_IMAGE
+            DockerImageName.parse("localstack/localstack:0.12.8")
         )
             .withNetwork(network)
             .withNetworkAliases("notthis", "localstack") // the last alias is used for HOSTNAME_EXTERNAL
@@ -367,22 +334,14 @@ public class LocalstackContainerTest {
 
         @Test
         public void s3EndpointHasProperRegion() {
-            final AwsClientBuilder.EndpointConfiguration endpointConfiguration = new AwsClientBuilder.EndpointConfiguration(
-                localstack.getEndpoint().toString(),
-                localstack.getRegion()
-            );
-            assertThat(endpointConfiguration.getSigningRegion())
-                .as("The endpoint configuration has right region")
-                .isEqualTo(region);
+            assertThat(localstack.getRegion()).as("The endpoint configuration has right region").isEqualTo(region);
         }
     }
 
     public static class WithoutServices {
 
         @ClassRule
-        public static LocalStackContainer localstack = new LocalStackContainer(
-            LocalstackTestImages.LOCALSTACK_0_13_IMAGE
-        );
+        public static LocalStackContainer localstack = new LocalStackContainer(LocalstackTestImages.LOCALSTACK_IMAGE);
 
         @Test
         public void s3ServiceStartLazily() {
@@ -478,46 +437,53 @@ public class LocalstackContainerTest {
     public static class S3SkipSignatureValidation {
 
         @ClassRule
-        public static LocalStackContainer localstack = new LocalStackContainer(
-            LocalstackTestImages.LOCALSTACK_2_3_IMAGE
-        )
+        public static LocalStackContainer localstack = new LocalStackContainer(LocalstackTestImages.LOCALSTACK_IMAGE)
             .withEnv("S3_SKIP_SIGNATURE_VALIDATION", "0");
 
         @Test
         public void shouldBeAccessibleWithCredentials() throws IOException {
-            AmazonS3 s3 = AmazonS3ClientBuilder
-                .standard()
-                .withEndpointConfiguration(
-                    new AwsClientBuilder.EndpointConfiguration(
-                        localstack.getEndpoint().toString(),
-                        localstack.getRegion()
+            S3Client s3 = S3Client
+                .builder()
+                .endpointOverride(localstack.getEndpoint())
+                .credentialsProvider(
+                    StaticCredentialsProvider.create(
+                        AwsBasicCredentials.create(localstack.getAccessKey(), localstack.getSecretKey())
                     )
                 )
-                .withCredentials(
-                    new AWSStaticCredentialsProvider(
-                        new BasicAWSCredentials(localstack.getAccessKey(), localstack.getSecretKey())
-                    )
-                )
+                .region(Region.of(localstack.getRegion()))
                 .build();
 
             final String bucketName = "foo";
 
-            s3.createBucket(bucketName);
+            s3.createBucket(CreateBucketRequest.builder().bucket(bucketName).build());
 
-            s3.putObject(bucketName, "bar", "baz");
+            s3.putObject(
+                PutObjectRequest.builder().bucket(bucketName).key("bar").build(),
+                software.amazon.awssdk.core.sync.RequestBody.fromString("baz")
+            );
 
-            final List<Bucket> buckets = s3.listBuckets();
-            final Optional<Bucket> maybeBucket = buckets
-                .stream()
-                .filter(b -> b.getName().equals(bucketName))
-                .findFirst();
+            final List<Bucket> buckets = s3.listBuckets().buckets();
+            final Optional<Bucket> maybeBucket = buckets.stream().filter(b -> b.name().equals(bucketName)).findFirst();
             assertThat(maybeBucket).as("The created bucket is present").isPresent();
 
-            URL presignedUrl = s3.generatePresignedUrl(
-                bucketName,
-                "bar",
-                Date.from(Instant.now().plus(5, ChronoUnit.MINUTES))
-            );
+            S3Presigner presigner = S3Presigner
+                .builder()
+                .endpointOverride(localstack.getEndpoint())
+                .credentialsProvider(
+                    StaticCredentialsProvider.create(
+                        AwsBasicCredentials.create(localstack.getAccessKey(), localstack.getSecretKey())
+                    )
+                )
+                .region(Region.of(localstack.getRegion()))
+                .build();
+
+            GetObjectPresignRequest presignRequest = GetObjectPresignRequest
+                .builder()
+                .signatureDuration(Duration.ofMinutes(5))
+                .getObjectRequest(GetObjectRequest.builder().bucket(bucketName).key("bar").build())
+                .build();
+
+            URL presignedUrl = presigner.presignGetObject(presignRequest).url();
 
             assertThat(presignedUrl).as("The presigned url is valid").isNotNull();
             final String content = IOUtils.toString(presignedUrl, StandardCharsets.UTF_8);
@@ -528,9 +494,7 @@ public class LocalstackContainerTest {
     public static class LambdaContainerLabels {
 
         @ClassRule
-        public static LocalStackContainer localstack = new LocalStackContainer(
-            LocalstackTestImages.LOCALSTACK_2_3_IMAGE
-        );
+        public static LocalStackContainer localstack = new LocalStackContainer(LocalstackTestImages.LOCALSTACK_IMAGE);
 
         private static byte[] createLambdaHandlerZipFile() throws IOException {
             StringBuilder sb = new StringBuilder();
@@ -551,44 +515,44 @@ public class LocalstackContainerTest {
 
         @Test
         public void shouldLabelLambdaContainers() throws IOException {
-            AWSLambda lambda = AWSLambdaClientBuilder
-                .standard()
-                .withEndpointConfiguration(
-                    new AwsClientBuilder.EndpointConfiguration(
-                        localstack.getEndpoint().toString(),
-                        localstack.getRegion()
+            LambdaClient lambda = LambdaClient
+                .builder()
+                .endpointOverride(localstack.getEndpoint())
+                .credentialsProvider(
+                    StaticCredentialsProvider.create(
+                        AwsBasicCredentials.create(localstack.getAccessKey(), localstack.getSecretKey())
                     )
                 )
-                .withCredentials(
-                    new AWSStaticCredentialsProvider(
-                        new BasicAWSCredentials(localstack.getAccessKey(), localstack.getSecretKey())
-                    )
-                )
+                .region(Region.of(localstack.getRegion()))
                 .build();
 
             // create function
             byte[] handlerFile = createLambdaHandlerZipFile();
-            CreateFunctionRequest createFunctionRequest = new CreateFunctionRequest()
-                .withFunctionName("test-function")
-                .withRuntime(Runtime.Python311)
-                .withHandler("handler.handler")
-                .withRole("arn:aws:iam::000000000000:role/test-role")
-                .withCode(new FunctionCode().withZipFile(ByteBuffer.wrap(handlerFile)));
-            CreateFunctionResult createFunctionResult = lambda.createFunction(createFunctionRequest);
-            GetFunctionRequest getFunctionRequest = new GetFunctionRequest()
-                .withFunctionName(createFunctionResult.getFunctionName());
-            lambda
-                .waiters()
-                .functionActiveV2()
-                .run(new WaiterParameters<GetFunctionRequest>().withRequest(getFunctionRequest));
+            CreateFunctionRequest createFunctionRequest = CreateFunctionRequest
+                .builder()
+                .functionName("test-function")
+                .runtime(Runtime.PYTHON3_11)
+                .handler("handler.handler")
+                .role("arn:aws:iam::000000000000:role/test-role")
+                .code(FunctionCode.builder().zipFile(SdkBytes.fromByteArray(handlerFile)).build())
+                .build();
+            CreateFunctionResponse createFunctionResult = lambda.createFunction(createFunctionRequest);
+
+            try (LambdaWaiter waiter = lambda.waiter()) {
+                waiter.waitUntilFunctionActive(
+                    GetFunctionConfigurationRequest.builder().functionName(createFunctionResult.functionName()).build()
+                );
+            }
 
             // invoke function once
             String payload = "{\"test\": \"payload\"}";
-            InvokeRequest invokeRequest = new InvokeRequest()
-                .withFunctionName(createFunctionResult.getFunctionName())
-                .withPayload(payload);
-            InvokeResult invokeResult = lambda.invoke(invokeRequest);
-            assertThat(StandardCharsets.UTF_8.decode(invokeResult.getPayload()).toString())
+            InvokeRequest invokeRequest = InvokeRequest
+                .builder()
+                .functionName(createFunctionResult.functionName())
+                .payload(SdkBytes.fromUtf8String(payload))
+                .build();
+            InvokeResponse invokeResult = lambda.invoke(invokeRequest);
+            assertThat(invokeResult.payload().asUtf8String())
                 .as("Invoke result not matching expected output")
                 .isEqualTo(payload);
 

@@ -1,8 +1,8 @@
 description = "Testcontainers :: JDBC :: YugabyteDB"
 
 dependencies {
-    api project(':jdbc')
-    testImplementation project(':jdbc-test')
+    api project(':testcontainers-jdbc')
+    testImplementation project(':testcontainers-jdbc-test')
     // YCQL driver
     testImplementation 'com.yugabyte:java-driver-core:4.19.0-yb-1'
     // YSQL driver

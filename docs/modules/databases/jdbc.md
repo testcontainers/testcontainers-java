@@ -37,11 +37,11 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 
 #### Using CrateDB
 
-`jdbc:tc:cratedb:5.2.3//localhost:5432/crate`
+`jdbc:tc:cratedb:5.2.3:///databasename`
 
 #### Using DB2
 
-`jdbc:tc:db2:11.5.0.0a//localhost:5432/crate`
+`jdbc:tc:db2:11.5.0.0a:///databasename`
 
 #### Using MariaDB
 

@@ -17,8 +17,12 @@ public class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSimple() throws SQLException {
-        try (
-            MSSQLServerContainer<?> mssqlServer = new MSSQLServerContainer<>(MSSQLServerTestImages.MSSQL_SERVER_IMAGE)
+        try ( // container {
+            MSSQLServerContainer<?> mssqlServer = new MSSQLServerContainer<>(
+                "mcr.microsoft.com/mssql/server:2022-CU20-ubuntu-22.04"
+            )
+                .acceptLicense()
+            // }
         ) {
             mssqlServer.start();
             ResultSet resultSet = performQuery(mssqlServer, "SELECT 1");

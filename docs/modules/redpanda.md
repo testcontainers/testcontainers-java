@@ -45,7 +45,7 @@ Below is an example of how to create the `AdminClient`:
 
 There are scenarios where additional listeners are needed because the consumer/producer can be another
 container in the same network or a different process where the port to connect differs from the default
-exposed port `9092`. E.g [Toxiproxy](../../docs/modules/toxiproxy.md).
+exposed port `9092`. E.g [Toxiproxy](../modules/toxiproxy.md).
 
 <!--codeinclude-->
 [Register additional listener](../../modules/redpanda/src/test/java/org/testcontainers/redpanda/RedpandaContainerTest.java) inside_block:registerListener

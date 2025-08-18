@@ -14,7 +14,10 @@ public class SimpleDb2Test extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSimple() throws SQLException {
-        try (Db2Container db2 = new Db2Container(Db2TestImages.DB2_IMAGE).acceptLicense()) {
+        try ( // container {
+            Db2Container db2 = new Db2Container("ibmcom/db2:11.5.0.0a").acceptLicense()
+            // }
+        ) {
             db2.start();
 
             ResultSet resultSet = performQuery(db2, "SELECT 1 FROM SYSIBM.SYSDUMMY1");

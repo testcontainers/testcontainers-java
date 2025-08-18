@@ -30,9 +30,7 @@ public class YugabyteDBYCQLTest {
                 .withPassword("cassandra")
             // }
         ) {
-            // startingYCQLContainer {
             ycqlContainer.start();
-            // }
             assertThat(performQuery(ycqlContainer, "SELECT release_version FROM system.local").wasApplied())
                 .as("A sample test query succeeds")
                 .isTrue();

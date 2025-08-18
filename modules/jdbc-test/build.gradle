@@ -1,5 +1,5 @@
 dependencies {
-    api project(':jdbc')
+    api project(':testcontainers-jdbc')
 
     api 'com.google.guava:guava:33.4.8-jre'
     api 'org.apache.commons:commons-lang3:3.18.0'

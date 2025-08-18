@@ -1,13 +1,22 @@
 # Oracle Database Free Module
 
-See [Database containers](./index.md) for documentation and usage that is common to all relational database container types.
+Testcontainers module for [Oracle Free](https://hub.docker.com/r/gvenzl/oracle-free)
 
 ## Usage example
 
-You can use `OracleContainer` like any other JDBC container:
+You can start an Oracle-Free container instance from any Java application by using:
+
 <!--codeinclude-->
-[Container creation](../../../modules/oracle-free/src/test/java/org/testcontainers/junit/oracle/SimpleOracleTest.java) inside_block:constructor
+[Container creation](../../../modules/oracle-free/src/test/java/org/testcontainers/junit/oracle/SimpleOracleTest.java) inside_block:container
 <!--/codeinclude-->
+
+See [Database containers](./index.md) for documentation and usage that is common to all relational database container types.
+
+### Testcontainers JDBC URL
+
+`jdbc:tc:oracle:21-slim-faststart:///databasename`
+
+See [JDBC](./jdbc.md) for documentation.
 
 ## Adding this module to your project dependencies
 
