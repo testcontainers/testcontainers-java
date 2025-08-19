@@ -9,7 +9,7 @@ dependencies {
     testImplementation 'software.amazon.awssdk:cloudwatchlogs'
     testImplementation 'software.amazon.awssdk:lambda'
     testImplementation 'software.amazon.awssdk:kms'
-    testImplementation 'org.assertj:assertj-core:3.27.3'
+    testImplementation 'org.assertj:assertj-core:3.27.4'
 }
 
 tasks.japicmp {
