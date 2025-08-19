@@ -38,12 +38,7 @@ public class Neo4jContainer extends GenericContainer<Neo4jContainer> {
      */
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("neo4j");
 
-    /**
-     * The default tag (version) to use.
-     */
-    private static final String DEFAULT_TAG = "4.4";
-
-    private static final String ENTERPRISE_TAG = DEFAULT_TAG + "-enterprise";
+    private static final String ENTERPRISE_SUFFIX = "-enterprise";
 
     /**
      * Default port for the binary Bolt protocol.
@@ -211,8 +206,7 @@ public class Neo4jContainer extends GenericContainer<Neo4jContainer> {
                 String.format("Cannot use enterprise version with alternative image %s.", getDockerImageName())
             );
         }
-
-        setDockerImageName(DEFAULT_IMAGE_NAME.withTag(ENTERPRISE_TAG).asCanonicalNameString());
+        setDockerImageName(DockerImageName.parse(getDockerImageName() + ENTERPRISE_SUFFIX).asCanonicalNameString());
         LicenseAcceptance.assertLicenseAccepted(getDockerImageName());
 
         addEnv("NEO4J_ACCEPT_LICENSE_AGREEMENT", "yes");
