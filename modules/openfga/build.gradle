@@ -3,7 +3,7 @@ description = "Testcontainers :: OpenFGA"
 dependencies {
     api project(':testcontainers')
 
-    testImplementation 'org.assertj:assertj-core:3.27.3'
+    testImplementation 'org.assertj:assertj-core:3.27.4'
     testImplementation 'dev.openfga:openfga-sdk:0.8.3'
 }
 
