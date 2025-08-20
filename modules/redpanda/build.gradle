@@ -5,7 +5,7 @@ dependencies {
     shaded 'org.freemarker:freemarker:2.3.34'
 
     testImplementation 'org.apache.kafka:kafka-clients:4.0.0'
-    testImplementation 'org.assertj:assertj-core:3.27.3'
+    testImplementation 'org.assertj:assertj-core:3.27.4'
     testImplementation 'io.rest-assured:rest-assured:5.5.5'
     testImplementation 'org.awaitility:awaitility:4.3.0'
 }
