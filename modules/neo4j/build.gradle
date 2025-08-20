@@ -34,7 +34,7 @@ dependencies {
     api project(":testcontainers")
 
     testImplementation 'org.neo4j.driver:neo4j-java-driver:4.4.20'
-    testImplementation 'org.assertj:assertj-core:3.27.3'
+    testImplementation 'org.assertj:assertj-core:3.27.4'
 }
 
 tasks.japicmp {
