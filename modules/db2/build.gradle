@@ -5,7 +5,7 @@ dependencies {
 
     testImplementation project(':testcontainers-jdbc-test')
     testRuntimeOnly 'com.ibm.db2:jcc:12.1.2.0'
-    testImplementation 'org.assertj:assertj-core:3.27.3'
+    testImplementation 'org.assertj:assertj-core:3.27.4'
 }
 
 tasks.japicmp {
