@@ -15,19 +15,17 @@ Currently, two different Kafka images are supported:
 ## Benefits
 
 * Running a single node Kafka installation with just one line of code
-* No need to manage external Zookeeper installation, required by Kafka. But see [below](#zookeeper)
+* No need to manage external Zookeeper installation, required by Kafka. 
 
 ## Example
 
-### Using org.testcontainers.containers.KafkaContainer
+### Using org.testcontainers.kafka.KafkaContainer
 
 Create a `KafkaContainer` to use it in your tests:
 
 <!--codeinclude-->
-[Creating a KafkaContainer](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:constructorWithVersion
+[Creating a KafkaContainer](../../modules/kafka/src/test/java/org/testcontainers/kafka/KafkaContainerTest.java) inside_block:constructorWithVersion
 <!--/codeinclude-->
-
-The correspondence between Confluent Platform versions and Kafka versions can be seen [in Confluent documentation](https://docs.confluent.io/current/installation/versions-interoperability.html#cp-and-apache-kafka-compatibility)
 
 Now your tests or any other process running on your machine can get access to running Kafka broker by using the following bootstrap server location:
 
@@ -46,26 +44,8 @@ Create a `ConfluentKafkaContainer` to use it in your tests:
 [Creating a ConfluentKafkaContainer](../../modules/kafka/src/test/java/org/testcontainers/kafka/ConfluentKafkaContainerTest.java) inside_block:constructorWithVersion
 <!--/codeinclude-->
 
-### Using org.testcontainers.kafka.KafkaContainer
-
-Create a `KafkaContainer` to use it in your tests:
-
-<!--codeinclude-->
-[Creating a KafkaContainer](../../modules/kafka/src/test/java/org/testcontainers/kafka/KafkaContainerTest.java) inside_block:constructorWithVersion
-<!--/codeinclude-->
-
 ## Options
         
-### <a name="zookeeper"></a> Using external Zookeeper
-
-!!! note
-    Only available for `org.testcontainers.containers.KafkaContainer`
-
-If for some reason you want to use an externally running Zookeeper, then just pass its location during construction:
-<!--codeinclude-->
-[External Zookeeper](../../modules/kafka/src/test/java/org/testcontainers/containers/KafkaContainerTest.java) inside_block:withExternalZookeeper
-<!--/codeinclude-->
-
 ### Using Kraft mode
 
 !!! note
