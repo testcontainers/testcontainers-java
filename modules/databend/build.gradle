@@ -5,5 +5,5 @@ dependencies {
 
     testImplementation project(':testcontainers-jdbc-test')
     testRuntimeOnly 'com.databend:databend-jdbc:0.4.0'
-    testImplementation 'org.assertj:assertj-core:3.27.3'
+    testImplementation 'org.assertj:assertj-core:3.27.4'
 }
