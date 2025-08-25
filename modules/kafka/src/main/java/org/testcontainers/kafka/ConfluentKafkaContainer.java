@@ -87,8 +87,8 @@ public class ConfluentKafkaContainer extends GenericContainer<ConfluentKafkaCont
      * <p>
      * Default advertised listeners:
      * <ul>
-     *      <li>{@code container.getConfig().getHostName():9092}</li>
-     *      <li>{@code container.getHost():container.getMappedPort(9093)}</li>
+     *      <li>{@code container.getHost():container.getMappedPort(9092)}</li>
+     *      <li>{@code containerInfo.getConfig().getHostName():9093}</li>
      * </ul>
      * @param listener a listener with format {@code host:port}
      * @return this {@link ConfluentKafkaContainer} instance
@@ -118,8 +118,8 @@ public class ConfluentKafkaContainer extends GenericContainer<ConfluentKafkaCont
      * <p>
      * Default advertised listeners:
      * <ul>
-     *      <li>{@code container.getConfig().getHostName():9092}</li>
-     *      <li>{@code container.getHost():container.getMappedPort(9093)}</li>
+     *      <li>{@code container.getHost():container.getMappedPort(9092)}</li>
+     *      <li>{@code containerInfo.getConfig().getHostName():9093}</li>
      * </ul>
      * @param listener a supplier that will provide a listener
      * @param advertisedListener a supplier that will provide a listener
