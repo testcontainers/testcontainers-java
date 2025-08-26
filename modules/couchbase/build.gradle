@@ -7,7 +7,7 @@ dependencies {
 
     testImplementation 'com.couchbase.client:java-client:3.8.3'
     testImplementation 'org.awaitility:awaitility:4.3.0'
-    testImplementation 'org.assertj:assertj-core:3.27.3'
+    testImplementation 'org.assertj:assertj-core:3.27.4'
 }
 
 tasks.japicmp {

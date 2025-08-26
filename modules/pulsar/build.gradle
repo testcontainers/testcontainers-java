@@ -6,7 +6,7 @@ dependencies {
     testImplementation platform("org.apache.pulsar:pulsar-bom:4.0.5")
     testImplementation 'org.apache.pulsar:pulsar-client'
     testImplementation 'org.apache.pulsar:pulsar-client-admin'
-    testImplementation 'org.assertj:assertj-core:3.27.3'
+    testImplementation 'org.assertj:assertj-core:3.27.4'
 }
 
 tasks.japicmp {

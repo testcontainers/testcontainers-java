@@ -33,7 +33,10 @@ public class SimpleOracleTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testDefaultSettings() throws SQLException {
-        try (OracleContainer oracle = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME);) {
+        try ( // container {
+            OracleContainer oracle = new OracleContainer("gvenzl/oracle-xe:21-slim-faststart")
+            // }
+        ) {
             runTest(oracle, "xepdb1", "test", "test");
 
             // Match against the last '/'
@@ -52,12 +55,10 @@ public class SimpleOracleTest extends AbstractContainerDatabaseTest {
     @Test
     public void testPluggableDatabaseAndCustomUser() throws SQLException {
         try (
-            // constructor {
             OracleContainer oracle = new OracleContainer("gvenzl/oracle-xe:21-slim-faststart")
                 .withDatabaseName("testDB")
                 .withUsername("testUser")
                 .withPassword("testPassword")
-            // }
         ) {
             runTest(oracle, "testDB", "testUser", "testPassword");
         }

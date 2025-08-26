@@ -20,7 +20,10 @@ public class SimpleCrateDBTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSimple() throws SQLException {
-        try (CrateDBContainer cratedb = new CrateDBContainer(CrateDBTestImages.CRATEDB_TEST_IMAGE)) {
+        try ( // container {
+            CrateDBContainer cratedb = new CrateDBContainer("crate:5.2.5")
+            // }
+        ) {
             cratedb.start();
 
             ResultSet resultSet = performQuery(cratedb, "SELECT 1");
