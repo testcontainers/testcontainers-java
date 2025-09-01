@@ -3,26 +3,21 @@ package org.testcontainers.cassandra;
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(Parameterized.class)
-public class CompatibleCassandraImageTest {
+class CompatibleCassandraImageTest {
 
-    @Parameterized.Parameters(name = "{0}")
     public static String[] params() {
         return new String[] { "cassandra:3.11.2", "cassandra:4.1.1", "cassandra:5" };
     }
 
-    @Parameterized.Parameter
-    public String imageName;
-
-    @Test
-    public void testCassandraGetContactPoint() {
-        try (CassandraContainer cassandra = new CassandraContainer(this.imageName)) {
+    @ParameterizedTest
+    @MethodSource("params")
+    void testCassandraGetContactPoint(String imageName) {
+        try (CassandraContainer cassandra = new CassandraContainer(imageName)) {
             cassandra.start();
             assertCassandraFunctionality(cassandra);
         }
