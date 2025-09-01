@@ -11,22 +11,22 @@ import com.azure.storage.blob.BlobServiceClientBuilder;
 import com.azure.storage.queue.QueueClient;
 import com.azure.storage.queue.QueueServiceClient;
 import com.azure.storage.queue.QueueServiceClientBuilder;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.utility.MountableFile;
 
 import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class AzuriteContainerTest {
+class AzuriteContainerTest {
 
     private static final String PASSWORD = "changeit";
 
     private static Properties originalSystemProperties;
 
-    @BeforeClass
+    @BeforeAll
     public static void captureOriginalSystemProperties() {
         originalSystemProperties = (Properties) System.getProperties().clone();
         System.setProperty(
@@ -37,13 +37,13 @@ public class AzuriteContainerTest {
         System.setProperty("javax.net.ssl.trustStoreType", "PKCS12");
     }
 
-    @AfterClass
+    @AfterAll
     public static void restoreOriginalSystemProperties() {
         System.setProperties(originalSystemProperties);
     }
 
     @Test
-    public void testWithBlobServiceClient() {
+    void testWithBlobServiceClient() {
         try (
             // emulatorContainer {
             AzuriteContainer emulator = new AzuriteContainer("mcr.microsoft.com/azure-storage/azurite:3.33.0")
@@ -56,7 +56,7 @@ public class AzuriteContainerTest {
     }
 
     @Test
-    public void testWithQueueServiceClient() {
+    void testWithQueueServiceClient() {
         try (AzuriteContainer emulator = new AzuriteContainer("mcr.microsoft.com/azure-storage/azurite:3.33.0")) {
             emulator.start();
             assertThat(emulator.getConnectionString()).contains("QueueEndpoint=http://");
@@ -65,7 +65,7 @@ public class AzuriteContainerTest {
     }
 
     @Test
-    public void testWithTableServiceClient() {
+    void testWithTableServiceClient() {
         try (AzuriteContainer emulator = new AzuriteContainer("mcr.microsoft.com/azure-storage/azurite:3.33.0")) {
             emulator.start();
             assertThat(emulator.getConnectionString()).contains("TableEndpoint=http://");
@@ -74,7 +74,7 @@ public class AzuriteContainerTest {
     }
 
     @Test
-    public void testWithBlobServiceClientWithSslUsingPfx() {
+    void testWithBlobServiceClientWithSslUsingPfx() {
         try (
             AzuriteContainer emulator = new AzuriteContainer("mcr.microsoft.com/azure-storage/azurite:3.33.0")
                 .withSsl(MountableFile.forClasspathResource("/keystore.pfx"), PASSWORD)
@@ -86,7 +86,7 @@ public class AzuriteContainerTest {
     }
 
     @Test
-    public void testWithQueueServiceClientWithSslUsingPfx() {
+    void testWithQueueServiceClientWithSslUsingPfx() {
         try (
             AzuriteContainer emulator = new AzuriteContainer("mcr.microsoft.com/azure-storage/azurite:3.33.0")
                 .withSsl(MountableFile.forClasspathResource("/keystore.pfx"), PASSWORD)
@@ -98,7 +98,7 @@ public class AzuriteContainerTest {
     }
 
     @Test
-    public void testWithTableServiceClientWithSslUsingPfx() {
+    void testWithTableServiceClientWithSslUsingPfx() {
         try (
             AzuriteContainer emulator = new AzuriteContainer("mcr.microsoft.com/azure-storage/azurite:3.33.0")
                 .withSsl(MountableFile.forClasspathResource("/keystore.pfx"), PASSWORD)
@@ -110,7 +110,7 @@ public class AzuriteContainerTest {
     }
 
     @Test
-    public void testWithBlobServiceClientWithSslUsingPem() {
+    void testWithBlobServiceClientWithSslUsingPem() {
         try (
             AzuriteContainer emulator = new AzuriteContainer("mcr.microsoft.com/azure-storage/azurite:3.33.0")
                 .withSsl(
@@ -125,7 +125,7 @@ public class AzuriteContainerTest {
     }
 
     @Test
-    public void testWithQueueServiceClientWithSslUsingPem() {
+    void testWithQueueServiceClientWithSslUsingPem() {
         try (
             AzuriteContainer emulator = new AzuriteContainer("mcr.microsoft.com/azure-storage/azurite:3.33.0")
                 .withSsl(
@@ -140,7 +140,7 @@ public class AzuriteContainerTest {
     }
 
     @Test
-    public void testWithTableServiceClientWithSslUsingPem() {
+    void testWithTableServiceClientWithSslUsingPem() {
         try (
             AzuriteContainer emulator = new AzuriteContainer("mcr.microsoft.com/azure-storage/azurite:3.33.0")
                 .withSsl(
@@ -155,7 +155,7 @@ public class AzuriteContainerTest {
     }
 
     @Test
-    public void testTwoAccountKeysWithBlobServiceClient() {
+    void testTwoAccountKeysWithBlobServiceClient() {
         try (
             // withTwoAccountKeys {
             AzuriteContainer emulator = new AzuriteContainer("mcr.microsoft.com/azure-storage/azurite:3.33.0")
@@ -194,7 +194,7 @@ public class AzuriteContainerTest {
     }
 
     @Test
-    public void testMultipleAccountsWithBlobServiceClient() {
+    void testMultipleAccountsWithBlobServiceClient() {
         try (
             // withMoreAccounts {
             AzuriteContainer emulator = new AzuriteContainer("mcr.microsoft.com/azure-storage/azurite:3.33.0")
