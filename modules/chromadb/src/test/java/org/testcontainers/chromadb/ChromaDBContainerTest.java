@@ -1,14 +1,14 @@
 package org.testcontainers.chromadb;
 
 import io.restassured.http.ContentType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
 
-public class ChromaDBContainerTest {
+class ChromaDBContainerTest {
 
     @Test
-    public void test() {
+    void test() {
         try ( // container {
             ChromaDBContainer chroma = new ChromaDBContainer("chromadb/chroma:0.4.23")
             // }
@@ -29,7 +29,7 @@ public class ChromaDBContainerTest {
     }
 
     @Test
-    public void testVersion2() {
+    void testVersion2() {
         try (ChromaDBContainer chroma = new ChromaDBContainer("chromadb/chroma:1.0.0")) {
             chroma.start();
 
