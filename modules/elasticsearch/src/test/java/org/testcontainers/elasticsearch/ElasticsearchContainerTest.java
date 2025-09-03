@@ -16,8 +16,8 @@ import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.TransportAddress;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
@@ -34,7 +34,7 @@ import javax.net.ssl.SSLHandshakeException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
-public class ElasticsearchContainerTest {
+class ElasticsearchContainerTest {
 
     /**
      * Elasticsearch version which should be used for the Tests
@@ -59,7 +59,7 @@ public class ElasticsearchContainerTest {
 
     private RestClient anonymousClient = null;
 
-    @After
+    @AfterEach
     public void stopRestClient() throws IOException {
         if (client != null) {
             client.close();
@@ -74,7 +74,7 @@ public class ElasticsearchContainerTest {
     @SuppressWarnings("deprecation") // Using deprecated constructor for verification of backwards compatibility
     @Test
     @Deprecated // We will remove this test in the future
-    public void elasticsearchDeprecatedCtorTest() throws IOException {
+    void elasticsearchDeprecatedCtorTest() throws IOException {
         // Create the elasticsearch container.
         try (
             ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE).withEnv("foo", "bar") // dummy env for compiler checking correct generics usage
@@ -96,7 +96,7 @@ public class ElasticsearchContainerTest {
     }
 
     @Test
-    public void elasticsearchDefaultTest() throws IOException {
+    void elasticsearchDefaultTest() throws IOException {
         // Create the elasticsearch container.
         try (
             ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE).withEnv("foo", "bar") // dummy env for compiler checking correct generics usage
@@ -118,7 +118,7 @@ public class ElasticsearchContainerTest {
     }
 
     @Test
-    public void elasticsearchSecuredTest() throws IOException {
+    void elasticsearchSecuredTest() throws IOException {
         try (
             ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE)
                 .withPassword(ELASTICSEARCH_PASSWORD)
@@ -138,7 +138,7 @@ public class ElasticsearchContainerTest {
     }
 
     @Test
-    public void elasticsearchVersion() throws IOException {
+    void elasticsearchVersion() throws IOException {
         try (ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE)) {
             container.start();
             Response response = getClient(container).performRequest(new Request("GET", "/"));
@@ -149,7 +149,7 @@ public class ElasticsearchContainerTest {
     }
 
     @Test
-    public void elasticsearchVersion83() throws IOException {
+    void elasticsearchVersion83() throws IOException {
         try (
             ElasticsearchContainer container = new ElasticsearchContainer(
                 "docker.elastic.co/elasticsearch/elasticsearch:8.3.0"
@@ -163,7 +163,7 @@ public class ElasticsearchContainerTest {
     }
 
     @Test
-    public void elasticsearchOssImage() throws IOException {
+    void elasticsearchOssImage() throws IOException {
         try (
             // ossContainer {
             ElasticsearchContainer container = new ElasticsearchContainer(
@@ -182,7 +182,7 @@ public class ElasticsearchContainerTest {
     }
 
     @Test
-    public void restClientClusterHealth() throws IOException {
+    void restClientClusterHealth() throws IOException {
         // httpClientContainer7 {
         // Create the elasticsearch container.
         try (ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE)) {
@@ -214,7 +214,7 @@ public class ElasticsearchContainerTest {
     }
 
     @Test
-    public void restClientClusterHealthElasticsearch8() throws IOException {
+    void restClientClusterHealthElasticsearch8() throws IOException {
         // httpClientContainer8 {
         // Create the elasticsearch container.
         try (
@@ -254,7 +254,7 @@ public class ElasticsearchContainerTest {
     }
 
     @Test
-    public void restClientClusterHealthElasticsearch8WithoutSSL() throws IOException {
+    void restClientClusterHealthElasticsearch8WithoutSSL() throws IOException {
         // httpClientContainerNoSSL8 {
         // Create the elasticsearch container.
         try (
@@ -293,7 +293,7 @@ public class ElasticsearchContainerTest {
     }
 
     @Test
-    public void restClientSecuredClusterHealth() throws IOException {
+    void restClientSecuredClusterHealth() throws IOException {
         // httpClientSecuredContainer {
         // Create the elasticsearch container.
         try (
@@ -330,7 +330,7 @@ public class ElasticsearchContainerTest {
 
     @SuppressWarnings("deprecation") // The TransportClient will be removed in Elasticsearch 8.
     @Test
-    public void transportClientClusterHealth() {
+    void transportClientClusterHealth() {
         // transportClientContainer {
         // Create the elasticsearch container.
         try (ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE)) {
@@ -356,7 +356,7 @@ public class ElasticsearchContainerTest {
     }
 
     @Test
-    public void incompatibleSettingsTest() {
+    void incompatibleSettingsTest() {
         // The OSS image can not use security feature
         assertThat(
             catchThrowable(() -> {
@@ -369,7 +369,7 @@ public class ElasticsearchContainerTest {
     }
 
     @Test
-    public void testDockerHubElasticsearch8ImageSecureByDefault() throws Exception {
+    void testDockerHubElasticsearch8ImageSecureByDefault() throws Exception {
         try (ElasticsearchContainer container = new ElasticsearchContainer("elasticsearch:8.1.2")) {
             container.start();
 
@@ -378,7 +378,7 @@ public class ElasticsearchContainerTest {
     }
 
     @Test
-    public void testElasticsearch8SecureByDefaultCustomCaCertFails() throws Exception {
+    void testElasticsearch8SecureByDefaultCustomCaCertFails() throws Exception {
         final MountableFile mountableFile = MountableFile.forClasspathResource("http_ca.crt");
         String caPath = "/tmp/http_ca.crt";
         try (
@@ -400,7 +400,7 @@ public class ElasticsearchContainerTest {
     }
 
     @Test
-    public void testElasticsearch8SecureByDefaultHttpWaitStrategy() throws Exception {
+    void testElasticsearch8SecureByDefaultHttpWaitStrategy() throws Exception {
         final HttpWaitStrategy httpsWaitStrategy = Wait
             .forHttps("/")
             .forPort(9200)
@@ -423,7 +423,7 @@ public class ElasticsearchContainerTest {
     }
 
     @Test
-    public void testElasticsearch8SecureByDefaultFailsSilentlyOnLatestImages() throws Exception {
+    void testElasticsearch8SecureByDefaultFailsSilentlyOnLatestImages() throws Exception {
         // this test exists for custom images by users that use the `latest` tag
         // even though the version might be older than version 8
         // this tags an old 7.x version as :latest
@@ -442,7 +442,7 @@ public class ElasticsearchContainerTest {
     }
 
     @Test
-    public void testElasticsearch7CanHaveSecurityEnabledAndUseSslContext() throws Exception {
+    void testElasticsearch7CanHaveSecurityEnabledAndUseSslContext() throws Exception {
         String customizedCertPath = "/usr/share/elasticsearch/config/certs/http_ca_customized.crt";
         try (
             ElasticsearchContainer container = new ElasticsearchContainer(
@@ -485,7 +485,7 @@ public class ElasticsearchContainerTest {
     }
 
     @Test
-    public void testElasticsearchDefaultMaxHeapSize() throws Exception {
+    void testElasticsearchDefaultMaxHeapSize() throws Exception {
         long defaultHeapSize = 2147483648L;
 
         try (ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE)) {
@@ -495,7 +495,7 @@ public class ElasticsearchContainerTest {
     }
 
     @Test
-    public void testElasticsearchCustomMaxHeapSizeInEnvironmentVariable() throws Exception {
+    void testElasticsearchCustomMaxHeapSizeInEnvironmentVariable() throws Exception {
         long customHeapSize = 1574961152;
 
         try (
@@ -508,7 +508,7 @@ public class ElasticsearchContainerTest {
     }
 
     @Test
-    public void testElasticsearchCustomMaxHeapSizeInJvmOptionsFile() throws Exception {
+    void testElasticsearchCustomMaxHeapSizeInJvmOptionsFile() throws Exception {
         long customHeapSize = 1574961152;
 
         try (
