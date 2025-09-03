@@ -23,6 +23,10 @@
   - changed-files:
       - any-glob-to-any-file:
           - modules/activemq/**/*
+"modules/arcadedb":
+  - changed-files:
+      - any-glob-to-any-file:
+          - modules/arcadedb/**/*
 "modules/azure":
   - changed-files:
     - any-glob-to-any-file:

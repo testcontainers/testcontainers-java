@@ -51,6 +51,7 @@ public class ArcadeDBContainer extends GenericContainer<ArcadeDBContainer> {
     private Optional<String> scriptPath = Optional.empty();
 
     private RemoteServer remoteServer;
+
     private RemoteDatabase database;
 
     public ArcadeDBContainer(@NonNull String dockerImageName) {
@@ -78,15 +79,18 @@ public class ArcadeDBContainer extends GenericContainer<ArcadeDBContainer> {
     }
 
     public synchronized RemoteDatabase getDatabase() {
-
         final String host = getHost();
         final Integer port = getMappedPort(serverPort);
         if (remoteServer == null) {
             try {
                 remoteServer = new RemoteServer(host, port, "root", serverPassword);
             } catch (Exception e) {
-                final String msg = String.format("Could not connect to server %s:%d with user 'root' due to %s",
-                    host,  port, e.getMessage());
+                final String msg = String.format(
+                    "Could not connect to server %s:%d with user 'root' due to %s",
+                    host,
+                    port,
+                    e.getMessage()
+                );
                 LOGGER.error(msg, e);
                 throw new IllegalStateException(msg, e);
             }
@@ -105,8 +109,13 @@ public class ArcadeDBContainer extends GenericContainer<ArcadeDBContainer> {
             scriptPath.ifPresent(path -> loadScript(path, database));
             return database;
         } catch (Exception e) {
-            final String msg = String.format("Could not connect to database %s on server %s:%d due to %s",
-                getDatabaseName(), host, port, e.getMessage());
+            final String msg = String.format(
+                "Could not connect to database %s on server %s:%d due to %s",
+                getDatabaseName(),
+                host,
+                port,
+                e.getMessage()
+            );
             LOGGER.error(msg, e);
             throw new IllegalStateException(msg, e);
         }
@@ -140,8 +149,12 @@ public class ArcadeDBContainer extends GenericContainer<ArcadeDBContainer> {
         try {
             remoteServer = new RemoteServer(host, port, "root", serverPassword);
         } catch (Exception e) {
-            final String msg = String.format("Could not connect to server %s:%d with user 'root' due to %s",
-                host,  port, e.getMessage());
+            final String msg = String.format(
+                "Could not connect to server %s:%d with user 'root' due to %s",
+                host,
+                port,
+                e.getMessage()
+            );
             LOGGER.error(msg, e);
             throw new IllegalStateException(msg, e);
         }

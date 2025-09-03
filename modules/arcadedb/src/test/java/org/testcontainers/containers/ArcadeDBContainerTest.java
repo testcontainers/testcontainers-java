@@ -8,7 +8,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class ArcadeDBContainerTest {
 
-    private static final DockerImageName ARCADEDB_IMAGE = DockerImageName.parse("arcadedata/arcadedb:24.4.1")
+    private static final DockerImageName ARCADEDB_IMAGE = DockerImageName
+        .parse("arcadedata/arcadedb:24.4.1")
         .asCompatibleSubstituteFor("arcadedb");
 
     @Test

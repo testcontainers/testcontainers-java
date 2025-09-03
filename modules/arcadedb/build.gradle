@@ -1,4 +1,4 @@
-description = "Testcontainers :: Arcadedb"
+description = "Testcontainers :: ArcadeDB"
 
 dependencies {
     api project(":testcontainers")
