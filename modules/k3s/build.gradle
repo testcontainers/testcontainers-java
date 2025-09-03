@@ -6,7 +6,14 @@ dependencies {
     // Synchronize with the jackson version, must match major and minor version
     shaded 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.18.4'
 
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
     testImplementation 'io.fabric8:kubernetes-client:7.3.1'
     testImplementation 'io.kubernetes:client-java:24.0.0-legacy'
     testImplementation 'org.assertj:assertj-core:3.27.4'
+}
+
+test {
+    useJUnitPlatform()
 }
