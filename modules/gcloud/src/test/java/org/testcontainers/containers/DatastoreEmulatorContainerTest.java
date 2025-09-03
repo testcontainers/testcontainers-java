@@ -6,8 +6,7 @@ import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.DatastoreOptions;
 import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.Key;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
@@ -16,37 +15,38 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class DatastoreEmulatorContainerTest {
 
-    @Rule
-    // creatingDatastoreEmulatorContainer {
-    public DatastoreEmulatorContainer emulator = new DatastoreEmulatorContainer(
-        DockerImageName.parse("gcr.io/google.com/cloudsdktool/google-cloud-cli:441.0.0-emulators")
-    );
-
-    // }
-
     //  startingDatastoreEmulatorContainer {
     @Test
     public void testSimple() {
-        DatastoreOptions options = DatastoreOptions
-            .newBuilder()
-            .setHost(emulator.getEmulatorEndpoint())
-            .setCredentials(NoCredentials.getInstance())
-            .setRetrySettings(ServiceOptions.getNoRetrySettings())
-            .setProjectId(emulator.getProjectId())
-            .build();
-        Datastore datastore = options.getService();
+        try (
+            // creatingDatastoreEmulatorContainer {
+            DatastoreEmulatorContainer emulator = new DatastoreEmulatorContainer(
+                DockerImageName.parse("gcr.io/google.com/cloudsdktool/google-cloud-cli:441.0.0-emulators")
+            );
+            // }
+        ) {
+            emulator.start();
+            DatastoreOptions options = DatastoreOptions
+                .newBuilder()
+                .setHost(emulator.getEmulatorEndpoint())
+                .setCredentials(NoCredentials.getInstance())
+                .setRetrySettings(ServiceOptions.getNoRetrySettings())
+                .setProjectId(emulator.getProjectId())
+                .build();
+            Datastore datastore = options.getService();
 
-        Key key = datastore.newKeyFactory().setKind("Task").newKey("sample");
-        Entity entity = Entity.newBuilder(key).set("description", "my description").build();
-        datastore.put(entity);
+            Key key = datastore.newKeyFactory().setKind("Task").newKey("sample");
+            Entity entity = Entity.newBuilder(key).set("description", "my description").build();
+            datastore.put(entity);
 
-        assertThat(datastore.get(key).getString("description")).isEqualTo("my description");
+            assertThat(datastore.get(key).getString("description")).isEqualTo("my description");
+        }
     }
 
     // }
 
     @Test
-    public void testWithFlags() throws IOException, InterruptedException {
+    void testWithFlags() throws IOException, InterruptedException {
         try (
             DatastoreEmulatorContainer emulator = new DatastoreEmulatorContainer(
                 "gcr.io/google.com/cloudsdktool/google-cloud-cli:441.0.0-emulators"
@@ -61,7 +61,7 @@ public class DatastoreEmulatorContainerTest {
     }
 
     @Test
-    public void testWithMultipleFlags() throws IOException, InterruptedException {
+    void testWithMultipleFlags() throws IOException, InterruptedException {
         try (
             DatastoreEmulatorContainer emulator = new DatastoreEmulatorContainer(
                 "gcr.io/google.com/cloudsdktool/google-cloud-cli:441.0.0-emulators"
