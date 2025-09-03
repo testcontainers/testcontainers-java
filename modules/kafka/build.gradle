@@ -3,8 +3,16 @@ description = "Testcontainers :: Kafka"
 dependencies {
     api project(':testcontainers')
 
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.13.4'
     testImplementation 'org.apache.kafka:kafka-clients:3.8.0'
     testImplementation 'org.assertj:assertj-core:3.27.4'
     testImplementation 'com.google.guava:guava:23.0'
     testImplementation 'org.awaitility:awaitility:4.3.0'
+}
+
+test {
+    useJUnitPlatform()
 }

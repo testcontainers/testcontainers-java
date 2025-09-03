@@ -2,7 +2,7 @@ package org.testcontainers.kafka;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import lombok.SneakyThrows;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.AbstractKafka;
 import org.testcontainers.KCatContainer;
 import org.testcontainers.containers.Network;
@@ -11,10 +11,10 @@ import org.testcontainers.utility.MountableFile;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ConfluentKafkaContainerTest extends AbstractKafka {
+class ConfluentKafkaContainerTest extends AbstractKafka {
 
     @Test
-    public void testUsage() throws Exception {
+    void testUsage() throws Exception {
         try ( // constructorWithVersion {
             ConfluentKafkaContainer kafka = new ConfluentKafkaContainer("confluentinc/cp-kafka:7.4.0")
             // }
@@ -25,7 +25,7 @@ public class ConfluentKafkaContainerTest extends AbstractKafka {
     }
 
     @Test
-    public void testUsageWithListener() throws Exception {
+    void testUsageWithListener() throws Exception {
         try (
             Network network = Network.newNetwork();
             // registerListener {
@@ -48,7 +48,7 @@ public class ConfluentKafkaContainerTest extends AbstractKafka {
     }
 
     @Test
-    public void testUsageWithListenerFromProxy() throws Exception {
+    void testUsageWithListenerFromProxy() throws Exception {
         try (
             Network network = Network.newNetwork();
             // registerListenerFromProxy {
@@ -68,7 +68,7 @@ public class ConfluentKafkaContainerTest extends AbstractKafka {
 
     @SneakyThrows
     @Test
-    public void shouldConfigureAuthenticationWithSaslUsingJaas() {
+    void shouldConfigureAuthenticationWithSaslUsingJaas() {
         try (
             ConfluentKafkaContainer kafka = new ConfluentKafkaContainer("confluentinc/cp-kafka:7.7.0")
                 .withEnv(
@@ -89,7 +89,7 @@ public class ConfluentKafkaContainerTest extends AbstractKafka {
 
     @SneakyThrows
     @Test
-    public void shouldConfigureAuthenticationWithSaslScramUsingJaas() {
+    void shouldConfigureAuthenticationWithSaslScramUsingJaas() {
         try (
             ConfluentKafkaContainer kafka = new ConfluentKafkaContainer("confluentinc/cp-kafka:7.7.0") {
                 @SneakyThrows
