@@ -1,7 +1,8 @@
 package org.testcontainers.k3s;
 
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
@@ -11,15 +12,25 @@ import org.testcontainers.utility.DockerImageName;
 import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class KubectlContainerTest {
+class KubectlContainerTest {
 
-    public static Network network = Network.SHARED;
+    private static final Network network = Network.SHARED;
 
-    @ClassRule
-    public static K3sContainer k3s = new K3sContainer(DockerImageName.parse("rancher/k3s:v1.21.3-k3s1"))
+    private static final K3sContainer k3s = new K3sContainer(DockerImageName.parse("rancher/k3s:v1.21.3-k3s1"))
         .withNetwork(network)
         .withNetworkAliases("k3s");
+
+    @BeforeAll
+    static void setup() {
+        k3s.start();
+    }
+
+    @AfterAll
+    static void teardown() {
+        k3s.stop();
+    }
 
     @Test
     public void shouldExposeKubeConfigForNetworkAlias() throws Exception {
@@ -38,8 +49,9 @@ public class KubectlContainerTest {
         }
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void shouldThrowAnExceptionForUnknownNetworkAlias() {
-        k3s.generateInternalKubeConfigYaml("not-set-network-alias");
+        assertThatThrownBy(() -> k3s.generateInternalKubeConfigYaml("not-set-network-alias"))
+            .isInstanceOf(IllegalArgumentException.class);
     }
 }
