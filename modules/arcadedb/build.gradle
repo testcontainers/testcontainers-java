@@ -1,0 +1,17 @@
+description = "Testcontainers :: Arcadedb"
+
+dependencies {
+    api project(":testcontainers")
+
+    api "com.arcadedb:arcadedb-engine:25.3.2"
+    api "com.arcadedb:arcadedb-network:25.3.2"
+    testImplementation 'org.assertj:assertj-core:3.27.4'
+    testImplementation 'org.apache.tinkerpop:gremlin-driver:3.7.3'
+    testImplementation "com.arcadedb:arcadedb-gremlin:25.3.2"
+}
+
+tasks.japicmp {
+    classExcludes = [
+        "org.testcontainers.containers.ArcadeDBContainer"
+    ]
+}
