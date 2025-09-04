@@ -12,7 +12,7 @@ import org.apache.kafka.common.config.SaslConfigs;
 import org.apache.kafka.common.errors.SaslAuthenticationException;
 import org.apache.kafka.common.errors.TopicAuthorizationException;
 import org.awaitility.Awaitility;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.SocatContainer;
@@ -30,14 +30,14 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class RedpandaContainerTest extends AbstractRedpanda {
+class RedpandaContainerTest extends AbstractRedpanda {
 
     private static final String REDPANDA_IMAGE = "docker.redpanda.com/redpandadata/redpanda:v22.2.1";
 
     private static final DockerImageName REDPANDA_DOCKER_IMAGE = DockerImageName.parse(REDPANDA_IMAGE);
 
     @Test
-    public void testUsage() throws Exception {
+    void testUsage() throws Exception {
         try (RedpandaContainer container = new RedpandaContainer(REDPANDA_DOCKER_IMAGE)) {
             container.start();
             testKafkaFunctionality(container.getBootstrapServers());
@@ -45,7 +45,7 @@ public class RedpandaContainerTest extends AbstractRedpanda {
     }
 
     @Test
-    public void testUsageWithStringImage() throws Exception {
+    void testUsageWithStringImage() throws Exception {
         try (
             // constructorWithVersion {
             RedpandaContainer container = new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v23.1.2")
@@ -61,21 +61,21 @@ public class RedpandaContainerTest extends AbstractRedpanda {
     }
 
     @Test
-    public void testNotCompatibleVersion() {
+    void testNotCompatibleVersion() {
         assertThatThrownBy(() -> new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v21.11.19"))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("Redpanda version must be >= v22.2.1");
     }
 
     @Test
-    public void redpandadataRedpandaImageVersion2221ShouldNotBeCompatible() {
+    void redpandadataRedpandaImageVersion2221ShouldNotBeCompatible() {
         assertThatThrownBy(() -> new RedpandaContainer("redpandadata/redpanda:v21.11.19"))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("Redpanda version must be >= v22.2.1");
     }
 
     @Test
-    public void testSchemaRegistry() {
+    void testSchemaRegistry() {
         try (RedpandaContainer container = new RedpandaContainer(REDPANDA_DOCKER_IMAGE)) {
             container.start();
 
@@ -105,7 +105,7 @@ public class RedpandaContainerTest extends AbstractRedpanda {
     }
 
     @Test
-    public void testUsageWithListener() throws Exception {
+    void testUsageWithListener() throws Exception {
         try (
             Network network = Network.newNetwork();
             RedpandaContainer redpanda = new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v23.1.7")
@@ -132,7 +132,7 @@ public class RedpandaContainerTest extends AbstractRedpanda {
     }
 
     @Test
-    public void testUsageWithListenerInTheSameNetwork() throws Exception {
+    void testUsageWithListenerInTheSameNetwork() throws Exception {
         try (
             Network network = Network.newNetwork();
             // registerListener {
@@ -165,7 +165,7 @@ public class RedpandaContainerTest extends AbstractRedpanda {
     }
 
     @Test
-    public void testUsageWithListenerFromProxy() throws Exception {
+    void testUsageWithListenerFromProxy() throws Exception {
         try (
             Network network = Network.newNetwork();
             // createProxy {
@@ -187,7 +187,7 @@ public class RedpandaContainerTest extends AbstractRedpanda {
     }
 
     @Test
-    public void testUsageWithListenerAndSasl() throws Exception {
+    void testUsageWithListenerAndSasl() throws Exception {
         final String username = "panda";
         final String password = "pandapass";
         final String algorithm = "SCRAM-SHA-256";
@@ -266,7 +266,7 @@ public class RedpandaContainerTest extends AbstractRedpanda {
 
     @SneakyThrows
     @Test
-    public void enableSaslWithSuccessfulTopicCreation() {
+    void enableSaslWithSuccessfulTopicCreation() {
         try (
             // security {
             RedpandaContainer redpanda = new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v23.1.7")
@@ -289,7 +289,7 @@ public class RedpandaContainerTest extends AbstractRedpanda {
     }
 
     @Test
-    public void enableSaslWithUnsuccessfulTopicCreation() {
+    void enableSaslWithUnsuccessfulTopicCreation() {
         try (
             RedpandaContainer redpanda = new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v23.1.7")
                 .enableAuthorization()
@@ -313,7 +313,7 @@ public class RedpandaContainerTest extends AbstractRedpanda {
     }
 
     @Test
-    public void enableSaslAndWithAuthenticationError() {
+    void enableSaslAndWithAuthenticationError() {
         try (
             RedpandaContainer redpanda = new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v23.1.7")
                 .enableAuthorization()
@@ -335,7 +335,7 @@ public class RedpandaContainerTest extends AbstractRedpanda {
     }
 
     @Test
-    public void schemaRegistryWithHttpBasic() {
+    void schemaRegistryWithHttpBasic() {
         try (
             RedpandaContainer redpanda = new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v23.1.7")
                 .enableSchemaRegistryHttpBasicAuth()
@@ -362,7 +362,7 @@ public class RedpandaContainerTest extends AbstractRedpanda {
 
     @SneakyThrows
     @Test
-    public void testRestProxy() {
+    void testRestProxy() {
         try (RedpandaContainer redpanda = new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v23.1.7")) {
             redpanda.start();
 
