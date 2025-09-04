@@ -1,6 +1,6 @@
 package org.testcontainers.typesense;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.typesense.api.Client;
 import org.typesense.api.Configuration;
 import org.typesense.resources.Node;
@@ -11,10 +11,10 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class TypesenseContainerTest {
+class TypesenseContainerTest {
 
     @Test
-    public void query() throws Exception {
+    void query() throws Exception {
         try ( // container {
             TypesenseContainer typesense = new TypesenseContainer("typesense/typesense:27.1")
             // }
@@ -33,7 +33,7 @@ public class TypesenseContainerTest {
     }
 
     @Test
-    public void withCustomApiKey() throws Exception {
+    void withCustomApiKey() throws Exception {
         try (TypesenseContainer typesense = new TypesenseContainer("typesense/typesense:27.1").withApiKey("s3cr3t")) {
             typesense.start();
             List<Node> nodes = Collections.singletonList(
