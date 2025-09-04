@@ -7,7 +7,7 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class SolaceContainerMQTTTest {
+class SolaceContainerMQTTTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SolaceContainerMQTTTest.class);
 
@@ -25,7 +25,7 @@ public class SolaceContainerMQTTTest {
     private static final String TOPIC_NAME = "Topic/ActualTopic";
 
     @Test
-    public void testSolaceContainer() {
+    void testSolaceContainer() {
         try (
             SolaceContainer solaceContainer = new SolaceContainer("solace/solace-pubsub-standard:10.25.0")
                 .withTopic(TOPIC_NAME, Service.MQTT)
