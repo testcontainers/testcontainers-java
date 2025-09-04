@@ -13,20 +13,20 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class SolaceContainerRESTTest {
+class SolaceContainerRESTTest {
 
     private static final String MESSAGE = "HelloWorld";
 
     private static final String TOPIC_NAME = "Topic/ActualTopic";
 
     @Test
-    public void testSolaceContainer() throws IOException {
+    void testSolaceContainer() throws IOException {
         try (
             SolaceContainer solaceContainer = new SolaceContainer("solace/solace-pubsub-standard:10.25.0")
                 .withTopic(TOPIC_NAME, Service.REST)
