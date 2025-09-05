@@ -4,19 +4,19 @@ import com.bettercloud.vault.Vault;
 import com.bettercloud.vault.VaultConfig;
 import com.bettercloud.vault.VaultException;
 import com.bettercloud.vault.response.LogicalResponse;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class VaultClientTest {
+class VaultClientTest {
 
     private static final String VAULT_TOKEN = "my-root-token";
 
     @Test
-    public void writeAndReadMultipleValues() throws VaultException {
+    void writeAndReadMultipleValues() throws VaultException {
         try (VaultContainer<?> vaultContainer = new VaultContainer<>("vault:1.1.3").withVaultToken(VAULT_TOKEN)) {
             vaultContainer.start();
 
