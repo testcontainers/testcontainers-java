@@ -5,7 +5,7 @@ import io.weaviate.client.WeaviateClient;
 import io.weaviate.client.base.Result;
 import io.weaviate.client.v1.misc.model.Meta;
 import org.assertj.core.api.InstanceOfAssertFactories;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -14,10 +14,10 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class WeaviateContainerTest {
+class WeaviateContainerTest {
 
     @Test
-    public void testWeaviate() {
+    void testWeaviate() {
         try ( // container {
             WeaviateContainer weaviate = new WeaviateContainer("cr.weaviate.io/semitechnologies/weaviate:1.29.0")
             // }
@@ -32,7 +32,7 @@ public class WeaviateContainerTest {
     }
 
     @Test
-    public void testWeaviateWithModules() {
+    void testWeaviateWithModules() {
         List<String> enableModules = Arrays.asList(
             "backup-filesystem",
             "text2vec-openai",
