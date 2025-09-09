@@ -128,4 +128,10 @@ public class HostPortWaitStrategy extends AbstractWaitStrategy {
         this.ports = ports;
         return this;
     }
+   @Override
+public String toString() {
+    return getClass().getSimpleName() + "{startupTimeout=" + startupTimeout + "}";
+}
+
+
 }
