@@ -1,16 +1,16 @@
 package org.testcontainers.ext;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ScriptScannerTest {
+class ScriptScannerTest {
 
     @Test
-    public void testHugeStringLiteral() {
+    void testHugeStringLiteral() {
         String script = "/* a comment */    \"" + StringUtils.repeat('~', 10000) + "\";";
         ScriptScanner scanner = scanner(script);
         assertThat(scanner.next()).isEqualTo(ScriptScanner.Lexem.COMMENT);
@@ -20,7 +20,7 @@ public class ScriptScannerTest {
     }
 
     @Test
-    public void testPgIdentifierWithDollarSigns() {
+    void testPgIdentifierWithDollarSigns() {
         ScriptScanner scanner = scanner(
             "this$is$a$valid$postgreSQL$identifier  " +
             "$a$While this is a quoted string$a$$ --just followed by a dollar sign"
@@ -32,7 +32,7 @@ public class ScriptScannerTest {
     }
 
     @Test
-    public void testQuotedLiterals() {
+    void testQuotedLiterals() {
         ScriptScanner scanner = scanner("'this \\'is a literal' \"this \\\" is a literal\"");
         assertThat(scanner.next()).isEqualTo(ScriptScanner.Lexem.QUOTED_STRING);
         assertThat(scanner.getCurrentMatch()).isEqualTo("'this \\'is a literal'");

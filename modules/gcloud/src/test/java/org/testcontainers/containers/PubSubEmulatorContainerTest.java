@@ -22,70 +22,73 @@ import com.google.pubsub.v1.SubscriptionName;
 import com.google.pubsub.v1.TopicName;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class PubSubEmulatorContainerTest {
+class PubSubEmulatorContainerTest {
 
-    public static final String PROJECT_ID = "my-project-id";
-
-    @Rule
-    // emulatorContainer {
-    public PubSubEmulatorContainer emulator = new PubSubEmulatorContainer(
-        DockerImageName.parse("gcr.io/google.com/cloudsdktool/google-cloud-cli:441.0.0-emulators")
-    );
-
-    // }
+    private static final String PROJECT_ID = "my-project-id";
 
     @Test
     // testWithEmulatorContainer {
-    public void testSimple() throws IOException {
-        String hostport = emulator.getEmulatorEndpoint();
-        ManagedChannel channel = ManagedChannelBuilder.forTarget(hostport).usePlaintext().build();
-        try {
-            TransportChannelProvider channelProvider = FixedTransportChannelProvider.create(
-                GrpcTransportChannel.create(channel)
+    void testSimple() throws IOException {
+        try (
+            // emulatorContainer {
+            PubSubEmulatorContainer emulator = new PubSubEmulatorContainer(
+                DockerImageName.parse("gcr.io/google.com/cloudsdktool/google-cloud-cli:441.0.0-emulators")
             );
-            NoCredentialsProvider credentialsProvider = NoCredentialsProvider.create();
+            // }
+        ) {
+            emulator.start();
+            String hostport = emulator.getEmulatorEndpoint();
+            ManagedChannel channel = ManagedChannelBuilder.forTarget(hostport).usePlaintext().build();
+            try {
+                TransportChannelProvider channelProvider = FixedTransportChannelProvider.create(
+                    GrpcTransportChannel.create(channel)
+                );
+                NoCredentialsProvider credentialsProvider = NoCredentialsProvider.create();
 
-            String topicId = "my-topic-id";
-            createTopic(topicId, channelProvider, credentialsProvider);
+                String topicId = "my-topic-id";
+                createTopic(topicId, channelProvider, credentialsProvider);
 
-            String subscriptionId = "my-subscription-id";
-            createSubscription(subscriptionId, topicId, channelProvider, credentialsProvider);
+                String subscriptionId = "my-subscription-id";
+                createSubscription(subscriptionId, topicId, channelProvider, credentialsProvider);
 
-            Publisher publisher = Publisher
-                .newBuilder(TopicName.of(PROJECT_ID, topicId))
-                .setChannelProvider(channelProvider)
-                .setCredentialsProvider(credentialsProvider)
-                .build();
-            PubsubMessage message = PubsubMessage.newBuilder().setData(ByteString.copyFromUtf8("test message")).build();
-            publisher.publish(message);
-
-            SubscriberStubSettings subscriberStubSettings = SubscriberStubSettings
-                .newBuilder()
-                .setTransportChannelProvider(channelProvider)
-                .setCredentialsProvider(credentialsProvider)
-                .build();
-            try (SubscriberStub subscriber = GrpcSubscriberStub.create(subscriberStubSettings)) {
-                PullRequest pullRequest = PullRequest
-                    .newBuilder()
-                    .setMaxMessages(1)
-                    .setSubscription(ProjectSubscriptionName.format(PROJECT_ID, subscriptionId))
+                Publisher publisher = Publisher
+                    .newBuilder(TopicName.of(PROJECT_ID, topicId))
+                    .setChannelProvider(channelProvider)
+                    .setCredentialsProvider(credentialsProvider)
                     .build();
-                PullResponse pullResponse = subscriber.pullCallable().call(pullRequest);
+                PubsubMessage message = PubsubMessage
+                    .newBuilder()
+                    .setData(ByteString.copyFromUtf8("test message"))
+                    .build();
+                publisher.publish(message);
 
-                assertThat(pullResponse.getReceivedMessagesList()).hasSize(1);
-                assertThat(pullResponse.getReceivedMessages(0).getMessage().getData().toStringUtf8())
-                    .isEqualTo("test message");
+                SubscriberStubSettings subscriberStubSettings = SubscriberStubSettings
+                    .newBuilder()
+                    .setTransportChannelProvider(channelProvider)
+                    .setCredentialsProvider(credentialsProvider)
+                    .build();
+                try (SubscriberStub subscriber = GrpcSubscriberStub.create(subscriberStubSettings)) {
+                    PullRequest pullRequest = PullRequest
+                        .newBuilder()
+                        .setMaxMessages(1)
+                        .setSubscription(ProjectSubscriptionName.format(PROJECT_ID, subscriptionId))
+                        .build();
+                    PullResponse pullResponse = subscriber.pullCallable().call(pullRequest);
+
+                    assertThat(pullResponse.getReceivedMessagesList()).hasSize(1);
+                    assertThat(pullResponse.getReceivedMessages(0).getMessage().getData().toStringUtf8())
+                        .isEqualTo("test message");
+                }
+            } finally {
+                channel.shutdown();
             }
-        } finally {
-            channel.shutdown();
         }
     }
 

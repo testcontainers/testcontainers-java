@@ -1,18 +1,18 @@
 package org.testcontainers.containers;
 
 import com.orientechnologies.orient.core.db.ODatabaseSession;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class OrientDBContainerTest {
+class OrientDBContainerTest {
 
     private static final DockerImageName ORIENTDB_IMAGE = DockerImageName.parse("orientdb:3.2.0-tp3");
 
     @Test
-    public void shouldReturnTheSameSession() {
+    void shouldReturnTheSameSession() {
         try ( // container {
             OrientDBContainer orientdb = new OrientDBContainer("orientdb:3.2.0-tp3")
             // }
@@ -27,7 +27,7 @@ public class OrientDBContainerTest {
     }
 
     @Test
-    public void shouldInitializeWithCommands() {
+    void shouldInitializeWithCommands() {
         try (OrientDBContainer orientdb = new OrientDBContainer(ORIENTDB_IMAGE)) {
             orientdb.start();
 
@@ -42,7 +42,7 @@ public class OrientDBContainerTest {
     }
 
     @Test
-    public void shouldQueryWithGremlin() {
+    void shouldQueryWithGremlin() {
         try (
             OrientDBContainer orientdb = new OrientDBContainer(ORIENTDB_IMAGE)
                 .withCopyFileToContainer(
@@ -63,7 +63,7 @@ public class OrientDBContainerTest {
     }
 
     @Test
-    public void shouldInitializeDatabaseFromScript() {
+    void shouldInitializeDatabaseFromScript() {
         try (
             OrientDBContainer orientdb = new OrientDBContainer(ORIENTDB_IMAGE)
                 .withScriptPath("initscript.osql")
