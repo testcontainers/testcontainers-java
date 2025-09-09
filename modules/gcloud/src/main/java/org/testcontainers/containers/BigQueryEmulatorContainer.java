@@ -33,8 +33,8 @@ public class BigQueryEmulatorContainer extends GenericContainer<BigQueryEmulator
         return String.format("http://%s:%d", getHost(), getMappedPort(HTTP_PORT));
     }
 
-    public String getEmulatorGrpcEndpoint() {
-        return String.format("http://%s:%d", getHost(), getMappedPort(GRPC_PORT));
+    public Integer getEmulatorGrpcPort() {
+        return getMappedPort(GRPC_PORT);
     }
 
     public String getProjectId() {
