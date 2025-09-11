@@ -1,0 +1,10 @@
+version: "2.1"
+services:
+  confluent:
+    image: confluentinc/cp-server:${TAG_CONFLUENT}
+  redis:
+    image: redis:${REDIS_VERSION:-latest}
+  mysql:
+    image: mysql:${MYSQL_VERSION-8.0}
+networks:
+  custom_network: {}

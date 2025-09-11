@@ -167,4 +167,68 @@ public class ParsedDockerComposeFileValidationTest {
         }
         assertThatNoException().isThrownBy(() -> new ParsedDockerComposeFile(file));
     }
+
+    @Test
+    public void shouldSubstituteEnvironmentVariablesInImageNames() {
+        // Set up environment variables for testing
+        System.setProperty("TEST_IMAGE_TAG", "latest");
+        System.setProperty("TEST_REGISTRY", "my-registry.com");
+        System.setProperty("EMPTY_VAR", "");
+
+        try {
+            ParsedDockerComposeFile parsedFile = new ParsedDockerComposeFile(
+                ImmutableMap.of(
+                    "version", "2",
+                    "services", ImmutableMap.of(
+                        "service1", ImmutableMap.of("image", "redis:${TEST_IMAGE_TAG}"),
+                        "service2", ImmutableMap.of("image", "${TEST_REGISTRY}/app:${TEST_IMAGE_TAG}"),
+                        "service3", ImmutableMap.of("image", "postgres:${MISSING_VAR:-default}"),
+                        "service4", ImmutableMap.of("image", "mysql:${EMPTY_VAR:-fallback}"),
+                        "service5", ImmutableMap.of("image", "nginx:${MISSING_VAR-alt}"),
+                        "service6", ImmutableMap.of("image", "nginx:${UNDEFINED_VAR}")
+                    )
+                )
+            );
+
+            assertThat(parsedFile.getServiceNameToImageNames())
+                .as("environment variables are substituted correctly")
+                .contains(
+                    entry("service1", Sets.newHashSet("redis:latest")),
+                    entry("service2", Sets.newHashSet("my-registry.com/app:latest")),
+                    entry("service3", Sets.newHashSet("postgres:default")),
+                    entry("service4", Sets.newHashSet("mysql:fallback")),
+                    entry("service5", Sets.newHashSet("nginx:alt")),
+                    entry("service6", Sets.newHashSet("nginx:${UNDEFINED_VAR}"))
+                );
+        } finally {
+            // Clean up
+            System.clearProperty("TEST_IMAGE_TAG");
+            System.clearProperty("TEST_REGISTRY");
+            System.clearProperty("EMPTY_VAR");
+        }
+    }
+
+    @Test
+    public void shouldSubstituteEnvironmentVariablesFromFile() {
+        // Set up environment variables for testing
+        System.setProperty("TAG_CONFLUENT", "7.0.0");
+        System.setProperty("REDIS_VERSION", "");  // Empty string to test :-default behavior
+
+        try {
+            File file = new File("src/test/resources/docker-compose-variable-substitution.yml");
+            ParsedDockerComposeFile parsedFile = new ParsedDockerComposeFile(file);
+            
+            assertThat(parsedFile.getServiceNameToImageNames())
+                .as("environment variables from compose file are substituted correctly")
+                .contains(
+                    entry("confluent", Sets.newHashSet("confluentinc/cp-server:7.0.0")),
+                    entry("redis", Sets.newHashSet("redis:latest")),  // :-default when empty
+                    entry("mysql", Sets.newHashSet("mysql:8.0"))      // -default when undefined
+                );
+        } finally {
+            // Clean up
+            System.clearProperty("TAG_CONFLUENT");
+            System.clearProperty("REDIS_VERSION");
+        }
+    }
 }
