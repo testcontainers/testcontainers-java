@@ -3,6 +3,13 @@ description = "Testcontainers :: JDBC :: OceanBase"
 dependencies {
     api project(':testcontainers-jdbc')
 
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
     testImplementation project(':testcontainers-jdbc-test')
     testRuntimeOnly 'mysql:mysql-connector-java:8.0.33'
+}
+
+test {
+    useJUnitPlatform()
 }

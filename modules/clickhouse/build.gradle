@@ -10,8 +10,15 @@ dependencies {
     testImplementation project(':testcontainers-jdbc-test')
     testRuntimeOnly(group: 'com.clickhouse', name: 'clickhouse-jdbc', version: '0.9.1', classifier: 'all')
 
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
     testImplementation 'org.assertj:assertj-core:3.27.4'
     testImplementation 'com.clickhouse:client-v2:0.9.1'
     testImplementation testFixtures(project(':testcontainers-r2dbc'))
     testRuntimeOnly(group: 'com.clickhouse', name: 'clickhouse-r2dbc', version: '0.9.1', classifier: 'http')
+}
+
+test {
+    useJUnitPlatform()
 }

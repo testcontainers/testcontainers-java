@@ -1,6 +1,6 @@
 package org.testcontainers.junit.mssqlserver;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.MSSQLServerTestImages;
 import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
@@ -13,10 +13,10 @@ import javax.sql.DataSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
+class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
 
     @Test
-    public void testSimple() throws SQLException {
+    void testSimple() throws SQLException {
         try ( // container {
             MSSQLServerContainer<?> mssqlServer = new MSSQLServerContainer<>(
                 "mcr.microsoft.com/mssql/server:2022-CU20-ubuntu-22.04"
@@ -34,7 +34,7 @@ public class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testWithAdditionalUrlParamInJdbcUrl() {
+    void testWithAdditionalUrlParamInJdbcUrl() {
         try (
             MSSQLServerContainer<?> mssqlServer = new MSSQLServerContainer<>(MSSQLServerTestImages.MSSQL_SERVER_IMAGE)
                 .withUrlParam("integratedSecurity", "false")
@@ -48,7 +48,7 @@ public class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testSetupDatabase() throws SQLException {
+    void testSetupDatabase() throws SQLException {
         try (
             MSSQLServerContainer<?> mssqlServer = new MSSQLServerContainer<>(MSSQLServerTestImages.MSSQL_SERVER_IMAGE)
         ) {

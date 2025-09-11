@@ -1,7 +1,7 @@
 package org.testcontainers.junit.mariadb;
 
 import org.apache.commons.lang3.SystemUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.MariaDBTestImages;
 import org.testcontainers.containers.MariaDBContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
@@ -21,10 +21,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.junit.Assume.assumeFalse;
 
-public class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
+class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
 
     @Test
-    public void testSimple() throws SQLException {
+    void testSimple() throws SQLException {
         try ( // container {
             MariaDBContainer<?> mariadb = new MariaDBContainer<>("mariadb:10.3.39")
             // }
@@ -39,7 +39,7 @@ public class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testSpecificVersion() throws SQLException {
+    void testSpecificVersion() throws SQLException {
         try (
             MariaDBContainer<?> mariadbOldVersion = new MariaDBContainer<>(
                 MariaDBTestImages.MARIADB_IMAGE.withTag("10.3.39")
@@ -57,7 +57,7 @@ public class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testMariaDBWithCustomIniFile() throws SQLException {
+    void testMariaDBWithCustomIniFile() throws SQLException {
         assumeFalse(SystemUtils.IS_OS_WINDOWS);
 
         try (
@@ -73,7 +73,7 @@ public class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testMariaDBWithCommandOverride() throws SQLException {
+    void testMariaDBWithCommandOverride() throws SQLException {
         try (
             MariaDBContainer<?> mariadbCustomConfig = new MariaDBContainer<>(MariaDBTestImages.MARIADB_IMAGE)
                 .withCommand("mysqld --auto_increment_increment=10")
@@ -87,7 +87,7 @@ public class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testWithAdditionalUrlParamInJdbcUrl() {
+    void testWithAdditionalUrlParamInJdbcUrl() {
         MariaDBContainer<?> mariaDBContainer = new MariaDBContainer<>(MariaDBTestImages.MARIADB_IMAGE)
             .withUrlParam("connectTimeout", "40000")
             .withUrlParam("rewriteBatchedStatements", "true");
@@ -105,7 +105,7 @@ public class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testWithOnlyUserReadableCustomIniFile() throws Exception {
+    void testWithOnlyUserReadableCustomIniFile() throws Exception {
         assumeThat(FileSystems.getDefault().supportedFileAttributeViews().contains("posix")).isTrue();
 
         try (
@@ -136,7 +136,7 @@ public class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testEmptyPasswordWithRootUser() throws SQLException {
+    void testEmptyPasswordWithRootUser() throws SQLException {
         try (MariaDBContainer<?> mysql = new MariaDBContainer<>("mariadb:11.2.4").withUsername("root")) {
             mysql.start();
 

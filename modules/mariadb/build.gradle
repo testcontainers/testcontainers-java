@@ -6,6 +6,9 @@ dependencies {
     compileOnly project(':testcontainers-r2dbc')
     compileOnly 'org.mariadb:r2dbc-mariadb:1.0.3'
 
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
     testImplementation project(':testcontainers-jdbc-test')
     testImplementation 'org.mariadb.jdbc:mariadb-java-client:3.5.5'
 
@@ -17,4 +20,8 @@ tasks.japicmp {
     classExcludes = [
         "org.testcontainers.containers.MariaDBContainer"
     ]
+}
+
+test {
+    useJUnitPlatform()
 }
