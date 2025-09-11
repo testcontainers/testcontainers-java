@@ -231,4 +231,50 @@ public class ParsedDockerComposeFileValidationTest {
             System.clearProperty("REDIS_VERSION");
         }
     }
+
+    @Test
+    public void shouldHandleEdgeCasesInVariableSubstitution() {
+        // Test various edge cases
+        System.setProperty("SIMPLE_VAR", "simple-value");
+        System.setProperty("WITH_SPECIAL_CHARS", "registry.io/app:v1.2.3");
+        System.setProperty("EMPTY_VAR", "");
+
+        try {
+            ParsedDockerComposeFile parsedFile = new ParsedDockerComposeFile(
+                ImmutableMap.of(
+                    "version", "2",
+                    "services", ImmutableMap.of(
+                        // Test $VAR syntax  
+                        "service1", ImmutableMap.of("image", "redis:$SIMPLE_VAR"),
+                        // Test complex image names with registry
+                        "service2", ImmutableMap.of("image", "${WITH_SPECIAL_CHARS}"),
+                        // Test multiple variables in one string
+                        "service3", ImmutableMap.of("image", "${WITH_SPECIAL_CHARS}-${SIMPLE_VAR}"),
+                        // Test undefined variables remain unchanged
+                        "service4", ImmutableMap.of("image", "app:${UNDEFINED_VAR}"),
+                        // Test variables with special characters that don't need substitution
+                        "service5", ImmutableMap.of("image", "app:latest"),
+                        // Test empty variable with default
+                        "service6", ImmutableMap.of("image", "nginx:${EMPTY_VAR:-default}")
+                    )
+                )
+            );
+
+            assertThat(parsedFile.getServiceNameToImageNames())
+                .as("edge cases in variable substitution work correctly")
+                .contains(
+                    entry("service1", Sets.newHashSet("redis:simple-value")),
+                    entry("service2", Sets.newHashSet("registry.io/app:v1.2.3")),
+                    entry("service3", Sets.newHashSet("registry.io/app:v1.2.3-simple-value")),
+                    entry("service4", Sets.newHashSet("app:${UNDEFINED_VAR}")),
+                    entry("service5", Sets.newHashSet("app:latest")),
+                    entry("service6", Sets.newHashSet("nginx:default"))
+                );
+        } finally {
+            // Clean up
+            System.clearProperty("SIMPLE_VAR");
+            System.clearProperty("WITH_SPECIAL_CHARS");
+            System.clearProperty("EMPTY_VAR");
+        }
+    }
 }
