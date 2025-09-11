@@ -1,6 +1,6 @@
 package org.testcontainers.junit.postgresql;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.PostgreSQLTestImages;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
@@ -13,14 +13,14 @@ import java.util.logging.LogManager;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 
-public class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
+class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
     static {
         // Postgres JDBC driver uses JUL; disable it to avoid annoying, irrelevant, stderr logs during connection testing
         LogManager.getLogManager().getLogger("").setLevel(Level.OFF);
     }
 
     @Test
-    public void testSimple() throws SQLException {
+    void testSimple() throws SQLException {
         try ( // container {
             PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:9.6.12")
             // }
@@ -35,7 +35,7 @@ public class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testCommandOverride() throws SQLException {
+    void testCommandOverride() throws SQLException {
         try (
             PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(PostgreSQLTestImages.POSTGRES_TEST_IMAGE)
                 .withCommand("postgres -c max_connections=42")
@@ -49,7 +49,7 @@ public class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testUnsetCommand() throws SQLException {
+    void testUnsetCommand() throws SQLException {
         try (
             PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(PostgreSQLTestImages.POSTGRES_TEST_IMAGE)
                 .withCommand("postgres -c max_connections=42")
@@ -64,7 +64,7 @@ public class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testMissingInitScript() {
+    void testMissingInitScript() {
         try (
             PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(PostgreSQLTestImages.POSTGRES_TEST_IMAGE)
                 .withInitScript(null)
@@ -74,7 +74,7 @@ public class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testExplicitInitScript() throws SQLException {
+    void testExplicitInitScript() throws SQLException {
         try (
             PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(PostgreSQLTestImages.POSTGRES_TEST_IMAGE)
                 .withInitScript("somepath/init_postgresql.sql")
@@ -89,7 +89,7 @@ public class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testExplicitInitScripts() throws SQLException {
+    void testExplicitInitScripts() throws SQLException {
         try (
             PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(PostgreSQLTestImages.POSTGRES_TEST_IMAGE)
                 .withInitScripts("somepath/init_postgresql.sql", "somepath/init_postgresql_2.sql")
@@ -110,7 +110,7 @@ public class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testWithAdditionalUrlParamInJdbcUrl() {
+    void testWithAdditionalUrlParamInJdbcUrl() {
         try (
             PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(PostgreSQLTestImages.POSTGRES_TEST_IMAGE)
                 .withUrlParam("charSet", "UNICODE")

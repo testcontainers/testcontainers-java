@@ -1,6 +1,6 @@
 package org.testcontainers.containers;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
 import java.sql.ResultSet;
@@ -8,10 +8,10 @@ import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class TimescaleDBContainerTest extends AbstractContainerDatabaseTest {
+class TimescaleDBContainerTest extends AbstractContainerDatabaseTest {
 
     @Test
-    public void testSimple() throws SQLException {
+    void testSimple() throws SQLException {
         try (JdbcDatabaseContainer<?> postgres = new TimescaleDBContainerProvider().newInstance()) {
             postgres.start();
 
@@ -22,7 +22,7 @@ public class TimescaleDBContainerTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testCommandOverride() throws SQLException {
+    void testCommandOverride() throws SQLException {
         try (
             GenericContainer<?> postgres = new TimescaleDBContainerProvider()
                 .newInstance()
@@ -40,7 +40,7 @@ public class TimescaleDBContainerTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testUnsetCommand() throws SQLException {
+    void testUnsetCommand() throws SQLException {
         try (
             GenericContainer<?> postgres = new TimescaleDBContainerProvider()
                 .newInstance()
@@ -59,7 +59,7 @@ public class TimescaleDBContainerTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testExplicitInitScript() throws SQLException {
+    void testExplicitInitScript() throws SQLException {
         try (
             JdbcDatabaseContainer<?> postgres = new TimescaleDBContainerProvider()
                 .newInstance()
