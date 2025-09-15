@@ -6,7 +6,16 @@ import com.google.api.gax.rpc.FixedTransportChannelProvider;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
+import com.google.cloud.bigquery.DatasetId;
+import com.google.cloud.bigquery.DatasetInfo;
+import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.QueryJobConfiguration;
+import com.google.cloud.bigquery.Schema;
+import com.google.cloud.bigquery.StandardSQLTypeName;
+import com.google.cloud.bigquery.StandardTableDefinition;
+import com.google.cloud.bigquery.TableDefinition;
+import com.google.cloud.bigquery.TableId;
+import com.google.cloud.bigquery.TableInfo;
 import com.google.cloud.bigquery.TableResult;
 import com.google.cloud.bigquery.storage.v1.BigQueryWriteClient;
 import com.google.cloud.bigquery.storage.v1.BigQueryWriteSettings;
@@ -26,53 +35,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class BigQueryEmulatorContainerTest {
 
-    @Test
-    public void testGrcp() throws IOException {
-        // Shallow test, validate that connection can be set up, and attempt to create write stream fails.
-        // BigQueryWriteSettings requires a HTTP/2 connection, not provided by the originally exposed endpoint. A "not found" exceptionm
-        // indicates successful
-        try (BigQueryEmulatorContainer container = new BigQueryEmulatorContainer("ghcr.io/goccy/bigquery-emulator:0.6.5")) {
-            container.start();
-            BigQueryWriteSettings.Builder bigQueryWriteSettingsBuilder = BigQueryWriteSettings.newBuilder();
-
-            bigQueryWriteSettingsBuilder.createWriteStreamSettings()
-                .setRetrySettings(bigQueryWriteSettingsBuilder.createWriteStreamSettings()
-                    .getRetrySettings()
-                    .toBuilder()
-                    .setTotalTimeout(Duration.ofSeconds(60))
-                    .build());
-
-            BigQueryWriteClient bigQueryWriteClient = BigQueryWriteClient.create(
-            bigQueryWriteSettingsBuilder.setTransportChannelProvider(FixedTransportChannelProvider.create(GrpcTransportChannel.create(
-                    ManagedChannelBuilder.forAddress(container.getHost(), container.getEmulatorGrpcPort()).usePlaintext().build())))
-                .setCredentialsProvider(NoCredentialsProvider.create())
-                .build()
-            );
-
-            TableName parentTable = TableName.of(container.getProjectId(), "dataset", "table");
-            CreateWriteStreamRequest createWriteStreamRequest = CreateWriteStreamRequest.newBuilder()
-                .setParent(parentTable.toString())
-                .setWriteStream(WriteStream.newBuilder().setType(WriteStream.Type.PENDING))
-                .build();
-
-            String message = null;
-            try {
-                // This will fail, extract error message to check that it fails in a "we reached the backend" way to ensure that setup was correct
-                WriteStream writeStream =  bigQueryWriteClient.createWriteStream(createWriteStreamRequest);
-                // Example setting up StreamWriter. Note passing bigQueryWriteClient as parameter, this is needed to avoid using gcloud credentials:
-                /* StreamWriter writer = StreamWriter.newBuilder(writeStream.getName(), bigQueryWriteClient).setWriterSchema(schema).build(); */
-            } catch (RuntimeException e) {
-                message = e.getMessage();
-            }
-            assertThat(message).contains("dataset dataset is not found in project test-project");
-
-            bigQueryWriteClient.shutdown();
-            bigQueryWriteClient.close();
-        }
+    private BigQuery getBigQuery(BigQueryEmulatorContainer container) {
+        String url = container.getEmulatorHttpEndpoint();
+        return BigQueryOptions
+            .newBuilder()
+            .setProjectId(container.getProjectId())
+            .setHost(url)
+            .setLocation(url)
+            .setCredentials(NoCredentials.getInstance())
+            .build().getService();
     }
 
     @Test
-    void test() throws Exception {
+    void testHttpEndpoint() throws Exception {
         try (
             // emulatorContainer {
             BigQueryEmulatorContainer container = new BigQueryEmulatorContainer("ghcr.io/goccy/bigquery-emulator:0.4.3")
@@ -81,15 +56,7 @@ class BigQueryEmulatorContainerTest {
             container.start();
 
             // bigQueryClient {
-            String url = container.getEmulatorHttpEndpoint();
-            BigQueryOptions options = BigQueryOptions
-                .newBuilder()
-                .setProjectId(container.getProjectId())
-                .setHost(url)
-                .setLocation(url)
-                .setCredentials(NoCredentials.getInstance())
-                .build();
-            BigQuery bigQuery = options.getService();
+            BigQuery bigQuery = getBigQuery(container);
             // }
 
             String fn =
@@ -107,4 +74,61 @@ class BigQueryEmulatorContainerTest {
             assertThat(values).containsOnly(BigDecimal.valueOf(30));
         }
     }
+
+    @Test
+    void testGrcpEndpoint() throws IOException {
+        try (BigQueryEmulatorContainer container = new BigQueryEmulatorContainer("ghcr.io/goccy/bigquery-emulator:0.6.5")) {
+            container.start();
+
+            // Test setup.
+            // Create a table the "regular" way. We need this to verify we can connect a writestream
+            BigQuery bigQuery =  getBigQuery(container);
+            String tableName = "test-table";
+            String datasetName = "test-dataset";
+
+            bigQuery.create(DatasetInfo.of(DatasetId.of(container.getProjectId(), datasetName)));
+
+            Schema schema = Schema.of(
+                Field.of("name", StandardSQLTypeName.STRING)
+            );
+
+            TableId tableId = TableId.of(datasetName, tableName);
+            TableDefinition tableDefinition = StandardTableDefinition.of(schema);
+            TableInfo tableInfo = TableInfo.newBuilder(tableId, tableDefinition).build();
+
+            bigQuery.create(tableInfo);
+
+            // Actual test.
+            // BigQueryWriteSettings requires a HTTP/2 connection, not provided by the originally exposed endpoint.
+            BigQueryWriteSettings.Builder bigQueryWriteSettingsBuilder = BigQueryWriteSettings.newBuilder();
+
+            bigQueryWriteSettingsBuilder.createWriteStreamSettings()
+                .setRetrySettings(bigQueryWriteSettingsBuilder.createWriteStreamSettings()
+                    .getRetrySettings()
+                    .toBuilder()
+                    .setTotalTimeout(Duration.ofSeconds(60))
+                    .build());
+
+            // Use the now exposed grpcPort to get a working connection.
+            BigQueryWriteClient bigQueryWriteClient = BigQueryWriteClient.create(
+                bigQueryWriteSettingsBuilder.setTransportChannelProvider(FixedTransportChannelProvider.create(GrpcTransportChannel.create(
+                        ManagedChannelBuilder.forAddress(container.getHost(), container.getEmulatorGrpcPort()).usePlaintext().build())))
+                    .setCredentialsProvider(NoCredentialsProvider.create())
+                    .build()
+            );
+
+            TableName parentTable = TableName.of(container.getProjectId(), datasetName, tableName);
+            CreateWriteStreamRequest createWriteStreamRequest = CreateWriteStreamRequest.newBuilder()
+                .setParent(parentTable.toString())
+                .setWriteStream(WriteStream.newBuilder().setType(WriteStream.Type.PENDING))
+                .build();
+
+            // Validate that we can successfully create a write stream. This would not work with http endpoint
+            bigQueryWriteClient.createWriteStream(createWriteStreamRequest);
+
+            bigQueryWriteClient.shutdown();
+            bigQueryWriteClient.close();
+        }
+    }
+
 }
