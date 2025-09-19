@@ -1,6 +1,6 @@
 package org.testcontainers.oceanbase;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
 import java.sql.ResultSet;
@@ -8,12 +8,12 @@ import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class SimpleOceanBaseCETest extends AbstractContainerDatabaseTest {
+class SimpleOceanBaseCETest extends AbstractContainerDatabaseTest {
 
     private static final String IMAGE = "oceanbase/oceanbase-ce:4.2.1.8-108000022024072217";
 
     @Test
-    public void testSimple() throws SQLException {
+    void testSimple() throws SQLException {
         try ( // container {
             OceanBaseCEContainer oceanbase = new OceanBaseCEContainer(
                 "oceanbase/oceanbase-ce:4.2.1.8-108000022024072217"
@@ -30,7 +30,7 @@ public class SimpleOceanBaseCETest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testExplicitInitScript() throws SQLException {
+    void testExplicitInitScript() throws SQLException {
         try (OceanBaseCEContainer oceanbase = new OceanBaseCEContainer(IMAGE).withInitScript("init.sql")) {
             oceanbase.start();
 
@@ -41,7 +41,7 @@ public class SimpleOceanBaseCETest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testWithAdditionalUrlParamInJdbcUrl() {
+    void testWithAdditionalUrlParamInJdbcUrl() {
         try (OceanBaseCEContainer oceanbase = new OceanBaseCEContainer(IMAGE).withUrlParam("useSSL", "false")) {
             oceanbase.start();
 

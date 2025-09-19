@@ -1,6 +1,6 @@
 package org.testcontainers.containers;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 import org.testcontainers.utility.DockerImageName;
 
@@ -9,10 +9,10 @@ import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class CompatibleImageTest extends AbstractContainerDatabaseTest {
+class CompatibleImageTest extends AbstractContainerDatabaseTest {
 
     @Test
-    public void pgvector() throws SQLException {
+    void pgvector() throws SQLException {
         try (
             // pgvectorContainer {
             PostgreSQLContainer<?> pgvector = new PostgreSQLContainer<>("pgvector/pgvector:pg16")
@@ -27,7 +27,7 @@ public class CompatibleImageTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void postgis() throws SQLException {
+    void postgis() throws SQLException {
         try (
             // postgisContainer {
             PostgreSQLContainer<?> postgis = new PostgreSQLContainer<>(
@@ -44,7 +44,7 @@ public class CompatibleImageTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void timescaledb() throws SQLException {
+    void timescaledb() throws SQLException {
         try (
             // timescaledbContainer {
             PostgreSQLContainer<?> timescaledb = new PostgreSQLContainer<>(

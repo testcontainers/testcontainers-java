@@ -1,6 +1,6 @@
 package org.testcontainers.containers;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.TrinoTestImages;
 
 import java.sql.Connection;
@@ -9,10 +9,10 @@ import java.sql.Statement;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class TrinoContainerTest {
+class TrinoContainerTest {
 
     @Test
-    public void testSimple() throws Exception {
+    void testSimple() throws Exception {
         try ( // container {
             TrinoContainer trino = new TrinoContainer("trinodb/trino:352")
             // }
@@ -33,7 +33,7 @@ public class TrinoContainerTest {
     }
 
     @Test
-    public void testSpecificVersion() throws Exception {
+    void testSpecificVersion() throws Exception {
         try (TrinoContainer trino = new TrinoContainer(TrinoTestImages.TRINO_PREVIOUS_VERSION_TEST_IMAGE)) {
             trino.start();
             try (
@@ -50,7 +50,7 @@ public class TrinoContainerTest {
     }
 
     @Test
-    public void testInitScript() throws Exception {
+    void testInitScript() throws Exception {
         try (TrinoContainer trino = new TrinoContainer(TrinoTestImages.TRINO_TEST_IMAGE)) {
             trino.withInitScript("initial.sql");
             trino.start();
