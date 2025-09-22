@@ -1,26 +1,25 @@
 package org.testcontainers.utility;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
-/**
- *
- */
-@RunWith(Parameterized.class)
-public class DockerStatusTest {
+@ParameterizedClass
+@MethodSource("parameters")
+class DockerStatusTest {
 
-    private final DateTimeFormatter dateTimeFormatter;
+    private DateTimeFormatter dateTimeFormatter;
 
     private static final Instant now = Instant.now();
 
@@ -52,16 +51,15 @@ public class DockerStatusTest {
         paused = buildState(false, true, buildTimestamp(now.minusMillis(100)), DockerStatus.DOCKER_TIMESTAMP_ZERO);
     }
 
-    @Parameterized.Parameters
-    public static Object[][] parameters() {
-        return new Object[][] {
-            { DateTimeFormatter.ISO_INSTANT },
-            { DateTimeFormatter.ISO_OFFSET_DATE_TIME.withZone(ZoneId.of("America/New_York")) },
-        };
+    public static Stream<DateTimeFormatter> parameters() {
+        return Stream.of(
+            DateTimeFormatter.ISO_INSTANT,
+            DateTimeFormatter.ISO_OFFSET_DATE_TIME.withZone(ZoneId.of("America/New_York"))
+        );
     }
 
     @Test
-    public void testRunning() throws Exception {
+    void testRunning() {
         assertThat(DockerStatus.isContainerRunning(running, minimumDuration, now)).isTrue();
         assertThat(DockerStatus.isContainerRunning(runningVariant, minimumDuration, now)).isTrue();
         assertThat(DockerStatus.isContainerRunning(shortRunning, minimumDuration, now)).isFalse();
@@ -72,7 +70,7 @@ public class DockerStatusTest {
     }
 
     @Test
-    public void testStopped() throws Exception {
+    void testStopped() {
         assertThat(DockerStatus.isContainerStopped(running)).isFalse();
         assertThat(DockerStatus.isContainerStopped(runningVariant)).isFalse();
         assertThat(DockerStatus.isContainerStopped(shortRunning)).isFalse();

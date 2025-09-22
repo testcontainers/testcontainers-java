@@ -1,7 +1,7 @@
 package org.testcontainers.utility;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,7 +10,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class TestcontainersConfigurationTest {
+class TestcontainersConfigurationTest {
 
     private Properties userProperties;
 
@@ -18,7 +18,7 @@ public class TestcontainersConfigurationTest {
 
     private Map<String, String> environment;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         userProperties = new Properties();
         classpathProperties = new Properties();
@@ -26,7 +26,7 @@ public class TestcontainersConfigurationTest {
     }
 
     @Test
-    public void shouldSubstituteImageNamesFromClasspathProperties() {
+    void shouldSubstituteImageNamesFromClasspathProperties() {
         classpathProperties.setProperty("ryuk.container.image", "foo:version");
         assertThat(newConfig().getConfiguredSubstituteImage(DockerImageName.parse("testcontainers/ryuk:any")))
             .as("an image name can be pulled from classpath properties")
@@ -34,7 +34,7 @@ public class TestcontainersConfigurationTest {
     }
 
     @Test
-    public void shouldSubstituteImageNamesFromUserProperties() {
+    void shouldSubstituteImageNamesFromUserProperties() {
         userProperties.setProperty("ryuk.container.image", "foo:version");
         assertThat(newConfig().getConfiguredSubstituteImage(DockerImageName.parse("testcontainers/ryuk:any")))
             .as("an image name can be pulled from user properties")
@@ -42,7 +42,7 @@ public class TestcontainersConfigurationTest {
     }
 
     @Test
-    public void shouldSubstituteImageNamesFromEnvironmentVariables() {
+    void shouldSubstituteImageNamesFromEnvironmentVariables() {
         environment.put("TESTCONTAINERS_RYUK_CONTAINER_IMAGE", "foo:version");
         assertThat(newConfig().getConfiguredSubstituteImage(DockerImageName.parse("testcontainers/ryuk:any")))
             .as("an image name can be pulled from an environment variable")
@@ -50,7 +50,7 @@ public class TestcontainersConfigurationTest {
     }
 
     @Test
-    public void shouldApplySettingsInOrder() {
+    void shouldApplySettingsInOrder() {
         assertThat(newConfig().getEnvVarOrProperty("key", "default"))
             .as("precedence order for multiple sources of the same value is correct")
             .isEqualTo("default");
@@ -75,7 +75,7 @@ public class TestcontainersConfigurationTest {
     }
 
     @Test
-    public void shouldNotReadChecksFromClasspathProperties() {
+    void shouldNotReadChecksFromClasspathProperties() {
         assertThat(newConfig().isDisableChecks()).as("checks enabled by default").isFalse();
 
         classpathProperties.setProperty("checks.disable", "true");
@@ -83,7 +83,7 @@ public class TestcontainersConfigurationTest {
     }
 
     @Test
-    public void shouldReadChecksFromUserProperties() {
+    void shouldReadChecksFromUserProperties() {
         assertThat(newConfig().isDisableChecks()).as("checks enabled by default").isFalse();
 
         userProperties.setProperty("checks.disable", "true");
@@ -91,7 +91,7 @@ public class TestcontainersConfigurationTest {
     }
 
     @Test
-    public void shouldReadChecksFromEnvironment() {
+    void shouldReadChecksFromEnvironment() {
         assertThat(newConfig().isDisableChecks()).as("checks enabled by default").isFalse();
 
         userProperties.remove("checks.disable");
@@ -100,7 +100,7 @@ public class TestcontainersConfigurationTest {
     }
 
     @Test
-    public void shouldReadDockerSettingsFromEnvironmentWithoutTestcontainersPrefix() {
+    void shouldReadDockerSettingsFromEnvironmentWithoutTestcontainersPrefix() {
         userProperties.remove("docker.foo");
         environment.put("DOCKER_FOO", "some value");
         assertThat(newConfig().getEnvVarOrUserProperty("docker.foo", "default"))
@@ -109,7 +109,7 @@ public class TestcontainersConfigurationTest {
     }
 
     @Test
-    public void shouldNotReadDockerSettingsFromEnvironmentWithTestcontainersPrefix() {
+    void shouldNotReadDockerSettingsFromEnvironmentWithTestcontainersPrefix() {
         userProperties.remove("docker.foo");
         environment.put("TESTCONTAINERS_DOCKER_FOO", "some value");
         assertThat(newConfig().getEnvVarOrUserProperty("docker.foo", "default"))
@@ -118,7 +118,7 @@ public class TestcontainersConfigurationTest {
     }
 
     @Test
-    public void shouldReadDockerSettingsFromUserProperties() {
+    void shouldReadDockerSettingsFromUserProperties() {
         environment.remove("DOCKER_FOO");
         userProperties.put("docker.foo", "some value");
         assertThat(newConfig().getEnvVarOrUserProperty("docker.foo", "default"))
@@ -127,7 +127,7 @@ public class TestcontainersConfigurationTest {
     }
 
     @Test
-    public void shouldNotReadSettingIfCorrespondingEnvironmentVarIsEmptyString() {
+    void shouldNotReadSettingIfCorrespondingEnvironmentVarIsEmptyString() {
         environment.put("DOCKER_FOO", "");
         assertThat(newConfig().getEnvVarOrUserProperty("docker.foo", "default"))
             .as("reads unprefixed env vars for docker. settings")
@@ -135,7 +135,7 @@ public class TestcontainersConfigurationTest {
     }
 
     @Test
-    public void shouldNotReadDockerClientStrategyFromClasspathProperties() {
+    void shouldNotReadDockerClientStrategyFromClasspathProperties() {
         String currentValue = newConfig().getDockerClientStrategyClassName();
 
         classpathProperties.setProperty("docker.client.strategy", UUID.randomUUID().toString());
@@ -145,7 +145,7 @@ public class TestcontainersConfigurationTest {
     }
 
     @Test
-    public void shouldReadDockerClientStrategyFromUserProperties() {
+    void shouldReadDockerClientStrategyFromUserProperties() {
         userProperties.setProperty("docker.client.strategy", "foo");
         assertThat(newConfig().getDockerClientStrategyClassName())
             .as("Docker client strategy is changed by user property")
@@ -153,7 +153,7 @@ public class TestcontainersConfigurationTest {
     }
 
     @Test
-    public void shouldReadDockerClientStrategyFromEnvironment() {
+    void shouldReadDockerClientStrategyFromEnvironment() {
         userProperties.remove("docker.client.strategy");
         environment.put("TESTCONTAINERS_DOCKER_CLIENT_STRATEGY", "foo");
         assertThat(newConfig().getDockerClientStrategyClassName())
@@ -162,7 +162,7 @@ public class TestcontainersConfigurationTest {
     }
 
     @Test
-    public void shouldNotUseImplicitDockerClientStrategyWhenDockerHostAndStrategyAreBothSet() {
+    void shouldNotUseImplicitDockerClientStrategyWhenDockerHostAndStrategyAreBothSet() {
         userProperties.put("docker.client.strategy", "foo");
         userProperties.put("docker.host", "tcp://1.2.3.4:5678");
         assertThat(newConfig().getDockerClientStrategyClassName())
@@ -191,7 +191,7 @@ public class TestcontainersConfigurationTest {
     }
 
     @Test
-    public void shouldNotReadReuseFromClasspathProperties() {
+    void shouldNotReadReuseFromClasspathProperties() {
         assertThat(newConfig().environmentSupportsReuse()).as("no reuse by default").isFalse();
 
         classpathProperties.setProperty("testcontainers.reuse.enable", "true");
@@ -201,7 +201,7 @@ public class TestcontainersConfigurationTest {
     }
 
     @Test
-    public void shouldReadReuseFromUserProperties() {
+    void shouldReadReuseFromUserProperties() {
         assertThat(newConfig().environmentSupportsReuse()).as("no reuse by default").isFalse();
 
         userProperties.setProperty("testcontainers.reuse.enable", "true");
@@ -209,7 +209,7 @@ public class TestcontainersConfigurationTest {
     }
 
     @Test
-    public void shouldReadReuseFromEnvironment() {
+    void shouldReadReuseFromEnvironment() {
         assertThat(newConfig().environmentSupportsReuse()).as("no reuse by default").isFalse();
 
         userProperties.remove("testcontainers.reuse.enable");
@@ -218,7 +218,7 @@ public class TestcontainersConfigurationTest {
     }
 
     @Test
-    public void shouldTrimImageNames() {
+    void shouldTrimImageNames() {
         userProperties.setProperty("ryuk.container.image", " testcontainers/ryuk:0.3.2 ");
         assertThat(newConfig().getRyukImage())
             .as("trailing whitespace was not removed from image name property")

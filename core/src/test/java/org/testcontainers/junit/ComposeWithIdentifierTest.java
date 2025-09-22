@@ -1,18 +1,22 @@
 package org.testcontainers.junit;
 
-import org.junit.Rule;
+import org.junit.jupiter.api.AutoClose;
 import org.testcontainers.containers.ComposeContainer;
 
 import java.io.File;
 
-public class ComposeWithIdentifierTest extends BaseComposeTest {
+class ComposeWithIdentifierTest extends BaseComposeTest {
 
-    @Rule
+    @AutoClose
     public ComposeContainer environment = new ComposeContainer(
         "TEST",
         new File("src/test/resources/v2-compose-test.yml")
     )
         .withExposedService("redis-1", REDIS_PORT);
+
+    ComposeWithIdentifierTest() {
+        environment.start();
+    }
 
     @Override
     protected ComposeContainer getEnvironment() {

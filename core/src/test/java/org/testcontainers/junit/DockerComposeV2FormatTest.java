@@ -1,6 +1,6 @@
 package org.testcontainers.junit;
 
-import org.junit.Rule;
+import org.junit.jupiter.api.AutoClose;
 import org.testcontainers.containers.DockerComposeContainer;
 
 import java.io.File;
@@ -8,13 +8,17 @@ import java.io.File;
 /**
  * Created by rnorth on 21/05/2016.
  */
-public class DockerComposeV2FormatTest extends BaseDockerComposeTest {
+class DockerComposeV2FormatTest extends BaseDockerComposeTest {
 
-    @Rule
+    @AutoClose
     public DockerComposeContainer environment = new DockerComposeContainer(
         new File("src/test/resources/v2-compose-test.yml")
     )
         .withExposedService("redis_1", REDIS_PORT);
+
+    DockerComposeV2FormatTest() {
+        environment.start();
+    }
 
     @Override
     protected DockerComposeContainer getEnvironment() {

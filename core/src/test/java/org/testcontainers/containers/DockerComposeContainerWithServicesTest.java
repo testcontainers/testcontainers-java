@@ -1,6 +1,6 @@
 package org.testcontainers.containers;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.rnorth.ducttape.TimeoutException;
 import org.testcontainers.containers.wait.strategy.Wait;
 
@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
-public class DockerComposeContainerWithServicesTest {
+class DockerComposeContainerWithServicesTest {
 
     public static final File SIMPLE_COMPOSE_FILE = new File(
         "src/test/resources/compose-scaling-multiple-containers.yml"
@@ -28,7 +28,7 @@ public class DockerComposeContainerWithServicesTest {
     );
 
     @Test
-    public void testDesiredSubsetOfServicesAreStarted() {
+    void testDesiredSubsetOfServicesAreStarted() {
         try (
             DockerComposeContainer<?> compose = new DockerComposeContainer<>(SIMPLE_COMPOSE_FILE).withServices("redis")
         ) {
@@ -39,7 +39,7 @@ public class DockerComposeContainerWithServicesTest {
     }
 
     @Test
-    public void testDesiredSubsetOfScaledServicesAreStarted() {
+    void testDesiredSubsetOfScaledServicesAreStarted() {
         try (
             DockerComposeContainer<?> compose = new DockerComposeContainer<>(SIMPLE_COMPOSE_FILE)
                 .withScaledService("redis", 2)
@@ -51,7 +51,7 @@ public class DockerComposeContainerWithServicesTest {
     }
 
     @Test
-    public void testDesiredSubsetOfSpecifiedAndScaledServicesAreStarted() {
+    void testDesiredSubsetOfSpecifiedAndScaledServicesAreStarted() {
         try (
             DockerComposeContainer<?> compose = new DockerComposeContainer<>(SIMPLE_COMPOSE_FILE)
                 .withServices("redis")
@@ -64,7 +64,7 @@ public class DockerComposeContainerWithServicesTest {
     }
 
     @Test
-    public void testDesiredSubsetOfSpecifiedOrScaledServicesAreStarted() {
+    void testDesiredSubsetOfSpecifiedOrScaledServicesAreStarted() {
         try (
             DockerComposeContainer<?> compose = new DockerComposeContainer<>(SIMPLE_COMPOSE_FILE)
                 .withServices("other")
@@ -77,7 +77,7 @@ public class DockerComposeContainerWithServicesTest {
     }
 
     @Test
-    public void testAllServicesAreStartedIfNotSpecified() {
+    void testAllServicesAreStartedIfNotSpecified() {
         try (DockerComposeContainer<?> compose = new DockerComposeContainer<>(SIMPLE_COMPOSE_FILE)) {
             compose.start();
 
@@ -86,7 +86,7 @@ public class DockerComposeContainerWithServicesTest {
     }
 
     @Test
-    public void testScaleInComposeFileIsRespected() {
+    void testScaleInComposeFileIsRespected() {
         try (DockerComposeContainer<?> compose = new DockerComposeContainer<>(COMPOSE_FILE_WITH_INLINE_SCALE)) {
             compose.start();
 
@@ -96,7 +96,7 @@ public class DockerComposeContainerWithServicesTest {
     }
 
     @Test
-    public void testStartupTimeoutSetsTheHighestTimeout() {
+    void testStartupTimeoutSetsTheHighestTimeout() {
         assertThat(
             catchThrowable(() -> {
                 try (
@@ -118,7 +118,7 @@ public class DockerComposeContainerWithServicesTest {
     }
 
     @Test
-    public void testWaitingForHealthcheck() {
+    void testWaitingForHealthcheck() {
         try (
             DockerComposeContainer<?> compose = new DockerComposeContainer<>(COMPOSE_FILE_WITH_HEALTHCHECK)
                 .waitingFor("redis", Wait.forHealthcheck().withStartupTimeout(Duration.ofMinutes(2)))
@@ -130,7 +130,7 @@ public class DockerComposeContainerWithServicesTest {
     }
 
     @Test
-    public void testWaitingForHealthcheckWithRestartDoesNotCrash() {
+    void testWaitingForHealthcheckWithRestartDoesNotCrash() {
         try (
             DockerComposeContainer<?> compose = new DockerComposeContainer<>(COMPOSE_FILE_WITH_HEALTHCHECK)
                 .waitingFor("redis", Wait.forHealthcheck().withStartupTimeout(Duration.ofMinutes(1)))

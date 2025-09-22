@@ -1,44 +1,41 @@
 package org.testcontainers.containers;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.TestImages;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(Enclosed.class)
-public class NetworkTest {
+class NetworkTest {
 
-    public static class WithRules {
+    @Nested
+    class WithRules {
 
-        @Rule
         public Network network = Network.newNetwork();
 
-        @Rule
         public GenericContainer<?> foo = new GenericContainer<>(TestImages.TINY_IMAGE)
             .withNetwork(network)
             .withNetworkAliases("foo")
             .withCommand("/bin/sh", "-c", "while true ; do printf 'HTTP/1.1 200 OK\\n\\nyay' | nc -l -p 8080; done");
 
-        @Rule
         public GenericContainer<?> bar = new GenericContainer<>(TestImages.TINY_IMAGE)
             .withNetwork(network)
             .withCommand("top");
 
-        @Test
-        public void testNetworkSupport() throws Exception {
+        void testNetworkSupport() throws Exception {
+            foo.start();
+            bar.start();
             String response = bar.execInContainer("wget", "-O", "-", "http://foo:8080").getStdout();
             assertThat(response).as("received response").isEqualTo("yay");
         }
     }
 
-    public static class WithoutRules {
+    @Nested
+    class WithoutRules {
 
         @Test
-        public void testNetworkSupport() throws Exception {
+        void testNetworkSupport() throws Exception {
             // useCustomNetwork {
             try (
                 Network network = Network.newNetwork();
@@ -64,7 +61,7 @@ public class NetworkTest {
         }
 
         @Test
-        public void testBuilder() {
+        void testBuilder() {
             try (Network network = Network.builder().driver("macvlan").build()) {
                 String id = network.getId();
                 assertThat(
@@ -76,7 +73,7 @@ public class NetworkTest {
         }
 
         @Test
-        public void testModifiers() {
+        void testModifiers() {
             try (
                 Network network = Network.builder().createNetworkCmdModifier(cmd -> cmd.withDriver("macvlan")).build()
             ) {
@@ -90,7 +87,7 @@ public class NetworkTest {
         }
 
         @Test
-        public void testReusability() {
+        void testReusability() {
             try (Network network = Network.newNetwork()) {
                 String firstId = network.getId();
                 assertThat(DockerClientFactory.instance().client().inspectNetworkCmd().withNetworkId(firstId).exec())

@@ -1,9 +1,9 @@
 package org.testcontainers.junit.wait.strategy;
 
 import org.jetbrains.annotations.NotNull;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -11,12 +11,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Tests for {@link LogMessageWaitStrategy}.
  */
-@RunWith(Parameterized.class)
-public class LogMessageWaitStrategyTest extends AbstractWaitStrategyTest<LogMessageWaitStrategy> {
+@ParameterizedClass(name = "{0}")
+@MethodSource("parameters")
+class LogMessageWaitStrategyTest extends AbstractWaitStrategyTest<LogMessageWaitStrategy> {
 
     private final String pattern;
 
-    @Parameterized.Parameters(name = "{0}")
     public static Object[] parameters() {
         return new String[] {
             ".*ready.*\\s", // previous recommended style (explicit line ending)
@@ -32,7 +32,7 @@ public class LogMessageWaitStrategyTest extends AbstractWaitStrategyTest<LogMess
     private static final String READY_MESSAGE = "I'm ready!";
 
     @Test
-    public void testWaitUntilReady_Success() {
+    void testWaitUntilReady_Success() {
         waitUntilReadyAndSucceed(
             "echo -e \"" +
             READY_MESSAGE +
@@ -46,7 +46,7 @@ public class LogMessageWaitStrategyTest extends AbstractWaitStrategyTest<LogMess
     }
 
     @Test
-    public void testWaitUntilReady_Timeout() {
+    void testWaitUntilReady_Timeout() {
         waitUntilReadyAndTimeout("echo -e \"" + READY_MESSAGE + "\";" + "echo -e \"foobar\";" + "sleep 300");
     }
 
