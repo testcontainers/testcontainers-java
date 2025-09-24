@@ -87,8 +87,8 @@ dependencies {
 
     shaded 'org.awaitility:awaitility:4.3.0'
 
-    api platform('com.github.docker-java:docker-java-bom:3.5.3')
-    shaded platform('com.github.docker-java:docker-java-bom:3.5.3')
+    api platform('com.github.docker-java:docker-java-bom:3.6.0')
+    shaded platform('com.github.docker-java:docker-java-bom:3.6.0')
 
     api "com.github.docker-java:docker-java-api"
 
