@@ -1,8 +1,7 @@
 package org.testcontainers.junit.mysql;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.testcontainers.MySQLTestImages;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
@@ -13,10 +12,8 @@ import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(Parameterized.class)
-public class MultiVersionMySQLTest extends AbstractContainerDatabaseTest {
+class MultiVersionMySQLTest extends AbstractContainerDatabaseTest {
 
-    @Parameterized.Parameters(name = "{0}")
     public static DockerImageName[] params() {
         return new DockerImageName[] {
             MySQLTestImages.MYSQL_57_IMAGE,
@@ -26,11 +23,9 @@ public class MultiVersionMySQLTest extends AbstractContainerDatabaseTest {
         };
     }
 
-    @Parameterized.Parameter
-    public DockerImageName dockerImageName;
-
-    @Test
-    public void versionCheckTest() throws SQLException {
+    @ParameterizedTest
+    @MethodSource("params")
+    void versionCheckTest(DockerImageName dockerImageName) throws SQLException {
         try (MySQLContainer<?> mysql = new MySQLContainer<>(dockerImageName)) {
             mysql.start();
             final ResultSet resultSet = performQuery(mysql, "SELECT VERSION()");

@@ -1,14 +1,13 @@
 package org.testcontainers.junit.mssqlserver;
 
 import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.testcontainers.MSSQLServerTestImages;
 import org.testcontainers.containers.MSSQLServerContainer;
 
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.fail;
 
@@ -16,7 +15,6 @@ import static org.assertj.core.api.Assertions.fail;
  * Tests if the password passed to the container satisfied the password policy described at
  * https://docs.microsoft.com/en-us/sql/relational-databases/security/password-policy?view=sql-server-2017
  */
-@RunWith(Parameterized.class)
 public class CustomPasswordMSSQLServerTest {
 
     private static String UPPER_CASE_LETTERS = "ABCDE";
@@ -27,51 +25,40 @@ public class CustomPasswordMSSQLServerTest {
 
     private static String SPECIAL_CHARS = "_(!)_";
 
-    private String password;
-
-    private Boolean valid;
-
-    public CustomPasswordMSSQLServerTest(String password, Boolean valid) {
-        this.password = password;
-        this.valid = valid;
-    }
-
-    @Parameterized.Parameters
-    public static Collection<Object[]> data() {
-        return Arrays.asList(
-            new Object[][] {
-                new Object[] { null, false },
-                // too short
-                { "abc123", false },
-                // too long
-                { RandomStringUtils.randomAlphabetic(129), false },
-                // only 2 categories
-                { UPPER_CASE_LETTERS + NUMBERS, false },
-                { UPPER_CASE_LETTERS + SPECIAL_CHARS, false },
-                { LOWER_CASE_LETTERS + NUMBERS, false },
-                { LOWER_CASE_LETTERS + SPECIAL_CHARS, false },
-                { NUMBERS + SPECIAL_CHARS, false },
-                // 3 categories
-                { UPPER_CASE_LETTERS + LOWER_CASE_LETTERS + NUMBERS, true },
-                { UPPER_CASE_LETTERS + LOWER_CASE_LETTERS + SPECIAL_CHARS, true },
-                { UPPER_CASE_LETTERS + NUMBERS + SPECIAL_CHARS, true },
-                { LOWER_CASE_LETTERS + NUMBERS + SPECIAL_CHARS, true },
-                // 4 categories
-                { UPPER_CASE_LETTERS + LOWER_CASE_LETTERS + NUMBERS + SPECIAL_CHARS, true },
-            }
+    public static Stream<Arguments> data() {
+        return Stream.of(
+            Arguments.arguments(null, false),
+            // too short
+            Arguments.arguments("abc123", false),
+            // too long
+            Arguments.arguments(RandomStringUtils.randomAlphabetic(129), false),
+            // only 2 categories
+            Arguments.arguments(UPPER_CASE_LETTERS + NUMBERS, false),
+            Arguments.arguments(UPPER_CASE_LETTERS + SPECIAL_CHARS, false),
+            Arguments.arguments(LOWER_CASE_LETTERS + NUMBERS, false),
+            Arguments.arguments(LOWER_CASE_LETTERS + SPECIAL_CHARS, false),
+            Arguments.arguments(NUMBERS + SPECIAL_CHARS, false),
+            // 3 categories
+            Arguments.arguments(UPPER_CASE_LETTERS + LOWER_CASE_LETTERS + NUMBERS, true),
+            Arguments.arguments(UPPER_CASE_LETTERS + LOWER_CASE_LETTERS + SPECIAL_CHARS, true),
+            Arguments.arguments(UPPER_CASE_LETTERS + NUMBERS + SPECIAL_CHARS, true),
+            Arguments.arguments(LOWER_CASE_LETTERS + NUMBERS + SPECIAL_CHARS, true),
+            // 4 categories
+            Arguments.arguments(UPPER_CASE_LETTERS + LOWER_CASE_LETTERS + NUMBERS + SPECIAL_CHARS, true)
         );
     }
 
-    @Test
-    public void runPasswordTests() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void runPasswordTests(String password, boolean valid) {
         try {
-            new MSSQLServerContainer<>(MSSQLServerTestImages.MSSQL_SERVER_IMAGE).withPassword(this.password);
+            new MSSQLServerContainer<>(MSSQLServerTestImages.MSSQL_SERVER_IMAGE).withPassword(password);
             if (!valid) {
-                fail("Password " + this.password + " is not valid. Expected exception");
+                fail("Password " + password + " is not valid. Expected exception");
             }
         } catch (IllegalArgumentException e) {
             if (valid) {
-                fail("Password " + this.password + " should have been validated");
+                fail("Password " + password + " should have been validated");
             }
         }
     }

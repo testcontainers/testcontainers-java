@@ -1,6 +1,6 @@
 package org.testcontainers.junit.tidb;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.TiDBTestImages;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 import org.testcontainers.tidb.TiDBContainer;
@@ -10,10 +10,10 @@ import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class SimpleTiDBTest extends AbstractContainerDatabaseTest {
+class SimpleTiDBTest extends AbstractContainerDatabaseTest {
 
     @Test
-    public void testSimple() throws SQLException {
+    void testSimple() throws SQLException {
         try ( // container {
             TiDBContainer tidb = new TiDBContainer("pingcap/tidb:v6.1.0")
             // }
@@ -29,7 +29,7 @@ public class SimpleTiDBTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testExplicitInitScript() throws SQLException {
+    void testExplicitInitScript() throws SQLException {
         try (
             TiDBContainer tidb = new TiDBContainer(TiDBTestImages.TIDB_IMAGE).withInitScript("somepath/init_tidb.sql")
         ) { // TiDB is expected to be compatible with MySQL
@@ -43,7 +43,7 @@ public class SimpleTiDBTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testWithAdditionalUrlParamInJdbcUrl() {
+    void testWithAdditionalUrlParamInJdbcUrl() {
         TiDBContainer tidb = new TiDBContainer(TiDBTestImages.TIDB_IMAGE).withUrlParam("sslmode", "disable");
 
         try {

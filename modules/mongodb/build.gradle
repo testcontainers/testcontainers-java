@@ -3,6 +3,10 @@ description = "Testcontainers :: MongoDB"
 dependencies {
     api project(':testcontainers')
 
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.13.4'
     testImplementation("org.mongodb:mongodb-driver-sync:5.1.4")
     testImplementation 'org.assertj:assertj-core:3.27.4'
 }
@@ -11,4 +15,8 @@ tasks.japicmp {
     classExcludes = [
         "org.testcontainers.containers.MongoDBContainer"
     ]
+}
+
+test {
+    useJUnitPlatform()
 }

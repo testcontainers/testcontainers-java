@@ -1,6 +1,6 @@
 package org.testcontainers.junit.postgresql;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.PostgreSQLTestImages;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
@@ -10,7 +10,7 @@ import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class CustomizablePostgreSQLTest extends AbstractContainerDatabaseTest {
+class CustomizablePostgreSQLTest extends AbstractContainerDatabaseTest {
 
     private static final String DB_NAME = "foo";
 
@@ -19,7 +19,7 @@ public class CustomizablePostgreSQLTest extends AbstractContainerDatabaseTest {
     private static final String PWD = "baz";
 
     @Test
-    public void testSimple() throws SQLException {
+    void testSimple() throws SQLException {
         try (
             PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(PostgreSQLTestImages.POSTGRES_TEST_IMAGE)
                 .withDatabaseName(DB_NAME)

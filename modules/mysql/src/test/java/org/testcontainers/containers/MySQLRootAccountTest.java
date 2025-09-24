@@ -1,9 +1,8 @@
 package org.testcontainers.containers;
 
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.testcontainers.MySQLTestImages;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.utility.DockerImageName;
@@ -13,10 +12,8 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 @Slf4j
-@RunWith(Parameterized.class)
-public class MySQLRootAccountTest {
+class MySQLRootAccountTest {
 
-    @Parameterized.Parameters(name = "{0}")
     public static DockerImageName[] params() {
         return new DockerImageName[] {
             MySQLTestImages.MYSQL_57_IMAGE,
@@ -26,21 +23,21 @@ public class MySQLRootAccountTest {
         };
     }
 
-    @Parameterized.Parameter
-    public DockerImageName image;
-
-    @Test
-    public void testRootAccountUsageWithDefaultPassword() throws SQLException {
+    @ParameterizedTest
+    @MethodSource("params")
+    void testRootAccountUsageWithDefaultPassword(DockerImageName image) throws SQLException {
         testWithDB(new MySQLContainer<>(image).withUsername("root"));
     }
 
-    @Test
-    public void testRootAccountUsageWithEmptyPassword() throws SQLException {
+    @ParameterizedTest
+    @MethodSource("params")
+    void testRootAccountUsageWithEmptyPassword(DockerImageName image) throws SQLException {
         testWithDB(new MySQLContainer<>(image).withUsername("root").withPassword(""));
     }
 
-    @Test
-    public void testRootAccountUsageWithCustomPassword() throws SQLException {
+    @ParameterizedTest
+    @MethodSource("params")
+    void testRootAccountUsageWithCustomPassword(DockerImageName image) throws SQLException {
         testWithDB(new MySQLContainer<>(image).withUsername("root").withPassword("not-default"));
     }
 
