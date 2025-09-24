@@ -1,22 +1,28 @@
 package org.testcontainers.junit;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AutoClose;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.testcontainers.containers.BrowserWebDriverContainer;
 
-public class ContainerWithoutCapabilitiesTest extends BaseWebDriverContainerTest {
+class ContainerWithoutCapabilitiesTest extends BaseWebDriverContainerTest {
 
-    @Rule
+    @AutoClose
     public BrowserWebDriverContainer<?> chrome = new BrowserWebDriverContainer<>().withNetwork(NETWORK);
 
+    @BeforeEach
+    public void setUp() {
+        chrome.start();
+    }
+
     @Test
-    public void chromeIsStartedIfNoCapabilitiesProvided() {
+    void chromeIsStartedIfNoCapabilitiesProvided() {
         assertBrowserNameIs(chrome, "chrome", new ChromeOptions());
     }
 
     @Test
-    public void simpleExploreTestWhenNoCapabilitiesProvided() {
+    void simpleExploreTestWhenNoCapabilitiesProvided() {
         doSimpleExplore(chrome, new ChromeOptions());
     }
 }

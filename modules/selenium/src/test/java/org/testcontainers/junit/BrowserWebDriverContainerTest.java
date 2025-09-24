@@ -3,8 +3,7 @@ package org.testcontainers.junit;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.junit.Assume;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.testcontainers.containers.BrowserWebDriverContainer;
@@ -14,15 +13,16 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assumptions.assumeThat;
 
-public class BrowserWebDriverContainerTest {
+class BrowserWebDriverContainerTest {
 
     private static final String NO_PROXY_KEY = "no_proxy";
 
     private static final String NO_PROXY_VALUE = "localhost,.noproxy-domain.com";
 
     @Test
-    public void honorPresetNoProxyEnvironment() {
+    void honorPresetNoProxyEnvironment() {
         try (
             BrowserWebDriverContainer chromeWithNoProxySet = (BrowserWebDriverContainer) new BrowserWebDriverContainer()
                 .withCapabilities(new ChromeOptions())
@@ -36,7 +36,7 @@ public class BrowserWebDriverContainerTest {
     }
 
     @Test
-    public void provideDefaultNoProxyEnvironmentIfNotSet() {
+    void provideDefaultNoProxyEnvironmentIfNotSet() {
         try (
             BrowserWebDriverContainer chromeWithoutNoProxySet = new BrowserWebDriverContainer()
                 .withCapabilities(new ChromeOptions())
@@ -49,8 +49,8 @@ public class BrowserWebDriverContainerTest {
     }
 
     @Test
-    public void createContainerWithShmVolume() {
-        Assume.assumeFalse("SHM isn't mounted on Windows", SystemUtils.IS_OS_WINDOWS);
+    void createContainerWithShmVolume() {
+        assumeThat(SystemUtils.IS_OS_WINDOWS).isTrue();
         try (
             BrowserWebDriverContainer webDriverContainer = new BrowserWebDriverContainer()
                 .withCapabilities(new FirefoxOptions())
@@ -66,7 +66,7 @@ public class BrowserWebDriverContainerTest {
     }
 
     @Test
-    public void createContainerWithoutShmVolume() {
+    void createContainerWithoutShmVolume() {
         try (
             BrowserWebDriverContainer webDriverContainer = new BrowserWebDriverContainer<>()
                 .withSharedMemorySize(512 * FileUtils.ONE_MB)
