@@ -3,8 +3,9 @@ package org.testcontainers.containers;
 import eu.rekawek.toxiproxy.Proxy;
 import eu.rekawek.toxiproxy.ToxiproxyClient;
 import eu.rekawek.toxiproxy.model.ToxicDirection;
+import org.junit.jupiter.api.AutoClose;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.junit.jupiter.ManagedNetwork;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
@@ -22,22 +23,28 @@ public class ToxiproxyTest {
     // spotless:off
     // creatingProxy {
     // Create a common docker network so that containers can communicate
-    @ManagedNetwork
+    @AutoClose
     public Network network = Network.newNetwork();
 
     // The target container - this could be anything
-    @org.testcontainers.junit.jupiter.Container
+    @AutoClose
     public GenericContainer<?> redis = new GenericContainer<>("redis:6-alpine")
         .withExposedPorts(6379)
         .withNetwork(network)
         .withNetworkAliases("redis");
 
     // Toxiproxy container, which will be used as a TCP proxy
-    @org.testcontainers.junit.jupiter.Container
+    @AutoClose
     public ToxiproxyContainer toxiproxy = new ToxiproxyContainer("ghcr.io/shopify/toxiproxy:2.5.0")
         .withNetwork(network);
     // }
     // spotless:on
+
+    @BeforeEach
+    public void setUp() {
+        redis.start();
+        toxiproxy.start();
+    }
 
     @Test
     public void testDirect() {
