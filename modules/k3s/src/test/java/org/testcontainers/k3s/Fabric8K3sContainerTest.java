@@ -12,7 +12,7 @@ import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.dsl.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -22,10 +22,10 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Slf4j
-public class Fabric8K3sContainerTest {
+class Fabric8K3sContainerTest {
 
     @Test
-    public void shouldStartAndHaveListableNode() {
+    void shouldStartAndHaveListableNode() {
         try (
             // starting_k3s {
             K3sContainer k3s = new K3sContainer(DockerImageName.parse("rancher/k3s:v1.21.3-k3s1"))

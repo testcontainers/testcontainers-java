@@ -2,7 +2,7 @@ package org.testcontainers.junit.yugabytedb;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.YugabyteDBYCQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * YugabyteDB YCQL API unit test class
  */
-public class YugabyteDBYCQLTest {
+class YugabyteDBYCQLTest {
 
     private static final String IMAGE_NAME = "yugabytedb/yugabyte:2.14.4.0-b26";
 
@@ -20,7 +20,7 @@ public class YugabyteDBYCQLTest {
     private static final DockerImageName YBDB_TEST_IMAGE = DockerImageName.parse(IMAGE_NAME);
 
     @Test
-    public void testSmoke() {
+    void testSmoke() {
         try (
             // creatingYCQLContainer {
             final YugabyteDBYCQLContainer ycqlContainer = new YugabyteDBYCQLContainer(
@@ -38,7 +38,7 @@ public class YugabyteDBYCQLTest {
     }
 
     @Test
-    public void testCustomKeyspace() {
+    void testCustomKeyspace() {
         String key = "random";
         try (
             final YugabyteDBYCQLContainer ycqlContainer = new YugabyteDBYCQLContainer(YBDB_TEST_IMAGE)
@@ -61,7 +61,7 @@ public class YugabyteDBYCQLTest {
     }
 
     @Test
-    public void testAuthenticationEnabled() {
+    void testAuthenticationEnabled() {
         String role = "random";
         try (
             final YugabyteDBYCQLContainer ycqlContainer = new YugabyteDBYCQLContainer(YBDB_TEST_IMAGE)
@@ -80,7 +80,7 @@ public class YugabyteDBYCQLTest {
     }
 
     @Test
-    public void testAuthenticationDisabled() {
+    void testAuthenticationDisabled() {
         try (
             final YugabyteDBYCQLContainer ycqlContainer = new YugabyteDBYCQLContainer(YBDB_TEST_IMAGE)
                 .withPassword("cassandra")
@@ -94,7 +94,7 @@ public class YugabyteDBYCQLTest {
     }
 
     @Test
-    public void testInitScript() {
+    void testInitScript() {
         String key = "random";
         try (
             final YugabyteDBYCQLContainer ycqlContainer = new YugabyteDBYCQLContainer(YBDB_TEST_IMAGE)
@@ -111,7 +111,7 @@ public class YugabyteDBYCQLTest {
     }
 
     @Test
-    public void shouldStartWhenContainerIpIsUsedInWaitStrategy() {
+    void shouldStartWhenContainerIpIsUsedInWaitStrategy() {
         try (
             final YugabyteDBYCQLContainer ycqlContainer = new YugabyteDBYCQLContainer(IMAGE_NAME_2_18)
                 .withUsername("cassandra")

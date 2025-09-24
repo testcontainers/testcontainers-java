@@ -3,23 +3,15 @@ package org.testcontainers.containers;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import org.bson.Document;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(Parameterized.class)
-public class CompatibleImageTest extends AbstractMongo {
+class CompatibleImageTest extends AbstractMongo {
 
-    private final String image;
-
-    public CompatibleImageTest(String image) {
-        this.image = image;
-    }
-
-    @Parameterized.Parameters(name = "{0}")
-    public static String[] image() {
+    static String[] image() {
         return new String[] {
             "mongo:7",
             "mongodb/mongodb-community-server:7.0.2-ubi8",
@@ -28,7 +20,7 @@ public class CompatibleImageTest extends AbstractMongo {
     }
 
     @Test
-    public void shouldExecuteTransactions() {
+    void shouldExecuteTransactions() {
         try (
             // creatingMongoDBContainer {
             final MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:4.0.10")
@@ -41,9 +33,10 @@ public class CompatibleImageTest extends AbstractMongo {
         }
     }
 
-    @Test
-    public void shouldSupportSharding() {
-        try (final MongoDBContainer mongoDBContainer = new MongoDBContainer(this.image).withSharding()) {
+    @ParameterizedTest
+    @MethodSource("image")
+    void shouldSupportSharding(String image) {
+        try (final MongoDBContainer mongoDBContainer = new MongoDBContainer(image).withSharding()) {
             mongoDBContainer.start();
             final MongoClient mongoClient = MongoClients.create(mongoDBContainer.getReplicaSetUrl());
 

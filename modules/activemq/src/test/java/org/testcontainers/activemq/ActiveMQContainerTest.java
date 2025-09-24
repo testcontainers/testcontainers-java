@@ -9,14 +9,14 @@ import jakarta.jms.Session;
 import jakarta.jms.TextMessage;
 import lombok.SneakyThrows;
 import org.apache.activemq.ActiveMQConnectionFactory;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ActiveMQContainerTest {
+class ActiveMQContainerTest {
 
     @Test
-    public void test() {
+    void test() {
         try ( // container {
             ActiveMQContainer activemq = new ActiveMQContainer("apache/activemq-classic:5.18.3")
             // }
@@ -30,7 +30,7 @@ public class ActiveMQContainerTest {
     }
 
     @Test
-    public void customCredentials() {
+    void customCredentials() {
         try (
             // settingCredentials {
             ActiveMQContainer activemq = new ActiveMQContainer("apache/activemq-classic:5.18.3")

@@ -1,6 +1,6 @@
 package org.testcontainers.junit.yugabytedb;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.YugabyteDBYSQLContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 import org.testcontainers.utility.DockerImageName;
@@ -12,14 +12,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * YugabyteDB YSQL API unit test class
  */
-public class YugabyteDBYSQLTest extends AbstractContainerDatabaseTest {
+class YugabyteDBYSQLTest extends AbstractContainerDatabaseTest {
 
     private static final String IMAGE_NAME = "yugabytedb/yugabyte:2.14.4.0-b26";
 
     private static final DockerImageName YBDB_TEST_IMAGE = DockerImageName.parse(IMAGE_NAME);
 
     @Test
-    public void testSmoke() throws SQLException {
+    void testSmoke() throws SQLException {
         try (
             // creatingYSQLContainer {
             final YugabyteDBYSQLContainer ysqlContainer = new YugabyteDBYSQLContainer(
@@ -35,7 +35,7 @@ public class YugabyteDBYSQLTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testCustomDatabase() throws SQLException {
+    void testCustomDatabase() throws SQLException {
         String key = "random";
         try (
             final YugabyteDBYSQLContainer ysqlContainer = new YugabyteDBYSQLContainer(YBDB_TEST_IMAGE)
@@ -49,7 +49,7 @@ public class YugabyteDBYSQLTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testInitScript() throws SQLException {
+    void testInitScript() throws SQLException {
         try (
             final YugabyteDBYSQLContainer ysqlContainer = new YugabyteDBYSQLContainer(YBDB_TEST_IMAGE)
                 .withInitScript("init/init_yql.sql")
@@ -62,7 +62,7 @@ public class YugabyteDBYSQLTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testWithAdditionalUrlParamInJdbcUrl() {
+    void testWithAdditionalUrlParamInJdbcUrl() {
         try (
             final YugabyteDBYSQLContainer ysqlContainer = new YugabyteDBYSQLContainer(YBDB_TEST_IMAGE)
                 .withUrlParam("sslmode", "disable")
@@ -80,7 +80,7 @@ public class YugabyteDBYSQLTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testWithCustomRole() throws SQLException {
+    void testWithCustomRole() throws SQLException {
         try (
             final YugabyteDBYSQLContainer ysqlContainer = new YugabyteDBYSQLContainer(YBDB_TEST_IMAGE)
                 .withDatabaseName("yugabyte")
@@ -95,7 +95,7 @@ public class YugabyteDBYSQLTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testWaitStrategy() throws SQLException {
+    void testWaitStrategy() throws SQLException {
         try (final YugabyteDBYSQLContainer ysqlContainer = new YugabyteDBYSQLContainer(YBDB_TEST_IMAGE)) {
             ysqlContainer.start();
             assertThat(performQuery(ysqlContainer, "SELECT 1").getInt(1))

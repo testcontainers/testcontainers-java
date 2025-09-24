@@ -3,14 +3,14 @@ package org.testcontainers.cassandra;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.utility.DockerImageName;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class CassandraContainerTest {
+class CassandraContainerTest {
 
     private static final String CASSANDRA_IMAGE = "cassandra:3.11.2";
 
@@ -19,7 +19,7 @@ public class CassandraContainerTest {
     private static final String BASIC_QUERY = "SELECT release_version FROM system.local";
 
     @Test
-    public void testSimple() {
+    void testSimple() {
         try ( // container-definition {
             CassandraContainer cassandraContainer = new CassandraContainer("cassandra:3.11.2")
             // }
@@ -32,7 +32,7 @@ public class CassandraContainerTest {
     }
 
     @Test
-    public void testSpecificVersion() {
+    void testSpecificVersion() {
         String cassandraVersion = "3.0.15";
         try (
             CassandraContainer cassandraContainer = new CassandraContainer(
@@ -47,7 +47,7 @@ public class CassandraContainerTest {
     }
 
     @Test
-    public void testConfigurationOverride() {
+    void testConfigurationOverride() {
         try (
             CassandraContainer cassandraContainer = new CassandraContainer(CASSANDRA_IMAGE)
                 .withConfigurationOverride("cassandra-test-configuration-example")
@@ -61,18 +61,18 @@ public class CassandraContainerTest {
         }
     }
 
-    @Test(expected = ContainerLaunchException.class)
-    public void testEmptyConfigurationOverride() {
+    @Test
+    void testEmptyConfigurationOverride() {
         try (
             CassandraContainer cassandraContainer = new CassandraContainer(CASSANDRA_IMAGE)
                 .withConfigurationOverride("cassandra-empty-configuration")
         ) {
-            cassandraContainer.start();
+            assertThatThrownBy(cassandraContainer::start).isInstanceOf(ContainerLaunchException.class);
         }
     }
 
     @Test
-    public void testInitScript() {
+    void testInitScript() {
         try (
             CassandraContainer cassandraContainer = new CassandraContainer(CASSANDRA_IMAGE)
                 .withInitScript("initial.cql")
@@ -83,17 +83,17 @@ public class CassandraContainerTest {
     }
 
     @Test
-    public void testNonexistentInitScript() {
+    void testNonexistentInitScript() {
         try (
             CassandraContainer cassandraContainer = new CassandraContainer(CASSANDRA_IMAGE)
                 .withInitScript("unknown_script.cql")
         ) {
-            assertThat(catchThrowable(cassandraContainer::start)).isInstanceOf(ContainerLaunchException.class);
+            assertThatThrownBy(cassandraContainer::start).isInstanceOf(ContainerLaunchException.class);
         }
     }
 
     @Test
-    public void testInitScriptWithRequiredAuthentication() {
+    void testInitScriptWithRequiredAuthentication() {
         try (
             // init-with-auth {
             CassandraContainer cassandraContainer = new CassandraContainer(CASSANDRA_IMAGE)
@@ -106,18 +106,18 @@ public class CassandraContainerTest {
         }
     }
 
-    @Test(expected = ContainerLaunchException.class)
-    public void testInitScriptWithError() {
+    @Test
+    void testInitScriptWithError() {
         try (
             CassandraContainer cassandraContainer = new CassandraContainer(CASSANDRA_IMAGE)
                 .withInitScript("initial-with-error.cql")
         ) {
-            cassandraContainer.start();
+            assertThatThrownBy(cassandraContainer::start).isInstanceOf(ContainerLaunchException.class);
         }
     }
 
     @Test
-    public void testInitScriptWithLegacyCassandra() {
+    void testInitScriptWithLegacyCassandra() {
         try (
             CassandraContainer cassandraContainer = new CassandraContainer("cassandra:2.2.11")
                 .withInitScript("initial.cql")
