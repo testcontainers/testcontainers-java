@@ -1,9 +1,8 @@
 package org.testcontainers.junit;
 
 import lombok.Cleanup;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.NginxContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
@@ -20,23 +19,15 @@ import java.net.URLConnection;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class SimpleNginxTest {
+class SimpleNginxTest {
 
     private static final DockerImageName NGINX_IMAGE = DockerImageName.parse("nginx:1.27.0-alpine3.19-slim");
 
     private static String tmpDirectory = System.getProperty("user.home") + "/.tmp-test-container";
 
-    // creatingContainer {
-    @Rule
-    public NginxContainer nginx = new NginxContainer(NGINX_IMAGE)
-        .withCopyFileToContainer(MountableFile.forHostPath(tmpDirectory), "/usr/share/nginx/html")
-        .waitingFor(new HttpWaitStrategy());
-
-    // }
-
     @SuppressWarnings({ "Duplicates", "ResultOfMethodCallIgnored" })
-    @BeforeClass
-    public static void setupContent() throws Exception {
+    @BeforeAll
+    static void setupContent() throws Exception {
         // addCustomContent {
         // Create a temporary dir
         File contentFolder = new File(tmpDirectory);
@@ -53,15 +44,24 @@ public class SimpleNginxTest {
     }
 
     @Test
-    public void testSimple() throws Exception {
-        // getFromNginxServer {
-        URL baseUrl = nginx.getBaseUrl("http", 80);
+    void testSimple() throws Exception {
+        try (
+            // creatingContainer {
+            NginxContainer nginx = new NginxContainer(NGINX_IMAGE)
+                .withCopyFileToContainer(MountableFile.forHostPath(tmpDirectory), "/usr/share/nginx/html")
+                .waitingFor(new HttpWaitStrategy());
+            // }
+        ) {
+            nginx.start();
+            // getFromNginxServer {
+            URL baseUrl = nginx.getBaseUrl("http", 80);
 
-        assertThat(responseFromNginx(baseUrl))
-            .as("An HTTP GET from the Nginx server returns the index.html from the custom content directory")
-            .contains("Hello World!");
-        // }
-        assertHasCorrectExposedAndLivenessCheckPorts(nginx);
+            assertThat(responseFromNginx(baseUrl))
+                .as("An HTTP GET from the Nginx server returns the index.html from the custom content directory")
+                .contains("Hello World!");
+            // }
+            assertHasCorrectExposedAndLivenessCheckPorts(nginx);
+        }
     }
 
     private void assertHasCorrectExposedAndLivenessCheckPorts(NginxContainer nginxContainer) {

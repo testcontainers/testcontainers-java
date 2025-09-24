@@ -1,7 +1,8 @@
 package org.testcontainers.containers;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.mockserver.client.MockServerClient;
 import org.testcontainers.utility.DockerImageName;
 
@@ -10,20 +11,29 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
-public class MockServerContainerRuleTest {
+class MockServerContainerRuleTest {
 
     // creatingProxy {
-    public static final DockerImageName MOCKSERVER_IMAGE = DockerImageName
+    private static final DockerImageName MOCKSERVER_IMAGE = DockerImageName
         .parse("mockserver/mockserver")
         .withTag("mockserver-" + MockServerClient.class.getPackage().getImplementationVersion());
 
-    @Rule
-    public MockServerContainer mockServer = new MockServerContainer(MOCKSERVER_IMAGE);
+    private static MockServerContainer mockServer = new MockServerContainer(MOCKSERVER_IMAGE);
 
     // }
 
+    @BeforeAll
+    static void setup() {
+        mockServer.start();
+    }
+
+    @AfterAll
+    static void tearDown() {
+        mockServer.stop();
+    }
+
     @Test
-    public void shouldReturnExpectation() throws Exception {
+    void shouldReturnExpectation() {
         // testSimpleExpectation {
         try (
             MockServerClient mockServerClient = new MockServerClient(mockServer.getHost(), mockServer.getServerPort())

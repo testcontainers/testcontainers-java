@@ -4,9 +4,11 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.lang3.SystemUtils;
-import org.junit.AfterClass;
-import org.junit.Test;
-import org.junit.runners.Parameterized.Parameter;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.Parameter;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -17,6 +19,8 @@ import java.util.EnumSet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assume.assumeFalse;
 
+@ParameterizedClass
+@MethodSource("data")
 public class AbstractJDBCDriverTest {
 
     protected enum Options {
@@ -27,7 +31,7 @@ public class AbstractJDBCDriverTest {
         PmdKnownBroken,
     }
 
-    @Parameter
+    @Parameter(0)
     public String jdbcUrl;
 
     @Parameter(1)
@@ -39,13 +43,13 @@ public class AbstractJDBCDriverTest {
         connection.createStatement().execute("CREATE TABLE my_counter (\n" + "  n INT\n" + ");");
     }
 
-    @AfterClass
+    @AfterAll
     public static void testCleanup() {
         ContainerDatabaseDriver.killContainers();
     }
 
     @Test
-    public void test() throws SQLException {
+    void test() throws SQLException {
         try (HikariDataSource dataSource = getDataSource(jdbcUrl, 1)) {
             performSimpleTest(dataSource);
 

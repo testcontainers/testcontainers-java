@@ -6,7 +6,7 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.RabbitMQContainer.SslVerification;
 import org.testcontainers.utility.MountableFile;
 
@@ -30,7 +30,7 @@ import javax.net.ssl.TrustManagerFactory;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
-public class RabbitMQContainerTest {
+class RabbitMQContainerTest {
 
     public static final int DEFAULT_AMQPS_PORT = 5671;
 
@@ -41,7 +41,7 @@ public class RabbitMQContainerTest {
     public static final int DEFAULT_HTTP_PORT = 15672;
 
     @Test
-    public void shouldCreateRabbitMQContainer() {
+    void shouldCreateRabbitMQContainer() {
         try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
             container.start();
 
@@ -70,7 +70,7 @@ public class RabbitMQContainerTest {
     }
 
     @Test
-    public void shouldCreateRabbitMQContainerWithCustomCredentials() {
+    void shouldCreateRabbitMQContainerWithCustomCredentials() {
         try (
             RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)
                 .withAdminUser("admin")
@@ -86,7 +86,7 @@ public class RabbitMQContainerTest {
     }
 
     @Test
-    public void shouldCreateRabbitMQContainerWithExchange() throws IOException, InterruptedException {
+    void shouldCreateRabbitMQContainerWithExchange() throws IOException, InterruptedException {
         try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
             container.withExchange("test-exchange", "direct");
 
@@ -98,7 +98,7 @@ public class RabbitMQContainerTest {
     }
 
     @Test
-    public void shouldCreateRabbitMQContainerWithExchangeInVhost() throws IOException, InterruptedException {
+    void shouldCreateRabbitMQContainerWithExchangeInVhost() throws IOException, InterruptedException {
         try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
             container.withVhost("test-vhost");
             container.withExchange(
@@ -119,7 +119,7 @@ public class RabbitMQContainerTest {
     }
 
     @Test
-    public void shouldCreateRabbitMQContainerWithQueues() throws IOException, InterruptedException {
+    void shouldCreateRabbitMQContainerWithQueues() throws IOException, InterruptedException {
         try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
             container
                 .withQueue("queue-one")
@@ -135,7 +135,7 @@ public class RabbitMQContainerTest {
     }
 
     @Test
-    public void shouldMountConfigurationFile() {
+    void shouldMountConfigurationFile() {
         try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
             container.withRabbitMQConfig(MountableFile.forClasspathResource("/rabbitmq-custom.conf"));
             container.start();
@@ -145,7 +145,7 @@ public class RabbitMQContainerTest {
     }
 
     @Test
-    public void shouldMountConfigurationFileErlang() {
+    void shouldMountConfigurationFileErlang() {
         try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
             container.withRabbitMQConfigErlang(MountableFile.forClasspathResource("/rabbitmq-custom.config"));
             container.start();
@@ -155,7 +155,7 @@ public class RabbitMQContainerTest {
     }
 
     @Test
-    public void shouldMountConfigurationFileSysctl() {
+    void shouldMountConfigurationFileSysctl() {
         try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
             container.withRabbitMQConfigSysctl(MountableFile.forClasspathResource("/rabbitmq-custom.conf"));
             container.start();
@@ -165,7 +165,7 @@ public class RabbitMQContainerTest {
     }
 
     @Test
-    public void shouldStartTheWholeEnchilada() throws IOException, InterruptedException {
+    void shouldStartTheWholeEnchilada() throws IOException, InterruptedException {
         try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
             container
                 .withVhost("vhost1")
@@ -240,7 +240,7 @@ public class RabbitMQContainerTest {
     }
 
     @Test
-    public void shouldThrowExceptionForDodgyJson() {
+    void shouldThrowExceptionForDodgyJson() {
         try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
             assertThatCode(() -> container.withQueue("queue2", true, false, ImmutableMap.of("x-message-ttl", container))
                 )
@@ -249,7 +249,7 @@ public class RabbitMQContainerTest {
     }
 
     @Test
-    public void shouldWorkWithSSL() {
+    void shouldWorkWithSSL() {
         try (RabbitMQContainer container = new RabbitMQContainer(RabbitMQTestImages.RABBITMQ_IMAGE)) {
             container.withSSL(
                 MountableFile.forClasspathResource("/certs/server_key.pem", 0644),

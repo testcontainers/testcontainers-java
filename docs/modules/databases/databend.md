@@ -1,5 +1,21 @@
 # Databend Module
 
+Testcontainers module for [Databend](https://hub.docker.com/r/datafuselabs/databend)
+
+## Usage example
+
+You can start a Databend container instance from any Java application by using:
+
+<!--codeinclude-->
+[Container definition](../../../modules/databend/src/test/java/org/testcontainers/databend/DatabendContainerTest.java) inside_block:container
+<!--/codeinclude-->
+
+### Testcontainers JDBC URL
+
+`jdbc:tc:databend:v1.2.615:///databasename`
+
+See [JDBC](./jdbc.md) for documentation.
+
 ## Adding this module to your project dependencies
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:

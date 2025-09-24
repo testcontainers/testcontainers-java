@@ -3,13 +3,20 @@ description = "Testcontainers :: JDBC :: DB2"
 dependencies {
     api project(':testcontainers-jdbc')
 
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
     testImplementation project(':testcontainers-jdbc-test')
     testRuntimeOnly 'com.ibm.db2:jcc:12.1.2.0'
-    testImplementation 'org.assertj:assertj-core:3.27.3'
+    testImplementation 'org.assertj:assertj-core:3.27.4'
 }
 
 tasks.japicmp {
     classExcludes = [
         "org.testcontainers.containers.Db2Container"
     ]
+}
+
+test {
+    useJUnitPlatform()
 }

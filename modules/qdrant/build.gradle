@@ -3,10 +3,17 @@ description = "Testcontainers :: Qdrant"
 dependencies {
     api project(':testcontainers')
 
-    testImplementation 'org.assertj:assertj-core:3.27.3'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
+    testImplementation 'org.assertj:assertj-core:3.27.4'
     testImplementation 'io.qdrant:client:1.15.0'
-    testImplementation platform('io.grpc:grpc-bom:1.73.0')
+    testImplementation platform('io.grpc:grpc-bom:1.75.0')
     testImplementation 'io.grpc:grpc-stub'
     testImplementation 'io.grpc:grpc-protobuf'
     testImplementation 'io.grpc:grpc-netty-shaded'
+}
+
+test {
+    useJUnitPlatform()
 }

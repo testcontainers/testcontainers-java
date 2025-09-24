@@ -1,6 +1,6 @@
 package org.testcontainers.junit.oracle;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 import org.testcontainers.oracle.OracleContainer;
 import org.testcontainers.utility.DockerImageName;
@@ -11,9 +11,9 @@ import java.sql.SQLException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
-public class SimpleOracleTest extends AbstractContainerDatabaseTest {
+class SimpleOracleTest extends AbstractContainerDatabaseTest {
 
-    public static final DockerImageName ORACLE_DOCKER_IMAGE_NAME = DockerImageName.parse(
+    private static final DockerImageName ORACLE_DOCKER_IMAGE_NAME = DockerImageName.parse(
         "gvenzl/oracle-free:slim-faststart"
     );
 
@@ -46,8 +46,11 @@ public class SimpleOracleTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testDefaultSettings() throws SQLException {
-        try (OracleContainer oracle = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME)) {
+    void testDefaultSettings() throws SQLException {
+        try ( // container {
+            OracleContainer oracle = new OracleContainer("gvenzl/oracle-free:slim-faststart")
+            // }
+        ) {
             runTest(oracle, "freepdb1", "test", "test");
 
             // Match against the last '/'
@@ -57,28 +60,26 @@ public class SimpleOracleTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testPluggableDatabase() throws SQLException {
+    void testPluggableDatabase() throws SQLException {
         try (OracleContainer oracle = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME).withDatabaseName("testDB")) {
             runTest(oracle, "testDB", "test", "test");
         }
     }
 
     @Test
-    public void testPluggableDatabaseAndCustomUser() throws SQLException {
+    void testPluggableDatabaseAndCustomUser() throws SQLException {
         try (
-            // constructor {
             OracleContainer oracle = new OracleContainer("gvenzl/oracle-free:slim-faststart")
                 .withDatabaseName("testDB")
                 .withUsername("testUser")
                 .withPassword("testPassword")
-            // }
         ) {
             runTest(oracle, "testDB", "testUser", "testPassword");
         }
     }
 
     @Test
-    public void testCustomUser() throws SQLException {
+    void testCustomUser() throws SQLException {
         try (
             OracleContainer oracle = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME)
                 .withUsername("testUser")
@@ -89,7 +90,7 @@ public class SimpleOracleTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testSID() throws SQLException {
+    void testSID() throws SQLException {
         try (OracleContainer oracle = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME).usingSid()) {
             runTestSystemUser(oracle, "freepdb1", "system", "test");
 
@@ -100,7 +101,7 @@ public class SimpleOracleTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testSIDAndCustomPassword() throws SQLException {
+    void testSIDAndCustomPassword() throws SQLException {
         try (
             OracleContainer oracle = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME)
                 .usingSid()
@@ -133,7 +134,7 @@ public class SimpleOracleTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testErrorPaths() throws SQLException {
+    void testErrorPaths() throws SQLException {
         try (OracleContainer oracle = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME)) {
             try {
                 oracle.withDatabaseName("FREEPDB1");
