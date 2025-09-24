@@ -7,8 +7,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.TestImages;
 import org.testcontainers.Testcontainers;
@@ -189,11 +187,6 @@ class ExposedHostTest {
 
             @Override
             public void close() {}
-
-            @Override
-            public Statement apply(Statement base, Description description) {
-                return null;
-            }
         };
 
         List<com.github.dockerjava.api.model.Network> networks = DockerClientFactory
