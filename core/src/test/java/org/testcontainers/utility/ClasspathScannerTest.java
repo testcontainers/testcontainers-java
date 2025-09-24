@@ -1,7 +1,7 @@
 package org.testcontainers.utility;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.URL;
@@ -15,7 +15,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class ClasspathScannerTest {
+class ClasspathScannerTest {
 
     private static URL FILE_A;
 
@@ -27,7 +27,7 @@ public class ClasspathScannerTest {
 
     private static URL FILE_C;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() throws Exception {
         FILE_A = new URL("file:///a/someName");
         FILE_B = new URL("file:///b/someName");
@@ -37,7 +37,7 @@ public class ClasspathScannerTest {
     }
 
     @Test
-    public void realClassLoaderLookupOccurs() {
+    void realClassLoaderLookupOccurs() {
         // look for a resource that we know exists only once
         final List<URL> foundURLs = ClasspathScanner.scanFor("expectedClasspathFile.txt").collect(Collectors.toList());
 
@@ -45,7 +45,7 @@ public class ClasspathScannerTest {
     }
 
     @Test
-    public void multipleResultsOnOneClassLoaderAreFound() throws IOException {
+    void multipleResultsOnOneClassLoaderAreFound() throws IOException {
         final ClassLoader firstMockClassLoader = mock(ClassLoader.class);
         when(firstMockClassLoader.getResources(eq("someName")))
             .thenReturn(Collections.enumeration(Arrays.asList(FILE_A, FILE_B)));
@@ -57,7 +57,7 @@ public class ClasspathScannerTest {
     }
 
     @Test
-    public void orderIsAlphabeticalForDeterminism() throws IOException {
+    void orderIsAlphabeticalForDeterminism() throws IOException {
         final ClassLoader firstMockClassLoader = mock(ClassLoader.class);
         when(firstMockClassLoader.getResources(eq("someName")))
             .thenReturn(Collections.enumeration(Arrays.asList(FILE_B, JAR_A, JAR_B, FILE_A)));
@@ -71,7 +71,7 @@ public class ClasspathScannerTest {
     }
 
     @Test
-    public void multipleClassLoadersAreQueried() throws IOException {
+    void multipleClassLoadersAreQueried() throws IOException {
         final ClassLoader firstMockClassLoader = mock(ClassLoader.class);
         when(firstMockClassLoader.getResources(eq("someName")))
             .thenReturn(Collections.enumeration(Arrays.asList(FILE_A, FILE_B)));

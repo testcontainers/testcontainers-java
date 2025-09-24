@@ -1,17 +1,20 @@
 package org.testcontainers.utility;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class LicenseAcceptanceTest {
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+class LicenseAcceptanceTest {
 
     @Test
-    public void testForExistingNames() {
+    void testForExistingNames() {
         LicenseAcceptance.assertLicenseAccepted("a");
         LicenseAcceptance.assertLicenseAccepted("b");
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testForMissingNames() {
-        LicenseAcceptance.assertLicenseAccepted("c");
+    @Test
+    void testForMissingNames() {
+        assertThatThrownBy(() -> LicenseAcceptance.assertLicenseAccepted("c"))
+            .isInstanceOf(IllegalStateException.class);
     }
 }

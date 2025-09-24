@@ -1,6 +1,6 @@
 package org.testcontainers.containers;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.rnorth.ducttape.TimeoutException;
 import org.testcontainers.containers.wait.strategy.Wait;
 
@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
-public class ComposeContainerWithServicesTest {
+class ComposeContainerWithServicesTest {
 
     public static final File SIMPLE_COMPOSE_FILE = new File(
         "src/test/resources/compose-scaling-multiple-containers.yml"
@@ -28,7 +28,7 @@ public class ComposeContainerWithServicesTest {
     );
 
     @Test
-    public void testDesiredSubsetOfServicesAreStarted() {
+    void testDesiredSubsetOfServicesAreStarted() {
         try (ComposeContainer compose = new ComposeContainer(SIMPLE_COMPOSE_FILE).withServices("redis")) {
             compose.start();
 
@@ -37,7 +37,7 @@ public class ComposeContainerWithServicesTest {
     }
 
     @Test
-    public void testDesiredSubsetOfScaledServicesAreStarted() {
+    void testDesiredSubsetOfScaledServicesAreStarted() {
         try (ComposeContainer compose = new ComposeContainer(SIMPLE_COMPOSE_FILE).withScaledService("redis", 2)) {
             compose.start();
 
@@ -46,7 +46,7 @@ public class ComposeContainerWithServicesTest {
     }
 
     @Test
-    public void testDesiredSubsetOfSpecifiedAndScaledServicesAreStarted() {
+    void testDesiredSubsetOfSpecifiedAndScaledServicesAreStarted() {
         try (
             ComposeContainer compose = new ComposeContainer(SIMPLE_COMPOSE_FILE)
                 .withServices("redis")
@@ -59,7 +59,7 @@ public class ComposeContainerWithServicesTest {
     }
 
     @Test
-    public void testDesiredSubsetOfSpecifiedOrScaledServicesAreStarted() {
+    void testDesiredSubsetOfSpecifiedOrScaledServicesAreStarted() {
         try (
             ComposeContainer compose = new ComposeContainer(SIMPLE_COMPOSE_FILE)
                 .withServices("other")
@@ -72,7 +72,7 @@ public class ComposeContainerWithServicesTest {
     }
 
     @Test
-    public void testAllServicesAreStartedIfNotSpecified() {
+    void testAllServicesAreStartedIfNotSpecified() {
         try (ComposeContainer compose = new ComposeContainer(SIMPLE_COMPOSE_FILE)) {
             compose.start();
 
@@ -81,7 +81,7 @@ public class ComposeContainerWithServicesTest {
     }
 
     @Test
-    public void testScaleInComposeFileIsRespected() {
+    void testScaleInComposeFileIsRespected() {
         try (ComposeContainer compose = new ComposeContainer(COMPOSE_FILE_WITH_INLINE_SCALE)) {
             compose.start();
 
@@ -91,7 +91,7 @@ public class ComposeContainerWithServicesTest {
     }
 
     @Test
-    public void testStartupTimeoutSetsTheHighestTimeout() {
+    void testStartupTimeoutSetsTheHighestTimeout() {
         assertThat(
             catchThrowable(() -> {
                 try (
@@ -113,7 +113,7 @@ public class ComposeContainerWithServicesTest {
     }
 
     @Test
-    public void testWaitingForHealthcheck() {
+    void testWaitingForHealthcheck() {
         try (
             ComposeContainer compose = new ComposeContainer(COMPOSE_FILE_WITH_HEALTHCHECK)
                 .waitingFor("redis", Wait.forHealthcheck().withStartupTimeout(Duration.ofMinutes(2)))
@@ -125,7 +125,7 @@ public class ComposeContainerWithServicesTest {
     }
 
     @Test
-    public void testWaitingForHealthcheckWithRestartDoesNotCrash() {
+    void testWaitingForHealthcheckWithRestartDoesNotCrash() {
         try (
             ComposeContainer compose = new ComposeContainer(COMPOSE_FILE_WITH_HEALTHCHECK)
                 .waitingFor("redis", Wait.forHealthcheck().withStartupTimeout(Duration.ofMinutes(1)))

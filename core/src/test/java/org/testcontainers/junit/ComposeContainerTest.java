@@ -1,7 +1,6 @@
 package org.testcontainers.junit;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.ComposeContainer;
 import org.testcontainers.containers.ContainerState;
 import org.testcontainers.containers.DockerComposeContainer;
@@ -15,9 +14,8 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ComposeContainerTest extends BaseComposeTest {
+class ComposeContainerTest extends BaseComposeTest {
 
-    @Rule
     // composeContainerConstructor {
     public ComposeContainer environment = new ComposeContainer(
         new File("src/test/resources/composev2/compose-test.yml")
@@ -27,13 +25,17 @@ public class ComposeContainerTest extends BaseComposeTest {
 
     // }
 
+    ComposeContainerTest() {
+        environment.start();
+    }
+
     @Override
     protected ComposeContainer getEnvironment() {
         return environment;
     }
 
     @Test
-    public void testGetServiceHostAndPort() {
+    void testGetServiceHostAndPort() {
         // getServiceHostAndPort {
         String serviceHost = environment.getServiceHost("redis-1", REDIS_PORT);
         int serviceWithInstancePort = environment.getServicePort("redis-1", REDIS_PORT);
@@ -48,7 +50,7 @@ public class ComposeContainerTest extends BaseComposeTest {
     }
 
     @Test
-    public void shouldRetrieveContainerByServiceName() {
+    void shouldRetrieveContainerByServiceName() {
         String existingServiceName = "db-1";
         Optional<ContainerState> result = environment.getContainerByServiceName(existingServiceName);
         assertThat(result)
@@ -60,7 +62,7 @@ public class ComposeContainerTest extends BaseComposeTest {
     }
 
     @Test
-    public void shouldReturnEmptyResultOnNoneExistingService() {
+    void shouldReturnEmptyResultOnNoneExistingService() {
         String notExistingServiceName = "db-256";
         Optional<ContainerState> result = environment.getContainerByServiceName(notExistingServiceName);
         assertThat(result)
@@ -69,7 +71,7 @@ public class ComposeContainerTest extends BaseComposeTest {
     }
 
     @Test
-    public void shouldCreateContainerWhenFileNotPrefixedWithPath() throws IOException {
+    void shouldCreateContainerWhenFileNotPrefixedWithPath() throws IOException {
         String validYaml =
             "version: '2.2'\n" +
             "services:\n" +

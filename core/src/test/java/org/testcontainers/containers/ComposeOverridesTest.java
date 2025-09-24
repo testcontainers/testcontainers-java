@@ -3,11 +3,8 @@ package org.testcontainers.containers;
 import com.google.common.util.concurrent.Uninterruptibles;
 import org.apache.commons.lang3.SystemUtils;
 import org.assertj.core.api.Assumptions;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.utility.CommandLine;
 
@@ -18,8 +15,7 @@ import java.net.Socket;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
-@RunWith(Parameterized.class)
-public class ComposeOverridesTest {
+class ComposeOverridesTest {
 
     private static final String DOCKER_EXECUTABLE = SystemUtils.IS_OS_WINDOWS ? "docker.exe" : "docker";
 
@@ -37,19 +33,6 @@ public class ComposeOverridesTest {
 
     private static final String SERVICE_NAME = "alpine-1";
 
-    private final boolean localMode;
-
-    private final String expectedEnvVar;
-
-    private final File[] composeFiles;
-
-    public ComposeOverridesTest(boolean localMode, String expectedEnvVar, File... composeFiles) {
-        this.localMode = localMode;
-        this.expectedEnvVar = expectedEnvVar;
-        this.composeFiles = composeFiles;
-    }
-
-    @Parameters(name = "{index}: local[{0}], composeFiles[{2}], expectedEnvVar[{1}]")
     public static Iterable<Object[]> data() {
         return Arrays.asList(
             new Object[][] {
@@ -61,18 +44,15 @@ public class ComposeOverridesTest {
         );
     }
 
-    @Before
-    public void setUp() {
+    @ParameterizedTest(name = "{index}: local[{0}], composeFiles[{2}], expectedEnvVar[{1}]")
+    @MethodSource("data")
+    void test(boolean localMode, String expectedEnvVar, File... composeFiles) {
         if (localMode) {
             Assumptions
                 .assumeThat(CommandLine.executableExists(DOCKER_EXECUTABLE))
                 .as("docker executable exists")
                 .isTrue();
         }
-    }
-
-    @Test
-    public void test() {
         try (
             ComposeContainer compose = new ComposeContainer(composeFiles)
                 .withLocalCompose(localMode)

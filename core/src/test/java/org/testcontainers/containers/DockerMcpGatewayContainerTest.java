@@ -1,15 +1,15 @@
 package org.testcontainers.containers;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class DockerMcpGatewayContainerTest {
+class DockerMcpGatewayContainerTest {
 
     @Test
-    public void serviceSuccessfullyStarts() {
+    void serviceSuccessfullyStarts() {
         try (DockerMcpGatewayContainer gateway = new DockerMcpGatewayContainer("docker/mcp-gateway:latest")) {
             gateway.start();
 
@@ -18,7 +18,7 @@ public class DockerMcpGatewayContainerTest {
     }
 
     @Test
-    public void gatewayStartsWithServers() {
+    void gatewayStartsWithServers() {
         try (
             // container {
             DockerMcpGatewayContainer gateway = new DockerMcpGatewayContainer("docker/mcp-gateway:latest")
