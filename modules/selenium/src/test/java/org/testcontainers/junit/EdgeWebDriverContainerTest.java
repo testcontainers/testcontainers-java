@@ -1,27 +1,26 @@
 package org.testcontainers.junit;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.edge.EdgeOptions;
 import org.testcontainers.containers.BrowserWebDriverContainer;
 
-public class EdgeWebDriverContainerTest extends BaseWebDriverContainerTest {
+class EdgeWebDriverContainerTest extends BaseWebDriverContainerTest {
 
     // junitRule {
-    @Rule
     public BrowserWebDriverContainer<?> edge = new BrowserWebDriverContainer<>()
         .withCapabilities(new EdgeOptions())
         // }
         .withNetwork(NETWORK);
 
-    @Before
+    @BeforeEach
     public void checkBrowserIsIndeedMSEdge() {
+        edge.start();
         assertBrowserNameIs(edge, "msedge", new EdgeOptions());
     }
 
     @Test
-    public void simpleExploreTest() {
+    void simpleExploreTest() {
         doSimpleExplore(edge, new EdgeOptions());
     }
 }
