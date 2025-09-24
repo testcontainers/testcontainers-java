@@ -72,7 +72,7 @@ dependencies {
     api 'org.slf4j:slf4j-api:1.7.36'
     compileOnly 'org.jetbrains:annotations:26.0.2-1'
     testCompileOnly 'org.jetbrains:annotations:26.0.2-1'
-    api 'org.apache.commons:commons-compress:1.24.0'
+    api 'org.apache.commons:commons-compress:1.28.0'
     api ('org.rnorth.duct-tape:duct-tape:1.0.8') {
         exclude(group: 'org.jetbrains', module: 'annotations')
     }
@@ -109,7 +109,7 @@ dependencies {
         exclude group: 'com.google.guava', module: 'guava'
     }
     testImplementation 'org.apache.httpcomponents:httpclient:4.5.14'
-    testImplementation 'redis.clients:jedis:6.1.0'
+    testImplementation 'redis.clients:jedis:6.2.0'
     testImplementation 'com.rabbitmq:amqp-client:5.26.0'
     testImplementation 'org.mongodb:mongo-java-driver:3.12.14'
 
@@ -119,13 +119,13 @@ dependencies {
     // Synthetic JAR used for MountableFileTest and DirectoryTarResourceTest
     testImplementation files('testlib/repo/fakejar/fakejar/0/fakejar-0.jar')
 
-    testImplementation 'org.assertj:assertj-core:3.27.4'
+    testImplementation 'org.assertj:assertj-core:3.27.6'
     testImplementation 'io.rest-assured:rest-assured:5.5.6'
 
     jarFileTestCompileOnly "org.projectlombok:lombok:${lombok.version}"
     jarFileTestAnnotationProcessor "org.projectlombok:lombok:${lombok.version}"
     jarFileTestImplementation 'junit:junit:4.13.2'
-    jarFileTestImplementation 'org.assertj:assertj-core:3.27.4'
+    jarFileTestImplementation 'org.assertj:assertj-core:3.27.6'
     jarFileTestImplementation 'org.ow2.asm:asm-debug-all:5.2'
 }
 
