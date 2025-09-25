@@ -19,7 +19,6 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
-import static org.junit.Assume.assumeFalse;
 
 class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
 
@@ -58,7 +57,7 @@ class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
 
     @Test
     void testMariaDBWithCustomIniFile() throws SQLException {
-        assumeFalse(SystemUtils.IS_OS_WINDOWS);
+        assumeThat(SystemUtils.IS_OS_WINDOWS).isFalse();
 
         try (
             MariaDBContainer<?> mariadbCustomConfig = new MariaDBContainer<>(
