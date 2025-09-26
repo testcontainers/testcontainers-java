@@ -33,12 +33,10 @@ class SimpleOracleTest extends AbstractContainerDatabaseTest {
 
     private void runTestSystemUser(OracleContainer container, String databaseName, String username, String password)
         throws SQLException {
-        //Test config was honored
         assertThat(container.getDatabaseName()).isEqualTo(databaseName);
         assertThat(container.getUsername()).isEqualTo(username);
         assertThat(container.getPassword()).isEqualTo(password);
 
-        //Test we can get a connection and execute a system-level command
         container.start();
         ResultSet resultSet = performQuery(container, "GRANT DBA TO " + username);
         int resultSetInt = resultSet.getInt(1);
@@ -113,11 +111,10 @@ class SimpleOracleTest extends AbstractContainerDatabaseTest {
 
     @Test
     public void testSeparateSystemAndAppPasswords() throws SQLException {
-        // SID mode should use system password
         try (
             OracleContainer oracleSid = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME)
                 .usingSid()
-                .withOraclePassword("SysP@ss1!")
+                .withSystemPassword("SysP@ss1!")
                 .withPassword("AppP@ss1!")
         ) {
             runTestSystemUser(oracleSid, "xepdb1", "system", "SysP@ss1!");
@@ -126,7 +123,7 @@ class SimpleOracleTest extends AbstractContainerDatabaseTest {
         // Non-SID mode should use application user's password
         try (
             OracleContainer oraclePdb = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME)
-                .withOraclePassword("SysP@ss2!")
+                .withSystemPassword("SysP@ss2!")
                 .withPassword("AppP@ss2!")
         ) {
             runTest(oraclePdb, "xepdb1", "test", "AppP@ss2!");

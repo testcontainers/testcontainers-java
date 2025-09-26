@@ -112,24 +112,25 @@ class SimpleOracleTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testSeparateSystemAndAppPasswords() throws SQLException {
-        // SID mode should use system password
+    public void testWithSystemPassword() throws SQLException {
         try (
-            OracleContainer oracleSid = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME)
+            OracleContainer oracle = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME)
                 .usingSid()
-                .withOraclePassword("SysP@ss1!")
+                .withSystemPassword("SysP@ss1!")
                 .withPassword("AppP@ss1!")
         ) {
-            runTestSystemUser(oracleSid, "freepdb1", "system", "SysP@ss1!");
+            runTestSystemUser(oracle, "freepdb1", "system", "SysP@ss1!");
         }
+    }
 
-        // Non-SID mode should use application user's password
+    @Test
+    public void testWithPassword() throws SQLException {
         try (
-            OracleContainer oraclePdb = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME)
-                .withOraclePassword("SysP@ss2!")
+            OracleContainer oracle = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME)
+                .withSystemPassword("SysP@ss2!")
                 .withPassword("AppP@ss2!")
         ) {
-            runTest(oraclePdb, "freepdb1", "test", "AppP@ss2!");
+            runTest(oracle, "freepdb1", "test", "AppP@ss2!");
         }
     }
 

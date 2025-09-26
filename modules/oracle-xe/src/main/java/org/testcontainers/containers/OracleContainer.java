@@ -63,15 +63,15 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     /**
      * Password for Oracle system user (e.g. SYSTEM/SYS). Defaults to {@link #APP_USER_PASSWORD}
-     * for backwards compatibility, but can be customized independently via {@link #withOraclePassword(String)}.
+     * for backwards compatibility, but can be customized independently via {@link #withSystemPassword(String)}.
      */
-    private String oraclePassword = APP_USER_PASSWORD;
+    private String systemPassword = APP_USER_PASSWORD;
 
     /**
-     * Tracks whether {@link #withOraclePassword(String)} was called to avoid overriding
+     * Tracks whether {@link #withSystemPassword(String)} was called to avoid overriding
      * the system password when {@link #withPassword(String)} is used for the application user only.
      */
-    private boolean oraclePasswordExplicitlySet = false;
+    private boolean systemPasswordExplicitlySet = false;
 
     private boolean usingSid = false;
 
@@ -138,7 +138,7 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     @Override
     public String getPassword() {
         // When connecting via SID we authenticate as SYSTEM. Use the dedicated system password.
-        return isUsingSid() ? oraclePassword : password;
+        return isUsingSid() ? systemPassword : password;
     }
 
     @Override
@@ -170,8 +170,8 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
         this.password = password;
         // Maintain backwards compatibility: if oracle password wasn't set explicitly,
         // align it with the application user's password.
-        if (!oraclePasswordExplicitlySet) {
-            this.oraclePassword = password;
+        if (!systemPasswordExplicitlySet) {
+            this.systemPassword = password;
         }
         return self();
     }
@@ -183,12 +183,12 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
      * @param oraclePassword password for SYSTEM/SYS users inside the container
      * @return this container instance
      */
-    public OracleContainer withOraclePassword(String oraclePassword) {
+    public OracleContainer withSystemPassword(String oraclePassword) {
         if (StringUtils.isEmpty(oraclePassword)) {
             throw new IllegalArgumentException("Oracle password cannot be null or empty");
         }
-        this.oraclePassword = oraclePassword;
-        this.oraclePasswordExplicitlySet = true;
+        this.systemPassword = oraclePassword;
+        this.systemPasswordExplicitlySet = true;
         return self();
     }
 
@@ -238,7 +238,7 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     @Override
     protected void configure() {
         // Configure system user password independently from application user's password
-        withEnv("ORACLE_PASSWORD", oraclePassword);
+        withEnv("ORACLE_PASSWORD", systemPassword);
 
         // Only set ORACLE_DATABASE if different than the default.
         if (databaseName != DEFAULT_DATABASE_NAME) {
