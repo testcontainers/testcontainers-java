@@ -30,6 +30,7 @@ shadowJar {
 }
 
 task jarFileTest(type: Test) {
+    useJUnitPlatform()
     testClassesDirs = sourceSets.jarFileTest.output.classesDirs
     classpath = sourceSets.jarFileTest.runtimeClasspath
 
@@ -48,13 +49,33 @@ tasks.japicmp {
 
     classExcludes = [
         "org.testcontainers.utility.RyukResourceReaper",
+        "org.testcontainers.containers.FailureDetectingExternalResource",
+        "org.testcontainers.containers.ComposeContainer",
+        "org.testcontainers.containers.DockerComposeContainer",
+        "org.testcontainers.containers.GenericContainer"
     ]
 
     methodExcludes = [
         "org.testcontainers.containers.Container#getDockerClient()",
         "org.testcontainers.containers.ContainerState#getDockerClient()",
         "org.testcontainers.containers.ContainerState#execInContainer(org.testcontainers.containers.ExecConfig)",
-        "org.testcontainers.containers.ContainerState#execInContainer(java.nio.charset.Charset,org.testcontainers.containers.ExecConfig)"
+        "org.testcontainers.containers.ContainerState#execInContainer(java.nio.charset.Charset,org.testcontainers.containers.ExecConfig)",
+        "org.testcontainers.containers.ComposeContainer#apply(org.junit.runners.model.Statement, org.junit.runner.Description)",
+        "org.testcontainers.containers.ComposeContainer#failed(java.lang.Throwable, org.junit.runner.Description)",
+        "org.testcontainers.containers.ComposeContainer#finished(org.junit.runner.Description)",
+        "org.testcontainers.containers.ComposeContainer#starting(org.junit.runner.Description)",
+        "org.testcontainers.containers.ComposeContainer#succeeded(org.junit.runner.Description)",
+        "org.testcontainers.containers.DockerComposeContainer#apply(org.junit.runners.model.Statement, org.junit.runner.Description)",
+        "org.testcontainers.containers.DockerComposeContainer#failed(java.lang.Throwable, org.junit.runner.Description)",
+        "org.testcontainers.containers.DockerComposeContainer#finished(org.junit.runner.Description)",
+        "org.testcontainers.containers.DockerComposeContainer#starting(org.junit.runner.Description)",
+        "org.testcontainers.containers.DockerComposeContainer#succeeded(org.junit.runner.Description)",
+        "org.testcontainers.containers.GenericContainer#apply(org.junit.runners.model.Statement, org.junit.runner.Description)",
+        "org.testcontainers.containers.GenericContainer#failed(java.lang.Throwable, org.junit.runner.Description)",
+        "org.testcontainers.containers.GenericContainer#finished(org.junit.runner.Description)",
+        "org.testcontainers.containers.GenericContainer#starting(org.junit.runner.Description)",
+        "org.testcontainers.containers.GenericContainer#succeeded(org.junit.runner.Description)",
+        'org.testcontainers.containers.Network$NetworkImpl#after()'
     ]
 
     fieldExcludes = []
@@ -68,7 +89,6 @@ configurations.all {
 }
 
 dependencies {
-    api 'junit:junit:4.13.2'
     api 'org.slf4j:slf4j-api:1.7.36'
     compileOnly 'org.jetbrains:annotations:26.0.2-1'
     testCompileOnly 'org.jetbrains:annotations:26.0.2-1'
@@ -105,6 +125,9 @@ dependencies {
 
     shaded 'org.zeroturnaround:zt-exec:1.12'
 
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
     testImplementation('com.google.cloud.tools:jib-core:0.27.3')  {
         exclude group: 'com.google.guava', module: 'guava'
     }
@@ -124,8 +147,9 @@ dependencies {
 
     jarFileTestCompileOnly "org.projectlombok:lombok:${lombok.version}"
     jarFileTestAnnotationProcessor "org.projectlombok:lombok:${lombok.version}"
-    jarFileTestImplementation 'junit:junit:4.13.2'
-    jarFileTestImplementation 'org.assertj:assertj-core:3.27.6'
+    jarFileTestRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
+    jarFileTestImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
+    jarFileTestImplementation 'org.assertj:assertj-core:3.27.4'
     jarFileTestImplementation 'org.ow2.asm:asm-debug-all:5.2'
 }
 
@@ -135,3 +159,14 @@ tasks.generatePomFileForMavenJavaPublication.finalizedBy(
         ]
     }
 )
+
+compileTestJava {
+    javaCompiler = javaToolchains.compilerFor {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+    options.release.set(17)
+}
+
+test {
+    useJUnitPlatform()
+}

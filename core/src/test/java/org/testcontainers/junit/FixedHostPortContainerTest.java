@@ -1,7 +1,7 @@
 package org.testcontainers.junit;
 
 import org.awaitility.Awaitility;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.TestImages;
 import org.testcontainers.containers.FixedHostPortGenericContainer;
 import org.testcontainers.containers.GenericContainer;
@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * is managed completely within the test method to allow a free port to be found and assigned before the container
  * is started.
  */
-public class FixedHostPortContainerTest {
+class FixedHostPortContainerTest {
 
     private static final String TEST_IMAGE = "alpine:3.17";
 
@@ -44,7 +44,7 @@ public class FixedHostPortContainerTest {
     );
 
     @Test
-    public void testFixedHostPortMapping() throws IOException {
+    void testFixedHostPortMapping() throws IOException {
         // first find a free port on the docker host that will work for testing
         final Integer unusedHostPort;
         try (

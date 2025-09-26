@@ -2,16 +2,16 @@ package org.testcontainers.junit;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.core.command.PullImageResultCallback;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.DockerComposeContainer;
 
 import java.io.File;
 
-public class DockerComposeLocalImageTest {
+class DockerComposeLocalImageTest {
 
     @Test
-    public void usesLocalImageEvenWhenPullFails() throws InterruptedException {
+    void usesLocalImageEvenWhenPullFails() throws InterruptedException {
         tagImage("redis:6-alpine", "redis-local", "latest");
 
         DockerComposeContainer composeContainer = new DockerComposeContainer(

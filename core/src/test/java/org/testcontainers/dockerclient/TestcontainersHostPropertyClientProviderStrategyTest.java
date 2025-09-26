@@ -1,29 +1,20 @@
 package org.testcontainers.dockerclient;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.testcontainers.utility.MockTestcontainersConfigurationRule;
+import org.testcontainers.utility.MockTestcontainersConfigurationExtension;
 import org.testcontainers.utility.TestcontainersConfiguration;
-
-import java.net.URI;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 
-@RunWith(MockitoJUnitRunner.class)
-public class TestcontainersHostPropertyClientProviderStrategyTest {
-
-    @Rule
-    public MockTestcontainersConfigurationRule mockConfig = new MockTestcontainersConfigurationRule();
-
-    private URI defaultDockerHost;
+@ExtendWith(MockTestcontainersConfigurationExtension.class)
+class TestcontainersHostPropertyClientProviderStrategyTest {
 
     @Test
-    public void tcHostPropertyIsProvided() {
+    void tcHostPropertyIsProvided() {
         Mockito
             .doReturn("tcp://127.0.0.1:9000")
             .when(TestcontainersConfiguration.getInstance())
@@ -37,7 +28,7 @@ public class TestcontainersHostPropertyClientProviderStrategyTest {
     }
 
     @Test
-    public void tcHostPropertyIsNotProvided() {
+    void tcHostPropertyIsNotProvided() {
         Mockito.doReturn(null).when(TestcontainersConfiguration.getInstance()).getUserProperty(eq("tc.host"), isNull());
 
         TestcontainersHostPropertyClientProviderStrategy strategy = new TestcontainersHostPropertyClientProviderStrategy();

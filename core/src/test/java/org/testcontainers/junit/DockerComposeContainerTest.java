@@ -1,7 +1,7 @@
 package org.testcontainers.junit;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AutoClose;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.ContainerState;
 import org.testcontainers.containers.DockerComposeContainer;
 
@@ -17,14 +17,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Created by rnorth on 08/08/2015.
  */
-public class DockerComposeContainerTest extends BaseDockerComposeTest {
+class DockerComposeContainerTest extends BaseDockerComposeTest {
 
-    @Rule
+    @AutoClose
     public DockerComposeContainer environment = new DockerComposeContainer(
         new File("src/test/resources/compose-test.yml")
     )
         .withExposedService("redis_1", REDIS_PORT)
         .withExposedService("db_1", 3306);
+
+    DockerComposeContainerTest() {
+        environment.start();
+    }
 
     @Override
     protected DockerComposeContainer getEnvironment() {
@@ -32,7 +36,7 @@ public class DockerComposeContainerTest extends BaseDockerComposeTest {
     }
 
     @Test
-    public void testGetServicePort() {
+    void testGetServicePort() {
         int serviceWithInstancePort = environment.getServicePort("redis_1", REDIS_PORT);
         assertThat(serviceWithInstancePort).as("Port is set for service with instance number").isNotNull();
         int serviceWithoutInstancePort = environment.getServicePort("redis", REDIS_PORT);
@@ -41,7 +45,7 @@ public class DockerComposeContainerTest extends BaseDockerComposeTest {
     }
 
     @Test
-    public void shouldRetrieveContainerByServiceName() {
+    void shouldRetrieveContainerByServiceName() {
         String existingServiceName = "db_1";
         Optional<ContainerState> result = environment.getContainerByServiceName(existingServiceName);
 
@@ -54,7 +58,7 @@ public class DockerComposeContainerTest extends BaseDockerComposeTest {
     }
 
     @Test
-    public void shouldRetrieveContainerByServiceNameWithoutNumberedSuffix() {
+    void shouldRetrieveContainerByServiceNameWithoutNumberedSuffix() {
         String existingServiceName = "db";
         Optional<ContainerState> result = environment.getContainerByServiceName(existingServiceName);
 
@@ -67,7 +71,7 @@ public class DockerComposeContainerTest extends BaseDockerComposeTest {
     }
 
     @Test
-    public void shouldReturnEmptyResultOnNoneExistingService() {
+    void shouldReturnEmptyResultOnNoneExistingService() {
         String notExistingServiceName = "db_256";
         Optional<ContainerState> result = environment.getContainerByServiceName(notExistingServiceName);
         assertThat(result)
@@ -76,7 +80,7 @@ public class DockerComposeContainerTest extends BaseDockerComposeTest {
     }
 
     @Test
-    public void shouldCreateContainerWhenFileNotPrefixedWithPath() throws IOException {
+    void shouldCreateContainerWhenFileNotPrefixedWithPath() throws IOException {
         String validYaml =
             "version: '2.2'\n" +
             "services:\n" +

@@ -1,7 +1,7 @@
 package org.testcontainers.containers;
 
 import com.github.dockerjava.api.command.InspectImageResponse;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.output.OutputFrame.OutputType;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
@@ -12,10 +12,10 @@ import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class JibTest {
+class JibTest {
 
     @Test
-    public void buildImage() {
+    void buildImage() {
         try (
             // jibContainerUsage {
             GenericContainer<?> busybox = new GenericContainer<>(
@@ -36,7 +36,7 @@ public class JibTest {
     }
 
     @Test
-    public void standardLabelsAreAddedWhenUsingJibSetLabels() {
+    void standardLabelsAreAddedWhenUsingJibSetLabels() {
         try (
             GenericContainer<?> busybox = new GenericContainer<>(
                 new JibImage(
@@ -56,7 +56,7 @@ public class JibTest {
     }
 
     @Test
-    public void standardLabelsAreAddedWhenUsingJibAddLabel() {
+    void standardLabelsAreAddedWhenUsingJibAddLabel() {
         try (
             GenericContainer<?> busybox = new GenericContainer<>(
                 new JibImage(

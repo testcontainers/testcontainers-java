@@ -2,7 +2,7 @@ package org.testcontainers.junit.wait.strategy;
 
 import org.assertj.core.api.Assertions;
 import org.jetbrains.annotations.NotNull;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.rnorth.ducttape.RetryCountExceededException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Tests for {@link HttpWaitStrategy}.
  */
-public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrategy> {
+class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrategy> {
 
     /**
      * newline sequence indicating end of the HTTP header.
@@ -31,7 +31,7 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
      * Expects that the WaitStrategy returns successfully after receiving an HTTP 200 response from the container.
      */
     @Test
-    public void testWaitUntilReadyWithSuccess() {
+    void testWaitUntilReadyWithSuccess() {
         waitUntilReadyAndSucceed(createShellCommand("200 OK", GOOD_RESPONSE_BODY));
     }
 
@@ -41,7 +41,7 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
      * logs we can ensure the HTTP request was correctly sent.
      */
     @Test
-    public void testWaitUntilReadyWithSuccessWithCustomHeaders() {
+    void testWaitUntilReadyWithSuccessWithCustomHeaders() {
         HashMap<String, String> headers = new HashMap<>();
         headers.put("baz", "boo");
         try (
@@ -64,7 +64,7 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
      * certificate validation chains (to support self-signed certificates for example).
      */
     @Test
-    public void testWaitUntilReadyWithTlsAndAllowUnsecure() {
+    void testWaitUntilReadyWithTlsAndAllowUnsecure() {
         try (
             GenericContainer<?> container = startContainerWithCommand(
                 createHttpsShellCommand("200 OK", GOOD_RESPONSE_BODY, 8080),
@@ -80,7 +80,7 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
      * This 401 response is checked with a lambda using {@link HttpWaitStrategy#forStatusCodeMatching(Predicate)}
      */
     @Test
-    public void testWaitUntilReadyWithUnauthorizedWithLambda() {
+    void testWaitUntilReadyWithUnauthorizedWithLambda() {
         try (
             GenericContainer<?> container = startContainerWithCommand(
                 createShellCommand("401 UNAUTHORIZED", GOOD_RESPONSE_BODY),
@@ -96,7 +96,7 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
      * This 401 response is checked with many status codes using {@link HttpWaitStrategy#forStatusCode(int)}
      */
     @Test
-    public void testWaitUntilReadyWithManyStatusCodes() {
+    void testWaitUntilReadyWithManyStatusCodes() {
         try (
             GenericContainer<?> container = startContainerWithCommand(
                 createShellCommand("401 UNAUTHORIZED", GOOD_RESPONSE_BODY),
@@ -113,7 +113,7 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
      * and a lambda using {@link HttpWaitStrategy#forStatusCodeMatching(Predicate)}
      */
     @Test
-    public void testWaitUntilReadyWithManyStatusCodesAndLambda() {
+    void testWaitUntilReadyWithManyStatusCodesAndLambda() {
         try (
             GenericContainer<?> container = startContainerWithCommand(
                 createShellCommand("401 UNAUTHORIZED", GOOD_RESPONSE_BODY),
@@ -133,7 +133,7 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
      * and {@link HttpWaitStrategy#forStatusCodeMatching(Predicate)}
      */
     @Test
-    public void testWaitUntilReadyWithTimeoutAndWithManyStatusCodesAndLambda() {
+    void testWaitUntilReadyWithTimeoutAndWithManyStatusCodesAndLambda() {
         try (
             GenericContainer<?> container = startContainerWithCommand(
                 createShellCommand("401 UNAUTHORIZED", GOOD_RESPONSE_BODY),
@@ -152,7 +152,7 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
      * Test case for: https://github.com/testcontainers/testcontainers-java/issues/880
      */
     @Test
-    public void testWaitUntilReadyWithTimeoutAndWithLambdaShouldNotMatchOk() {
+    void testWaitUntilReadyWithTimeoutAndWithLambdaShouldNotMatchOk() {
         try (
             GenericContainer<?> container = startContainerWithCommand(
                 createShellCommand("200 OK", GOOD_RESPONSE_BODY),
@@ -168,7 +168,7 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
      * response from the container within the timeout period.
      */
     @Test
-    public void testWaitUntilReadyWithTimeout() {
+    void testWaitUntilReadyWithTimeout() {
         waitUntilReadyAndTimeout(createShellCommand("400 Bad Request", GOOD_RESPONSE_BODY));
     }
 
@@ -177,7 +177,7 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
      * from the container within the timeout period.
      */
     @Test
-    public void testWaitUntilReadyWithTimeoutAndBadResponseBody() {
+    void testWaitUntilReadyWithTimeoutAndBadResponseBody() {
         waitUntilReadyAndTimeout(createShellCommand("200 OK", "Bad Response"));
     }
 
@@ -185,7 +185,7 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
      * Expects the WaitStrategy probing the right port.
      */
     @Test
-    public void testWaitUntilReadyWithSpecificPort() {
+    void testWaitUntilReadyWithSpecificPort() {
         try (
             GenericContainer<?> container = startContainerWithCommand(
                 createShellCommand("200 OK", GOOD_RESPONSE_BODY, 9090),
@@ -200,7 +200,7 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
     }
 
     @Test
-    public void testWaitUntilReadyWithTimeoutCausedByReadTimeout() {
+    void testWaitUntilReadyWithTimeoutCausedByReadTimeout() {
         try (
             GenericContainer<?> container = startContainerWithCommand(
                 createShellCommand("0 Connection Refused", GOOD_RESPONSE_BODY, 9090),
@@ -217,7 +217,7 @@ public class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrat
      * The exceptions we should see in the stacktrace ('/' means 'caused by'): ContainerLaunchException / TimeoutException / RuntimeException / SSLHandshakeException / ValidatorException (in sun.* package so not accessible) / SunCertPathBuilderException (in sun.* package so not accessible).
      */
     @Test
-    public void testWaitUntilReadyWithTimeoutCausedBySslHandshakeError() {
+    void testWaitUntilReadyWithTimeoutCausedBySslHandshakeError() {
         try (
             GenericContainer<?> container = new GenericContainer<>(
                 new ImageFromDockerfile()

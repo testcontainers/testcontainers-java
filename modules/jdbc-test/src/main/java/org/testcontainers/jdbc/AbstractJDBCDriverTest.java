@@ -17,7 +17,7 @@ import java.sql.Statement;
 import java.util.EnumSet;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assume.assumeFalse;
+import static org.assertj.core.api.Assumptions.assumeThat;
 
 @ParameterizedClass
 @MethodSource("data")
@@ -207,7 +207,7 @@ public class AbstractJDBCDriverTest {
     }
 
     private void performTestForCustomIniFile(HikariDataSource dataSource) throws SQLException {
-        assumeFalse(SystemUtils.IS_OS_WINDOWS);
+        assumeThat(SystemUtils.IS_OS_WINDOWS).isFalse();
         Statement statement = dataSource.getConnection().createStatement();
         statement.execute("SELECT @@GLOBAL.innodb_max_undo_log_size");
         ResultSet resultSet = statement.getResultSet();

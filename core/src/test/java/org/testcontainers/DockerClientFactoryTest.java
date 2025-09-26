@@ -1,10 +1,10 @@
 package org.testcontainers;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.testcontainers.dockerclient.LogToStringContainerCallback;
 import org.testcontainers.utility.DockerImageName;
-import org.testcontainers.utility.MockTestcontainersConfigurationRule;
+import org.testcontainers.utility.MockTestcontainersConfigurationExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -12,13 +12,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * Test for {@link DockerClientFactory}.
  */
-public class DockerClientFactoryTest {
-
-    @Rule
-    public MockTestcontainersConfigurationRule configurationMock = new MockTestcontainersConfigurationRule();
+@ExtendWith(MockTestcontainersConfigurationExtension.class)
+class DockerClientFactoryTest {
 
     @Test
-    public void runCommandInsideDockerShouldNotFailIfImageDoesNotExistsLocally() {
+    void runCommandInsideDockerShouldNotFailIfImageDoesNotExistsLocally() {
         try (DockerRegistryContainer registryContainer = new DockerRegistryContainer()) {
             registryContainer.start();
             DockerImageName imageName = registryContainer.createImage();
@@ -40,14 +38,14 @@ public class DockerClientFactoryTest {
     }
 
     @Test
-    public void dockerHostIpAddress() {
+    void dockerHostIpAddress() {
         DockerClientFactory instance = new DockerClientFactory();
         instance.strategy = null;
         assertThat(instance.dockerHostIpAddress()).isNotNull();
     }
 
     @Test
-    public void failedChecksFailFast() {
+    void failedChecksFailFast() {
         DockerClientFactory instance = DockerClientFactory.instance();
         assertThat(instance.client()).isNotNull();
         assertThat(instance.cachedClientFailure).isNull();
