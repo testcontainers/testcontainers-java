@@ -34,6 +34,11 @@ import java.util.stream.Stream;
 public class Neo4jContainer extends GenericContainer<Neo4jContainer> {
 
     /**
+     * The default tag (version) to use.
+     */
+    private static final String ENTERPRISE_TAG_4_4 = "4.4-enterprise";
+
+    /**
      * The image defaults to the official Neo4j image: <a href="https://hub.docker.com/_/neo4j/">Neo4j</a>.
      */
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("neo4j");
@@ -206,7 +211,7 @@ public class Neo4jContainer extends GenericContainer<Neo4jContainer> {
                 String.format("Cannot use enterprise version with alternative image %s.", getDockerImageName())
             );
         }
-        setDockerImageName(DockerImageName.parse(getDockerImageName() + ENTERPRISE_SUFFIX).asCanonicalNameString());
+        setDockerImageName(DEFAULT_IMAGE_NAME.withTag(ENTERPRISE_TAG_4_4).asCanonicalNameString());
         LicenseAcceptance.assertLicenseAccepted(getDockerImageName());
 
         addEnv("NEO4J_ACCEPT_LICENSE_AGREEMENT", "yes");

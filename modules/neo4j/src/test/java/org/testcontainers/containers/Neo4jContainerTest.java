@@ -136,10 +136,10 @@ class Neo4jContainerTest {
     void shouldCheckEnterpriseLicense() {
         assumeThat(Neo4jContainerTest.class.getResource(ACCEPTANCE_FILE_LOCATION)).isNull();
 
-        String expectedImageName = "neo4j:5.26-enterprise";
+        String expectedImageName = "neo4j:4.4-enterprise";
 
         assertThatExceptionOfType(IllegalStateException.class)
-            .isThrownBy(() -> new Neo4jContainer("neo4j:5.26").withEnterpriseEdition())
+            .isThrownBy(() -> new Neo4jContainer("neo4j:4.4").withEnterpriseEdition())
             .withMessageContaining("The image " + expectedImageName + " requires you to accept a license agreement.");
     }
 
