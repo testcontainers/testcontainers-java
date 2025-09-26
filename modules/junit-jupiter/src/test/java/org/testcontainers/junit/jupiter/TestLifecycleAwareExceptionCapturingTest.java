@@ -1,10 +1,10 @@
 package org.testcontainers.junit.jupiter;
 
-import org.junit.AssumptionViolatedException;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.opentest4j.TestAbortedException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
@@ -31,7 +31,7 @@ class TestLifecycleAwareExceptionCapturingTest {
     @Order(2)
     void should_have_captured_thrownException() {
         Throwable capturedThrowable = startedTestContainer.getCapturedThrowable();
-        assertThat(capturedThrowable).isInstanceOf(AssumptionViolatedException.class);
+        assertThat(capturedThrowable).isInstanceOf(TestAbortedException.class);
         assertThat(capturedThrowable.getMessage()).contains("Expecting value to be true but was false");
     }
 }

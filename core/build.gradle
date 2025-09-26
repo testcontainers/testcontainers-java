@@ -49,13 +49,33 @@ tasks.japicmp {
 
     classExcludes = [
         "org.testcontainers.utility.RyukResourceReaper",
+        "org.testcontainers.containers.FailureDetectingExternalResource",
+        "org.testcontainers.containers.ComposeContainer",
+        "org.testcontainers.containers.DockerComposeContainer",
+        "org.testcontainers.containers.GenericContainer"
     ]
 
     methodExcludes = [
         "org.testcontainers.containers.Container#getDockerClient()",
         "org.testcontainers.containers.ContainerState#getDockerClient()",
         "org.testcontainers.containers.ContainerState#execInContainer(org.testcontainers.containers.ExecConfig)",
-        "org.testcontainers.containers.ContainerState#execInContainer(java.nio.charset.Charset,org.testcontainers.containers.ExecConfig)"
+        "org.testcontainers.containers.ContainerState#execInContainer(java.nio.charset.Charset,org.testcontainers.containers.ExecConfig)",
+        "org.testcontainers.containers.ComposeContainer#apply(org.junit.runners.model.Statement, org.junit.runner.Description)",
+        "org.testcontainers.containers.ComposeContainer#failed(java.lang.Throwable, org.junit.runner.Description)",
+        "org.testcontainers.containers.ComposeContainer#finished(org.junit.runner.Description)",
+        "org.testcontainers.containers.ComposeContainer#starting(org.junit.runner.Description)",
+        "org.testcontainers.containers.ComposeContainer#succeeded(org.junit.runner.Description)",
+        "org.testcontainers.containers.DockerComposeContainer#apply(org.junit.runners.model.Statement, org.junit.runner.Description)",
+        "org.testcontainers.containers.DockerComposeContainer#failed(java.lang.Throwable, org.junit.runner.Description)",
+        "org.testcontainers.containers.DockerComposeContainer#finished(org.junit.runner.Description)",
+        "org.testcontainers.containers.DockerComposeContainer#starting(org.junit.runner.Description)",
+        "org.testcontainers.containers.DockerComposeContainer#succeeded(org.junit.runner.Description)",
+        "org.testcontainers.containers.GenericContainer#apply(org.junit.runners.model.Statement, org.junit.runner.Description)",
+        "org.testcontainers.containers.GenericContainer#failed(java.lang.Throwable, org.junit.runner.Description)",
+        "org.testcontainers.containers.GenericContainer#finished(org.junit.runner.Description)",
+        "org.testcontainers.containers.GenericContainer#starting(org.junit.runner.Description)",
+        "org.testcontainers.containers.GenericContainer#succeeded(org.junit.runner.Description)",
+        'org.testcontainers.containers.Network$NetworkImpl#after()'
     ]
 
     fieldExcludes = []
@@ -69,7 +89,6 @@ configurations.all {
 }
 
 dependencies {
-    api 'junit:junit:4.13.2'
     api 'org.slf4j:slf4j-api:1.7.36'
     compileOnly 'org.jetbrains:annotations:26.0.2-1'
     testCompileOnly 'org.jetbrains:annotations:26.0.2-1'
