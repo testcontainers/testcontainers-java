@@ -125,7 +125,7 @@ dependencies {
 
     shaded 'org.zeroturnaround:zt-exec:1.12'
 
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.13.4'
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
     testImplementation('com.google.cloud.tools:jib-core:0.27.3')  {
@@ -147,7 +147,7 @@ dependencies {
 
     jarFileTestCompileOnly "org.projectlombok:lombok:${lombok.version}"
     jarFileTestAnnotationProcessor "org.projectlombok:lombok:${lombok.version}"
-    jarFileTestRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
+    jarFileTestRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.13.4'
     jarFileTestImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
     jarFileTestImplementation 'org.assertj:assertj-core:3.27.4'
     jarFileTestImplementation 'org.ow2.asm:asm-debug-all:5.2'
