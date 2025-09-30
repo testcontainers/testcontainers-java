@@ -230,8 +230,8 @@ public class Neo4jContainer extends GenericContainer<Neo4jContainer> {
      * Community Edition can be used for free in your projects under the GPL v3 license, Neo4j Enterprise edition
      * needs either a commercial, education or evaluation license.
      *
-     * @return This container
-     **/
+     * @return This container.
+     */
     public Neo4jContainer withEnterpriseImage() {
         if (!standardImage) {
             throw new IllegalStateException(
