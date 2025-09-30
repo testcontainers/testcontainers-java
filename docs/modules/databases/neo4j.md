@@ -107,7 +107,7 @@ If you need the Neo4j enterprise license, you can declare your Neo4j container l
 !!! warning
     the `withEnterpriseEdition` method is deprecated because it was implicitly changing the image tag to be always version 4.4. 
 
-This creates a Testcontainers based on the Docker image build with the Enterprise version of the defined tag. 
+This creates a Testcontainers container based on the Docker image build with the Enterprise version of the defined tag. 
 The call to `withEnterpriseImage` adds the required environment variable that you accepted the terms and condition of the enterprise version.
 You accept those by adding a file named `container-license-acceptance.txt` to the root of your classpath containing the text `neo4j:<tag>-enterprise` in one line.
 
