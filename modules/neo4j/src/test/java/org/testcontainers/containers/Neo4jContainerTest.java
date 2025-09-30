@@ -74,22 +74,22 @@ class Neo4jContainerTest {
     void shouldFailOnCopyDatabaseForDefaultNeo4j4Image() {
         assertThatIllegalArgumentException()
             .isThrownBy(() -> {
-                new Neo4jContainer("neo4j:4.4.1").withDatabase(MountableFile.forClasspathResource("/test-graph.db"));
+                new Neo4jContainer("neo4j:4.4").withDatabase(MountableFile.forClasspathResource("/test-graph.db"));
             })
             .withMessage("Copying database folder is not supported for Neo4j instances with version 4.0 or higher.");
     }
 
     @Test
-    void shouldFailOnCopyDatabaseForCustomNeo4j4Image() {
+    void shouldFailOnCopyDatabaseForCustomNeo4j5Image() {
         assertThatIllegalArgumentException()
             .isThrownBy(() -> {
-                new Neo4jContainer("neo4j:5.26.10").withDatabase(MountableFile.forClasspathResource("/test-graph.db"));
+                new Neo4jContainer("neo4j:5.26").withDatabase(MountableFile.forClasspathResource("/test-graph.db"));
             })
             .withMessage("Copying database folder is not supported for Neo4j instances with version 4.0 or higher.");
     }
 
     @Test
-    void shouldFailOnCopyDatabaseForCustomNonSemverNeo4j4Image() {
+    void shouldFailOnCopyDatabaseForCustomNonSemverNeo4jLatestImage() {
         assertThatIllegalArgumentException()
             .isThrownBy(() -> {
                 new Neo4jContainer("neo4j:latest").withDatabase(MountableFile.forClasspathResource("/test-graph.db"));
