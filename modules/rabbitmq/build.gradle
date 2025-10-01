@@ -7,7 +7,7 @@ dependencies {
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
     testImplementation 'com.rabbitmq:amqp-client:5.26.0'
-    testImplementation 'org.assertj:assertj-core:3.27.3'
+    testImplementation 'org.assertj:assertj-core:3.27.6'
     compileOnly 'org.jetbrains:annotations:26.0.2'
 }
 
