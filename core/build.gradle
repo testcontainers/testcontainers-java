@@ -30,6 +30,7 @@ shadowJar {
 }
 
 task jarFileTest(type: Test) {
+    useJUnitPlatform()
     testClassesDirs = sourceSets.jarFileTest.output.classesDirs
     classpath = sourceSets.jarFileTest.runtimeClasspath
 
@@ -48,13 +49,33 @@ tasks.japicmp {
 
     classExcludes = [
         "org.testcontainers.utility.RyukResourceReaper",
+        "org.testcontainers.containers.FailureDetectingExternalResource",
+        "org.testcontainers.containers.ComposeContainer",
+        "org.testcontainers.containers.DockerComposeContainer",
+        "org.testcontainers.containers.GenericContainer"
     ]
 
     methodExcludes = [
         "org.testcontainers.containers.Container#getDockerClient()",
         "org.testcontainers.containers.ContainerState#getDockerClient()",
         "org.testcontainers.containers.ContainerState#execInContainer(org.testcontainers.containers.ExecConfig)",
-        "org.testcontainers.containers.ContainerState#execInContainer(java.nio.charset.Charset,org.testcontainers.containers.ExecConfig)"
+        "org.testcontainers.containers.ContainerState#execInContainer(java.nio.charset.Charset,org.testcontainers.containers.ExecConfig)",
+        "org.testcontainers.containers.ComposeContainer#apply(org.junit.runners.model.Statement, org.junit.runner.Description)",
+        "org.testcontainers.containers.ComposeContainer#failed(java.lang.Throwable, org.junit.runner.Description)",
+        "org.testcontainers.containers.ComposeContainer#finished(org.junit.runner.Description)",
+        "org.testcontainers.containers.ComposeContainer#starting(org.junit.runner.Description)",
+        "org.testcontainers.containers.ComposeContainer#succeeded(org.junit.runner.Description)",
+        "org.testcontainers.containers.DockerComposeContainer#apply(org.junit.runners.model.Statement, org.junit.runner.Description)",
+        "org.testcontainers.containers.DockerComposeContainer#failed(java.lang.Throwable, org.junit.runner.Description)",
+        "org.testcontainers.containers.DockerComposeContainer#finished(org.junit.runner.Description)",
+        "org.testcontainers.containers.DockerComposeContainer#starting(org.junit.runner.Description)",
+        "org.testcontainers.containers.DockerComposeContainer#succeeded(org.junit.runner.Description)",
+        "org.testcontainers.containers.GenericContainer#apply(org.junit.runners.model.Statement, org.junit.runner.Description)",
+        "org.testcontainers.containers.GenericContainer#failed(java.lang.Throwable, org.junit.runner.Description)",
+        "org.testcontainers.containers.GenericContainer#finished(org.junit.runner.Description)",
+        "org.testcontainers.containers.GenericContainer#starting(org.junit.runner.Description)",
+        "org.testcontainers.containers.GenericContainer#succeeded(org.junit.runner.Description)",
+        'org.testcontainers.containers.Network$NetworkImpl#after()'
     ]
 
     fieldExcludes = []
@@ -68,11 +89,10 @@ configurations.all {
 }
 
 dependencies {
-    api 'junit:junit:4.13.2'
     api 'org.slf4j:slf4j-api:1.7.36'
-    compileOnly 'org.jetbrains:annotations:26.0.2'
-    testCompileOnly 'org.jetbrains:annotations:26.0.2'
-    api 'org.apache.commons:commons-compress:1.24.0'
+    compileOnly 'org.jetbrains:annotations:26.0.2-1'
+    testCompileOnly 'org.jetbrains:annotations:26.0.2-1'
+    api 'org.apache.commons:commons-compress:1.28.0'
     api ('org.rnorth.duct-tape:duct-tape:1.0.8') {
         exclude(group: 'org.jetbrains', module: 'annotations')
     }
@@ -87,8 +107,8 @@ dependencies {
 
     shaded 'org.awaitility:awaitility:4.3.0'
 
-    api platform('com.github.docker-java:docker-java-bom:3.5.3')
-    shaded platform('com.github.docker-java:docker-java-bom:3.5.3')
+    api platform('com.github.docker-java:docker-java-bom:3.6.0')
+    shaded platform('com.github.docker-java:docker-java-bom:3.6.0')
 
     api "com.github.docker-java:docker-java-api"
 
@@ -99,17 +119,20 @@ dependencies {
     api 'com.github.docker-java:docker-java-transport-zerodep'
 
     shaded 'com.google.guava:guava:33.3.1-jre'
-    shaded "org.yaml:snakeyaml:2.4"
+    shaded "org.yaml:snakeyaml:2.5"
 
     shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
 
     shaded 'org.zeroturnaround:zt-exec:1.12'
 
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
     testImplementation('com.google.cloud.tools:jib-core:0.27.3')  {
         exclude group: 'com.google.guava', module: 'guava'
     }
     testImplementation 'org.apache.httpcomponents:httpclient:4.5.14'
-    testImplementation 'redis.clients:jedis:6.0.0'
+    testImplementation 'redis.clients:jedis:6.2.0'
     testImplementation 'com.rabbitmq:amqp-client:5.26.0'
     testImplementation 'org.mongodb:mongo-java-driver:3.12.14'
 
@@ -119,13 +142,14 @@ dependencies {
     // Synthetic JAR used for MountableFileTest and DirectoryTarResourceTest
     testImplementation files('testlib/repo/fakejar/fakejar/0/fakejar-0.jar')
 
-    testImplementation 'org.assertj:assertj-core:3.27.3'
-    testImplementation 'io.rest-assured:rest-assured:5.5.5'
+    testImplementation 'org.assertj:assertj-core:3.27.6'
+    testImplementation 'io.rest-assured:rest-assured:5.5.6'
 
     jarFileTestCompileOnly "org.projectlombok:lombok:${lombok.version}"
     jarFileTestAnnotationProcessor "org.projectlombok:lombok:${lombok.version}"
-    jarFileTestImplementation 'junit:junit:4.13.2'
-    jarFileTestImplementation 'org.assertj:assertj-core:3.27.3'
+    jarFileTestRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
+    jarFileTestImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
+    jarFileTestImplementation 'org.assertj:assertj-core:3.27.4'
     jarFileTestImplementation 'org.ow2.asm:asm-debug-all:5.2'
 }
 
@@ -135,3 +159,14 @@ tasks.generatePomFileForMavenJavaPublication.finalizedBy(
         ]
     }
 )
+
+compileTestJava {
+    javaCompiler = javaToolchains.compilerFor {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+    options.release.set(17)
+}
+
+test {
+    useJUnitPlatform()
+}

@@ -2,7 +2,7 @@ package org.testcontainers.scylladb;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.Container;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
@@ -35,14 +35,14 @@ import javax.net.ssl.TrustManagerFactory;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class ScyllaDBContainerTest {
+class ScyllaDBContainerTest {
 
     private static final DockerImageName SCYLLADB_IMAGE = DockerImageName.parse("scylladb/scylla:6.2");
 
     private static final String BASIC_QUERY = "SELECT release_version FROM system.local";
 
     @Test
-    public void testSimple() {
+    void testSimple() {
         try ( // container {
             ScyllaDBContainer scylladb = new ScyllaDBContainer("scylladb/scylla:6.2")
             // }
@@ -63,7 +63,7 @@ public class ScyllaDBContainerTest {
     }
 
     @Test
-    public void testSimpleSsl()
+    void testSimpleSsl()
         throws NoSuchAlgorithmException, KeyStoreException, IOException, CertificateException, UnrecoverableKeyException, KeyManagementException {
         try (
             // customConfiguration {
@@ -121,7 +121,7 @@ public class ScyllaDBContainerTest {
     }
 
     @Test
-    public void testSimpleSslCqlsh() throws IllegalStateException, InterruptedException, IOException {
+    void testSimpleSslCqlsh() throws IllegalStateException, InterruptedException, IOException {
         try (
             ScyllaDBContainer scylladb = new ScyllaDBContainer(SCYLLADB_IMAGE)
                 .withConfigurationOverride("scylla-test-ssl")
@@ -144,7 +144,7 @@ public class ScyllaDBContainerTest {
     }
 
     @Test
-    public void testShardAwareness() {
+    void testShardAwareness() {
         try (ScyllaDBContainer scylladb = new ScyllaDBContainer(SCYLLADB_IMAGE)) {
             scylladb.start();
             // shardAwarenessSession {
@@ -161,7 +161,7 @@ public class ScyllaDBContainerTest {
     }
 
     @Test
-    public void testAlternator() {
+    void testAlternator() {
         try ( // alternator {
             ScyllaDBContainer scylladb = new ScyllaDBContainer(SCYLLADB_IMAGE).withAlternator()
             // }
@@ -192,7 +192,7 @@ public class ScyllaDBContainerTest {
     }
 
     @Test
-    public void throwExceptionWhenAlternatorDisabled() {
+    void throwExceptionWhenAlternatorDisabled() {
         try (ScyllaDBContainer scylladb = new ScyllaDBContainer(SCYLLADB_IMAGE)) {
             scylladb.start();
             assertThatThrownBy(scylladb::getAlternatorEndpoint)

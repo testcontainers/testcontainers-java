@@ -2,7 +2,7 @@ package org.testcontainers.containers;
 
 import org.apache.pulsar.client.admin.PulsarAdmin;
 import org.apache.pulsar.client.admin.PulsarAdminException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
@@ -10,12 +10,12 @@ import java.time.Duration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class PulsarContainerTest extends AbstractPulsar {
+class PulsarContainerTest extends AbstractPulsar {
 
     private static final DockerImageName PULSAR_IMAGE = DockerImageName.parse("apachepulsar/pulsar:3.0.0");
 
     @Test
-    public void testUsage() throws Exception {
+    void testUsage() throws Exception {
         try (
             // do not use PULSAR_IMAGE to make the doc looks easier
             // constructorWithVersion {
@@ -32,7 +32,7 @@ public class PulsarContainerTest extends AbstractPulsar {
     }
 
     @Test
-    public void envVarsUsage() throws Exception {
+    void envVarsUsage() throws Exception {
         try (
             // constructorWithEnv {
             PulsarContainer pulsar = new PulsarContainer(PULSAR_IMAGE)
@@ -45,7 +45,7 @@ public class PulsarContainerTest extends AbstractPulsar {
     }
 
     @Test
-    public void customClusterName() throws Exception {
+    void customClusterName() throws Exception {
         try (
             PulsarContainer pulsar = new PulsarContainer(PULSAR_IMAGE)
                 .withEnv("PULSAR_PREFIX_clusterName", "tc-cluster");
@@ -56,7 +56,7 @@ public class PulsarContainerTest extends AbstractPulsar {
     }
 
     @Test
-    public void shouldNotEnableFunctionsWorkerByDefault() throws Exception {
+    void shouldNotEnableFunctionsWorkerByDefault() throws Exception {
         try (PulsarContainer pulsar = new PulsarContainer(PULSAR_IMAGE)) {
             pulsar.start();
 
@@ -68,7 +68,7 @@ public class PulsarContainerTest extends AbstractPulsar {
     }
 
     @Test
-    public void shouldWaitForFunctionsWorkerStarted() throws Exception {
+    void shouldWaitForFunctionsWorkerStarted() throws Exception {
         try (
             // constructorWithFunctionsWorker {
             PulsarContainer pulsar = new PulsarContainer(DockerImageName.parse("apachepulsar/pulsar:3.0.0"))
@@ -84,7 +84,7 @@ public class PulsarContainerTest extends AbstractPulsar {
     }
 
     @Test
-    public void testTransactions() throws Exception {
+    void testTransactions() throws Exception {
         try (
             // constructorWithTransactions {
             PulsarContainer pulsar = new PulsarContainer(PULSAR_IMAGE).withTransactions();
@@ -100,7 +100,7 @@ public class PulsarContainerTest extends AbstractPulsar {
     }
 
     @Test
-    public void testTransactionsAndFunctionsWorker() throws Exception {
+    void testTransactionsAndFunctionsWorker() throws Exception {
         try (PulsarContainer pulsar = new PulsarContainer(PULSAR_IMAGE).withTransactions().withFunctionsWorker()) {
             pulsar.start();
 
@@ -113,7 +113,7 @@ public class PulsarContainerTest extends AbstractPulsar {
     }
 
     @Test
-    public void testClusterFullyInitialized() throws Exception {
+    void testClusterFullyInitialized() throws Exception {
         try (PulsarContainer pulsar = new PulsarContainer(PULSAR_IMAGE)) {
             pulsar.start();
 
@@ -124,7 +124,7 @@ public class PulsarContainerTest extends AbstractPulsar {
     }
 
     @Test
-    public void testStartupTimeoutIsHonored() {
+    void testStartupTimeoutIsHonored() {
         try (PulsarContainer pulsar = new PulsarContainer(PULSAR_IMAGE).withStartupTimeout(Duration.ZERO)) {
             assertThatThrownBy(pulsar::start)
                 .hasRootCauseMessage("Precondition failed: timeout must be greater than zero");

@@ -1,6 +1,6 @@
 package org.testcontainers.junit.mysql;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.MySQLTestImages;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
@@ -10,7 +10,7 @@ import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class CustomizableMysqlTest extends AbstractContainerDatabaseTest {
+class CustomizableMysqlTest extends AbstractContainerDatabaseTest {
 
     private static final String DB_NAME = "foo";
 
@@ -19,7 +19,7 @@ public class CustomizableMysqlTest extends AbstractContainerDatabaseTest {
     private static final String PWD = "baz";
 
     @Test
-    public void testSimple() throws SQLException {
+    void testSimple() throws SQLException {
         // Add MYSQL_ROOT_HOST environment so that we can root login from anywhere for testing purposes
         try (
             MySQLContainer<?> mysql = new MySQLContainer<>(MySQLTestImages.MYSQL_80_IMAGE)

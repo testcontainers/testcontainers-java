@@ -3,10 +3,10 @@ package org.testcontainers.containers.localstack;
 import com.github.dockerjava.api.DockerClient;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
@@ -63,192 +63,186 @@ import java.util.zip.ZipOutputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Tests for Localstack Container, used both in bridge network (exposed to host) and docker network modes.
- * <p>
- * These tests attempt simple interactions with the container to verify behaviour. The bridge network tests use the
- * Java AWS SDK, whereas the docker network tests use an AWS CLI container within the network, to simulate usage of
- * Localstack from within a Docker network.
- */
 @Slf4j
-@RunWith(Enclosed.class)
-public class LocalstackContainerTest {
+class LocalstackContainerTest {
 
-    public static class WithoutNetwork {
-
-        // without_network {
-        @ClassRule
-        public static LocalStackContainer localstack = new LocalStackContainer(LocalstackTestImages.LOCALSTACK_IMAGE)
-            .withEnv("SQS_ENDPOINT_STRATEGY", "dynamic")
-            .withServices(
-                Service.S3,
-                Service.SQS,
-                Service.CLOUDWATCHLOGS,
-                Service.KMS,
-                LocalStackContainer.EnabledService.named("events")
-            );
-
-        // }
+    @Nested
+    class WithoutNetwork {
 
         @Test
-        public void s3TestOverBridgeNetwork() throws IOException {
-            S3Client s3 = S3Client
-                .builder()
-                .endpointOverride(localstack.getEndpoint())
-                .credentialsProvider(
-                    StaticCredentialsProvider.create(
-                        AwsBasicCredentials.create(localstack.getAccessKey(), localstack.getSecretKey())
+        void s3TestOverBridgeNetwork() throws IOException {
+            try (
+                // without_network {
+                LocalStackContainer localstack = new LocalStackContainer(LocalstackTestImages.LOCALSTACK_IMAGE)
+                    .withServices(Service.S3)
+                // }
+            ) {
+                localstack.start();
+
+                // with_aws_sdk_v2 {
+                S3Client s3 = S3Client
+                    .builder()
+                    .endpointOverride(localstack.getEndpoint())
+                    .credentialsProvider(
+                        StaticCredentialsProvider.create(
+                            AwsBasicCredentials.create(localstack.getAccessKey(), localstack.getSecretKey())
+                        )
                     )
-                )
-                .region(Region.of(localstack.getRegion()))
-                .build();
+                    .region(Region.of(localstack.getRegion()))
+                    .build();
+                // }
 
-            final String bucketName = "foo";
-            s3.createBucket(CreateBucketRequest.builder().bucket(bucketName).build());
-            s3.putObject(
-                PutObjectRequest.builder().bucket(bucketName).key("bar").build(),
-                software.amazon.awssdk.core.sync.RequestBody.fromString("baz")
-            );
+                final String bucketName = "foo";
+                s3.createBucket(CreateBucketRequest.builder().bucket(bucketName).build());
+                s3.putObject(
+                    PutObjectRequest.builder().bucket(bucketName).key("bar").build(),
+                    software.amazon.awssdk.core.sync.RequestBody.fromString("baz")
+                );
 
-            final List<Bucket> buckets = s3.listBuckets().buckets();
-            final Optional<Bucket> maybeBucket = buckets.stream().filter(b -> b.name().equals(bucketName)).findFirst();
-            assertThat(maybeBucket).as("The created bucket is present").isPresent();
-            final Bucket bucket = maybeBucket.get();
+                final List<Bucket> buckets = s3.listBuckets().buckets();
+                final Optional<Bucket> maybeBucket = buckets
+                    .stream()
+                    .filter(b -> b.name().equals(bucketName))
+                    .findFirst();
+                assertThat(maybeBucket).as("The created bucket is present").isPresent();
+                final Bucket bucket = maybeBucket.get();
 
-            assertThat(bucket.name()).as("The created bucket has the right name").isEqualTo(bucketName);
+                assertThat(bucket.name()).as("The created bucket has the right name").isEqualTo(bucketName);
 
-            final ListObjectsV2Response objectListing = s3.listObjectsV2(
-                ListObjectsV2Request.builder().bucket(bucketName).build()
-            );
-            assertThat(objectListing.contents()).as("The created bucket has 1 item in it").hasSize(1);
+                final ListObjectsV2Response objectListing = s3.listObjectsV2(
+                    ListObjectsV2Request.builder().bucket(bucketName).build()
+                );
+                assertThat(objectListing.contents()).as("The created bucket has 1 item in it").hasSize(1);
 
-            final String content = s3
-                .getObjectAsBytes(GetObjectRequest.builder().bucket(bucketName).key("bar").build())
-                .asString(StandardCharsets.UTF_8);
-            assertThat(content).as("The object can be retrieved").isEqualTo("baz");
+                final String content = s3
+                    .getObjectAsBytes(GetObjectRequest.builder().bucket(bucketName).key("bar").build())
+                    .asString(StandardCharsets.UTF_8);
+                assertThat(content).as("The object can be retrieved").isEqualTo("baz");
+            }
         }
 
         @Test
-        public void s3TestUsingAwsSdkV2() {
-            // with_aws_sdk_v2 {
-            S3Client s3 = S3Client
-                .builder()
-                .endpointOverride(localstack.getEndpoint())
-                .credentialsProvider(
-                    StaticCredentialsProvider.create(
-                        AwsBasicCredentials.create(localstack.getAccessKey(), localstack.getSecretKey())
-                    )
-                )
-                .region(Region.of(localstack.getRegion()))
-                .build();
-            // }
+        void sqsTestOverBridgeNetwork() {
+            try (
+                LocalStackContainer localstack = new LocalStackContainer(LocalstackTestImages.LOCALSTACK_IMAGE)
+                    .withEnv("SQS_ENDPOINT_STRATEGY", "dynamic")
+                    .withServices(Service.SQS)
+            ) {
+                localstack.start();
 
-            final String bucketName = "foov2";
-            s3.createBucket(b -> b.bucket(bucketName));
-            assertThat(s3.listBuckets().buckets().stream().anyMatch(b -> b.name().equals(bucketName)))
-                .as("New bucket was created")
-                .isTrue();
+                SqsClient sqs = SqsClient
+                    .builder()
+                    .endpointOverride(localstack.getEndpoint())
+                    .credentialsProvider(
+                        StaticCredentialsProvider.create(
+                            AwsBasicCredentials.create(localstack.getAccessKey(), localstack.getSecretKey())
+                        )
+                    )
+                    .region(Region.of(localstack.getRegion()))
+                    .build();
+
+                CreateQueueResponse queueResult = sqs.createQueue(
+                    CreateQueueRequest.builder().queueName("baz").build()
+                );
+                String fooQueueUrl = queueResult.queueUrl();
+
+                sqs.sendMessage(SendMessageRequest.builder().queueUrl(fooQueueUrl).messageBody("test").build());
+                final long messageCount = sqs
+                    .receiveMessage(ReceiveMessageRequest.builder().queueUrl(fooQueueUrl).build())
+                    .messages()
+                    .stream()
+                    .filter(message -> message.body().equals("test"))
+                    .count();
+                assertThat(messageCount).as("the sent message can be received").isEqualTo(1L);
+            }
         }
 
         @Test
-        public void sqsTestOverBridgeNetwork() {
-            SqsClient sqs = SqsClient
-                .builder()
-                .endpointOverride(localstack.getEndpoint())
-                .credentialsProvider(
-                    StaticCredentialsProvider.create(
-                        AwsBasicCredentials.create(localstack.getAccessKey(), localstack.getSecretKey())
+        void cloudWatchLogsTestOverBridgeNetwork() {
+            try (
+                LocalStackContainer localstack = new LocalStackContainer(LocalstackTestImages.LOCALSTACK_IMAGE)
+                    .withServices(Service.CLOUDWATCHLOGS)
+            ) {
+                localstack.start();
+
+                CloudWatchLogsClient logs = CloudWatchLogsClient
+                    .builder()
+                    .endpointOverride(localstack.getEndpoint())
+                    .credentialsProvider(
+                        StaticCredentialsProvider.create(
+                            AwsBasicCredentials.create(localstack.getAccessKey(), localstack.getSecretKey())
+                        )
                     )
-                )
-                .region(Region.of(localstack.getRegion()))
-                .build();
+                    .region(Region.of(localstack.getRegion()))
+                    .build();
 
-            CreateQueueResponse queueResult = sqs.createQueue(CreateQueueRequest.builder().queueName("baz").build());
-            String fooQueueUrl = queueResult.queueUrl();
+                logs.createLogGroup(CreateLogGroupRequest.builder().logGroupName("foo").build());
 
-            sqs.sendMessage(SendMessageRequest.builder().queueUrl(fooQueueUrl).messageBody("test").build());
-            final long messageCount = sqs
-                .receiveMessage(ReceiveMessageRequest.builder().queueUrl(fooQueueUrl).build())
-                .messages()
-                .stream()
-                .filter(message -> message.body().equals("test"))
-                .count();
-            assertThat(messageCount).as("the sent message can be received").isEqualTo(1L);
+                DescribeLogGroupsResponse response = logs.describeLogGroups();
+                assertThat(response.logGroups()).as("One log group should be created").hasSize(1);
+                assertThat(response.logGroups().get(0).logGroupName())
+                    .as("Name of created log group is [foo]")
+                    .isEqualTo("foo");
+            }
         }
 
         @Test
-        public void cloudWatchLogsTestOverBridgeNetwork() {
-            CloudWatchLogsClient logs = CloudWatchLogsClient
-                .builder()
-                .endpointOverride(localstack.getEndpoint())
-                .credentialsProvider(
-                    StaticCredentialsProvider.create(
-                        AwsBasicCredentials.create(localstack.getAccessKey(), localstack.getSecretKey())
+        void kmsKeyCreationTest() {
+            try (
+                LocalStackContainer localstack = new LocalStackContainer(LocalstackTestImages.LOCALSTACK_IMAGE)
+                    .withServices(Service.KMS)
+            ) {
+                localstack.start();
+                KmsClient kms = KmsClient
+                    .builder()
+                    .endpointOverride(localstack.getEndpoint())
+                    .credentialsProvider(
+                        StaticCredentialsProvider.create(
+                            AwsBasicCredentials.create(localstack.getAccessKey(), localstack.getSecretKey())
+                        )
                     )
-                )
-                .region(Region.of(localstack.getRegion()))
-                .build();
+                    .region(Region.of(localstack.getRegion()))
+                    .build();
 
-            logs.createLogGroup(CreateLogGroupRequest.builder().logGroupName("foo").build());
+                String desc = "AWS CMK Description";
+                Tag createdByTag = Tag.builder().tagKey("CreatedBy").tagValue("StorageService").build();
+                CreateKeyRequest req = CreateKeyRequest.builder().description(desc).tags(createdByTag).build();
+                CreateKeyResponse key = kms.createKey(req);
 
-            DescribeLogGroupsResponse response = logs.describeLogGroups();
-            assertThat(response.logGroups()).as("One log group should be created").hasSize(1);
-            assertThat(response.logGroups().get(0).logGroupName())
-                .as("Name of created log group is [foo]")
-                .isEqualTo("foo");
+                assertThat(desc)
+                    .as("AWS KMS Customer Managed Key should be created ")
+                    .isEqualTo(key.keyMetadata().description());
+            }
         }
 
         @Test
-        public void kmsKeyCreationTest() {
-            KmsClient kms = KmsClient
-                .builder()
-                .endpointOverride(localstack.getEndpoint())
-                .credentialsProvider(
-                    StaticCredentialsProvider.create(
-                        AwsBasicCredentials.create(localstack.getAccessKey(), localstack.getSecretKey())
-                    )
-                )
-                .region(Region.of(localstack.getRegion()))
-                .build();
+        void samePortIsExposedForAllServices() {
+            try (LocalStackContainer localstack = new LocalStackContainer(LocalstackTestImages.LOCALSTACK_IMAGE)) {
+                localstack.start();
 
-            String desc = "AWS CMK Description";
-            Tag createdByTag = Tag.builder().tagKey("CreatedBy").tagValue("StorageService").build();
-            CreateKeyRequest req = CreateKeyRequest.builder().description(desc).tags(createdByTag).build();
-            CreateKeyResponse key = kms.createKey(req);
-
-            assertThat(desc)
-                .as("AWS KMS Customer Managed Key should be created ")
-                .isEqualTo(key.keyMetadata().description());
-        }
-
-        @Test
-        public void samePortIsExposedForAllServices() {
-            assertThat(localstack.getExposedPorts()).as("A single port is exposed").hasSize(1);
-            assertThat(localstack.getEndpointOverride(Service.SQS).toString())
-                .as("Endpoint overrides are different")
-                .isEqualTo(localstack.getEndpointOverride(Service.S3).toString());
+                assertThat(localstack.getExposedPorts()).as("A single port is exposed").hasSize(1);
+                assertThat(localstack.getEndpointOverride(Service.SQS).toString())
+                    .as("Endpoint overrides are different")
+                    .isEqualTo(localstack.getEndpointOverride(Service.S3).toString());
+            }
         }
     }
 
-    public static class WithNetwork {
+    @Nested
+    class WithNetwork {
 
         // with_network {
-        private static Network network = Network.newNetwork();
+        Network network = Network.newNetwork();
 
-        @ClassRule
-        public static LocalStackContainer localstackInDockerNetwork = new LocalStackContainer(
+        LocalStackContainer localstackInDockerNetwork = new LocalStackContainer(
             DockerImageName.parse("localstack/localstack:0.12.8")
         )
             .withNetwork(network)
             .withNetworkAliases("notthis", "localstack") // the last alias is used for HOSTNAME_EXTERNAL
             .withServices(Service.S3, Service.SQS, Service.CLOUDWATCHLOGS);
-
         // }
 
-        @ClassRule
-        public static GenericContainer<?> awsCliInDockerNetwork = new GenericContainer<>(
-            LocalstackTestImages.AWS_CLI_IMAGE
-        )
+        GenericContainer<?> awsCliInDockerNetwork = new GenericContainer<>(LocalstackTestImages.AWS_CLI_IMAGE)
             .withNetwork(network)
             .withCreateContainerCmdModifier(cmd -> cmd.withEntrypoint("tail"))
             .withCommand(" -f /dev/null")
@@ -256,13 +250,28 @@ public class LocalstackContainerTest {
             .withEnv("AWS_SECRET_ACCESS_KEY", "secretkey")
             .withEnv("AWS_REGION", "eu-west-1");
 
+        @BeforeEach
+        void setup() {
+            localstackInDockerNetwork.start();
+            awsCliInDockerNetwork.start();
+        }
+
+        @AfterEach
+        void tearDown() {
+            awsCliInDockerNetwork.stop();
+            localstackInDockerNetwork.stop();
+        }
+
         @Test
-        public void localstackHostEnVarIsSet() {
+        void localstackHostEnVarIsSet() {
+            localstackInDockerNetwork.start();
+            awsCliInDockerNetwork.start();
+
             assertThat(localstackInDockerNetwork.getEnvMap().get("HOSTNAME_EXTERNAL")).isEqualTo("localstack");
         }
 
         @Test
-        public void s3TestOverDockerNetwork() throws Exception {
+        void s3TestOverDockerNetwork() throws Exception {
             runAwsCliAgainstDockerNetworkContainer(
                 "s3api create-bucket --bucket foo --create-bucket-configuration LocationConstraint=eu-west-1"
             );
@@ -271,7 +280,7 @@ public class LocalstackContainerTest {
         }
 
         @Test
-        public void sqsTestOverDockerNetwork() throws Exception {
+        void sqsTestOverDockerNetwork() throws Exception {
             final String queueCreationResponse = runAwsCliAgainstDockerNetworkContainer(
                 "sqs create-queue --queue-name baz"
             );
@@ -299,7 +308,7 @@ public class LocalstackContainerTest {
         }
 
         @Test
-        public void cloudWatchLogsTestOverDockerNetwork() throws Exception {
+        void cloudWatchLogsTestOverDockerNetwork() throws Exception {
             runAwsCliAgainstDockerNetworkContainer("logs create-log-group --log-group-name foo");
         }
 
@@ -320,32 +329,34 @@ public class LocalstackContainerTest {
         }
     }
 
-    public static class WithRegion {
-
-        // with_region {
-        private static String region = "eu-west-1";
-
-        @ClassRule
-        public static LocalStackContainer localstack = new LocalStackContainer(LocalstackTestImages.LOCALSTACK_IMAGE)
-            .withEnv("DEFAULT_REGION", region)
-            .withServices(Service.S3);
-
-        // }
+    @Nested
+    class WithRegion {
 
         @Test
-        public void s3EndpointHasProperRegion() {
-            assertThat(localstack.getRegion()).as("The endpoint configuration has right region").isEqualTo(region);
+        void s3EndpointHasProperRegion() {
+            try (
+                // with_region {
+                LocalStackContainer localstack = new LocalStackContainer(LocalstackTestImages.LOCALSTACK_IMAGE)
+                    .withEnv("DEFAULT_REGION", "eu-west-1")
+                    .withServices(Service.S3);
+                // }
+            ) {
+                localstack.start();
+                assertThat(localstack.getRegion())
+                    .as("The endpoint configuration has right region")
+                    .isEqualTo("eu-west-1");
+            }
         }
     }
 
-    public static class WithoutServices {
-
-        @ClassRule
-        public static LocalStackContainer localstack = new LocalStackContainer(LocalstackTestImages.LOCALSTACK_IMAGE);
+    @Nested
+    class WithoutServices {
 
         @Test
-        public void s3ServiceStartLazily() {
-            try (
+        void s3ServiceStartLazily() {
+            try (LocalStackContainer localstack = new LocalStackContainer(LocalstackTestImages.LOCALSTACK_IMAGE);) {
+                localstack.start();
+
                 S3Client s3 = S3Client
                     .builder()
                     .endpointOverride(localstack.getEndpoint())
@@ -355,69 +366,67 @@ public class LocalstackContainerTest {
                         )
                     )
                     .region(Region.of(localstack.getRegion()))
-                    .build()
-            ) {
+                    .build();
                 assertThat(s3.listBuckets().buckets()).as("S3 Service is started lazily").isEmpty();
             }
         }
-    }
-
-    public static class WithVersion2 {
-
-        private static Network network = Network.newNetwork();
-
-        @ClassRule
-        public static LocalStackContainer localstack = new LocalStackContainer(
-            DockerImageName.parse("localstack/localstack:2.0")
-        )
-            .withNetwork(network)
-            .withNetworkAliases("localstack");
-
-        @ClassRule
-        public static GenericContainer<?> awsCliInDockerNetwork = new GenericContainer<>(
-            LocalstackTestImages.AWS_CLI_IMAGE
-        )
-            .withNetwork(network)
-            .withCreateContainerCmdModifier(cmd -> cmd.withEntrypoint("tail"))
-            .withCommand(" -f /dev/null")
-            .withEnv("AWS_ACCESS_KEY_ID", "accesskey")
-            .withEnv("AWS_SECRET_ACCESS_KEY", "secretkey")
-            .withEnv("AWS_REGION", "eu-west-1");
 
         @Test
-        public void localstackHostEnVarIsSet() {
-            assertThat(localstack.getEnvMap().get("LOCALSTACK_HOST")).isEqualTo("localstack");
+        void sqsTestOverDockerNetwork() throws Exception {
+            try (
+                Network network = Network.newNetwork();
+                LocalStackContainer localstack = new LocalStackContainer(
+                    DockerImageName.parse("localstack/localstack:2.0")
+                )
+                    .withNetwork(network)
+                    .withNetworkAliases("localstack");
+                GenericContainer<?> awsCliInDockerNetwork = new GenericContainer<>(LocalstackTestImages.AWS_CLI_IMAGE)
+                    .withNetwork(network)
+                    .withCreateContainerCmdModifier(cmd -> cmd.withEntrypoint("tail"))
+                    .withCommand(" -f /dev/null")
+                    .withEnv("AWS_ACCESS_KEY_ID", "accesskey")
+                    .withEnv("AWS_SECRET_ACCESS_KEY", "secretkey")
+                    .withEnv("AWS_REGION", "eu-west-1")
+            ) {
+                localstack.start();
+                awsCliInDockerNetwork.start();
+
+                assertThat(localstack.getEnvMap().get("LOCALSTACK_HOST")).isEqualTo("localstack");
+
+                final String queueCreationResponse = runAwsCliAgainstDockerNetworkContainer(
+                    "sqs create-queue --queue-name baz",
+                    awsCliInDockerNetwork
+                );
+
+                assertThat(queueCreationResponse)
+                    .as("Created queue has external hostname URL")
+                    .contains("http://localstack:" + LocalStackContainer.PORT);
+
+                runAwsCliAgainstDockerNetworkContainer(
+                    String.format(
+                        "sqs send-message --endpoint http://localstack:%d --queue-url http://localstack:%d/queue/baz --message-body test",
+                        LocalStackContainer.PORT,
+                        LocalStackContainer.PORT
+                    ),
+                    awsCliInDockerNetwork
+                );
+                final String message = runAwsCliAgainstDockerNetworkContainer(
+                    String.format(
+                        "sqs receive-message --endpoint http://localstack:%d --queue-url http://localstack:%d/queue/baz",
+                        LocalStackContainer.PORT,
+                        LocalStackContainer.PORT
+                    ),
+                    awsCliInDockerNetwork
+                );
+
+                assertThat(message).as("the sent message can be received").contains("\"Body\": \"test\"");
+            }
         }
 
-        @Test
-        public void sqsTestOverDockerNetwork() throws Exception {
-            final String queueCreationResponse = runAwsCliAgainstDockerNetworkContainer(
-                "sqs create-queue --queue-name baz"
-            );
-
-            assertThat(queueCreationResponse)
-                .as("Created queue has external hostname URL")
-                .contains("http://localstack:" + LocalStackContainer.PORT);
-
-            runAwsCliAgainstDockerNetworkContainer(
-                String.format(
-                    "sqs send-message --endpoint http://localstack:%d --queue-url http://localstack:%d/queue/baz --message-body test",
-                    LocalStackContainer.PORT,
-                    LocalStackContainer.PORT
-                )
-            );
-            final String message = runAwsCliAgainstDockerNetworkContainer(
-                String.format(
-                    "sqs receive-message --endpoint http://localstack:%d --queue-url http://localstack:%d/queue/baz",
-                    LocalStackContainer.PORT,
-                    LocalStackContainer.PORT
-                )
-            );
-
-            assertThat(message).as("the sent message can be received").contains("\"Body\": \"test\"");
-        }
-
-        private String runAwsCliAgainstDockerNetworkContainer(String command) throws Exception {
+        private String runAwsCliAgainstDockerNetworkContainer(
+            String command,
+            GenericContainer<?> awsCliInDockerNetwork
+        ) throws Exception {
             final String[] commandParts = String
                 .format(
                     "/usr/local/bin/aws --region eu-west-1 %s --endpoint-url http://localstack:%d --no-verify-ssl",
@@ -434,69 +443,74 @@ public class LocalstackContainerTest {
         }
     }
 
-    public static class S3SkipSignatureValidation {
-
-        @ClassRule
-        public static LocalStackContainer localstack = new LocalStackContainer(LocalstackTestImages.LOCALSTACK_IMAGE)
-            .withEnv("S3_SKIP_SIGNATURE_VALIDATION", "0");
+    @Nested
+    class S3SkipSignatureValidation {
 
         @Test
-        public void shouldBeAccessibleWithCredentials() throws IOException {
-            S3Client s3 = S3Client
-                .builder()
-                .endpointOverride(localstack.getEndpoint())
-                .credentialsProvider(
-                    StaticCredentialsProvider.create(
-                        AwsBasicCredentials.create(localstack.getAccessKey(), localstack.getSecretKey())
+        void shouldBeAccessibleWithCredentials() throws IOException {
+            try (
+                LocalStackContainer localstack = new LocalStackContainer(LocalstackTestImages.LOCALSTACK_IMAGE)
+                    .withEnv("S3_SKIP_SIGNATURE_VALIDATION", "0")
+            ) {
+                localstack.start();
+
+                S3Client s3 = S3Client
+                    .builder()
+                    .endpointOverride(localstack.getEndpoint())
+                    .credentialsProvider(
+                        StaticCredentialsProvider.create(
+                            AwsBasicCredentials.create(localstack.getAccessKey(), localstack.getSecretKey())
+                        )
                     )
-                )
-                .region(Region.of(localstack.getRegion()))
-                .build();
+                    .region(Region.of(localstack.getRegion()))
+                    .build();
 
-            final String bucketName = "foo";
+                final String bucketName = "foo";
 
-            s3.createBucket(CreateBucketRequest.builder().bucket(bucketName).build());
+                s3.createBucket(CreateBucketRequest.builder().bucket(bucketName).build());
 
-            s3.putObject(
-                PutObjectRequest.builder().bucket(bucketName).key("bar").build(),
-                software.amazon.awssdk.core.sync.RequestBody.fromString("baz")
-            );
+                s3.putObject(
+                    PutObjectRequest.builder().bucket(bucketName).key("bar").build(),
+                    software.amazon.awssdk.core.sync.RequestBody.fromString("baz")
+                );
 
-            final List<Bucket> buckets = s3.listBuckets().buckets();
-            final Optional<Bucket> maybeBucket = buckets.stream().filter(b -> b.name().equals(bucketName)).findFirst();
-            assertThat(maybeBucket).as("The created bucket is present").isPresent();
+                final List<Bucket> buckets = s3.listBuckets().buckets();
+                final Optional<Bucket> maybeBucket = buckets
+                    .stream()
+                    .filter(b -> b.name().equals(bucketName))
+                    .findFirst();
+                assertThat(maybeBucket).as("The created bucket is present").isPresent();
 
-            S3Presigner presigner = S3Presigner
-                .builder()
-                .endpointOverride(localstack.getEndpoint())
-                .credentialsProvider(
-                    StaticCredentialsProvider.create(
-                        AwsBasicCredentials.create(localstack.getAccessKey(), localstack.getSecretKey())
+                S3Presigner presigner = S3Presigner
+                    .builder()
+                    .endpointOverride(localstack.getEndpoint())
+                    .credentialsProvider(
+                        StaticCredentialsProvider.create(
+                            AwsBasicCredentials.create(localstack.getAccessKey(), localstack.getSecretKey())
+                        )
                     )
-                )
-                .region(Region.of(localstack.getRegion()))
-                .build();
+                    .region(Region.of(localstack.getRegion()))
+                    .build();
 
-            GetObjectPresignRequest presignRequest = GetObjectPresignRequest
-                .builder()
-                .signatureDuration(Duration.ofMinutes(5))
-                .getObjectRequest(GetObjectRequest.builder().bucket(bucketName).key("bar").build())
-                .build();
+                GetObjectPresignRequest presignRequest = GetObjectPresignRequest
+                    .builder()
+                    .signatureDuration(Duration.ofMinutes(5))
+                    .getObjectRequest(GetObjectRequest.builder().bucket(bucketName).key("bar").build())
+                    .build();
 
-            URL presignedUrl = presigner.presignGetObject(presignRequest).url();
+                URL presignedUrl = presigner.presignGetObject(presignRequest).url();
 
-            assertThat(presignedUrl).as("The presigned url is valid").isNotNull();
-            final String content = IOUtils.toString(presignedUrl, StandardCharsets.UTF_8);
-            assertThat(content).as("The object can be retrieved").isEqualTo("baz");
+                assertThat(presignedUrl).as("The presigned url is valid").isNotNull();
+                final String content = IOUtils.toString(presignedUrl, StandardCharsets.UTF_8);
+                assertThat(content).as("The object can be retrieved").isEqualTo("baz");
+            }
         }
     }
 
-    public static class LambdaContainerLabels {
+    @Nested
+    class LambdaContainerLabels {
 
-        @ClassRule
-        public static LocalStackContainer localstack = new LocalStackContainer(LocalstackTestImages.LOCALSTACK_IMAGE);
-
-        private static byte[] createLambdaHandlerZipFile() throws IOException {
+        private byte[] createLambdaHandlerZipFile() throws IOException {
             StringBuilder sb = new StringBuilder();
             sb.append("def handler(event, context):\n");
             sb.append("    return event");
@@ -514,64 +528,71 @@ public class LocalstackContainerTest {
         }
 
         @Test
-        public void shouldLabelLambdaContainers() throws IOException {
-            LambdaClient lambda = LambdaClient
-                .builder()
-                .endpointOverride(localstack.getEndpoint())
-                .credentialsProvider(
-                    StaticCredentialsProvider.create(
-                        AwsBasicCredentials.create(localstack.getAccessKey(), localstack.getSecretKey())
+        void shouldLabelLambdaContainers() throws IOException {
+            try (LocalStackContainer localstack = new LocalStackContainer(LocalstackTestImages.LOCALSTACK_IMAGE)) {
+                localstack.start();
+
+                LambdaClient lambda = LambdaClient
+                    .builder()
+                    .endpointOverride(localstack.getEndpoint())
+                    .credentialsProvider(
+                        StaticCredentialsProvider.create(
+                            AwsBasicCredentials.create(localstack.getAccessKey(), localstack.getSecretKey())
+                        )
                     )
-                )
-                .region(Region.of(localstack.getRegion()))
-                .build();
+                    .region(Region.of(localstack.getRegion()))
+                    .build();
 
-            // create function
-            byte[] handlerFile = createLambdaHandlerZipFile();
-            CreateFunctionRequest createFunctionRequest = CreateFunctionRequest
-                .builder()
-                .functionName("test-function")
-                .runtime(Runtime.PYTHON3_11)
-                .handler("handler.handler")
-                .role("arn:aws:iam::000000000000:role/test-role")
-                .code(FunctionCode.builder().zipFile(SdkBytes.fromByteArray(handlerFile)).build())
-                .build();
-            CreateFunctionResponse createFunctionResult = lambda.createFunction(createFunctionRequest);
+                // create function
+                byte[] handlerFile = createLambdaHandlerZipFile();
+                CreateFunctionRequest createFunctionRequest = CreateFunctionRequest
+                    .builder()
+                    .functionName("test-function")
+                    .runtime(Runtime.PYTHON3_11)
+                    .handler("handler.handler")
+                    .role("arn:aws:iam::000000000000:role/test-role")
+                    .code(FunctionCode.builder().zipFile(SdkBytes.fromByteArray(handlerFile)).build())
+                    .build();
+                CreateFunctionResponse createFunctionResult = lambda.createFunction(createFunctionRequest);
 
-            try (LambdaWaiter waiter = lambda.waiter()) {
-                waiter.waitUntilFunctionActive(
-                    GetFunctionConfigurationRequest.builder().functionName(createFunctionResult.functionName()).build()
-                );
+                try (LambdaWaiter waiter = lambda.waiter()) {
+                    waiter.waitUntilFunctionActive(
+                        GetFunctionConfigurationRequest
+                            .builder()
+                            .functionName(createFunctionResult.functionName())
+                            .build()
+                    );
+                }
+
+                // invoke function once
+                String payload = "{\"test\": \"payload\"}";
+                InvokeRequest invokeRequest = InvokeRequest
+                    .builder()
+                    .functionName(createFunctionResult.functionName())
+                    .payload(SdkBytes.fromUtf8String(payload))
+                    .build();
+                InvokeResponse invokeResult = lambda.invoke(invokeRequest);
+                assertThat(invokeResult.payload().asUtf8String())
+                    .as("Invoke result not matching expected output")
+                    .isEqualTo(payload);
+
+                // assert that the spawned lambda containers has the testcontainers labels set
+                DockerClient dockerClient = DockerClientFactory.instance().client();
+                Collection<String> nameFilter = Collections.singleton(localstack.getContainerName().replace("_", "-"));
+                com.github.dockerjava.api.model.Container lambdaContainer = dockerClient
+                    .listContainersCmd()
+                    .withNameFilter(nameFilter)
+                    .exec()
+                    .stream()
+                    .findFirst()
+                    .orElse(null);
+                assertThat(lambdaContainer).as("Lambda container not found").isNotNull();
+                Map<String, String> labels = lambdaContainer.getLabels();
+                assertThat(labels.get("org.testcontainers")).as("TestContainers label not present").isEqualTo("true");
+                assertThat(labels.get("org.testcontainers.sessionId"))
+                    .as("TestContainers session id not present")
+                    .isNotNull();
             }
-
-            // invoke function once
-            String payload = "{\"test\": \"payload\"}";
-            InvokeRequest invokeRequest = InvokeRequest
-                .builder()
-                .functionName(createFunctionResult.functionName())
-                .payload(SdkBytes.fromUtf8String(payload))
-                .build();
-            InvokeResponse invokeResult = lambda.invoke(invokeRequest);
-            assertThat(invokeResult.payload().asUtf8String())
-                .as("Invoke result not matching expected output")
-                .isEqualTo(payload);
-
-            // assert that the spawned lambda containers has the testcontainers labels set
-            DockerClient dockerClient = DockerClientFactory.instance().client();
-            Collection<String> nameFilter = Collections.singleton(localstack.getContainerName().replace("_", "-"));
-            com.github.dockerjava.api.model.Container lambdaContainer = dockerClient
-                .listContainersCmd()
-                .withNameFilter(nameFilter)
-                .exec()
-                .stream()
-                .findFirst()
-                .orElse(null);
-            assertThat(lambdaContainer).as("Lambda container not found").isNotNull();
-            Map<String, String> labels = lambdaContainer.getLabels();
-            assertThat(labels.get("org.testcontainers")).as("TestContainers label not present").isEqualTo("true");
-            assertThat(labels.get("org.testcontainers.sessionId"))
-                .as("TestContainers session id not present")
-                .isNotNull();
         }
     }
 }

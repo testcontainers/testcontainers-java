@@ -1,14 +1,16 @@
 package org.testcontainers.dockerclient;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.testcontainers.DockerRegistryContainer;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 
-public class AmbiguousImagePullTest {
+class AmbiguousImagePullTest {
 
-    @Test(timeout = 30_000)
-    public void testNotUsingParse() {
+    @Test
+    @Timeout(30)
+    void testNotUsingParse() {
         try (DockerRegistryContainer registryContainer = new DockerRegistryContainer()) {
             registryContainer.start();
             DockerImageName imageName = registryContainer.createImage("latest");

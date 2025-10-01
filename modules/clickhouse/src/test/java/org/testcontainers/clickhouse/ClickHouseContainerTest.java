@@ -3,7 +3,7 @@ package org.testcontainers.clickhouse;
 import com.clickhouse.client.api.Client;
 import com.clickhouse.client.api.data_formats.ClickHouseBinaryFormatReader;
 import com.clickhouse.client.api.query.QueryResponse;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.ClickhouseTestImages;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
@@ -16,11 +16,14 @@ import java.util.concurrent.TimeoutException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
-public class ClickHouseContainerTest extends AbstractContainerDatabaseTest {
+class ClickHouseContainerTest extends AbstractContainerDatabaseTest {
 
     @Test
-    public void testSimple() throws SQLException {
-        try (ClickHouseContainer clickhouse = new ClickHouseContainer("clickhouse/clickhouse-server:21.11-alpine")) {
+    void testSimple() throws SQLException {
+        try ( // container {
+            ClickHouseContainer clickhouse = new ClickHouseContainer("clickhouse/clickhouse-server:21.11-alpine")
+            // }
+        ) {
             clickhouse.start();
 
             ResultSet resultSet = performQuery(clickhouse, "SELECT 1");
@@ -31,7 +34,7 @@ public class ClickHouseContainerTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void customCredentialsWithUrlParams() throws SQLException {
+    void customCredentialsWithUrlParams() throws SQLException {
         try (
             ClickHouseContainer clickhouse = new ClickHouseContainer("clickhouse/clickhouse-server:21.11.2-alpine")
                 .withUsername("default")
@@ -53,7 +56,7 @@ public class ClickHouseContainerTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testNewAuth() throws SQLException {
+    void testNewAuth() throws SQLException {
         try (ClickHouseContainer clickhouse = new ClickHouseContainer(ClickhouseTestImages.CLICKHOUSE_24_12_IMAGE)) {
             clickhouse.start();
 
@@ -65,7 +68,7 @@ public class ClickHouseContainerTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testGetHttpMethodWithHttpClient() {
+    void testGetHttpMethodWithHttpClient() {
         ClickHouseContainer clickhouse = new ClickHouseContainer(ClickhouseTestImages.CLICKHOUSE_24_12_IMAGE);
         clickhouse.start();
         Client client = new Client.Builder()

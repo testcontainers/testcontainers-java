@@ -14,8 +14,7 @@ import com.solacesystems.jcsmp.Topic;
 import com.solacesystems.jcsmp.XMLMessageConsumer;
 import com.solacesystems.jcsmp.XMLMessageListener;
 import com.solacesystems.jcsmp.XMLMessageProducer;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.utility.MountableFile;
@@ -24,8 +23,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
-public class SolaceContainerSMFTest {
+class SolaceContainerSMFTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SolaceContainerSMFTest.class);
 
@@ -36,7 +36,7 @@ public class SolaceContainerSMFTest {
     private static final Queue QUEUE = JCSMPFactory.onlyInstance().createQueue("Queue");
 
     @Test
-    public void testSolaceContainerWithSimpleAuthentication() {
+    void testSolaceContainerWithSimpleAuthentication() {
         try (
             // solaceContainerSetup {
             SolaceContainer solaceContainer = new SolaceContainer("solace/solace-pubsub-standard:10.25.0")
@@ -54,7 +54,7 @@ public class SolaceContainerSMFTest {
     }
 
     @Test
-    public void testSolaceContainerWithCreateFlow() {
+    void testSolaceContainerWithCreateFlow() {
         try (
             SolaceContainer solaceContainer = new SolaceContainer("solace/solace-pubsub-standard:10.25.0")
                 .withCredentials("user", "pass")
@@ -87,7 +87,7 @@ public class SolaceContainerSMFTest {
     }
 
     @Test
-    public void testSolaceContainerWithCertificates() {
+    void testSolaceContainerWithCertificates() {
         try (
             // solaceContainerUsageSSL {
             SolaceContainer solaceContainer = new SolaceContainer("solace/solace-pubsub-standard:10.25.0")
@@ -145,7 +145,7 @@ public class SolaceContainerSMFTest {
             session.connect();
             return session;
         } catch (Exception e) {
-            Assert.fail("Error connecting and setting up session! " + e.getMessage());
+            fail("Error connecting and setting up session! " + e.getMessage());
             return null;
         }
     }

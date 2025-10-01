@@ -1,6 +1,6 @@
 package org.testcontainers.utility;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.utility.ResourceReaper.FilterRegistry;
 
 import java.io.ByteArrayInputStream;
@@ -15,7 +15,7 @@ import java.util.Map.Entry;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class FilterRegistryTest {
+class FilterRegistryTest {
 
     private static final List<Entry<String, String>> FILTERS = Arrays.asList(
         new SimpleEntry<>("key1!", "value2?"),
@@ -31,7 +31,7 @@ public class FilterRegistryTest {
     private static final String NEW_LINE = "\n";
 
     @Test
-    public void registerReturnsTrueIfAcknowledgementIsReadFromInputStream() throws IOException {
+    void registerReturnsTrueIfAcknowledgementIsReadFromInputStream() throws IOException {
         FilterRegistry registry = new FilterRegistry(inputStream(ACKNOWLEDGEMENT), anyOutputStream());
 
         boolean successful = registry.register(FILTERS);
@@ -40,7 +40,7 @@ public class FilterRegistryTest {
     }
 
     @Test
-    public void registerReturnsFalseIfNoAcknowledgementIsReadFromInputStream() throws IOException {
+    void registerReturnsFalseIfNoAcknowledgementIsReadFromInputStream() throws IOException {
         FilterRegistry registry = new FilterRegistry(inputStream(NO_ACKNOWLEDGEMENT), anyOutputStream());
 
         boolean successful = registry.register(FILTERS);
@@ -49,7 +49,7 @@ public class FilterRegistryTest {
     }
 
     @Test
-    public void registerWritesUrlEncodedFiltersAndNewlineToOutputStream() throws IOException {
+    void registerWritesUrlEncodedFiltersAndNewlineToOutputStream() throws IOException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         FilterRegistry registry = new FilterRegistry(anyInputStream(), outputStream);
 

@@ -1,7 +1,7 @@
 package org.testcontainers.junit;
 
 import io.restassured.RestAssured;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.ComposeContainer;
 import org.testcontainers.containers.ContainerLaunchException;
 
@@ -11,10 +11,10 @@ import java.io.IOException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
-public class ComposeContainerWithCopyFilesTest {
+class ComposeContainerWithCopyFilesTest {
 
     @Test
-    public void testShouldCopyAllFilesByDefault() throws IOException {
+    void testShouldCopyAllFilesByDefault() throws IOException {
         try (
             ComposeContainer environment = new ComposeContainer(
                 new File("src/test/resources/compose-file-copy-inclusions/compose.yml")
@@ -29,7 +29,7 @@ public class ComposeContainerWithCopyFilesTest {
     }
 
     @Test
-    public void testWithFileCopyInclusionUsingFilePath() throws IOException {
+    void testWithFileCopyInclusionUsingFilePath() throws IOException {
         try (
             ComposeContainer environment = new ComposeContainer(
                 new File("src/test/resources/compose-file-copy-inclusions/compose-root-only.yml")
@@ -47,7 +47,7 @@ public class ComposeContainerWithCopyFilesTest {
     }
 
     @Test
-    public void testWithFileCopyInclusionUsingDirectoryPath() throws IOException {
+    void testWithFileCopyInclusionUsingDirectoryPath() throws IOException {
         try (
             // composeContainerWithCopyFiles {
             ComposeContainer environment = new ComposeContainer(
@@ -66,7 +66,7 @@ public class ComposeContainerWithCopyFilesTest {
     }
 
     @Test
-    public void testShouldNotBeAbleToStartIfNeededEnvFileIsNotCopied() {
+    void testShouldNotBeAbleToStartIfNeededEnvFileIsNotCopied() {
         try (
             ComposeContainer environment = new ComposeContainer(
                 new File("src/test/resources/compose-file-copy-inclusions/compose-test-only.yml")

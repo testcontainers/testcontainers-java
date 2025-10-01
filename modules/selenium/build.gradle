@@ -6,6 +6,9 @@ dependencies {
     provided 'org.seleniumhq.selenium:selenium-remote-driver:4.10.0'
     provided 'org.seleniumhq.selenium:selenium-chrome-driver:4.10.0'
 
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
     testImplementation platform('org.seleniumhq.selenium:selenium-bom:4.13.0')
     testImplementation 'org.seleniumhq.selenium:selenium-firefox-driver'
     testImplementation 'org.seleniumhq.selenium:selenium-edge-driver'
@@ -13,7 +16,11 @@ dependencies {
 
     testImplementation 'org.mortbay.jetty:jetty:6.1.26'
     testImplementation project(':testcontainers-nginx')
-    testImplementation 'org.assertj:assertj-core:3.27.3'
+    testImplementation 'org.assertj:assertj-core:3.27.4'
 
     compileOnly 'org.jetbrains:annotations:26.0.2'
+}
+
+test {
+    useJUnitPlatform()
 }

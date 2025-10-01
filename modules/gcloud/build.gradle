@@ -3,12 +3,19 @@ description = "Testcontainers :: GCloud"
 dependencies {
     api project(':testcontainers')
 
-    testImplementation platform("com.google.cloud:libraries-bom:26.65.0")
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
+    testImplementation platform("com.google.cloud:libraries-bom:26.66.0")
     testImplementation 'com.google.cloud:google-cloud-bigquery'
     testImplementation 'com.google.cloud:google-cloud-datastore'
     testImplementation 'com.google.cloud:google-cloud-firestore'
     testImplementation 'com.google.cloud:google-cloud-pubsub'
     testImplementation 'com.google.cloud:google-cloud-spanner'
     testImplementation 'com.google.cloud:google-cloud-bigtable'
-    testImplementation 'org.assertj:assertj-core:3.27.3'
+    testImplementation 'org.assertj:assertj-core:3.27.4'
+}
+
+test {
+    useJUnitPlatform()
 }

@@ -1,26 +1,18 @@
 package org.testcontainers.redpanda;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
-public class CompatibleImageTest extends AbstractRedpanda {
+class CompatibleImageTest extends AbstractRedpanda {
 
-    private final String image;
-
-    public CompatibleImageTest(String image) {
-        this.image = image;
-    }
-
-    @Parameterized.Parameters(name = "{0}")
     public static String[] image() {
         return new String[] { "docker.redpanda.com/redpandadata/redpanda:v22.2.1", "redpandadata/redpanda:v22.2.1" };
     }
 
-    @Test
-    public void shouldProduceAndConsumeMessage() throws Exception {
-        try (RedpandaContainer container = new RedpandaContainer(this.image)) {
+    @ParameterizedTest
+    @MethodSource("image")
+    void shouldProduceAndConsumeMessage(String image) throws Exception {
+        try (RedpandaContainer container = new RedpandaContainer(image)) {
             container.start();
             testKafkaFunctionality(container.getBootstrapServers());
         }

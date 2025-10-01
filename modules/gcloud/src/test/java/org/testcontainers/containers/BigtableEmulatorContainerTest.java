@@ -19,8 +19,7 @@ import com.google.cloud.bigtable.data.v2.models.RowMutation;
 import com.google.cloud.bigtable.data.v2.models.TableId;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
@@ -28,48 +27,52 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class BigtableEmulatorContainerTest {
+class BigtableEmulatorContainerTest {
 
-    public static final String PROJECT_ID = "test-project";
+    private static final String PROJECT_ID = "test-project";
 
-    public static final String INSTANCE_ID = "test-instance";
-
-    @Rule
-    // emulatorContainer {
-    public BigtableEmulatorContainer emulator = new BigtableEmulatorContainer(
-        DockerImageName.parse("gcr.io/google.com/cloudsdktool/google-cloud-cli:441.0.0-emulators")
-    );
-
-    // }
+    private static final String INSTANCE_ID = "test-instance";
 
     @Test
     // testWithEmulatorContainer {
-    public void testSimple() throws IOException {
-        ManagedChannel channel = ManagedChannelBuilder.forTarget(emulator.getEmulatorEndpoint()).usePlaintext().build();
-
-        TransportChannelProvider channelProvider = FixedTransportChannelProvider.create(
-            GrpcTransportChannel.create(channel)
-        );
-        NoCredentialsProvider credentialsProvider = NoCredentialsProvider.create();
-        createTable(channelProvider, credentialsProvider, "test-table");
+    void testSimple() throws IOException {
         try (
-            BigtableDataClient client = BigtableDataClient.create(
-                BigtableDataSettings
-                    .newBuilderForEmulator(emulator.getHost(), emulator.getEmulatorPort())
-                    .setProjectId(PROJECT_ID)
-                    .setInstanceId(INSTANCE_ID)
-                    .build()
-            )
+            // emulatorContainer {
+            BigtableEmulatorContainer emulator = new BigtableEmulatorContainer(
+                DockerImageName.parse("gcr.io/google.com/cloudsdktool/google-cloud-cli:441.0.0-emulators")
+            );
+            // }
         ) {
-            client.mutateRow(RowMutation.create(TableId.of("test-table"), "1").setCell("name", "firstName", "Ray"));
+            emulator.start();
+            ManagedChannel channel = ManagedChannelBuilder
+                .forTarget(emulator.getEmulatorEndpoint())
+                .usePlaintext()
+                .build();
 
-            Row row = client.readRow(TableId.of("test-table"), "1");
-            List<RowCell> cells = row.getCells("name", "firstName");
+            TransportChannelProvider channelProvider = FixedTransportChannelProvider.create(
+                GrpcTransportChannel.create(channel)
+            );
+            NoCredentialsProvider credentialsProvider = NoCredentialsProvider.create();
+            createTable(channelProvider, credentialsProvider, "test-table");
+            try (
+                BigtableDataClient client = BigtableDataClient.create(
+                    BigtableDataSettings
+                        .newBuilderForEmulator(emulator.getHost(), emulator.getEmulatorPort())
+                        .setProjectId(PROJECT_ID)
+                        .setInstanceId(INSTANCE_ID)
+                        .build()
+                )
+            ) {
+                client.mutateRow(RowMutation.create(TableId.of("test-table"), "1").setCell("name", "firstName", "Ray"));
 
-            assertThat(cells).isNotNull().hasSize(1);
-            assertThat(cells.get(0).getValue().toStringUtf8()).isEqualTo("Ray");
-        } finally {
-            channel.shutdown();
+                Row row = client.readRow(TableId.of("test-table"), "1");
+                List<RowCell> cells = row.getCells("name", "firstName");
+
+                assertThat(cells).isNotNull().hasSize(1);
+                assertThat(cells.get(0).getValue().toStringUtf8()).isEqualTo("Ray");
+            } finally {
+                channel.shutdown();
+            }
         }
     }
 

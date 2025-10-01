@@ -1,8 +1,7 @@
 package org.testcontainers.jdbc;
 
 import lombok.NonNull;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.testcontainers.containers.JdbcDatabaseContainer;
@@ -14,18 +13,19 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class JdbcDatabaseDelegateTest {
+class JdbcDatabaseDelegateTest {
 
     @Test
-    public void testLeakedConnections() {
+    void testLeakedConnections() {
         final JdbcDatabaseContainerStub stub = new JdbcDatabaseContainerStub(DockerImageName.parse("something"));
         try (JdbcDatabaseDelegate delegate = new JdbcDatabaseDelegate(stub, "")) {
             delegate.execute("foo", null, 0, false, false);
         }
-        Assert.assertEquals(0, stub.openConnectionsList.size());
+        assertThat(stub.openConnectionsList.size()).isZero();
     }
 
     static class JdbcDatabaseContainerStub extends JdbcDatabaseContainer {

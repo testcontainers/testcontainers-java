@@ -3,6 +3,13 @@ description = "Testcontainers :: MinIO"
 dependencies {
     api project(':testcontainers')
 
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
     testImplementation("io.minio:minio:8.5.17")
-    testImplementation 'org.assertj:assertj-core:3.27.3'
+    testImplementation 'org.assertj:assertj-core:3.27.4'
+}
+
+test {
+    useJUnitPlatform()
 }

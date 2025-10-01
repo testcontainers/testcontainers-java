@@ -5,7 +5,10 @@ dependencies {
 
     compileOnly 'org.influxdb:influxdb-java:2.25'
 
-    testImplementation 'org.assertj:assertj-core:3.27.3'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
+    testImplementation 'org.assertj:assertj-core:3.27.4'
     testImplementation 'org.influxdb:influxdb-java:2.25'
     testImplementation "com.influxdb:influxdb-client-java:7.3.0"
     testImplementation 'com.influxdb:influxdb3-java:1.2.0'
@@ -21,4 +24,8 @@ tasks.japicmp {
     classExcludes = [
         "org.testcontainers.containers.InfluxDBContainer"
     ]
+}
+
+test {
+    useJUnitPlatform()
 }

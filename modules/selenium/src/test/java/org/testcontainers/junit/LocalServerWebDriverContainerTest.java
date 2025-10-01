@@ -1,8 +1,7 @@
 package org.testcontainers.junit;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.bio.SocketConnector;
 import org.mortbay.jetty.handler.ResourceHandler;
@@ -18,17 +17,17 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Test that a browser running in a container can access a web server hosted on the host machine (i.e. the one running
  * the tests)
  */
-public class LocalServerWebDriverContainerTest {
+class LocalServerWebDriverContainerTest {
 
-    @Rule
     public BrowserWebDriverContainer<?> chrome = new BrowserWebDriverContainer<>()
         .withAccessToHost(true)
         .withCapabilities(new ChromeOptions());
 
     private int localPort;
 
-    @Before
+    @BeforeEach
     public void setupLocalServer() throws Exception {
+        chrome.start();
         // Set up a local Jetty HTTP server
         Server server = new Server();
         server.addConnector(new SocketConnector());
@@ -42,7 +41,7 @@ public class LocalServerWebDriverContainerTest {
     }
 
     @Test
-    public void testConnection() {
+    void testConnection() {
         // getWebDriver {
         RemoteWebDriver driver = new RemoteWebDriver(chrome.getSeleniumAddress(), new ChromeOptions());
         // }

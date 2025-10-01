@@ -27,6 +27,9 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "com.gradleup.shadow"
+        update-types: [ "version-update:semver-major" ]
 
 # Explicit entry for each module
   - package-ecosystem: "gradle"
@@ -272,11 +275,17 @@ updates:
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "io.pinecone:pinecone-client"
+        update-types: [ "version-update:semver-major" ]
   - package-ecosystem: "gradle"
     directory: "/modules/pulsar"
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "org.apache.pulsar:pulsar-bom"
+        update-types: [ "version-update:semver-patch" ]
   - package-ecosystem: "gradle"
     directory: "/modules/qdrant"
     schedule:
@@ -400,7 +409,7 @@ updates:
       - dependency-name: "org.springframework.boot"
         update-types: [ "version-update:semver-major" ]
       - dependency-name: "com.diffplug.spotless"
-        update-types: [ "version-update:semver-minor" ]
+        update-types: [ "version-update:semver-major", "version-update:semver-minor" ]
       - dependency-name: "com.hazelcast:hazelcast"
         update-types: [ "version-update:semver-minor" ]
 
@@ -414,7 +423,7 @@ updates:
       - dependency-name: "ch.qos.logback:logback-classic"
         update-types: [ "version-update:semver-minor" ]
       - dependency-name: "com.diffplug.spotless"
-        update-types: [ "version-update:semver-minor" ]
+        update-types: [ "version-update:semver-major", "version-update:semver-minor" ]
 
 # GitHub Actions
   - package-ecosystem: "github-actions"

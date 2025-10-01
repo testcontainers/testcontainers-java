@@ -1,17 +1,17 @@
 package org.testcontainers.images;
 
 import com.google.common.collect.Sets;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.nio.file.Paths;
 import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ParsedDockerfileTest {
+class ParsedDockerfileTest {
 
     @Test
-    public void doesSimpleParsing() {
+    void doesSimpleParsing() {
         final ParsedDockerfile parsedDockerfile = new ParsedDockerfile(
             Arrays.asList("FROM someimage", "RUN something")
         );
@@ -21,7 +21,7 @@ public class ParsedDockerfileTest {
     }
 
     @Test
-    public void isCaseInsensitive() {
+    void isCaseInsensitive() {
         final ParsedDockerfile parsedDockerfile = new ParsedDockerfile(
             Arrays.asList("from someimage", "RUN something")
         );
@@ -31,7 +31,7 @@ public class ParsedDockerfileTest {
     }
 
     @Test
-    public void handlesTags() {
+    void handlesTags() {
         final ParsedDockerfile parsedDockerfile = new ParsedDockerfile(
             Arrays.asList("FROM someimage:tag", "RUN something")
         );
@@ -41,7 +41,7 @@ public class ParsedDockerfileTest {
     }
 
     @Test
-    public void handlesDigests() {
+    void handlesDigests() {
         final ParsedDockerfile parsedDockerfile = new ParsedDockerfile(
             Arrays.asList("FROM someimage@sha256:abc123", "RUN something")
         );
@@ -51,7 +51,7 @@ public class ParsedDockerfileTest {
     }
 
     @Test
-    public void ignoringCommentedFromLines() {
+    void ignoringCommentedFromLines() {
         final ParsedDockerfile parsedDockerfile = new ParsedDockerfile(
             Arrays.asList("FROM someimage", "#FROM somethingelse")
         );
@@ -61,7 +61,7 @@ public class ParsedDockerfileTest {
     }
 
     @Test
-    public void ignoringBuildStageNames() {
+    void ignoringBuildStageNames() {
         final ParsedDockerfile parsedDockerfile = new ParsedDockerfile(
             Arrays.asList("FROM someimage --as=base", "RUN something", "FROM nextimage", "RUN something")
         );
@@ -71,7 +71,7 @@ public class ParsedDockerfileTest {
     }
 
     @Test
-    public void ignoringPlatformArgs() {
+    void ignoringPlatformArgs() {
         final ParsedDockerfile parsedDockerfile = new ParsedDockerfile(
             Arrays.asList("FROM --platform=linux/amd64 someimage", "RUN something")
         );
@@ -81,7 +81,7 @@ public class ParsedDockerfileTest {
     }
 
     @Test
-    public void ignoringExtraPlatformArgs() {
+    void ignoringExtraPlatformArgs() {
         final ParsedDockerfile parsedDockerfile = new ParsedDockerfile(
             Arrays.asList("FROM --platform=linux/amd64 --somethingelse=value someimage", "RUN something")
         );
@@ -91,7 +91,7 @@ public class ParsedDockerfileTest {
     }
 
     @Test
-    public void handlesGracefullyIfNoFromLine() {
+    void handlesGracefullyIfNoFromLine() {
         final ParsedDockerfile parsedDockerfile = new ParsedDockerfile(
             Arrays.asList("RUN something", "# is this even a valid Dockerfile?")
         );
@@ -101,7 +101,7 @@ public class ParsedDockerfileTest {
     }
 
     @Test
-    public void handlesGracefullyIfDockerfileNotFound() {
+    void handlesGracefullyIfDockerfileNotFound() {
         final ParsedDockerfile parsedDockerfile = new ParsedDockerfile(Paths.get("nonexistent.Dockerfile"));
         assertThat(parsedDockerfile.getDependencyImageNames())
             .as("handles missing Dockerfiles gracefully")

@@ -1,6 +1,6 @@
 package org.testcontainers.junit;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.SeleniumUtils;
 
 import java.io.IOException;
@@ -11,15 +11,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Created by Julien LAMY
  */
-public class SeleniumUtilsTest {
+class SeleniumUtilsTest {
 
     @Test
-    public void detectSeleniumVersionUnder3() throws IOException {
+    void detectSeleniumVersionUnder3() throws IOException {
         checkSeleniumVersionDetected("manifests/MANIFEST-2.45.0.MF", "2.45.0");
     }
 
     @Test
-    public void detectSeleniumVersionUpper3() throws IOException {
+    void detectSeleniumVersionUpper3() throws IOException {
         checkSeleniumVersionDetected("manifests/MANIFEST-3.5.2.MF", "3.5.2");
     }
 

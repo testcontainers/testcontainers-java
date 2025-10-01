@@ -2,15 +2,15 @@ package org.testcontainers.containers;
 
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
-public class DockerModelRunnerContainerTest {
+class DockerModelRunnerContainerTest {
 
     @Test
-    public void checkStatus() {
+    void checkStatus() {
         assumeThat(System.getenv("CI")).isNull();
 
         try (
@@ -26,7 +26,7 @@ public class DockerModelRunnerContainerTest {
     }
 
     @Test
-    public void pullsModelAndExposesInference() {
+    void pullsModelAndExposesInference() {
         assumeThat(System.getenv("CI")).isNull();
 
         String modelName = "ai/smollm2:360M-Q4_K_M";

@@ -1,18 +1,13 @@
 package org.testcontainers.dockerclient;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 import org.testcontainers.utility.DockerImageName;
 
-@RunWith(Parameterized.class)
-public class ImagePullTest {
+class ImagePullTest {
 
-    private final String image;
-
-    @Parameterized.Parameters(name = "{0}")
     public static String[] parameters() {
         return new String[] {
             "alpine:latest",
@@ -26,12 +21,9 @@ public class ImagePullTest {
         };
     }
 
-    public ImagePullTest(String image) {
-        this.image = image;
-    }
-
-    @Test
-    public void test() {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("parameters")
+    void test(String image) {
         try (
             final GenericContainer<?> container = new GenericContainer<>(DockerImageName.parse(image))
                 .withCommand("/bin/sh", "-c", "sleep 0")

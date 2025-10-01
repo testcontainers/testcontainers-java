@@ -21,7 +21,7 @@ import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.awaitility.Awaitility;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import uk.org.webcompere.systemstubs.SystemStubs;
 
 import java.time.Duration;
@@ -29,10 +29,10 @@ import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class LgtmStackContainerTest {
+class LgtmStackContainerTest {
 
     @Test
-    public void shouldPublishMetricsTracesAndLogs() throws Exception {
+    void shouldPublishMetricsTracesAndLogs() throws Exception {
         try ( // container {
             LgtmStackContainer lgtm = new LgtmStackContainer("grafana/otel-lgtm:0.11.1")
             // }

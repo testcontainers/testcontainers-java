@@ -1,6 +1,6 @@
 package org.testcontainers.junit.db2;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.Db2TestImages;
 import org.testcontainers.containers.Db2Container;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
@@ -10,11 +10,14 @@ import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class SimpleDb2Test extends AbstractContainerDatabaseTest {
+class SimpleDb2Test extends AbstractContainerDatabaseTest {
 
     @Test
-    public void testSimple() throws SQLException {
-        try (Db2Container db2 = new Db2Container(Db2TestImages.DB2_IMAGE).acceptLicense()) {
+    void testSimple() throws SQLException {
+        try ( // container {
+            Db2Container db2 = new Db2Container("ibmcom/db2:11.5.0.0a").acceptLicense()
+            // }
+        ) {
             db2.start();
 
             ResultSet resultSet = performQuery(db2, "SELECT 1 FROM SYSIBM.SYSDUMMY1");
@@ -26,7 +29,7 @@ public class SimpleDb2Test extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testSimpleWithNewImage() throws SQLException {
+    void testSimpleWithNewImage() throws SQLException {
         try (Db2Container db2 = new Db2Container("icr.io/db2_community/db2:11.5.8.0").acceptLicense()) {
             db2.start();
 
@@ -39,7 +42,7 @@ public class SimpleDb2Test extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testWithAdditionalUrlParamInJdbcUrl() {
+    void testWithAdditionalUrlParamInJdbcUrl() {
         try (
             Db2Container db2 = new Db2Container(Db2TestImages.DB2_IMAGE)
                 .withUrlParam("sslConnection", "false")

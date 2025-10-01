@@ -1,6 +1,6 @@
 package org.testcontainers.junit.cockroachdb;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.CockroachDBTestImages;
 import org.testcontainers.containers.CockroachContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
@@ -14,15 +14,18 @@ import java.util.logging.LogManager;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class SimpleCockroachDBTest extends AbstractContainerDatabaseTest {
+class SimpleCockroachDBTest extends AbstractContainerDatabaseTest {
     static {
         // Postgres JDBC driver uses JUL; disable it to avoid annoying, irrelevant, stderr logs during connection testing
         LogManager.getLogManager().getLogger("").setLevel(Level.OFF);
     }
 
     @Test
-    public void testSimple() throws SQLException {
-        try (CockroachContainer cockroach = new CockroachContainer(CockroachDBTestImages.COCKROACHDB_IMAGE)) {
+    void testSimple() throws SQLException {
+        try ( // container {
+            CockroachContainer cockroach = new CockroachContainer("cockroachdb/cockroach:v22.2.3")
+            // }
+        ) {
             cockroach.start();
 
             ResultSet resultSet = performQuery(cockroach, "SELECT 1");
@@ -33,7 +36,7 @@ public class SimpleCockroachDBTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testExplicitInitScript() throws SQLException {
+    void testExplicitInitScript() throws SQLException {
         try (
             CockroachContainer cockroach = new CockroachContainer(CockroachDBTestImages.COCKROACHDB_IMAGE)
                 .withInitScript("somepath/init_postgresql.sql")
@@ -48,7 +51,7 @@ public class SimpleCockroachDBTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testWithAdditionalUrlParamInJdbcUrl() {
+    void testWithAdditionalUrlParamInJdbcUrl() {
         CockroachContainer cockroach = new CockroachContainer(CockroachDBTestImages.COCKROACHDB_IMAGE)
             .withUrlParam("sslmode", "disable")
             .withUrlParam("application_name", "cockroach");
@@ -67,7 +70,7 @@ public class SimpleCockroachDBTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testWithUsernamePasswordDatabase() throws SQLException {
+    void testWithUsernamePasswordDatabase() throws SQLException {
         try (
             CockroachContainer cockroach = new CockroachContainer(
                 CockroachDBTestImages.FIRST_COCKROACHDB_IMAGE_WITH_ENV_VARS_SUPPORT
@@ -89,7 +92,7 @@ public class SimpleCockroachDBTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testAnExceptionIsThrownWhenImageDoesNotSupportEnvVars() {
+    void testAnExceptionIsThrownWhenImageDoesNotSupportEnvVars() {
         CockroachContainer cockroachContainer = new CockroachContainer(
             CockroachDBTestImages.COCKROACHDB_IMAGE_WITH_ENV_VARS_UNSUPPORTED
         );
@@ -108,7 +111,7 @@ public class SimpleCockroachDBTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testInitializationScript() throws SQLException {
+    void testInitializationScript() throws SQLException {
         String sql =
             "USE postgres; \n" +
             "CREATE TABLE bar (foo VARCHAR(255)); \n" +

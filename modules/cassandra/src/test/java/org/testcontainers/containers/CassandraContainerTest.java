@@ -5,14 +5,15 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.wait.CassandraQueryWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Slf4j
-public class CassandraContainerTest {
+class CassandraContainerTest {
 
     private static final DockerImageName CASSANDRA_IMAGE = DockerImageName.parse("cassandra:3.11.2");
 
@@ -21,7 +22,7 @@ public class CassandraContainerTest {
     private static final String BASIC_QUERY = "SELECT release_version FROM system.local";
 
     @Test
-    public void testSimple() {
+    void testSimple() {
         try (CassandraContainer<?> cassandraContainer = new CassandraContainer<>(CASSANDRA_IMAGE)) {
             cassandraContainer.start();
             ResultSet resultSet = performQuery(cassandraContainer, BASIC_QUERY);
@@ -31,7 +32,7 @@ public class CassandraContainerTest {
     }
 
     @Test
-    public void testSpecificVersion() {
+    void testSpecificVersion() {
         String cassandraVersion = "3.0.15";
         try (
             CassandraContainer<?> cassandraContainer = new CassandraContainer<>(
@@ -46,7 +47,7 @@ public class CassandraContainerTest {
     }
 
     @Test
-    public void testConfigurationOverride() {
+    void testConfigurationOverride() {
         try (
             CassandraContainer<?> cassandraContainer = new CassandraContainer<>(CASSANDRA_IMAGE)
                 .withConfigurationOverride("cassandra-test-configuration-example")
@@ -60,18 +61,18 @@ public class CassandraContainerTest {
         }
     }
 
-    @Test(expected = ContainerLaunchException.class)
-    public void testEmptyConfigurationOverride() {
+    @Test
+    void testEmptyConfigurationOverride() {
         try (
             CassandraContainer<?> cassandraContainer = new CassandraContainer<>(CASSANDRA_IMAGE)
                 .withConfigurationOverride("cassandra-empty-configuration")
         ) {
-            cassandraContainer.start();
+            assertThatThrownBy(cassandraContainer::start).isInstanceOf(ContainerLaunchException.class);
         }
     }
 
     @Test
-    public void testInitScript() {
+    void testInitScript() {
         try (
             CassandraContainer<?> cassandraContainer = new CassandraContainer<>(CASSANDRA_IMAGE)
                 .withInitScript("initial.cql")
@@ -82,7 +83,7 @@ public class CassandraContainerTest {
     }
 
     @Test
-    public void testInitScriptWithLegacyCassandra() {
+    void testInitScriptWithLegacyCassandra() {
         try (
             CassandraContainer<?> cassandraContainer = new CassandraContainer<>(
                 DockerImageName.parse("cassandra:2.2.11")
@@ -96,7 +97,7 @@ public class CassandraContainerTest {
 
     @SuppressWarnings("deprecation") // Using deprecated constructor for verification of backwards compatibility
     @Test
-    public void testCassandraQueryWaitStrategy() {
+    void testCassandraQueryWaitStrategy() {
         try (
             CassandraContainer<?> cassandraContainer = new CassandraContainer<>()
                 .waitingFor(new CassandraQueryWaitStrategy())
@@ -109,7 +110,7 @@ public class CassandraContainerTest {
 
     @SuppressWarnings("deprecation") // Using deprecated constructor for verification of backwards compatibility
     @Test
-    public void testCassandraGetCluster() {
+    void testCassandraGetCluster() {
         try (CassandraContainer<?> cassandraContainer = new CassandraContainer<>()) {
             cassandraContainer.start();
             ResultSet resultSet = performQuery(cassandraContainer.getCluster(), BASIC_QUERY);

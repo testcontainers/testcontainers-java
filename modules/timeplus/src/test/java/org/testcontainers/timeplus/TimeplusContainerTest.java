@@ -1,6 +1,6 @@
 package org.testcontainers.timeplus;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.TimeplusImages;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
@@ -9,11 +9,14 @@ import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class TimeplusContainerTest extends AbstractContainerDatabaseTest {
+class TimeplusContainerTest extends AbstractContainerDatabaseTest {
 
     @Test
-    public void testSimple() throws SQLException {
-        try (TimeplusContainer timeplus = new TimeplusContainer(TimeplusImages.TIMEPLUS_IMAGE)) {
+    void testSimple() throws SQLException {
+        try ( // container {
+            TimeplusContainer timeplus = new TimeplusContainer("timeplus/timeplusd:2.3.21")
+            // }
+        ) {
             timeplus.start();
 
             ResultSet resultSet = performQuery(timeplus, "SELECT 1");
@@ -24,7 +27,7 @@ public class TimeplusContainerTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void customCredentialsWithUrlParams() throws SQLException {
+    void customCredentialsWithUrlParams() throws SQLException {
         try (
             TimeplusContainer timeplus = new TimeplusContainer(TimeplusImages.TIMEPLUS_IMAGE)
                 .withUsername("system")
