@@ -10,7 +10,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
     testImplementation 'com.couchbase.client:java-client:3.9.0'
     testImplementation 'org.awaitility:awaitility:4.3.0'
-    testImplementation 'org.assertj:assertj-core:3.27.4'
+    testImplementation 'org.assertj:assertj-core:3.27.6'
 }
 
 tasks.japicmp {
