@@ -3,7 +3,7 @@ description = "Testcontainers :: JDBC"
 dependencies {
     api project(':testcontainers-database-commons')
 
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:6.0.0'
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
     compileOnly 'org.jetbrains:annotations:26.0.2'
