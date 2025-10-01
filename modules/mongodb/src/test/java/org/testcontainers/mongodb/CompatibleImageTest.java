@@ -1,4 +1,4 @@
-package org.testcontainers.containers;
+package org.testcontainers.mongodb;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
@@ -23,7 +23,7 @@ class CompatibleImageTest extends AbstractMongo {
     void shouldExecuteTransactions() {
         try (
             // creatingMongoDBContainer {
-            final MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:4.0.10")
+            MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:4.0.10").withReplicaSet()
             // }
         ) {
             // startingMongoDBContainer {
@@ -36,7 +36,7 @@ class CompatibleImageTest extends AbstractMongo {
     @ParameterizedTest
     @MethodSource("image")
     void shouldSupportSharding(String image) {
-        try (final MongoDBContainer mongoDBContainer = new MongoDBContainer(image).withSharding()) {
+        try (MongoDBContainer mongoDBContainer = new MongoDBContainer(image).withSharding()) {
             mongoDBContainer.start();
             final MongoClient mongoClient = MongoClients.create(mongoDBContainer.getReplicaSetUrl());
 

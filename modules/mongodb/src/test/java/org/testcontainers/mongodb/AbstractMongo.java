@@ -1,4 +1,4 @@
-package org.testcontainers.containers;
+package org.testcontainers.mongodb;
 
 import com.mongodb.ReadConcern;
 import com.mongodb.ReadPreference;
