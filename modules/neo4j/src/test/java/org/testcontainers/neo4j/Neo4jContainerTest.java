@@ -1,4 +1,4 @@
-package org.testcontainers.containers;
+package org.testcontainers.neo4j;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -263,7 +263,7 @@ class Neo4jContainerTest {
 
         neo4jContainer.configure();
 
-        assertThat(neo4jContainer.getWaitStrategy()).isInstanceOf(CustomDummyWaitStrategy.class);
+        assertThat(neo4jContainer).extracting("waitStrategy").isInstanceOf(CustomDummyWaitStrategy.class);
     }
 
     @Test

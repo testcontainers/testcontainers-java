@@ -1,5 +1,6 @@
-package org.testcontainers.containers;
+package org.testcontainers.neo4j;
 
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
@@ -30,10 +31,7 @@ import java.util.stream.Stream;
  *     <li>HTTP: 7474</li>
  *     <li>HTTPS: 7473</li>
  * </ul>
- *
- * @deprecated use {@link org.testcontainers.neo4j.Neo4jContainer} instead.
  */
-@Deprecated
 public class Neo4jContainer extends GenericContainer<Neo4jContainer> {
 
     /**
