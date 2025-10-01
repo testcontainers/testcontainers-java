@@ -1,4 +1,4 @@
-package org.testcontainers.containers;
+package org.testcontainers.gcloud;
 
 import com.google.api.core.ApiFuture;
 import com.google.cloud.NoCredentials;

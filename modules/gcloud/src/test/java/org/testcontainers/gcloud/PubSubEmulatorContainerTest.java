@@ -1,4 +1,4 @@
-package org.testcontainers.containers;
+package org.testcontainers.gcloud;
 
 import com.google.api.gax.core.NoCredentialsProvider;
 import com.google.api.gax.grpc.GrpcTransportChannel;

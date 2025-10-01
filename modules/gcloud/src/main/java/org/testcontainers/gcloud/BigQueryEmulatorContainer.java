@@ -1,5 +1,6 @@
-package org.testcontainers.containers;
+package org.testcontainers.gcloud;
 
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 
 /**
@@ -7,10 +8,7 @@ import org.testcontainers.utility.DockerImageName;
  * <p>
  * Supported image: {@code ghcr.io/goccy/bigquery-emulator}
  * <p>
- *
- * @deprecated use {@link org.testcontainers.gcloud.BigQueryEmulatorContainer} instead.
  */
-@Deprecated
 public class BigQueryEmulatorContainer extends GenericContainer<BigQueryEmulatorContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("ghcr.io/goccy/bigquery-emulator");
