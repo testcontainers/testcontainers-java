@@ -1,4 +1,4 @@
-package org.testcontainers.containers;
+package org.testcontainers.mockserver;
 
 import io.restassured.config.RestAssuredConfig;
 import io.restassured.config.SSLConfig;
@@ -22,8 +22,11 @@ class MockServerContainerTest {
         .withTag("mockserver-" + MockServerClient.class.getPackage().getImplementationVersion());
 
     @Test
-    void shouldCallActualMockserverVersion() throws Exception {
-        try (MockServerContainer mockServer = new MockServerContainer(MOCKSERVER_IMAGE)) {
+    void shouldCallActualMockserverVersion() {
+        try ( // creatingProxy {
+            MockServerContainer mockServer = new MockServerContainer(MOCKSERVER_IMAGE)
+            // }
+        ) {
             mockServer.start();
 
             String expectedBody = "Hello World!";
@@ -41,7 +44,7 @@ class MockServerContainerTest {
     }
 
     @Test
-    void shouldCallMockserverUsingTlsProtocol() throws Exception {
+    void shouldCallMockserverUsingTlsProtocol() {
         try (MockServerContainer mockServer = new MockServerContainer(MOCKSERVER_IMAGE)) {
             mockServer.start();
 
@@ -63,7 +66,7 @@ class MockServerContainerTest {
     }
 
     @Test
-    void shouldCallMockserverUsingMutualTlsProtocol() throws Exception {
+    void shouldCallMockserverUsingMutualTlsProtocol() {
         try (
             MockServerContainer mockServer = new MockServerContainer(MOCKSERVER_IMAGE)
                 .withEnv("MOCKSERVER_TLS_MUTUAL_AUTHENTICATION_REQUIRED", "true")

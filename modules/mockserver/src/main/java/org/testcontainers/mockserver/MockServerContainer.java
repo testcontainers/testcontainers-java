@@ -1,14 +1,11 @@
-package org.testcontainers.containers;
+package org.testcontainers.mockserver;
 
 import lombok.extern.slf4j.Slf4j;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
-/**
- * @deprecated use {@link org.testcontainers.mockserver.MockServerContainer} instead.
- */
 @Slf4j
-@Deprecated
 public class MockServerContainer extends GenericContainer<MockServerContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("jamesdbloom/mockserver");
