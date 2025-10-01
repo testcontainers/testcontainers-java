@@ -4,7 +4,7 @@ dependencies {
     api project(':testcontainers-jdbc')
 
     testRuntimeOnly 'org.postgresql:postgresql:42.7.7'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:6.0.0'
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
     testImplementation project(':testcontainers-jdbc-test')
