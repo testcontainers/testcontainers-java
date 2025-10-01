@@ -6,7 +6,7 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
 
     testImplementation 'org.assertj:assertj-core:3.27.4'
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
+    testImplementation 'org.junit.jupiter:junit-jupiter:6.0.0'
     testImplementation "org.apache.activemq:activemq-client:6.1.7"
     testImplementation "org.apache.activemq:artemis-jakarta-client:2.42.0"
 }
