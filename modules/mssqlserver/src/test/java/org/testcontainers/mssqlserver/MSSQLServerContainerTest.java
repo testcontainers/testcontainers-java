@@ -1,9 +1,9 @@
-package org.testcontainers.junit.mssqlserver;
+package org.testcontainers.mssqlserver;
 
 import org.junit.jupiter.api.Test;
 import org.testcontainers.MSSQLServerTestImages;
-import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
+import org.testcontainers.utility.DockerImageName;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,12 +13,12 @@ import javax.sql.DataSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
+class MSSQLServerContainerTest extends AbstractContainerDatabaseTest {
 
     @Test
     void testSimple() throws SQLException {
         try ( // container {
-            MSSQLServerContainer<?> mssqlServer = new MSSQLServerContainer<>(
+            MSSQLServerContainer mssqlServer = new MSSQLServerContainer(
                 "mcr.microsoft.com/mssql/server:2022-CU20-ubuntu-22.04"
             )
                 .acceptLicense()
@@ -36,7 +36,7 @@ class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
     @Test
     void testWithAdditionalUrlParamInJdbcUrl() {
         try (
-            MSSQLServerContainer<?> mssqlServer = new MSSQLServerContainer<>(MSSQLServerTestImages.MSSQL_SERVER_IMAGE)
+            MSSQLServerContainer mssqlServer = new MSSQLServerContainer(MSSQLServerTestImages.MSSQL_SERVER_IMAGE)
                 .withUrlParam("integratedSecurity", "false")
                 .withUrlParam("applicationName", "MyApp")
         ) {
@@ -49,9 +49,7 @@ class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
 
     @Test
     void testSetupDatabase() throws SQLException {
-        try (
-            MSSQLServerContainer<?> mssqlServer = new MSSQLServerContainer<>(MSSQLServerTestImages.MSSQL_SERVER_IMAGE)
-        ) {
+        try (MSSQLServerContainer mssqlServer = new MSSQLServerContainer(MSSQLServerTestImages.MSSQL_SERVER_IMAGE)) {
             mssqlServer.start();
             DataSource ds = getDataSource(mssqlServer);
             Statement statement = ds.getConnection().createStatement();
@@ -70,7 +68,23 @@ class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
         }
     }
 
-    private void assertHasCorrectExposedAndLivenessCheckPorts(MSSQLServerContainer<?> mssqlServer) {
+    @Test
+    void testSqlServerConnection() throws SQLException {
+        try (
+            MSSQLServerContainer mssqlServerContainer = new MSSQLServerContainer(
+                DockerImageName.parse("mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04")
+            )
+                .withPassword("myStrong(!)Password")
+        ) {
+            mssqlServerContainer.start();
+
+            ResultSet resultSet = performQuery(mssqlServerContainer, mssqlServerContainer.getTestQueryString());
+            int resultSetInt = resultSet.getInt(1);
+            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+        }
+    }
+
+    private void assertHasCorrectExposedAndLivenessCheckPorts(MSSQLServerContainer mssqlServer) {
         assertThat(mssqlServer.getExposedPorts()).containsExactly(MSSQLServerContainer.MS_SQL_SERVER_PORT);
         assertThat(mssqlServer.getLivenessCheckPortNumbers())
             .containsExactly(mssqlServer.getMappedPort(MSSQLServerContainer.MS_SQL_SERVER_PORT));
