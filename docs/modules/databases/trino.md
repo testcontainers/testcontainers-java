@@ -7,7 +7,7 @@ Testcontainers module for [Trino](https://hub.docker.com/r/trinodb/trino)
 You can start a Trino container instance from any Java application by using:
 
 <!--codeinclude-->
-[Container creation](../../../modules/trino/src/test/java/org/testcontainers/containers/TrinoContainerTest.java) inside_block:container
+[Container creation](../../../modules/trino/src/test/java/org/testcontainers/trino/TrinoContainerTest.java) inside_block:container
 <!--/codeinclude-->
 
 See [Database containers](./index.md) for documentation and usage that is common to all database container types.
