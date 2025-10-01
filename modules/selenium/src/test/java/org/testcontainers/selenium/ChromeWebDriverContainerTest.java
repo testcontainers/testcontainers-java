@@ -1,15 +1,13 @@
-package org.testcontainers.junit;
+package org.testcontainers.selenium;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.testcontainers.containers.BrowserWebDriverContainer;
 
 class ChromeWebDriverContainerTest extends BaseWebDriverContainerTest {
 
     // junitRule {
-    public BrowserWebDriverContainer<?> chrome = new BrowserWebDriverContainer<>()
-        .withCapabilities(new ChromeOptions())
+    public BrowserWebDriverContainer chrome = new BrowserWebDriverContainer("selenium/standalone-chrome:4.13.0")
         // }
         .withNetwork(NETWORK);
 

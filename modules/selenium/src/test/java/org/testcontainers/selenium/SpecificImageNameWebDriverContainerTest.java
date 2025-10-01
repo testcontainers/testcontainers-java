@@ -1,17 +1,14 @@
-package org.testcontainers.junit;
+package org.testcontainers.selenium;
 
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.firefox.FirefoxOptions;
-import org.testcontainers.containers.BrowserWebDriverContainer;
 import org.testcontainers.utility.DockerImageName;
 
 class SpecificImageNameWebDriverContainerTest extends BaseWebDriverContainerTest {
 
     private static final DockerImageName FIREFOX_IMAGE = DockerImageName.parse("selenium/standalone-firefox:4.10.0");
 
-    public BrowserWebDriverContainer<?> firefox = new BrowserWebDriverContainer<>(FIREFOX_IMAGE)
-        .withCapabilities(new FirefoxOptions())
-        .withNetwork(NETWORK);
+    public BrowserWebDriverContainer firefox = new BrowserWebDriverContainer(FIREFOX_IMAGE).withNetwork(NETWORK);
 
     @Test
     void simpleExploreTest() {

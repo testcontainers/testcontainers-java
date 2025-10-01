@@ -1,18 +1,17 @@
-package org.testcontainers.junit;
+package org.testcontainers.selenium;
 
 import com.google.common.io.PatternFilenameFilter;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.testcontainers.containers.BrowserWebDriverContainer;
-import org.testcontainers.containers.BrowserWebDriverContainer.VncRecordingMode;
 import org.testcontainers.containers.DefaultRecordingFileFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.VncRecordingContainer;
 import org.testcontainers.containers.VncRecordingContainer.VncRecordingFormat;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.lifecycle.TestDescription;
+import org.testcontainers.selenium.BrowserWebDriverContainer.VncRecordingMode;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
@@ -46,8 +45,7 @@ class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContainerTest {
             try (
                 // recordAll {
                 // To do this, simply add extra parameters to the rule constructor, so video will default to FLV format:
-                BrowserWebDriverContainer<?> chrome = new BrowserWebDriverContainer<>()
-                    .withCapabilities(new ChromeOptions())
+                BrowserWebDriverContainer chrome = new BrowserWebDriverContainer("selenium/standalone-chrome:4.13.0")
                     .withRecordingMode(VncRecordingMode.RECORD_ALL, target)
                     // }
                     .withRecordingFileFactory(new DefaultRecordingFileFactory())
@@ -58,7 +56,7 @@ class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContainerTest {
             }
         }
 
-        private File[] runSimpleExploreInContainer(BrowserWebDriverContainer<?> container, String fileNamePattern)
+        private File[] runSimpleExploreInContainer(BrowserWebDriverContainer container, String fileNamePattern)
             throws InterruptedException {
             container.start();
 
@@ -88,8 +86,7 @@ class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContainerTest {
             try (
                 // recordFlv {
                 // Set (explicitly) FLV format for recorded video:
-                BrowserWebDriverContainer<?> chrome = new BrowserWebDriverContainer<>()
-                    .withCapabilities(new ChromeOptions())
+                BrowserWebDriverContainer chrome = new BrowserWebDriverContainer("selenium/standalone-chrome:4.13.0")
                     .withRecordingMode(VncRecordingMode.RECORD_ALL, target, VncRecordingFormat.FLV)
                     // }
                     .withRecordingFileFactory(new DefaultRecordingFileFactory())
@@ -106,8 +103,7 @@ class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContainerTest {
             try (
                 // recordMp4 {
                 // Set MP4 format for recorded video:
-                BrowserWebDriverContainer<?> chrome = new BrowserWebDriverContainer<>()
-                    .withCapabilities(new ChromeOptions())
+                BrowserWebDriverContainer chrome = new BrowserWebDriverContainer("selenium/standalone-chrome:4.13.0")
                     .withRecordingMode(VncRecordingMode.RECORD_ALL, target, VncRecordingFormat.MP4)
                     // }
                     .withRecordingFileFactory(new DefaultRecordingFileFactory())
@@ -122,8 +118,7 @@ class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContainerTest {
         void recordingTestThatShouldHaveCorrectDuration() throws IOException, InterruptedException {
             MountableFile mountableFile;
             try (
-                BrowserWebDriverContainer<?> chrome = new BrowserWebDriverContainer<>()
-                    .withCapabilities(new ChromeOptions())
+                BrowserWebDriverContainer chrome = new BrowserWebDriverContainer("selenium/standalone-chrome:4.13.0")
                     .withRecordingMode(VncRecordingMode.RECORD_ALL, vncRecordingDirectory.toFile())
                     .withRecordingFileFactory(new DefaultRecordingFileFactory())
                     .withNetwork(NETWORK)
@@ -168,9 +163,8 @@ class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContainerTest {
         void recordingTestThatShouldBeRecordedButNotPersisted() {
             try (
                 // withRecordingFileFactory {
-                BrowserWebDriverContainer<?> chrome = new BrowserWebDriverContainer<>()
+                BrowserWebDriverContainer chrome = new BrowserWebDriverContainer("selenium/standalone-chrome:4.13.0")
                     // }
-                    .withCapabilities(new ChromeOptions())
                     // withRecordingFileFactory {
                     .withRecordingFileFactory(new CustomRecordingFileFactory())
                     // }
@@ -188,8 +182,7 @@ class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContainerTest {
             try (
                 // recordFailing {
                 // or if you only want videos for test failures:
-                BrowserWebDriverContainer<?> chrome = new BrowserWebDriverContainer<>()
-                    .withCapabilities(new ChromeOptions())
+                BrowserWebDriverContainer chrome = new BrowserWebDriverContainer("selenium/standalone-chrome:4.13.0")
                     .withRecordingMode(VncRecordingMode.RECORD_FAILING, target)
                     // }
                     .withRecordingFileFactory(new DefaultRecordingFileFactory())

@@ -1,4 +1,4 @@
-package org.testcontainers.junit;
+package org.testcontainers.selenium;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,7 +9,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.testcontainers.Testcontainers;
-import org.testcontainers.containers.BrowserWebDriverContainer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -19,9 +18,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class LocalServerWebDriverContainerTest {
 
-    public BrowserWebDriverContainer<?> chrome = new BrowserWebDriverContainer<>()
-        .withAccessToHost(true)
-        .withCapabilities(new ChromeOptions());
+    public BrowserWebDriverContainer chrome = new BrowserWebDriverContainer("selenium/standalone-chrome:4.13.0")
+        .withAccessToHost(true);
 
     private int localPort;
 
