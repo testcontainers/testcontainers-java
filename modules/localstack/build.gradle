@@ -5,7 +5,7 @@ dependencies {
 
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
 
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
+    testImplementation 'org.junit.jupiter:junit-jupiter:6.0.0'
     testImplementation platform("software.amazon.awssdk:bom:2.32.29")
     testImplementation 'software.amazon.awssdk:s3'
     testImplementation 'software.amazon.awssdk:sqs'
