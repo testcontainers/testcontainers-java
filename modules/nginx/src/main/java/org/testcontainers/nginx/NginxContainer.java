@@ -1,16 +1,11 @@
-package org.testcontainers.containers;
+package org.testcontainers.nginx;
 
-import org.jetbrains.annotations.NotNull;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Set;
 
-/**
- * @deprecated use {@link org.testcontainers.nginx.NginxContainer} instead.
- */
-@Deprecated
 public class NginxContainer extends GenericContainer<NginxContainer> {
 
     private static final int NGINX_DEFAULT_PORT = 80;
@@ -29,29 +24,7 @@ public class NginxContainer extends GenericContainer<NginxContainer> {
         setCommand("nginx", "-g", "daemon off;");
     }
 
-    /**
-     * @return the ports on which to check if the container is ready
-     * @deprecated use {@link #getLivenessCheckPortNumbers()} instead
-     */
-    @NotNull
-    @Override
-    @Deprecated
-    protected Set<Integer> getLivenessCheckPorts() {
-        return super.getLivenessCheckPorts();
-    }
-
     public URL getBaseUrl(String scheme, int port) throws MalformedURLException {
         return new URL(scheme + "://" + getHost() + ":" + getMappedPort(port));
-    }
-
-    @Deprecated
-    public void setCustomContent(String htmlContentPath) {
-        addFileSystemBind(htmlContentPath, "/usr/share/nginx/html", BindMode.READ_ONLY);
-    }
-
-    @Deprecated
-    public NginxContainer withCustomContent(String htmlContentPath) {
-        this.setCustomContent(htmlContentPath);
-        return self();
     }
 }
