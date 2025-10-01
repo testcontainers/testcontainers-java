@@ -8,7 +8,7 @@ dependencies {
     api project(':testcontainers')
     api 'io.r2dbc:r2dbc-spi:0.9.0.RELEASE'
 
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:6.0.0'
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
     testImplementation 'org.assertj:assertj-core:3.27.4'
