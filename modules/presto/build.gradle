@@ -5,7 +5,7 @@ dependencies {
 
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
 
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
+    testImplementation 'org.junit.jupiter:junit-jupiter:6.0.0'
     testImplementation project(':testcontainers-jdbc-test')
     testRuntimeOnly 'io.prestosql:presto-jdbc:350'
     compileOnly 'org.jetbrains:annotations:26.0.2'
