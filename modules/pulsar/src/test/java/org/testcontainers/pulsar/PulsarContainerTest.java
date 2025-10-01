@@ -1,4 +1,4 @@
-package org.testcontainers.containers;
+package org.testcontainers.pulsar;
 
 import org.apache.pulsar.client.admin.PulsarAdmin;
 import org.apache.pulsar.client.admin.PulsarAdminException;
@@ -19,7 +19,7 @@ class PulsarContainerTest extends AbstractPulsar {
         try (
             // do not use PULSAR_IMAGE to make the doc looks easier
             // constructorWithVersion {
-            PulsarContainer pulsar = new PulsarContainer(DockerImageName.parse("apachepulsar/pulsar:3.0.0"));
+            PulsarContainer pulsar = new PulsarContainer("apachepulsar/pulsar:3.0.0");
             // }
         ) {
             pulsar.start();
