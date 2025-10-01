@@ -1,11 +1,10 @@
-package org.testcontainers.junit.mysql;
+package org.testcontainers.mysql;
 
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.MySQLTestImages;
 import org.testcontainers.containers.ContainerLaunchException;
-import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
@@ -30,14 +29,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
-class SimpleMySQLTest extends AbstractContainerDatabaseTest {
+class MySQLContainerTest extends AbstractContainerDatabaseTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(SimpleMySQLTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(MySQLContainerTest.class);
 
     @Test
     void testSimple() throws SQLException {
         try ( // container {
-            MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.0.36")
+            MySQLContainer mysql = new MySQLContainer("mysql:8.0.36")
             // }
         ) {
             mysql.start();
@@ -53,7 +52,7 @@ class SimpleMySQLTest extends AbstractContainerDatabaseTest {
     @Test
     void testSpecificVersion() throws SQLException {
         try (
-            MySQLContainer<?> mysqlOldVersion = new MySQLContainer<>(MySQLTestImages.MYSQL_80_IMAGE)
+            MySQLContainer mysqlOldVersion = new MySQLContainer(MySQLTestImages.MYSQL_80_IMAGE)
                 .withConfigurationOverride("somepath/mysql_conf_override")
                 .withLogConsumer(new Slf4jLogConsumer(logger))
         ) {
@@ -71,7 +70,7 @@ class SimpleMySQLTest extends AbstractContainerDatabaseTest {
     @Test
     void testMySQLWithCustomIniFile() throws SQLException {
         try (
-            MySQLContainer<?> mysqlCustomConfig = new MySQLContainer<>(MySQLTestImages.MYSQL_80_IMAGE)
+            MySQLContainer mysqlCustomConfig = new MySQLContainer(MySQLTestImages.MYSQL_80_IMAGE)
                 .withConfigurationOverride("somepath/mysql_conf_override")
         ) {
             mysqlCustomConfig.start();
@@ -83,7 +82,7 @@ class SimpleMySQLTest extends AbstractContainerDatabaseTest {
     @Test
     void testCommandOverride() throws SQLException {
         try (
-            MySQLContainer<?> mysqlCustomConfig = new MySQLContainer<>(MySQLTestImages.MYSQL_80_IMAGE)
+            MySQLContainer mysqlCustomConfig = new MySQLContainer(MySQLTestImages.MYSQL_80_IMAGE)
                 .withCommand("mysqld --auto_increment_increment=42")
         ) {
             mysqlCustomConfig.start();
@@ -98,7 +97,7 @@ class SimpleMySQLTest extends AbstractContainerDatabaseTest {
     @Test
     void testExplicitInitScript() throws SQLException {
         try (
-            MySQLContainer<?> container = new MySQLContainer<>(MySQLTestImages.MYSQL_80_IMAGE)
+            MySQLContainer container = new MySQLContainer(MySQLTestImages.MYSQL_80_IMAGE)
                 .withInitScript("somepath/init_mysql.sql")
                 .withLogConsumer(new Slf4jLogConsumer(logger))
         ) {
@@ -114,7 +113,7 @@ class SimpleMySQLTest extends AbstractContainerDatabaseTest {
     @Test
     void testEmptyPasswordWithNonRootUser() {
         try (
-            MySQLContainer<?> container = new MySQLContainer<>(MySQLTestImages.MYSQL_80_IMAGE)
+            MySQLContainer container = new MySQLContainer(MySQLTestImages.MYSQL_80_IMAGE)
                 .withDatabaseName("TEST")
                 .withUsername("test")
                 .withPassword("")
@@ -130,7 +129,7 @@ class SimpleMySQLTest extends AbstractContainerDatabaseTest {
     void testEmptyPasswordWithRootUser() throws SQLException {
         // Add MYSQL_ROOT_HOST environment so that we can root login from anywhere for testing purposes
         try (
-            MySQLContainer<?> mysql = new MySQLContainer<>(MySQLTestImages.MYSQL_80_IMAGE)
+            MySQLContainer mysql = new MySQLContainer(MySQLTestImages.MYSQL_80_IMAGE)
                 .withDatabaseName("foo")
                 .withUsername("root")
                 .withPassword("")
@@ -147,7 +146,7 @@ class SimpleMySQLTest extends AbstractContainerDatabaseTest {
 
     @Test
     void testWithAdditionalUrlParamTimeZone() throws SQLException {
-        MySQLContainer<?> mysql = new MySQLContainer<>(MySQLTestImages.MYSQL_80_IMAGE)
+        MySQLContainer mysql = new MySQLContainer(MySQLTestImages.MYSQL_80_IMAGE)
             .withUrlParam("serverTimezone", "Europe/Zurich")
             .withEnv("TZ", "Europe/Zurich")
             .withLogConsumer(new Slf4jLogConsumer(logger));
@@ -182,7 +181,7 @@ class SimpleMySQLTest extends AbstractContainerDatabaseTest {
 
     @Test
     void testWithAdditionalUrlParamMultiQueries() throws SQLException {
-        MySQLContainer<?> mysql = new MySQLContainer<>(MySQLTestImages.MYSQL_80_IMAGE)
+        MySQLContainer mysql = new MySQLContainer(MySQLTestImages.MYSQL_80_IMAGE)
             .withUrlParam("allowMultiQueries", "true")
             .withLogConsumer(new Slf4jLogConsumer(logger));
         mysql.start();
@@ -207,7 +206,7 @@ class SimpleMySQLTest extends AbstractContainerDatabaseTest {
 
     @Test
     void testWithAdditionalUrlParamInJdbcUrl() {
-        MySQLContainer<?> mysql = new MySQLContainer<>(MySQLTestImages.MYSQL_80_IMAGE)
+        MySQLContainer mysql = new MySQLContainer(MySQLTestImages.MYSQL_80_IMAGE)
             .withUrlParam("allowMultiQueries", "true")
             .withUrlParam("rewriteBatchedStatements", "true")
             .withLogConsumer(new Slf4jLogConsumer(logger));
@@ -228,7 +227,7 @@ class SimpleMySQLTest extends AbstractContainerDatabaseTest {
     void testWithOnlyUserReadableCustomIniFile() throws Exception {
         assumeThat(FileSystems.getDefault().supportedFileAttributeViews().contains("posix")).isTrue();
         try (
-            MySQLContainer<?> mysql = new MySQLContainer<>(MySQLTestImages.MYSQL_80_IMAGE)
+            MySQLContainer mysql = new MySQLContainer(MySQLTestImages.MYSQL_80_IMAGE)
                 .withConfigurationOverride("somepath/mysql_conf_override")
                 .withLogConsumer(new Slf4jLogConsumer(logger))
         ) {
@@ -252,12 +251,31 @@ class SimpleMySQLTest extends AbstractContainerDatabaseTest {
         }
     }
 
-    private void assertHasCorrectExposedAndLivenessCheckPorts(MySQLContainer<?> mysql) {
+    @Test
+    void testCustom() throws SQLException {
+        // Add MYSQL_ROOT_HOST environment so that we can root login from anywhere for testing purposes
+        try (
+            MySQLContainer mysql = new MySQLContainer(MySQLTestImages.MYSQL_80_IMAGE)
+                .withDatabaseName("foo")
+                .withUsername("bar")
+                .withPassword("baz")
+                .withEnv("MYSQL_ROOT_HOST", "%")
+        ) {
+            mysql.start();
+
+            ResultSet resultSet = performQuery(mysql, "SELECT 1");
+
+            int resultSetInt = resultSet.getInt(1);
+            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+        }
+    }
+
+    private void assertHasCorrectExposedAndLivenessCheckPorts(MySQLContainer mysql) {
         assertThat(mysql.getExposedPorts()).containsExactly(MySQLContainer.MYSQL_PORT);
         assertThat(mysql.getLivenessCheckPortNumbers()).containsExactly(mysql.getMappedPort(MySQLContainer.MYSQL_PORT));
     }
 
-    private void assertThatCustomIniFileWasUsed(MySQLContainer<?> mysql) throws SQLException {
+    private void assertThatCustomIniFileWasUsed(MySQLContainer mysql) throws SQLException {
         try (ResultSet resultSet = performQuery(mysql, "SELECT @@GLOBAL.innodb_max_undo_log_size")) {
             long result = resultSet.getLong(1);
             assertThat(result)

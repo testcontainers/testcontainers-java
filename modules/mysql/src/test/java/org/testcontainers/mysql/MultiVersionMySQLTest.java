@@ -1,9 +1,8 @@
-package org.testcontainers.junit.mysql;
+package org.testcontainers.mysql;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.testcontainers.MySQLTestImages;
-import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 import org.testcontainers.utility.DockerImageName;
 
@@ -26,7 +25,7 @@ class MultiVersionMySQLTest extends AbstractContainerDatabaseTest {
     @ParameterizedTest
     @MethodSource("params")
     void versionCheckTest(DockerImageName dockerImageName) throws SQLException {
-        try (MySQLContainer<?> mysql = new MySQLContainer<>(dockerImageName)) {
+        try (MySQLContainer mysql = new MySQLContainer(dockerImageName)) {
             mysql.start();
             final ResultSet resultSet = performQuery(mysql, "SELECT VERSION()");
             final String resultSetString = resultSet.getString(1);
