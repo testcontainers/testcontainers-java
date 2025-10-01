@@ -7,7 +7,7 @@ dependencies {
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
     testImplementation 'org.mock-server:mockserver-client-java:5.15.0'
-    testImplementation 'org.assertj:assertj-core:3.27.4'
+    testImplementation 'org.assertj:assertj-core:3.27.6'
     testImplementation 'io.rest-assured:rest-assured:5.5.6'
 }
 
