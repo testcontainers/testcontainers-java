@@ -8,7 +8,7 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
-    testImplementation 'org.assertj:assertj-core:3.27.4'
+    testImplementation 'org.assertj:assertj-core:3.27.6'
     testImplementation 'org.apache.tinkerpop:gremlin-driver:3.7.4'
     testImplementation "com.orientechnologies:orientdb-gremlin:3.2.43"
 }
