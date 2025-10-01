@@ -1,8 +1,7 @@
-package org.testcontainers.junit.cockroachdb;
+package org.testcontainers.cockroachdb;
 
 import org.junit.jupiter.api.Test;
 import org.testcontainers.CockroachDBTestImages;
-import org.testcontainers.containers.CockroachContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 import org.testcontainers.images.builder.Transferable;
 
@@ -14,7 +13,7 @@ import java.util.logging.LogManager;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class SimpleCockroachDBTest extends AbstractContainerDatabaseTest {
+class CockroachContainerTest extends AbstractContainerDatabaseTest {
     static {
         // Postgres JDBC driver uses JUL; disable it to avoid annoying, irrelevant, stderr logs during connection testing
         LogManager.getLogManager().getLogger("").setLevel(Level.OFF);
