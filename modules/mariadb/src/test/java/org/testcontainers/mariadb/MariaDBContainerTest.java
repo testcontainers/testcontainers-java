@@ -1,9 +1,8 @@
-package org.testcontainers.junit.mariadb;
+package org.testcontainers.mariadb;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.MariaDBTestImages;
-import org.testcontainers.containers.MariaDBContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
 import java.io.File;
@@ -20,12 +19,12 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
-class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
+class MariaDBContainerTest extends AbstractContainerDatabaseTest {
 
     @Test
     void testSimple() throws SQLException {
         try ( // container {
-            MariaDBContainer<?> mariadb = new MariaDBContainer<>("mariadb:10.3.39")
+            MariaDBContainer mariadb = new MariaDBContainer("mariadb:10.3.39")
             // }
         ) {
             mariadb.start();
@@ -40,7 +39,7 @@ class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
     @Test
     void testSpecificVersion() throws SQLException {
         try (
-            MariaDBContainer<?> mariadbOldVersion = new MariaDBContainer<>(
+            MariaDBContainer mariadbOldVersion = new MariaDBContainer(
                 MariaDBTestImages.MARIADB_IMAGE.withTag("10.3.39")
             )
         ) {
@@ -60,7 +59,7 @@ class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
         assumeThat(SystemUtils.IS_OS_WINDOWS).isFalse();
 
         try (
-            MariaDBContainer<?> mariadbCustomConfig = new MariaDBContainer<>(
+            MariaDBContainer mariadbCustomConfig = new MariaDBContainer(
                 MariaDBTestImages.MARIADB_IMAGE.withTag("10.3.39")
             )
                 .withConfigurationOverride("somepath/mariadb_conf_override")
@@ -74,7 +73,7 @@ class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
     @Test
     void testMariaDBWithCommandOverride() throws SQLException {
         try (
-            MariaDBContainer<?> mariadbCustomConfig = new MariaDBContainer<>(MariaDBTestImages.MARIADB_IMAGE)
+            MariaDBContainer mariadbCustomConfig = new MariaDBContainer(MariaDBTestImages.MARIADB_IMAGE)
                 .withCommand("mysqld --auto_increment_increment=10")
         ) {
             mariadbCustomConfig.start();
@@ -87,7 +86,7 @@ class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
 
     @Test
     void testWithAdditionalUrlParamInJdbcUrl() {
-        MariaDBContainer<?> mariaDBContainer = new MariaDBContainer<>(MariaDBTestImages.MARIADB_IMAGE)
+        MariaDBContainer mariaDBContainer = new MariaDBContainer(MariaDBTestImages.MARIADB_IMAGE)
             .withUrlParam("connectTimeout", "40000")
             .withUrlParam("rewriteBatchedStatements", "true");
 
@@ -108,7 +107,7 @@ class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
         assumeThat(FileSystems.getDefault().supportedFileAttributeViews().contains("posix")).isTrue();
 
         try (
-            MariaDBContainer<?> mariadbCustomConfig = new MariaDBContainer<>(
+            MariaDBContainer mariadbCustomConfig = new MariaDBContainer(
                 MariaDBTestImages.MARIADB_IMAGE.withTag("10.3.39")
             )
                 .withConfigurationOverride("somepath/mariadb_conf_override")
@@ -136,7 +135,7 @@ class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
 
     @Test
     void testEmptyPasswordWithRootUser() throws SQLException {
-        try (MariaDBContainer<?> mysql = new MariaDBContainer<>("mariadb:11.2.4").withUsername("root")) {
+        try (MariaDBContainer mysql = new MariaDBContainer("mariadb:11.2.4").withUsername("root")) {
             mysql.start();
 
             ResultSet resultSet = performQuery(mysql, "SELECT 1");
@@ -146,7 +145,7 @@ class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
         }
     }
 
-    private void assertThatCustomIniFileWasUsed(MariaDBContainer<?> mariadb) throws SQLException {
+    private void assertThatCustomIniFileWasUsed(MariaDBContainer mariadb) throws SQLException {
         try (ResultSet resultSet = performQuery(mariadb, "SELECT @@GLOBAL.innodb_max_undo_log_size")) {
             long result = resultSet.getLong(1);
             assertThat(result)

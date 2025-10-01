@@ -1,6 +1,8 @@
-package org.testcontainers.containers;
+package org.testcontainers.mariadb;
 
 import com.google.common.collect.Sets;
+import org.testcontainers.containers.ContainerLaunchException;
+import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 
@@ -12,21 +14,12 @@ import java.util.Set;
  * Supported image: {@code mariadb}
  * <p>
  * Exposed ports: 3306
- *
- * @deprecated use {@link org.testcontainers.mariadb.MariaDBContainer} instead.
  */
-@Deprecated
-public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
+public class MariaDBContainer extends JdbcDatabaseContainer<MariaDBContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("mariadb");
 
-    @Deprecated
-    public static final String DEFAULT_TAG = "10.3.6";
-
     public static final String NAME = "mariadb";
-
-    @Deprecated
-    public static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
 
     static final String DEFAULT_USER = "test";
 
@@ -118,25 +111,25 @@ public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcD
         return "SELECT 1";
     }
 
-    public SELF withConfigurationOverride(String s) {
+    public MariaDBContainer withConfigurationOverride(String s) {
         parameters.put(MY_CNF_CONFIG_OVERRIDE_PARAM_NAME, s);
         return self();
     }
 
     @Override
-    public SELF withDatabaseName(final String databaseName) {
+    public MariaDBContainer withDatabaseName(final String databaseName) {
         this.databaseName = databaseName;
         return self();
     }
 
     @Override
-    public SELF withUsername(final String username) {
+    public MariaDBContainer withUsername(final String username) {
         this.username = username;
         return self();
     }
 
     @Override
-    public SELF withPassword(final String password) {
+    public MariaDBContainer withPassword(final String password) {
         this.password = password;
         return self();
     }
