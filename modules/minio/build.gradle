@@ -7,7 +7,7 @@ dependencies {
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
     testImplementation("io.minio:minio:8.5.17")
-    testImplementation 'org.assertj:assertj-core:3.27.4'
+    testImplementation 'org.assertj:assertj-core:3.27.6'
 }
 
 test {
