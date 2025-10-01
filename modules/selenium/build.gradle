@@ -6,7 +6,7 @@ dependencies {
     provided 'org.seleniumhq.selenium:selenium-remote-driver:4.10.0'
     provided 'org.seleniumhq.selenium:selenium-chrome-driver:4.10.0'
 
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:6.0.0'
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
     testImplementation platform('org.seleniumhq.selenium:selenium-bom:4.13.0')
