@@ -27,7 +27,10 @@ import java.util.Set;
  *     <li>15671 (HTTPS)</li>
  *     <li>15672 (HTTP)</li>
  * </ul>
+ *
+ * @deprecated use {@link org.testcontainers.rabbitmq.RabbitMQContainer} instead.
  */
+@Deprecated
 public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
 
     /**
