@@ -5,8 +5,8 @@ dependencies {
 
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
 
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
-    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.13.4'
+    testImplementation 'org.junit.jupiter:junit-jupiter:6.0.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:6.0.0'
     testImplementation platform("org.apache.pulsar:pulsar-bom:4.0.5")
     testImplementation 'org.apache.pulsar:pulsar-client'
     testImplementation 'org.apache.pulsar:pulsar-client-admin'
