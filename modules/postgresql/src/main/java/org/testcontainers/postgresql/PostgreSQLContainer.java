@@ -1,6 +1,7 @@
-package org.testcontainers.containers;
+package org.testcontainers.postgresql;
 
 import org.jetbrains.annotations.NotNull;
+import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
@@ -14,11 +15,8 @@ import java.util.Set;
  * Supported images: {@code postgres}, {@code pgvector/pgvector}
  * <p>
  * Exposed ports: 5432
- *
- * @deprecated use {@link org.testcontainers.postgresql.PostgreSQLContainer} instead.
  */
-@Deprecated
-public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
+public class PostgreSQLContainer extends JdbcDatabaseContainer<PostgreSQLContainer> {
 
     public static final String NAME = "postgresql";
 
@@ -122,19 +120,19 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
     }
 
     @Override
-    public SELF withDatabaseName(final String databaseName) {
+    public PostgreSQLContainer withDatabaseName(final String databaseName) {
         this.databaseName = databaseName;
         return self();
     }
 
     @Override
-    public SELF withUsername(final String username) {
+    public PostgreSQLContainer withUsername(final String username) {
         this.username = username;
         return self();
     }
 
     @Override
-    public SELF withPassword(final String password) {
+    public PostgreSQLContainer withPassword(final String password) {
         this.password = password;
         return self();
     }

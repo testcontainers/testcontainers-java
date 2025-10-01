@@ -1,8 +1,7 @@
-package org.testcontainers.junit.postgresql;
+package org.testcontainers.postgresql;
 
 import org.junit.jupiter.api.Test;
 import org.testcontainers.PostgreSQLTestImages;
-import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
 import java.sql.ResultSet;
@@ -13,7 +12,7 @@ import java.util.logging.LogManager;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 
-class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
+class PostgreSQLContainerTest extends AbstractContainerDatabaseTest {
     static {
         // Postgres JDBC driver uses JUL; disable it to avoid annoying, irrelevant, stderr logs during connection testing
         LogManager.getLogManager().getLogger("").setLevel(Level.OFF);
@@ -22,7 +21,7 @@ class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
     @Test
     void testSimple() throws SQLException {
         try ( // container {
-            PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:9.6.12")
+            PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:9.6.12")
             // }
         ) {
             postgres.start();
@@ -37,7 +36,7 @@ class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
     @Test
     void testCommandOverride() throws SQLException {
         try (
-            PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(PostgreSQLTestImages.POSTGRES_TEST_IMAGE)
+            PostgreSQLContainer postgres = new PostgreSQLContainer(PostgreSQLTestImages.POSTGRES_TEST_IMAGE)
                 .withCommand("postgres -c max_connections=42")
         ) {
             postgres.start();
@@ -51,7 +50,7 @@ class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
     @Test
     void testUnsetCommand() throws SQLException {
         try (
-            PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(PostgreSQLTestImages.POSTGRES_TEST_IMAGE)
+            PostgreSQLContainer postgres = new PostgreSQLContainer(PostgreSQLTestImages.POSTGRES_TEST_IMAGE)
                 .withCommand("postgres -c max_connections=42")
                 .withCommand()
         ) {
@@ -66,7 +65,7 @@ class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
     @Test
     void testMissingInitScript() {
         try (
-            PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(PostgreSQLTestImages.POSTGRES_TEST_IMAGE)
+            PostgreSQLContainer postgres = new PostgreSQLContainer(PostgreSQLTestImages.POSTGRES_TEST_IMAGE)
                 .withInitScript(null)
         ) {
             assertThatNoException().isThrownBy(postgres::start);
@@ -76,7 +75,7 @@ class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
     @Test
     void testExplicitInitScript() throws SQLException {
         try (
-            PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(PostgreSQLTestImages.POSTGRES_TEST_IMAGE)
+            PostgreSQLContainer postgres = new PostgreSQLContainer(PostgreSQLTestImages.POSTGRES_TEST_IMAGE)
                 .withInitScript("somepath/init_postgresql.sql")
         ) {
             postgres.start();
@@ -91,7 +90,7 @@ class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
     @Test
     void testExplicitInitScripts() throws SQLException {
         try (
-            PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(PostgreSQLTestImages.POSTGRES_TEST_IMAGE)
+            PostgreSQLContainer postgres = new PostgreSQLContainer(PostgreSQLTestImages.POSTGRES_TEST_IMAGE)
                 .withInitScripts("somepath/init_postgresql.sql", "somepath/init_postgresql_2.sql")
         ) {
             postgres.start();
@@ -112,7 +111,7 @@ class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
     @Test
     void testWithAdditionalUrlParamInJdbcUrl() {
         try (
-            PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(PostgreSQLTestImages.POSTGRES_TEST_IMAGE)
+            PostgreSQLContainer postgres = new PostgreSQLContainer(PostgreSQLTestImages.POSTGRES_TEST_IMAGE)
                 .withUrlParam("charSet", "UNICODE")
         ) {
             postgres.start();
@@ -123,7 +122,7 @@ class SimplePostgreSQLTest extends AbstractContainerDatabaseTest {
         }
     }
 
-    private void assertHasCorrectExposedAndLivenessCheckPorts(PostgreSQLContainer<?> postgres) {
+    private void assertHasCorrectExposedAndLivenessCheckPorts(PostgreSQLContainer postgres) {
         assertThat(postgres.getExposedPorts()).containsExactly(PostgreSQLContainer.POSTGRESQL_PORT);
         assertThat(postgres.getLivenessCheckPortNumbers())
             .containsExactly(postgres.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT));

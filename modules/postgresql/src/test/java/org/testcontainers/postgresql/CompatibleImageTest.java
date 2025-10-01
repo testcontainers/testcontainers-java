@@ -1,4 +1,4 @@
-package org.testcontainers.containers;
+package org.testcontainers.postgresql;
 
 import org.junit.jupiter.api.Test;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
@@ -15,7 +15,7 @@ class CompatibleImageTest extends AbstractContainerDatabaseTest {
     void pgvector() throws SQLException {
         try (
             // pgvectorContainer {
-            PostgreSQLContainer<?> pgvector = new PostgreSQLContainer<>("pgvector/pgvector:pg16")
+            PostgreSQLContainer pgvector = new PostgreSQLContainer("pgvector/pgvector:pg16")
             // }
         ) {
             pgvector.start();
@@ -30,7 +30,7 @@ class CompatibleImageTest extends AbstractContainerDatabaseTest {
     void postgis() throws SQLException {
         try (
             // postgisContainer {
-            PostgreSQLContainer<?> postgis = new PostgreSQLContainer<>(
+            PostgreSQLContainer postgis = new PostgreSQLContainer(
                 DockerImageName.parse("postgis/postgis:16-3.4-alpine").asCompatibleSubstituteFor("postgres")
             )
             // }
@@ -47,7 +47,7 @@ class CompatibleImageTest extends AbstractContainerDatabaseTest {
     void timescaledb() throws SQLException {
         try (
             // timescaledbContainer {
-            PostgreSQLContainer<?> timescaledb = new PostgreSQLContainer<>(
+            PostgreSQLContainer timescaledb = new PostgreSQLContainer(
                 DockerImageName.parse("timescale/timescaledb:2.14.2-pg16").asCompatibleSubstituteFor("postgres")
             )
             // }
