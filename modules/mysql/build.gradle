@@ -6,7 +6,7 @@ dependencies {
     compileOnly project(':testcontainers-r2dbc')
     compileOnly 'io.asyncer:r2dbc-mysql:1.4.1'
 
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:6.0.0'
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
     testImplementation project(':testcontainers-jdbc-test')
