@@ -5,12 +5,4 @@ dependencies {
 
     testImplementation project(':testcontainers-jdbc-test')
     testRuntimeOnly 'com.databend:databend-jdbc:0.4.0'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
-
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
-    testImplementation 'org.assertj:assertj-core:3.27.4'
-}
-
-test {
-    useJUnitPlatform()
 }

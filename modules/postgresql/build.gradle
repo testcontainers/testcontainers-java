@@ -6,9 +6,6 @@ dependencies {
     compileOnly project(':testcontainers-r2dbc')
     compileOnly 'io.r2dbc:r2dbc-postgresql:0.8.13.RELEASE'
 
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
-
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
     testImplementation project(':testcontainers-jdbc-test')
     testRuntimeOnly 'org.postgresql:postgresql:42.7.7'
 
@@ -22,8 +19,4 @@ tasks.japicmp {
     classExcludes = [
         "org.testcontainers.containers.PostgreSQLContainer"
     ]
-}
-
-test {
-    useJUnitPlatform()
 }

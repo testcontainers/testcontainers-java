@@ -3,16 +3,9 @@ description = "Testcontainers :: JDBC :: YugabyteDB"
 dependencies {
     api project(':testcontainers-jdbc')
 
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
-
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
     testImplementation project(':testcontainers-jdbc-test')
     // YCQL driver
     testImplementation 'com.yugabyte:java-driver-core:4.19.0-yb-1'
     // YSQL driver
     testRuntimeOnly 'com.yugabyte:jdbc-yugabytedb:42.7.3-yb-4'
-}
-
-test {
-    useJUnitPlatform()
 }
