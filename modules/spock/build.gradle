@@ -41,10 +41,3 @@ javadocJar {
     archiveClassifier = 'javadoc'
     from groovydoc.destinationDir
 }
-
-test {
-    useJUnitPlatform()
-    testLogging {
-        events "passed", "skipped", "failed"
-    }
-}

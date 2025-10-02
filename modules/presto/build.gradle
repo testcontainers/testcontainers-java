@@ -3,14 +3,7 @@ description = "Testcontainers :: JDBC :: Presto"
 dependencies {
     api project(':testcontainers-jdbc')
 
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
-
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
     testImplementation project(':testcontainers-jdbc-test')
     testRuntimeOnly 'io.prestosql:presto-jdbc:350'
     compileOnly 'org.jetbrains:annotations:26.0.2'
-}
-
-test {
-    useJUnitPlatform()
 }

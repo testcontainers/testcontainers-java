@@ -6,9 +6,6 @@ dependencies {
     compileOnly project(':testcontainers-r2dbc')
     compileOnly 'io.asyncer:r2dbc-mysql:1.4.1'
 
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
-
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
     testImplementation project(':testcontainers-jdbc-test')
     testRuntimeOnly 'mysql:mysql-connector-java:8.0.33'
 
@@ -22,8 +19,4 @@ tasks.japicmp {
     classExcludes = [
         "org.testcontainers.containers.MySQLContainer"
     ]
-}
-
-test {
-    useJUnitPlatform()
 }
