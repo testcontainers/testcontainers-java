@@ -3,5 +3,5 @@ description = "Testcontainers :: MinIO"
 dependencies {
     api project(':testcontainers')
 
-    testImplementation("io.minio:minio:8.5.17")
+    testImplementation("io.minio:minio:8.6.0")
 }
