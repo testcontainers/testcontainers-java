@@ -14,6 +14,6 @@ dependencies {
         exclude(module: 'hamcrest-core')
     }
 
-    testRuntimeOnly 'org.postgresql:postgresql:42.7.7'
+    testRuntimeOnly 'org.postgresql:postgresql:42.7.8'
     testRuntimeOnly 'mysql:mysql-connector-java:8.0.33'
 }
