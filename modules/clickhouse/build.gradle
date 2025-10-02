@@ -5,12 +5,12 @@ dependencies {
     api project(':testcontainers-jdbc')
 
     compileOnly project(':testcontainers-r2dbc')
-    compileOnly(group: 'com.clickhouse', name: 'clickhouse-r2dbc', version: '0.9.1', classifier: 'http')
+    compileOnly(group: 'com.clickhouse', name: 'clickhouse-r2dbc', version: '0.9.2', classifier: 'http')
 
     testImplementation project(':testcontainers-jdbc-test')
-    testRuntimeOnly(group: 'com.clickhouse', name: 'clickhouse-jdbc', version: '0.9.1', classifier: 'all')
+    testRuntimeOnly(group: 'com.clickhouse', name: 'clickhouse-jdbc', version: '0.9.2', classifier: 'all')
 
-    testImplementation 'com.clickhouse:client-v2:0.9.1'
+    testImplementation 'com.clickhouse:client-v2:0.9.2'
     testImplementation testFixtures(project(':testcontainers-r2dbc'))
-    testRuntimeOnly(group: 'com.clickhouse', name: 'clickhouse-r2dbc', version: '0.9.1', classifier: 'http')
+    testRuntimeOnly(group: 'com.clickhouse', name: 'clickhouse-r2dbc', version: '0.9.2', classifier: 'http')
 }
