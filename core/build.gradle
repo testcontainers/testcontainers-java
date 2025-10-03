@@ -149,7 +149,7 @@ dependencies {
     jarFileTestAnnotationProcessor "org.projectlombok:lombok:${lombok.version}"
     jarFileTestRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
     jarFileTestImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
-    jarFileTestImplementation 'org.assertj:assertj-core:3.27.4'
+    jarFileTestImplementation 'org.assertj:assertj-core:3.27.6'
     jarFileTestImplementation 'org.ow2.asm:asm-debug-all:5.2'
 }
 
