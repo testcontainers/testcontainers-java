@@ -12,7 +12,7 @@ dependencies {
     testImplementation testFixtures(project(':testcontainers-r2dbc'))
     testRuntimeOnly 'io.r2dbc:r2dbc-postgresql:0.8.13.RELEASE'
 
-    compileOnly 'org.jetbrains:annotations:26.0.2'
+    compileOnly 'org.jetbrains:annotations:26.0.2-1'
 }
 
 tasks.japicmp {
