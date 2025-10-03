@@ -167,4 +167,114 @@ class ParsedDockerComposeFileValidationTest {
         }
         assertThatNoException().isThrownBy(() -> new ParsedDockerComposeFile(file));
     }
+
+    @Test
+    public void shouldSubstituteEnvironmentVariablesInImageNames() {
+        // Set up environment variables for testing
+        System.setProperty("TEST_IMAGE_TAG", "latest");
+        System.setProperty("TEST_REGISTRY", "my-registry.com");
+        System.setProperty("EMPTY_VAR", "");
+
+        try {
+            ParsedDockerComposeFile parsedFile = new ParsedDockerComposeFile(
+                ImmutableMap.of(
+                    "version", "2",
+                    "services", ImmutableMap.of(
+                        "service1", ImmutableMap.of("image", "redis:${TEST_IMAGE_TAG}"),
+                        "service2", ImmutableMap.of("image", "${TEST_REGISTRY}/app:${TEST_IMAGE_TAG}"),
+                        "service3", ImmutableMap.of("image", "postgres:${MISSING_VAR:-default}"),
+                        "service4", ImmutableMap.of("image", "mysql:${EMPTY_VAR:-fallback}"),
+                        "service5", ImmutableMap.of("image", "nginx:${MISSING_VAR-alt}"),
+                        "service6", ImmutableMap.of("image", "nginx:${UNDEFINED_VAR}")
+                    )
+                )
+            );
+
+            assertThat(parsedFile.getServiceNameToImageNames())
+                .as("environment variables are substituted correctly")
+                .contains(
+                    entry("service1", Sets.newHashSet("redis:latest")),
+                    entry("service2", Sets.newHashSet("my-registry.com/app:latest")),
+                    entry("service3", Sets.newHashSet("postgres:default")),
+                    entry("service4", Sets.newHashSet("mysql:fallback")),
+                    entry("service5", Sets.newHashSet("nginx:alt")),
+                    entry("service6", Sets.newHashSet("nginx:${UNDEFINED_VAR}"))
+                );
+        } finally {
+            // Clean up
+            System.clearProperty("TEST_IMAGE_TAG");
+            System.clearProperty("TEST_REGISTRY");
+            System.clearProperty("EMPTY_VAR");
+        }
+    }
+
+    @Test
+    public void shouldSubstituteEnvironmentVariablesFromFile() {
+        // Set up environment variables for testing
+        System.setProperty("TAG_CONFLUENT", "7.0.0");
+        System.setProperty("REDIS_VERSION", "");  // Empty string to test :-default behavior
+
+        try {
+            File file = new File("src/test/resources/docker-compose-variable-substitution.yml");
+            ParsedDockerComposeFile parsedFile = new ParsedDockerComposeFile(file);
+            
+            assertThat(parsedFile.getServiceNameToImageNames())
+                .as("environment variables from compose file are substituted correctly")
+                .contains(
+                    entry("confluent", Sets.newHashSet("confluentinc/cp-server:7.0.0")),
+                    entry("redis", Sets.newHashSet("redis:latest")),  // :-default when empty
+                    entry("mysql", Sets.newHashSet("mysql:8.0"))      // -default when undefined
+                );
+        } finally {
+            // Clean up
+            System.clearProperty("TAG_CONFLUENT");
+            System.clearProperty("REDIS_VERSION");
+        }
+    }
+
+    @Test
+    public void shouldHandleEdgeCasesInVariableSubstitution() {
+        // Test various edge cases
+        System.setProperty("SIMPLE_VAR", "simple-value");
+        System.setProperty("WITH_SPECIAL_CHARS", "registry.io/app:v1.2.3");
+        System.setProperty("EMPTY_VAR", "");
+
+        try {
+            ParsedDockerComposeFile parsedFile = new ParsedDockerComposeFile(
+                ImmutableMap.of(
+                    "version", "2",
+                    "services", ImmutableMap.of(
+                        // Test $VAR syntax  
+                        "service1", ImmutableMap.of("image", "redis:$SIMPLE_VAR"),
+                        // Test complex image names with registry
+                        "service2", ImmutableMap.of("image", "${WITH_SPECIAL_CHARS}"),
+                        // Test multiple variables in one string
+                        "service3", ImmutableMap.of("image", "${WITH_SPECIAL_CHARS}-${SIMPLE_VAR}"),
+                        // Test undefined variables remain unchanged
+                        "service4", ImmutableMap.of("image", "app:${UNDEFINED_VAR}"),
+                        // Test variables with special characters that don't need substitution
+                        "service5", ImmutableMap.of("image", "app:latest"),
+                        // Test empty variable with default
+                        "service6", ImmutableMap.of("image", "nginx:${EMPTY_VAR:-default}")
+                    )
+                )
+            );
+
+            assertThat(parsedFile.getServiceNameToImageNames())
+                .as("edge cases in variable substitution work correctly")
+                .contains(
+                    entry("service1", Sets.newHashSet("redis:simple-value")),
+                    entry("service2", Sets.newHashSet("registry.io/app:v1.2.3")),
+                    entry("service3", Sets.newHashSet("registry.io/app:v1.2.3-simple-value")),
+                    entry("service4", Sets.newHashSet("app:${UNDEFINED_VAR}")),
+                    entry("service5", Sets.newHashSet("app:latest")),
+                    entry("service6", Sets.newHashSet("nginx:default"))
+                );
+        } finally {
+            // Clean up
+            System.clearProperty("SIMPLE_VAR");
+            System.clearProperty("WITH_SPECIAL_CHARS");
+            System.clearProperty("EMPTY_VAR");
+        }
+    }
 }
