@@ -34,16 +34,17 @@ import java.util.stream.Stream;
 public class Neo4jContainer extends GenericContainer<Neo4jContainer> {
 
     /**
+     * The default tag (version) to use.
+     * @deprecated this should not be used anywhere besides also deprecated method {@link #withEnterpriseEdition()}
+     */
+    private static final String ENTERPRISE_TAG_4_4 = "4.4-enterprise";
+
+    /**
      * The image defaults to the official Neo4j image: <a href="https://hub.docker.com/_/neo4j/">Neo4j</a>.
      */
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("neo4j");
 
-    /**
-     * The default tag (version) to use.
-     */
-    private static final String DEFAULT_TAG = "4.4";
-
-    private static final String ENTERPRISE_TAG = DEFAULT_TAG + "-enterprise";
+    private static final String ENTERPRISE_SUFFIX = "-enterprise";
 
     /**
      * Default port for the binary Bolt protocol.
@@ -204,6 +205,9 @@ public class Neo4jContainer extends GenericContainer<Neo4jContainer> {
      * needs either a commercial, education or evaluation license.
      *
      * @return This container.
+     * @deprecated This method will force the use of the old 4.4. (LTS) version to be used as the enterprise image,
+     * use {@link #withEnterpriseImage} to actively accept the license and use the enterprise version of
+     * the initial defined community version.
      */
     public Neo4jContainer withEnterpriseEdition() {
         if (!standardImage) {
@@ -211,8 +215,30 @@ public class Neo4jContainer extends GenericContainer<Neo4jContainer> {
                 String.format("Cannot use enterprise version with alternative image %s.", getDockerImageName())
             );
         }
+        setDockerImageName(DEFAULT_IMAGE_NAME.withTag(ENTERPRISE_TAG_4_4).asCanonicalNameString());
+        LicenseAcceptance.assertLicenseAccepted(getDockerImageName());
 
-        setDockerImageName(DEFAULT_IMAGE_NAME.withTag(ENTERPRISE_TAG).asCanonicalNameString());
+        addEnv("NEO4J_ACCEPT_LICENSE_AGREEMENT", "yes");
+
+        return self();
+    }
+
+    /**
+     * Configures the container to use the enterprise edition of the default docker image.
+     * <br><br>
+     * Please have a look at the <a href="https://neo4j.com/licensing/">Neo4j Licensing page</a>. While the Neo4j
+     * Community Edition can be used for free in your projects under the GPL v3 license, Neo4j Enterprise edition
+     * needs either a commercial, education or evaluation license.
+     *
+     * @return This container.
+     */
+    public Neo4jContainer withEnterpriseImage() {
+        if (!standardImage) {
+            throw new IllegalStateException(
+                String.format("Cannot use enterprise version with alternative image %s.", getDockerImageName())
+            );
+        }
+        setDockerImageName(DockerImageName.parse(getDockerImageName() + ENTERPRISE_SUFFIX).asCanonicalNameString());
         LicenseAcceptance.assertLicenseAccepted(getDockerImageName());
 
         addEnv("NEO4J_ACCEPT_LICENSE_AGREEMENT", "yes");
