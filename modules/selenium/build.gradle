@@ -14,5 +14,5 @@ dependencies {
     testImplementation 'org.mortbay.jetty:jetty:6.1.26'
     testImplementation project(':testcontainers-nginx')
 
-    compileOnly 'org.jetbrains:annotations:26.0.2'
+    compileOnly 'org.jetbrains:annotations:26.0.2-1'
 }
