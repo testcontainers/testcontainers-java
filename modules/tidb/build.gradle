@@ -6,5 +6,5 @@ dependencies {
     testImplementation project(':testcontainers-jdbc-test')
     testRuntimeOnly 'mysql:mysql-connector-java:8.0.33'
 
-    compileOnly 'org.jetbrains:annotations:26.0.2'
+    compileOnly 'org.jetbrains:annotations:26.0.2-1'
 }
