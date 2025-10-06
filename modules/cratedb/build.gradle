@@ -7,5 +7,5 @@ dependencies {
 
     testImplementation project(':testcontainers-jdbc-test')
 
-    compileOnly 'org.jetbrains:annotations:26.0.2'
+    compileOnly 'org.jetbrains:annotations:26.0.2-1'
 }
