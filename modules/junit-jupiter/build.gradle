@@ -15,5 +15,5 @@ dependencies {
     }
 
     testRuntimeOnly 'org.postgresql:postgresql:42.7.8'
-    testRuntimeOnly 'mysql:mysql-connector-java:8.0.33'
+    testRuntimeOnly 'com.mysql:mysql-connector-j:8.2.0'
 }
