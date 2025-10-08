@@ -17,7 +17,7 @@ dependencies {
 
     testRuntimeOnly 'org.postgresql:postgresql:42.7.8'
     testRuntimeOnly 'com.mysql:mysql-connector-j:8.2.0'
-    testRuntimeOnly platform('org.junit:junit-bom:5.13.4')
+    testRuntimeOnly platform('org.junit:junit-bom:6.0.0')
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testRuntimeOnly 'org.junit.platform:junit-platform-testkit'
 
