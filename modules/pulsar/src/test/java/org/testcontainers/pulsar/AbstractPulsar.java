@@ -1,4 +1,4 @@
-package org.testcontainers.containers;
+package org.testcontainers.pulsar;
 
 import org.apache.pulsar.client.admin.ListTopicsOptions;
 import org.apache.pulsar.client.admin.PulsarAdmin;

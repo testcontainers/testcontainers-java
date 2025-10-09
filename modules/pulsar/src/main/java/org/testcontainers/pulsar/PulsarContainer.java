@@ -1,5 +1,6 @@
-package org.testcontainers.containers;
+package org.testcontainers.pulsar;
 
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.utility.DockerImageName;
@@ -14,10 +15,7 @@ import org.testcontainers.utility.DockerImageName;
  *     <li>Pulsar: 6650</li>
  *     <li>HTTP: 8080</li>
  * </ul>
- *
- * @deprecated use {@link org.testcontainers.pulsar.PulsarContainer} instead.
  */
-@Deprecated
 public class PulsarContainer extends GenericContainer<PulsarContainer> {
 
     public static final int BROKER_PORT = 6650;
@@ -40,12 +38,9 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
 
     private boolean transactionsEnabled = false;
 
-    /**
-     * @deprecated use {@link #PulsarContainer(DockerImageName)} instead
-     */
     @Deprecated
-    public PulsarContainer(String pulsarVersion) {
-        this(DEFAULT_IMAGE_NAME.withTag(pulsarVersion));
+    public PulsarContainer(String dockerImageName) {
+        this(DockerImageName.parse(dockerImageName));
     }
 
     public PulsarContainer(final DockerImageName dockerImageName) {
