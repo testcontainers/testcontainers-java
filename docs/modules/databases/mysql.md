@@ -7,7 +7,7 @@ Testcontainers module for [MySQL](https://hub.docker.com/_/mysql)
 You can start a MySQL container instance from any Java application by using:
 
 <!--codeinclude-->
-[Container definition](../../../modules/mysql/src/test/java/org/testcontainers/junit/mysql/SimpleMySQLTest.java) inside_block:container
+[Container definition](../../../modules/mysql/src/test/java/org/testcontainers/mysql/MySQLContainerTest.java) inside_block:container
 <!--/codeinclude-->
 
 See [Database containers](./index.md) for documentation and usage that is common to all relational database container types.

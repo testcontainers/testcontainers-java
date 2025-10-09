@@ -1,6 +1,8 @@
-package org.testcontainers.containers;
+package org.testcontainers.mysql;
 
 import org.jetbrains.annotations.NotNull;
+import org.testcontainers.containers.ContainerLaunchException;
+import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 
@@ -12,21 +14,12 @@ import java.util.Set;
  * Supported image: {@code mysql}
  * <p>
  * Exposed ports: 3306
- *
- * @deprecated use {@link org.testcontainers.mysql.MySQLContainer} instead.
  */
-@Deprecated
-public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
+public class MySQLContainer extends JdbcDatabaseContainer<MySQLContainer> {
 
     public static final String NAME = "mysql";
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("mysql");
-
-    @Deprecated
-    public static final String DEFAULT_TAG = "5.7.34";
-
-    @Deprecated
-    public static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
 
     static final String DEFAULT_USER = "test";
 
@@ -142,25 +135,25 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
         return "SELECT 1";
     }
 
-    public SELF withConfigurationOverride(String s) {
+    public MySQLContainer withConfigurationOverride(String s) {
         parameters.put(MY_CNF_CONFIG_OVERRIDE_PARAM_NAME, s);
         return self();
     }
 
     @Override
-    public SELF withDatabaseName(final String databaseName) {
+    public MySQLContainer withDatabaseName(final String databaseName) {
         this.databaseName = databaseName;
         return self();
     }
 
     @Override
-    public SELF withUsername(final String username) {
+    public MySQLContainer withUsername(final String username) {
         this.username = username;
         return self();
     }
 
     @Override
-    public SELF withPassword(final String password) {
+    public MySQLContainer withPassword(final String password) {
         this.password = password;
         return self();
     }
