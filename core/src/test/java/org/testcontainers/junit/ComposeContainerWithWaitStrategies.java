@@ -1,6 +1,6 @@
 package org.testcontainers.junit;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.ComposeContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 
@@ -9,12 +9,12 @@ import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ComposeContainerWithWaitStrategies {
+class ComposeContainerWithWaitStrategies {
 
     private static final int REDIS_PORT = 6379;
 
     @Test
-    public void testComposeContainerConstructor() {
+    void testComposeContainerConstructor() {
         try (
             // composeContainerWithCombinedWaitStrategies {
             ComposeContainer compose = new ComposeContainer(new File("src/test/resources/composev2/compose-test.yml"))
@@ -28,7 +28,7 @@ public class ComposeContainerWithWaitStrategies {
     }
 
     @Test
-    public void testComposeContainerWaitForPortWithTimeout() {
+    void testComposeContainerWaitForPortWithTimeout() {
         try (
             // composeContainerWaitForPortWithTimeout {
             ComposeContainer compose = new ComposeContainer(new File("src/test/resources/composev2/compose-test.yml"))

@@ -8,22 +8,12 @@ dependencies {
     testImplementation project(':testcontainers-mysql')
     testImplementation project(':testcontainers-postgresql')
     testImplementation 'com.zaxxer:HikariCP:7.0.2'
-    testImplementation 'redis.clients:jedis:6.1.0'
+    testImplementation 'redis.clients:jedis:6.2.0'
     testImplementation 'org.apache.httpcomponents:httpclient:4.5.14'
     testImplementation ('org.mockito:mockito-core:4.11.0') {
         exclude(module: 'hamcrest-core')
     }
-    testImplementation 'org.assertj:assertj-core:3.27.3'
-    testImplementation 'org.junit.jupiter:junit-jupiter'
 
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.13.4'
-    testRuntimeOnly 'org.postgresql:postgresql:42.7.7'
-    testRuntimeOnly 'mysql:mysql-connector-java:8.0.33'
-}
-
-test {
-    useJUnitPlatform()
-    testLogging {
-        events "passed", "skipped", "failed"
-    }
+    testRuntimeOnly 'org.postgresql:postgresql:42.7.8'
+    testRuntimeOnly 'com.mysql:mysql-connector-j:8.2.0'
 }

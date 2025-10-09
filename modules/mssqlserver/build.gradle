@@ -4,16 +4,13 @@ dependencies {
     api project(':testcontainers-jdbc')
 
     compileOnly project(':testcontainers-r2dbc')
-    compileOnly 'io.r2dbc:r2dbc-mssql:1.0.2.RELEASE'
+    compileOnly 'io.r2dbc:r2dbc-mssql:1.0.3.RELEASE'
 
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
-
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
     testImplementation project(':testcontainers-jdbc-test')
     testImplementation 'com.microsoft.sqlserver:mssql-jdbc:13.2.0.jre8'
 
     testImplementation project(':testcontainers-r2dbc')
-    testRuntimeOnly 'io.r2dbc:r2dbc-mssql:1.0.2.RELEASE'
+    testRuntimeOnly 'io.r2dbc:r2dbc-mssql:1.0.3.RELEASE'
 
     // MSSQL's wait strategy requires the JDBC driver
     testImplementation testFixtures(project(':testcontainers-r2dbc'))
@@ -23,8 +20,4 @@ tasks.japicmp {
     classExcludes = [
         "org.testcontainers.containers.MSSQLServerContainer"
     ]
-}
-
-test {
-    useJUnitPlatform()
 }

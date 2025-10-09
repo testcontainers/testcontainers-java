@@ -18,7 +18,9 @@ import java.util.Set;
  * <ul>
  *     <li>Database: 50000</li>
  * </ul>
+ * @deprecated use {@link org.testcontainers.db2.Db2Container} instead.
  */
+@Deprecated
 public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
 
     public static final String NAME = "db2";

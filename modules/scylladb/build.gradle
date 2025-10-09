@@ -3,14 +3,6 @@ description = "Testcontainers :: ScyllaDB"
 dependencies {
     api project(":testcontainers")
 
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
-
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
     testImplementation 'com.scylladb:java-driver-core:4.19.0.1'
-    testImplementation 'org.assertj:assertj-core:3.27.3'
-    testImplementation 'software.amazon.awssdk:dynamodb:2.32.30'
-}
-
-test {
-    useJUnitPlatform()
+    testImplementation 'software.amazon.awssdk:dynamodb:2.34.8'
 }

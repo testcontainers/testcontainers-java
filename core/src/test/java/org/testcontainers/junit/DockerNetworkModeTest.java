@@ -2,7 +2,7 @@ package org.testcontainers.junit;
 
 import com.github.dockerjava.api.model.NetworkSettings;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.TestImages;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
@@ -14,10 +14,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  * without other setup steps.
  */
 @Slf4j
-public class DockerNetworkModeTest {
+class DockerNetworkModeTest {
 
     @Test
-    public void testNoNetworkContainer() {
+    void testNoNetworkContainer() {
         try (
             GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
                 .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
@@ -33,7 +33,7 @@ public class DockerNetworkModeTest {
     }
 
     @Test
-    public void testHostNetworkContainer() {
+    void testHostNetworkContainer() {
         try (
             GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
                 .withStartupCheckStrategy(new OneShotStartupCheckStrategy())

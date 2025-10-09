@@ -3,8 +3,7 @@ package org.testcontainers.images.builder.dockerfile.statement;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.junit.Rule;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.TestInfo;
 import org.rnorth.ducttape.Preconditions;
 
 import java.io.InputStream;
@@ -14,13 +13,17 @@ import static org.assertj.core.api.Assertions.fail;
 
 public abstract class AbstractStatementTest {
 
-    @Rule
-    public TestName testName = new TestName();
+    private final TestInfo testInfo;
+
+    AbstractStatementTest(TestInfo testInfo) {
+        this.testInfo = testInfo;
+    }
 
     protected void assertStatement(Statement statement) {
+        String testName = testInfo.getTestMethod().get().getName();
         String[] expectedLines = new String[0];
         try {
-            String path = "fixtures/statements/" + getClass().getSimpleName() + "/" + testName.getMethodName();
+            String path = "fixtures/statements/" + getClass().getSimpleName() + "/" + testName;
             InputStream inputStream = getClass().getClassLoader().getResourceAsStream(path);
 
             Preconditions.check("inputStream is null for path " + path, inputStream != null);
@@ -29,7 +32,7 @@ public abstract class AbstractStatementTest {
             IOUtils.closeQuietly(inputStream);
             expectedLines = StringUtils.chomp(content.replaceAll("\r\n", "\n").trim()).split("\n");
         } catch (Exception e) {
-            fail("can't load fixture '" + testName.getMethodName() + "'\n" + ExceptionUtils.getStackTrace(e));
+            fail("can't load fixture '" + testName + "'\n" + ExceptionUtils.getStackTrace(e));
         }
 
         StringBuilder builder = new StringBuilder();

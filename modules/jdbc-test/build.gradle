@@ -1,15 +1,15 @@
 dependencies {
     api project(':testcontainers-jdbc')
 
-    api 'com.google.guava:guava:33.4.8-jre'
-    api 'org.apache.commons:commons-lang3:3.18.0'
+    api 'com.google.guava:guava:33.5.0-jre'
+    api 'org.apache.commons:commons-lang3:3.19.0'
     api 'com.zaxxer:HikariCP-java6:2.3.13'
     api 'commons-dbutils:commons-dbutils:1.8.1'
 
-    api 'org.assertj:assertj-core:3.27.4'
+    api 'org.assertj:assertj-core:3.27.6'
 
-    api 'org.apache.tomcat:tomcat-jdbc:11.0.10'
+    api 'org.apache.tomcat:tomcat-jdbc:11.0.11'
     api 'org.vibur:vibur-dbcp:26.0'
-    api 'mysql:mysql-connector-java:8.0.33'
+    api 'com.mysql:mysql-connector-j:8.2.0'
     api 'org.junit.jupiter:junit-jupiter:5.13.4'
 }

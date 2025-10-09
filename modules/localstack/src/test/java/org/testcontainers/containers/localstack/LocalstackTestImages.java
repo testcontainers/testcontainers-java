@@ -3,7 +3,7 @@ package org.testcontainers.containers.localstack;
 import org.testcontainers.utility.DockerImageName;
 
 public interface LocalstackTestImages {
-    DockerImageName LOCALSTACK_IMAGE = DockerImageName.parse("localstack/localstack:4.7.0");
+    DockerImageName LOCALSTACK_IMAGE = DockerImageName.parse("localstack/localstack:4.9.2");
 
     DockerImageName LOCALSTACK_0_10_IMAGE = LOCALSTACK_IMAGE.withTag("0.10.7");
 

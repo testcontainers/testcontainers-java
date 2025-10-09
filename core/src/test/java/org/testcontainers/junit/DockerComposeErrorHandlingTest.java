@@ -1,6 +1,6 @@
 package org.testcontainers.junit;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.DockerComposeContainer;
 
 import java.io.File;
@@ -8,10 +8,10 @@ import java.io.File;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
-public class DockerComposeErrorHandlingTest {
+class DockerComposeErrorHandlingTest {
 
     @Test
-    public void simpleTest() {
+    void simpleTest() {
         assertThat(
             catchThrowable(() -> {
                 DockerComposeContainer environment = new DockerComposeContainer(

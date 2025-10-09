@@ -14,7 +14,10 @@ import org.testcontainers.utility.DockerImageName;
  *     <li>Pulsar: 6650</li>
  *     <li>HTTP: 8080</li>
  * </ul>
+ *
+ * @deprecated use {@link org.testcontainers.pulsar.PulsarContainer} instead.
  */
+@Deprecated
 public class PulsarContainer extends GenericContainer<PulsarContainer> {
 
     public static final int BROKER_PORT = 6650;

@@ -3,20 +3,12 @@ description = "Testcontainers :: elasticsearch"
 dependencies {
     api project(':testcontainers')
 
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
-
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
-    testImplementation "org.elasticsearch.client:elasticsearch-rest-client:9.1.2"
+    testImplementation "org.elasticsearch.client:elasticsearch-rest-client:9.1.4"
     testImplementation "org.elasticsearch.client:transport:7.17.29"
-    testImplementation 'org.assertj:assertj-core:3.27.4'
 }
 
 tasks.japicmp {
     classExcludes = [
         "org.testcontainers.elasticsearch.ElasticsearchContainer"
     ]
-}
-
-test {
-    useJUnitPlatform()
 }

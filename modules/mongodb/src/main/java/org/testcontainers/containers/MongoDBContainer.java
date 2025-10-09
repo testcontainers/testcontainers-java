@@ -16,8 +16,11 @@ import java.io.IOException;
  * Supported images: {@code mongo}, {@code mongodb/mongodb-community-server}, {@code mongodb/mongodb-enterprise-server}
  * <p>
  * Exposed ports: 27017
+ *
+ * @deprecated use {@link org.testcontainers.mongodb.MongoDBContainer} instead.
  */
 @Slf4j
+@Deprecated
 public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("mongo");

@@ -17,7 +17,10 @@ import java.time.Duration;
  *     <li>Database: 26257</li>
  *     <li>Console: 8080</li>
  * </ul>
+ *
+ * @deprecated use {@link org.testcontainers.cockroachdb.CockroachContainer} instead
  */
+@Deprecated
 public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("cockroachdb/cockroach");

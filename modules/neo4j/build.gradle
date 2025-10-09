@@ -33,11 +33,7 @@ dependencies {
 
     api project(":testcontainers")
 
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
-
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
-    testImplementation 'org.neo4j.driver:neo4j-java-driver:4.4.20'
-    testImplementation 'org.assertj:assertj-core:3.27.4'
+    testImplementation 'org.neo4j.driver:neo4j-java-driver:4.4.21'
 }
 
 tasks.japicmp {
@@ -45,8 +41,4 @@ tasks.japicmp {
         "org.testcontainers.containers.Neo4jContainer",
         "org.testcontainers.containers.Neo4jLabsPlugin"
     ]
-}
-
-test {
-    useJUnitPlatform()
 }

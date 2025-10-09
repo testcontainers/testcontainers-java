@@ -23,11 +23,11 @@ PubSubEmulatorContainer | [gcr.io/google.com/cloudsdktool/google-cloud-cli:emula
 Start BigQuery Emulator during a test:
 
 <!--codeinclude-->
-[Starting a BigQuery Emulator container](../../modules/gcloud/src/test/java/org/testcontainers/containers/BigQueryEmulatorContainerTest.java) inside_block:emulatorContainer
+[Starting a BigQuery Emulator container](../../modules/gcloud/src/test/java/org/testcontainers/gcloud/BigQueryEmulatorContainerTest.java) inside_block:emulatorContainer
 <!--/codeinclude-->
 
 <!--codeinclude-->
-[Creating BigQuery Client](../../modules/gcloud/src/test/java/org/testcontainers/containers/BigQueryEmulatorContainerTest.java) inside_block:bigQueryClient
+[Creating BigQuery Client](../../modules/gcloud/src/test/java/org/testcontainers/gcloud/BigQueryEmulatorContainerTest.java) inside_block:bigQueryClient
 <!--/codeinclude-->
 
 ### Bigtable
@@ -35,19 +35,19 @@ Start BigQuery Emulator during a test:
 Start Bigtable Emulator during a test:
 
 <!--codeinclude-->
-[Starting a Bigtable Emulator container](../../modules/gcloud/src/test/java/org/testcontainers/containers/BigtableEmulatorContainerTest.java) inside_block:emulatorContainer
+[Starting a Bigtable Emulator container](../../modules/gcloud/src/test/java/org/testcontainers/gcloud/BigtableEmulatorContainerTest.java) inside_block:emulatorContainer
 <!--/codeinclude-->
 
 Create a test Bigtable table in the Emulator:
 
 <!--codeinclude-->
-[Create a test table](../../modules/gcloud/src/test/java/org/testcontainers/containers/BigtableEmulatorContainerTest.java) inside_block:createTable
+[Create a test table](../../modules/gcloud/src/test/java/org/testcontainers/gcloud/BigtableEmulatorContainerTest.java) inside_block:createTable
 <!--/codeinclude-->
 
 Test against the Emulator:
 
 <!--codeinclude-->
-[Testing with a Bigtable Emulator container](../../modules/gcloud/src/test/java/org/testcontainers/containers/BigtableEmulatorContainerTest.java) inside_block:testWithEmulatorContainer
+[Testing with a Bigtable Emulator container](../../modules/gcloud/src/test/java/org/testcontainers/gcloud/BigtableEmulatorContainerTest.java) inside_block:testWithEmulatorContainer
 <!--/codeinclude-->
 
 ### Datastore
@@ -55,18 +55,18 @@ Test against the Emulator:
 Start Datastore Emulator during a test:
 
 <!--codeinclude-->
-[Starting a Datastore Emulator container](../../modules/gcloud/src/test/java/org/testcontainers/containers/DatastoreEmulatorContainerTest.java) inside_block:creatingDatastoreEmulatorContainer
+[Starting a Datastore Emulator container](../../modules/gcloud/src/test/java/org/testcontainers/gcloud/DatastoreEmulatorContainerTest.java) inside_block:creatingDatastoreEmulatorContainer
 <!--/codeinclude-->
 
 And test against the Emulator:
 
 <!--codeinclude-->
-[Testing with a Datastore Emulator container](../../modules/gcloud/src/test/java/org/testcontainers/containers/DatastoreEmulatorContainerTest.java) inside_block:startingDatastoreEmulatorContainer
+[Testing with a Datastore Emulator container](../../modules/gcloud/src/test/java/org/testcontainers/gcloud/DatastoreEmulatorContainerTest.java) inside_block:startingDatastoreEmulatorContainer
 <!--/codeinclude-->
 
 See more examples:
 
- * [Full sample code](https://github.com/testcontainers/testcontainers-java/tree/main/modules/gcloud/src/test/java/org/testcontainers/containers/DatastoreEmulatorContainerTest.java)
+ * [Full sample code](https://github.com/testcontainers/testcontainers-java/tree/main/modules/gcloud/src/test/java/org/testcontainers/gcloud/DatastoreEmulatorContainerTest.java)
  * [With Spring Boot](https://github.com/saturnism/testcontainers-gcloud-examples/tree/main/springboot/datastore-example/src/test/java/com/example/springboot/datastore) 
 
 ### Firestore 
@@ -74,18 +74,18 @@ See more examples:
 Start Firestore Emulator during a test:
 
 <!--codeinclude-->
-[Starting a Firestore Emulator container](../../modules/gcloud/src/test/java/org/testcontainers/containers/FirestoreEmulatorContainerTest.java) inside_block:emulatorContainer
+[Starting a Firestore Emulator container](../../modules/gcloud/src/test/java/org/testcontainers/gcloud/FirestoreEmulatorContainerTest.java) inside_block:emulatorContainer
 <!--/codeinclude-->
 
 And test against the Emulator:
 
 <!--codeinclude-->
-[Testing with a Firestore Emulator container](../../modules/gcloud/src/test/java/org/testcontainers/containers/FirestoreEmulatorContainerTest.java) inside_block:testWithEmulatorContainer
+[Testing with a Firestore Emulator container](../../modules/gcloud/src/test/java/org/testcontainers/gcloud/FirestoreEmulatorContainerTest.java) inside_block:testWithEmulatorContainer
 <!--/codeinclude-->
 
 See more examples:
 
- * [Full sample code](https://github.com/testcontainers/testcontainers-java/tree/main/modules/gcloud/src/test/java/org/testcontainers/containers/FirestoreEmulatorContainerTest.java)
+ * [Full sample code](https://github.com/testcontainers/testcontainers-java/tree/main/modules/gcloud/src/test/java/org/testcontainers/gcloud/FirestoreEmulatorContainerTest.java)
  * [With Spring Boot](https://github.com/saturnism/testcontainers-gcloud-examples/tree/main/springboot/firestore-example/src/test/java/com/example/springboot/firestore/FirestoreIntegrationTests.java)
 
 ### Spanner 
@@ -93,30 +93,30 @@ See more examples:
 Start Spanner Emulator during a test:
 
 <!--codeinclude-->
-[Starting a Spanner Emulator container](../../modules/gcloud/src/test/java/org/testcontainers/containers/SpannerEmulatorContainerTest.java) inside_block:emulatorContainer
+[Starting a Spanner Emulator container](../../modules/gcloud/src/test/java/org/testcontainers/gcloud/SpannerEmulatorContainerTest.java) inside_block:emulatorContainer
 <!--/codeinclude-->
 
 Create a test Spanner Instance in the Emulator:
 
 <!--codeinclude-->
-[Create a test Spanner instance](../../modules/gcloud/src/test/java/org/testcontainers/containers/SpannerEmulatorContainerTest.java) inside_block:createInstance
+[Create a test Spanner instance](../../modules/gcloud/src/test/java/org/testcontainers/gcloud/SpannerEmulatorContainerTest.java) inside_block:createInstance
 <!--/codeinclude-->
 
 Create a test Database in the Emulator:
 
 <!--codeinclude-->
-[Creating a test Spanner database](../../modules/gcloud/src/test/java/org/testcontainers/containers/SpannerEmulatorContainerTest.java) inside_block:createDatabase
+[Creating a test Spanner database](../../modules/gcloud/src/test/java/org/testcontainers/gcloud/SpannerEmulatorContainerTest.java) inside_block:createDatabase
 <!--/codeinclude-->
 
 And test against the Emulator:
 
 <!--codeinclude-->
-[Testing with a Spanner Emulator container](../../modules/gcloud/src/test/java/org/testcontainers/containers/SpannerEmulatorContainerTest.java) inside_block:testWithEmulatorContainer
+[Testing with a Spanner Emulator container](../../modules/gcloud/src/test/java/org/testcontainers/gcloud/SpannerEmulatorContainerTest.java) inside_block:testWithEmulatorContainer
 <!--/codeinclude-->
 
 See more examples:
 
- * [Full sample code](https://github.com/testcontainers/testcontainers-java/tree/main/modules/gcloud/src/test/java/org/testcontainers/containers/SpannerEmulatorContainerTest.java)
+ * [Full sample code](https://github.com/testcontainers/testcontainers-java/tree/main/modules/gcloud/src/test/java/org/testcontainers/gcloud/SpannerEmulatorContainerTest.java)
  * [With Spring Boot](https://github.com/saturnism/testcontainers-gcloud-examples/tree/main/springboot/spanner-example/src/test/java/com/example/springboot/spanner/SpannerIntegrationTests.java)
 
 ### Pub/Sub 
@@ -124,30 +124,30 @@ See more examples:
 Start Pub/Sub Emulator during a test:
 
 <!--codeinclude-->
-[Starting a Pub/Sub Emulator container](../../modules/gcloud/src/test/java/org/testcontainers/containers/PubSubEmulatorContainerTest.java) inside_block:emulatorContainer
+[Starting a Pub/Sub Emulator container](../../modules/gcloud/src/test/java/org/testcontainers/gcloud/PubSubEmulatorContainerTest.java) inside_block:emulatorContainer
 <!--/codeinclude-->
 
 Create a test Pub/Sub topic in the Emulator:
 
 <!--codeinclude-->
-[Create a test topic](../../modules/gcloud/src/test/java/org/testcontainers/containers/PubSubEmulatorContainerTest.java) inside_block:createTopic
+[Create a test topic](../../modules/gcloud/src/test/java/org/testcontainers/gcloud/PubSubEmulatorContainerTest.java) inside_block:createTopic
 <!--/codeinclude-->
 
 Create a test Pub/Sub subscription in the Emulator:
 
 <!--codeinclude-->
-[Create a test subscription](../../modules/gcloud/src/test/java/org/testcontainers/containers/PubSubEmulatorContainerTest.java) inside_block:createSubscription
+[Create a test subscription](../../modules/gcloud/src/test/java/org/testcontainers/gcloud/PubSubEmulatorContainerTest.java) inside_block:createSubscription
 <!--/codeinclude-->
 
 And test against the Emulator:
 
 <!--codeinclude-->
-[Testing with a Pub/Sub Emulator container](../../modules/gcloud/src/test/java/org/testcontainers/containers/PubSubEmulatorContainerTest.java) inside_block:testWithEmulatorContainer
+[Testing with a Pub/Sub Emulator container](../../modules/gcloud/src/test/java/org/testcontainers/gcloud/PubSubEmulatorContainerTest.java) inside_block:testWithEmulatorContainer
 <!--/codeinclude-->
 
 See more examples:
 
- * [Full sample code](https://github.com/testcontainers/testcontainers-java/tree/main/modules/gcloud/src/test/java/org/testcontainers/containers/PubSubEmulatorContainerTest.java)
+ * [Full sample code](https://github.com/testcontainers/testcontainers-java/tree/main/modules/gcloud/src/test/java/org/testcontainers/gcloud/PubSubEmulatorContainerTest.java)
  * [With Spring Boot](https://github.com/saturnism/testcontainers-gcloud-examples/tree/main/springboot/pubsub-example/src/test/java/com/example/springboot/pubsub/PubSubIntegrationTests.java)
 
 ## Adding this module to your project dependencies

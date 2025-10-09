@@ -52,7 +52,7 @@ jobs:
         with:
           rootless: true
       - name: Setup Gradle Build Action
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
       - name: Build with Gradle
         run: ./gradlew --no-daemon --scan testcontainers:test --tests '*GenericContainerRuleTest'
       - uses: ./.github/actions/setup-junit-report

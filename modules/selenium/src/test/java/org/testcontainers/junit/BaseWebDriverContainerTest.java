@@ -1,6 +1,5 @@
 package org.testcontainers.junit;
 
-import org.junit.ClassRule;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.WebElement;
@@ -15,15 +14,10 @@ import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- *
- */
 public class BaseWebDriverContainerTest {
 
-    @ClassRule
     public static Network NETWORK = Network.newNetwork();
 
-    @ClassRule
     public static GenericContainer<?> HELLO_WORLD = new GenericContainer<>(
         DockerImageName.parse("testcontainers/helloworld:1.1.0")
     )
@@ -31,6 +25,10 @@ public class BaseWebDriverContainerTest {
         .withNetworkAliases("helloworld")
         .withExposedPorts(8080, 8081)
         .waitingFor(new HttpWaitStrategy());
+
+    static {
+        HELLO_WORLD.start();
+    }
 
     protected static void doSimpleExplore(BrowserWebDriverContainer<?> rule, Capabilities capabilities) {
         RemoteWebDriver driver = new RemoteWebDriver(rule.getSeleniumAddress(), capabilities);
