@@ -26,7 +26,10 @@ import java.util.concurrent.atomic.AtomicInteger;
  *     <li>HTTP: 8474</li>
  *     <li>Proxied Ports: 8666-8697</li>
  * </ul>
+ *
+ * @deprecated use {@link org.testcontainers.toxiproxy.ToxiproxyContainer} instead.
  */
+@Deprecated
 public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("shopify/toxiproxy");
