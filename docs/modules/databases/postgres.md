@@ -7,7 +7,7 @@ Testcontainers module for [PostgresSQL](https://hub.docker.com/_/postgres)
 You can start a PostgreSQL container instance from any Java application by using:
 
 <!--codeinclude-->
-[Container creation](../../../modules/postgresql/src/test/java/org/testcontainers/junit/postgresql/SimplePostgreSQLTest.java) inside_block:container
+[Container creation](../../../modules/postgresql/src/test/java/org/testcontainers/postgresql/PostgreSQLContainerTest.java) inside_block:container
 <!--/codeinclude-->
 
 See [Database containers](./index.md) for documentation and usage that is common to all relational database container types.
@@ -28,19 +28,19 @@ See [JDBC](./jdbc.md) for documentation.
 * [pgvector/pgvector](https://hub.docker.com/r/pgvector/pgvector)
 
 <!--codeinclude-->
-[Using pgvector](../../../modules/postgresql/src/test/java/org/testcontainers/containers/CompatibleImageTest.java) inside_block:pgvectorContainer
+[Using pgvector](../../../modules/postgresql/src/test/java/org/testcontainers/postgresql/CompatibleImageTest.java) inside_block:pgvectorContainer
 <!--/codeinclude-->
 
 * [postgis/postgis](https://registry.hub.docker.com/r/postgis/postgis)
 
 <!--codeinclude-->
-[Using PostGIS](../../../modules/postgresql/src/test/java/org/testcontainers/containers/CompatibleImageTest.java) inside_block:postgisContainer
+[Using PostGIS](../../../modules/postgresql/src/test/java/org/testcontainers/postgresql/CompatibleImageTest.java) inside_block:postgisContainer
 <!--/codeinclude-->
 
 * [timescale/timescaledb](https://hub.docker.com/r/timescale/timescaledb)
 
 <!--codeinclude-->
-[Using TimescaleDB](../../../modules/postgresql/src/test/java/org/testcontainers/containers/CompatibleImageTest.java) inside_block:timescaledbContainer
+[Using TimescaleDB](../../../modules/postgresql/src/test/java/org/testcontainers/postgresql/CompatibleImageTest.java) inside_block:timescaledbContainer
 <!--/codeinclude-->
 
 ## Adding this module to your project dependencies
