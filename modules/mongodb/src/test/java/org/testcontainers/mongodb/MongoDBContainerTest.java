@@ -1,4 +1,4 @@
-package org.testcontainers.containers;
+package org.testcontainers.mongodb;
 
 import org.junit.jupiter.api.Test;
 
@@ -13,7 +13,7 @@ class MongoDBContainerTest extends AbstractMongo {
     void shouldExecuteTransactions() {
         try (
             // creatingMongoDBContainer {
-            final MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:4.0.10")
+            MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:4.0.10").withReplicaSet()
             // }
         ) {
             // startingMongoDBContainer {
@@ -25,14 +25,14 @@ class MongoDBContainerTest extends AbstractMongo {
 
     @Test
     void supportsMongoDB_7_0() {
-        try (final MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:7.0")) {
+        try (MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:7.0")) {
             mongoDBContainer.start();
         }
     }
 
     @Test
     void shouldTestDatabaseName() {
-        try (final MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:4.0.10")) {
+        try (MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:4.0.10")) {
             mongoDBContainer.start();
             final String databaseName = "my-db";
             assertThat(mongoDBContainer.getReplicaSetUrl(databaseName)).endsWith(databaseName);
