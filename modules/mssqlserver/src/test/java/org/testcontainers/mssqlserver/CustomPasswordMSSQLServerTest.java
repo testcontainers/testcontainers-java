@@ -1,4 +1,4 @@
-package org.testcontainers.junit.mssqlserver;
+package org.testcontainers.mssqlserver;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.params.ParameterizedTest;
