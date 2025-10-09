@@ -1,16 +1,15 @@
-package org.testcontainers.junit.tidb;
+package org.testcontainers.tidb;
 
 import org.junit.jupiter.api.Test;
 import org.testcontainers.TiDBTestImages;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
-import org.testcontainers.tidb.TiDBContainer;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class SimpleTiDBTest extends AbstractContainerDatabaseTest {
+class TiDBContainerTest extends AbstractContainerDatabaseTest {
 
     @Test
     void testSimple() throws SQLException {
