@@ -1,4 +1,4 @@
-package org.testcontainers.containers;
+package org.testcontainers.trino;
 
 import org.junit.jupiter.api.Test;
 import org.testcontainers.TrinoTestImages;
@@ -24,9 +24,7 @@ class TrinoContainerTest {
                 ResultSet resultSet = statement.executeQuery("SELECT DISTINCT node_version FROM system.runtime.nodes")
             ) {
                 assertThat(resultSet.next()).as("results").isTrue();
-                assertThat(resultSet.getString("node_version"))
-                    .as("Trino version")
-                    .isEqualTo(TrinoContainer.DEFAULT_TAG);
+                assertThat(resultSet.getString("node_version")).as("Trino version").isEqualTo("352");
                 assertContainerHasCorrectExposedAndLivenessCheckPorts(trino);
             }
         }

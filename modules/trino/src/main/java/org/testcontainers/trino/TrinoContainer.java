@@ -1,8 +1,9 @@
-package org.testcontainers.containers;
+package org.testcontainers.trino;
 
 import com.google.common.base.Strings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.VisibleForTesting;
+import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import java.sql.Connection;
@@ -15,10 +16,7 @@ import java.util.Set;
  * Supported image: {@code trinodb/trino}
  * <p>
  * Exposed ports: 8080
- *
- * @deprecated use {@link org.testcontainers.trino.TrinoContainer} instead.
  */
-@Deprecated
 public class TrinoContainer extends JdbcDatabaseContainer<TrinoContainer> {
 
     static final String NAME = "trino";
