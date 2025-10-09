@@ -1,4 +1,4 @@
-package org.testcontainers.containers;
+package org.testcontainers.rabbitmq;
 
 import org.testcontainers.utility.DockerImageName;
 
