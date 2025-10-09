@@ -1,9 +1,8 @@
-package org.testcontainers.junit;
+package org.testcontainers.nginx;
 
 import lombok.Cleanup;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.NginxContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
@@ -19,7 +18,7 @@ import java.net.URLConnection;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class SimpleNginxTest {
+class NginxContainerTest {
 
     private static final DockerImageName NGINX_IMAGE = DockerImageName.parse("nginx:1.27.0-alpine3.19-slim");
 
