@@ -1,12 +1,12 @@
-package org.testcontainers.containers;
+package org.testcontainers.db2;
 
 import com.github.dockerjava.api.model.Capability;
-import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.containers.JdbcDatabaseContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.LicenseAcceptance;
 
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.Set;
 
 /**
@@ -18,23 +18,12 @@ import java.util.Set;
  * <ul>
  *     <li>Database: 50000</li>
  * </ul>
- * @deprecated use {@link org.testcontainers.db2.Db2Container} instead.
  */
-@Deprecated
 public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
 
     public static final String NAME = "db2";
 
-    @Deprecated
-    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("ibmcom/db2");
-
     private static final DockerImageName DEFAULT_NEW_IMAGE_NAME = DockerImageName.parse("icr.io/db2_community/db2");
-
-    @Deprecated
-    public static final String DEFAULT_DB2_IMAGE_NAME = DEFAULT_IMAGE_NAME.getUnversionedPart();
-
-    @Deprecated
-    public static final String DEFAULT_TAG = "11.5.0.0a";
 
     public static final int DB2_PORT = 50000;
 
@@ -50,13 +39,10 @@ public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
 
     public Db2Container(final DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_NEW_IMAGE_NAME, DEFAULT_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DEFAULT_NEW_IMAGE_NAME);
 
         withCreateContainerCmdModifier(cmd -> cmd.withCapAdd(Capability.IPC_LOCK).withCapAdd(Capability.IPC_OWNER));
-        this.waitStrategy =
-            new LogMessageWaitStrategy()
-                .withRegEx(".*Setup has completed\\..*")
-                .withStartupTimeout(Duration.of(10, ChronoUnit.MINUTES));
+        waitingFor(Wait.forLogMessage(".*Setup has completed\\..*", 1).withStartupTimeout(Duration.ofMinutes(10)));
 
         addExposedPort(DB2_PORT);
     }

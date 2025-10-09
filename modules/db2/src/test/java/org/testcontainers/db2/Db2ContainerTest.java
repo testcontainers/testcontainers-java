@@ -1,8 +1,7 @@
-package org.testcontainers.junit.db2;
+package org.testcontainers.db2;
 
 import org.junit.jupiter.api.Test;
 import org.testcontainers.Db2TestImages;
-import org.testcontainers.containers.Db2Container;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
 import java.sql.ResultSet;
@@ -10,12 +9,12 @@ import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class SimpleDb2Test extends AbstractContainerDatabaseTest {
+class Db2ContainerTest extends AbstractContainerDatabaseTest {
 
     @Test
     void testSimple() throws SQLException {
         try ( // container {
-            Db2Container db2 = new Db2Container("ibmcom/db2:11.5.0.0a").acceptLicense()
+            Db2Container db2 = new Db2Container("icr.io/db2_community/db2:11.5.8.0").acceptLicense()
             // }
         ) {
             db2.start();
