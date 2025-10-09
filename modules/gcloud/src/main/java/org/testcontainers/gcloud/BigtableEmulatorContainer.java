@@ -1,5 +1,6 @@
-package org.testcontainers.containers;
+package org.testcontainers.gcloud;
 
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
@@ -9,10 +10,7 @@ import org.testcontainers.utility.DockerImageName;
  * Supported images: {@code gcr.io/google.com/cloudsdktool/google-cloud-cli}, {@code gcr.io/google.com/cloudsdktool/cloud-sdk}
  * <p>
  * Default port is 9000.
- *
- * @deprecated use {@link org.testcontainers.gcloud.BigtableEmulatorContainer} instead.
  */
-@Deprecated
 public class BigtableEmulatorContainer extends GenericContainer<BigtableEmulatorContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse(

@@ -1,19 +1,17 @@
-package org.testcontainers.containers;
+package org.testcontainers.gcloud;
 
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 /**
- * A Firestore container that relies in google cloud sdk.
+ * A Datastore container that relies in google cloud sdk.
  * <p>
  * Supported images: {@code gcr.io/google.com/cloudsdktool/google-cloud-cli}, {@code gcr.io/google.com/cloudsdktool/cloud-sdk}
  * <p>
- * Default port is 8080.
- *
- * @deprecated use {@link org.testcontainers.gcloud.FirestoreEmulatorContainer} instead.
+ * Default port is 8081.
  */
-@Deprecated
-public class FirestoreEmulatorContainer extends GenericContainer<FirestoreEmulatorContainer> {
+public class DatastoreEmulatorContainer extends GenericContainer<DatastoreEmulatorContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse(
         "gcr.io/google.com/cloudsdktool/google-cloud-cli"
@@ -23,22 +21,27 @@ public class FirestoreEmulatorContainer extends GenericContainer<FirestoreEmulat
         "gcr.io/google.com/cloudsdktool/cloud-sdk"
     );
 
-    private static final String CMD = "gcloud beta emulators firestore start --host-port 0.0.0.0:8080";
+    private static final String PROJECT_ID = "test-project";
 
-    private static final int PORT = 8080;
+    private static final String CMD = String.format(
+        "gcloud beta emulators datastore start --project %s --host-port 0.0.0.0:8081",
+        PROJECT_ID
+    );
+
+    private static final int HTTP_PORT = 8081;
 
     private String flags;
 
-    public FirestoreEmulatorContainer(String image) {
+    public DatastoreEmulatorContainer(final String image) {
         this(DockerImageName.parse(image));
     }
 
-    public FirestoreEmulatorContainer(final DockerImageName dockerImageName) {
+    public DatastoreEmulatorContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, CLOUD_SDK_IMAGE_NAME);
 
-        withExposedPorts(PORT);
-        setWaitStrategy(Wait.forLogMessage(".*running.*$", 1));
+        withExposedPorts(HTTP_PORT);
+        setWaitStrategy(Wait.forHttp("/").forStatusCode(200));
     }
 
     @Override
@@ -50,7 +53,7 @@ public class FirestoreEmulatorContainer extends GenericContainer<FirestoreEmulat
         withCommand("/bin/sh", "-c", command);
     }
 
-    public FirestoreEmulatorContainer withFlags(String flags) {
+    public DatastoreEmulatorContainer withFlags(String flags) {
         this.flags = flags;
         return this;
     }
@@ -61,6 +64,10 @@ public class FirestoreEmulatorContainer extends GenericContainer<FirestoreEmulat
      * com.google.cloud.ServiceOptions.Builder#setHost(java.lang.String) method.
      */
     public String getEmulatorEndpoint() {
-        return getHost() + ":" + getMappedPort(8080);
+        return getHost() + ":" + getMappedPort(HTTP_PORT);
+    }
+
+    public String getProjectId() {
+        return PROJECT_ID;
     }
 }

@@ -1,4 +1,4 @@
-package org.testcontainers.containers;
+package org.testcontainers.gcloud;
 
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.Database;

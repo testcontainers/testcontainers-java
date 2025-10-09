@@ -1,19 +1,17 @@
-package org.testcontainers.containers;
+package org.testcontainers.gcloud;
 
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 /**
- * A Bigtable container that relies in google cloud sdk.
+ * A Firestore container that relies in google cloud sdk.
  * <p>
  * Supported images: {@code gcr.io/google.com/cloudsdktool/google-cloud-cli}, {@code gcr.io/google.com/cloudsdktool/cloud-sdk}
  * <p>
- * Default port is 9000.
- *
- * @deprecated use {@link org.testcontainers.gcloud.BigtableEmulatorContainer} instead.
+ * Default port is 8080.
  */
-@Deprecated
-public class BigtableEmulatorContainer extends GenericContainer<BigtableEmulatorContainer> {
+public class FirestoreEmulatorContainer extends GenericContainer<FirestoreEmulatorContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse(
         "gcr.io/google.com/cloudsdktool/google-cloud-cli"
@@ -23,21 +21,36 @@ public class BigtableEmulatorContainer extends GenericContainer<BigtableEmulator
         "gcr.io/google.com/cloudsdktool/cloud-sdk"
     );
 
-    private static final String CMD = "gcloud beta emulators bigtable start --host-port 0.0.0.0:9000";
+    private static final String CMD = "gcloud beta emulators firestore start --host-port 0.0.0.0:8080";
 
-    private static final int PORT = 9000;
+    private static final int PORT = 8080;
 
-    public BigtableEmulatorContainer(String image) {
+    private String flags;
+
+    public FirestoreEmulatorContainer(String image) {
         this(DockerImageName.parse(image));
     }
 
-    public BigtableEmulatorContainer(final DockerImageName dockerImageName) {
+    public FirestoreEmulatorContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, CLOUD_SDK_IMAGE_NAME);
 
         withExposedPorts(PORT);
         setWaitStrategy(Wait.forLogMessage(".*running.*$", 1));
-        withCommand("/bin/sh", "-c", CMD);
+    }
+
+    @Override
+    protected void configure() {
+        String command = CMD;
+        if (this.flags != null && !this.flags.isEmpty()) {
+            command += " " + this.flags;
+        }
+        withCommand("/bin/sh", "-c", command);
+    }
+
+    public FirestoreEmulatorContainer withFlags(String flags) {
+        this.flags = flags;
+        return this;
     }
 
     /**
@@ -46,10 +59,6 @@ public class BigtableEmulatorContainer extends GenericContainer<BigtableEmulator
      * com.google.cloud.ServiceOptions.Builder#setHost(java.lang.String) method.
      */
     public String getEmulatorEndpoint() {
-        return getHost() + ":" + getEmulatorPort();
-    }
-
-    public int getEmulatorPort() {
-        return getMappedPort(PORT);
+        return getHost() + ":" + getMappedPort(8080);
     }
 }
