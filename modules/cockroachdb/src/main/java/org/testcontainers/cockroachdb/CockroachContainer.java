@@ -1,5 +1,6 @@
-package org.testcontainers.containers;
+package org.testcontainers.cockroachdb;
 
+import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.utility.ComparableVersion;
@@ -17,23 +18,12 @@ import java.time.Duration;
  *     <li>Database: 26257</li>
  *     <li>Console: 8080</li>
  * </ul>
- *
- * @deprecated use {@link org.testcontainers.cockroachdb.CockroachContainer} instead
  */
-@Deprecated
 public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("cockroachdb/cockroach");
 
-    private static final String DEFAULT_TAG = "v19.2.11";
-
     public static final String NAME = "cockroach";
-
-    @Deprecated
-    public static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
-
-    @Deprecated
-    public static final String IMAGE_TAG = DEFAULT_TAG;
 
     private static final String JDBC_DRIVER_CLASS_NAME = "org.postgresql.Driver";
 
