@@ -90,6 +90,14 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
      * @deprecated use {@link #LocalStackContainer(DockerImageName)} instead
      */
     @Deprecated
+    public LocalStackContainer() {
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
+    }
+
+    /**
+     * @deprecated use {@link #LocalStackContainer(DockerImageName)} instead
+     */
+    @Deprecated
     public LocalStackContainer(String version) {
         this(DEFAULT_IMAGE_NAME.withTag(version));
     }

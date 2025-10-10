@@ -36,6 +36,8 @@ public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("orientdb");
 
+    private static final String DEFAULT_TAG = "3.0.24-tp3";
+
     private static final String DEFAULT_USERNAME = "admin";
 
     private static final String DEFAULT_PASSWORD = "admin";
@@ -57,6 +59,14 @@ public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
     private OrientDB orientDB;
 
     private ODatabaseSession session;
+
+    /**
+     * @deprecated use {@link #OrientDBContainer(DockerImageName)} instead
+     */
+    @Deprecated
+    public OrientDBContainer() {
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
+    }
 
     public OrientDBContainer(@NonNull String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));

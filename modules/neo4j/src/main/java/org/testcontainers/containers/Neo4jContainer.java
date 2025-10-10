@@ -87,6 +87,15 @@ public class Neo4jContainer extends GenericContainer<Neo4jContainer> {
         .forStatusCodeMatching(response -> response == HttpURLConnection.HTTP_OK);
 
     /**
+     * Creates a Neo4jContainer using the official Neo4j docker image.
+     * @deprecated use {@link #Neo4jContainer(DockerImageName)} instead
+     */
+    @Deprecated
+    public Neo4jContainer() {
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
+    }
+
+    /**
      * Creates a Neo4jContainer using a specific docker image.
      *
      * @param dockerImageName The docker image to use.
