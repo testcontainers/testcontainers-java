@@ -8,5 +8,5 @@ public final class InfluxDBTestUtils {
 
     static final DockerImageName INFLUXDB_V2_TEST_IMAGE = DockerImageName.parse("influxdb:2.0.7");
 
-    public static final DockerImageName INFLUXDB_V3_TEST_IMAGE = DockerImageName.parse("influxdb:3-core");
+    public static final DockerImageName INFLUXDB_V3_TEST_IMAGE = DockerImageName.parse("influxdb:3.5.0-core");
 }

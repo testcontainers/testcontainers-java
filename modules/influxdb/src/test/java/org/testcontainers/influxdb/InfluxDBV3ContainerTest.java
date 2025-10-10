@@ -2,7 +2,7 @@ package org.testcontainers.influxdb;
 
 import com.influxdb.v3.client.InfluxDBClient;
 import com.influxdb.v3.client.Point;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.InfluxDBTestUtils;
 
 import java.math.BigInteger;
@@ -22,7 +22,7 @@ public class InfluxDBV3ContainerTest {
             container.start();
             try (final InfluxDBClient client = InfluxDBClient.getInstance(container.getUrl(), container.getToken().toCharArray(), "test")) {
                 assertThat(client).isNotNull();
-                assertThat(client.getServerVersion()).isEqualTo("3.3.0");
+                assertThat(client.getServerVersion()).isEqualTo("3.5.0");
             } catch (Exception e) {
                 fail("Cannot get instance of influxdb v3", e);
             }
@@ -35,7 +35,7 @@ public class InfluxDBV3ContainerTest {
             container.start();
             try (final InfluxDBClient client = InfluxDBClient.getInstance(container.getUrl(), null, "test")) {
                 assertThat(client).isNotNull();
-                assertThat(client.getServerVersion()).isEqualTo("3.3.0");
+                assertThat(client.getServerVersion()).isEqualTo("3.5.0");
             } catch (Exception e) {
                 fail("Cannot get instance of influxdb v3", e);
             }
