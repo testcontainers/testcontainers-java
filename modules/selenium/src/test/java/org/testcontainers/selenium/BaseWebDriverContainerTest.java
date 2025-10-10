@@ -1,10 +1,9 @@
-package org.testcontainers.junit;
+package org.testcontainers.selenium;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.RemoteWebDriver;
-import org.testcontainers.containers.BrowserWebDriverContainer;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
@@ -30,7 +29,7 @@ public class BaseWebDriverContainerTest {
         HELLO_WORLD.start();
     }
 
-    protected static void doSimpleExplore(BrowserWebDriverContainer<?> rule, Capabilities capabilities) {
+    protected static void doSimpleExplore(BrowserWebDriverContainer rule, Capabilities capabilities) {
         RemoteWebDriver driver = new RemoteWebDriver(rule.getSeleniumAddress(), capabilities);
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(30));
         System.out.println("Selenium remote URL is: " + rule.getSeleniumAddress());
@@ -46,11 +45,11 @@ public class BaseWebDriverContainerTest {
     }
 
     protected void assertBrowserNameIs(
-        BrowserWebDriverContainer<?> rule,
+        BrowserWebDriverContainer container,
         String expectedName,
         Capabilities capabilities
     ) {
-        RemoteWebDriver driver = new RemoteWebDriver(rule.getSeleniumAddress(), capabilities);
+        RemoteWebDriver driver = new RemoteWebDriver(container.getSeleniumAddress(), capabilities);
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(30));
         String actual = driver.getCapabilities().getBrowserName();
         assertThat(actual).as(String.format("actual browser name is %s", actual)).isEqualTo(expectedName);

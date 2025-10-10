@@ -1,15 +1,13 @@
-package org.testcontainers.junit;
+package org.testcontainers.selenium;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.edge.EdgeOptions;
-import org.testcontainers.containers.BrowserWebDriverContainer;
 
 class EdgeWebDriverContainerTest extends BaseWebDriverContainerTest {
 
     // junitRule {
-    public BrowserWebDriverContainer<?> edge = new BrowserWebDriverContainer<>()
-        .withCapabilities(new EdgeOptions())
+    public BrowserWebDriverContainer edge = new BrowserWebDriverContainer("selenium/standalone-edge:4.13.0")
         // }
         .withNetwork(NETWORK);
 

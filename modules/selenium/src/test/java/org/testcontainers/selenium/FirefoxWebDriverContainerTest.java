@@ -1,15 +1,13 @@
-package org.testcontainers.junit;
+package org.testcontainers.selenium;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.firefox.FirefoxOptions;
-import org.testcontainers.containers.BrowserWebDriverContainer;
 
 class FirefoxWebDriverContainerTest extends BaseWebDriverContainerTest {
 
     // junitRule {
-    public BrowserWebDriverContainer<?> firefox = new BrowserWebDriverContainer<>()
-        .withCapabilities(new FirefoxOptions())
+    public BrowserWebDriverContainer firefox = new BrowserWebDriverContainer("selenium/standalone-firefox:4.13.0")
         // }
         .withNetwork(NETWORK);
 

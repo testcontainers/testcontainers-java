@@ -1,12 +1,9 @@
-package org.testcontainers.junit;
+package org.testcontainers.selenium;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.junit.jupiter.api.Test;
-import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.firefox.FirefoxOptions;
-import org.testcontainers.containers.BrowserWebDriverContainer;
 
 import java.util.Collections;
 import java.util.List;
@@ -24,8 +21,9 @@ class BrowserWebDriverContainerTest {
     @Test
     void honorPresetNoProxyEnvironment() {
         try (
-            BrowserWebDriverContainer chromeWithNoProxySet = (BrowserWebDriverContainer) new BrowserWebDriverContainer()
-                .withCapabilities(new ChromeOptions())
+            BrowserWebDriverContainer chromeWithNoProxySet = new BrowserWebDriverContainer(
+                "selenium/standalone-chrome:4.13.0"
+            )
                 .withEnv(NO_PROXY_KEY, NO_PROXY_VALUE)
         ) {
             chromeWithNoProxySet.start();
@@ -38,8 +36,9 @@ class BrowserWebDriverContainerTest {
     @Test
     void provideDefaultNoProxyEnvironmentIfNotSet() {
         try (
-            BrowserWebDriverContainer chromeWithoutNoProxySet = new BrowserWebDriverContainer()
-                .withCapabilities(new ChromeOptions())
+            BrowserWebDriverContainer chromeWithoutNoProxySet = new BrowserWebDriverContainer(
+                "selenium/standalone-chrome:4.13.0"
+            )
         ) {
             chromeWithoutNoProxySet.start();
 
@@ -52,8 +51,9 @@ class BrowserWebDriverContainerTest {
     void createContainerWithShmVolume() {
         assumeThat(SystemUtils.IS_OS_WINDOWS).isTrue();
         try (
-            BrowserWebDriverContainer webDriverContainer = new BrowserWebDriverContainer()
-                .withCapabilities(new FirefoxOptions())
+            BrowserWebDriverContainer webDriverContainer = new BrowserWebDriverContainer(
+                "selenium/standalone-firefox:4.13.0"
+            )
         ) {
             webDriverContainer.start();
 
@@ -68,9 +68,10 @@ class BrowserWebDriverContainerTest {
     @Test
     void createContainerWithoutShmVolume() {
         try (
-            BrowserWebDriverContainer webDriverContainer = new BrowserWebDriverContainer<>()
+            BrowserWebDriverContainer webDriverContainer = new BrowserWebDriverContainer(
+                "selenium/standalone-firefox:4.13.0"
+            )
                 .withSharedMemorySize(512 * FileUtils.ONE_MB)
-                .withCapabilities(new FirefoxOptions())
         ) {
             webDriverContainer.start();
 
