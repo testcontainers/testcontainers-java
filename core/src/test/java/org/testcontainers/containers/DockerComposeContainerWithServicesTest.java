@@ -3,6 +3,7 @@ package org.testcontainers.containers;
 import org.junit.jupiter.api.Test;
 import org.rnorth.ducttape.TimeoutException;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
 import java.time.Duration;
@@ -30,7 +31,11 @@ class DockerComposeContainerWithServicesTest {
     @Test
     void testDesiredSubsetOfServicesAreStarted() {
         try (
-            DockerComposeContainer<?> compose = new DockerComposeContainer<>(SIMPLE_COMPOSE_FILE).withServices("redis")
+            DockerComposeContainer<?> compose = new DockerComposeContainer<>(
+                DockerImageName.parse("docker/compose:debian-1.29.2"),
+                SIMPLE_COMPOSE_FILE
+            )
+                .withServices("redis")
         ) {
             compose.start();
 
@@ -41,7 +46,10 @@ class DockerComposeContainerWithServicesTest {
     @Test
     void testDesiredSubsetOfScaledServicesAreStarted() {
         try (
-            DockerComposeContainer<?> compose = new DockerComposeContainer<>(SIMPLE_COMPOSE_FILE)
+            DockerComposeContainer<?> compose = new DockerComposeContainer<>(
+                DockerImageName.parse("docker/compose:debian-1.29.2"),
+                SIMPLE_COMPOSE_FILE
+            )
                 .withScaledService("redis", 2)
         ) {
             compose.start();
@@ -53,7 +61,10 @@ class DockerComposeContainerWithServicesTest {
     @Test
     void testDesiredSubsetOfSpecifiedAndScaledServicesAreStarted() {
         try (
-            DockerComposeContainer<?> compose = new DockerComposeContainer<>(SIMPLE_COMPOSE_FILE)
+            DockerComposeContainer<?> compose = new DockerComposeContainer<>(
+                DockerImageName.parse("docker/compose:debian-1.29.2"),
+                SIMPLE_COMPOSE_FILE
+            )
                 .withServices("redis")
                 .withScaledService("redis", 2)
         ) {
@@ -66,7 +77,10 @@ class DockerComposeContainerWithServicesTest {
     @Test
     void testDesiredSubsetOfSpecifiedOrScaledServicesAreStarted() {
         try (
-            DockerComposeContainer<?> compose = new DockerComposeContainer<>(SIMPLE_COMPOSE_FILE)
+            DockerComposeContainer<?> compose = new DockerComposeContainer<>(
+                DockerImageName.parse("docker/compose:debian-1.29.2"),
+                SIMPLE_COMPOSE_FILE
+            )
                 .withServices("other")
                 .withScaledService("redis", 2)
         ) {
@@ -78,7 +92,12 @@ class DockerComposeContainerWithServicesTest {
 
     @Test
     void testAllServicesAreStartedIfNotSpecified() {
-        try (DockerComposeContainer<?> compose = new DockerComposeContainer<>(SIMPLE_COMPOSE_FILE)) {
+        try (
+            DockerComposeContainer<?> compose = new DockerComposeContainer<>(
+                DockerImageName.parse("docker/compose:debian-1.29.2"),
+                SIMPLE_COMPOSE_FILE
+            )
+        ) {
             compose.start();
 
             verifyStartedContainers(compose, "redis_1", "other_1");
@@ -87,7 +106,12 @@ class DockerComposeContainerWithServicesTest {
 
     @Test
     void testScaleInComposeFileIsRespected() {
-        try (DockerComposeContainer<?> compose = new DockerComposeContainer<>(COMPOSE_FILE_WITH_INLINE_SCALE)) {
+        try (
+            DockerComposeContainer<?> compose = new DockerComposeContainer<>(
+                DockerImageName.parse("docker/compose:debian-1.29.2"),
+                COMPOSE_FILE_WITH_INLINE_SCALE
+            )
+        ) {
             compose.start();
 
             // the compose file includes `scale: 3` for the redis container
@@ -100,7 +124,10 @@ class DockerComposeContainerWithServicesTest {
         assertThat(
             catchThrowable(() -> {
                 try (
-                    DockerComposeContainer<?> compose = new DockerComposeContainer<>(SIMPLE_COMPOSE_FILE)
+                    DockerComposeContainer<?> compose = new DockerComposeContainer<>(
+                        DockerImageName.parse("docker/compose:debian-1.29.2"),
+                        SIMPLE_COMPOSE_FILE
+                    )
                         .withServices("redis")
                         .withStartupTimeout(Duration.ofMillis(1))
                         .withExposedService(
@@ -120,7 +147,10 @@ class DockerComposeContainerWithServicesTest {
     @Test
     void testWaitingForHealthcheck() {
         try (
-            DockerComposeContainer<?> compose = new DockerComposeContainer<>(COMPOSE_FILE_WITH_HEALTHCHECK)
+            DockerComposeContainer<?> compose = new DockerComposeContainer<>(
+                DockerImageName.parse("docker/compose:debian-1.29.2"),
+                COMPOSE_FILE_WITH_HEALTHCHECK
+            )
                 .waitingFor("redis", Wait.forHealthcheck().withStartupTimeout(Duration.ofMinutes(2)))
         ) {
             compose.start();
@@ -132,7 +162,10 @@ class DockerComposeContainerWithServicesTest {
     @Test
     void testWaitingForHealthcheckWithRestartDoesNotCrash() {
         try (
-            DockerComposeContainer<?> compose = new DockerComposeContainer<>(COMPOSE_FILE_WITH_HEALTHCHECK)
+            DockerComposeContainer<?> compose = new DockerComposeContainer<>(
+                DockerImageName.parse("docker/compose:debian-1.29.2"),
+                COMPOSE_FILE_WITH_HEALTHCHECK
+            )
                 .waitingFor("redis", Wait.forHealthcheck().withStartupTimeout(Duration.ofMinutes(1)))
         ) {
             compose.start();

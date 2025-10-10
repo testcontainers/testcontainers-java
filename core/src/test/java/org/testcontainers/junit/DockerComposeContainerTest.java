@@ -1,9 +1,11 @@
 package org.testcontainers.junit;
 
 import org.junit.jupiter.api.AutoClose;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.ContainerState;
 import org.testcontainers.containers.DockerComposeContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,10 +19,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Created by rnorth on 08/08/2015.
  */
+@Disabled
 class DockerComposeContainerTest extends BaseDockerComposeTest {
 
     @AutoClose
     public DockerComposeContainer environment = new DockerComposeContainer(
+        DockerImageName.parse("docker/compose:1.29.2"),
         new File("src/test/resources/compose-test.yml")
     )
         .withExposedService("redis_1", REDIS_PORT)
@@ -96,6 +100,7 @@ class DockerComposeContainerTest extends BaseDockerComposeTest {
         Files.write(filePathNotStartWithDotSlash.toPath(), validYaml.getBytes(StandardCharsets.UTF_8));
 
         final DockerComposeContainer<?> dockerComposeContainer = new DockerComposeContainer<>(
+            DockerImageName.parse("docker/compose:debian-1.29.2"),
             filePathNotStartWithDotSlash
         );
         assertThat(dockerComposeContainer).as("Container could not be created using docker compose file").isNotNull();

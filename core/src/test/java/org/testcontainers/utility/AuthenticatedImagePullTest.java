@@ -130,7 +130,12 @@ public class AuthenticatedImagePullTest {
         Files.write(tempFile, composeFileContent.getBytes());
 
         // Start the docker compose project, which will require an authenticated pull
-        try (final DockerComposeContainer<?> compose = new DockerComposeContainer<>(tempFile.toFile())) {
+        try (
+            final DockerComposeContainer<?> compose = new DockerComposeContainer<>(
+                DockerImageName.parse("docker/compose:1.29.2"),
+                tempFile.toFile()
+            )
+        ) {
             compose.start();
 
             assertThat(

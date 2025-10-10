@@ -4,6 +4,7 @@ import org.assertj.core.api.Assumptions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.testcontainers.utility.CommandLine;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
 
@@ -15,14 +16,13 @@ class DockerComposeProfilesOptionTest {
         return new Boolean[] { Boolean.TRUE, Boolean.FALSE };
     }
 
-    public boolean localMode;
-
     public static final File COMPOSE_FILE = new File("src/test/resources/compose-profile-option/compose-test.yml");
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("local")
-    void testProfileOption() {
-        if (this.localMode) {
+    void testProfileOption(boolean localMode) {
+        DockerComposeContainer<?> compose;
+        if (localMode) {
             Assumptions
                 .assumeThat(CommandLine.executableExists(DockerComposeContainer.COMPOSE_EXECUTABLE))
                 .as("docker-compose executable exists")
@@ -30,14 +30,16 @@ class DockerComposeProfilesOptionTest {
             Assumptions
                 .assumeThat(CommandLine.runShellCommand("docker-compose", "--version"))
                 .doesNotStartWith("Docker Compose version v2");
+
+            compose = new DockerComposeContainer<>(COMPOSE_FILE).withOptions("--profile=cache");
+        } else {
+            compose =
+                new DockerComposeContainer<>(DockerImageName.parse("docker/compose:debian-1.29.2"), COMPOSE_FILE)
+                    .withOptions("--profile=cache");
         }
-        try (
-            DockerComposeContainer<?> compose = new DockerComposeContainer<>(COMPOSE_FILE)
-                .withOptions("--profile=cache")
-                .withLocalCompose(this.localMode)
-        ) {
-            compose.start();
-            assertThat(compose.listChildContainers()).hasSize(1);
-        }
+
+        compose.start();
+        assertThat(compose.listChildContainers()).hasSize(1);
+        compose.stop();
     }
 }

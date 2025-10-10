@@ -4,6 +4,7 @@ import io.restassured.RestAssured;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.ComposeContainer;
 import org.testcontainers.containers.ContainerLaunchException;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,6 +18,7 @@ class ComposeContainerWithCopyFilesTest {
     void testShouldCopyAllFilesByDefault() throws IOException {
         try (
             ComposeContainer environment = new ComposeContainer(
+                DockerImageName.parse("docker:24.0.2"),
                 new File("src/test/resources/compose-file-copy-inclusions/compose.yml")
             )
                 .withExposedService("app", 8080)
@@ -32,6 +34,7 @@ class ComposeContainerWithCopyFilesTest {
     void testWithFileCopyInclusionUsingFilePath() throws IOException {
         try (
             ComposeContainer environment = new ComposeContainer(
+                DockerImageName.parse("docker:24.0.2"),
                 new File("src/test/resources/compose-file-copy-inclusions/compose-root-only.yml")
             )
                 .withExposedService("app", 8080)
@@ -51,6 +54,7 @@ class ComposeContainerWithCopyFilesTest {
         try (
             // composeContainerWithCopyFiles {
             ComposeContainer environment = new ComposeContainer(
+                DockerImageName.parse("docker:24.0.2"),
                 new File("src/test/resources/compose-file-copy-inclusions/compose-test-only.yml")
             )
                 .withExposedService("app", 8080)
@@ -69,6 +73,7 @@ class ComposeContainerWithCopyFilesTest {
     void testShouldNotBeAbleToStartIfNeededEnvFileIsNotCopied() {
         try (
             ComposeContainer environment = new ComposeContainer(
+                DockerImageName.parse("docker:24.0.2"),
                 new File("src/test/resources/compose-file-copy-inclusions/compose-test-only.yml")
             )
                 .withExposedService("app", 8080)
