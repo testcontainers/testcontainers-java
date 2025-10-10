@@ -7,7 +7,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.DockerComposeContainer;
-import org.testcontainers.utility.CommandLine;
 import org.testcontainers.utility.TestEnvironment;
 import redis.clients.jedis.Jedis;
 
@@ -32,8 +31,6 @@ public abstract class BaseDockerComposeTest {
     @BeforeAll
     public static void checkVersion() {
         assumeThat(TestEnvironment.dockerApiAtLeast("1.22")).isTrue();
-        assumeThat(CommandLine.runShellCommand("docker-compose", "--version"))
-            .doesNotStartWith("Docker Compose version v2");
     }
 
     @Test

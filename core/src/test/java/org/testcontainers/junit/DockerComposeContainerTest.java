@@ -4,6 +4,7 @@ import org.junit.jupiter.api.AutoClose;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.ContainerState;
 import org.testcontainers.containers.DockerComposeContainer;
+import org.testcontainers.utility.CommandLine;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
@@ -14,6 +15,7 @@ import java.util.Collections;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assumptions.assumeThat;
 
 /**
  * Created by rnorth on 08/08/2015.
@@ -29,6 +31,8 @@ class DockerComposeContainerTest extends BaseDockerComposeTest {
         .withExposedService("db_1", 3306);
 
     DockerComposeContainerTest() {
+        assumeThat(CommandLine.runShellCommand("docker-compose", "--version"))
+            .doesNotStartWith("Docker Compose version v2");
         environment.start();
     }
 
