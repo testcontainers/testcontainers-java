@@ -39,7 +39,7 @@ class DockerComposeContainerWithBuildTest {
         final AtomicReference<String> pulledImageName = new AtomicReference<>("");
         try (
             DockerComposeContainer environment = new DockerComposeContainer<>(
-                DockerImageName.parse("docker:24.0.2"),
+                DockerImageName.parse("docker/compose:1.29.2"),
                 composeFile
             )
                 .withExposedService("customredis", 6379)

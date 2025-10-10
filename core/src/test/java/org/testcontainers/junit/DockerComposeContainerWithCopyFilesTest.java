@@ -16,7 +16,7 @@ class DockerComposeContainerWithCopyFilesTest {
     void testShouldCopyAllFilesByDefault() throws IOException {
         try (
             DockerComposeContainer environment = new DockerComposeContainer(
-                DockerImageName.parse("docker:24.0.2"),
+                DockerImageName.parse("docker/compose:1.29.2"),
                 new File("src/test/resources/compose-file-copy-inclusions/compose.yml")
             )
                 .withExposedService("app", 8080)
@@ -32,7 +32,7 @@ class DockerComposeContainerWithCopyFilesTest {
     void testWithFileCopyInclusionUsingFilePath() throws IOException {
         try (
             DockerComposeContainer environment = new DockerComposeContainer(
-                DockerImageName.parse("docker:24.0.2"),
+                DockerImageName.parse("docker/compose:1.29.2"),
                 new File("src/test/resources/compose-file-copy-inclusions/compose-root-only.yml")
             )
                 .withExposedService("app", 8080)
@@ -51,7 +51,7 @@ class DockerComposeContainerWithCopyFilesTest {
     void testWithFileCopyInclusionUsingDirectoryPath() throws IOException {
         try (
             DockerComposeContainer environment = new DockerComposeContainer(
-                DockerImageName.parse("docker:24.0.2"),
+                DockerImageName.parse("docker/compose:1.29.2"),
                 new File("src/test/resources/compose-file-copy-inclusions/compose-test-only.yml")
             )
                 .withExposedService("app", 8080)

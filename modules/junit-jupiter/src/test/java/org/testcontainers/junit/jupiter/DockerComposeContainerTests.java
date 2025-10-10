@@ -18,7 +18,7 @@ class DockerComposeContainerTests {
 
     @Container
     private DockerComposeContainer composeContainer = new DockerComposeContainer(
-        DockerImageName.parse("docker:24.0.2"),
+        DockerImageName.parse("docker/compose:1.29.2"),
         new File("src/test/resources/docker-compose.yml")
     )
         .withExposedService("whoami_1", 80, Wait.forHttp("/"));

@@ -132,7 +132,7 @@ public class AuthenticatedImagePullTest {
         // Start the docker compose project, which will require an authenticated pull
         try (
             final DockerComposeContainer<?> compose = new DockerComposeContainer<>(
-                DockerImageName.parse("docker:24.0.2"),
+                DockerImageName.parse("docker/compose:1.29.2"),
                 tempFile.toFile()
             )
         ) {

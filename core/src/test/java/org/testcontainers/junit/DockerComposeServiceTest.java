@@ -16,7 +16,7 @@ class DockerComposeServiceTest extends BaseDockerComposeTest {
 
     @AutoClose
     public DockerComposeContainer environment = new DockerComposeContainer(
-        DockerImageName.parse("docker:24.0.2"),
+        DockerImageName.parse("docker/compose:1.29.2"),
         new File("src/test/resources/compose-test.yml")
     )
         .withServices("redis")

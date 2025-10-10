@@ -26,7 +26,7 @@ class DockerComposeWaitStrategyTest {
     public final void setUp() {
         environment =
             new DockerComposeContainer<>(
-                DockerImageName.parse("docker:24.0.2"),
+                DockerImageName.parse("docker/compose:1.29.2"),
                 new File("src/test/resources/compose-test.yml")
             );
     }

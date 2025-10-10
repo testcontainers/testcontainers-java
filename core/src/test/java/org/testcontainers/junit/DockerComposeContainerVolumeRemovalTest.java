@@ -29,7 +29,7 @@ class DockerComposeContainerVolumeRemovalTest {
         final AtomicReference<String> volumeName = new AtomicReference<>("");
         try (
             DockerComposeContainer environment = new DockerComposeContainer<>(
-                DockerImageName.parse("docker:24.0.2"),
+                DockerImageName.parse("docker/compose:1.29.2"),
                 composeFile
             )
                 .withExposedService("redis", 6379)

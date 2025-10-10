@@ -30,7 +30,7 @@ class DockerComposeContainerScalingTest {
 
     @AutoClose
     public DockerComposeContainer environment = new DockerComposeContainer(
-        DockerImageName.parse("docker:24.0.2"),
+        DockerImageName.parse("docker/compose:1.29.2"),
         new File("src/test/resources/scaled-compose-test.yml")
     )
         .withScaledService("redis", 3)

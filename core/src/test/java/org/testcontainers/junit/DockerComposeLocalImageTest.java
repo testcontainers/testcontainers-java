@@ -16,7 +16,7 @@ class DockerComposeLocalImageTest {
         tagImage("redis:6-alpine", "redis-local", "latest");
 
         DockerComposeContainer composeContainer = new DockerComposeContainer(
-            DockerImageName.parse("docker:24.0.2"),
+            DockerImageName.parse("docker/compose:1.29.2"),
             new File("src/test/resources/local-compose-test.yml")
         )
             .withExposedService("redis", 6379);
