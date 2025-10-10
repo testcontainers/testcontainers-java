@@ -104,12 +104,12 @@ If you need the Neo4j enterprise license, you can declare your Neo4j container l
 [Enterprise edition](../../../modules/neo4j/src/test/java/org/testcontainers/containers/Neo4jContainerTest.java) inside_block:enterpriseEdition
 <!--/codeinclude-->
 
-This creates a Testcontainers based on the Docker image build with the Enterprise version of Neo4j 4.4. 
-The call to `withEnterpriseEdition` adds the required environment variable that you accepted the terms and condition of the enterprise version.
-You accept those by adding a file named `container-license-acceptance.txt` to the root of your classpath containing the text `neo4j:4.4-enterprise` in one line.
+!!! warning
+    the `withEnterpriseEdition` method is deprecated because it was implicitly changing the image tag to be always version 4.4. 
 
-If you are planning to run a newer Neo4j 5.x enterprise edition image, you have to manually define the proper enterprise image (e.g. `neo4j:5-enterprise`)
-and set the environment variable `NEO4J_ACCEPT_LICENSE_AGREEMENT` by adding `.withEnv("NEO4J_ACCEPT_LICENSE_AGREEMENT", "yes")` to your container definition.
+This creates a Testcontainers container based on the Docker image build with the Enterprise version of the defined tag. 
+The call to `withEnterpriseImage` adds the required environment variable that you accepted the terms and condition of the enterprise version.
+You accept those by adding a file named `container-license-acceptance.txt` to the root of your classpath containing the text `neo4j:<tag>-enterprise` in one line.
 
 You'll find more information about licensing Neo4j here: [About Neo4j Licenses](https://neo4j.com/licensing/).
 
