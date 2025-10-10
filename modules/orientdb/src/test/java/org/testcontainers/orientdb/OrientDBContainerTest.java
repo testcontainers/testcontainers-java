@@ -1,6 +1,8 @@
-package org.testcontainers.containers;
+package org.testcontainers.orientdb;
 
 import com.orientechnologies.orient.core.db.ODatabaseSession;
+import com.orientechnologies.orient.core.db.OrientDB;
+import com.orientechnologies.orient.core.db.OrientDBConfig;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
@@ -12,26 +14,24 @@ class OrientDBContainerTest {
     private static final DockerImageName ORIENTDB_IMAGE = DockerImageName.parse("orientdb:3.2.0-tp3");
 
     @Test
-    void shouldReturnTheSameSession() {
+    void shouldInitializeWithCommands() {
         try ( // container {
             OrientDBContainer orientdb = new OrientDBContainer("orientdb:3.2.0-tp3")
             // }
         ) {
             orientdb.start();
 
-            final ODatabaseSession session = orientdb.getSession();
-            final ODatabaseSession session2 = orientdb.getSession();
-
-            assertThat(session).isSameAs(session2);
-        }
-    }
-
-    @Test
-    void shouldInitializeWithCommands() {
-        try (OrientDBContainer orientdb = new OrientDBContainer(ORIENTDB_IMAGE)) {
-            orientdb.start();
-
-            final ODatabaseSession session = orientdb.getSession();
+            OrientDB orientDB = new OrientDB(
+                orientdb.getServerUrl(),
+                orientdb.getServerUser(),
+                orientdb.getServerPassword(),
+                OrientDBConfig.defaultConfig()
+            );
+            ODatabaseSession session = orientDB.open(
+                orientdb.getDatabaseName(),
+                orientdb.getUsername(),
+                orientdb.getPassword()
+            );
 
             session.command("CREATE CLASS Person EXTENDS V");
             session.command("INSERT INTO Person set name='john'");
@@ -52,7 +52,17 @@ class OrientDBContainerTest {
         ) {
             orientdb.start();
 
-            final ODatabaseSession session = orientdb.getSession("admin", "admin");
+            OrientDB orientDB = new OrientDB(
+                orientdb.getServerUrl(),
+                orientdb.getServerUser(),
+                orientdb.getServerPassword(),
+                OrientDBConfig.defaultConfig()
+            );
+            ODatabaseSession session = orientDB.open(
+                orientdb.getDatabaseName(),
+                orientdb.getUsername(),
+                orientdb.getPassword()
+            );
 
             session.command("CREATE CLASS Person EXTENDS V");
             session.command("INSERT INTO Person set name='john'");
@@ -66,7 +76,7 @@ class OrientDBContainerTest {
     void shouldInitializeDatabaseFromScript() {
         try (
             OrientDBContainer orientdb = new OrientDBContainer(ORIENTDB_IMAGE)
-                .withScriptPath("initscript.osql")
+                .withScriptPath(MountableFile.forClasspathResource("initscript.osql"))
                 .withDatabaseName("persons")
         ) {
             orientdb.start();
@@ -74,7 +84,17 @@ class OrientDBContainerTest {
             assertThat(orientdb.getDbUrl())
                 .isEqualTo("remote:" + orientdb.getHost() + ":" + orientdb.getMappedPort(2424) + "/persons");
 
-            final ODatabaseSession session = orientdb.getSession();
+            OrientDB orientDB = new OrientDB(
+                orientdb.getServerUrl(),
+                orientdb.getServerUser(),
+                orientdb.getServerPassword(),
+                OrientDBConfig.defaultConfig()
+            );
+            ODatabaseSession session = orientDB.open(
+                orientdb.getDatabaseName(),
+                orientdb.getUsername(),
+                orientdb.getPassword()
+            );
 
             assertThat(session.query("SELECT FROM Person").stream()).hasSize(4);
         }

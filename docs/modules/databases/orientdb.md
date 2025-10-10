@@ -7,7 +7,7 @@ Testcontainers module for [OrientDB](https://hub.docker.com/_/orientdb/)
 You can start an OrientDB container instance from any Java application by using:
 
 <!--codeinclude-->
-[Container creation](../../../modules/orientdb/src/test/java/org/testcontainers/containers/OrientDBContainerTest.java) inside_block:container
+[Container creation](../../../modules/orientdb/src/test/java/org/testcontainers/orientdb/OrientDBContainerTest.java) inside_block:container
 <!--/codeinclude-->
 
 ## Adding this module to your project dependencies
