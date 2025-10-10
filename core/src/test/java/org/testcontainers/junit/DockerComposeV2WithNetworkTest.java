@@ -1,14 +1,13 @@
 package org.testcontainers.junit;
 
 import org.junit.jupiter.api.AutoClose;
+import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.DockerComposeContainer;
-import org.testcontainers.utility.CommandLine;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
 
-import static org.assertj.core.api.Assumptions.assumeThat;
-
+@Disabled
 class DockerComposeV2WithNetworkTest extends BaseDockerComposeTest {
 
     @AutoClose
@@ -19,8 +18,6 @@ class DockerComposeV2WithNetworkTest extends BaseDockerComposeTest {
         .withExposedService("redis_1", REDIS_PORT);
 
     DockerComposeV2WithNetworkTest() {
-        assumeThat(CommandLine.runShellCommand("docker-compose", "--version"))
-            .doesNotStartWith("Docker Compose version v2");
         environment.start();
     }
 

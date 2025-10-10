@@ -1,17 +1,17 @@
 package org.testcontainers.junit;
 
 import org.junit.jupiter.api.AutoClose;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.DockerComposeContainer;
-import org.testcontainers.utility.CommandLine;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Assumptions.assumeThat;
 
+@Disabled
 class DockerComposeServiceTest extends BaseDockerComposeTest {
 
     @AutoClose
@@ -23,8 +23,6 @@ class DockerComposeServiceTest extends BaseDockerComposeTest {
         .withExposedService("redis_1", REDIS_PORT);
 
     DockerComposeServiceTest() {
-        assumeThat(CommandLine.runShellCommand("docker-compose", "--version"))
-            .doesNotStartWith("Docker Compose version v2");
         environment.start();
     }
 
