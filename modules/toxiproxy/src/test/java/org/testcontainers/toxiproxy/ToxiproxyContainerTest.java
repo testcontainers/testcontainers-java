@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
-public class ToxiproxyContainerTest {
+class ToxiproxyContainerTest {
 
     private static final Duration JEDIS_TIMEOUT = Duration.ofSeconds(10);
 
@@ -43,22 +43,23 @@ public class ToxiproxyContainerTest {
     // spotless:on
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         redis.start();
         toxiproxy.start();
     }
 
     @Test
-    public void testDirect() {
-        final Jedis jedis = createJedis(redis.getHost(), redis.getFirstMappedPort());
-        jedis.set("somekey", "somevalue");
+    void testDirect() {
+        try (Jedis jedis = createJedis(redis.getHost(), redis.getFirstMappedPort())) {
+            jedis.set("somekey", "somevalue");
 
-        final String s = jedis.get("somekey");
-        assertThat(s).as("direct access to the container works OK").isEqualTo("somevalue");
+            final String s = jedis.get("somekey");
+            assertThat(s).as("direct access to the container works OK").isEqualTo("somevalue");
+        }
     }
 
     @Test
-    public void testLatencyViaProxy() throws IOException {
+    void testLatencyViaProxy() throws IOException {
         // obtainProxyObject {
         final ToxiproxyClient toxiproxyClient = new ToxiproxyClient(toxiproxy.getHost(), toxiproxy.getControlPort());
         final Proxy proxy = toxiproxyClient.createProxy("redis", "0.0.0.0:8666", "redis:6379");
@@ -69,60 +70,62 @@ public class ToxiproxyContainerTest {
         final int portViaToxiproxy = toxiproxy.getMappedPort(8666);
         // }
 
-        final Jedis jedis = createJedis(ipAddressViaToxiproxy, portViaToxiproxy);
-        jedis.set("somekey", "somevalue");
+        try (Jedis jedis = createJedis(ipAddressViaToxiproxy, portViaToxiproxy)) {
+            jedis.set("somekey", "somevalue");
 
-        checkCallWithLatency(jedis, "without interference", 0, 250);
+            checkCallWithLatency(jedis, "without interference", 0, 250);
 
-        // spotless:off
-        // addingLatency {
-        proxy.toxics()
-            .latency("latency", ToxicDirection.DOWNSTREAM, 1_100)
-            .setJitter(100);
-        // from now on the connection latency should be from 1000-1200 ms.
-        // }
-        // spotless:on
+            // spotless:off
+            // addingLatency {
+            proxy.toxics()
+                .latency("latency", ToxicDirection.DOWNSTREAM, 1_100)
+                .setJitter(100);
+            // from now on the connection latency should be from 1000-1200 ms.
+            // }
+            // spotless:on
 
-        checkCallWithLatency(jedis, "with interference", 1_000, 1_500);
+            checkCallWithLatency(jedis, "with interference", 1_000, 1_500);
+        }
     }
 
     @Test
-    public void testConnectionCut() throws IOException {
+    void testConnectionCut() throws IOException {
         final ToxiproxyClient toxiproxyClient = new ToxiproxyClient(toxiproxy.getHost(), toxiproxy.getControlPort());
         final Proxy proxy = toxiproxyClient.createProxy("redis", "0.0.0.0:8666", "redis:6379");
-        final Jedis jedis = createJedis(toxiproxy.getHost(), toxiproxy.getMappedPort(8666));
-        jedis.set("somekey", "somevalue");
+        try (Jedis jedis = createJedis(toxiproxy.getHost(), toxiproxy.getMappedPort(8666))) {
+            jedis.set("somekey", "somevalue");
 
-        assertThat(jedis.get("somekey"))
-            .as("access to the container works OK before cutting the connection")
-            .isEqualTo("somevalue");
+            assertThat(jedis.get("somekey"))
+                .as("access to the container works OK before cutting the connection")
+                .isEqualTo("somevalue");
 
-        // disableProxy {
-        proxy.toxics().bandwidth("CUT_CONNECTION_DOWNSTREAM", ToxicDirection.DOWNSTREAM, 0);
-        proxy.toxics().bandwidth("CUT_CONNECTION_UPSTREAM", ToxicDirection.UPSTREAM, 0);
+            // disableProxy {
+            proxy.toxics().bandwidth("CUT_CONNECTION_DOWNSTREAM", ToxicDirection.DOWNSTREAM, 0);
+            proxy.toxics().bandwidth("CUT_CONNECTION_UPSTREAM", ToxicDirection.UPSTREAM, 0);
 
-        // for example, expect failure when the connection is cut
-        assertThat(
-            catchThrowable(() -> {
-                jedis.get("somekey");
-            })
-        )
-            .as("calls fail when the connection is cut")
-            .isInstanceOf(JedisConnectionException.class);
+            // for example, expect failure when the connection is cut
+            assertThat(
+                catchThrowable(() -> {
+                    jedis.get("somekey");
+                })
+            )
+                .as("calls fail when the connection is cut")
+                .isInstanceOf(JedisConnectionException.class);
 
-        proxy.toxics().get("CUT_CONNECTION_DOWNSTREAM").remove();
-        proxy.toxics().get("CUT_CONNECTION_UPSTREAM").remove();
+            proxy.toxics().get("CUT_CONNECTION_DOWNSTREAM").remove();
+            proxy.toxics().get("CUT_CONNECTION_UPSTREAM").remove();
 
-        jedis.close();
-        // and with the connection re-established, expect success
-        assertThat(jedis.get("somekey"))
-            .as("access to the container works OK after re-establishing the connection")
-            .isEqualTo("somevalue");
+            jedis.close();
+            // and with the connection re-established, expect success
+            assertThat(jedis.get("somekey"))
+                .as("access to the container works OK after re-establishing the connection")
+                .isEqualTo("somevalue");
+        }
         // }
     }
 
     @Test
-    public void testMultipleProxiesCanBeCreated() throws IOException {
+    void testMultipleProxiesCanBeCreated() throws IOException {
         try (
             GenericContainer<?> secondRedis = new GenericContainer<>("redis:6-alpine")
                 .withExposedPorts(6379)
@@ -138,24 +141,26 @@ public class ToxiproxyContainerTest {
             final Proxy firstProxy = toxiproxyClient.createProxy("redis1", "0.0.0.0:8666", "redis:6379");
             toxiproxyClient.createProxy("redis2", "0.0.0.0:8667", "redis2:6379");
 
-            final Jedis firstJedis = createJedis(toxiproxy.getHost(), toxiproxy.getMappedPort(8666));
-            final Jedis secondJedis = createJedis(toxiproxy.getHost(), toxiproxy.getMappedPort(8667));
+            try (
+                Jedis firstJedis = createJedis(toxiproxy.getHost(), toxiproxy.getMappedPort(8666));
+                Jedis secondJedis = createJedis(toxiproxy.getHost(), toxiproxy.getMappedPort(8667))
+            ) {
+                firstJedis.set("somekey", "somevalue");
+                secondJedis.set("somekey", "somevalue");
 
-            firstJedis.set("somekey", "somevalue");
-            secondJedis.set("somekey", "somevalue");
+                firstProxy.toxics().bandwidth("CUT_CONNECTION_DOWNSTREAM", ToxicDirection.DOWNSTREAM, 0);
+                firstProxy.toxics().bandwidth("CUT_CONNECTION_UPSTREAM", ToxicDirection.UPSTREAM, 0);
 
-            firstProxy.toxics().bandwidth("CUT_CONNECTION_DOWNSTREAM", ToxicDirection.DOWNSTREAM, 0);
-            firstProxy.toxics().bandwidth("CUT_CONNECTION_UPSTREAM", ToxicDirection.UPSTREAM, 0);
+                assertThat(
+                    catchThrowable(() -> {
+                        firstJedis.get("somekey");
+                    })
+                )
+                    .as("calls fail when the connection is cut, for only the relevant proxy")
+                    .isInstanceOf(JedisConnectionException.class);
 
-            assertThat(
-                catchThrowable(() -> {
-                    firstJedis.get("somekey");
-                })
-            )
-                .as("calls fail when the connection is cut, for only the relevant proxy")
-                .isInstanceOf(JedisConnectionException.class);
-
-            assertThat(secondJedis.get("somekey")).as("access via a different proxy is OK").isEqualTo("somevalue");
+                assertThat(secondJedis.get("somekey")).as("access via a different proxy is OK").isEqualTo("somevalue");
+            }
         }
     }
 
