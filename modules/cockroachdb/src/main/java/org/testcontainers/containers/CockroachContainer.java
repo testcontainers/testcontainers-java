@@ -17,7 +17,10 @@ import java.time.Duration;
  *     <li>Database: 26257</li>
  *     <li>Console: 8080</li>
  * </ul>
+ *
+ * @deprecated use {@link org.testcontainers.cockroachdb.CockroachContainer} instead
  */
+@Deprecated
 public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("cockroachdb/cockroach");
@@ -51,6 +54,14 @@ public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer
     private String password = "";
 
     private boolean isVersionGreaterThanOrEqualTo221;
+
+    /**
+     * @deprecated use {@link #CockroachContainer(DockerImageName)} instead
+     */
+    @Deprecated
+    public CockroachContainer() {
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
+    }
 
     public CockroachContainer(final String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));

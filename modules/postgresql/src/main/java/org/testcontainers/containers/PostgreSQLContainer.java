@@ -14,7 +14,10 @@ import java.util.Set;
  * Supported images: {@code postgres}, {@code pgvector/pgvector}
  * <p>
  * Exposed ports: 5432
+ *
+ * @deprecated use {@link org.testcontainers.postgresql.PostgreSQLContainer} instead.
  */
+@Deprecated
 public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
 
     public static final String NAME = "postgresql";
@@ -40,6 +43,14 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
     private String password = "test";
 
     private static final String FSYNC_OFF_OPTION = "fsync=off";
+
+    /**
+     * @deprecated use {@link #PostgreSQLContainer(DockerImageName)} or {@link #PostgreSQLContainer(String)} instead
+     */
+    @Deprecated
+    public PostgreSQLContainer() {
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
+    }
 
     public PostgreSQLContainer(final String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));

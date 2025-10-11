@@ -3,7 +3,7 @@ package org.testcontainers.junit;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.ComposeContainer;
 import org.testcontainers.containers.ContainerState;
-import org.testcontainers.containers.DockerComposeContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,6 +18,7 @@ class ComposeContainerTest extends BaseComposeTest {
 
     // composeContainerConstructor {
     public ComposeContainer environment = new ComposeContainer(
+        DockerImageName.parse("docker:24.0.2"),
         new File("src/test/resources/composev2/compose-test.yml")
     )
         .withExposedService("redis-1", REDIS_PORT)
@@ -86,7 +87,8 @@ class ComposeContainerTest extends BaseComposeTest {
         filePathNotStartWithDotSlash.deleteOnExit();
         Files.write(filePathNotStartWithDotSlash.toPath(), validYaml.getBytes(StandardCharsets.UTF_8));
 
-        final DockerComposeContainer<?> dockerComposeContainer = new DockerComposeContainer<>(
+        final ComposeContainer dockerComposeContainer = new ComposeContainer(
+            DockerImageName.parse("docker:24.0.2"),
             filePathNotStartWithDotSlash
         );
         assertThat(dockerComposeContainer).as("Container created using docker compose file").isNotNull();

@@ -2,7 +2,6 @@ package org.testcontainers.junit;
 
 import com.github.dockerjava.api.model.Network;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,6 +15,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assumptions.assumeThat;
 
 /**
  * Created by rnorth on 21/05/2016.
@@ -30,7 +30,7 @@ public abstract class BaseDockerComposeTest {
 
     @BeforeAll
     public static void checkVersion() {
-        Assumptions.assumeTrue(TestEnvironment.dockerApiAtLeast("1.22"));
+        assumeThat(TestEnvironment.dockerApiAtLeast("1.22")).isTrue();
     }
 
     @Test

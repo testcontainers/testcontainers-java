@@ -30,8 +30,11 @@ import java.util.stream.Stream;
  *     <li>HTTP: 7474</li>
  *     <li>HTTPS: 7473</li>
  * </ul>
+ *
+ * @deprecated use {@link org.testcontainers.neo4j.Neo4jContainer} instead.
  */
-public class Neo4jContainer extends GenericContainer<Neo4jContainer> {
+@Deprecated
+public class Neo4jContainer<S extends Neo4jContainer<S>> extends GenericContainer<S> {
 
     /**
      * The image defaults to the official Neo4j image: <a href="https://hub.docker.com/_/neo4j/">Neo4j</a>.
@@ -82,6 +85,15 @@ public class Neo4jContainer extends GenericContainer<Neo4jContainer> {
     private static final WaitStrategy WAIT_FOR_HTTP = new HttpWaitStrategy()
         .forPort(DEFAULT_HTTP_PORT)
         .forStatusCodeMatching(response -> response == HttpURLConnection.HTTP_OK);
+
+    /**
+     * Creates a Neo4jContainer using the official Neo4j docker image.
+     * @deprecated use {@link #Neo4jContainer(DockerImageName)} instead
+     */
+    @Deprecated
+    public Neo4jContainer() {
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
+    }
 
     /**
      * Creates a Neo4jContainer using a specific docker image.
@@ -205,7 +217,7 @@ public class Neo4jContainer extends GenericContainer<Neo4jContainer> {
      *
      * @return This container.
      */
-    public Neo4jContainer withEnterpriseEdition() {
+    public S withEnterpriseEdition() {
         if (!standardImage) {
             throw new IllegalStateException(
                 String.format("Cannot use enterprise version with alternative image %s.", getDockerImageName())
@@ -227,7 +239,7 @@ public class Neo4jContainer extends GenericContainer<Neo4jContainer> {
      * @param adminPassword The admin password for the default database account.
      * @return This container.
      */
-    public Neo4jContainer withAdminPassword(final String adminPassword) {
+    public S withAdminPassword(final String adminPassword) {
         if (adminPassword != null && adminPassword.length() < 8) {
             logger().warn("Your provided admin password is too short and will not work with Neo4j 5.3+.");
         }
@@ -240,7 +252,7 @@ public class Neo4jContainer extends GenericContainer<Neo4jContainer> {
      *
      * @return This container.
      */
-    public Neo4jContainer withoutAuthentication() {
+    public S withoutAuthentication() {
         return withAdminPassword(null);
     }
 
@@ -264,7 +276,7 @@ public class Neo4jContainer extends GenericContainer<Neo4jContainer> {
      * @throws IllegalArgumentException If the database version is not 3.5.
      * @return This container.
      */
-    public Neo4jContainer withDatabase(MountableFile graphDb) {
+    public S withDatabase(MountableFile graphDb) {
         if (!isNeo4jDatabaseVersionSupportingDbCopy()) {
             throw new IllegalArgumentException(
                 "Copying database folder is not supported for Neo4j instances with version 4.0 or higher."
@@ -283,7 +295,7 @@ public class Neo4jContainer extends GenericContainer<Neo4jContainer> {
      * @param plugins
      * @return This container.
      */
-    public Neo4jContainer withPlugins(MountableFile plugins) {
+    public S withPlugins(MountableFile plugins) {
         return withCopyFileToContainer(plugins, "/var/lib/neo4j/plugins/");
     }
 
@@ -295,7 +307,7 @@ public class Neo4jContainer extends GenericContainer<Neo4jContainer> {
      * @param value The value to set
      * @return This container.
      */
-    public Neo4jContainer withNeo4jConfig(String key, String value) {
+    public S withNeo4jConfig(String key, String value) {
         addEnv(formatConfigurationKey(key), value);
         return self();
     }
@@ -318,7 +330,7 @@ public class Neo4jContainer extends GenericContainer<Neo4jContainer> {
      * @param plugins The Neo4j plugins that should get started with the server.
      * @return This container.
      */
-    public Neo4jContainer withPlugins(String... plugins) {
+    public S withPlugins(String... plugins) {
         this.labsPlugins.addAll(Arrays.asList(plugins));
         return self();
     }
@@ -351,7 +363,7 @@ public class Neo4jContainer extends GenericContainer<Neo4jContainer> {
         return false;
     }
 
-    public Neo4jContainer withRandomPassword() {
+    public S withRandomPassword() {
         return withAdminPassword(UUID.randomUUID().toString());
     }
 }

@@ -28,8 +28,11 @@ import java.util.stream.Collectors;
  * Supported images: {@code localstack/localstack}, {@code localstack/localstack-pro}
  * <p>
  * Exposed ports: 4566
+ *
+ * @deprecated use {@link org.testcontainers.localstack.LocalStackContainer} instead.
  */
 @Slf4j
+@Deprecated
 public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
 
     static final int PORT = 4566;
@@ -82,6 +85,14 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
     private final boolean servicesEnvVarRequired;
 
     private final boolean isVersion2;
+
+    /**
+     * @deprecated use {@link #LocalStackContainer(DockerImageName)} instead
+     */
+    @Deprecated
+    public LocalStackContainer() {
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
+    }
 
     /**
      * @deprecated use {@link #LocalStackContainer(DockerImageName)} instead

@@ -4,7 +4,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
+/**
+ * @deprecated use {@link org.testcontainers.mockserver.MockServerContainer} instead.
+ */
 @Slf4j
+@Deprecated
 public class MockServerContainer extends GenericContainer<MockServerContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("jamesdbloom/mockserver");
@@ -15,6 +19,14 @@ public class MockServerContainer extends GenericContainer<MockServerContainer> {
     public static final String VERSION = DEFAULT_TAG;
 
     public static final int PORT = 1080;
+
+    /**
+     * @deprecated use {@link #MockServerContainer(DockerImageName)} instead
+     */
+    @Deprecated
+    public MockServerContainer() {
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
+    }
 
     /**
      * @deprecated use {@link #MockServerContainer(DockerImageName)} instead

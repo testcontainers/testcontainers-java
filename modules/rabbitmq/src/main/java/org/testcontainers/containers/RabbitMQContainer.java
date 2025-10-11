@@ -27,13 +27,18 @@ import java.util.Set;
  *     <li>15671 (HTTPS)</li>
  *     <li>15672 (HTTP)</li>
  * </ul>
+ *
+ * @deprecated use {@link org.testcontainers.rabbitmq.RabbitMQContainer} instead.
  */
+@Deprecated
 public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
 
     /**
      * The image defaults to the official RabbitMQ image: <a href="https://hub.docker.com/_/rabbitmq/">RabbitMQ</a>.
      */
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("rabbitmq");
+
+    private static final String DEFAULT_TAG = "3.7.25-management-alpine";
 
     private static final int DEFAULT_AMQP_PORT = 5672;
 
@@ -48,6 +53,15 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
     private String adminUsername = "guest";
 
     private final List<List<String>> values = new ArrayList<>();
+
+    /**
+     * Creates a RabbitMQ container using the official RabbitMQ docker image.
+     * @deprecated use {@link #RabbitMQContainer(DockerImageName)} instead
+     */
+    @Deprecated
+    public RabbitMQContainer() {
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
+    }
 
     /**
      * Creates a RabbitMQ container using a specific docker image.

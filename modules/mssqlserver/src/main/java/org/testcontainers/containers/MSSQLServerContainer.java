@@ -13,7 +13,10 @@ import java.util.stream.Stream;
  * Supported image: {@code mcr.microsoft.com/mssql/server}
  * <p>
  * Exposed ports: 1433
+ *
+ * @deprecated use {@link org.testcontainers.mssqlserver.MSSQLServerContainer} instead.
  */
+@Deprecated
 public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("mcr.microsoft.com/mssql/server");
@@ -43,6 +46,14 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
         Pattern.compile("[0-9]+"),
         Pattern.compile("[^a-zA-Z0-9]+", Pattern.CASE_INSENSITIVE),
     };
+
+    /**
+     * @deprecated use {@link #MSSQLServerContainer(DockerImageName)} instead
+     */
+    @Deprecated
+    public MSSQLServerContainer() {
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
+    }
 
     public MSSQLServerContainer(final String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));

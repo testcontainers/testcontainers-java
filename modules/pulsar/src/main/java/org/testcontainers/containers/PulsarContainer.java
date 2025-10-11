@@ -14,7 +14,10 @@ import org.testcontainers.utility.DockerImageName;
  *     <li>Pulsar: 6650</li>
  *     <li>HTTP: 8080</li>
  * </ul>
+ *
+ * @deprecated use {@link org.testcontainers.pulsar.PulsarContainer} instead.
  */
+@Deprecated
 public class PulsarContainer extends GenericContainer<PulsarContainer> {
 
     public static final int BROKER_PORT = 6650;
@@ -31,11 +34,22 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("apachepulsar/pulsar");
 
+    @Deprecated
+    private static final String DEFAULT_TAG = "3.0.0";
+
     private final WaitAllStrategy waitAllStrategy = new WaitAllStrategy();
 
     private boolean functionsWorkerEnabled = false;
 
     private boolean transactionsEnabled = false;
+
+    /**
+     * @deprecated use {@link #PulsarContainer(DockerImageName)} instead
+     */
+    @Deprecated
+    public PulsarContainer() {
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
+    }
 
     /**
      * @deprecated use {@link #PulsarContainer(DockerImageName)} instead

@@ -3,6 +3,7 @@ package org.testcontainers.containers;
 import org.junit.jupiter.api.Test;
 import org.rnorth.ducttape.TimeoutException;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
 import java.time.Duration;
@@ -29,7 +30,10 @@ class ComposeContainerWithServicesTest {
 
     @Test
     void testDesiredSubsetOfServicesAreStarted() {
-        try (ComposeContainer compose = new ComposeContainer(SIMPLE_COMPOSE_FILE).withServices("redis")) {
+        try (
+            ComposeContainer compose = new ComposeContainer(DockerImageName.parse("docker:24.0.2"), SIMPLE_COMPOSE_FILE)
+                .withServices("redis")
+        ) {
             compose.start();
 
             verifyStartedContainers(compose, "redis-1");
@@ -38,7 +42,10 @@ class ComposeContainerWithServicesTest {
 
     @Test
     void testDesiredSubsetOfScaledServicesAreStarted() {
-        try (ComposeContainer compose = new ComposeContainer(SIMPLE_COMPOSE_FILE).withScaledService("redis", 2)) {
+        try (
+            ComposeContainer compose = new ComposeContainer(DockerImageName.parse("docker:24.0.2"), SIMPLE_COMPOSE_FILE)
+                .withScaledService("redis", 2)
+        ) {
             compose.start();
 
             verifyStartedContainers(compose, "redis-1", "redis-2");
@@ -48,7 +55,7 @@ class ComposeContainerWithServicesTest {
     @Test
     void testDesiredSubsetOfSpecifiedAndScaledServicesAreStarted() {
         try (
-            ComposeContainer compose = new ComposeContainer(SIMPLE_COMPOSE_FILE)
+            ComposeContainer compose = new ComposeContainer(DockerImageName.parse("docker:24.0.2"), SIMPLE_COMPOSE_FILE)
                 .withServices("redis")
                 .withScaledService("redis", 2)
         ) {
@@ -61,7 +68,7 @@ class ComposeContainerWithServicesTest {
     @Test
     void testDesiredSubsetOfSpecifiedOrScaledServicesAreStarted() {
         try (
-            ComposeContainer compose = new ComposeContainer(SIMPLE_COMPOSE_FILE)
+            ComposeContainer compose = new ComposeContainer(DockerImageName.parse("docker:24.0.2"), SIMPLE_COMPOSE_FILE)
                 .withServices("other")
                 .withScaledService("redis", 2)
         ) {
@@ -73,7 +80,9 @@ class ComposeContainerWithServicesTest {
 
     @Test
     void testAllServicesAreStartedIfNotSpecified() {
-        try (ComposeContainer compose = new ComposeContainer(SIMPLE_COMPOSE_FILE)) {
+        try (
+            ComposeContainer compose = new ComposeContainer(DockerImageName.parse("docker:24.0.2"), SIMPLE_COMPOSE_FILE)
+        ) {
             compose.start();
 
             verifyStartedContainers(compose, "redis-1", "other-1");
@@ -82,7 +91,12 @@ class ComposeContainerWithServicesTest {
 
     @Test
     void testScaleInComposeFileIsRespected() {
-        try (ComposeContainer compose = new ComposeContainer(COMPOSE_FILE_WITH_INLINE_SCALE)) {
+        try (
+            ComposeContainer compose = new ComposeContainer(
+                DockerImageName.parse("docker:24.0.2"),
+                COMPOSE_FILE_WITH_INLINE_SCALE
+            )
+        ) {
             compose.start();
 
             // the compose file includes `scale: 3` for the redis container
@@ -95,7 +109,10 @@ class ComposeContainerWithServicesTest {
         assertThat(
             catchThrowable(() -> {
                 try (
-                    ComposeContainer compose = new ComposeContainer(SIMPLE_COMPOSE_FILE)
+                    ComposeContainer compose = new ComposeContainer(
+                        DockerImageName.parse("docker:24.0.2"),
+                        SIMPLE_COMPOSE_FILE
+                    )
                         .withServices("redis")
                         .withStartupTimeout(Duration.ofMillis(1))
                         .withExposedService(
@@ -115,7 +132,10 @@ class ComposeContainerWithServicesTest {
     @Test
     void testWaitingForHealthcheck() {
         try (
-            ComposeContainer compose = new ComposeContainer(COMPOSE_FILE_WITH_HEALTHCHECK)
+            ComposeContainer compose = new ComposeContainer(
+                DockerImageName.parse("docker:24.0.2"),
+                COMPOSE_FILE_WITH_HEALTHCHECK
+            )
                 .waitingFor("redis", Wait.forHealthcheck().withStartupTimeout(Duration.ofMinutes(2)))
         ) {
             compose.start();
@@ -127,7 +147,10 @@ class ComposeContainerWithServicesTest {
     @Test
     void testWaitingForHealthcheckWithRestartDoesNotCrash() {
         try (
-            ComposeContainer compose = new ComposeContainer(COMPOSE_FILE_WITH_HEALTHCHECK)
+            ComposeContainer compose = new ComposeContainer(
+                DockerImageName.parse("docker:24.0.2"),
+                COMPOSE_FILE_WITH_HEALTHCHECK
+            )
                 .waitingFor("redis", Wait.forHealthcheck().withStartupTimeout(Duration.ofMinutes(1)))
         ) {
             compose.start();
