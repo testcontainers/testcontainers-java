@@ -5,10 +5,10 @@ import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 import org.testcontainers.utility.DockerImageName;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 
 class CustomizableMSSQLServerTest extends AbstractContainerDatabaseTest {
 
@@ -24,9 +24,17 @@ class CustomizableMSSQLServerTest extends AbstractContainerDatabaseTest {
         ) {
             mssqlServerContainer.start();
 
-            ResultSet resultSet = performQuery(mssqlServerContainer, mssqlServerContainer.getTestQueryString());
-            int resultSetInt = resultSet.getInt(1);
-            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+            performQuery(
+                mssqlServerContainer,
+                mssqlServerContainer.getTestQueryString(),
+                resultSet -> {
+                    assertThatNoException()
+                        .isThrownBy(() -> {
+                            int resultSetInt = resultSet.getInt(1);
+                            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+                        });
+                }
+            );
         }
     }
 }

@@ -2,7 +2,8 @@ package org.testcontainers.images.builder.dockerfile.statement;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.assertj.core.api.Assertions;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.TestInfo;
 import org.rnorth.ducttape.Preconditions;
 
@@ -21,50 +22,46 @@ public abstract class AbstractStatementTest {
 
     protected void assertStatement(Statement statement) {
         String testName = testInfo.getTestMethod().get().getName();
-        String[] expectedLines = new String[0];
-        try {
-            String path = "fixtures/statements/" + getClass().getSimpleName() + "/" + testName;
-            InputStream inputStream = getClass().getClassLoader().getResourceAsStream(path);
+        String path = "fixtures/statements/" + getClass().getSimpleName() + "/" + testName;
 
-            Preconditions.check("inputStream is null for path " + path, inputStream != null);
+        AssertionsForClassTypes
+            .assertThatNoException()
+            .isThrownBy(() -> {
+                try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(path)) {
+                    String[] expectedLines;
+                    Preconditions.check("inputStream is null for path " + path, inputStream != null);
 
-            String content = IOUtils.toString(inputStream);
-            IOUtils.closeQuietly(inputStream);
-            expectedLines = StringUtils.chomp(content.replaceAll("\r\n", "\n").trim()).split("\n");
-        } catch (Exception e) {
-            fail("can't load fixture '" + testName + "'\n" + ExceptionUtils.getStackTrace(e));
-        }
+                    String content = IOUtils.toString(inputStream);
+                    IOUtils.closeQuietly(inputStream);
+                    expectedLines = StringUtils.chomp(content.replaceAll("\r\n", "\n").trim()).split("\n");
+                    StringBuilder builder = new StringBuilder();
+                    statement.appendArguments(builder);
+                    String[] resultLines = StringUtils.chomp(builder.toString().trim()).split("\n");
 
-        StringBuilder builder = new StringBuilder();
-        statement.appendArguments(builder);
-        String[] resultLines = StringUtils.chomp(builder.toString().trim()).split("\n");
+                    Assertions.assertThat(expectedLines.length).isSameAs(resultLines.length);
 
-        if (expectedLines.length != resultLines.length) {
-            fail(
-                "number of lines is not the same. Expected " + expectedLines.length + " but got " + resultLines.length
-            );
-        }
+                    if (!Arrays.equals(expectedLines, resultLines)) {
+                        StringBuilder failureBuilder = new StringBuilder();
+                        failureBuilder.append("Invalid statement!\n");
 
-        if (!Arrays.equals(expectedLines, resultLines)) {
-            StringBuilder failureBuilder = new StringBuilder();
-            failureBuilder.append("Invalid statement!\n");
+                        for (int i = 0; i < expectedLines.length; i++) {
+                            String expectedLine = expectedLines[i];
+                            String actualLine = resultLines[i];
 
-            for (int i = 0; i < expectedLines.length; i++) {
-                String expectedLine = expectedLines[i];
-                String actualLine = resultLines[i];
+                            if (!expectedLine.equals(actualLine)) {
+                                failureBuilder.append("Invalid line #");
+                                failureBuilder.append(i);
+                                failureBuilder.append(":\n\tActual:   <");
+                                failureBuilder.append(actualLine);
+                                failureBuilder.append(">\n\tExpected: <");
+                                failureBuilder.append(expectedLine);
+                                failureBuilder.append(">\n");
+                            }
+                        }
 
-                if (!expectedLine.equals(actualLine)) {
-                    failureBuilder.append("Invalid line #");
-                    failureBuilder.append(i);
-                    failureBuilder.append(":\n\tActual:   <");
-                    failureBuilder.append(actualLine);
-                    failureBuilder.append(">\n\tExpected: <");
-                    failureBuilder.append(expectedLine);
-                    failureBuilder.append(">\n");
+                        fail(failureBuilder.toString());
+                    }
                 }
-            }
-
-            fail(failureBuilder.toString());
-        }
+            });
     }
 }

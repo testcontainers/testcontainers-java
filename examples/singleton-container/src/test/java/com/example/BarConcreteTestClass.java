@@ -16,9 +16,9 @@ class BarConcreteTestClass extends AbstractIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        Jedis jedis = new Jedis(redis.getHost(), redis.getMappedPort(6379));
-
-        cache = new RedisBackedCache(jedis, "bar");
+        try (Jedis jedis = new Jedis(redis.getHost(), redis.getMappedPort(6379))) {
+            cache = new RedisBackedCache(jedis, "bar");
+        }
     }
 
     @Test

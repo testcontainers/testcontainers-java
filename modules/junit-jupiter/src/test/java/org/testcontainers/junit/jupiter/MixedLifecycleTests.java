@@ -12,11 +12,11 @@ class MixedLifecycleTests {
 
     // will be shared between test methods
     @Container
-    private static final MySQLContainer MY_SQL_CONTAINER = new MySQLContainer("mysql:8.0.36");
+    private static final MySQLContainer<?> MY_SQL_CONTAINER = new MySQLContainer<>("mysql:8.0.36");
 
     // will be started before and stopped after each test method
     @Container
-    private PostgreSQLContainer postgresqlContainer = new PostgreSQLContainer("postgres:9.6.12")
+    private static final PostgreSQLContainer<?> postgresqlContainer = new PostgreSQLContainer<>("postgres:9.6.12")
         .withDatabaseName("foo")
         .withUsername("foo")
         .withPassword("secret");

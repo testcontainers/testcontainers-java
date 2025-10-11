@@ -14,7 +14,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
 
 class SolaceContainerMQTTTest {
 
@@ -25,35 +24,24 @@ class SolaceContainerMQTTTest {
     private static final String TOPIC_NAME = "Topic/ActualTopic";
 
     @Test
-    void testSolaceContainer() {
+    void testSolaceContainer() throws MqttException {
         try (
             SolaceContainer solaceContainer = new SolaceContainer("solace/solace-pubsub-standard:10.25.0")
                 .withTopic(TOPIC_NAME, Service.MQTT)
                 .withVpn("mqtt-vpn")
         ) {
             solaceContainer.start();
-            MqttClient client = createClient(
-                solaceContainer.getUsername(),
-                solaceContainer.getPassword(),
-                solaceContainer.getOrigin(Service.MQTT)
-            );
-            assertThat(client).isNotNull();
-            assertThat(consumeMessageFromSolace(client)).isEqualTo(MESSAGE);
-        }
-    }
 
-    private static MqttClient createClient(String username, String password, String host) {
-        try {
-            MqttClient mqttClient = new MqttClient(host, MESSAGE);
-            MqttConnectOptions connOpts = new MqttConnectOptions();
-            connOpts.setCleanSession(true);
-            connOpts.setUserName(username);
-            connOpts.setPassword(password.toCharArray());
-            mqttClient.connect(connOpts);
-            return mqttClient;
-        } catch (Exception e) {
-            fail("Error connecting and setting up session! " + e.getMessage());
-            return null;
+            try (MqttClient mqttClient = new MqttClient(solaceContainer.getOrigin(Service.MQTT), MESSAGE)) {
+                MqttConnectOptions connOpts = new MqttConnectOptions();
+                connOpts.setCleanSession(true);
+                connOpts.setUserName(solaceContainer.getUsername());
+                connOpts.setPassword(solaceContainer.getPassword().toCharArray());
+                mqttClient.connect(connOpts);
+
+                assertThat(mqttClient).isNotNull();
+                assertThat(consumeMessageFromSolace(mqttClient)).isEqualTo(MESSAGE);
+            }
         }
     }
 

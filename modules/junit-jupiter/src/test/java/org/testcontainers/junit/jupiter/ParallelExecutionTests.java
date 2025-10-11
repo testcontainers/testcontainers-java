@@ -18,7 +18,7 @@ public class ParallelExecutionTests {
         .withPassword("secret");
 
     @Container
-    private MySQLContainer<?> mySQLContainer = new MySQLContainer<>(JUnitJupiterTestImages.MYSQL_IMAGE);
+    private static final MySQLContainer<?> mySQLContainer = new MySQLContainer<>(JUnitJupiterTestImages.MYSQL_IMAGE);
 
     @Test
     void test() {

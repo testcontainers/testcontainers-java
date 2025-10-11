@@ -84,7 +84,7 @@ class FileOperationsTest {
     @Test
     void copyFileToContainerFolderTest() throws Exception {
         try (
-            GenericContainer alpineCopyToContainer = new GenericContainer(TestImages.ALPINE_IMAGE) //
+            GenericContainer<?> alpineCopyToContainer = new GenericContainer(TestImages.ALPINE_IMAGE) //
                 .withCommand("top")
         ) {
             alpineCopyToContainer.start();
@@ -102,7 +102,7 @@ class FileOperationsTest {
     @Test
     void copyFolderToContainerFolderTest() throws Exception {
         try (
-            GenericContainer alpineCopyToContainer = new GenericContainer(TestImages.ALPINE_IMAGE) //
+            GenericContainer<?> alpineCopyToContainer = new GenericContainer(TestImages.ALPINE_IMAGE) //
                 .withCommand("top")
         ) {
             alpineCopyToContainer.start();
@@ -121,7 +121,7 @@ class FileOperationsTest {
     void copyFromContainerShouldFailBecauseNoFileTest() {
         assertThatThrownBy(() -> {
                 try (
-                    GenericContainer alpineCopyToContainer = new GenericContainer(TestImages.ALPINE_IMAGE) //
+                    GenericContainer<?> alpineCopyToContainer = new GenericContainer(TestImages.ALPINE_IMAGE) //
                         .withCommand("top")
                 ) {
                     alpineCopyToContainer.start();
@@ -137,7 +137,7 @@ class FileOperationsTest {
     @Test
     void shouldCopyFileFromContainerTest() throws IOException {
         try (
-            GenericContainer alpineCopyToContainer = new GenericContainer(TestImages.ALPINE_IMAGE) //
+            GenericContainer<?> alpineCopyToContainer = new GenericContainer(TestImages.ALPINE_IMAGE) //
                 .withCommand("top")
         ) {
             alpineCopyToContainer.start();

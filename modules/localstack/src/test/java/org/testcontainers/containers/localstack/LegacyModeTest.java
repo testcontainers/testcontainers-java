@@ -34,22 +34,31 @@ class LegacyModeTest {
 
     static Stream<Arguments> localstackVersionWithLegacyOff() {
         return Stream.of(
-            Arguments.arguments("0.12", new LocalStackContainer(LocalstackTestImages.LOCALSTACK_0_12_IMAGE)),
-            Arguments.arguments("0.11", new LocalStackContainer(LocalstackTestImages.LOCALSTACK_0_11_IMAGE)),
             Arguments.arguments(
-                "0.11 with legacy = off",
-                new LocalStackContainer(LocalstackTestImages.LOCALSTACK_0_11_IMAGE, false)
-            )
+                "0.12",
+                LocalstackTestImages.LOCALSTACK_0_12_IMAGE,
+                LocalStackContainer.shouldRunInLegacyMode("0.12")
+            ),
+            Arguments.arguments(
+                "0.11",
+                LocalstackTestImages.LOCALSTACK_0_11_IMAGE,
+                LocalStackContainer.shouldRunInLegacyMode("0.11")
+            ),
+            Arguments.arguments("0.11 with legacy = off", LocalstackTestImages.LOCALSTACK_0_11_IMAGE, false)
         );
     }
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("localstackVersionWithLegacyOff")
-    void samePortIsExposedForAllServices(String description, LocalStackContainer localstack) {
-        localstack.withServices(Service.S3, Service.SQS);
-        localstack.start();
+    void samePortIsExposedForAllServices(
+        String description,
+        final DockerImageName imageName,
+        final boolean legacyMode
+    ) {
+        try (LocalStackContainer localstack = new LocalStackContainer(imageName, legacyMode)) {
+            localstack.withServices(Service.S3, Service.SQS);
+            localstack.start();
 
-        try {
             assertThat(localstack.getExposedPorts()).as("A single port is exposed").hasSize(1);
             assertThat(localstack.getEndpointOverride(Service.SQS).toString())
                 .as("Endpoint overrides are different")
@@ -57,29 +66,32 @@ class LegacyModeTest {
             assertThat(localstack.getEndpointOverride(Service.SQS).toString())
                 .as("Endpoint configuration have different endpoints")
                 .isEqualTo(localstack.getEndpointOverride(Service.S3).toString());
-        } finally {
-            localstack.stop();
         }
     }
 
     public static Stream<Arguments> localstackVersionWithLegacyOn() {
         return Stream.of(
-            Arguments.arguments("0.10", new LocalStackContainer(LocalstackTestImages.LOCALSTACK_0_10_IMAGE)),
-            Arguments.arguments("custom", new LocalStackContainer(LOCALSTACK_CUSTOM_TAG)),
             Arguments.arguments(
-                "0.11 with legacy = on",
-                new LocalStackContainer(LocalstackTestImages.LOCALSTACK_0_11_IMAGE, true)
-            )
+                "0.10",
+                LocalstackTestImages.LOCALSTACK_0_10_IMAGE,
+                LocalStackContainer.shouldRunInLegacyMode("0.10")
+            ),
+            Arguments.arguments(
+                "custom",
+                LOCALSTACK_CUSTOM_TAG,
+                LocalStackContainer.shouldRunInLegacyMode(LOCALSTACK_CUSTOM_TAG.getVersionPart())
+            ),
+            Arguments.arguments("0.11 with legacy = on", LocalstackTestImages.LOCALSTACK_0_11_IMAGE, true)
         );
     }
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("localstackVersionWithLegacyOn")
-    void differentPortsAreExposed(String description, LocalStackContainer localstack) {
-        localstack.withServices(Service.S3, Service.SQS);
-        localstack.start();
+    void differentPortsAreExposed(String description, final DockerImageName imageName, final boolean legacyMode) {
+        try (LocalStackContainer localstack = new LocalStackContainer(imageName, legacyMode)) {
+            localstack.withServices(Service.S3, Service.SQS);
+            localstack.start();
 
-        try {
             assertThat(localstack.getExposedPorts()).as("Multiple ports are exposed").hasSizeGreaterThan(1);
             assertThat(localstack.getEndpointOverride(Service.SQS).toString())
                 .as("Endpoint overrides are different")
@@ -87,8 +99,6 @@ class LegacyModeTest {
             assertThat(localstack.getEndpointOverride(Service.SQS).toString())
                 .as("Endpoint configuration have different endpoints")
                 .isNotEqualTo(localstack.getEndpointOverride(Service.S3).toString());
-        } finally {
-            localstack.stop();
         }
     }
 

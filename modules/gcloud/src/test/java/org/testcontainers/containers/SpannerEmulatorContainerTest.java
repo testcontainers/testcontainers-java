@@ -10,6 +10,7 @@ import com.google.cloud.spanner.InstanceAdminClient;
 import com.google.cloud.spanner.InstanceConfigId;
 import com.google.cloud.spanner.InstanceId;
 import com.google.cloud.spanner.InstanceInfo;
+import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
@@ -66,12 +67,14 @@ class SpannerEmulatorContainerTest {
                     return null;
                 });
 
-            ResultSet resultSet = dbClient
-                .readOnlyTransaction()
-                .executeQuery(Statement.of("select * from TestTable order by Key"));
-            resultSet.next();
-            assertThat(resultSet.getLong(0)).isEqualTo(1);
-            assertThat(resultSet.getString(1)).isEqualTo("Java");
+            try (
+                ReadOnlyTransaction transaction = dbClient.readOnlyTransaction();
+                ResultSet resultSet = transaction.executeQuery(Statement.of("select * from TestTable order by Key"))
+            ) {
+                resultSet.next();
+                assertThat(resultSet.getLong(0)).isEqualTo(1);
+                assertThat(resultSet.getString(1)).isEqualTo("Java");
+            }
         }
     }
 

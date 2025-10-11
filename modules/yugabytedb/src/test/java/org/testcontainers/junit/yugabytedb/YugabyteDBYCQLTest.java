@@ -23,9 +23,7 @@ class YugabyteDBYCQLTest {
     void testSmoke() {
         try (
             // creatingYCQLContainer {
-            final YugabyteDBYCQLContainer ycqlContainer = new YugabyteDBYCQLContainer(
-                "yugabytedb/yugabyte:2.14.4.0-b26"
-            )
+            final YugabyteDBYCQLContainer ycqlContainer = new YugabyteDBYCQLContainer(YBDB_TEST_IMAGE)
                 .withUsername("cassandra")
                 .withPassword("cassandra")
             // }

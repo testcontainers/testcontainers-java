@@ -34,9 +34,9 @@ public class RedisBackedCacheTest {
 
     @BeforeMethod
     public void setUp() {
-        Jedis jedis = new Jedis(redis.getHost(), redis.getMappedPort(6379));
-
-        cache = new RedisBackedCache(jedis, "test");
+        try (Jedis jedis = new Jedis(redis.getHost(), redis.getMappedPort(6379))) {
+            cache = new RedisBackedCache(jedis, "test");
+        }
     }
 
     @Test

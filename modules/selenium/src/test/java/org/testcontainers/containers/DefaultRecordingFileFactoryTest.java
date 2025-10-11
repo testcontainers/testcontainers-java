@@ -40,7 +40,7 @@ class DefaultRecordingFileFactoryTest {
     }
 
     @Test
-    public void recordingFileThatShouldDescribeTheTestResultAtThePresentTime(TestInfo testInfo) throws Exception {
+    void recordingFileThatShouldDescribeTheTestResultAtThePresentTime(TestInfo testInfo) throws Exception {
         File vncRecordingDirectory = Files.createTempDirectory("recording").toFile();
         String className = testInfo.getTestClass().orElseThrow(IllegalStateException::new).getSimpleName();
         String description = className + "-" + methodName;

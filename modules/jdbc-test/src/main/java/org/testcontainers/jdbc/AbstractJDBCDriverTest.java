@@ -38,9 +38,11 @@ public class AbstractJDBCDriverTest {
     public EnumSet<Options> options;
 
     public static void sampleInitFunction(Connection connection) throws SQLException {
-        connection.createStatement().execute("CREATE TABLE bar (\n" + "  foo VARCHAR(255)\n" + ");");
-        connection.createStatement().execute("INSERT INTO bar (foo) VALUES ('hello world');");
-        connection.createStatement().execute("CREATE TABLE my_counter (\n" + "  n INT\n" + ");");
+        try (Statement statement = connection.createStatement()) {
+            statement.execute("CREATE TABLE bar (\n" + "  foo VARCHAR(255)\n" + ");");
+            statement.execute("INSERT INTO bar (foo) VALUES ('hello world');");
+            statement.execute("CREATE TABLE my_counter (\n" + "  n INT\n" + ");");
+        }
     }
 
     @AfterAll
@@ -50,7 +52,7 @@ public class AbstractJDBCDriverTest {
 
     @Test
     void test() throws SQLException {
-        try (HikariDataSource dataSource = getDataSource(jdbcUrl, 1)) {
+        try (HikariDataSource dataSource = getDataSource(jdbcUrl)) {
             performSimpleTest(dataSource);
 
             if (options.contains(Options.ScriptedSchema)) {
@@ -181,14 +183,16 @@ public class AbstractJDBCDriverTest {
      * @throws SQLException
      */
     private void performSimpleTestWithCharacterSet(String jdbcUrl) throws SQLException {
-        HikariDataSource datasource1 = verifyCharacterSet(jdbcUrl);
-        HikariDataSource datasource2 = verifyCharacterSet(jdbcUrl);
-        datasource1.close();
-        datasource2.close();
+        try (
+            HikariDataSource ignored = verifyCharacterSet(jdbcUrl);
+            HikariDataSource ignored1 = verifyCharacterSet(jdbcUrl)
+        ) {
+            // Both atasources will be automatically closed
+        }
     }
 
     private HikariDataSource verifyCharacterSet(String jdbcUrl) throws SQLException {
-        HikariDataSource dataSource = getDataSource(jdbcUrl, 1);
+        HikariDataSource dataSource = getDataSource(jdbcUrl);
         boolean result = new QueryRunner(dataSource)
             .query(
                 "SHOW VARIABLES LIKE 'character\\_set\\_connection'",
@@ -208,22 +212,24 @@ public class AbstractJDBCDriverTest {
 
     private void performTestForCustomIniFile(HikariDataSource dataSource) throws SQLException {
         assumeThat(SystemUtils.IS_OS_WINDOWS).isFalse();
-        Statement statement = dataSource.getConnection().createStatement();
-        statement.execute("SELECT @@GLOBAL.innodb_max_undo_log_size");
-        ResultSet resultSet = statement.getResultSet();
-
-        assertThat(resultSet.next()).as("The query returns a result").isTrue();
-        long result = resultSet.getLong(1);
-
-        assertThat(result).as("The InnoDB max undo log size has been set by the ini file content").isEqualTo(20000000);
+        try (Connection connection = dataSource.getConnection(); Statement statement = connection.createStatement()) {
+            statement.execute("SELECT @@GLOBAL.innodb_max_undo_log_size");
+            try (ResultSet rs = statement.getResultSet()) {
+                rs.next();
+                long result = rs.getLong(1);
+                assertThat(result)
+                    .as("The InnoDB max undo log size has been set by the ini file content")
+                    .isEqualTo(20000000);
+            }
+        }
     }
 
-    private HikariDataSource getDataSource(String jdbcUrl, int poolSize) {
+    private HikariDataSource getDataSource(String jdbcUrl) {
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setJdbcUrl(jdbcUrl);
         hikariConfig.setConnectionTestQuery("SELECT 1");
         hikariConfig.setMinimumIdle(1);
-        hikariConfig.setMaximumPoolSize(poolSize);
+        hikariConfig.setMaximumPoolSize(1);
 
         return new HikariDataSource(hikariConfig);
     }

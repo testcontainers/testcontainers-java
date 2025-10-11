@@ -26,9 +26,9 @@ class RedisBackedCacheTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        Jedis jedis = new Jedis(redis.getHost(), redis.getMappedPort(6379));
-
-        cache = new RedisBackedCache(jedis, "test");
+        try (Jedis jedis = new Jedis(redis.getHost(), redis.getMappedPort(6379))) {
+            cache = new RedisBackedCache(jedis, "test");
+        }
     }
 
     @Test

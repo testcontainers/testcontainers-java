@@ -19,10 +19,9 @@ class OrientDBContainerTest {
         ) {
             orientdb.start();
 
-            final ODatabaseSession session = orientdb.getSession();
-            final ODatabaseSession session2 = orientdb.getSession();
-
-            assertThat(session).isSameAs(session2);
+            try (ODatabaseSession session = orientdb.getSession(); ODatabaseSession session2 = orientdb.getSession()) {
+                assertThat(session).isSameAs(session2);
+            }
         }
     }
 
@@ -31,13 +30,13 @@ class OrientDBContainerTest {
         try (OrientDBContainer orientdb = new OrientDBContainer(ORIENTDB_IMAGE)) {
             orientdb.start();
 
-            final ODatabaseSession session = orientdb.getSession();
+            try (ODatabaseSession session = orientdb.getSession()) {
+                session.command("CREATE CLASS Person EXTENDS V");
+                session.command("INSERT INTO Person set name='john'");
+                session.command("INSERT INTO Person set name='jane'");
 
-            session.command("CREATE CLASS Person EXTENDS V");
-            session.command("INSERT INTO Person set name='john'");
-            session.command("INSERT INTO Person set name='jane'");
-
-            assertThat(session.query("SELECT FROM Person").stream()).hasSize(2);
+                assertThat(session.query("SELECT FROM Person").stream()).hasSize(2);
+            }
         }
     }
 
@@ -52,13 +51,13 @@ class OrientDBContainerTest {
         ) {
             orientdb.start();
 
-            final ODatabaseSession session = orientdb.getSession("admin", "admin");
+            try (ODatabaseSession session = orientdb.getSession("admin", "admin")) {
+                session.command("CREATE CLASS Person EXTENDS V");
+                session.command("INSERT INTO Person set name='john'");
+                session.command("INSERT INTO Person set name='jane'");
 
-            session.command("CREATE CLASS Person EXTENDS V");
-            session.command("INSERT INTO Person set name='john'");
-            session.command("INSERT INTO Person set name='jane'");
-
-            assertThat(session.execute("gremlin", "g.V().hasLabel('Person')").stream()).hasSize(2);
+                assertThat(session.execute("gremlin", "g.V().hasLabel('Person')").stream()).hasSize(2);
+            }
         }
     }
 
@@ -74,9 +73,9 @@ class OrientDBContainerTest {
             assertThat(orientdb.getDbUrl())
                 .isEqualTo("remote:" + orientdb.getHost() + ":" + orientdb.getMappedPort(2424) + "/persons");
 
-            final ODatabaseSession session = orientdb.getSession();
-
-            assertThat(session.query("SELECT FROM Person").stream()).hasSize(4);
+            try (ODatabaseSession session = orientdb.getSession()) {
+                assertThat(session.query("SELECT FROM Person").stream()).hasSize(4);
+            }
         }
     }
 }

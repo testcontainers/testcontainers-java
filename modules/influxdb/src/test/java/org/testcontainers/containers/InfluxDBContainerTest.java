@@ -91,7 +91,7 @@ class InfluxDBContainerTest {
                 .withPassword(PASSWORD)
                 .withOrganization(ORG)
                 .withBucket(BUCKET)
-                .withRetention(RETENTION);
+                .withRetention(RETENTION)
             // }
         ) {
             influxDBContainer.start();
@@ -124,16 +124,17 @@ class InfluxDBContainerTest {
         ) {
             influxDBContainer.start();
 
-            try (final InfluxDBClient influxDBClient = createClient(influxDBContainer)) {
-                try (final WriteApi writeApi = influxDBClient.makeWriteApi()) {
-                    final Point point = Point
-                        .measurement("temperature")
-                        .addTag("location", "west")
-                        .addField("value", 55.0D)
-                        .time(Instant.now().toEpochMilli(), WritePrecision.MS);
+            try (
+                final InfluxDBClient influxDBClient = createClient(influxDBContainer);
+                final WriteApi writeApi = influxDBClient.makeWriteApi()
+            ) {
+                final Point point = Point
+                    .measurement("temperature")
+                    .addTag("location", "west")
+                    .addField("value", 55.0D)
+                    .time(Instant.now().toEpochMilli(), WritePrecision.MS);
 
-                    writeApi.writePoint(point);
-                }
+                writeApi.writePoint(point);
 
                 final String flux = String.format("from(bucket:\"%s\") |> range(start: 0)", BUCKET);
 

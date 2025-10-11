@@ -27,7 +27,7 @@ class AzuriteContainerTest {
     private static Properties originalSystemProperties;
 
     @BeforeAll
-    public static void captureOriginalSystemProperties() {
+    static void captureOriginalSystemProperties() {
         originalSystemProperties = (Properties) System.getProperties().clone();
         System.setProperty(
             "javax.net.ssl.trustStore",
@@ -38,7 +38,7 @@ class AzuriteContainerTest {
     }
 
     @AfterAll
-    public static void restoreOriginalSystemProperties() {
+    static void restoreOriginalSystemProperties() {
         System.setProperties(originalSystemProperties);
     }
 

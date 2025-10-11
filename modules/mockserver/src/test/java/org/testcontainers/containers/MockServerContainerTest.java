@@ -3,6 +3,7 @@ package org.testcontainers.containers;
 import io.restassured.config.RestAssuredConfig;
 import io.restassured.config.SSLConfig;
 import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockserver.client.MockServerClient;
 import org.mockserver.configuration.Configuration;
@@ -22,76 +23,76 @@ class MockServerContainerTest {
         .withTag("mockserver-" + MockServerClient.class.getPackage().getImplementationVersion());
 
     @Test
-    void shouldCallActualMockserverVersion() throws Exception {
-        try (MockServerContainer mockServer = new MockServerContainer(MOCKSERVER_IMAGE)) {
-            mockServer.start();
-
-            String expectedBody = "Hello World!";
-
-            try (MockServerClient client = new MockServerClient(mockServer.getHost(), mockServer.getServerPort())) {
-                assertThat(client.hasStarted()).as("Mockserver running").isTrue();
-
-                client.when(request().withPath("/hello")).respond(response().withBody(expectedBody));
-
-                assertThat(given().when().get(mockServer.getEndpoint() + "/hello").then().extract().body().asString())
-                    .as("MockServer returns correct result")
-                    .isEqualTo(expectedBody);
-            }
-        }
-    }
-
-    @Test
-    void shouldCallMockserverUsingTlsProtocol() throws Exception {
-        try (MockServerContainer mockServer = new MockServerContainer(MOCKSERVER_IMAGE)) {
-            mockServer.start();
-
-            String expectedBody = "Hello World!";
-
-            try (
-                MockServerClient client = new MockServerClient(mockServer.getHost(), mockServer.getServerPort())
-                    .withSecure(true)
-            ) {
-                assertThat(client.hasStarted()).as("Mockserver running").isTrue();
-
-                client.when(request().withPath("/hello")).respond(response().withBody(expectedBody));
-
-                assertThat(secureResponseFromMockserver(mockServer))
-                    .as("MockServer returns correct result")
-                    .isEqualTo(expectedBody);
-            }
-        }
-    }
-
-    @Test
-    void shouldCallMockserverUsingMutualTlsProtocol() throws Exception {
+    void shouldCallActualMockserverVersion() {
         try (
-            MockServerContainer mockServer = new MockServerContainer(MOCKSERVER_IMAGE)
-                .withEnv("MOCKSERVER_TLS_MUTUAL_AUTHENTICATION_REQUIRED", "true")
+            MockServerContainer mockServer = new MockServerContainer(MOCKSERVER_IMAGE);
+            MockServerClient client = new MockServerClient(mockServer.getHost(), mockServer.getServerPort())
         ) {
             mockServer.start();
 
             String expectedBody = "Hello World!";
 
-            try (
-                MockServerClient client = new MockServerClient(mockServer.getHost(), mockServer.getServerPort())
-                    .withSecure(true)
-            ) {
-                assertThat(client.hasStarted()).as("Mockserver running").isTrue();
+            assertThat(client.hasStarted()).as("Mockserver running").isTrue();
 
-                client.when(request().withPath("/hello")).respond(response().withBody(expectedBody));
+            client.when(request().withPath("/hello")).respond(response().withBody(expectedBody));
 
-                assertThat(secureResponseFromMockserver(mockServer))
-                    .as("MockServer returns correct result")
-                    .isEqualTo(expectedBody);
-            }
+            assertThat(given().when().get(mockServer.getEndpoint() + "/hello").then().extract().body().asString())
+                .as("MockServer returns correct result")
+                .isEqualTo(expectedBody);
+        }
+    }
+
+    @Test
+    void shouldCallMockserverUsingTlsProtocol() {
+        try (
+            MockServerContainer mockServer = new MockServerContainer(MOCKSERVER_IMAGE);
+            MockServerClient client = new MockServerClient(mockServer.getHost(), mockServer.getServerPort())
+                .withSecure(true)
+        ) {
+            mockServer.start();
+
+            String expectedBody = "Hello World!";
+
+            assertThat(client.hasStarted()).as("Mockserver running").isTrue();
+
+            client.when(request().withPath("/hello")).respond(response().withBody(expectedBody));
+
+            assertThat(secureResponseFromMockserver(mockServer))
+                .as("MockServer returns correct result")
+                .isEqualTo(expectedBody);
+        }
+    }
+
+    @Test
+    void shouldCallMockserverUsingMutualTlsProtocol() {
+        try (
+            MockServerContainer mockServer = new MockServerContainer(MOCKSERVER_IMAGE)
+                .withEnv("MOCKSERVER_TLS_MUTUAL_AUTHENTICATION_REQUIRED", "true");
+            MockServerClient client = new MockServerClient(mockServer.getHost(), mockServer.getServerPort())
+                .withSecure(true)
+        ) {
+            mockServer.start();
+
+            String expectedBody = "Hello World!";
+            assertThat(client.hasStarted()).as("Mockserver running").isTrue();
+
+            client.when(request().withPath("/hello")).respond(response().withBody(expectedBody));
+
+            assertThat(secureResponseFromMockserver(mockServer))
+                .as("MockServer returns correct result")
+                .isEqualTo(expectedBody);
         }
     }
 
     @Test
     void newVersionStartsWithDefaultWaitStrategy() {
-        try (MockServerContainer mockServer = new MockServerContainer(MOCKSERVER_IMAGE)) {
-            mockServer.start();
-        }
+        Assertions
+            .assertThatNoException()
+            .isThrownBy(() -> {
+                try (MockServerContainer mockServer = new MockServerContainer(MOCKSERVER_IMAGE)) {
+                    mockServer.start();
+                }
+            });
     }
 
     private static String secureResponseFromMockserver(MockServerContainer mockServer) {

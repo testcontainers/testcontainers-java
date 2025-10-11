@@ -8,7 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class EnabledIfDockerAvailableTests {
+class EnabledIfDockerAvailableTests {
 
     @Test
     void whenDockerIsAvailableTestsAreEnabled() {
@@ -41,6 +41,7 @@ public class EnabledIfDockerAvailableTests {
             this.dockerAvailable = dockerAvailable;
         }
 
+        @Override
         boolean isDockerAvailable() {
             return dockerAvailable;
         }

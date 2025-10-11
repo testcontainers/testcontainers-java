@@ -72,7 +72,7 @@ class ScriptSplittingTest {
     void testSplittingEnquotedSemicolon() {
         String script = "CREATE TABLE `bar;bar` (\n" + "  end_time VARCHAR(255)\n" + ");";
 
-        List<String> expected = Arrays.asList("CREATE TABLE `bar;bar` ( end_time VARCHAR(255) )");
+        List<String> expected = Collections.singletonList("CREATE TABLE `bar;bar` ( end_time VARCHAR(255) )");
 
         splitAndCompare(script, expected);
     }
@@ -119,7 +119,7 @@ class ScriptSplittingTest {
     void testBlockCommentExclusion() {
         String script = "INSERT INTO bar (foo) /* ; */ VALUES ('hello world');";
 
-        List<String> expected = Arrays.asList("INSERT INTO bar (foo) VALUES ('hello world')");
+        List<String> expected = Collections.singletonList("INSERT INTO bar (foo) VALUES ('hello world')");
 
         splitAndCompare(script, expected);
     }
@@ -129,7 +129,7 @@ class ScriptSplittingTest {
         String script =
             "INSERT INTO something_end (begin_with_the_token, another_field) /*end*/ VALUES /* end */ (' begin ', `end`)-- begin\n;";
 
-        List<String> expected = Arrays.asList(
+        List<String> expected = Collections.singletonList(
             "INSERT INTO something_end (begin_with_the_token, another_field) VALUES (' begin ', `end`)"
         );
 
@@ -233,7 +233,7 @@ class ScriptSplittingTest {
             "\n" +
             "  END /*; */;";
 
-        List<String> expected = Arrays.asList(
+        List<String> expected = Collections.singletonList(
             "CREATE PROCEDURE count_foo() BEGIN\n" +
             "\n" +
             "    BEGIN\n" +

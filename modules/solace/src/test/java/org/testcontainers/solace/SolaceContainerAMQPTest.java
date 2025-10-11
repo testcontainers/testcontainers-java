@@ -18,7 +18,6 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
 
 class SolaceContainerAMQPTest {
 
@@ -29,7 +28,7 @@ class SolaceContainerAMQPTest {
     private static final String TOPIC_NAME = "Topic/ActualTopic";
 
     @Test
-    void testSolaceContainer() throws JMSException {
+    void testSolaceContainer() throws JMSException, InterruptedException {
         try (
             SolaceContainer solaceContainer = new SolaceContainer("solace/solace-pubsub-standard:10.25.0")
                 .withTopic(TOPIC_NAME, Service.AMQP)
@@ -37,44 +36,36 @@ class SolaceContainerAMQPTest {
         ) {
             solaceContainer.start();
             // solaceContainerUsage {
-            Session session = createSession(
+            ConnectionFactory connectionFactory = new JmsConnectionFactory(
                 solaceContainer.getUsername(),
                 solaceContainer.getPassword(),
                 solaceContainer.getOrigin(Service.AMQP)
             );
-            // }
-            assertThat(session).isNotNull();
-            assertThat(consumeMessageFromSolace(session)).isEqualTo(MESSAGE);
-            session.close();
-        }
-    }
-
-    private static Session createSession(String username, String password, String host) {
-        try {
-            ConnectionFactory connectionFactory = new JmsConnectionFactory(username, password, host);
-            Connection connection = connectionFactory.createConnection();
-            Session session = connection.createSession();
-            connection.start();
-            return session;
-        } catch (Exception e) {
-            fail("Error connecting and setting up session! " + e.getMessage());
-            return null;
+            try (
+                Connection connection = connectionFactory.createConnection();
+                Session session = connection.createSession()
+            ) {
+                // }
+                connection.start();
+                assertThat(session).isNotNull();
+                assertThat(consumeMessageFromSolace(session)).isEqualTo(MESSAGE);
+            }
         }
     }
 
     private void publishMessageToSolace(Session session, Topic topic) throws JMSException {
-        MessageProducer messageProducer = session.createProducer(topic);
-        TextMessage message = session.createTextMessage(MESSAGE);
-        messageProducer.send(message);
-        messageProducer.close();
+        try (MessageProducer messageProducer = session.createProducer(topic)) {
+            TextMessage message = session.createTextMessage(MESSAGE);
+            messageProducer.send(message);
+        }
     }
 
-    private String consumeMessageFromSolace(Session session) {
+    private String consumeMessageFromSolace(Session session) throws JMSException, InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
-        try {
-            String[] result = new String[1];
-            Topic topic = session.createTopic(TOPIC_NAME);
-            MessageConsumer messageConsumer = session.createConsumer(topic);
+
+        String[] result = new String[1];
+        Topic topic = session.createTopic(TOPIC_NAME);
+        try (MessageConsumer messageConsumer = session.createConsumer(topic)) {
             messageConsumer.setMessageListener(message -> {
                 try {
                     if (message instanceof TextMessage) {
@@ -90,8 +81,6 @@ class SolaceContainerAMQPTest {
             assertThat(latch.await(10L, TimeUnit.SECONDS)).isTrue();
             messageConsumer.close();
             return result[0];
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot receive message from solace", e);
         }
     }
 }

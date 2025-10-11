@@ -269,12 +269,12 @@ class RabbitMQContainerTest {
                     connectionFactory.enableHostnameVerification();
                     connectionFactory.setUri(container.getAmqpsUrl());
                     connectionFactory.setPassword(container.getAdminPassword());
-                    Connection connection = connectionFactory.newConnection();
-                    Channel channel = connection
-                        .openChannel()
-                        .orElseThrow(() -> new RuntimeException("Failed to Open channel"));
-                    channel.close();
-                    connection.close();
+                    try (Connection connection = connectionFactory.newConnection()) {
+                        Channel channel = connection
+                            .openChannel()
+                            .orElseThrow(() -> new RuntimeException("Failed to Open channel"));
+                        channel.close();
+                    }
                 })
                 .doesNotThrowAnyException();
         }

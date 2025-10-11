@@ -1,5 +1,6 @@
 package org.testcontainers.junit.mysql;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
@@ -42,11 +44,18 @@ class SimpleMySQLTest extends AbstractContainerDatabaseTest {
         ) {
             mysql.start();
 
-            ResultSet resultSet = performQuery(mysql, "SELECT 1");
-            int resultSetInt = resultSet.getInt(1);
-
-            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
-            assertHasCorrectExposedAndLivenessCheckPorts(mysql);
+            performQuery(
+                mysql,
+                "SELECT 1",
+                resultSet -> {
+                    assertThatNoException()
+                        .isThrownBy(() -> {
+                            int resultSetInt = resultSet.getInt(1);
+                            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+                            assertHasCorrectExposedAndLivenessCheckPorts(mysql);
+                        });
+                }
+            );
         }
     }
 
@@ -59,12 +68,19 @@ class SimpleMySQLTest extends AbstractContainerDatabaseTest {
         ) {
             mysqlOldVersion.start();
 
-            ResultSet resultSet = performQuery(mysqlOldVersion, "SELECT VERSION()");
-            String resultSetString = resultSet.getString(1);
-
-            assertThat(resultSetString)
-                .as("The database version can be set using a container rule parameter")
-                .startsWith("8.0");
+            performQuery(
+                mysqlOldVersion,
+                "SELECT VERSION()",
+                resultSet -> {
+                    assertThatNoException()
+                        .isThrownBy(() -> {
+                            String resultSetString = resultSet.getString(1);
+                            assertThat(resultSetString)
+                                .as("The database version can be set using a container rule parameter")
+                                .startsWith("8.0");
+                        });
+                }
+            );
         }
     }
 
@@ -88,10 +104,19 @@ class SimpleMySQLTest extends AbstractContainerDatabaseTest {
         ) {
             mysqlCustomConfig.start();
 
-            ResultSet resultSet = performQuery(mysqlCustomConfig, "show variables like 'auto_increment_increment'");
-            String result = resultSet.getString("Value");
-
-            assertThat(result).as("Auto increment increment should be overridden by command line").isEqualTo("42");
+            performQuery(
+                mysqlCustomConfig,
+                "show variables like 'auto_increment_increment'",
+                resultSet -> {
+                    assertThatNoException()
+                        .isThrownBy(() -> {
+                            String result = resultSet.getString("Value");
+                            assertThat(result)
+                                .as("Auto increment increment should be overridden by command line")
+                                .isEqualTo("42");
+                        });
+                }
+            );
         }
     }
 
@@ -104,10 +129,19 @@ class SimpleMySQLTest extends AbstractContainerDatabaseTest {
         ) {
             container.start();
 
-            ResultSet resultSet = performQuery(container, "SELECT foo FROM bar");
-            String firstColumnValue = resultSet.getString(1);
-
-            assertThat(firstColumnValue).as("Value from init script should equal real value").isEqualTo("hello world");
+            performQuery(
+                container,
+                "SELECT foo FROM bar",
+                resultSet -> {
+                    assertThatNoException()
+                        .isThrownBy(() -> {
+                            String firstColumnValue = resultSet.getString(1);
+                            assertThat(firstColumnValue)
+                                .as("Value from init script should equal real value")
+                                .isEqualTo("hello world");
+                        });
+                }
+            );
         }
     }
 
@@ -138,89 +172,100 @@ class SimpleMySQLTest extends AbstractContainerDatabaseTest {
         ) {
             mysql.start();
 
-            ResultSet resultSet = performQuery(mysql, "SELECT 1");
-            int resultSetInt = resultSet.getInt(1);
-
-            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+            performQuery(
+                mysql,
+                "SELECT 1",
+                resultSet -> {
+                    assertThatNoException()
+                        .isThrownBy(() -> {
+                            int resultSetInt = resultSet.getInt(1);
+                            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+                        });
+                }
+            );
         }
     }
 
     @Test
     void testWithAdditionalUrlParamTimeZone() throws SQLException {
-        MySQLContainer<?> mysql = new MySQLContainer<>(MySQLTestImages.MYSQL_80_IMAGE)
-            .withUrlParam("serverTimezone", "Europe/Zurich")
-            .withEnv("TZ", "Europe/Zurich")
-            .withLogConsumer(new Slf4jLogConsumer(logger));
-        mysql.start();
+        try (
+            MySQLContainer<?> mysql = new MySQLContainer<>(MySQLTestImages.MYSQL_80_IMAGE)
+                .withUrlParam("serverTimezone", "Europe/Zurich")
+                .withEnv("TZ", "Europe/Zurich")
+                .withLogConsumer(new Slf4jLogConsumer(logger))
+        ) {
+            mysql.start();
 
-        try (Connection connection = mysql.createConnection("")) {
-            Statement statement = connection.createStatement();
-            statement.execute("SELECT NOW();");
-            try (ResultSet resultSet = statement.getResultSet()) {
-                resultSet.next();
+            try (
+                Connection connection = mysql.createConnection("");
+                Statement statement = connection.createStatement()
+            ) {
+                statement.execute("SELECT NOW();");
+                try (ResultSet resultSet = statement.getResultSet()) {
+                    resultSet.next();
 
-                // checking that the time_zone MySQL is Europe/Zurich
-                LocalDateTime localDateTime = resultSet.getObject(1, LocalDateTime.class);
-                ZonedDateTime actualDateTime = localDateTime
-                    .atZone(ZoneId.of("Europe/Zurich"))
-                    .truncatedTo(ChronoUnit.MINUTES);
-                ZonedDateTime expectedDateTime = ZonedDateTime
-                    .now(ZoneId.of("Europe/Zurich"))
-                    .truncatedTo(ChronoUnit.MINUTES);
+                    // checking that the time_zone MySQL is Europe/Zurich
+                    LocalDateTime localDateTime = resultSet.getObject(1, LocalDateTime.class);
+                    ZonedDateTime actualDateTime = localDateTime
+                        .atZone(ZoneId.of("Europe/Zurich"))
+                        .truncatedTo(ChronoUnit.MINUTES);
+                    ZonedDateTime expectedDateTime = ZonedDateTime
+                        .now(ZoneId.of("Europe/Zurich"))
+                        .truncatedTo(ChronoUnit.MINUTES);
 
-                String message = String.format(
-                    "MySQL time zone is not Europe/Zurich. MySQL date:%s, current date:%s",
-                    actualDateTime,
-                    expectedDateTime
-                );
-                assertThat(actualDateTime).as(message).isEqualTo(expectedDateTime);
+                    String message = String.format(
+                        "MySQL time zone is not Europe/Zurich. MySQL date:%s, current date:%s",
+                        actualDateTime,
+                        expectedDateTime
+                    );
+                    assertThat(actualDateTime).as(message).isEqualTo(expectedDateTime);
+                }
             }
-        } finally {
-            mysql.stop();
         }
     }
 
     @Test
     void testWithAdditionalUrlParamMultiQueries() throws SQLException {
-        MySQLContainer<?> mysql = new MySQLContainer<>(MySQLTestImages.MYSQL_80_IMAGE)
-            .withUrlParam("allowMultiQueries", "true")
-            .withLogConsumer(new Slf4jLogConsumer(logger));
-        mysql.start();
+        try (
+            MySQLContainer<?> mysql = new MySQLContainer<>(MySQLTestImages.MYSQL_80_IMAGE)
+                .withUrlParam("allowMultiQueries", "true")
+                .withLogConsumer(new Slf4jLogConsumer(logger))
+        ) {
+            mysql.start();
 
-        try (Connection connection = mysql.createConnection("")) {
-            Statement statement = connection.createStatement();
-            String multiQuery =
-                "DROP TABLE IF EXISTS bar; " +
-                "CREATE TABLE bar (foo VARCHAR(20)); " +
-                "INSERT INTO bar (foo) VALUES ('hello world');";
-            statement.execute(multiQuery);
-            statement.execute("SELECT foo FROM bar;");
-            try (ResultSet resultSet = statement.getResultSet()) {
-                resultSet.next();
-                String firstColumnValue = resultSet.getString(1);
-                assertThat(firstColumnValue).as("Value from bar should equal real value").isEqualTo("hello world");
+            try (
+                Connection connection = mysql.createConnection("");
+                Statement statement = connection.createStatement()
+            ) {
+                String multiQuery =
+                    "DROP TABLE IF EXISTS bar; " +
+                    "CREATE TABLE bar (foo VARCHAR(20)); " +
+                    "INSERT INTO bar (foo) VALUES ('hello world');";
+                statement.execute(multiQuery);
+                statement.execute("SELECT foo FROM bar;");
+                try (ResultSet resultSet = statement.getResultSet()) {
+                    resultSet.next();
+                    String firstColumnValue = resultSet.getString(1);
+                    assertThat(firstColumnValue).as("Value from bar should equal real value").isEqualTo("hello world");
+                }
             }
-        } finally {
-            mysql.stop();
         }
     }
 
     @Test
     void testWithAdditionalUrlParamInJdbcUrl() {
-        MySQLContainer<?> mysql = new MySQLContainer<>(MySQLTestImages.MYSQL_80_IMAGE)
-            .withUrlParam("allowMultiQueries", "true")
-            .withUrlParam("rewriteBatchedStatements", "true")
-            .withLogConsumer(new Slf4jLogConsumer(logger));
-
-        try {
+        try (
+            MySQLContainer<?> mysql = new MySQLContainer<>(MySQLTestImages.MYSQL_80_IMAGE)
+                .withUrlParam("allowMultiQueries", "true")
+                .withUrlParam("rewriteBatchedStatements", "true")
+                .withLogConsumer(new Slf4jLogConsumer(logger))
+        ) {
             mysql.start();
             String jdbcUrl = mysql.getJdbcUrl();
             assertThat(jdbcUrl).contains("?");
             assertThat(jdbcUrl).contains("&");
             assertThat(jdbcUrl).contains("rewriteBatchedStatements=true");
             assertThat(jdbcUrl).contains("allowMultiQueries=true");
-        } finally {
-            mysql.stop();
         }
     }
 
@@ -234,8 +279,9 @@ class SimpleMySQLTest extends AbstractContainerDatabaseTest {
         ) {
             URL resource = this.getClass().getClassLoader().getResource("somepath/mysql_conf_override");
 
+            Assertions.assertNotNull(resource);
             File file = new File(resource.toURI());
-            assertThat(file.isDirectory()).isTrue();
+            assertThat(file).isDirectory();
 
             Set<PosixFilePermission> permissions = new HashSet<>(
                 Arrays.asList(
@@ -258,11 +304,18 @@ class SimpleMySQLTest extends AbstractContainerDatabaseTest {
     }
 
     private void assertThatCustomIniFileWasUsed(MySQLContainer<?> mysql) throws SQLException {
-        try (ResultSet resultSet = performQuery(mysql, "SELECT @@GLOBAL.innodb_max_undo_log_size")) {
-            long result = resultSet.getLong(1);
-            assertThat(result)
-                .as("The InnoDB max undo log size has been set by the ini file content")
-                .isEqualTo(20000000);
-        }
+        performQuery(
+            mysql,
+            "SELECT @@GLOBAL.innodb_max_undo_log_size",
+            resultSet -> {
+                assertThatNoException()
+                    .isThrownBy(() -> {
+                        long result = resultSet.getLong(1);
+                        assertThat(result)
+                            .as("The InnoDB max undo log size has been set by the ini file content")
+                            .isEqualTo(20000000);
+                    });
+            }
+        );
     }
 }

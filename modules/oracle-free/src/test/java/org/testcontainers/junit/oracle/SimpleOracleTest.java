@@ -5,11 +5,11 @@ import org.testcontainers.db.AbstractContainerDatabaseTest;
 import org.testcontainers.oracle.OracleContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class SimpleOracleTest extends AbstractContainerDatabaseTest {
 
@@ -26,9 +26,17 @@ class SimpleOracleTest extends AbstractContainerDatabaseTest {
 
         //Test we can get a connection
         container.start();
-        ResultSet resultSet = performQuery(container, "SELECT 1 FROM dual");
-        int resultSetInt = resultSet.getInt(1);
-        assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+        performQuery(
+            container,
+            "SELECT 1 FROM dual",
+            resultSet -> {
+                assertThatNoException()
+                    .isThrownBy(() -> {
+                        int resultSetInt = resultSet.getInt(1);
+                        assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+                    });
+            }
+        );
     }
 
     @Test
@@ -98,49 +106,31 @@ class SimpleOracleTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    void testErrorPaths() throws SQLException {
+    void testErrorPaths() {
         try (OracleContainer oracle = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME)) {
-            try {
-                oracle.withDatabaseName("FREEPDB1");
-                fail("Should not have been able to set database name to freepdb1.");
-            } catch (IllegalArgumentException e) {
-                //expected
-            }
+            assertThatThrownBy(() -> oracle.withDatabaseName("FREEPDB1"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Should not have been able to set database name to freepdb1.");
 
-            try {
-                oracle.withDatabaseName("");
-                fail("Should not have been able to set database name to nothing.");
-            } catch (IllegalArgumentException e) {
-                //expected
-            }
+            assertThatThrownBy(() -> oracle.withDatabaseName(""))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Should not have been able to set database name to nothing.");
 
-            try {
-                oracle.withUsername("SYSTEM");
-                fail("Should not have been able to set username to system.");
-            } catch (IllegalArgumentException e) {
-                //expected
-            }
+            assertThatThrownBy(() -> oracle.withUsername("SYSTEM"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Should not have been able to set username to system.");
 
-            try {
-                oracle.withUsername("SYS");
-                fail("Should not have been able to set username to sys.");
-            } catch (IllegalArgumentException e) {
-                //expected
-            }
+            assertThatThrownBy(() -> oracle.withUsername("SYS"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Should not have been able to set username to sys.");
 
-            try {
-                oracle.withUsername("");
-                fail("Should not have been able to set username to nothing.");
-            } catch (IllegalArgumentException e) {
-                //expected
-            }
+            assertThatThrownBy(() -> oracle.withUsername(""))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Should not have been able to set username to nothing.");
 
-            try {
-                oracle.withPassword("");
-                fail("Should not have been able to set password to nothing.");
-            } catch (IllegalArgumentException e) {
-                //expected
-            }
+            assertThatThrownBy(() -> oracle.withPassword(""))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Should not have been able to set password to nothing.");
         }
     }
 }

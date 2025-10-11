@@ -48,7 +48,7 @@ class FixedHostPortContainerTest {
         // first find a free port on the docker host that will work for testing
         final Integer unusedHostPort;
         try (
-            final GenericContainer echoServer = new GenericContainer(TestImages.TINY_IMAGE)
+            final GenericContainer<?> echoServer = new GenericContainer(TestImages.TINY_IMAGE)
                 .withExposedPorts(TEST_PORT)
                 .withCommand("/bin/sh", "-c", HTTP_ECHO_CMD)
         ) {
@@ -58,7 +58,7 @@ class FixedHostPortContainerTest {
 
         // now starting echo server container mapped to known-as-free host port
         try (
-            final GenericContainer echoServer = new FixedHostPortGenericContainer(TEST_IMAGE)
+            final GenericContainer<?> echoServer = new FixedHostPortGenericContainer(TEST_IMAGE)
                 // using workaround for port bind+expose
                 .withFixedExposedPort(unusedHostPort, TEST_PORT)
                 .withExposedPorts(TEST_PORT)
@@ -83,7 +83,7 @@ class FixedHostPortContainerTest {
      * @return socket reader content
      * @throws IOException if any
      */
-    private String readResponse(GenericContainer container, Integer port) throws IOException {
+    private String readResponse(GenericContainer<?> container, Integer port) throws IOException {
         try (
             Socket socket = Awaitility
                 .await()

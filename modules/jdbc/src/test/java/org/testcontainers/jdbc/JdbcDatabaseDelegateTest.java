@@ -21,11 +21,12 @@ class JdbcDatabaseDelegateTest {
 
     @Test
     void testLeakedConnections() {
-        final JdbcDatabaseContainerStub stub = new JdbcDatabaseContainerStub(DockerImageName.parse("something"));
-        try (JdbcDatabaseDelegate delegate = new JdbcDatabaseDelegate(stub, "")) {
-            delegate.execute("foo", null, 0, false, false);
+        try (JdbcDatabaseContainerStub stub = new JdbcDatabaseContainerStub(DockerImageName.parse("something"))) {
+            try (JdbcDatabaseDelegate delegate = new JdbcDatabaseDelegate(stub, "")) {
+                delegate.execute("foo", null, 0, false, false);
+            }
+            assertThat(stub.openConnectionsList.size()).isZero();
         }
-        assertThat(stub.openConnectionsList.size()).isZero();
     }
 
     static class JdbcDatabaseContainerStub extends JdbcDatabaseContainer {

@@ -13,7 +13,6 @@ import redis.clients.jedis.Jedis;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -23,7 +22,7 @@ public abstract class BaseComposeTest {
 
     protected abstract ComposeContainer getEnvironment();
 
-    private List<String> existingNetworks = new ArrayList<>();
+    private final List<String> existingNetworks = new ArrayList<>();
 
     @BeforeAll
     public static void checkVersion() {
@@ -32,33 +31,39 @@ public abstract class BaseComposeTest {
 
     @Test
     void simpleTest() {
-        Jedis jedis = new Jedis(
-            getEnvironment().getServiceHost("redis-1", REDIS_PORT),
-            getEnvironment().getServicePort("redis-1", REDIS_PORT)
-        );
+        try (
+            Jedis jedis = new Jedis(
+                getEnvironment().getServiceHost("redis-1", REDIS_PORT),
+                getEnvironment().getServicePort("redis-1", REDIS_PORT)
+            )
+        ) {
+            jedis.incr("test");
+            jedis.incr("test");
+            jedis.incr("test");
 
-        jedis.incr("test");
-        jedis.incr("test");
-        jedis.incr("test");
-
-        assertThat(jedis.get("test")).as("A redis instance defined in compose can be used in isolation").isEqualTo("3");
+            assertThat(jedis.get("test"))
+                .as("A redis instance defined in compose can be used in isolation")
+                .isEqualTo("3");
+        }
     }
 
     @Test
     void secondTest() {
         // used in manual checking for cleanup in between tests
-        Jedis jedis = new Jedis(
-            getEnvironment().getServiceHost("redis-1", REDIS_PORT),
-            getEnvironment().getServicePort("redis-1", REDIS_PORT)
-        );
+        try (
+            Jedis jedis = new Jedis(
+                getEnvironment().getServiceHost("redis-1", REDIS_PORT),
+                getEnvironment().getServicePort("redis-1", REDIS_PORT)
+            )
+        ) {
+            jedis.incr("test");
+            jedis.incr("test");
+            jedis.incr("test");
 
-        jedis.incr("test");
-        jedis.incr("test");
-        jedis.incr("test");
-
-        assertThat(jedis.get("test")).as("Tests use fresh container instances").isEqualTo("3");
-        // if these end up using the same container one of the test methods will fail.
-        // However, @Rule creates a separate DockerComposeContainer instance per test, so this just shouldn't happen
+            assertThat(jedis.get("test")).as("Tests use fresh container instances").isEqualTo("3");
+            // if these end up using the same container one of the test methods will fail.
+            // However, @Rule creates a separate DockerComposeContainer instance per test, so this just shouldn't happen
+        }
     }
 
     @BeforeEach
@@ -80,6 +85,6 @@ public abstract class BaseComposeTest {
             .stream()
             .map(Network::getName)
             .sorted()
-            .collect(Collectors.toList());
+            .toList();
     }
 }

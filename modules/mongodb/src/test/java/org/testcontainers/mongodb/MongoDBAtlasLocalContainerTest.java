@@ -62,7 +62,7 @@ class MongoDBAtlasLocalContainerTest {
             // creatingAtlasLocalContainer {
             MongoDBAtlasLocalContainer atlasLocalContainer = new MongoDBAtlasLocalContainer(
                 "mongodb/mongodb-atlas-local:7.0.9"
-            );
+            )
             // }
         ) {
             // startingAtlasLocalContainer {

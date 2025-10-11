@@ -137,8 +137,7 @@ class CassandraContainerTest {
     }
 
     private ResultSet performQuery(Cluster cluster, String cql) {
-        try (Cluster closeableCluster = cluster) {
-            Session session = closeableCluster.newSession();
+        try (Cluster closeableCluster = cluster; Session session = closeableCluster.newSession()) {
             return session.execute(cql);
         }
     }

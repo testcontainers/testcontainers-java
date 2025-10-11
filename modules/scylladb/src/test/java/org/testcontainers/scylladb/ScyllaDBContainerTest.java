@@ -49,16 +49,19 @@ class ScyllaDBContainerTest {
         ) {
             scylladb.start();
             // session {
-            CqlSession session = CqlSession
-                .builder()
-                .addContactPoint(scylladb.getContactPoint())
-                .withLocalDatacenter("datacenter1")
-                .build();
-            // }
-            ResultSet resultSet = session.execute(BASIC_QUERY);
-            assertThat(resultSet.wasApplied()).isTrue();
-            assertThat(resultSet.one().getString(0)).isNotNull();
-            assertThat(session.getMetadata().getNodes().values()).hasSize(1);
+            try (
+                CqlSession session = CqlSession
+                    .builder()
+                    .addContactPoint(scylladb.getContactPoint())
+                    .withLocalDatacenter("datacenter1")
+                    .build()
+            ) {
+                // }
+                ResultSet resultSet = session.execute(BASIC_QUERY);
+                assertThat(resultSet.wasApplied()).isTrue();
+                assertThat(resultSet.one().getString(0)).isNotNull();
+                assertThat(session.getMetadata().getNodes().values()).hasSize(1);
+            }
         }
     }
 
@@ -107,16 +110,19 @@ class ScyllaDBContainerTest {
 
             scylladb.start();
 
-            CqlSession session = CqlSession
-                .builder()
-                .addContactPoint(scylladb.getContactPoint())
-                .withLocalDatacenter("datacenter1")
-                .withSslContext(sslContext)
-                .build();
-            ResultSet resultSet = session.execute(BASIC_QUERY);
-            assertThat(resultSet.wasApplied()).isTrue();
-            assertThat(resultSet.one().getString(0)).isNotNull();
-            assertThat(session.getMetadata().getNodes().values()).hasSize(1);
+            try (
+                CqlSession session = CqlSession
+                    .builder()
+                    .addContactPoint(scylladb.getContactPoint())
+                    .withLocalDatacenter("datacenter1")
+                    .withSslContext(sslContext)
+                    .build()
+            ) {
+                ResultSet resultSet = session.execute(BASIC_QUERY);
+                assertThat(resultSet.wasApplied()).isTrue();
+                assertThat(resultSet.one().getString(0)).isNotNull();
+                assertThat(session.getMetadata().getNodes().values()).hasSize(1);
+            }
         }
     }
 
@@ -148,15 +154,18 @@ class ScyllaDBContainerTest {
         try (ScyllaDBContainer scylladb = new ScyllaDBContainer(SCYLLADB_IMAGE)) {
             scylladb.start();
             // shardAwarenessSession {
-            CqlSession session = CqlSession
-                .builder()
-                .addContactPoint(scylladb.getShardAwareContactPoint())
-                .withLocalDatacenter("datacenter1")
-                .build();
-            // }
-            ResultSet resultSet = session.execute("SELECT driver_name FROM system.clients");
-            assertThat(resultSet.one().getString(0)).isNotNull();
-            assertThat(session.getMetadata().getNodes().values()).hasSize(1);
+            try (
+                CqlSession session = CqlSession
+                    .builder()
+                    .addContactPoint(scylladb.getShardAwareContactPoint())
+                    .withLocalDatacenter("datacenter1")
+                    .build()
+            ) {
+                // }
+                ResultSet resultSet = session.execute("SELECT driver_name FROM system.clients");
+                assertThat(resultSet.one().getString(0)).isNotNull();
+                assertThat(session.getMetadata().getNodes().values()).hasSize(1);
+            }
         }
     }
 
@@ -169,25 +178,32 @@ class ScyllaDBContainerTest {
             scylladb.start();
 
             // dynamodDbClient {
-            DynamoDbClient client = DynamoDbClient
-                .builder()
-                .endpointOverride(URI.create(scylladb.getAlternatorEndpoint()))
-                .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create("test", "test")))
-                .region(Region.US_EAST_1)
-                .build();
-            // }
-            client.createTable(
-                CreateTableRequest
+            try (
+                DynamoDbClient client = DynamoDbClient
                     .builder()
-                    .tableName("demo_table")
-                    .keySchema(KeySchemaElement.builder().attributeName("id").keyType(KeyType.HASH).build())
-                    .attributeDefinitions(
-                        AttributeDefinition.builder().attributeName("id").attributeType(ScalarAttributeType.S).build()
-                    )
-                    .billingMode(BillingMode.PAY_PER_REQUEST)
+                    .endpointOverride(URI.create(scylladb.getAlternatorEndpoint()))
+                    .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create("test", "test")))
+                    .region(Region.US_EAST_1)
                     .build()
-            );
-            assertThat(client.listTables().tableNames()).containsExactly(("demo_table"));
+            ) {
+                // }
+                client.createTable(
+                    CreateTableRequest
+                        .builder()
+                        .tableName("demo_table")
+                        .keySchema(KeySchemaElement.builder().attributeName("id").keyType(KeyType.HASH).build())
+                        .attributeDefinitions(
+                            AttributeDefinition
+                                .builder()
+                                .attributeName("id")
+                                .attributeType(ScalarAttributeType.S)
+                                .build()
+                        )
+                        .billingMode(BillingMode.PAY_PER_REQUEST)
+                        .build()
+                );
+                assertThat(client.listTables().tableNames()).containsExactly(("demo_table"));
+            }
         }
     }
 

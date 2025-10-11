@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class TestcontainersRestartBetweenTests {
 
     @Container
-    private GenericContainer<?> genericContainer = new GenericContainer<>(JUnitJupiterTestImages.HTTPD_IMAGE)
+    private final GenericContainer<?> genericContainer = new GenericContainer<>(JUnitJupiterTestImages.HTTPD_IMAGE)
         .withExposedPorts(80);
 
     private static String lastContainerId;

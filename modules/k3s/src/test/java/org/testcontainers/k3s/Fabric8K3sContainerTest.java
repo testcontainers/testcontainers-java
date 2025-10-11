@@ -41,22 +41,22 @@ class Fabric8K3sContainerTest {
             // requires io.fabric8:kubernetes-client:5.11.0 or higher
             Config config = Config.fromKubeconfig(kubeConfigYaml);
 
-            DefaultKubernetesClient client = new DefaultKubernetesClient(config);
+            try (DefaultKubernetesClient client = new DefaultKubernetesClient(config)) {
+                // interact with the running K3s server, e.g.:
+                List<Node> nodes = client.nodes().list().getItems();
+                // }
 
-            // interact with the running K3s server, e.g.:
-            List<Node> nodes = client.nodes().list().getItems();
-            // }
+                assertThat(nodes).hasSize(1);
 
-            assertThat(nodes).hasSize(1);
+                // verify that we can start a pod
+                Pod helloworld = dummyStartablePod();
+                client.pods().create(helloworld);
+                client.pods().inNamespace("default").withName("helloworld").waitUntilReady(30, TimeUnit.SECONDS);
 
-            // verify that we can start a pod
-            Pod helloworld = dummyStartablePod();
-            client.pods().create(helloworld);
-            client.pods().inNamespace("default").withName("helloworld").waitUntilReady(30, TimeUnit.SECONDS);
-
-            assertThat(client.pods().inNamespace("default").withName("helloworld"))
-                .extracting(Resource::isReady)
-                .isEqualTo(true);
+                assertThat(client.pods().inNamespace("default").withName("helloworld"))
+                    .extracting(Resource::isReady)
+                    .isEqualTo(true);
+            }
         }
     }
 

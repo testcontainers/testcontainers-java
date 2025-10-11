@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class ConsulContainerTest {
 
-    private static ConsulContainer consul = new ConsulContainer("hashicorp/consul:1.15")
+    private static final ConsulContainer consul = new ConsulContainer("hashicorp/consul:1.15")
         .withConsulCommand("kv put config/testing1 value123");
 
     @BeforeAll

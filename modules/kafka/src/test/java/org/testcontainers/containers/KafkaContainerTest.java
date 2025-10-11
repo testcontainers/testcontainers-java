@@ -319,28 +319,30 @@ class KafkaContainerTest extends AbstractKafka {
         ) {
             kafka.start();
 
-            AdminClient adminClient = AdminClient.create(
-                ImmutableMap.of(
-                    AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG,
-                    kafka.getBootstrapServers(),
-                    AdminClientConfig.SECURITY_PROTOCOL_CONFIG,
-                    "SASL_PLAINTEXT",
-                    SaslConfigs.SASL_MECHANISM,
-                    "PLAIN",
-                    SaslConfigs.SASL_JAAS_CONFIG,
-                    "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"test\" password=\"secretx\";"
+            try (
+                AdminClient adminClient = AdminClient.create(
+                    ImmutableMap.of(
+                        AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG,
+                        kafka.getBootstrapServers(),
+                        AdminClientConfig.SECURITY_PROTOCOL_CONFIG,
+                        "SASL_PLAINTEXT",
+                        SaslConfigs.SASL_MECHANISM,
+                        "PLAIN",
+                        SaslConfigs.SASL_JAAS_CONFIG,
+                        "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"test\" password=\"secretx\";"
+                    )
                 )
-            );
+            ) {
+                String topicName = "messages-" + UUID.randomUUID();
+                Collection<NewTopic> topics = Collections.singletonList(new NewTopic(topicName, 1, (short) 1));
 
-            String topicName = "messages-" + UUID.randomUUID();
-            Collection<NewTopic> topics = Collections.singletonList(new NewTopic(topicName, 1, (short) 1));
-
-            Awaitility
-                .await()
-                .untilAsserted(() -> {
-                    assertThatThrownBy(() -> adminClient.createTopics(topics).all().get(30, TimeUnit.SECONDS))
-                        .hasCauseInstanceOf(SaslAuthenticationException.class);
-                });
+                Awaitility
+                    .await()
+                    .untilAsserted(() -> {
+                        assertThatThrownBy(() -> adminClient.createTopics(topics).all().get(30, TimeUnit.SECONDS))
+                            .hasCauseInstanceOf(SaslAuthenticationException.class);
+                    });
+            }
         }
     }
 }

@@ -165,8 +165,8 @@ class CassandraContainerTest {
     }
 
     private ResultSet performQuery(CqlSession session, String cql) {
-        final ResultSet rs = session.execute(cql);
-        session.close();
-        return rs;
+        try (CqlSession closableSession = session) {
+            return closableSession.execute(cql);
+        }
     }
 }

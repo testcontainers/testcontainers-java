@@ -7,10 +7,10 @@ import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 import org.testcontainers.utility.DockerImageName;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 
 class MultiVersionMySQLTest extends AbstractContainerDatabaseTest {
 
@@ -28,12 +28,19 @@ class MultiVersionMySQLTest extends AbstractContainerDatabaseTest {
     void versionCheckTest(DockerImageName dockerImageName) throws SQLException {
         try (MySQLContainer<?> mysql = new MySQLContainer<>(dockerImageName)) {
             mysql.start();
-            final ResultSet resultSet = performQuery(mysql, "SELECT VERSION()");
-            final String resultSetString = resultSet.getString(1);
-
-            assertThat(resultSetString)
-                .as("The database version can be set using a container rule parameter")
-                .isEqualTo(dockerImageName.getVersionPart());
+            performQuery(
+                mysql,
+                "SELECT VERSION()",
+                resultSet -> {
+                    assertThatNoException()
+                        .isThrownBy(() -> {
+                            final String resultSetString = resultSet.getString(1);
+                            assertThat(resultSetString)
+                                .as("The database version can be set using a container rule parameter")
+                                .isEqualTo(dockerImageName.getVersionPart());
+                        });
+                }
+            );
         }
     }
 }

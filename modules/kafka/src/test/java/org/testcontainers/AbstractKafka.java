@@ -114,7 +114,7 @@ public class AbstractKafka {
                 consumerProperties,
                 new StringDeserializer(),
                 new StringDeserializer()
-            );
+            )
         ) {
             String topicName = "messages-" + UUID.randomUUID();
 
@@ -142,12 +142,12 @@ public class AbstractKafka {
     }
 
     protected static String getJaasConfig() {
-        String jaasConfig =
+        return (
             "org.apache.kafka.common.security.plain.PlainLoginModule required " +
             "username=\"admin\" " +
             "password=\"admin\" " +
             "user_admin=\"admin\" " +
-            "user_test=\"secret\";";
-        return jaasConfig;
+            "user_test=\"secret\";"
+        );
     }
 }

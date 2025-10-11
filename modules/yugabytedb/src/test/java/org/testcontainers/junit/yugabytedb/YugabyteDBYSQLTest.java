@@ -8,6 +8,7 @@ import org.testcontainers.utility.DockerImageName;
 import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 
 /**
  * YugabyteDB YSQL API unit test class
@@ -22,15 +23,21 @@ class YugabyteDBYSQLTest extends AbstractContainerDatabaseTest {
     void testSmoke() throws SQLException {
         try (
             // creatingYSQLContainer {
-            final YugabyteDBYSQLContainer ysqlContainer = new YugabyteDBYSQLContainer(
-                "yugabytedb/yugabyte:2.14.4.0-b26"
-            )
+            final YugabyteDBYSQLContainer ysqlContainer = new YugabyteDBYSQLContainer(YBDB_TEST_IMAGE)
             // }
         ) {
             ysqlContainer.start();
-            assertThat(performQuery(ysqlContainer, "SELECT 1").getInt(1))
-                .as("A sample test query succeeds")
-                .isEqualTo(1);
+            performQuery(
+                ysqlContainer,
+                "SELECT 1",
+                resultSet -> {
+                    assertThatNoException()
+                        .isThrownBy(() -> {
+                            int resultSetInt = resultSet.getInt(1);
+                            assertThat(resultSetInt).as("A sample test query succeeds").isEqualTo(1);
+                        });
+                }
+            );
         }
     }
 
@@ -42,9 +49,17 @@ class YugabyteDBYSQLTest extends AbstractContainerDatabaseTest {
                 .withDatabaseName(key)
         ) {
             ysqlContainer.start();
-            assertThat(performQuery(ysqlContainer, "SELECT 1").getInt(1))
-                .as("A test query on a custom database succeeds")
-                .isEqualTo(1);
+            performQuery(
+                ysqlContainer,
+                "SELECT 1",
+                resultSet -> {
+                    assertThatNoException()
+                        .isThrownBy(() -> {
+                            int resultSetInt = resultSet.getInt(1);
+                            assertThat(resultSetInt).as("A test query on a custom database succeeds").isEqualTo(1);
+                        });
+                }
+            );
         }
     }
 
@@ -55,9 +70,17 @@ class YugabyteDBYSQLTest extends AbstractContainerDatabaseTest {
                 .withInitScript("init/init_yql.sql")
         ) {
             ysqlContainer.start();
-            assertThat(performQuery(ysqlContainer, "SELECT greet FROM dsql").getString(1))
-                .as("A record match succeeds")
-                .isEqualTo("Hello DSQL");
+            performQuery(
+                ysqlContainer,
+                "SELECT greet FROM dsql",
+                resultSet -> {
+                    assertThatNoException()
+                        .isThrownBy(() -> {
+                            String resultSetString = resultSet.getString(1);
+                            assertThat(resultSetString).as("A record match succeeds").isEqualTo("Hello DSQL");
+                        });
+                }
+            );
         }
     }
 
@@ -88,9 +111,17 @@ class YugabyteDBYSQLTest extends AbstractContainerDatabaseTest {
                 .withUsername("yugabyte")
         ) {
             ysqlContainer.start();
-            assertThat(performQuery(ysqlContainer, "SELECT 1").getInt(1))
-                .as("A sample test query with a custom role succeeds")
-                .isEqualTo(1);
+            performQuery(
+                ysqlContainer,
+                "SELECT 1",
+                resultSet -> {
+                    assertThatNoException()
+                        .isThrownBy(() -> {
+                            int resultSetInt = resultSet.getInt(1);
+                            assertThat(resultSetInt).as("A sample test query with a custom role succeeds").isEqualTo(1);
+                        });
+                }
+            );
         }
     }
 
@@ -98,15 +129,30 @@ class YugabyteDBYSQLTest extends AbstractContainerDatabaseTest {
     void testWaitStrategy() throws SQLException {
         try (final YugabyteDBYSQLContainer ysqlContainer = new YugabyteDBYSQLContainer(YBDB_TEST_IMAGE)) {
             ysqlContainer.start();
-            assertThat(performQuery(ysqlContainer, "SELECT 1").getInt(1))
-                .as("A sample test query succeeds")
-                .isEqualTo(1);
-            boolean tableExists = performQuery(
+
+            performQuery(
                 ysqlContainer,
-                "SELECT EXISTS (SELECT FROM pg_tables WHERE tablename = 'YB_SAMPLE')"
-            )
-                .getBoolean(1);
-            assertThat(tableExists).as("yb_sample table does not exists").isFalse();
+                "SELECT 1",
+                resultSet -> {
+                    assertThatNoException()
+                        .isThrownBy(() -> {
+                            int resultSetInt = resultSet.getInt(1);
+                            assertThat(resultSetInt).as("A sample test query succeeds").isEqualTo(1);
+                        });
+                }
+            );
+
+            performQuery(
+                ysqlContainer,
+                "SELECT EXISTS (SELECT FROM pg_tables WHERE tablename = 'YB_SAMPLE')",
+                resultSet -> {
+                    assertThatNoException()
+                        .isThrownBy(() -> {
+                            boolean tableExists = resultSet.getBoolean(1);
+                            assertThat(tableExists).as("A sample test query succeeds").isFalse();
+                        });
+                }
+            );
         }
     }
 }

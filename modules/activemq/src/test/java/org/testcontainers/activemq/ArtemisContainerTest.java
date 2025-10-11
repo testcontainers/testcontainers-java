@@ -62,25 +62,28 @@ class ArtemisContainerTest {
 
     @SneakyThrows
     private void assertFunctionality(ArtemisContainer artemis, boolean anonymousLogin) {
-        ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(artemis.getBrokerUrl());
-        if (!anonymousLogin) {
-            connectionFactory.setUser(artemis.getUser());
-            connectionFactory.setPassword(artemis.getPassword());
+        try (ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(artemis.getBrokerUrl())) {
+            if (!anonymousLogin) {
+                connectionFactory.setUser(artemis.getUser());
+                connectionFactory.setPassword(artemis.getPassword());
+            }
+            try (
+                Connection connection = connectionFactory.createConnection();
+                Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)
+            ) {
+                Destination destination = session.createQueue("test-queue");
+                try (
+                    MessageProducer producer = session.createProducer(destination);
+                    MessageConsumer consumer = session.createConsumer(destination)
+                ) {
+                    String contentMessage = "Testcontainers";
+                    TextMessage message = session.createTextMessage(contentMessage);
+                    producer.send(message);
+
+                    TextMessage messageReceived = (TextMessage) consumer.receive();
+                    assertThat(messageReceived.getText()).isEqualTo(contentMessage);
+                }
+            }
         }
-        Connection connection = connectionFactory.createConnection();
-        connection.start();
-
-        Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-        Destination destination = session.createQueue("test-queue");
-        MessageProducer producer = session.createProducer(destination);
-
-        String contentMessage = "Testcontainers";
-        TextMessage message = session.createTextMessage(contentMessage);
-        producer.send(message);
-
-        MessageConsumer consumer = session.createConsumer(destination);
-        TextMessage messageReceived = (TextMessage) consumer.receive();
-        assertThat(messageReceived.getText()).isEqualTo(contentMessage);
     }
 }

@@ -1,6 +1,5 @@
 package org.testcontainers.jdbc;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 
@@ -18,19 +17,15 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class DatabaseDriverShutdownTest {
 
-    @BeforeAll
-    public static void testCleanup() {
-        ContainerDatabaseDriver.killContainers();
-    }
-
     @Test
     void shouldStopContainerWhenAllConnectionsClosed() throws SQLException {
         final String jdbcUrl = "jdbc:tc:postgresql:9.6.8://hostname/databasename";
 
         getConnectionAndClose(jdbcUrl);
 
-        JdbcDatabaseContainer<?> container = ContainerDatabaseDriver.getContainer(jdbcUrl);
-        assertThat(container).as("Database container instance is null as expected").isNull();
+        try (JdbcDatabaseContainer<?> container = ContainerDatabaseDriver.getContainer(jdbcUrl)) {
+            assertThat(container).as("Database container instance is null as expected").isNull();
+        }
     }
 
     @Test
@@ -39,9 +34,10 @@ class DatabaseDriverShutdownTest {
 
         getConnectionAndClose(jdbcUrl);
 
-        JdbcDatabaseContainer<?> container = ContainerDatabaseDriver.getContainer(jdbcUrl);
-        assertThat(container).as("Database container instance is not null as expected").isNotNull();
-        assertThat(container.isRunning()).as("Database container is running as expected").isTrue();
+        try (JdbcDatabaseContainer<?> container = ContainerDatabaseDriver.getContainer(jdbcUrl)) {
+            assertThat(container).as("Database container instance is not null as expected").isNotNull();
+            assertThat(container.isRunning()).as("Database container is running as expected").isTrue();
+        }
     }
 
     private void getConnectionAndClose(String jdbcUrl) throws SQLException {

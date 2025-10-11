@@ -10,43 +10,48 @@ class PostgreSQLConnectionURLTest {
 
     @Test
     void shouldCorrectlyAppendQueryString() {
-        PostgreSQLContainer<?> postgres = new FixedJdbcUrlPostgreSQLContainer();
-        String connectionUrl = postgres.constructUrlForConnection("?stringtype=unspecified&stringtype=unspecified");
-        String queryString = connectionUrl.substring(connectionUrl.indexOf('?'));
+        try (PostgreSQLContainer<?> postgres = new FixedJdbcUrlPostgreSQLContainer()) {
+            String connectionUrl = postgres.constructUrlForConnection("?stringtype=unspecified&stringtype=unspecified");
+            String queryString = connectionUrl.substring(connectionUrl.indexOf('?'));
 
-        assertThat(queryString)
-            .as("Query String contains expected params")
-            .contains("?stringtype=unspecified&stringtype=unspecified");
-        assertThat(queryString.indexOf('?')).as("Query String starts with '?'").isZero();
-        assertThat(queryString.substring(1)).as("Query String does not contain extra '?'").doesNotContain("?");
+            assertThat(queryString)
+                .as("Query String contains expected params")
+                .contains("?stringtype=unspecified&stringtype=unspecified");
+            assertThat(queryString.indexOf('?')).as("Query String starts with '?'").isZero();
+            assertThat(queryString.substring(1)).as("Query String does not contain extra '?'").doesNotContain("?");
+        }
     }
 
     @Test
     void shouldCorrectlyAppendQueryStringWhenNoBaseParams() {
-        PostgreSQLContainer<?> postgres = new NoParamsUrlPostgreSQLContainer();
-        String connectionUrl = postgres.constructUrlForConnection("?stringtype=unspecified&stringtype=unspecified");
-        String queryString = connectionUrl.substring(connectionUrl.indexOf('?'));
+        try (PostgreSQLContainer<?> postgres = new NoParamsUrlPostgreSQLContainer()) {
+            String connectionUrl = postgres.constructUrlForConnection("?stringtype=unspecified&stringtype=unspecified");
+            String queryString = connectionUrl.substring(connectionUrl.indexOf('?'));
 
-        assertThat(queryString)
-            .as("Query String contains expected params")
-            .contains("?stringtype=unspecified&stringtype=unspecified");
-        assertThat(queryString.indexOf('?')).as("Query String starts with '?'").isZero();
-        assertThat(queryString.substring(1)).as("Query String does not contain extra '?'").doesNotContain("?");
+            assertThat(queryString)
+                .as("Query String contains expected params")
+                .contains("?stringtype=unspecified&stringtype=unspecified");
+            assertThat(queryString.indexOf('?')).as("Query String starts with '?'").isZero();
+            assertThat(queryString.substring(1)).as("Query String does not contain extra '?'").doesNotContain("?");
+        }
     }
 
     @Test
     void shouldReturnOriginalURLWhenEmptyQueryString() {
-        PostgreSQLContainer<?> postgres = new FixedJdbcUrlPostgreSQLContainer();
-        String connectionUrl = postgres.constructUrlForConnection("");
+        try (PostgreSQLContainer<?> postgres = new FixedJdbcUrlPostgreSQLContainer()) {
+            String connectionUrl = postgres.constructUrlForConnection("");
 
-        assertThat(postgres.getJdbcUrl()).as("Query String remains unchanged").isEqualTo(connectionUrl);
+            assertThat(postgres.getJdbcUrl()).as("Query String remains unchanged").isEqualTo(connectionUrl);
+        }
     }
 
     @Test
     void shouldRejectInvalidQueryString() {
         assertThat(
             catchThrowable(() -> {
-                new NoParamsUrlPostgreSQLContainer().constructUrlForConnection("stringtype=unspecified");
+                try (PostgreSQLContainer<?> postgres = new NoParamsUrlPostgreSQLContainer()) {
+                    postgres.constructUrlForConnection("stringtype=unspecified");
+                }
             })
         )
             .as("Fails when invalid query string provided")

@@ -186,82 +186,96 @@ class GenericContainerRuleTest {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(rabbitMq.getHost());
         factory.setPort(rabbitMq.getMappedPort(RABBITMQ_PORT));
-        Connection connection = factory.newConnection();
+        try (Connection connection = factory.newConnection()) {
+            Channel channel = connection.createChannel();
+            channel.exchangeDeclare(RABBIQMQ_TEST_EXCHANGE, "direct", true);
+            String queueName = channel.queueDeclare().getQueue();
+            channel.queueBind(queueName, RABBIQMQ_TEST_EXCHANGE, RABBITMQ_TEST_ROUTING_KEY);
 
-        Channel channel = connection.createChannel();
-        channel.exchangeDeclare(RABBIQMQ_TEST_EXCHANGE, "direct", true);
-        String queueName = channel.queueDeclare().getQueue();
-        channel.queueBind(queueName, RABBIQMQ_TEST_EXCHANGE, RABBITMQ_TEST_ROUTING_KEY);
-
-        // Set up a consumer on the queue
-        final boolean[] messageWasReceived = new boolean[1];
-        channel.basicConsume(
-            queueName,
-            false,
-            new DefaultConsumer(channel) {
-                @Override
-                public void handleDelivery(
-                    String consumerTag,
-                    Envelope envelope,
-                    AMQP.BasicProperties properties,
-                    byte[] body
-                ) throws IOException {
-                    messageWasReceived[0] = Arrays.equals(body, RABBITMQ_TEST_MESSAGE.getBytes());
-                }
-            }
-        );
-
-        // post a message
-        channel.basicPublish(RABBIQMQ_TEST_EXCHANGE, RABBITMQ_TEST_ROUTING_KEY, null, RABBITMQ_TEST_MESSAGE.getBytes());
-
-        // check the message was received
-        assertThat(
-            Unreliables.retryUntilSuccess(
-                5,
-                TimeUnit.SECONDS,
-                () -> {
-                    if (!messageWasReceived[0]) {
-                        throw new IllegalStateException("Message not received yet");
+            // Set up a consumer on the queue
+            final boolean[] messageWasReceived = new boolean[1];
+            channel.basicConsume(
+                queueName,
+                false,
+                new DefaultConsumer(channel) {
+                    @Override
+                    public void handleDelivery(
+                        String consumerTag,
+                        Envelope envelope,
+                        AMQP.BasicProperties properties,
+                        byte[] body
+                    ) throws IOException {
+                        messageWasReceived[0] = Arrays.equals(body, RABBITMQ_TEST_MESSAGE.getBytes());
                     }
-                    return true;
                 }
+            );
+
+            // post a message
+            channel.basicPublish(
+                RABBIQMQ_TEST_EXCHANGE,
+                RABBITMQ_TEST_ROUTING_KEY,
+                null,
+                RABBITMQ_TEST_MESSAGE.getBytes()
+            );
+
+            // check the message was received
+            assertThat(
+                Unreliables.retryUntilSuccess(
+                    5,
+                    TimeUnit.SECONDS,
+                    () -> {
+                        if (!messageWasReceived[0]) {
+                            throw new IllegalStateException("Message not received yet");
+                        }
+                        return true;
+                    }
+                )
             )
-        )
-            .as("The message was received")
-            .isTrue();
+                .as("The message was received")
+                .isTrue();
+        }
     }
 
     @Test
     void simpleMongoDbTest() {
-        MongoClient mongoClient = new MongoClient(mongo.getHost(), mongo.getMappedPort(MONGO_PORT));
-        MongoDatabase database = mongoClient.getDatabase("test");
-        MongoCollection<Document> collection = database.getCollection("testCollection");
+        try (MongoClient mongoClient = new MongoClient(mongo.getHost(), mongo.getMappedPort(MONGO_PORT))) {
+            MongoDatabase database = mongoClient.getDatabase("test");
+            MongoCollection<Document> collection = database.getCollection("testCollection");
 
-        Document doc = new Document("name", "foo").append("value", 1);
-        collection.insertOne(doc);
+            Document doc = new Document("name", "foo").append("value", 1);
+            collection.insertOne(doc);
 
-        Document doc2 = collection.find(new Document("name", "foo")).first();
-        assertThat(doc2.get("value")).as("A record can be inserted into and retrieved from MongoDB").isEqualTo(1);
+            Document doc2 = collection.find(new Document("name", "foo")).first();
+            assertThat(doc2.get("value")).as("A record can be inserted into and retrieved from MongoDB").isEqualTo(1);
+        }
     }
 
     @Test
     void environmentAndCustomCommandTest() throws IOException {
-        String line = getReaderForContainerPort80(alpineEnvVar).readLine();
-
-        assertThat(line).as("An environment variable can be passed into a command").isEqualTo("42");
+        try (
+            Socket socket = new Socket(alpineEnvVar.getHost(), alpineEnvVar.getFirstMappedPort());
+            BufferedReader reader = getReaderForContainerPort80(socket)
+        ) {
+            String line = reader.readLine();
+            assertThat(line).as("An environment variable can be passed into a command").isEqualTo("42");
+        }
     }
 
     @Test
     void environmentFromMapTest() throws IOException {
-        String line = getReaderForContainerPort80(alpineEnvVarFromMap).readLine();
-
-        assertThat(line).as("Environment variables can be passed into a command from a map").isEqualTo("42 and 50");
+        try (
+            Socket socket = new Socket(alpineEnvVarFromMap.getHost(), alpineEnvVarFromMap.getFirstMappedPort());
+            BufferedReader reader = getReaderForContainerPort80(socket)
+        ) {
+            String line = reader.readLine();
+            assertThat(line).as("Environment variables can be passed into a command from a map").isEqualTo("42 and 50");
+        }
     }
 
     @Test
     void customLabelTest() {
         try (
-            final GenericContainer alpineCustomLabel = new GenericContainer<>(TestImages.ALPINE_IMAGE)
+            final GenericContainer<?> alpineCustomLabel = new GenericContainer<>(TestImages.ALPINE_IMAGE)
                 .withLabel("our.custom", "label")
                 .withCommand("top")
                 .withCreateContainerCmdModifier(cmd -> cmd.getLabels().put("scope", "local"))
@@ -301,19 +315,31 @@ class GenericContainerRuleTest {
     void customClasspathResourceMappingTest() throws IOException {
         // Note: This functionality doesn't work if you are running your build inside a Docker container;
         // in that case this test will fail.
-        String line = getReaderForContainerPort80(alpineClasspathResource).readLine();
-
-        assertThat(line)
-            .as("Resource on the classpath can be mapped using calls to withClasspathResourceMapping")
-            .isEqualTo("FOOBAR");
+        try (
+            Socket socket = new Socket(alpineClasspathResource.getHost(), alpineClasspathResource.getFirstMappedPort());
+            BufferedReader reader = getReaderForContainerPort80(socket)
+        ) {
+            String line = reader.readLine();
+            assertThat(line)
+                .as("Resource on the classpath can be mapped using calls to withClasspathResourceMapping")
+                .isEqualTo("FOOBAR");
+        }
     }
 
     @Test
     void customClasspathResourceMappingWithSelinuxTest() throws IOException {
-        String line = getReaderForContainerPort80(alpineClasspathResourceSelinux).readLine();
-        assertThat(line)
-            .as("Resource on the classpath can be mapped using calls to withClasspathResourceMappingSelinux")
-            .isEqualTo("FOOBAR");
+        try (
+            Socket socket = new Socket(
+                alpineClasspathResourceSelinux.getHost(),
+                alpineClasspathResourceSelinux.getFirstMappedPort()
+            );
+            BufferedReader reader = getReaderForContainerPort80(socket)
+        ) {
+            String line = reader.readLine();
+            assertThat(line)
+                .as("Resource on the classpath can be mapped using calls to withClasspathResourceMappingSelinux")
+                .isEqualTo("FOOBAR");
+        }
     }
 
     @Test
@@ -327,20 +353,20 @@ class GenericContainerRuleTest {
         throws FileNotFoundException {
         File file = new File(contentFolder, filename);
 
-        PrintStream printStream = new PrintStream(new FileOutputStream(file));
-        printStream.println(string);
-        printStream.close();
+        try (PrintStream printStream = new PrintStream(new FileOutputStream(file))) {
+            printStream.println(string);
+        }
     }
 
     @Test
     @Disabled //TODO investigate intermittent failures
     void failFastWhenContainerHaltsImmediately() {
         long startingTimeNano = System.nanoTime();
-        final GenericContainer failsImmediately = new GenericContainer<>(TestImages.ALPINE_IMAGE)
-            .withCommand("/bin/sh", "-c", "return false")
-            .withMinimumRunningDuration(Duration.ofMillis(100));
-
-        try {
+        try (
+            GenericContainer<?> failsImmediately = new GenericContainer<>(TestImages.ALPINE_IMAGE)
+                .withCommand("/bin/sh", "-c", "return false")
+                .withMinimumRunningDuration(Duration.ofMillis(100))
+        ) {
             assertThat(catchThrowable(failsImmediately::start))
                 .as("When we start a container that halts immediately, an exception is thrown")
                 .isInstanceOf(RetryCountExceededException.class);
@@ -354,26 +380,29 @@ class GenericContainerRuleTest {
             assertThat(completedTimeNano - startingTimeNano < TimeUnit.SECONDS.toNanos(allowedSecondsToFailure))
                 .as("container should not take long to start up")
                 .isTrue();
-        } finally {
-            failsImmediately.stop();
         }
     }
 
     @Test
     void extraHostTest() throws IOException {
-        BufferedReader br = getReaderForContainerPort80(alpineExtrahost);
+        try (
+            Socket socket = new Socket(alpineExtrahost.getHost(), alpineExtrahost.getFirstMappedPort());
+            BufferedReader br = getReaderForContainerPort80(socket)
+        ) {
+            // read hosts file from container
+            StringBuffer hosts = new StringBuffer();
+            String line = br.readLine();
+            while (line != null) {
+                hosts.append(line);
+                hosts.append("\n");
+                line = br.readLine();
+            }
 
-        // read hosts file from container
-        StringBuffer hosts = new StringBuffer();
-        String line = br.readLine();
-        while (line != null) {
-            hosts.append(line);
-            hosts.append("\n");
-            line = br.readLine();
+            Matcher matcher = Pattern
+                .compile("^192.168.1.10\\s.*somehost", Pattern.MULTILINE)
+                .matcher(hosts.toString());
+            assertThat(matcher.find()).as("The hosts file of container contains extra host").isTrue();
         }
-
-        Matcher matcher = Pattern.compile("^192.168.1.10\\s.*somehost", Pattern.MULTILINE).matcher(hosts.toString());
-        assertThat(matcher.find()).as("The hosts file of container contains extra host").isTrue();
     }
 
     @Test
@@ -398,14 +427,13 @@ class GenericContainerRuleTest {
         }
     }
 
-    private BufferedReader getReaderForContainerPort80(GenericContainer container) {
+    private BufferedReader getReaderForContainerPort80(Socket socket) {
         return Unreliables.retryUntilSuccess(
             10,
             TimeUnit.SECONDS,
             () -> {
                 Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
-
-                Socket socket = new Socket(container.getHost(), container.getFirstMappedPort());
+                // Note: BufferedReader and Socket will be managed by the caller
                 return new BufferedReader(new InputStreamReader(socket.getInputStream()));
             }
         );

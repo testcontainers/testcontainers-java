@@ -5,6 +5,7 @@ import org.testcontainers.MSSQLServerTestImages;
 import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -12,6 +13,7 @@ import java.sql.Statement;
 import javax.sql.DataSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 
 class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
 
@@ -25,11 +27,18 @@ class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
             // }
         ) {
             mssqlServer.start();
-            ResultSet resultSet = performQuery(mssqlServer, "SELECT 1");
-
-            int resultSetInt = resultSet.getInt(1);
-            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
-            assertHasCorrectExposedAndLivenessCheckPorts(mssqlServer);
+            performQuery(
+                mssqlServer,
+                "SELECT 1",
+                resultSet -> {
+                    assertThatNoException()
+                        .isThrownBy(() -> {
+                            int resultSetInt = resultSet.getInt(1);
+                            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+                            assertHasCorrectExposedAndLivenessCheckPorts(mssqlServer);
+                        });
+                }
+            );
         }
     }
 
@@ -54,19 +63,25 @@ class SimpleMSSQLServerTest extends AbstractContainerDatabaseTest {
         ) {
             mssqlServer.start();
             DataSource ds = getDataSource(mssqlServer);
-            Statement statement = ds.getConnection().createStatement();
-            statement.executeUpdate("CREATE DATABASE [test];");
-            statement = ds.getConnection().createStatement();
-            statement.executeUpdate("CREATE TABLE [test].[dbo].[Foo](ID INT PRIMARY KEY);");
-            statement = ds.getConnection().createStatement();
-            statement.executeUpdate("INSERT INTO [test].[dbo].[Foo] (ID) VALUES (3);");
-            statement = ds.getConnection().createStatement();
-            statement.execute("SELECT * FROM [test].[dbo].[Foo];");
-            ResultSet resultSet = statement.getResultSet();
-
-            resultSet.next();
-            int resultSetInt = resultSet.getInt("ID");
-            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(3);
+            try (Connection conn = ds.getConnection()) {
+                try (Statement statement = conn.createStatement()) {
+                    statement.executeUpdate("CREATE DATABASE [test];");
+                }
+                try (Statement statement = conn.createStatement()) {
+                    statement.executeUpdate("CREATE TABLE [test].[dbo].[Foo](ID INT PRIMARY KEY);");
+                }
+                try (Statement statement = conn.createStatement()) {
+                    statement.executeUpdate("INSERT INTO [test].[dbo].[Foo] (ID) VALUES (3);");
+                }
+                try (Statement statement = conn.createStatement()) {
+                    statement.execute("SELECT * FROM [test].[dbo].[Foo];");
+                    try (ResultSet resultSet = statement.getResultSet()) {
+                        resultSet.next();
+                        int resultSetInt = resultSet.getInt("ID");
+                        assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(3);
+                    }
+                }
+            }
         }
     }
 

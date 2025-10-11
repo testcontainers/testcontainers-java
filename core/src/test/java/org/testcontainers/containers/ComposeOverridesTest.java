@@ -2,6 +2,7 @@ package org.testcontainers.containers;
 
 import com.google.common.util.concurrent.Uninterruptibles;
 import org.apache.commons.lang3.SystemUtils;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.assertj.core.api.Assumptions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -60,34 +61,40 @@ class ComposeOverridesTest {
         ) {
             compose.start();
 
-            BufferedReader br = Unreliables.retryUntilSuccess(
-                10,
-                TimeUnit.SECONDS,
-                () -> {
-                    Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
+            AssertionsForClassTypes
+                .assertThatNoException()
+                .isThrownBy(() -> {
+                    try (
+                        Socket socket = new Socket(
+                            compose.getServiceHost(SERVICE_NAME, SERVICE_PORT),
+                            compose.getServicePort(SERVICE_NAME, SERVICE_PORT)
+                        );
+                        BufferedReader br = Unreliables.retryUntilSuccess(
+                            10,
+                            TimeUnit.SECONDS,
+                            () -> {
+                                Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
 
-                    Socket socket = new Socket(
-                        compose.getServiceHost(SERVICE_NAME, SERVICE_PORT),
-                        compose.getServicePort(SERVICE_NAME, SERVICE_PORT)
-                    );
-                    return new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                }
-            );
-
-            Unreliables.retryUntilTrue(
-                10,
-                TimeUnit.SECONDS,
-                () -> {
-                    while (br.ready()) {
-                        String line = br.readLine();
-                        if (line.contains(expectedEnvVar)) {
-                            return true;
-                        }
+                                return new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                            }
+                        )
+                    ) {
+                        Unreliables.retryUntilTrue(
+                            10,
+                            TimeUnit.SECONDS,
+                            () -> {
+                                while (br.ready()) {
+                                    String line = br.readLine();
+                                    if (line.contains(expectedEnvVar)) {
+                                        return true;
+                                    }
+                                }
+                                Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
+                                return false;
+                            }
+                        );
                     }
-                    Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
-                    return false;
-                }
-            );
+                });
         }
     }
 }

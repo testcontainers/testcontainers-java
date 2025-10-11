@@ -12,7 +12,7 @@ public class CompatibleApacheKafkaImageTest extends AbstractKafka {
 
     @ParameterizedTest
     @MethodSource("params")
-    public void testUsage(String imageName) throws Exception {
+    void testUsage(String imageName) throws Exception {
         try (KafkaContainer kafka = new KafkaContainer(imageName)) {
             kafka.start();
             testKafkaFunctionality(kafka.getBootstrapServers());

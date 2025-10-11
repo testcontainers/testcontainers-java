@@ -14,10 +14,12 @@ class JdbcDatabaseContainerTest {
 
     @Test
     void anExceptionIsThrownIfJdbcIsNotAvailable() {
-        JdbcDatabaseContainer<?> jdbcContainer = new JdbcDatabaseContainerStub("mysql:latest")
-            .withStartupTimeoutSeconds(1);
-
-        assertThatExceptionOfType(IllegalStateException.class).isThrownBy(jdbcContainer::waitUntilContainerStarted);
+        try (
+            JdbcDatabaseContainer<?> jdbcContainer = new JdbcDatabaseContainerStub("mysql:latest")
+                .withStartupTimeoutSeconds(1)
+        ) {
+            assertThatExceptionOfType(IllegalStateException.class).isThrownBy(jdbcContainer::waitUntilContainerStarted);
+        }
     }
 
     static class JdbcDatabaseContainerStub extends JdbcDatabaseContainer {

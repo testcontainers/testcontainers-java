@@ -11,13 +11,13 @@ import java.net.URL;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.attribute.PosixFilePermission;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
 class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
@@ -30,10 +30,17 @@ class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
         ) {
             mariadb.start();
 
-            ResultSet resultSet = performQuery(mariadb, "SELECT 1");
-            int resultSetInt = resultSet.getInt(1);
-
-            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+            performQuery(
+                mariadb,
+                "SELECT 1",
+                resultSet -> {
+                    assertThatNoException()
+                        .isThrownBy(() -> {
+                            int resultSetInt = resultSet.getInt(1);
+                            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+                        });
+                }
+            );
         }
     }
 
@@ -46,12 +53,19 @@ class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
         ) {
             mariadbOldVersion.start();
 
-            ResultSet resultSet = performQuery(mariadbOldVersion, "SELECT VERSION()");
-            String resultSetString = resultSet.getString(1);
-
-            assertThat(resultSetString)
-                .as("The database version can be set using a container rule parameter")
-                .startsWith("10.3.39");
+            performQuery(
+                mariadbOldVersion,
+                "SELECT VERSION()",
+                resultSet -> {
+                    assertThatNoException()
+                        .isThrownBy(() -> {
+                            String resultSetString = resultSet.getString(1);
+                            assertThat(resultSetString)
+                                .as("The database version can be set using a container rule parameter")
+                                .startsWith("10.3.39");
+                        });
+                }
+            );
         }
     }
 
@@ -78,28 +92,35 @@ class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
                 .withCommand("mysqld --auto_increment_increment=10")
         ) {
             mariadbCustomConfig.start();
-            ResultSet resultSet = performQuery(mariadbCustomConfig, "show variables like 'auto_increment_increment'");
-            String result = resultSet.getString("Value");
-
-            assertThat(result).as("Auto increment increment should be overridden by command line").isEqualTo("10");
+            performQuery(
+                mariadbCustomConfig,
+                "show variables like 'auto_increment_increment'",
+                resultSet -> {
+                    assertThatNoException()
+                        .isThrownBy(() -> {
+                            String result = resultSet.getString("Value");
+                            assertThat(result)
+                                .as("Auto increment increment should be overridden by command line")
+                                .isEqualTo("10");
+                        });
+                }
+            );
         }
     }
 
     @Test
     void testWithAdditionalUrlParamInJdbcUrl() {
-        MariaDBContainer<?> mariaDBContainer = new MariaDBContainer<>(MariaDBTestImages.MARIADB_IMAGE)
-            .withUrlParam("connectTimeout", "40000")
-            .withUrlParam("rewriteBatchedStatements", "true");
-
-        try {
+        try (
+            MariaDBContainer<?> mariaDBContainer = new MariaDBContainer<>(MariaDBTestImages.MARIADB_IMAGE)
+                .withUrlParam("connectTimeout", "40000")
+                .withUrlParam("rewriteBatchedStatements", "true")
+        ) {
             mariaDBContainer.start();
             String jdbcUrl = mariaDBContainer.getJdbcUrl();
             assertThat(jdbcUrl).contains("?");
             assertThat(jdbcUrl).contains("&");
             assertThat(jdbcUrl).contains("rewriteBatchedStatements=true");
             assertThat(jdbcUrl).contains("connectTimeout=40000");
-        } finally {
-            mariaDBContainer.stop();
         }
     }
 
@@ -116,7 +137,7 @@ class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
             URL resource = this.getClass().getClassLoader().getResource("somepath/mariadb_conf_override");
 
             File file = new File(resource.toURI());
-            assertThat(file.isDirectory()).isTrue();
+            assertThat(file).isDirectory();
 
             Set<PosixFilePermission> permissions = new HashSet<>(
                 Arrays.asList(
@@ -139,19 +160,33 @@ class SimpleMariaDBTest extends AbstractContainerDatabaseTest {
         try (MariaDBContainer<?> mysql = new MariaDBContainer<>("mariadb:11.2.4").withUsername("root")) {
             mysql.start();
 
-            ResultSet resultSet = performQuery(mysql, "SELECT 1");
-            int resultSetInt = resultSet.getInt(1);
-
-            assertThat(resultSetInt).isEqualTo(1);
+            performQuery(
+                mysql,
+                "SELECT 1",
+                resultSet -> {
+                    assertThatNoException()
+                        .isThrownBy(() -> {
+                            int resultSetInt = resultSet.getInt(1);
+                            assertThat(resultSetInt).isEqualTo(1);
+                        });
+                }
+            );
         }
     }
 
     private void assertThatCustomIniFileWasUsed(MariaDBContainer<?> mariadb) throws SQLException {
-        try (ResultSet resultSet = performQuery(mariadb, "SELECT @@GLOBAL.innodb_max_undo_log_size")) {
-            long result = resultSet.getLong(1);
-            assertThat(result)
-                .as("The InnoDB max undo log size has been set by the ini file content")
-                .isEqualTo(20000000);
-        }
+        performQuery(
+            mariadb,
+            "SELECT @@GLOBAL.innodb_max_undo_log_size",
+            resultSet -> {
+                assertThatNoException()
+                    .isThrownBy(() -> {
+                        long result = resultSet.getLong(1);
+                        assertThat(result)
+                            .as("The InnoDB max undo log size has been set by the ini file content")
+                            .isEqualTo(20000000);
+                    });
+            }
+        );
     }
 }

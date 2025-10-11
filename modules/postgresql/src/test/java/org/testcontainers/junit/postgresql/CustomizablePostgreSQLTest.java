@@ -5,10 +5,10 @@ import org.testcontainers.PostgreSQLTestImages;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 
 class CustomizablePostgreSQLTest extends AbstractContainerDatabaseTest {
 
@@ -28,10 +28,17 @@ class CustomizablePostgreSQLTest extends AbstractContainerDatabaseTest {
         ) {
             postgres.start();
 
-            ResultSet resultSet = performQuery(postgres, "SELECT 1");
-
-            int resultSetInt = resultSet.getInt(1);
-            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+            performQuery(
+                postgres,
+                "SELECT 1",
+                resultSet -> {
+                    assertThatNoException()
+                        .isThrownBy(() -> {
+                            int resultSetInt = resultSet.getInt(1);
+                            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+                        });
+                }
+            );
         }
     }
 }

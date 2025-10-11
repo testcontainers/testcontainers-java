@@ -14,9 +14,7 @@ public class OracleR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseConta
 
     @Override
     protected ConnectionFactoryOptions getOptions(OracleContainer container) {
-        ConnectionFactoryOptions options = OracleR2DBCDatabaseContainer.getOptions(container);
-
-        return options;
+        return OracleR2DBCDatabaseContainer.getOptions(container);
     }
 
     protected String createR2DBCUrl() {

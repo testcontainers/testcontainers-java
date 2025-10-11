@@ -17,12 +17,13 @@ class ContainerDatabaseDriverTest {
     @Test
     void shouldNotTryToConnectToNonMatchingJdbcUrlDirectly() throws SQLException {
         ContainerDatabaseDriver driver = new ContainerDatabaseDriver();
-        Connection connection = driver.connect(PLAIN_POSTGRESQL_JDBC_URL, new Properties());
-        assertThat(connection).isNull();
+        try (Connection connection = driver.connect(PLAIN_POSTGRESQL_JDBC_URL, new Properties())) {
+            assertThat(connection).isNull();
+        }
     }
 
     @Test
-    void shouldNotTryToConnectToNonMatchingJdbcUrlViaDriverManager() throws SQLException {
+    void shouldNotTryToConnectToNonMatchingJdbcUrlViaDriverManager() {
         assertThatThrownBy(() -> DriverManager.getConnection(PLAIN_POSTGRESQL_JDBC_URL))
             .isInstanceOf(SQLException.class)
             .hasMessageStartingWith("No suitable driver found for ");

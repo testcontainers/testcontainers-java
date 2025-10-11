@@ -1,5 +1,6 @@
 package org.testcontainers.containers;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -19,15 +20,19 @@ class MongoDBContainerTest extends AbstractMongo {
             // startingMongoDBContainer {
             mongoDBContainer.start();
             // }
-            executeTx(mongoDBContainer);
+            Assertions.assertThatNoException().isThrownBy(() -> executeTx(mongoDBContainer));
         }
     }
 
     @Test
     void supportsMongoDB_7_0() {
-        try (final MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:7.0")) {
-            mongoDBContainer.start();
-        }
+        Assertions
+            .assertThatNoException()
+            .isThrownBy(() -> {
+                try (final MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:7.0")) {
+                    mongoDBContainer.start();
+                }
+            });
     }
 
     @Test

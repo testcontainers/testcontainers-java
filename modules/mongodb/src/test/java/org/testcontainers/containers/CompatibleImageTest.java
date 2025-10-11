@@ -2,6 +2,7 @@ package org.testcontainers.containers;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
+import org.assertj.core.api.Assertions;
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -29,16 +30,18 @@ class CompatibleImageTest extends AbstractMongo {
             // startingMongoDBContainer {
             mongoDBContainer.start();
             // }
-            executeTx(mongoDBContainer);
+            Assertions.assertThatNoException().isThrownBy(() -> executeTx(mongoDBContainer));
         }
     }
 
     @ParameterizedTest
     @MethodSource("image")
     void shouldSupportSharding(String image) {
-        try (final MongoDBContainer mongoDBContainer = new MongoDBContainer(image).withSharding()) {
+        try (
+            MongoDBContainer mongoDBContainer = new MongoDBContainer(image).withSharding();
+            MongoClient mongoClient = MongoClients.create(mongoDBContainer.getReplicaSetUrl())
+        ) {
             mongoDBContainer.start();
-            final MongoClient mongoClient = MongoClients.create(mongoDBContainer.getReplicaSetUrl());
 
             mongoClient.getDatabase("mydb1").getCollection("foo").insertOne(new Document("abc", 0));
 

@@ -3,10 +3,10 @@ package org.testcontainers.oceanbase;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 
 class SimpleOceanBaseCETest extends AbstractContainerDatabaseTest {
 
@@ -22,10 +22,18 @@ class SimpleOceanBaseCETest extends AbstractContainerDatabaseTest {
         ) {
             oceanbase.start();
 
-            ResultSet resultSet = performQuery(oceanbase, "SELECT 1");
-            int resultSetInt = resultSet.getInt(1);
-            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
-            assertHasCorrectExposedAndLivenessCheckPorts(oceanbase);
+            performQuery(
+                oceanbase,
+                "SELECT 1",
+                resultSet -> {
+                    assertThatNoException()
+                        .isThrownBy(() -> {
+                            int resultSetInt = resultSet.getInt(1);
+                            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+                            assertHasCorrectExposedAndLivenessCheckPorts(oceanbase);
+                        });
+                }
+            );
         }
     }
 
@@ -34,9 +42,19 @@ class SimpleOceanBaseCETest extends AbstractContainerDatabaseTest {
         try (OceanBaseCEContainer oceanbase = new OceanBaseCEContainer(IMAGE).withInitScript("init.sql")) {
             oceanbase.start();
 
-            ResultSet resultSet = performQuery(oceanbase, "SELECT foo FROM bar");
-            String firstColumnValue = resultSet.getString(1);
-            assertThat(firstColumnValue).as("Value from init script should equal real value").isEqualTo("hello world");
+            performQuery(
+                oceanbase,
+                "SELECT foo FROM bar",
+                resultSet -> {
+                    assertThatNoException()
+                        .isThrownBy(() -> {
+                            String firstColumnValue = resultSet.getString(1);
+                            assertThat(firstColumnValue)
+                                .as("Value from init script should equal real value")
+                                .isEqualTo("hello world");
+                        });
+                }
+            );
         }
     }
 

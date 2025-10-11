@@ -409,7 +409,7 @@ class RedpandaContainerTest extends AbstractRedpanda {
     private AdminClient getAdminClient(RedpandaContainer redpanda) {
         String bootstrapServer = String.format("%s:%s", redpanda.getHost(), redpanda.getMappedPort(9092));
         // createAdminClient {
-        AdminClient adminClient = AdminClient.create(
+        return AdminClient.create(
             ImmutableMap.of(
                 AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG,
                 bootstrapServer,
@@ -421,8 +421,6 @@ class RedpandaContainerTest extends AbstractRedpanda {
                 "org.apache.kafka.common.security.scram.ScramLoginModule required username=\"superuser-1\" password=\"test\";"
             )
         );
-        // }
-        return adminClient;
     }
 
     private void createSuperUser(RedpandaContainer redpanda) {

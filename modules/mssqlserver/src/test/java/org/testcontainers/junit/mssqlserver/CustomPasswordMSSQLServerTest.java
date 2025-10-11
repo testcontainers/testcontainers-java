@@ -13,17 +13,18 @@ import static org.assertj.core.api.Assertions.fail;
 
 /**
  * Tests if the password passed to the container satisfied the password policy described at
- * https://docs.microsoft.com/en-us/sql/relational-databases/security/password-policy?view=sql-server-2017
+ *
+ * @see <a href="https://docs.microsoft.com/en-us/sql/relational-databases/security/password-policy?view=sql-server-2017">https://docs.microsoft.com/en-us/sql/relational-databases/security/password-policy?view=sql-server-2017</a>
  */
-public class CustomPasswordMSSQLServerTest {
+class CustomPasswordMSSQLServerTest {
 
-    private static String UPPER_CASE_LETTERS = "ABCDE";
+    private static final String UPPER_CASE_LETTERS = "ABCDE";
 
-    private static String LOWER_CASE_LETTERS = "abcde";
+    private static final String LOWER_CASE_LETTERS = "abcde";
 
-    private static String NUMBERS = "12345";
+    private static final String NUMBERS = "12345";
 
-    private static String SPECIAL_CHARS = "_(!)_";
+    private static final String SPECIAL_CHARS = "_(!)_";
 
     public static Stream<Arguments> data() {
         return Stream.of(
@@ -50,9 +51,11 @@ public class CustomPasswordMSSQLServerTest {
 
     @ParameterizedTest
     @MethodSource("data")
-    public void runPasswordTests(String password, boolean valid) {
-        try {
-            new MSSQLServerContainer<>(MSSQLServerTestImages.MSSQL_SERVER_IMAGE).withPassword(password);
+    void runPasswordTests(String password, boolean valid) {
+        try (
+            MSSQLServerContainer<?> ignored = new MSSQLServerContainer<>(MSSQLServerTestImages.MSSQL_SERVER_IMAGE)
+                .withPassword(password)
+        ) {
             if (!valid) {
                 fail("Password " + password + " is not valid. Expected exception");
             }

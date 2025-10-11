@@ -5,6 +5,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
@@ -28,14 +29,17 @@ class PostgresContainerTests {
         hikariConfig.setUsername("foo");
         hikariConfig.setPassword("secret");
 
-        try (HikariDataSource ds = new HikariDataSource(hikariConfig)) {
-            Statement statement = ds.getConnection().createStatement();
+        try (
+            HikariDataSource ds = new HikariDataSource(hikariConfig);
+            Connection conn = ds.getConnection();
+            Statement statement = conn.createStatement()
+        ) {
             statement.execute("SELECT 1");
-            ResultSet resultSet = statement.getResultSet();
-            resultSet.next();
-
-            int resultSetInt = resultSet.getInt(1);
-            assertThat(resultSetInt).isEqualTo(1);
+            try (ResultSet resultSet = statement.getResultSet()) {
+                resultSet.next();
+                int resultSetInt = resultSet.getInt(1);
+                assertThat(resultSetInt).isEqualTo(1);
+            }
         }
     }
 }

@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class DockerComposeContainerTest extends BaseDockerComposeTest {
 
     @AutoClose
-    public DockerComposeContainer environment = new DockerComposeContainer(
+    public DockerComposeContainer<?> environment = new DockerComposeContainer<>(
         new File("src/test/resources/compose-test.yml")
     )
         .withExposedService("redis_1", REDIS_PORT)

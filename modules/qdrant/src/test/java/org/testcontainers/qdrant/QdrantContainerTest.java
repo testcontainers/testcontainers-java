@@ -23,13 +23,14 @@ class QdrantContainerTest {
         ) {
             qdrant.start();
 
-            QdrantClient client = new QdrantClient(
-                QdrantGrpcClient.newBuilder(qdrant.getHost(), qdrant.getGrpcPort(), false).build()
-            );
-            QdrantOuterClass.HealthCheckReply healthCheckReply = client.healthCheckAsync().get();
-            assertThat(healthCheckReply.getVersion()).isEqualTo("1.7.4");
-
-            client.close();
+            try (
+                QdrantClient client = new QdrantClient(
+                    QdrantGrpcClient.newBuilder(qdrant.getHost(), qdrant.getGrpcPort(), false).build()
+                )
+            ) {
+                QdrantOuterClass.HealthCheckReply healthCheckReply = client.healthCheckAsync().get();
+                assertThat(healthCheckReply.getVersion()).isEqualTo("1.7.4");
+            }
         }
     }
 
@@ -39,22 +40,25 @@ class QdrantContainerTest {
         try (QdrantContainer qdrant = new QdrantContainer("qdrant/qdrant:v1.7.4").withApiKey(apiKey)) {
             qdrant.start();
 
-            final QdrantClient unauthClient = new QdrantClient(
-                QdrantGrpcClient.newBuilder(qdrant.getHost(), qdrant.getGrpcPort(), false).build()
-            );
+            try (
+                QdrantClient unauthClient = new QdrantClient(
+                    QdrantGrpcClient.newBuilder(qdrant.getHost(), qdrant.getGrpcPort(), false).build()
+                )
+            ) {
+                assertThatThrownBy(() -> unauthClient.healthCheckAsync().get()).isInstanceOf(ExecutionException.class);
+            }
 
-            assertThatThrownBy(() -> unauthClient.healthCheckAsync().get()).isInstanceOf(ExecutionException.class);
-
-            unauthClient.close();
-
-            final QdrantClient client = new QdrantClient(
-                QdrantGrpcClient.newBuilder(qdrant.getHost(), qdrant.getGrpcPort(), false).withApiKey(apiKey).build()
-            );
-
-            QdrantOuterClass.HealthCheckReply healthCheckReply = client.healthCheckAsync().get();
-            assertThat(healthCheckReply.getVersion()).isEqualTo("1.7.4");
-
-            client.close();
+            try (
+                QdrantClient client = new QdrantClient(
+                    QdrantGrpcClient
+                        .newBuilder(qdrant.getHost(), qdrant.getGrpcPort(), false)
+                        .withApiKey(apiKey)
+                        .build()
+                )
+            ) {
+                QdrantOuterClass.HealthCheckReply healthCheckReply = client.healthCheckAsync().get();
+                assertThat(healthCheckReply.getVersion()).isEqualTo("1.7.4");
+            }
         }
     }
 
@@ -68,22 +72,25 @@ class QdrantContainerTest {
         ) {
             qdrant.start();
 
-            final QdrantClient unauthClient = new QdrantClient(
-                QdrantGrpcClient.newBuilder(qdrant.getHost(), qdrant.getGrpcPort(), false).build()
-            );
+            try (
+                QdrantClient unauthClient = new QdrantClient(
+                    QdrantGrpcClient.newBuilder(qdrant.getHost(), qdrant.getGrpcPort(), false).build()
+                )
+            ) {
+                assertThatThrownBy(() -> unauthClient.healthCheckAsync().get()).isInstanceOf(ExecutionException.class);
+            }
 
-            assertThatThrownBy(() -> unauthClient.healthCheckAsync().get()).isInstanceOf(ExecutionException.class);
-
-            unauthClient.close();
-
-            final QdrantClient client = new QdrantClient(
-                QdrantGrpcClient.newBuilder(qdrant.getHost(), qdrant.getGrpcPort(), false).withApiKey(apiKey).build()
-            );
-
-            QdrantOuterClass.HealthCheckReply healthCheckReply = client.healthCheckAsync().get();
-            assertThat(healthCheckReply.getVersion()).isEqualTo("1.7.4");
-
-            client.close();
+            try (
+                QdrantClient client = new QdrantClient(
+                    QdrantGrpcClient
+                        .newBuilder(qdrant.getHost(), qdrant.getGrpcPort(), false)
+                        .withApiKey(apiKey)
+                        .build()
+                )
+            ) {
+                QdrantOuterClass.HealthCheckReply healthCheckReply = client.healthCheckAsync().get();
+                assertThat(healthCheckReply.getVersion()).isEqualTo("1.7.4");
+            }
         }
     }
 }

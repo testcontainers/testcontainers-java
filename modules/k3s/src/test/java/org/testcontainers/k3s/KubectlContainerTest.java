@@ -33,7 +33,7 @@ class KubectlContainerTest {
     }
 
     @Test
-    public void shouldExposeKubeConfigForNetworkAlias() throws Exception {
+    void shouldExposeKubeConfigForNetworkAlias() {
         String kubeConfigYaml = k3s.generateInternalKubeConfigYaml("k3s");
 
         try (
@@ -50,7 +50,7 @@ class KubectlContainerTest {
     }
 
     @Test
-    public void shouldThrowAnExceptionForUnknownNetworkAlias() {
+    void shouldThrowAnExceptionForUnknownNetworkAlias() {
         assertThatThrownBy(() -> k3s.generateInternalKubeConfigYaml("not-set-network-alias"))
             .isInstanceOf(IllegalArgumentException.class);
     }

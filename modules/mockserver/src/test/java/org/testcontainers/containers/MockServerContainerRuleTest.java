@@ -18,7 +18,7 @@ class MockServerContainerRuleTest {
         .parse("mockserver/mockserver")
         .withTag("mockserver-" + MockServerClient.class.getPackage().getImplementationVersion());
 
-    private static MockServerContainer mockServer = new MockServerContainer(MOCKSERVER_IMAGE);
+    private static final MockServerContainer mockServer = new MockServerContainer(MOCKSERVER_IMAGE);
 
     // }
 

@@ -6,12 +6,12 @@ import org.testcontainers.containers.CockroachContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 import org.testcontainers.images.builder.Transferable;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class SimpleCockroachDBTest extends AbstractContainerDatabaseTest {
@@ -28,10 +28,17 @@ class SimpleCockroachDBTest extends AbstractContainerDatabaseTest {
         ) {
             cockroach.start();
 
-            ResultSet resultSet = performQuery(cockroach, "SELECT 1");
-
-            int resultSetInt = resultSet.getInt(1);
-            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+            performQuery(
+                cockroach,
+                "SELECT 1",
+                resultSet -> {
+                    assertThatNoException()
+                        .isThrownBy(() -> {
+                            int resultSetInt = resultSet.getInt(1);
+                            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+                        });
+                }
+            );
         }
     }
 
@@ -43,20 +50,29 @@ class SimpleCockroachDBTest extends AbstractContainerDatabaseTest {
         ) { // CockroachDB is expected to be compatible with Postgres
             cockroach.start();
 
-            ResultSet resultSet = performQuery(cockroach, "SELECT foo FROM bar");
-
-            String firstColumnValue = resultSet.getString(1);
-            assertThat(firstColumnValue).as("Value from init script should equal real value").isEqualTo("hello world");
+            performQuery(
+                cockroach,
+                "SELECT foo FROM bar",
+                resultSet -> {
+                    assertThatNoException()
+                        .isThrownBy(() -> {
+                            String firstColumnValue = resultSet.getString(1);
+                            assertThat(firstColumnValue)
+                                .as("Value from init script should equal real value")
+                                .isEqualTo("hello world");
+                        });
+                }
+            );
         }
     }
 
     @Test
     void testWithAdditionalUrlParamInJdbcUrl() {
-        CockroachContainer cockroach = new CockroachContainer(CockroachDBTestImages.COCKROACHDB_IMAGE)
-            .withUrlParam("sslmode", "disable")
-            .withUrlParam("application_name", "cockroach");
-
-        try {
+        try (
+            CockroachContainer cockroach = new CockroachContainer(CockroachDBTestImages.COCKROACHDB_IMAGE)
+                .withUrlParam("sslmode", "disable")
+                .withUrlParam("application_name", "cockroach")
+        ) {
             cockroach.start();
             String jdbcUrl = cockroach.getJdbcUrl();
             assertThat(jdbcUrl)
@@ -64,8 +80,6 @@ class SimpleCockroachDBTest extends AbstractContainerDatabaseTest {
                 .contains("&")
                 .contains("sslmode=disable")
                 .contains("application_name=cockroach");
-        } finally {
-            cockroach.stop();
         }
     }
 
@@ -81,10 +95,17 @@ class SimpleCockroachDBTest extends AbstractContainerDatabaseTest {
         ) {
             cockroach.start();
 
-            ResultSet resultSet = performQuery(cockroach, "SELECT 1");
-
-            int resultSetInt = resultSet.getInt(1);
-            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+            performQuery(
+                cockroach,
+                "SELECT 1",
+                resultSet -> {
+                    assertThatNoException()
+                        .isThrownBy(() -> {
+                            int resultSetInt = resultSet.getInt(1);
+                            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+                        });
+                }
+            );
 
             String jdbcUrl = cockroach.getJdbcUrl();
             assertThat(jdbcUrl).contains("/" + "test_database");
@@ -93,21 +114,23 @@ class SimpleCockroachDBTest extends AbstractContainerDatabaseTest {
 
     @Test
     void testAnExceptionIsThrownWhenImageDoesNotSupportEnvVars() {
-        CockroachContainer cockroachContainer = new CockroachContainer(
-            CockroachDBTestImages.COCKROACHDB_IMAGE_WITH_ENV_VARS_UNSUPPORTED
-        );
+        try (
+            CockroachContainer cockroachContainer = new CockroachContainer(
+                CockroachDBTestImages.COCKROACHDB_IMAGE_WITH_ENV_VARS_UNSUPPORTED
+            )
+        ) {
+            assertThatThrownBy(() -> cockroachContainer.withUsername("test_user"))
+                .withFailMessage("Setting a username in not supported in the versions below 22.1.0")
+                .isInstanceOf(UnsupportedOperationException.class);
 
-        assertThatThrownBy(() -> cockroachContainer.withUsername("test_user"))
-            .isInstanceOf(UnsupportedOperationException.class)
-            .withFailMessage("Setting a username in not supported in the versions below 22.1.0");
+            assertThatThrownBy(() -> cockroachContainer.withPassword("test_password"))
+                .withFailMessage("Setting a password in not supported in the versions below 22.1.0")
+                .isInstanceOf(UnsupportedOperationException.class);
 
-        assertThatThrownBy(() -> cockroachContainer.withPassword("test_password"))
-            .isInstanceOf(UnsupportedOperationException.class)
-            .withFailMessage("Setting a password in not supported in the versions below 22.1.0");
-
-        assertThatThrownBy(() -> cockroachContainer.withDatabaseName("test_database"))
-            .isInstanceOf(UnsupportedOperationException.class)
-            .withFailMessage("Setting a databaseName in not supported in the versions below 22.1.0");
+            assertThatThrownBy(() -> cockroachContainer.withDatabaseName("test_database"))
+                .withFailMessage("Setting a databaseName in not supported in the versions below 22.1.0")
+                .isInstanceOf(UnsupportedOperationException.class);
+        }
     }
 
     @Test
@@ -124,10 +147,19 @@ class SimpleCockroachDBTest extends AbstractContainerDatabaseTest {
         ) { // CockroachDB is expected to be compatible with Postgres
             cockroach.start();
 
-            ResultSet resultSet = performQuery(cockroach, "SELECT foo FROM bar");
-
-            String firstColumnValue = resultSet.getString(1);
-            assertThat(firstColumnValue).as("Value from init script should equal real value").isEqualTo("hello world");
+            performQuery(
+                cockroach,
+                "SELECT foo FROM bar",
+                resultSet -> {
+                    assertThatNoException()
+                        .isThrownBy(() -> {
+                            String firstColumnValue = resultSet.getString(1);
+                            assertThat(firstColumnValue)
+                                .as("Value from init script should equal real value")
+                                .isEqualTo("hello world");
+                        });
+                }
+            );
         }
     }
 }

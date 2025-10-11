@@ -40,7 +40,7 @@ class PubSubEmulatorContainerTest {
             // emulatorContainer {
             PubSubEmulatorContainer emulator = new PubSubEmulatorContainer(
                 DockerImageName.parse("gcr.io/google.com/cloudsdktool/google-cloud-cli:441.0.0-emulators")
-            );
+            )
             // }
         ) {
             emulator.start();
@@ -125,14 +125,17 @@ class PubSubEmulatorContainerTest {
             .setTransportChannelProvider(channelProvider)
             .setCredentialsProvider(credentialsProvider)
             .build();
-        SubscriptionAdminClient subscriptionAdminClient = SubscriptionAdminClient.create(subscriptionAdminSettings);
-        SubscriptionName subscriptionName = SubscriptionName.of(PROJECT_ID, subscriptionId);
-        subscriptionAdminClient.createSubscription(
-            subscriptionName,
-            TopicName.of(PROJECT_ID, topicId),
-            PushConfig.getDefaultInstance(),
-            10
-        );
+        try (
+            SubscriptionAdminClient subscriptionAdminClient = SubscriptionAdminClient.create(subscriptionAdminSettings)
+        ) {
+            SubscriptionName subscriptionName = SubscriptionName.of(PROJECT_ID, subscriptionId);
+            subscriptionAdminClient.createSubscription(
+                subscriptionName,
+                TopicName.of(PROJECT_ID, topicId),
+                PushConfig.getDefaultInstance(),
+                10
+            );
+        }
     }
     // }
 

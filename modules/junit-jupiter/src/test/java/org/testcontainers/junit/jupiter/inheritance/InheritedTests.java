@@ -8,7 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class InheritedTests extends AbstractTestBase {
 
     @Container
-    private RedisContainer myRedis = new RedisContainer();
+    private final RedisContainer myRedis = new RedisContainer();
 
     @Test
     void step1() {

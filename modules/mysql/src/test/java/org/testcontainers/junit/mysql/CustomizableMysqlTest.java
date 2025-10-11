@@ -5,10 +5,10 @@ import org.testcontainers.MySQLTestImages;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 
 class CustomizableMysqlTest extends AbstractContainerDatabaseTest {
 
@@ -30,10 +30,17 @@ class CustomizableMysqlTest extends AbstractContainerDatabaseTest {
         ) {
             mysql.start();
 
-            ResultSet resultSet = performQuery(mysql, "SELECT 1");
-
-            int resultSetInt = resultSet.getInt(1);
-            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+            performQuery(
+                mysql,
+                "SELECT 1",
+                resultSet -> {
+                    assertThatNoException()
+                        .isThrownBy(() -> {
+                            int resultSetInt = resultSet.getInt(1);
+                            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+                        });
+                }
+            );
         }
     }
 }

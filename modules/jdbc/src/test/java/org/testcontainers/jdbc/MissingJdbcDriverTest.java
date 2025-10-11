@@ -1,6 +1,6 @@
 package org.testcontainers.jdbc;
 
-import com.google.common.base.Throwables;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.utility.DockerImageName;
@@ -10,29 +10,24 @@ import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
 
 class MissingJdbcDriverTest {
 
     @Test
     void shouldFailFastIfNoDriverFound() {
-        final MissingDriverContainer container = new MissingDriverContainer();
+        try (MissingDriverContainer container = new MissingDriverContainer()) {
+            Throwable thrown = Assertions.catchThrowable(container::start);
+            Throwable rootCause = org.assertj.core.util.Throwables.getRootCause(thrown);
 
-        try {
-            container.start();
-            fail("The container is expected to fail to start");
-        } catch (Exception e) {
-            final Throwable rootCause = Throwables.getRootCause(e);
-            assertThat(rootCause)
-                .as("ClassNotFoundException is the root cause")
+            Assertions
+                .assertThat(rootCause)
+                .as("Root cause should be ClassNotFoundException")
                 .isInstanceOf(ClassNotFoundException.class);
-        } finally {
-            container.stop();
-        }
 
-        assertThat(container.getConnectionAttempts())
-            .as("only one connection attempt should have been made")
-            .isEqualTo(1);
+            assertThat(container.getConnectionAttempts())
+                .as("only one connection attempt should have been made")
+                .isEqualTo(1);
+        }
     }
 
     /**

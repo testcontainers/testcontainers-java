@@ -27,40 +27,30 @@ class ServiceBusEmulatorContainerTest {
     @Test
     void testWithClient() {
         try (
-            // network {
             Network network = Network.newNetwork();
-            // }
-            // sqlContainer {
             MSSQLServerContainer<?> mssqlServerContainer = new MSSQLServerContainer<>(
                 "mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04"
             )
                 .acceptLicense()
                 .withPassword("yourStrong(!)Password")
-                .withCreateContainerCmdModifier(cmd -> {
-                    cmd.getHostConfig().withCapAdd(Capability.SYS_PTRACE);
-                })
+                .withCreateContainerCmdModifier(cmd -> cmd.getHostConfig().withCapAdd(Capability.SYS_PTRACE))
                 .withNetwork(network);
-            // }
-            // emulatorContainer {
             ServiceBusEmulatorContainer emulator = new ServiceBusEmulatorContainer(
                 "mcr.microsoft.com/azure-messaging/servicebus-emulator:1.1.2"
             )
                 .acceptLicense()
                 .withConfig(MountableFile.forClasspathResource("/service-bus-config.json"))
                 .withNetwork(network)
-                .withMsSqlServerContainer(mssqlServerContainer);
-            // }
+                .withMsSqlServerContainer(mssqlServerContainer)
         ) {
             emulator.start();
             assertThat(emulator.getConnectionString()).startsWith("Endpoint=sb://");
 
-            // senderClient {
             ServiceBusSenderClient senderClient = new ServiceBusClientBuilder()
                 .connectionString(emulator.getConnectionString())
                 .sender()
                 .queueName("queue.1")
                 .buildClient();
-            // }
 
             await()
                 .atMost(20, TimeUnit.SECONDS)
@@ -77,23 +67,23 @@ class ServiceBusEmulatorContainerTest {
                 m.complete();
             };
             Consumer<ServiceBusErrorContext> errorConsumer = e -> Assertions.fail("Unexpected error: " + e);
-            // processorClient {
-            ServiceBusProcessorClient processorClient = new ServiceBusClientBuilder()
-                .connectionString(emulator.getConnectionString())
-                .processor()
-                .queueName("queue.1")
-                .processMessage(messageConsumer)
-                .processError(errorConsumer)
-                .buildProcessorClient();
-            // }
-            processorClient.start();
+            try (
+                ServiceBusProcessorClient processorClient = new ServiceBusClientBuilder()
+                    .connectionString(emulator.getConnectionString())
+                    .processor()
+                    .queueName("queue.1")
+                    .processMessage(messageConsumer)
+                    .processError(errorConsumer)
+                    .buildProcessorClient()
+            ) {
+                processorClient.start();
 
-            await()
-                .atMost(20, TimeUnit.SECONDS)
-                .untilAsserted(() -> {
-                    assertThat(received).hasSize(1).containsExactlyInAnyOrder("Hello, Testcontainers!");
-                });
-            processorClient.close();
+                await()
+                    .atMost(20, TimeUnit.SECONDS)
+                    .untilAsserted(() -> {
+                        assertThat(received).hasSize(1).containsExactlyInAnyOrder("Hello, Testcontainers!");
+                    });
+            }
         }
     }
 }

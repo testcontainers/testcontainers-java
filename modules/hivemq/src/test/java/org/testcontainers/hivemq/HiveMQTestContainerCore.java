@@ -86,10 +86,7 @@ class HiveMQTestContainerCore {
         final MountableFile mountableFile = MountableFile.forHostPath("/this/does/not/exist");
         assertThatExceptionOfType(ContainerLaunchException.class)
             .isThrownBy(() -> {
-                final HiveMQContainer hiveMQContainer = container.withFileInExtensionHomeFolder(
-                    mountableFile,
-                    "my-extension"
-                );
+                container.withFileInExtensionHomeFolder(mountableFile, "my-extension");
             });
     }
 }

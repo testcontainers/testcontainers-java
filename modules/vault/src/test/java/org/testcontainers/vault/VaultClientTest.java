@@ -17,7 +17,8 @@ class VaultClientTest {
 
     @Test
     void writeAndReadMultipleValues() throws VaultException {
-        try (VaultContainer<?> vaultContainer = new VaultContainer<>("vault:1.1.3").withVaultToken(VAULT_TOKEN)) {
+        try (VaultContainer<?> vaultContainer = new VaultContainer<>("vault:1.1.3")) {
+            vaultContainer.withVaultToken(VAULT_TOKEN);
             vaultContainer.start();
 
             final VaultConfig config = new VaultConfig()

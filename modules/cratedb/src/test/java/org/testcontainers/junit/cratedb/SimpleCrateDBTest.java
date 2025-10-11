@@ -5,12 +5,12 @@ import org.testcontainers.CrateDBTestImages;
 import org.testcontainers.cratedb.CrateDBContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 
 class SimpleCrateDBTest extends AbstractContainerDatabaseTest {
     static {
@@ -26,10 +26,18 @@ class SimpleCrateDBTest extends AbstractContainerDatabaseTest {
         ) {
             cratedb.start();
 
-            ResultSet resultSet = performQuery(cratedb, "SELECT 1");
-            int resultSetInt = resultSet.getInt(1);
-            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
-            assertHasCorrectExposedAndLivenessCheckPorts(cratedb);
+            performQuery(
+                cratedb,
+                "SELECT 1",
+                resultSet -> {
+                    assertThatNoException()
+                        .isThrownBy(() -> {
+                            int resultSetInt = resultSet.getInt(1);
+                            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+                            assertHasCorrectExposedAndLivenessCheckPorts(cratedb);
+                        });
+                }
+            );
         }
     }
 
@@ -41,9 +49,17 @@ class SimpleCrateDBTest extends AbstractContainerDatabaseTest {
         ) {
             cratedb.start();
 
-            ResultSet resultSet = performQuery(cratedb, "select name from sys.cluster");
-            String result = resultSet.getString(1);
-            assertThat(result).as("cluster name should be overridden").isEqualTo("testcontainers");
+            performQuery(
+                cratedb,
+                "select name from sys.cluster",
+                resultSet -> {
+                    assertThatNoException()
+                        .isThrownBy(() -> {
+                            String result = resultSet.getString(1);
+                            assertThat(result).as("cluster name should be overridden").isEqualTo("testcontainers");
+                        });
+                }
+            );
         }
     }
 
@@ -55,10 +71,19 @@ class SimpleCrateDBTest extends AbstractContainerDatabaseTest {
         ) {
             cratedb.start();
 
-            ResultSet resultSet = performQuery(cratedb, "SELECT foo FROM bar");
-
-            String firstColumnValue = resultSet.getString(1);
-            assertThat(firstColumnValue).as("Value from init script should equal real value").isEqualTo("hello world");
+            performQuery(
+                cratedb,
+                "SELECT foo FROM bar",
+                resultSet -> {
+                    assertThatNoException()
+                        .isThrownBy(() -> {
+                            String firstColumnValue = resultSet.getString(1);
+                            assertThat(firstColumnValue)
+                                .as("Value from init script should equal real value")
+                                .isEqualTo("hello world");
+                        });
+                }
+            );
         }
     }
 

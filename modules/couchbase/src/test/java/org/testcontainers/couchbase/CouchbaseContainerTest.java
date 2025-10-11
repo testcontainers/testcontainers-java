@@ -152,17 +152,15 @@ class CouchbaseContainerTest {
         container.start();
 
         // cluster_creation {
-        Cluster cluster = Cluster.connect(
-            container.getConnectionString(),
-            container.getUsername(),
-            container.getPassword()
-        );
-        // }
-
-        try {
+        try (
+            Cluster cluster = Cluster.connect(
+                container.getConnectionString(),
+                container.getUsername(),
+                container.getPassword()
+            )
+        ) {
             consumer.accept(cluster);
-        } finally {
-            cluster.disconnect();
         }
+        // }
     }
 }

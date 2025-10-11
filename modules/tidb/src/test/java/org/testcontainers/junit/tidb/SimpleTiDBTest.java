@@ -5,10 +5,10 @@ import org.testcontainers.TiDBTestImages;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 import org.testcontainers.tidb.TiDBContainer;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 
 class SimpleTiDBTest extends AbstractContainerDatabaseTest {
 
@@ -20,11 +20,18 @@ class SimpleTiDBTest extends AbstractContainerDatabaseTest {
         ) {
             tidb.start();
 
-            ResultSet resultSet = performQuery(tidb, "SELECT 1");
-
-            int resultSetInt = resultSet.getInt(1);
-            assertThat(resultSetInt).isEqualTo(1);
-            assertHasCorrectExposedAndLivenessCheckPorts(tidb);
+            performQuery(
+                tidb,
+                "SELECT 1",
+                resultSet -> {
+                    assertThatNoException()
+                        .isThrownBy(() -> {
+                            int resultSetInt = resultSet.getInt(1);
+                            assertThat(resultSetInt).isEqualTo(1);
+                            assertHasCorrectExposedAndLivenessCheckPorts(tidb);
+                        });
+                }
+            );
         }
     }
 
@@ -35,30 +42,33 @@ class SimpleTiDBTest extends AbstractContainerDatabaseTest {
         ) { // TiDB is expected to be compatible with MySQL
             tidb.start();
 
-            ResultSet resultSet = performQuery(tidb, "SELECT foo FROM bar");
-
-            String firstColumnValue = resultSet.getString(1);
-            assertThat(firstColumnValue).isEqualTo("hello world");
+            performQuery(
+                tidb,
+                "SELECT foo FROM bar",
+                resultSet -> {
+                    assertThatNoException()
+                        .isThrownBy(() -> {
+                            String firstColumnValue = resultSet.getString(1);
+                            assertThat(firstColumnValue).isEqualTo("hello world");
+                        });
+                }
+            );
         }
     }
 
     @Test
     void testWithAdditionalUrlParamInJdbcUrl() {
-        TiDBContainer tidb = new TiDBContainer(TiDBTestImages.TIDB_IMAGE).withUrlParam("sslmode", "disable");
-
-        try {
+        try (TiDBContainer tidb = new TiDBContainer(TiDBTestImages.TIDB_IMAGE).withUrlParam("sslmode", "disable")) {
             tidb.start();
             String jdbcUrl = tidb.getJdbcUrl();
             assertThat(jdbcUrl).contains("?");
             assertThat(jdbcUrl).contains("sslmode=disable");
-        } finally {
-            tidb.stop();
         }
     }
 
     private void assertHasCorrectExposedAndLivenessCheckPorts(TiDBContainer tidb) {
-        Integer tidbPort = 4000;
-        Integer restApiPort = 10080;
+        int tidbPort = 4000;
+        int restApiPort = 10080;
 
         assertThat(tidb.getExposedPorts()).containsExactlyInAnyOrder(tidbPort, restApiPort);
         assertThat(tidb.getLivenessCheckPortNumbers())

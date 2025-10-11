@@ -11,7 +11,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 class TestcontainersNestedRestartedContainerTests {
 
     @Container
-    private final GenericContainer<?> topLevelContainer = new GenericContainer<>(JUnitJupiterTestImages.HTTPD_IMAGE)
+    private static final GenericContainer<?> topLevelContainer = new GenericContainer<>(
+        JUnitJupiterTestImages.HTTPD_IMAGE
+    )
         .withExposedPorts(80);
 
     // }}

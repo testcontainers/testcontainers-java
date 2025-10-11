@@ -3,10 +3,10 @@ package org.testcontainers.databend;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 
 class DatabendContainerTest extends AbstractContainerDatabaseTest {
 
@@ -18,10 +18,17 @@ class DatabendContainerTest extends AbstractContainerDatabaseTest {
         ) {
             databend.start();
 
-            ResultSet resultSet = performQuery(databend, "SELECT 1");
-
-            int resultSetInt = resultSet.getInt(1);
-            assertThat(resultSetInt).isEqualTo(1);
+            performQuery(
+                databend,
+                "SELECT 1",
+                resultSet -> {
+                    assertThatNoException()
+                        .isThrownBy(() -> {
+                            int resultSetInt = resultSet.getInt(1);
+                            assertThat(resultSetInt).isEqualTo(1);
+                        });
+                }
+            );
         }
     }
 
@@ -35,10 +42,17 @@ class DatabendContainerTest extends AbstractContainerDatabaseTest {
         ) {
             databend.start();
 
-            ResultSet resultSet = performQuery(databend, "SELECT 1;");
-
-            int resultSetInt = resultSet.getInt(1);
-            assertThat(resultSetInt).isEqualTo(1);
+            performQuery(
+                databend,
+                "SELECT 1;",
+                resultSet -> {
+                    assertThatNoException()
+                        .isThrownBy(() -> {
+                            int resultSetInt = resultSet.getInt(1);
+                            assertThat(resultSetInt).isEqualTo(1);
+                        });
+                }
+            );
         }
     }
 }

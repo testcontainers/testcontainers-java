@@ -7,14 +7,11 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.ClickhouseTestImages;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 
 class ClickHouseContainerTest extends AbstractContainerDatabaseTest {
 
@@ -26,10 +23,17 @@ class ClickHouseContainerTest extends AbstractContainerDatabaseTest {
         ) {
             clickhouse.start();
 
-            ResultSet resultSet = performQuery(clickhouse, "SELECT 1");
-
-            int resultSetInt = resultSet.getInt(1);
-            assertThat(resultSetInt).isEqualTo(1);
+            performQuery(
+                clickhouse,
+                "SELECT 1",
+                resultSet -> {
+                    assertThatNoException()
+                        .isThrownBy(() -> {
+                            int resultSetInt = resultSet.getInt(1);
+                            assertThat(resultSetInt).isEqualTo(1);
+                        });
+                }
+            );
         }
     }
 
@@ -45,13 +49,17 @@ class ClickHouseContainerTest extends AbstractContainerDatabaseTest {
         ) {
             clickhouse.start();
 
-            ResultSet resultSet = performQuery(
+            performQuery(
                 clickhouse,
-                "SELECT value FROM system.settings where name='max_result_rows'"
+                "SELECT value FROM system.settings where name='max_result_rows'",
+                resultSet -> {
+                    assertThatNoException()
+                        .isThrownBy(() -> {
+                            int resultSetInt = resultSet.getInt(1);
+                            assertThat(resultSetInt).isEqualTo(5);
+                        });
+                }
             );
-
-            int resultSetInt = resultSet.getInt(1);
-            assertThat(resultSetInt).isEqualTo(5);
         }
     }
 
@@ -60,33 +68,39 @@ class ClickHouseContainerTest extends AbstractContainerDatabaseTest {
         try (ClickHouseContainer clickhouse = new ClickHouseContainer(ClickhouseTestImages.CLICKHOUSE_24_12_IMAGE)) {
             clickhouse.start();
 
-            ResultSet resultSet = performQuery(clickhouse, "SELECT 1");
-
-            int resultSetInt = resultSet.getInt(1);
-            assertThat(resultSetInt).isEqualTo(1);
+            performQuery(
+                clickhouse,
+                "SELECT 1",
+                resultSet -> {
+                    assertThatNoException()
+                        .isThrownBy(() -> {
+                            int resultSetInt = resultSet.getInt(1);
+                            assertThat(resultSetInt).isEqualTo(1);
+                        });
+                }
+            );
         }
     }
 
     @Test
     void testGetHttpMethodWithHttpClient() {
-        ClickHouseContainer clickhouse = new ClickHouseContainer(ClickhouseTestImages.CLICKHOUSE_24_12_IMAGE);
-        clickhouse.start();
-        Client client = new Client.Builder()
-            .addEndpoint(clickhouse.getHttpUrl())
-            .setUsername(clickhouse.getUsername())
-            .setPassword(clickhouse.getPassword())
-            .build();
-        try {
-            QueryResponse queryResponse = client.query("SELECT 1").get(1, TimeUnit.MINUTES);
-            ClickHouseBinaryFormatReader reader = client.newBinaryFormatReader(queryResponse);
-            reader.next();
-            int result = reader.getInteger(1);
-            assertThat(result).isEqualTo(1);
-        } catch (ExecutionException | InterruptedException | TimeoutException e) {
-            fail("Cannot get sql result:" + e);
-        } finally {
-            clickhouse.close();
-            client.close();
+        try (
+            ClickHouseContainer clickhouse = new ClickHouseContainer(ClickhouseTestImages.CLICKHOUSE_24_12_IMAGE);
+            Client client = new Client.Builder()
+                .addEndpoint(clickhouse.getHttpUrl())
+                .setUsername(clickhouse.getUsername())
+                .setPassword(clickhouse.getPassword())
+                .build()
+        ) {
+            assertThatNoException()
+                .isThrownBy(() -> {
+                    QueryResponse queryResponse = client.query("SELECT 1").get(1, TimeUnit.MINUTES);
+                    try (ClickHouseBinaryFormatReader reader = client.newBinaryFormatReader(queryResponse)) {
+                        reader.next();
+                        int result = reader.getInteger(1);
+                        assertThat(result).isEqualTo(1);
+                    }
+                });
         }
     }
 }
