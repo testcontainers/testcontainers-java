@@ -1,4 +1,4 @@
-package org.testcontainers.containers;
+package org.testcontainers.neo4j;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -192,7 +192,10 @@ class Neo4jContainerTest {
 
     @Test
     void shouldRespectEnvironmentAuth() {
-        try (Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4").withEnv("NEO4J_AUTH", "neo4j/secret")) {
+        try (
+            Neo4jContainer neo4jContainer = (Neo4jContainer) new Neo4jContainer("neo4j:4.4")
+                .withEnv("NEO4J_AUTH", "neo4j/secret")
+        ) {
             neo4jContainer.configure();
 
             assertThat(neo4jContainer.getEnvMap()).containsEntry("NEO4J_AUTH", "neo4j/secret");
@@ -214,9 +217,9 @@ class Neo4jContainerTest {
     @Test
     void containerAdminPasswordOverrulesEnvironmentAuth() {
         try (
-            Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4")
-                .withEnv("NEO4J_AUTH", "neo4j/secret")
-                .withAdminPassword("anotherSecret")
+            Neo4jContainer neo4jContainer = (
+                (Neo4jContainer) new Neo4jContainer("neo4j:4.4").withEnv("NEO4J_AUTH", "neo4j/secret")
+            ).withAdminPassword("anotherSecret")
         ) {
             neo4jContainer.configure();
 
@@ -227,9 +230,9 @@ class Neo4jContainerTest {
     @Test
     void containerWithoutAuthenticationOverrulesEnvironmentAuth() {
         try (
-            Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4")
-                .withEnv("NEO4J_AUTH", "neo4j/secret")
-                .withoutAuthentication()
+            Neo4jContainer neo4jContainer = (
+                (Neo4jContainer) new Neo4jContainer("neo4j:4.4").withEnv("NEO4J_AUTH", "neo4j/secret")
+            ).withoutAuthentication()
         ) {
             neo4jContainer.configure();
 
@@ -239,7 +242,7 @@ class Neo4jContainerTest {
 
     @Test
     void shouldRespectAlreadyDefinedPortMappingsBolt() {
-        try (Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4").withExposedPorts(7687)) {
+        try (Neo4jContainer neo4jContainer = (Neo4jContainer) new Neo4jContainer("neo4j:4.4").withExposedPorts(7687)) {
             neo4jContainer.configure();
 
             assertThat(neo4jContainer.getExposedPorts()).containsExactly(7687);
@@ -248,7 +251,7 @@ class Neo4jContainerTest {
 
     @Test
     void shouldRespectAlreadyDefinedPortMappingsHttp() {
-        try (Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4").withExposedPorts(7474)) {
+        try (Neo4jContainer neo4jContainer = (Neo4jContainer) new Neo4jContainer("neo4j:4.4").withExposedPorts(7474)) {
             neo4jContainer.configure();
 
             assertThat(neo4jContainer.getExposedPorts()).containsExactly(7474);
@@ -257,7 +260,10 @@ class Neo4jContainerTest {
 
     @Test
     void shouldRespectAlreadyDefinedPortMappingsWithoutHttps() {
-        try (Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4").withExposedPorts(7687, 7474)) {
+        try (
+            Neo4jContainer neo4jContainer = (Neo4jContainer) new Neo4jContainer("neo4j:4.4")
+                .withExposedPorts(7687, 7474)
+        ) {
             neo4jContainer.configure();
 
             assertThat(neo4jContainer.getExposedPorts()).containsExactlyInAnyOrder(7474, 7687);
@@ -275,13 +281,11 @@ class Neo4jContainerTest {
 
     @Test
     void shouldRespectCustomWaitStrategy() {
-        try (
-            Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4").waitingFor(new CustomDummyWaitStrategy())
-        ) {
-            neo4jContainer.configure();
+        Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4").waitingFor(new CustomDummyWaitStrategy());
 
-            assertThat(neo4jContainer.getWaitStrategy()).isInstanceOf(CustomDummyWaitStrategy.class);
-        }
+        neo4jContainer.configure();
+
+        assertThat(neo4jContainer).extracting("waitStrategy").isInstanceOf(CustomDummyWaitStrategy.class);
     }
 
     @Test
@@ -306,7 +310,7 @@ class Neo4jContainerTest {
             neo4jContainer.configure();
 
             assertThat(neo4jContainer.getEnvMap().get("NEO4JLABS_PLUGINS"))
-                .containsAnyOf("[\"apoc\",\"bloom\"]", "[\"bloom\",\"apoc\"]");
+                .isIn("[\"apoc\",\"bloom\"]", "[\"bloom\",\"apoc\"]");
         }
     }
 

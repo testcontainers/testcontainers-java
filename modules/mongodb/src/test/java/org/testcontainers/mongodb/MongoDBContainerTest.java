@@ -1,4 +1,4 @@
-package org.testcontainers.containers;
+package org.testcontainers.mongodb;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;

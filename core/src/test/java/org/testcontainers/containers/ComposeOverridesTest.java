@@ -55,9 +55,7 @@ class ComposeOverridesTest {
                 .isTrue();
         }
         try (
-            ComposeContainer compose = new ComposeContainer(composeFiles)
-                .withLocalCompose(localMode)
-                .withExposedService(SERVICE_NAME, SERVICE_PORT)
+            ComposeContainer compose = new ComposeContainer(composeFiles).withExposedService(SERVICE_NAME, SERVICE_PORT)
         ) {
             compose.start();
 

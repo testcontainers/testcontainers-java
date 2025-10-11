@@ -93,9 +93,17 @@ class MSSQLServerContainerTest extends AbstractContainerDatabaseTest {
         ) {
             mssqlServerContainer.start();
 
-            ResultSet resultSet = performQuery(mssqlServerContainer, mssqlServerContainer.getTestQueryString());
-            int resultSetInt = resultSet.getInt(1);
-            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+            performQuery(
+                mssqlServerContainer,
+                mssqlServerContainer.getTestQueryString(),
+                resultSet -> {
+                    assertThatNoException()
+                        .isThrownBy(() -> {
+                            int resultSetInt = resultSet.getInt(1);
+                            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+                        });
+                }
+            );
         }
     }
 

@@ -54,8 +54,7 @@ class DockerComposeOverridesTest {
                 .doesNotStartWith("Docker Compose version v2");
         }
         try (
-            DockerComposeContainer compose = new DockerComposeContainer(composeFiles)
-                .withLocalCompose(localMode)
+            DockerComposeContainer<?> compose = new DockerComposeContainer(composeFiles)
                 .withExposedService(SERVICE_NAME, SERVICE_PORT)
         ) {
             compose.start();

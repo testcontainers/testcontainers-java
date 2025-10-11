@@ -13,19 +13,22 @@ class DockerComposeLocalImageTest {
 
     @Test
     void usesLocalImageEvenWhenPullFails() throws InterruptedException {
-        tagImage("redis:6-alpine", "redis-local", "latest");
+        tagImage();
 
-        DockerComposeContainer composeContainer = new DockerComposeContainer(
-            DockerImageName.parse("docker/compose:1.29.2"),
-            new File("src/test/resources/local-compose-test.yml")
-        )
-            .withExposedService("redis", 6379);
-        composeContainer.start();
+        try (
+            DockerComposeContainer<?> composeContainer = new DockerComposeContainer<>(
+                DockerImageName.parse("docker/compose:1.29.2"),
+                new File("src/test/resources/local-compose-test.yml")
+            )
+                .withExposedService("redis", 6379)
+        ) {
+            composeContainer.start();
+        }
     }
 
-    private void tagImage(String sourceImage, String targetImage, String targetTag) throws InterruptedException {
+    private void tagImage() throws InterruptedException {
         DockerClient client = DockerClientFactory.instance().client();
-        client.pullImageCmd(sourceImage).exec(new PullImageResultCallback()).awaitCompletion();
-        client.tagImageCmd(sourceImage, targetImage, targetTag).exec();
+        client.pullImageCmd("redis:6-alpine").exec(new PullImageResultCallback()).awaitCompletion();
+        client.tagImageCmd("redis:6-alpine", "redis-local", "latest").exec();
     }
 }
