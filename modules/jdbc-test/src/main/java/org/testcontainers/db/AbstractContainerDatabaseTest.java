@@ -80,6 +80,24 @@ public abstract class AbstractContainerDatabaseTest {
         );
     }
 
+    protected void performSelectVersionQuery(final JdbcDatabaseContainer<?> container) throws SQLException {
+        performQuery(
+            container,
+            "SELECT VERSION()",
+            resultSet -> {
+                Assertions
+                    .assertThatNoException()
+                    .isThrownBy(() -> {
+                        String resultSetString = resultSet.getString(1);
+                        Assertions
+                            .assertThat(resultSetString)
+                            .as("The database version can be set using a container rule parameter")
+                            .startsWith("10.3.39");
+                    });
+            }
+        );
+    }
+
     protected DataSource getDataSource(final JdbcDatabaseContainer<?> container) {
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setJdbcUrl(container.getJdbcUrl());

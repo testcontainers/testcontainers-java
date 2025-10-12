@@ -57,20 +57,7 @@ class MySQLContainerTest extends AbstractContainerDatabaseTest {
         ) {
             mysqlOldVersion.start();
 
-            performQuery(
-                mysqlOldVersion,
-                "SELECT VERSION()",
-                resultSet -> {
-                    Assertions
-                        .assertThatNoException()
-                        .isThrownBy(() -> {
-                            String resultSetString = resultSet.getString(1);
-                            assertThat(resultSetString)
-                                .as("The database version can be set using a container rule parameter")
-                                .startsWith("8.0");
-                        });
-                }
-            );
+            performSelectVersionQuery(mysqlOldVersion);
         }
     }
 

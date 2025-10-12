@@ -42,20 +42,7 @@ class MariaDBContainerTest extends AbstractContainerDatabaseTest {
         ) {
             mariadbOldVersion.start();
 
-            performQuery(
-                mariadbOldVersion,
-                "SELECT VERSION()",
-                resultSet -> {
-                    Assertions
-                        .assertThatNoException()
-                        .isThrownBy(() -> {
-                            String resultSetString = resultSet.getString(1);
-                            assertThat(resultSetString)
-                                .as("The database version can be set using a container rule parameter")
-                                .startsWith("10.3.39");
-                        });
-                }
-            );
+            performSelectOneQuery(mariadbOldVersion);
         }
     }
 
