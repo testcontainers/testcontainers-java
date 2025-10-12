@@ -25,18 +25,17 @@ public class ValkeyContainer extends GenericContainer<ValkeyContainer> {
     }
 
     private static final DockerImageName DEFAULT_IMAGE = DockerImageName.parse(
-        "valkey/valkey:7.2.5");
+        "valkey/valkey:8.1");
 
     private static final String DEFAULT_CONFIG_FILE = "/usr/local/valkey.conf";
 
     private static final int CONTAINER_PORT = 6379;
 
-    @Getter
     private String username;
-    @Getter
     private String password;
     private String persistenceVolume;
     private String initialImportScriptFile;
+    private String configFile;
     private ValkeyLogLevel logLevel;
     private SnapshottingSettings snapshottingSettings;
 
@@ -112,9 +111,7 @@ public class ValkeyContainer extends GenericContainer<ValkeyContainer> {
      * Sets the config file to be used for the Valkey container.
      */
     public ValkeyContainer withConfigFile(String configFile) {
-        withCopyFileToContainer(MountableFile.forHostPath(configFile), DEFAULT_CONFIG_FILE);
-
-        // TODO check whether config path needs to be specified on startup
+        this.configFile = configFile;
 
         return this;
     }
@@ -124,13 +121,17 @@ public class ValkeyContainer extends GenericContainer<ValkeyContainer> {
         List<String> command = new ArrayList<>();
         command.add("valkey-server");
 
+        if (configFile != null && !configFile.isEmpty()) {
+            withCopyToContainer(MountableFile.forHostPath(configFile), DEFAULT_CONFIG_FILE);
+            command.add(DEFAULT_CONFIG_FILE);
+        }
+
         if (password != null && !password.isEmpty()) {
             command.add("--requirepass");
             command.add(password);
 
             if (username != null && !username.isEmpty()) {
-                command.add("--user");
-                command.add(username + " on >" + password + " ~* +@all");
+                command.add("--user " + username + " on >" + password + " ~* +@all");
             }
         }
 
@@ -161,22 +162,40 @@ public class ValkeyContainer extends GenericContainer<ValkeyContainer> {
 
         super.start();
 
-        if (initialImportScriptFile != null && !initialImportScriptFile.isEmpty()) {
-            try {
-                ExecResult result = this.execInContainer("/bin/sh", "/tmp/import.sh",
-                    password != null ? password : "");
-                if (result.getExitCode() != 0 || result.getStdout().contains("ERR")) {
-                    throw new RuntimeException(
-                        "Could not import initial data: " + result.getStdout());
-                }
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
+        evaluateImportScript();
     }
 
     public int getPort() {
         return getMappedPort(CONTAINER_PORT);
+    }
+
+    /**
+     * Executes a command in the Valkey CLI inside the container.
+     */
+    public String executeCli(String cmd, String... flags) {
+        try {
+            List<String> args = new ArrayList<>();
+            args.add("redis-cli");
+
+            if (password != null && !password.isEmpty()) {
+                args.addAll(username != null && !username.isEmpty()
+                    ? Arrays.asList("--user", username, "--pass", password)
+                    : Arrays.asList("--pass", password)
+                );
+            }
+
+            args.add(cmd);
+            args.addAll(Arrays.asList(flags));
+
+            ExecResult result = execInContainer(args.toArray(new String[0]));
+            if (result.getExitCode() != 0) {
+                throw new RuntimeException(result.getStdout() + result.getStderr());
+            }
+
+            return result.getStdout();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public String createConnectionUrl() {
@@ -184,15 +203,15 @@ public class ValkeyContainer extends GenericContainer<ValkeyContainer> {
         if (username != null && !username.isEmpty() && password != null && !password.isEmpty()) {
             userInfo = username + ":" + password;
         } else if (password != null && !password.isEmpty()) {
-            userInfo = password;
+            userInfo = ":" + password;
         }
 
         try {
             URI uri = new URI(
                 "redis",
                 userInfo,
-                this.getHost(),
-                this.getPort(),
+                getHost(),
+                getPort(),
                 null,
                 null,
                 null
@@ -200,6 +219,24 @@ public class ValkeyContainer extends GenericContainer<ValkeyContainer> {
             return uri.toString();
         } catch (URISyntaxException e) {
             throw new RuntimeException("Failed to build Redis URI", e);
+        }
+    }
+
+    private void evaluateImportScript() {
+        if (initialImportScriptFile == null || initialImportScriptFile.isEmpty()) {
+            return;
+        }
+
+        try {
+            ExecResult result = execInContainer("/bin/sh", "/tmp/import.sh",
+                password != null ? password : "");
+
+            if (result.getExitCode() != 0 || result.getStdout().contains("ERR")) {
+                throw new RuntimeException(
+                    "Could not import initial data: " + result.getStdout());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
