@@ -1,10 +1,10 @@
 package org.testcontainers.tidb;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.TiDBTestImages;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -19,10 +19,18 @@ class TiDBContainerTest extends AbstractContainerDatabaseTest {
         ) {
             tidb.start();
 
-            ResultSet resultSet = performQuery(tidb, "SELECT 1");
-
-            int resultSetInt = resultSet.getInt(1);
-            assertThat(resultSetInt).isEqualTo(1);
+            performQuery(
+                tidb,
+                "SELECT 1",
+                resultSet -> {
+                    Assertions
+                        .assertThatNoException()
+                        .isThrownBy(() -> {
+                            int resultSetInt = resultSet.getInt(1);
+                            assertThat(resultSetInt).isEqualTo(1);
+                        });
+                }
+            );
             assertHasCorrectExposedAndLivenessCheckPorts(tidb);
         }
     }
@@ -34,10 +42,18 @@ class TiDBContainerTest extends AbstractContainerDatabaseTest {
         ) { // TiDB is expected to be compatible with MySQL
             tidb.start();
 
-            ResultSet resultSet = performQuery(tidb, "SELECT foo FROM bar");
-
-            String firstColumnValue = resultSet.getString(1);
-            assertThat(firstColumnValue).isEqualTo("hello world");
+            performQuery(
+                tidb,
+                "SELECT foo FROM bar",
+                resultSet -> {
+                    Assertions
+                        .assertThatNoException()
+                        .isThrownBy(() -> {
+                            String firstColumnValue = resultSet.getString(1);
+                            assertThat(firstColumnValue).isEqualTo("hello world");
+                        });
+                }
+            );
         }
     }
 

@@ -1,10 +1,10 @@
 package org.testcontainers.db2;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.Db2TestImages;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -19,10 +19,18 @@ class Db2ContainerTest extends AbstractContainerDatabaseTest {
         ) {
             db2.start();
 
-            ResultSet resultSet = performQuery(db2, "SELECT 1 FROM SYSIBM.SYSDUMMY1");
-
-            int resultSetInt = resultSet.getInt(1);
-            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+            performQuery(
+                db2,
+                "SELECT 1 FROM SYSIBM.SYSDUMMY1",
+                resultSet -> {
+                    Assertions
+                        .assertThatNoException()
+                        .isThrownBy(() -> {
+                            int resultSetInt = resultSet.getInt(1);
+                            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+                        });
+                }
+            );
             assertHasCorrectExposedAndLivenessCheckPorts(db2);
         }
     }
@@ -32,10 +40,18 @@ class Db2ContainerTest extends AbstractContainerDatabaseTest {
         try (Db2Container db2 = new Db2Container("icr.io/db2_community/db2:11.5.8.0").acceptLicense()) {
             db2.start();
 
-            ResultSet resultSet = performQuery(db2, "SELECT 1 FROM SYSIBM.SYSDUMMY1");
-
-            int resultSetInt = resultSet.getInt(1);
-            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+            performQuery(
+                db2,
+                "SELECT 1 FROM SYSIBM.SYSDUMMY1",
+                resultSet -> {
+                    Assertions
+                        .assertThatNoException()
+                        .isThrownBy(() -> {
+                            int resultSetInt = resultSet.getInt(1);
+                            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+                        });
+                }
+            );
             assertHasCorrectExposedAndLivenessCheckPorts(db2);
         }
     }

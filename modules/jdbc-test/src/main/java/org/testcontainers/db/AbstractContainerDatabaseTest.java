@@ -4,25 +4,34 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.function.Consumer;
 
 import javax.sql.DataSource;
 
 public abstract class AbstractContainerDatabaseTest {
 
-    protected ResultSet performQuery(JdbcDatabaseContainer<?> container, String sql) throws SQLException {
-        DataSource ds = getDataSource(container);
-        Statement statement = ds.getConnection().createStatement();
-        statement.execute(sql);
-        ResultSet resultSet = statement.getResultSet();
+    protected void performQuery(
+        final JdbcDatabaseContainer<?> container,
+        final String sql,
+        final Consumer<ResultSet> consumer
+    ) throws SQLException {
+        final DataSource ds = getDataSource(container);
 
-        resultSet.next();
-        return resultSet;
+        try (
+            Connection connection = ds.getConnection();
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(sql)
+        ) {
+            resultSet.next();
+            consumer.accept(resultSet);
+        }
     }
 
-    protected DataSource getDataSource(JdbcDatabaseContainer<?> container) {
+    protected DataSource getDataSource(final JdbcDatabaseContainer<?> container) {
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setJdbcUrl(container.getJdbcUrl());
         hikariConfig.setUsername(container.getUsername());

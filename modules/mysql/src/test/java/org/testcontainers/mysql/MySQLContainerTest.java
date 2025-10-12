@@ -1,5 +1,6 @@
 package org.testcontainers.mysql;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,10 +42,18 @@ class MySQLContainerTest extends AbstractContainerDatabaseTest {
         ) {
             mysql.start();
 
-            ResultSet resultSet = performQuery(mysql, "SELECT 1");
-            int resultSetInt = resultSet.getInt(1);
-
-            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+            performQuery(
+                mysql,
+                "SELECT 1",
+                resultSet -> {
+                    Assertions
+                        .assertThatNoException()
+                        .isThrownBy(() -> {
+                            int resultSetInt = resultSet.getInt(1);
+                            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+                        });
+                }
+            );
             assertHasCorrectExposedAndLivenessCheckPorts(mysql);
         }
     }
@@ -58,12 +67,20 @@ class MySQLContainerTest extends AbstractContainerDatabaseTest {
         ) {
             mysqlOldVersion.start();
 
-            ResultSet resultSet = performQuery(mysqlOldVersion, "SELECT VERSION()");
-            String resultSetString = resultSet.getString(1);
-
-            assertThat(resultSetString)
-                .as("The database version can be set using a container rule parameter")
-                .startsWith("8.0");
+            performQuery(
+                mysqlOldVersion,
+                "SELECT VERSION()",
+                resultSet -> {
+                    Assertions
+                        .assertThatNoException()
+                        .isThrownBy(() -> {
+                            String resultSetString = resultSet.getString(1);
+                            assertThat(resultSetString)
+                                .as("The database version can be set using a container rule parameter")
+                                .startsWith("8.0");
+                        });
+                }
+            );
         }
     }
 
@@ -87,10 +104,20 @@ class MySQLContainerTest extends AbstractContainerDatabaseTest {
         ) {
             mysqlCustomConfig.start();
 
-            ResultSet resultSet = performQuery(mysqlCustomConfig, "show variables like 'auto_increment_increment'");
-            String result = resultSet.getString("Value");
-
-            assertThat(result).as("Auto increment increment should be overridden by command line").isEqualTo("42");
+            performQuery(
+                mysqlCustomConfig,
+                "show variables like 'auto_increment_increment'",
+                resultSet -> {
+                    Assertions
+                        .assertThatNoException()
+                        .isThrownBy(() -> {
+                            String result = resultSet.getString("Value");
+                            assertThat(result)
+                                .as("Auto increment increment should be overridden by command line")
+                                .isEqualTo("42");
+                        });
+                }
+            );
         }
     }
 
@@ -103,10 +130,20 @@ class MySQLContainerTest extends AbstractContainerDatabaseTest {
         ) {
             container.start();
 
-            ResultSet resultSet = performQuery(container, "SELECT foo FROM bar");
-            String firstColumnValue = resultSet.getString(1);
-
-            assertThat(firstColumnValue).as("Value from init script should equal real value").isEqualTo("hello world");
+            performQuery(
+                container,
+                "SELECT foo FROM bar",
+                resultSet -> {
+                    Assertions
+                        .assertThatNoException()
+                        .isThrownBy(() -> {
+                            String firstColumnValue = resultSet.getString(1);
+                            assertThat(firstColumnValue)
+                                .as("Value from init script should equal real value")
+                                .isEqualTo("hello world");
+                        });
+                }
+            );
         }
     }
 
@@ -137,10 +174,18 @@ class MySQLContainerTest extends AbstractContainerDatabaseTest {
         ) {
             mysql.start();
 
-            ResultSet resultSet = performQuery(mysql, "SELECT 1");
-            int resultSetInt = resultSet.getInt(1);
-
-            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+            performQuery(
+                mysql,
+                "SELECT 1",
+                resultSet -> {
+                    Assertions
+                        .assertThatNoException()
+                        .isThrownBy(() -> {
+                            int resultSetInt = resultSet.getInt(1);
+                            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+                        });
+                }
+            );
         }
     }
 
@@ -263,10 +308,18 @@ class MySQLContainerTest extends AbstractContainerDatabaseTest {
         ) {
             mysql.start();
 
-            ResultSet resultSet = performQuery(mysql, "SELECT 1");
-
-            int resultSetInt = resultSet.getInt(1);
-            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+            performQuery(
+                mysql,
+                "SELECT 1",
+                resultSet -> {
+                    Assertions
+                        .assertThatNoException()
+                        .isThrownBy(() -> {
+                            int resultSetInt = resultSet.getInt(1);
+                            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+                        });
+                }
+            );
         }
     }
 
@@ -276,11 +329,19 @@ class MySQLContainerTest extends AbstractContainerDatabaseTest {
     }
 
     private void assertThatCustomIniFileWasUsed(MySQLContainer mysql) throws SQLException {
-        try (ResultSet resultSet = performQuery(mysql, "SELECT @@GLOBAL.innodb_max_undo_log_size")) {
-            long result = resultSet.getLong(1);
-            assertThat(result)
-                .as("The InnoDB max undo log size has been set by the ini file content")
-                .isEqualTo(20000000);
-        }
+        performQuery(
+            mysql,
+            "SELECT @@GLOBAL.innodb_max_undo_log_size",
+            resultSet -> {
+                Assertions
+                    .assertThatNoException()
+                    .isThrownBy(() -> {
+                        long result = resultSet.getLong(1);
+                        assertThat(result)
+                            .as("The InnoDB max undo log size has been set by the ini file content")
+                            .isEqualTo(20000000);
+                    });
+            }
+        );
     }
 }

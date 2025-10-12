@@ -1,11 +1,11 @@
 package org.testcontainers.cockroachdb;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.CockroachDBTestImages;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 import org.testcontainers.images.builder.Transferable;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -27,10 +27,18 @@ class CockroachContainerTest extends AbstractContainerDatabaseTest {
         ) {
             cockroach.start();
 
-            ResultSet resultSet = performQuery(cockroach, "SELECT 1");
-
-            int resultSetInt = resultSet.getInt(1);
-            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+            performQuery(
+                cockroach,
+                "SELECT 1",
+                resultSet -> {
+                    Assertions
+                        .assertThatNoException()
+                        .isThrownBy(() -> {
+                            int resultSetInt = resultSet.getInt(1);
+                            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+                        });
+                }
+            );
         }
     }
 
@@ -42,10 +50,20 @@ class CockroachContainerTest extends AbstractContainerDatabaseTest {
         ) { // CockroachDB is expected to be compatible with Postgres
             cockroach.start();
 
-            ResultSet resultSet = performQuery(cockroach, "SELECT foo FROM bar");
-
-            String firstColumnValue = resultSet.getString(1);
-            assertThat(firstColumnValue).as("Value from init script should equal real value").isEqualTo("hello world");
+            performQuery(
+                cockroach,
+                "SELECT foo FROM bar",
+                resultSet -> {
+                    Assertions
+                        .assertThatNoException()
+                        .isThrownBy(() -> {
+                            String firstColumnValue = resultSet.getString(1);
+                            assertThat(firstColumnValue)
+                                .as("Value from init script should equal real value")
+                                .isEqualTo("hello world");
+                        });
+                }
+            );
         }
     }
 
@@ -80,10 +98,18 @@ class CockroachContainerTest extends AbstractContainerDatabaseTest {
         ) {
             cockroach.start();
 
-            ResultSet resultSet = performQuery(cockroach, "SELECT 1");
-
-            int resultSetInt = resultSet.getInt(1);
-            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+            performQuery(
+                cockroach,
+                "SELECT 1",
+                resultSet -> {
+                    Assertions
+                        .assertThatNoException()
+                        .isThrownBy(() -> {
+                            int resultSetInt = resultSet.getInt(1);
+                            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+                        });
+                }
+            );
 
             String jdbcUrl = cockroach.getJdbcUrl();
             assertThat(jdbcUrl).contains("/" + "test_database");
@@ -123,10 +149,20 @@ class CockroachContainerTest extends AbstractContainerDatabaseTest {
         ) { // CockroachDB is expected to be compatible with Postgres
             cockroach.start();
 
-            ResultSet resultSet = performQuery(cockroach, "SELECT foo FROM bar");
-
-            String firstColumnValue = resultSet.getString(1);
-            assertThat(firstColumnValue).as("Value from init script should equal real value").isEqualTo("hello world");
+            performQuery(
+                cockroach,
+                "SELECT foo FROM bar",
+                resultSet -> {
+                    Assertions
+                        .assertThatNoException()
+                        .isThrownBy(() -> {
+                            String firstColumnValue = resultSet.getString(1);
+                            assertThat(firstColumnValue)
+                                .as("Value from init script should equal real value")
+                                .isEqualTo("hello world");
+                        });
+                }
+            );
         }
     }
 }

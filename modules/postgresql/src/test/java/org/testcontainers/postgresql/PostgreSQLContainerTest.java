@@ -1,10 +1,10 @@
 package org.testcontainers.postgresql;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.PostgreSQLTestImages;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -26,9 +26,18 @@ class PostgreSQLContainerTest extends AbstractContainerDatabaseTest {
         ) {
             postgres.start();
 
-            ResultSet resultSet = performQuery(postgres, "SELECT 1");
-            int resultSetInt = resultSet.getInt(1);
-            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+            performQuery(
+                postgres,
+                "SELECT 1",
+                resultSet -> {
+                    Assertions
+                        .assertThatNoException()
+                        .isThrownBy(() -> {
+                            int resultSetInt = resultSet.getInt(1);
+                            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+                        });
+                }
+            );
             assertHasCorrectExposedAndLivenessCheckPorts(postgres);
         }
     }
@@ -41,9 +50,18 @@ class PostgreSQLContainerTest extends AbstractContainerDatabaseTest {
         ) {
             postgres.start();
 
-            ResultSet resultSet = performQuery(postgres, "SELECT current_setting('max_connections')");
-            String result = resultSet.getString(1);
-            assertThat(result).as("max_connections should be overridden").isEqualTo("42");
+            performQuery(
+                postgres,
+                "SELECT current_setting('max_connections')",
+                resultSet -> {
+                    Assertions
+                        .assertThatNoException()
+                        .isThrownBy(() -> {
+                            String result = resultSet.getString(1);
+                            assertThat(result).as("max_connections should be overridden").isEqualTo("42");
+                        });
+                }
+            );
         }
     }
 
@@ -56,9 +74,18 @@ class PostgreSQLContainerTest extends AbstractContainerDatabaseTest {
         ) {
             postgres.start();
 
-            ResultSet resultSet = performQuery(postgres, "SELECT current_setting('max_connections')");
-            String result = resultSet.getString(1);
-            assertThat(result).as("max_connections should not be overridden").isNotEqualTo("42");
+            performQuery(
+                postgres,
+                "SELECT current_setting('max_connections')",
+                resultSet -> {
+                    Assertions
+                        .assertThatNoException()
+                        .isThrownBy(() -> {
+                            String result = resultSet.getString(1);
+                            assertThat(result).as("max_connections should not be overridden").isNotEqualTo("42");
+                        });
+                }
+            );
         }
     }
 
@@ -80,10 +107,20 @@ class PostgreSQLContainerTest extends AbstractContainerDatabaseTest {
         ) {
             postgres.start();
 
-            ResultSet resultSet = performQuery(postgres, "SELECT foo FROM bar");
-
-            String firstColumnValue = resultSet.getString(1);
-            assertThat(firstColumnValue).as("Value from init script should equal real value").isEqualTo("hello world");
+            performQuery(
+                postgres,
+                "SELECT foo FROM bar",
+                resultSet -> {
+                    Assertions
+                        .assertThatNoException()
+                        .isThrownBy(() -> {
+                            String firstColumnValue = resultSet.getString(1);
+                            assertThat(firstColumnValue)
+                                .as("Value from init script should equal real value")
+                                .isEqualTo("hello world");
+                        });
+                }
+            );
         }
     }
 
@@ -95,16 +132,25 @@ class PostgreSQLContainerTest extends AbstractContainerDatabaseTest {
         ) {
             postgres.start();
 
-            ResultSet resultSet = performQuery(
+            performQuery(
                 postgres,
-                "SELECT foo AS value FROM bar UNION SELECT bar AS value FROM foo"
+                "SELECT foo AS value FROM bar UNION SELECT bar AS value FROM foo",
+                resultSet -> {
+                    Assertions
+                        .assertThatNoException()
+                        .isThrownBy(() -> {
+                            String columnValue1 = resultSet.getString(1);
+                            resultSet.next();
+                            String columnValue2 = resultSet.getString(1);
+                            assertThat(columnValue1)
+                                .as("Value from init script 1 should equal real value")
+                                .isEqualTo("hello world");
+                            assertThat(columnValue2)
+                                .as("Value from init script 2 should equal real value")
+                                .isEqualTo("hello world 2");
+                        });
+                }
             );
-
-            String columnValue1 = resultSet.getString(1);
-            resultSet.next();
-            String columnValue2 = resultSet.getString(1);
-            assertThat(columnValue1).as("Value from init script 1 should equal real value").isEqualTo("hello world");
-            assertThat(columnValue2).as("Value from init script 2 should equal real value").isEqualTo("hello world 2");
         }
     }
 

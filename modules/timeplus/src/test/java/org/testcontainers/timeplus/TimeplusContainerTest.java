@@ -1,10 +1,10 @@
 package org.testcontainers.timeplus;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.TimeplusImages;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -19,10 +19,18 @@ class TimeplusContainerTest extends AbstractContainerDatabaseTest {
         ) {
             timeplus.start();
 
-            ResultSet resultSet = performQuery(timeplus, "SELECT 1");
-
-            int resultSetInt = resultSet.getInt(1);
-            assertThat(resultSetInt).isEqualTo(1);
+            performQuery(
+                timeplus,
+                "SELECT 1",
+                resultSet -> {
+                    Assertions
+                        .assertThatNoException()
+                        .isThrownBy(() -> {
+                            int resultSetInt = resultSet.getInt(1);
+                            assertThat(resultSetInt).isEqualTo(1);
+                        });
+                }
+            );
         }
     }
 
@@ -37,13 +45,18 @@ class TimeplusContainerTest extends AbstractContainerDatabaseTest {
         ) {
             timeplus.start();
 
-            ResultSet resultSet = performQuery(
+            performQuery(
                 timeplus,
-                "SELECT to_int(value) FROM system.settings where name='interactive_delay'"
+                "SELECT to_int(value) FROM system.settings where name='interactive_delay'",
+                resultSet -> {
+                    Assertions
+                        .assertThatNoException()
+                        .isThrownBy(() -> {
+                            int resultSetInt = resultSet.getInt(1);
+                            assertThat(resultSetInt).isEqualTo(5);
+                        });
+                }
             );
-
-            int resultSetInt = resultSet.getInt(1);
-            assertThat(resultSetInt).isEqualTo(5);
         }
     }
 }
