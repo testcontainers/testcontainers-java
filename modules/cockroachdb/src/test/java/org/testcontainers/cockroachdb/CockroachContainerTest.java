@@ -26,19 +26,7 @@ class CockroachContainerTest extends AbstractContainerDatabaseTest {
             // }
         ) {
             cockroach.start();
-
-            performQuery(
-                cockroach,
-                "SELECT 1",
-                resultSet -> {
-                    Assertions
-                        .assertThatNoException()
-                        .isThrownBy(() -> {
-                            int resultSetInt = resultSet.getInt(1);
-                            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
-                        });
-                }
-            );
+            performSelectOneQuery(cockroach);
         }
     }
 
@@ -98,18 +86,7 @@ class CockroachContainerTest extends AbstractContainerDatabaseTest {
         ) {
             cockroach.start();
 
-            performQuery(
-                cockroach,
-                "SELECT 1",
-                resultSet -> {
-                    Assertions
-                        .assertThatNoException()
-                        .isThrownBy(() -> {
-                            int resultSetInt = resultSet.getInt(1);
-                            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
-                        });
-                }
-            );
+            performSelectOneQuery(cockroach);
 
             String jdbcUrl = cockroach.getJdbcUrl();
             assertThat(jdbcUrl).contains("/" + "test_database");

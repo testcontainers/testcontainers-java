@@ -26,18 +26,7 @@ class SimpleCrateDBTest extends AbstractContainerDatabaseTest {
         ) {
             cratedb.start();
 
-            performQuery(
-                cratedb,
-                "SELECT 1",
-                resultSet -> {
-                    Assertions
-                        .assertThatNoException()
-                        .isThrownBy(() -> {
-                            int resultSetInt = resultSet.getInt(1);
-                            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
-                        });
-                }
-            );
+            performSelectOneQuery(cratedb);
             assertHasCorrectExposedAndLivenessCheckPorts(cratedb);
         }
     }

@@ -26,18 +26,7 @@ class ClickHouseContainerTest extends AbstractContainerDatabaseTest {
         ) {
             clickhouse.start();
 
-            performQuery(
-                clickhouse,
-                "SELECT 1",
-                resultSet -> {
-                    Assertions
-                        .assertThatNoException()
-                        .isThrownBy(() -> {
-                            int resultSetInt = resultSet.getInt(1);
-                            assertThat(resultSetInt).isEqualTo(1);
-                        });
-                }
-            );
+            performSelectOneQuery(clickhouse);
         }
     }
 
@@ -73,18 +62,7 @@ class ClickHouseContainerTest extends AbstractContainerDatabaseTest {
         try (ClickHouseContainer clickhouse = new ClickHouseContainer(ClickhouseTestImages.CLICKHOUSE_24_12_IMAGE)) {
             clickhouse.start();
 
-            performQuery(
-                clickhouse,
-                "SELECT 1",
-                resultSet -> {
-                    Assertions
-                        .assertThatNoException()
-                        .isThrownBy(() -> {
-                            int resultSetInt = resultSet.getInt(1);
-                            assertThat(resultSetInt).isEqualTo(1);
-                        });
-                }
-            );
+            performSelectOneQuery(clickhouse);
         }
     }
 

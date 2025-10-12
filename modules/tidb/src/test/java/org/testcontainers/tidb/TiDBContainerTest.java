@@ -19,18 +19,8 @@ class TiDBContainerTest extends AbstractContainerDatabaseTest {
         ) {
             tidb.start();
 
-            performQuery(
-                tidb,
-                "SELECT 1",
-                resultSet -> {
-                    Assertions
-                        .assertThatNoException()
-                        .isThrownBy(() -> {
-                            int resultSetInt = resultSet.getInt(1);
-                            assertThat(resultSetInt).isEqualTo(1);
-                        });
-                }
-            );
+            performSelectOneQuery(tidb);
+
             assertHasCorrectExposedAndLivenessCheckPorts(tidb);
         }
     }

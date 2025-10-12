@@ -1,6 +1,5 @@
 package org.testcontainers.mssqlserver;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.MSSQLServerTestImages;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
@@ -26,18 +25,9 @@ class MSSQLServerContainerTest extends AbstractContainerDatabaseTest {
             // }
         ) {
             mssqlServer.start();
-            performQuery(
-                mssqlServer,
-                "SELECT 1",
-                resultSet -> {
-                    Assertions
-                        .assertThatNoException()
-                        .isThrownBy(() -> {
-                            int resultSetInt = resultSet.getInt(1);
-                            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
-                        });
-                }
-            );
+
+            performSelectOneQuery(mssqlServer);
+
             assertHasCorrectExposedAndLivenessCheckPorts(mssqlServer);
         }
     }
@@ -87,18 +77,7 @@ class MSSQLServerContainerTest extends AbstractContainerDatabaseTest {
         ) {
             mssqlServerContainer.start();
 
-            performQuery(
-                mssqlServerContainer,
-                mssqlServerContainer.getTestQueryString(),
-                resultSet -> {
-                    Assertions
-                        .assertThatNoException()
-                        .isThrownBy(() -> {
-                            int resultSetInt = resultSet.getInt(1);
-                            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
-                        });
-                }
-            );
+            performSelectOneQuery(mssqlServerContainer);
         }
     }
 

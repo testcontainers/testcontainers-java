@@ -42,18 +42,8 @@ class MySQLContainerTest extends AbstractContainerDatabaseTest {
         ) {
             mysql.start();
 
-            performQuery(
-                mysql,
-                "SELECT 1",
-                resultSet -> {
-                    Assertions
-                        .assertThatNoException()
-                        .isThrownBy(() -> {
-                            int resultSetInt = resultSet.getInt(1);
-                            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
-                        });
-                }
-            );
+            performSelectOneQuery(mysql);
+
             assertHasCorrectExposedAndLivenessCheckPorts(mysql);
         }
     }
@@ -174,18 +164,7 @@ class MySQLContainerTest extends AbstractContainerDatabaseTest {
         ) {
             mysql.start();
 
-            performQuery(
-                mysql,
-                "SELECT 1",
-                resultSet -> {
-                    Assertions
-                        .assertThatNoException()
-                        .isThrownBy(() -> {
-                            int resultSetInt = resultSet.getInt(1);
-                            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
-                        });
-                }
-            );
+            performSelectOneQuery(mysql);
         }
     }
 
@@ -308,18 +287,7 @@ class MySQLContainerTest extends AbstractContainerDatabaseTest {
         ) {
             mysql.start();
 
-            performQuery(
-                mysql,
-                "SELECT 1",
-                resultSet -> {
-                    Assertions
-                        .assertThatNoException()
-                        .isThrownBy(() -> {
-                            int resultSetInt = resultSet.getInt(1);
-                            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
-                        });
-                }
-            );
+            performSelectOneQuery(mysql);
         }
     }
 

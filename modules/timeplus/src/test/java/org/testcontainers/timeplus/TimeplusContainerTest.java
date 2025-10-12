@@ -19,18 +19,7 @@ class TimeplusContainerTest extends AbstractContainerDatabaseTest {
         ) {
             timeplus.start();
 
-            performQuery(
-                timeplus,
-                "SELECT 1",
-                resultSet -> {
-                    Assertions
-                        .assertThatNoException()
-                        .isThrownBy(() -> {
-                            int resultSetInt = resultSet.getInt(1);
-                            assertThat(resultSetInt).isEqualTo(1);
-                        });
-                }
-            );
+            performSelectOneQuery(timeplus);
         }
     }
 

@@ -29,17 +29,8 @@ class YugabyteDBYSQLTest extends AbstractContainerDatabaseTest {
             // }
         ) {
             ysqlContainer.start();
-            performQuery(
-                ysqlContainer,
-                "SELECT 1",
-                resultSet -> {
-                    Assertions
-                        .assertThatNoException()
-                        .isThrownBy(() -> {
-                            assertThat(resultSet.getInt(1)).as("A sample test query succeeds").isEqualTo(1);
-                        });
-                }
-            );
+
+            performSelectOneQuery(ysqlContainer);
         }
     }
 
@@ -51,19 +42,8 @@ class YugabyteDBYSQLTest extends AbstractContainerDatabaseTest {
                 .withDatabaseName(key)
         ) {
             ysqlContainer.start();
-            performQuery(
-                ysqlContainer,
-                "SELECT 1",
-                resultSet -> {
-                    Assertions
-                        .assertThatNoException()
-                        .isThrownBy(() -> {
-                            assertThat(resultSet.getInt(1))
-                                .as("A test query on a custom database succeeds")
-                                .isEqualTo(1);
-                        });
-                }
-            );
+
+            performSelectOneQuery(ysqlContainer);
         }
     }
 
@@ -135,17 +115,9 @@ class YugabyteDBYSQLTest extends AbstractContainerDatabaseTest {
     void testWaitStrategy() throws SQLException {
         try (final YugabyteDBYSQLContainer ysqlContainer = new YugabyteDBYSQLContainer(YBDB_TEST_IMAGE)) {
             ysqlContainer.start();
-            performQuery(
-                ysqlContainer,
-                "SELECT 1",
-                resultSet -> {
-                    Assertions
-                        .assertThatNoException()
-                        .isThrownBy(() -> {
-                            assertThat(resultSet.getInt(1)).as("A sample test query succeeds").isEqualTo(1);
-                        });
-                }
-            );
+
+            performSelectOneQuery(ysqlContainer);
+
             performQuery(
                 ysqlContainer,
                 "SELECT EXISTS (SELECT FROM pg_tables WHERE tablename = 'YB_SAMPLE')",

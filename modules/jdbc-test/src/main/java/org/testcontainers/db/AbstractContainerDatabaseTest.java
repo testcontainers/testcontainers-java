@@ -2,6 +2,7 @@ package org.testcontainers.db;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.assertj.core.api.Assertions;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 
 import java.sql.Connection;
@@ -29,6 +30,21 @@ public abstract class AbstractContainerDatabaseTest {
             resultSet.next();
             consumer.accept(resultSet);
         }
+    }
+
+    protected void performSelectOneQuery(final JdbcDatabaseContainer<?> container) throws SQLException {
+        performQuery(
+            container,
+            "SELECT 1",
+            resultSet -> {
+                Assertions
+                    .assertThatNoException()
+                    .isThrownBy(() -> {
+                        int resultSetInt = resultSet.getInt(1);
+                        Assertions.assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+                    });
+            }
+        );
     }
 
     protected DataSource getDataSource(final JdbcDatabaseContainer<?> container) {

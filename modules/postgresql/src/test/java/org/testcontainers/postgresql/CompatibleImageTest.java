@@ -1,13 +1,10 @@
 package org.testcontainers.postgresql;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 import org.testcontainers.utility.DockerImageName;
 
 import java.sql.SQLException;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class CompatibleImageTest extends AbstractContainerDatabaseTest {
 
@@ -20,18 +17,7 @@ class CompatibleImageTest extends AbstractContainerDatabaseTest {
         ) {
             pgvector.start();
 
-            performQuery(
-                pgvector,
-                "SELECT 1",
-                resultSet -> {
-                    Assertions
-                        .assertThatNoException()
-                        .isThrownBy(() -> {
-                            int resultSetInt = resultSet.getInt(1);
-                            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
-                        });
-                }
-            );
+            performSelectOneQuery(pgvector);
         }
     }
 
@@ -46,18 +32,7 @@ class CompatibleImageTest extends AbstractContainerDatabaseTest {
         ) {
             postgis.start();
 
-            performQuery(
-                postgis,
-                "SELECT 1",
-                resultSet -> {
-                    Assertions
-                        .assertThatNoException()
-                        .isThrownBy(() -> {
-                            int resultSetInt = resultSet.getInt(1);
-                            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
-                        });
-                }
-            );
+            performSelectOneQuery(postgis);
         }
     }
 
@@ -72,18 +47,7 @@ class CompatibleImageTest extends AbstractContainerDatabaseTest {
         ) {
             timescaledb.start();
 
-            performQuery(
-                timescaledb,
-                "SELECT 1",
-                resultSet -> {
-                    Assertions
-                        .assertThatNoException()
-                        .isThrownBy(() -> {
-                            int resultSetInt = resultSet.getInt(1);
-                            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
-                        });
-                }
-            );
+            performSelectOneQuery(timescaledb);
         }
     }
 }

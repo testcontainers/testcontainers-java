@@ -6,7 +6,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.QuestDBTestImages;
 import org.testcontainers.containers.QuestDBContainer;
@@ -32,18 +31,7 @@ class SimpleQuestDBTest extends AbstractContainerDatabaseTest {
         ) {
             questDB.start();
 
-            performQuery(
-                questDB,
-                questDB.getTestQueryString(),
-                resultSet -> {
-                    Assertions
-                        .assertThatNoException()
-                        .isThrownBy(() -> {
-                            int resultSetInt = resultSet.getInt(1);
-                            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
-                        });
-                }
-            );
+            performSelectOneQuery(questDB);
         }
     }
 

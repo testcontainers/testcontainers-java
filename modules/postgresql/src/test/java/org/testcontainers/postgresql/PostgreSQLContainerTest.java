@@ -26,18 +26,8 @@ class PostgreSQLContainerTest extends AbstractContainerDatabaseTest {
         ) {
             postgres.start();
 
-            performQuery(
-                postgres,
-                "SELECT 1",
-                resultSet -> {
-                    Assertions
-                        .assertThatNoException()
-                        .isThrownBy(() -> {
-                            int resultSetInt = resultSet.getInt(1);
-                            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
-                        });
-                }
-            );
+            performSelectOneQuery(postgres);
+
             assertHasCorrectExposedAndLivenessCheckPorts(postgres);
         }
     }

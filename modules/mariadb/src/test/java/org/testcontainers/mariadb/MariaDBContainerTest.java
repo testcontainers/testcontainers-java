@@ -29,18 +29,7 @@ class MariaDBContainerTest extends AbstractContainerDatabaseTest {
         ) {
             mariadb.start();
 
-            performQuery(
-                mariadb,
-                "SELECT 1",
-                resultSet -> {
-                    Assertions
-                        .assertThatNoException()
-                        .isThrownBy(() -> {
-                            int resultSetInt = resultSet.getInt(1);
-                            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
-                        });
-                }
-            );
+            performSelectOneQuery(mariadb);
         }
     }
 
@@ -164,18 +153,7 @@ class MariaDBContainerTest extends AbstractContainerDatabaseTest {
         try (MariaDBContainer mysql = new MariaDBContainer("mariadb:11.2.4").withUsername("root")) {
             mysql.start();
 
-            performQuery(
-                mysql,
-                "SELECT 1",
-                resultSet -> {
-                    Assertions
-                        .assertThatNoException()
-                        .isThrownBy(() -> {
-                            int resultSetInt = resultSet.getInt(1);
-                            assertThat(resultSetInt).isEqualTo(1);
-                        });
-                }
-            );
+            performSelectOneQuery(mysql);
         }
     }
 
