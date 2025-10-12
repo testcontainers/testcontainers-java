@@ -108,6 +108,7 @@ nav:
           - modules/solr.md
           - modules/toxiproxy.md
           - modules/typesense.md
+          - modules/valkey.md
           - modules/vault.md
           - modules/weaviate.md
           - modules/webdriver_containers.md
