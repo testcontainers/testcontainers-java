@@ -14,6 +14,16 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
+/**
+ * Testcontainers implementation for Valkey.
+ * <p>
+ * Supported image: {@code valkey}
+ * <p>
+ * Exposed ports:
+ * <ul>
+ *     <li>Server: 6379</li>
+ * </ul>
+ */
 public class ValkeyContainer extends GenericContainer<ValkeyContainer> {
 
     @AllArgsConstructor
