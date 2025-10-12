@@ -24,7 +24,7 @@ class MultiVersionMySQLTest extends AbstractContainerDatabaseTest {
     void versionCheckTest(DockerImageName dockerImageName) throws SQLException {
         try (MySQLContainer mysql = new MySQLContainer(dockerImageName)) {
             mysql.start();
-            performSelectVersionQuery(mysql);
+            performSelectVersionQuery(mysql, dockerImageName.getVersionPart());
         }
     }
 }

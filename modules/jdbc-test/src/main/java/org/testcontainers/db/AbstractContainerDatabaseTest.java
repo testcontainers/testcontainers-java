@@ -65,7 +65,10 @@ public abstract class AbstractContainerDatabaseTest {
         );
     }
 
-    protected void performSelectMaxConnectionsQuery(final JdbcDatabaseContainer<?> container) throws SQLException {
+    protected void performSelectMaxConnectionsQuery(
+        final JdbcDatabaseContainer<?> container,
+        final String expectedMaxConnections
+    ) throws SQLException {
         performQuery(
             container,
             "SELECT current_setting('max_connections')",
@@ -74,13 +77,17 @@ public abstract class AbstractContainerDatabaseTest {
                     .assertThatNoException()
                     .isThrownBy(() -> {
                         String result = resultSet.getString(1);
-                        Assertions.assertThat(result).as("max_connections should be overridden").isEqualTo("42");
+                        Assertions
+                            .assertThat(result)
+                            .as("max_connections should be overridden")
+                            .isEqualTo(expectedMaxConnections);
                     });
             }
         );
     }
 
-    protected void performSelectVersionQuery(final JdbcDatabaseContainer<?> container) throws SQLException {
+    protected void performSelectVersionQuery(final JdbcDatabaseContainer<?> container, final String expectedVersion)
+        throws SQLException {
         performQuery(
             container,
             "SELECT VERSION()",
@@ -92,7 +99,7 @@ public abstract class AbstractContainerDatabaseTest {
                         Assertions
                             .assertThat(resultSetString)
                             .as("The database version can be set using a container rule parameter")
-                            .startsWith("10.3.39");
+                            .startsWith(expectedVersion);
                     });
             }
         );

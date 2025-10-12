@@ -40,7 +40,7 @@ class PostgreSQLContainerTest extends AbstractContainerDatabaseTest {
         ) {
             postgres.start();
 
-            performSelectMaxConnectionsQuery(postgres);
+            performSelectMaxConnectionsQuery(postgres, "42");
         }
     }
 
@@ -53,7 +53,9 @@ class PostgreSQLContainerTest extends AbstractContainerDatabaseTest {
         ) {
             postgres.start();
 
-            performSelectMaxConnectionsQuery(postgres);
+            // After unsetting the command, max_connections should be the default value (100), not 42
+
+            performSelectMaxConnectionsQuery(postgres, "100");
         }
     }
 
