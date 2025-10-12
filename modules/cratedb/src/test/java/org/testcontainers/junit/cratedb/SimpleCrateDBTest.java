@@ -26,7 +26,7 @@ class SimpleCrateDBTest extends AbstractContainerDatabaseTest {
         ) {
             cratedb.start();
 
-            performSelectOneQuery(cratedb);
+            executeSelectOneQuery(cratedb);
             assertHasCorrectExposedAndLivenessCheckPorts(cratedb);
         }
     }
@@ -39,7 +39,7 @@ class SimpleCrateDBTest extends AbstractContainerDatabaseTest {
         ) {
             cratedb.start();
 
-            performQuery(
+            executeQuery(
                 cratedb,
                 "select name from sys.cluster",
                 resultSet -> {

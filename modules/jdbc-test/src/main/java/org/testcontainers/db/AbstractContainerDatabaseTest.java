@@ -15,7 +15,7 @@ import javax.sql.DataSource;
 
 public abstract class AbstractContainerDatabaseTest {
 
-    protected void performQuery(
+    protected void executeQuery(
         final JdbcDatabaseContainer<?> container,
         final String sql,
         final Consumer<ResultSet> consumer
@@ -32,10 +32,15 @@ public abstract class AbstractContainerDatabaseTest {
         }
     }
 
-    protected void performSelectOneQuery(final JdbcDatabaseContainer<?> container) throws SQLException {
-        performQuery(
+    protected void executeSelectOneQuery(final JdbcDatabaseContainer<?> container) throws SQLException {
+        executeSelectOneQuery(container, "SELECT 1");
+    }
+
+    protected void executeSelectOneQuery(final JdbcDatabaseContainer<?> container, final String sql)
+        throws SQLException {
+        executeQuery(
             container,
-            "SELECT 1",
+            sql,
             resultSet -> {
                 Assertions
                     .assertThatNoException()
@@ -48,7 +53,7 @@ public abstract class AbstractContainerDatabaseTest {
     }
 
     protected void performSelectFooBarQuery(final JdbcDatabaseContainer<?> container) throws SQLException {
-        performQuery(
+        executeQuery(
             container,
             "SELECT foo FROM bar",
             resultSet -> {
@@ -69,7 +74,7 @@ public abstract class AbstractContainerDatabaseTest {
         final JdbcDatabaseContainer<?> container,
         final String expectedMaxConnections
     ) throws SQLException {
-        performQuery(
+        executeQuery(
             container,
             "SELECT current_setting('max_connections')",
             resultSet -> {
@@ -88,7 +93,7 @@ public abstract class AbstractContainerDatabaseTest {
 
     protected void performSelectVersionQuery(final JdbcDatabaseContainer<?> container, final String expectedVersion)
         throws SQLException {
-        performQuery(
+        executeQuery(
             container,
             "SELECT VERSION()",
             resultSet -> {

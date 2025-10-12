@@ -21,7 +21,7 @@ class SimpleOceanBaseCETest extends AbstractContainerDatabaseTest {
         ) {
             oceanbase.start();
 
-            performSelectOneQuery(oceanbase);
+            executeSelectOneQuery(oceanbase);
 
             assertHasCorrectExposedAndLivenessCheckPorts(oceanbase);
         }

@@ -19,7 +19,7 @@ class TimeplusContainerTest extends AbstractContainerDatabaseTest {
         ) {
             timeplus.start();
 
-            performSelectOneQuery(timeplus);
+            executeSelectOneQuery(timeplus);
         }
     }
 
@@ -34,7 +34,7 @@ class TimeplusContainerTest extends AbstractContainerDatabaseTest {
         ) {
             timeplus.start();
 
-            performQuery(
+            executeQuery(
                 timeplus,
                 "SELECT to_int(value) FROM system.settings where name='interactive_delay'",
                 resultSet -> {

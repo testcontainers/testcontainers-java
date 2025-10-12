@@ -29,7 +29,7 @@ class MariaDBContainerTest extends AbstractContainerDatabaseTest {
         ) {
             mariadb.start();
 
-            performSelectOneQuery(mariadb);
+            executeSelectOneQuery(mariadb);
         }
     }
 
@@ -42,7 +42,7 @@ class MariaDBContainerTest extends AbstractContainerDatabaseTest {
         ) {
             mariadbOldVersion.start();
 
-            performSelectOneQuery(mariadbOldVersion);
+            executeSelectOneQuery(mariadbOldVersion);
         }
     }
 
@@ -69,7 +69,7 @@ class MariaDBContainerTest extends AbstractContainerDatabaseTest {
                 .withCommand("mysqld --auto_increment_increment=10")
         ) {
             mariadbCustomConfig.start();
-            performQuery(
+            executeQuery(
                 mariadbCustomConfig,
                 "show variables like 'auto_increment_increment'",
                 resultSet -> {
@@ -140,12 +140,12 @@ class MariaDBContainerTest extends AbstractContainerDatabaseTest {
         try (MariaDBContainer mysql = new MariaDBContainer("mariadb:11.2.4").withUsername("root")) {
             mysql.start();
 
-            performSelectOneQuery(mysql);
+            executeSelectOneQuery(mysql);
         }
     }
 
     private void assertThatCustomIniFileWasUsed(MariaDBContainer mariadb) throws SQLException {
-        performQuery(
+        executeQuery(
             mariadb,
             "SELECT @@GLOBAL.innodb_max_undo_log_size",
             resultSet -> {

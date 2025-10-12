@@ -18,7 +18,7 @@ class TiDBContainerTest extends AbstractContainerDatabaseTest {
         ) {
             tidb.start();
 
-            performSelectOneQuery(tidb);
+            executeSelectOneQuery(tidb);
 
             assertHasCorrectExposedAndLivenessCheckPorts(tidb);
         }

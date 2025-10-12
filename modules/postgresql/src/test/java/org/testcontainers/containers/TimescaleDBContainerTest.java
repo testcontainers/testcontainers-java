@@ -12,7 +12,7 @@ class TimescaleDBContainerTest extends AbstractContainerDatabaseTest {
         try (JdbcDatabaseContainer<?> postgres = new TimescaleDBContainerProvider().newInstance()) {
             postgres.start();
 
-            performSelectOneQuery(postgres);
+            executeSelectOneQuery(postgres);
         }
     }
 

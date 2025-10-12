@@ -42,7 +42,7 @@ class MySQLContainerTest extends AbstractContainerDatabaseTest {
         ) {
             mysql.start();
 
-            performSelectOneQuery(mysql);
+            executeSelectOneQuery(mysql);
 
             assertHasCorrectExposedAndLivenessCheckPorts(mysql);
         }
@@ -81,7 +81,7 @@ class MySQLContainerTest extends AbstractContainerDatabaseTest {
         ) {
             mysqlCustomConfig.start();
 
-            performQuery(
+            executeQuery(
                 mysqlCustomConfig,
                 "show variables like 'auto_increment_increment'",
                 resultSet -> {
@@ -138,7 +138,7 @@ class MySQLContainerTest extends AbstractContainerDatabaseTest {
         ) {
             mysql.start();
 
-            performSelectOneQuery(mysql);
+            executeSelectOneQuery(mysql);
         }
     }
 
@@ -261,7 +261,7 @@ class MySQLContainerTest extends AbstractContainerDatabaseTest {
         ) {
             mysql.start();
 
-            performSelectOneQuery(mysql);
+            executeSelectOneQuery(mysql);
         }
     }
 
@@ -271,7 +271,7 @@ class MySQLContainerTest extends AbstractContainerDatabaseTest {
     }
 
     private void assertThatCustomIniFileWasUsed(MySQLContainer mysql) throws SQLException {
-        performQuery(
+        executeQuery(
             mysql,
             "SELECT @@GLOBAL.innodb_max_undo_log_size",
             resultSet -> {

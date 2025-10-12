@@ -17,7 +17,7 @@ class CompatibleImageTest extends AbstractContainerDatabaseTest {
         ) {
             pgvector.start();
 
-            performSelectOneQuery(pgvector);
+            executeSelectOneQuery(pgvector);
         }
     }
 
@@ -32,7 +32,7 @@ class CompatibleImageTest extends AbstractContainerDatabaseTest {
         ) {
             postgis.start();
 
-            performSelectOneQuery(postgis);
+            executeSelectOneQuery(postgis);
         }
     }
 
@@ -47,7 +47,7 @@ class CompatibleImageTest extends AbstractContainerDatabaseTest {
         ) {
             timescaledb.start();
 
-            performSelectOneQuery(timescaledb);
+            executeSelectOneQuery(timescaledb);
         }
     }
 }

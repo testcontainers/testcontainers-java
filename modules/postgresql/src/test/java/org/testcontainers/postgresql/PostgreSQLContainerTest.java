@@ -26,7 +26,7 @@ class PostgreSQLContainerTest extends AbstractContainerDatabaseTest {
         ) {
             postgres.start();
 
-            performSelectOneQuery(postgres);
+            executeSelectOneQuery(postgres);
 
             assertHasCorrectExposedAndLivenessCheckPorts(postgres);
         }
@@ -89,7 +89,7 @@ class PostgreSQLContainerTest extends AbstractContainerDatabaseTest {
         ) {
             postgres.start();
 
-            performQuery(
+            executeQuery(
                 postgres,
                 "SELECT foo AS value FROM bar UNION SELECT bar AS value FROM foo",
                 resultSet -> {

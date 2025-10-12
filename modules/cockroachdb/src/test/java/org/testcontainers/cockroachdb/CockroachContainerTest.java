@@ -25,7 +25,7 @@ class CockroachContainerTest extends AbstractContainerDatabaseTest {
             // }
         ) {
             cockroach.start();
-            performSelectOneQuery(cockroach);
+            executeSelectOneQuery(cockroach);
         }
     }
 
@@ -72,7 +72,7 @@ class CockroachContainerTest extends AbstractContainerDatabaseTest {
         ) {
             cockroach.start();
 
-            performSelectOneQuery(cockroach);
+            executeSelectOneQuery(cockroach);
 
             String jdbcUrl = cockroach.getJdbcUrl();
             assertThat(jdbcUrl).contains("/" + "test_database");

@@ -15,7 +15,7 @@ class DatabendContainerTest extends AbstractContainerDatabaseTest {
         ) {
             databend.start();
 
-            performSelectOneQuery(databend);
+            executeSelectOneQuery(databend);
         }
     }
 
@@ -29,7 +29,7 @@ class DatabendContainerTest extends AbstractContainerDatabaseTest {
         ) {
             databend.start();
 
-            performSelectOneQuery(databend);
+            executeSelectOneQuery(databend);
         }
     }
 }

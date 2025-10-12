@@ -26,7 +26,7 @@ class MSSQLServerContainerTest extends AbstractContainerDatabaseTest {
         ) {
             mssqlServer.start();
 
-            performSelectOneQuery(mssqlServer);
+            executeSelectOneQuery(mssqlServer);
 
             assertHasCorrectExposedAndLivenessCheckPorts(mssqlServer);
         }
@@ -77,7 +77,7 @@ class MSSQLServerContainerTest extends AbstractContainerDatabaseTest {
         ) {
             mssqlServerContainer.start();
 
-            performSelectOneQuery(mssqlServerContainer);
+            executeSelectOneQuery(mssqlServerContainer);
         }
     }
 

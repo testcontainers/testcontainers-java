@@ -31,7 +31,7 @@ class SimpleQuestDBTest extends AbstractContainerDatabaseTest {
         ) {
             questDB.start();
 
-            performSelectOneQuery(questDB);
+            executeSelectOneQuery(questDB);
         }
     }
 

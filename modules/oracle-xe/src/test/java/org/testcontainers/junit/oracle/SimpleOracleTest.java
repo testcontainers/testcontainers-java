@@ -1,6 +1,5 @@
 package org.testcontainers.junit.oracle;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.OracleContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
@@ -26,18 +25,8 @@ class SimpleOracleTest extends AbstractContainerDatabaseTest {
 
         //Test we can get a connection
         container.start();
-        performQuery(
-            container,
-            "SELECT 1 FROM dual",
-            resultSet -> {
-                Assertions
-                    .assertThatNoException()
-                    .isThrownBy(() -> {
-                        int resultSetInt = resultSet.getInt(1);
-                        assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
-                    });
-            }
-        );
+
+        executeSelectOneQuery(container, "SELECT 1 FROM dual");
     }
 
     @Test

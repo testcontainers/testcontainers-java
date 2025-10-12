@@ -26,7 +26,7 @@ class ClickHouseContainerTest extends AbstractContainerDatabaseTest {
         ) {
             clickhouse.start();
 
-            performSelectOneQuery(clickhouse);
+            executeSelectOneQuery(clickhouse);
         }
     }
 
@@ -42,7 +42,7 @@ class ClickHouseContainerTest extends AbstractContainerDatabaseTest {
         ) {
             clickhouse.start();
 
-            performQuery(
+            executeQuery(
                 clickhouse,
                 "SELECT value FROM system.settings where name='max_result_rows'",
                 resultSet -> {
@@ -62,7 +62,7 @@ class ClickHouseContainerTest extends AbstractContainerDatabaseTest {
         try (ClickHouseContainer clickhouse = new ClickHouseContainer(ClickhouseTestImages.CLICKHOUSE_24_12_IMAGE)) {
             clickhouse.start();
 
-            performSelectOneQuery(clickhouse);
+            executeSelectOneQuery(clickhouse);
         }
     }
 

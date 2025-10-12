@@ -30,7 +30,7 @@ class YugabyteDBYSQLTest extends AbstractContainerDatabaseTest {
         ) {
             ysqlContainer.start();
 
-            performSelectOneQuery(ysqlContainer);
+            executeSelectOneQuery(ysqlContainer);
         }
     }
 
@@ -43,7 +43,7 @@ class YugabyteDBYSQLTest extends AbstractContainerDatabaseTest {
         ) {
             ysqlContainer.start();
 
-            performSelectOneQuery(ysqlContainer);
+            executeSelectOneQuery(ysqlContainer);
         }
     }
 
@@ -54,7 +54,7 @@ class YugabyteDBYSQLTest extends AbstractContainerDatabaseTest {
                 .withInitScript("init/init_yql.sql")
         ) {
             ysqlContainer.start();
-            performQuery(
+            executeQuery(
                 ysqlContainer,
                 "SELECT greet FROM dsql",
                 resultSet -> {
@@ -96,7 +96,7 @@ class YugabyteDBYSQLTest extends AbstractContainerDatabaseTest {
         ) {
             ysqlContainer.start();
 
-            performSelectOneQuery(ysqlContainer);
+            executeSelectOneQuery(ysqlContainer);
         }
     }
 
@@ -105,9 +105,9 @@ class YugabyteDBYSQLTest extends AbstractContainerDatabaseTest {
         try (final YugabyteDBYSQLContainer ysqlContainer = new YugabyteDBYSQLContainer(YBDB_TEST_IMAGE)) {
             ysqlContainer.start();
 
-            performSelectOneQuery(ysqlContainer);
+            executeSelectOneQuery(ysqlContainer);
 
-            performQuery(
+            executeQuery(
                 ysqlContainer,
                 "SELECT EXISTS (SELECT FROM pg_tables WHERE tablename = 'YB_SAMPLE')",
                 resultSet -> {

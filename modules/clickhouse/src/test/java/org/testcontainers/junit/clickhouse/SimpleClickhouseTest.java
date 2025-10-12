@@ -14,7 +14,7 @@ class SimpleClickhouseTest extends AbstractContainerDatabaseTest {
         try (ClickHouseContainer clickhouse = new ClickHouseContainer(ClickhouseTestImages.CLICKHOUSE_IMAGE)) {
             clickhouse.start();
 
-            performSelectOneQuery(clickhouse);
+            executeSelectOneQuery(clickhouse);
         }
     }
 }
