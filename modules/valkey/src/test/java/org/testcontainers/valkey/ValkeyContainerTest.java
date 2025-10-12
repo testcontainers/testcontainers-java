@@ -1,15 +1,15 @@
 package org.testcontainers.valkey;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import io.valkey.Jedis;
 import io.valkey.JedisPool;
-import java.nio.file.Paths;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ValkeyContainerTest {
 
@@ -18,10 +18,11 @@ class ValkeyContainerTest {
 
     @Test
     void shouldWriteAndReadEntry() {
-        try (ValkeyContainer valkeyContainer = new ValkeyContainer()
-            .withLogLevel(ValkeyLogLevel.DEBUG)
-            .withSnapshotting(3, 1)) {
-
+        try (
+            ValkeyContainer valkeyContainer = new ValkeyContainer()
+                .withLogLevel(ValkeyLogLevel.DEBUG)
+                .withSnapshotting(3, 1)
+        ) {
             valkeyContainer.start();
             JedisPool jedisPool = new JedisPool(valkeyContainer.createConnectionUrl());
 
@@ -34,10 +35,9 @@ class ValkeyContainerTest {
 
     @Test
     void shouldConfigureServiceWithAuthentication() {
-        try (ValkeyContainer valkeyContainer = new ValkeyContainer()
-            .withUsername("testuser")
-            .withPassword("testpass")) {
-
+        try (
+            ValkeyContainer valkeyContainer = new ValkeyContainer().withUsername("testuser").withPassword("testpass")
+        ) {
             valkeyContainer.start();
             String url = valkeyContainer.createConnectionUrl();
             assertThat(url).contains("testuser:testpass");
@@ -55,10 +55,11 @@ class ValkeyContainerTest {
         Path dataDir = tempDir.resolve("valkey-data");
         dataDir.toFile().mkdirs();
 
-        try (ValkeyContainer valkeyContainer = new ValkeyContainer()
-            .withPersistenceVolume(dataDir.toString())
-            .withSnapshotting(1, 1)) {
-
+        try (
+            ValkeyContainer valkeyContainer = new ValkeyContainer()
+                .withPersistenceVolume(dataDir.toString())
+                .withSnapshotting(1, 1)
+        ) {
             valkeyContainer.start();
             JedisPool jedisPool = new JedisPool(valkeyContainer.createConnectionUrl());
 
@@ -67,8 +68,7 @@ class ValkeyContainerTest {
             }
 
             valkeyContainer.stop();
-            try (ValkeyContainer restarted = new ValkeyContainer()
-                .withPersistenceVolume(dataDir.toString())) {
+            try (ValkeyContainer restarted = new ValkeyContainer().withPersistenceVolume(dataDir.toString())) {
                 restarted.start();
                 JedisPool restartedPool = new JedisPool(restarted.createConnectionUrl());
 
@@ -83,9 +83,7 @@ class ValkeyContainerTest {
     void shouldInitializeDatabaseWithPayload() throws Exception {
         Path importFile = Paths.get(getClass().getResource("/initData.valkey").toURI());
 
-        try (ValkeyContainer valkeyContainer = new ValkeyContainer()
-            .withInitialData(importFile.toString())) {
-
+        try (ValkeyContainer valkeyContainer = new ValkeyContainer().withInitialData(importFile.toString())) {
             valkeyContainer.start();
             JedisPool jedisPool = new JedisPool(valkeyContainer.createConnectionUrl());
 
@@ -111,8 +109,7 @@ class ValkeyContainerTest {
     void shouldMountValkeyConfigToContainer() throws Exception {
         Path configFile = Paths.get(getClass().getResource("/valkey.conf").toURI());
 
-        try (ValkeyContainer valkeyContainer = new ValkeyContainer().withConfigFile(
-            configFile.toString())) {
+        try (ValkeyContainer valkeyContainer = new ValkeyContainer().withConfigFile(configFile.toString())) {
             valkeyContainer.start();
 
             JedisPool jedisPool = new JedisPool(valkeyContainer.createConnectionUrl());

@@ -1,18 +1,19 @@
 package org.testcontainers.valkey;
 
 import com.google.common.base.Preconditions;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Testcontainers implementation for Valkey.
@@ -31,22 +32,28 @@ public class ValkeyContainer extends GenericContainer<ValkeyContainer> {
     private static class SnapshottingSettings {
 
         int seconds;
+
         int changedKeys;
     }
 
-    private static final DockerImageName DEFAULT_IMAGE = DockerImageName.parse(
-        "valkey/valkey:8.1");
+    private static final DockerImageName DEFAULT_IMAGE = DockerImageName.parse("valkey/valkey:8.1");
 
     private static final String DEFAULT_CONFIG_FILE = "/usr/local/valkey.conf";
 
     private static final int CONTAINER_PORT = 6379;
 
     private String username;
+
     private String password;
+
     private String persistenceVolume;
+
     private String initialImportScriptFile;
+
     private String configFile;
+
     private ValkeyLogLevel logLevel;
+
     private SnapshottingSettings snapshottingSettings;
 
     public ValkeyContainer() {
@@ -59,7 +66,6 @@ public class ValkeyContainer extends GenericContainer<ValkeyContainer> {
 
     public ValkeyContainer(DockerImageName dockerImageName) {
         super(dockerImageName);
-
         withExposedPorts(CONTAINER_PORT);
         withStartupTimeout(Duration.ofMinutes(2));
         waitingFor(Wait.forLogMessage(".*Ready to accept connections.*", 1));
@@ -151,10 +157,9 @@ public class ValkeyContainer extends GenericContainer<ValkeyContainer> {
         }
 
         if (snapshottingSettings != null) {
-            command.addAll(Arrays.asList(
-                "--save",
-                snapshottingSettings.getSeconds() + " " + snapshottingSettings.getChangedKeys()
-            ));
+            command.addAll(
+                Arrays.asList("--save", snapshottingSettings.getSeconds() + " " + snapshottingSettings.getChangedKeys())
+            );
         }
 
         if (logLevel != null) {
@@ -162,10 +167,8 @@ public class ValkeyContainer extends GenericContainer<ValkeyContainer> {
         }
 
         if (initialImportScriptFile != null && !initialImportScriptFile.isEmpty()) {
-            withCopyToContainer(MountableFile.forHostPath(initialImportScriptFile),
-                "/tmp/import.valkey");
-            withCopyToContainer(MountableFile.forClasspathResource("import.sh"),
-                "/tmp/import.sh");
+            withCopyToContainer(MountableFile.forHostPath(initialImportScriptFile), "/tmp/import.valkey");
+            withCopyToContainer(MountableFile.forClasspathResource("import.sh"), "/tmp/import.sh");
         }
 
         withCommand(command.toArray(new String[0]));
@@ -188,9 +191,10 @@ public class ValkeyContainer extends GenericContainer<ValkeyContainer> {
             args.add("redis-cli");
 
             if (password != null && !password.isEmpty()) {
-                args.addAll(username != null && !username.isEmpty()
-                    ? Arrays.asList("--user", username, "--pass", password)
-                    : Arrays.asList("--pass", password)
+                args.addAll(
+                    username != null && !username.isEmpty()
+                        ? Arrays.asList("--user", username, "--pass", password)
+                        : Arrays.asList("--pass", password)
                 );
             }
 
@@ -217,15 +221,7 @@ public class ValkeyContainer extends GenericContainer<ValkeyContainer> {
         }
 
         try {
-            URI uri = new URI(
-                "redis",
-                userInfo,
-                getHost(),
-                getPort(),
-                null,
-                null,
-                null
-            );
+            URI uri = new URI("redis", userInfo, getHost(), getPort(), null, null, null);
             return uri.toString();
         } catch (URISyntaxException e) {
             throw new RuntimeException("Failed to build Redis URI", e);
@@ -238,16 +234,13 @@ public class ValkeyContainer extends GenericContainer<ValkeyContainer> {
         }
 
         try {
-            ExecResult result = execInContainer("/bin/sh", "/tmp/import.sh",
-                password != null ? password : "");
+            ExecResult result = execInContainer("/bin/sh", "/tmp/import.sh", password != null ? password : "");
 
             if (result.getExitCode() != 0 || result.getStdout().contains("ERR")) {
-                throw new RuntimeException(
-                    "Could not import initial data: " + result.getStdout());
+                throw new RuntimeException("Could not import initial data: " + result.getStdout());
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
-
 }
