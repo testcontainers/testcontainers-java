@@ -1,12 +1,9 @@
 package org.testcontainers.containers;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
 import java.sql.SQLException;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class TimescaleDBContainerTest extends AbstractContainerDatabaseTest {
 
@@ -28,18 +25,7 @@ class TimescaleDBContainerTest extends AbstractContainerDatabaseTest {
         ) {
             postgres.start();
 
-            performQuery(
-                (JdbcDatabaseContainer<?>) postgres,
-                "SELECT current_setting('max_connections')",
-                resultSet -> {
-                    Assertions
-                        .assertThatNoException()
-                        .isThrownBy(() -> {
-                            String result = resultSet.getString(1);
-                            assertThat(result).as("max_connections should be overridden").isEqualTo("42");
-                        });
-                }
-            );
+            performSelectMaxConnectionsQuery((JdbcDatabaseContainer<?>) postgres);
         }
     }
 
@@ -53,18 +39,7 @@ class TimescaleDBContainerTest extends AbstractContainerDatabaseTest {
         ) {
             postgres.start();
 
-            performQuery(
-                (JdbcDatabaseContainer<?>) postgres,
-                "SELECT current_setting('max_connections')",
-                resultSet -> {
-                    Assertions
-                        .assertThatNoException()
-                        .isThrownBy(() -> {
-                            String result = resultSet.getString(1);
-                            assertThat(result).as("max_connections should not be overridden").isNotEqualTo("42");
-                        });
-                }
-            );
+            performSelectMaxConnectionsQuery((JdbcDatabaseContainer<?>) postgres);
         }
     }
 

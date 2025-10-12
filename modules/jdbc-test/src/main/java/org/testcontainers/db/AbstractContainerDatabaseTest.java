@@ -65,6 +65,21 @@ public abstract class AbstractContainerDatabaseTest {
         );
     }
 
+    protected void performSelectMaxConnectionsQuery(final JdbcDatabaseContainer<?> container) throws SQLException {
+        performQuery(
+            container,
+            "SELECT current_setting('max_connections')",
+            resultSet -> {
+                Assertions
+                    .assertThatNoException()
+                    .isThrownBy(() -> {
+                        String result = resultSet.getString(1);
+                        Assertions.assertThat(result).as("max_connections should be overridden").isEqualTo("42");
+                    });
+            }
+        );
+    }
+
     protected DataSource getDataSource(final JdbcDatabaseContainer<?> container) {
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setJdbcUrl(container.getJdbcUrl());

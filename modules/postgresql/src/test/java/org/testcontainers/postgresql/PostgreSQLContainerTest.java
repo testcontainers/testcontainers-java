@@ -40,18 +40,7 @@ class PostgreSQLContainerTest extends AbstractContainerDatabaseTest {
         ) {
             postgres.start();
 
-            performQuery(
-                postgres,
-                "SELECT current_setting('max_connections')",
-                resultSet -> {
-                    Assertions
-                        .assertThatNoException()
-                        .isThrownBy(() -> {
-                            String result = resultSet.getString(1);
-                            assertThat(result).as("max_connections should be overridden").isEqualTo("42");
-                        });
-                }
-            );
+            performSelectMaxConnectionsQuery(postgres);
         }
     }
 
@@ -64,18 +53,7 @@ class PostgreSQLContainerTest extends AbstractContainerDatabaseTest {
         ) {
             postgres.start();
 
-            performQuery(
-                postgres,
-                "SELECT current_setting('max_connections')",
-                resultSet -> {
-                    Assertions
-                        .assertThatNoException()
-                        .isThrownBy(() -> {
-                            String result = resultSet.getString(1);
-                            assertThat(result).as("max_connections should not be overridden").isNotEqualTo("42");
-                        });
-                }
-            );
+            performSelectMaxConnectionsQuery(postgres);
         }
     }
 
