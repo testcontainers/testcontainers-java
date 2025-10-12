@@ -57,7 +57,7 @@ class MySQLContainerTest extends AbstractContainerDatabaseTest {
         ) {
             mysqlOldVersion.start();
 
-            performSelectVersionQuery(mysqlOldVersion, "8.0.36");
+            executeSelectVersionQuery(mysqlOldVersion, "8.0.36");
         }
     }
 
@@ -107,7 +107,7 @@ class MySQLContainerTest extends AbstractContainerDatabaseTest {
         ) {
             container.start();
 
-            performSelectFooBarQuery(container);
+            executeSelectFooBarQuery(container);
         }
     }
 

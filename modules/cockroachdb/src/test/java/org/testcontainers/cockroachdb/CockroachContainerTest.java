@@ -37,7 +37,7 @@ class CockroachContainerTest extends AbstractContainerDatabaseTest {
         ) { // CockroachDB is expected to be compatible with Postgres
             cockroach.start();
 
-            performSelectFooBarQuery(cockroach);
+            executeSelectFooBarQuery(cockroach);
         }
     }
 
@@ -112,7 +112,7 @@ class CockroachContainerTest extends AbstractContainerDatabaseTest {
         ) { // CockroachDB is expected to be compatible with Postgres
             cockroach.start();
 
-            performSelectFooBarQuery(cockroach);
+            executeSelectFooBarQuery(cockroach);
         }
     }
 }

@@ -62,7 +62,7 @@ class SimpleCrateDBTest extends AbstractContainerDatabaseTest {
         ) {
             cratedb.start();
 
-            performSelectFooBarQuery(cratedb);
+            executeSelectFooBarQuery(cratedb);
         }
     }
 

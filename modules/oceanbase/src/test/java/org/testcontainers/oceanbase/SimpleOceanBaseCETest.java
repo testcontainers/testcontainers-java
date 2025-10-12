@@ -32,7 +32,7 @@ class SimpleOceanBaseCETest extends AbstractContainerDatabaseTest {
         try (OceanBaseCEContainer oceanbase = new OceanBaseCEContainer(IMAGE).withInitScript("init.sql")) {
             oceanbase.start();
 
-            performSelectFooBarQuery(oceanbase);
+            executeSelectFooBarQuery(oceanbase);
         }
     }
 

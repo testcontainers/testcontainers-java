@@ -25,7 +25,7 @@ class TimescaleDBContainerTest extends AbstractContainerDatabaseTest {
         ) {
             postgres.start();
 
-            performSelectMaxConnectionsQuery((JdbcDatabaseContainer<?>) postgres, "42");
+            executeSelectMaxConnectionsQuery((JdbcDatabaseContainer<?>) postgres, "42");
         }
     }
 
@@ -39,7 +39,7 @@ class TimescaleDBContainerTest extends AbstractContainerDatabaseTest {
         ) {
             postgres.start();
 
-            performSelectMaxConnectionsQuery((JdbcDatabaseContainer<?>) postgres, "100");
+            executeSelectMaxConnectionsQuery((JdbcDatabaseContainer<?>) postgres, "100");
         }
     }
 
@@ -52,7 +52,7 @@ class TimescaleDBContainerTest extends AbstractContainerDatabaseTest {
         ) {
             postgres.start();
 
-            performSelectFooBarQuery(postgres);
+            executeSelectFooBarQuery(postgres);
         }
     }
 }

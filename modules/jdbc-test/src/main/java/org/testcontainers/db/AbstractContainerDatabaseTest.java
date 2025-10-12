@@ -52,7 +52,7 @@ public abstract class AbstractContainerDatabaseTest {
         );
     }
 
-    protected void performSelectFooBarQuery(final JdbcDatabaseContainer<?> container) throws SQLException {
+    protected void executeSelectFooBarQuery(final JdbcDatabaseContainer<?> container) throws SQLException {
         executeQuery(
             container,
             "SELECT foo FROM bar",
@@ -70,7 +70,7 @@ public abstract class AbstractContainerDatabaseTest {
         );
     }
 
-    protected void performSelectMaxConnectionsQuery(
+    protected void executeSelectMaxConnectionsQuery(
         final JdbcDatabaseContainer<?> container,
         final String expectedMaxConnections
     ) throws SQLException {
@@ -91,7 +91,7 @@ public abstract class AbstractContainerDatabaseTest {
         );
     }
 
-    protected void performSelectVersionQuery(final JdbcDatabaseContainer<?> container, final String expectedVersion)
+    protected void executeSelectVersionQuery(final JdbcDatabaseContainer<?> container, final String expectedVersion)
         throws SQLException {
         executeQuery(
             container,

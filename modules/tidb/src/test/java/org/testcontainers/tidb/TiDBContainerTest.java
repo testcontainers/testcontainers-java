@@ -31,7 +31,7 @@ class TiDBContainerTest extends AbstractContainerDatabaseTest {
         ) { // TiDB is expected to be compatible with MySQL
             tidb.start();
 
-            performSelectFooBarQuery(tidb);
+            executeSelectFooBarQuery(tidb);
         }
     }
 
