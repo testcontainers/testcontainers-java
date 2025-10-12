@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.valkey.Jedis;
 import io.valkey.JedisPool;
 import java.nio.file.Paths;
-import lombok.val;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -81,18 +80,6 @@ class ValkeyContainerTest {
     }
 
     @Test
-    void shouldValidateSnapshottingConfiguration() {
-        ValkeyContainer container = new ValkeyContainer();
-        assertThatThrownBy(() -> container.withSnapshotting(0, 10))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("seconds must be greater than 0");
-
-        assertThatThrownBy(() -> container.withSnapshotting(10, 0))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("changedKeys must be non-negative");
-    }
-
-    @Test
     void shouldInitializeDatabaseWithPayload() throws Exception {
         Path importFile = Paths.get(getClass().getResource("/initData.valkey").toURI());
 
@@ -136,5 +123,17 @@ class ValkeyContainerTest {
                 assertThat(maxMemory).isEqualTo("2097152");
             }
         }
+    }
+
+    @Test
+    void shouldValidateSnapshottingConfiguration() {
+        ValkeyContainer container = new ValkeyContainer();
+        assertThatThrownBy(() -> container.withSnapshotting(0, 10))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("seconds must be greater than 0");
+
+        assertThatThrownBy(() -> container.withSnapshotting(10, 0))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("changedKeys must be non-negative");
     }
 }
