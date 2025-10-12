@@ -62,20 +62,7 @@ class SimpleCrateDBTest extends AbstractContainerDatabaseTest {
         ) {
             cratedb.start();
 
-            performQuery(
-                cratedb,
-                "SELECT foo FROM bar",
-                resultSet -> {
-                    Assertions
-                        .assertThatNoException()
-                        .isThrownBy(() -> {
-                            String firstColumnValue = resultSet.getString(1);
-                            assertThat(firstColumnValue)
-                                .as("Value from init script should equal real value")
-                                .isEqualTo("hello world");
-                        });
-                }
-            );
+            performSelectFooBarQuery(cratedb);
         }
     }
 

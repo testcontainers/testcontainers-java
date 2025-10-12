@@ -95,19 +95,8 @@ class YugabyteDBYSQLTest extends AbstractContainerDatabaseTest {
                 .withUsername("yugabyte")
         ) {
             ysqlContainer.start();
-            performQuery(
-                ysqlContainer,
-                "SELECT 1",
-                resultSet -> {
-                    Assertions
-                        .assertThatNoException()
-                        .isThrownBy(() -> {
-                            assertThat(resultSet.getInt(1))
-                                .as("A sample test query with a custom role succeeds")
-                                .isEqualTo(1);
-                        });
-                }
-            );
+
+            performSelectOneQuery(ysqlContainer);
         }
     }
 

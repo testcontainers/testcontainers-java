@@ -1,6 +1,5 @@
 package org.testcontainers.tidb;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.TiDBTestImages;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
@@ -32,18 +31,7 @@ class TiDBContainerTest extends AbstractContainerDatabaseTest {
         ) { // TiDB is expected to be compatible with MySQL
             tidb.start();
 
-            performQuery(
-                tidb,
-                "SELECT foo FROM bar",
-                resultSet -> {
-                    Assertions
-                        .assertThatNoException()
-                        .isThrownBy(() -> {
-                            String firstColumnValue = resultSet.getString(1);
-                            assertThat(firstColumnValue).isEqualTo("hello world");
-                        });
-                }
-            );
+            performSelectFooBarQuery(tidb);
         }
     }
 

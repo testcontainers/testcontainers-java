@@ -16,19 +16,6 @@ class TimescaleDBContainerTest extends AbstractContainerDatabaseTest {
             postgres.start();
 
             performSelectOneQuery(postgres);
-
-            performQuery(
-                postgres,
-                "SELECT 1",
-                resultSet -> {
-                    Assertions
-                        .assertThatNoException()
-                        .isThrownBy(() -> {
-                            int resultSetInt = resultSet.getInt(1);
-                            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
-                        });
-                }
-            );
         }
     }
 
@@ -90,20 +77,7 @@ class TimescaleDBContainerTest extends AbstractContainerDatabaseTest {
         ) {
             postgres.start();
 
-            performQuery(
-                postgres,
-                "SELECT foo FROM bar",
-                resultSet -> {
-                    Assertions
-                        .assertThatNoException()
-                        .isThrownBy(() -> {
-                            String firstColumnValue = resultSet.getString(1);
-                            assertThat(firstColumnValue)
-                                .as("Value from init script should equal real value")
-                                .isEqualTo("hello world");
-                        });
-                }
-            );
+            performSelectFooBarQuery(postgres);
         }
     }
 }

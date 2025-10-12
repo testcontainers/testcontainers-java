@@ -1,6 +1,5 @@
 package org.testcontainers.oceanbase;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
@@ -33,20 +32,7 @@ class SimpleOceanBaseCETest extends AbstractContainerDatabaseTest {
         try (OceanBaseCEContainer oceanbase = new OceanBaseCEContainer(IMAGE).withInitScript("init.sql")) {
             oceanbase.start();
 
-            performQuery(
-                oceanbase,
-                "SELECT foo FROM bar",
-                resultSet -> {
-                    Assertions
-                        .assertThatNoException()
-                        .isThrownBy(() -> {
-                            String firstColumnValue = resultSet.getString(1);
-                            assertThat(firstColumnValue)
-                                .as("Value from init script should equal real value")
-                                .isEqualTo("hello world");
-                        });
-                }
-            );
+            performSelectFooBarQuery(oceanbase);
         }
     }
 

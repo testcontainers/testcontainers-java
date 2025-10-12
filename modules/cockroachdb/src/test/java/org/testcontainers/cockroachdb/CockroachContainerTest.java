@@ -1,6 +1,5 @@
 package org.testcontainers.cockroachdb;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.CockroachDBTestImages;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
@@ -38,20 +37,7 @@ class CockroachContainerTest extends AbstractContainerDatabaseTest {
         ) { // CockroachDB is expected to be compatible with Postgres
             cockroach.start();
 
-            performQuery(
-                cockroach,
-                "SELECT foo FROM bar",
-                resultSet -> {
-                    Assertions
-                        .assertThatNoException()
-                        .isThrownBy(() -> {
-                            String firstColumnValue = resultSet.getString(1);
-                            assertThat(firstColumnValue)
-                                .as("Value from init script should equal real value")
-                                .isEqualTo("hello world");
-                        });
-                }
-            );
+            performSelectFooBarQuery(cockroach);
         }
     }
 
@@ -126,20 +112,7 @@ class CockroachContainerTest extends AbstractContainerDatabaseTest {
         ) { // CockroachDB is expected to be compatible with Postgres
             cockroach.start();
 
-            performQuery(
-                cockroach,
-                "SELECT foo FROM bar",
-                resultSet -> {
-                    Assertions
-                        .assertThatNoException()
-                        .isThrownBy(() -> {
-                            String firstColumnValue = resultSet.getString(1);
-                            assertThat(firstColumnValue)
-                                .as("Value from init script should equal real value")
-                                .isEqualTo("hello world");
-                        });
-                }
-            );
+            performSelectFooBarQuery(cockroach);
         }
     }
 }

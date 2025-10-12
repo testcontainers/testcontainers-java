@@ -47,6 +47,24 @@ public abstract class AbstractContainerDatabaseTest {
         );
     }
 
+    protected void performSelectFooBarQuery(final JdbcDatabaseContainer<?> container) throws SQLException {
+        performQuery(
+            container,
+            "SELECT foo FROM bar",
+            resultSet -> {
+                Assertions
+                    .assertThatNoException()
+                    .isThrownBy(() -> {
+                        String firstColumnValue = resultSet.getString(1);
+                        Assertions
+                            .assertThat(firstColumnValue)
+                            .as("Value from init script should equal real value")
+                            .isEqualTo("hello world");
+                    });
+            }
+        );
+    }
+
     protected DataSource getDataSource(final JdbcDatabaseContainer<?> container) {
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setJdbcUrl(container.getJdbcUrl());

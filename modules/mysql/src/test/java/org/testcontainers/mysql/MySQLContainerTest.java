@@ -120,20 +120,7 @@ class MySQLContainerTest extends AbstractContainerDatabaseTest {
         ) {
             container.start();
 
-            performQuery(
-                container,
-                "SELECT foo FROM bar",
-                resultSet -> {
-                    Assertions
-                        .assertThatNoException()
-                        .isThrownBy(() -> {
-                            String firstColumnValue = resultSet.getString(1);
-                            assertThat(firstColumnValue)
-                                .as("Value from init script should equal real value")
-                                .isEqualTo("hello world");
-                        });
-                }
-            );
+            performSelectFooBarQuery(container);
         }
     }
 
