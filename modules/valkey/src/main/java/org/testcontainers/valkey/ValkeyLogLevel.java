@@ -1,10 +1,5 @@
 package org.testcontainers.valkey;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
-@AllArgsConstructor
-@Getter
 public enum ValkeyLogLevel {
     DEBUG("debug"),
     VERBOSE("verbose"),
@@ -12,4 +7,12 @@ public enum ValkeyLogLevel {
     WARNING("warning");
 
     private final String level;
+
+    ValkeyLogLevel(String level) {
+        this.level = level;
+    }
+
+    public String getLevel() {
+        return level;
+    }
 }

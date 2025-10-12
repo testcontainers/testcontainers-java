@@ -163,7 +163,7 @@ public class ValkeyContainer extends GenericContainer<ValkeyContainer> {
         }
 
         if (logLevel != null) {
-            command.addAll(Arrays.asList("--loglevel", logLevel.name()));
+            command.addAll(Arrays.asList("--loglevel", logLevel.getLevel()));
         }
 
         if (initialImportScriptFile != null && !initialImportScriptFile.isEmpty()) {
