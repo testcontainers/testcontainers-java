@@ -2,7 +2,7 @@ package org.testcontainers.containers;
 
 import com.google.common.base.Strings;
 import org.jetbrains.annotations.NotNull;
-import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 import java.sql.Connection;
@@ -47,10 +47,11 @@ public class PrestoContainer<SELF extends PrestoContainer<SELF>> extends JdbcDat
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
-        this.waitStrategy =
-            new LogMessageWaitStrategy()
-                .withRegEx(".*======== SERVER STARTED ========.*")
-                .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS));
+        waitingFor(
+            Wait
+                .forLogMessage(".*======== SERVER STARTED ========.*", 1)
+                .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS))
+        );
 
         addExposedPort(PRESTO_PORT);
     }

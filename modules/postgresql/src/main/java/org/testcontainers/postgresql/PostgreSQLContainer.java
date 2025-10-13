@@ -2,7 +2,7 @@ package org.testcontainers.postgresql;
 
 import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.JdbcDatabaseContainer;
-import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
@@ -50,12 +50,12 @@ public class PostgreSQLContainer extends JdbcDatabaseContainer<PostgreSQLContain
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, PGVECTOR_IMAGE_NAME);
 
-        this.waitStrategy =
-            new LogMessageWaitStrategy()
-                .withRegEx(".*database system is ready to accept connections.*\\s")
-                .withTimes(2)
-                .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS));
-        this.setCommand("postgres", "-c", FSYNC_OFF_OPTION);
+        waitingFor(
+            Wait
+                .forLogMessage(".*database system is ready to accept connections.*\\s", 2)
+                .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS))
+        );
+        setCommand("postgres", "-c", FSYNC_OFF_OPTION);
 
         addExposedPort(POSTGRESQL_PORT);
     }
