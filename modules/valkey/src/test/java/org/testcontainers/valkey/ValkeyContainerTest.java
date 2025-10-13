@@ -24,9 +24,8 @@ class ValkeyContainerTest {
                 .withSnapshotting(3, 1)
         ) {
             valkeyContainer.start();
-            JedisPool jedisPool = new JedisPool(valkeyContainer.createConnectionUrl());
-
-            try (Jedis jedis = jedisPool.getResource()) {
+            try (JedisPool jedisPool = new JedisPool(valkeyContainer.createConnectionUrl());
+                Jedis jedis = jedisPool.getResource()) {
                 jedis.set("key", "value");
                 assertThat(jedis.get("key")).isEqualTo("value");
             }
@@ -36,19 +35,21 @@ class ValkeyContainerTest {
     @Test
     void shouldConfigureServiceWithAuthentication() {
         try (
-            ValkeyContainer valkeyContainer = new ValkeyContainer().withUsername("testuser").withPassword("testpass")
+            ValkeyContainer valkeyContainer = new ValkeyContainer().withUsername("testuser")
+                .withPassword("testpass")
         ) {
             valkeyContainer.start();
             String url = valkeyContainer.createConnectionUrl();
             assertThat(url).contains("testuser:testpass");
 
-            JedisPool jedisPool = new JedisPool(url);
-            try (Jedis jedis = jedisPool.getResource()) {
+            try (JedisPool jedisPool = new JedisPool(url);
+                Jedis jedis = jedisPool.getResource()) {
                 jedis.set("k1", "v2");
                 assertThat(jedis.get("k1")).isEqualTo("v2");
             }
         }
     }
+
 
     @Test
     void shouldPersistData() {
@@ -61,18 +62,21 @@ class ValkeyContainerTest {
                 .withSnapshotting(1, 1)
         ) {
             valkeyContainer.start();
-            JedisPool jedisPool = new JedisPool(valkeyContainer.createConnectionUrl());
 
-            try (Jedis jedis = jedisPool.getResource()) {
+            String containerConnectionUrl = valkeyContainer.createConnectionUrl();
+            try (JedisPool jedisPool = new JedisPool(containerConnectionUrl);
+                Jedis jedis = jedisPool.getResource()) {
                 jedis.set("persistKey", "persistValue");
             }
 
             valkeyContainer.stop();
-            try (ValkeyContainer restarted = new ValkeyContainer().withPersistenceVolume(dataDir.toString())) {
+            try (ValkeyContainer restarted = new ValkeyContainer().withPersistenceVolume(
+                dataDir.toString())) {
                 restarted.start();
-                JedisPool restartedPool = new JedisPool(restarted.createConnectionUrl());
+                String connectionUrl = restarted.createConnectionUrl();
 
-                try (Jedis jedis = restartedPool.getResource()) {
+                try (JedisPool restartedPool = new JedisPool(connectionUrl);
+                    Jedis jedis = restartedPool.getResource()) {
                     assertThat(jedis.get("persistKey")).isEqualTo("persistValue");
                 }
             }
@@ -83,11 +87,13 @@ class ValkeyContainerTest {
     void shouldInitializeDatabaseWithPayload() throws Exception {
         Path importFile = Paths.get(getClass().getResource("/initData.valkey").toURI());
 
-        try (ValkeyContainer valkeyContainer = new ValkeyContainer().withInitialData(importFile.toString())) {
+        try (ValkeyContainer valkeyContainer = new ValkeyContainer().withInitialData(
+            importFile.toString())) {
             valkeyContainer.start();
-            JedisPool jedisPool = new JedisPool(valkeyContainer.createConnectionUrl());
+            String connectionUrl = valkeyContainer.createConnectionUrl();
 
-            try (Jedis jedis = jedisPool.getResource()) {
+            try (JedisPool jedisPool = new JedisPool(
+                connectionUrl); Jedis jedis = jedisPool.getResource()) {
                 assertThat(jedis.get("key1")).isEqualTo("value1");
                 assertThat(jedis.get("key2")).isEqualTo("value2");
             }
@@ -109,12 +115,13 @@ class ValkeyContainerTest {
     void shouldMountValkeyConfigToContainer() throws Exception {
         Path configFile = Paths.get(getClass().getResource("/valkey.conf").toURI());
 
-        try (ValkeyContainer valkeyContainer = new ValkeyContainer().withConfigFile(configFile.toString())) {
+        try (ValkeyContainer valkeyContainer = new ValkeyContainer().withConfigFile(
+            configFile.toString())) {
             valkeyContainer.start();
 
-            JedisPool jedisPool = new JedisPool(valkeyContainer.createConnectionUrl());
-
-            try (Jedis jedis = jedisPool.getResource()) {
+            String connectionUrl = valkeyContainer.createConnectionUrl();
+            try (JedisPool jedisPool = new JedisPool(connectionUrl);
+                Jedis jedis = jedisPool.getResource()) {
                 String maxMemory = jedis.configGet("maxmemory").get("maxmemory");
 
                 assertThat(maxMemory).isEqualTo("2097152");
@@ -124,13 +131,14 @@ class ValkeyContainerTest {
 
     @Test
     void shouldValidateSnapshottingConfiguration() {
-        ValkeyContainer container = new ValkeyContainer();
-        assertThatThrownBy(() -> container.withSnapshotting(0, 10))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("seconds must be greater than 0");
+        try (ValkeyContainer container = new ValkeyContainer()) {
+            assertThatThrownBy(() -> container.withSnapshotting(0, 10))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("seconds must be greater than 0");
 
-        assertThatThrownBy(() -> container.withSnapshotting(10, 0))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("changedKeys must be non-negative");
+            assertThatThrownBy(() -> container.withSnapshotting(10, 0))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("changedKeys must be non-negative");
+        }
     }
 }
