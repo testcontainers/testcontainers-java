@@ -147,12 +147,12 @@ public class ValkeyContainer extends GenericContainer<ValkeyContainer> {
             command.add("--requirepass");
             command.add(password);
 
-            if (username != null && !username.isEmpty()) {
+            if (StringUtils.isNotEmpty(username)) {
                 command.add("--user " + username + " on >" + password + " ~* +@all");
             }
         }
 
-        if (persistenceVolume != null && !persistenceVolume.isEmpty()) {
+        if (StringUtils.isNotEmpty(persistenceVolume)) {
             command.addAll(Arrays.asList("--appendonly", "yes"));
             withFileSystemBind(persistenceVolume, "/data");
         }
@@ -168,7 +168,7 @@ public class ValkeyContainer extends GenericContainer<ValkeyContainer> {
             command.addAll(Arrays.asList("--loglevel", logLevel.getLevel()));
         }
 
-        if (initialImportScriptFile != null && !initialImportScriptFile.isEmpty()) {
+        if (StringUtils.isNotEmpty(initialImportScriptFile)) {
             withCopyToContainer(MountableFile.forHostPath(initialImportScriptFile),
                 "/tmp/import.valkey");
             withCopyToContainer(MountableFile.forClasspathResource("import.sh"), "/tmp/import.sh");
