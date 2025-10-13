@@ -42,7 +42,7 @@ class MariaDBContainerTest extends AbstractContainerDatabaseTest {
         ) {
             mariadbOldVersion.start();
 
-            executeSelectOneQuery(mariadbOldVersion);
+            executeSelectVersionQuery(mariadbOldVersion, "10.3.39");
         }
     }
 
