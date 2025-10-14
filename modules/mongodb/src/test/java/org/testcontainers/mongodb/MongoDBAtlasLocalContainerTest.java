@@ -1,6 +1,6 @@
 package org.testcontainers.mongodb;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,12 +12,12 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
-public class MongoDBAtlasLocalContainerTest {
+class MongoDBAtlasLocalContainerTest {
 
     private static final Logger log = LoggerFactory.getLogger(MongoDBAtlasLocalContainerTest.class);
 
     @Test
-    public void getConnectionString() {
+    void getConnectionString() {
         try (
             MongoDBAtlasLocalContainer container = new MongoDBAtlasLocalContainer("mongodb/mongodb-atlas-local:7.0.9")
         ) {
@@ -37,7 +37,27 @@ public class MongoDBAtlasLocalContainerTest {
     }
 
     @Test
-    public void createAtlasIndexAndSearchIt() throws Exception {
+    void getDatabaseConnectionString() {
+        try (
+            MongoDBAtlasLocalContainer container = new MongoDBAtlasLocalContainer("mongodb/mongodb-atlas-local:7.0.9")
+        ) {
+            container.start();
+            String databaseConnectionString = container.getDatabaseConnectionString();
+            assertThat(databaseConnectionString).isNotNull();
+            assertThat(databaseConnectionString).startsWith("mongodb://");
+            assertThat(databaseConnectionString)
+                .isEqualTo(
+                    String.format(
+                        "mongodb://%s:%d/test?directConnection=true",
+                        container.getHost(),
+                        container.getFirstMappedPort()
+                    )
+                );
+        }
+    }
+
+    @Test
+    void createAtlasIndexAndSearchIt() throws Exception {
         try (
             // creatingAtlasLocalContainer {
             MongoDBAtlasLocalContainer atlasLocalContainer = new MongoDBAtlasLocalContainer(

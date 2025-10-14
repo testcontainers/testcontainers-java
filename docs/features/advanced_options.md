@@ -38,6 +38,14 @@ You can also configure Testcontainers to use your custom implementation by using
     pull.policy=com.mycompany.testcontainers.ExampleImagePullPolicy
     ```
 
+You can also use the provided implementation to always pull images
+
+=== "`src/test/resources/testcontainers.properties`"
+    ```text
+    pull.policy=org.testcontainers.images.AlwaysPullPolicy
+    ```
+
+
 Please see [the documentation on configuration mechanisms](./configuration.md) for more information.
 
 ## Customizing the container

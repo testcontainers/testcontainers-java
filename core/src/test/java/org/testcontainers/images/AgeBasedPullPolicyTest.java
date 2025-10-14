@@ -1,6 +1,6 @@
 package org.testcontainers.images;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
@@ -10,12 +10,12 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class AgeBasedPullPolicyTest {
+class AgeBasedPullPolicyTest {
 
     final DockerImageName imageName = DockerImageName.parse(UUID.randomUUID().toString());
 
     @Test
-    public void shouldPull() {
+    void shouldPull() {
         ImageData imageData = ImageData.builder().createdAt(Instant.now().minus(2, ChronoUnit.HOURS)).build();
 
         AgeBasedPullPolicy oneHour = new AgeBasedPullPolicy(Duration.of(1L, ChronoUnit.HOURS));

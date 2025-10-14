@@ -14,14 +14,12 @@ import com.github.dockerjava.core.command.CreateContainerCmdImpl;
 import com.github.dockerjava.core.command.InspectContainerCmdImpl;
 import com.github.dockerjava.core.command.ListContainersCmdImpl;
 import com.github.dockerjava.core.command.StartContainerCmdImpl;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
-import org.junit.runner.RunWith;
-import org.junit.runners.BlockJUnit4ClassRunner;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Answers;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
@@ -29,7 +27,7 @@ import org.testcontainers.DockerClientFactory;
 import org.testcontainers.TestImages;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
-import org.testcontainers.utility.MockTestcontainersConfigurationRule;
+import org.testcontainers.utility.MockTestcontainersConfigurationExtension;
 import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
@@ -53,15 +51,11 @@ import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-@RunWith(Enclosed.class)
-public class ReusabilityUnitTests {
+class ReusabilityUnitTests {
 
-    @RunWith(Parameterized.class)
-    @RequiredArgsConstructor
-    @FieldDefaults(makeFinal = true)
-    public static class CanBeReusedTest {
+    @Nested
+    class CanBeReusedTest {
 
-        @Parameterized.Parameters(name = "{0}")
         public static Object[][] data() {
             return new Object[][] {
                 { "generic", new GenericContainer<>(TestImages.TINY_IMAGE), true },
@@ -72,14 +66,9 @@ public class ReusabilityUnitTests {
             };
         }
 
-        String name;
-
-        GenericContainer container;
-
-        boolean reusable;
-
-        @Test
-        public void shouldBeReusable() {
+        @ParameterizedTest(name = "{0}")
+        @MethodSource("data")
+        void shouldBeReusable(String name, GenericContainer container, boolean reusable) {
             if (reusable) {
                 assertThat(container.canBeReused()).as("Is reusable").isTrue();
             } else {
@@ -108,9 +97,8 @@ public class ReusabilityUnitTests {
         }
     }
 
-    @RunWith(BlockJUnit4ClassRunner.class)
-    @FieldDefaults(makeFinal = true)
-    public static class HooksTest extends AbstractReusabilityTest {
+    @Nested
+    class HooksTest extends AbstractReusabilityTest {
 
         List<String> script = new ArrayList<>();
 
@@ -140,7 +128,7 @@ public class ReusabilityUnitTests {
         );
 
         @Test
-        public void shouldSetLabelsIfEnvironmentDoesNotSupportReuse() {
+        void shouldSetLabelsIfEnvironmentDoesNotSupportReuse() {
             Mockito.doReturn(false).when(TestcontainersConfiguration.getInstance()).environmentSupportsReuse();
 
             String containerId = randomContainerId();
@@ -159,7 +147,7 @@ public class ReusabilityUnitTests {
         }
 
         @Test
-        public void shouldCallHookIfReused() {
+        void shouldCallHookIfReused() {
             Mockito.doReturn(true).when(TestcontainersConfiguration.getInstance()).environmentSupportsReuse();
             String containerId = randomContainerId();
             when(client.createContainerCmd(any())).then(createContainerAnswer(containerId));
@@ -172,7 +160,7 @@ public class ReusabilityUnitTests {
         }
 
         @Test
-        public void shouldNotCallHookIfNotReused() {
+        void shouldNotCallHookIfNotReused() {
             String containerId = randomContainerId();
             when(client.createContainerCmd(any())).then(createContainerAnswer(containerId));
             when(client.listContainersCmd()).then(listContainersAnswer());
@@ -189,9 +177,8 @@ public class ReusabilityUnitTests {
         }
     }
 
-    @RunWith(BlockJUnit4ClassRunner.class)
-    @FieldDefaults(makeFinal = true)
-    public static class HashTest extends AbstractReusabilityTest {
+    @Nested
+    class HashTest extends AbstractReusabilityTest {
 
         protected GenericContainer<?> container = makeReusable(
             new GenericContainer(TestImages.TINY_IMAGE) {
@@ -203,7 +190,7 @@ public class ReusabilityUnitTests {
         );
 
         @Test
-        public void shouldStartIfListReturnsEmpty() {
+        void shouldStartIfListReturnsEmpty() {
             String containerId = randomContainerId();
             when(client.createContainerCmd(any())).then(createContainerAnswer(containerId));
             when(client.listContainersCmd()).then(listContainersAnswer());
@@ -216,7 +203,7 @@ public class ReusabilityUnitTests {
         }
 
         @Test
-        public void shouldReuseIfListReturnsID() {
+        void shouldReuseIfListReturnsID() {
             Mockito.doReturn(true).when(TestcontainersConfiguration.getInstance()).environmentSupportsReuse();
             String containerId = randomContainerId();
             when(client.createContainerCmd(any())).then(createContainerAnswer(containerId));
@@ -231,7 +218,7 @@ public class ReusabilityUnitTests {
         }
 
         @Test
-        public void shouldSetLabelsIfEnvironmentDoesNotSupportReuse() {
+        void shouldSetLabelsIfEnvironmentDoesNotSupportReuse() {
             Mockito.doReturn(false).when(TestcontainersConfiguration.getInstance()).environmentSupportsReuse();
             AtomicReference<CreateContainerCmd> commandRef = new AtomicReference<>();
             String containerId = randomContainerId();
@@ -250,7 +237,7 @@ public class ReusabilityUnitTests {
         }
 
         @Test
-        public void shouldSetCopiedFilesHashLabel() {
+        void shouldSetCopiedFilesHashLabel() {
             Mockito.doReturn(true).when(TestcontainersConfiguration.getInstance()).environmentSupportsReuse();
             AtomicReference<CreateContainerCmd> commandRef = new AtomicReference<>();
             String containerId = randomContainerId();
@@ -266,7 +253,7 @@ public class ReusabilityUnitTests {
         }
 
         @Test
-        public void shouldHashCopiedFiles() {
+        void shouldHashCopiedFiles() {
             Mockito.doReturn(true).when(TestcontainersConfiguration.getInstance()).environmentSupportsReuse();
             AtomicReference<CreateContainerCmd> commandRef = new AtomicReference<>();
             String containerId = randomContainerId();
@@ -303,9 +290,10 @@ public class ReusabilityUnitTests {
         }
     }
 
-    @RunWith(Parameterized.class)
-    @FieldDefaults(makeFinal = true)
-    public static class CopyFilesHashTest {
+    @Nested
+    @ParameterizedClass
+    @MethodSource("strategies")
+    class CopyFilesHashTest {
 
         private final TestStrategy strategy;
 
@@ -353,7 +341,6 @@ public class ReusabilityUnitTests {
             }
         }
 
-        @Parameterized.Parameters
         public static List<Function<GenericContainer<?>, TestStrategy>> strategies() {
             return Arrays.asList(MountableFileTestStrategy::new, TransferableTestStrategy::new);
         }
@@ -365,12 +352,12 @@ public class ReusabilityUnitTests {
         }
 
         @Test
-        public void empty() {
+        void empty() {
             assertThat(container.hashCopiedFiles()).isNotNull();
         }
 
         @Test
-        public void oneFile() {
+        void oneFile() {
             long emptyHash = container.hashCopiedFiles().getValue();
 
             strategy.withCopyFileToContainer(
@@ -382,7 +369,7 @@ public class ReusabilityUnitTests {
         }
 
         @Test
-        public void differentPath() {
+        void differentPath() {
             MountableFile mountableFile = MountableFile.forClasspathResource("test_copy_to_container.txt");
             strategy.withCopyFileToContainer(mountableFile, "/foo/bar");
 
@@ -396,7 +383,7 @@ public class ReusabilityUnitTests {
         }
 
         @Test
-        public void detectsChangesInFile() throws Exception {
+        void detectsChangesInFile() throws Exception {
             Path path = File.createTempFile("reusable_test", ".txt").toPath();
             MountableFile mountableFile = MountableFile.forHostPath(path);
             strategy.withCopyFileToContainer(mountableFile, "/foo/bar");
@@ -409,7 +396,7 @@ public class ReusabilityUnitTests {
         }
 
         @Test
-        public void multipleFiles() {
+        void multipleFiles() {
             strategy.withCopyFileToContainer(
                 MountableFile.forClasspathResource("test_copy_to_container.txt"),
                 "/foo/bar"
@@ -425,7 +412,7 @@ public class ReusabilityUnitTests {
         }
 
         @Test
-        public void folder() throws Exception {
+        void folder() throws Exception {
             long emptyHash = container.hashCopiedFiles().getValue();
 
             Path tempDirectory = Files.createTempDirectory("reusable_test");
@@ -436,7 +423,7 @@ public class ReusabilityUnitTests {
         }
 
         @Test
-        public void changesInFolder() throws Exception {
+        void changesInFolder() throws Exception {
             Path tempDirectory = Files.createTempDirectory("reusable_test");
             MountableFile mountableFile = MountableFile.forHostPath(tempDirectory);
             assertThat(new File(mountableFile.getResolvedPath())).isDirectory();
@@ -455,7 +442,7 @@ public class ReusabilityUnitTests {
         }
 
         @Test
-        public void folderAndFile() throws Exception {
+        void folderAndFile() throws Exception {
             Path tempDirectory = Files.createTempDirectory("reusable_test");
             MountableFile mountableFile = MountableFile.forHostPath(tempDirectory);
             assertThat(new File(mountableFile.getResolvedPath())).isDirectory();
@@ -472,7 +459,7 @@ public class ReusabilityUnitTests {
         }
 
         @Test
-        public void filePermissions() throws Exception {
+        void filePermissions() throws Exception {
             Path path = File.createTempFile("reusable_test", ".txt").toPath();
             path.toFile().setExecutable(false);
             MountableFile mountableFile = MountableFile.forHostPath(path);
@@ -487,7 +474,7 @@ public class ReusabilityUnitTests {
         }
 
         @Test
-        public void folderPermissions() throws Exception {
+        void folderPermissions() throws Exception {
             Path tempDirectory = Files.createTempDirectory("reusable_test");
             MountableFile mountableFile = MountableFile.forHostPath(tempDirectory);
             assertThat(new File(mountableFile.getResolvedPath())).isDirectory();
@@ -505,11 +492,8 @@ public class ReusabilityUnitTests {
         }
     }
 
-    @FieldDefaults(makeFinal = true)
+    @ExtendWith(MockTestcontainersConfigurationExtension.class)
     public abstract static class AbstractReusabilityTest {
-
-        @Rule
-        public MockTestcontainersConfigurationRule configurationMock = new MockTestcontainersConfigurationRule();
 
         protected DockerClient client = Mockito.mock(DockerClient.class);
 

@@ -107,6 +107,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/kafka/**/*
+"modules/ldap":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/ldap/**/*
 "modules/localstack":
   - changed-files:
     - any-glob-to-any-file:

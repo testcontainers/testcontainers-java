@@ -3,9 +3,14 @@ description = "Testcontainers :: Orientdb"
 dependencies {
     api project(":testcontainers")
 
-    api "com.orientechnologies:orientdb-client:3.2.33"
+    api "com.orientechnologies:orientdb-client:3.2.44"
 
-    testImplementation 'org.assertj:assertj-core:3.26.3'
-    testImplementation 'org.apache.tinkerpop:gremlin-driver:3.7.2'
-    testImplementation "com.orientechnologies:orientdb-gremlin:3.2.33"
+    testImplementation 'org.apache.tinkerpop:gremlin-driver:3.7.4'
+    testImplementation "com.orientechnologies:orientdb-gremlin:3.2.44"
+}
+
+tasks.japicmp {
+    classExcludes = [
+        "org.testcontainers.containers.OrientDBContainer"
+    ]
 }

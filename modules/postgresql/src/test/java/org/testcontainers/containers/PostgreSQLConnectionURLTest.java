@@ -1,15 +1,15 @@
 package org.testcontainers.containers;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.PostgreSQLTestImages;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
-public class PostgreSQLConnectionURLTest {
+class PostgreSQLConnectionURLTest {
 
     @Test
-    public void shouldCorrectlyAppendQueryString() {
+    void shouldCorrectlyAppendQueryString() {
         PostgreSQLContainer<?> postgres = new FixedJdbcUrlPostgreSQLContainer();
         String connectionUrl = postgres.constructUrlForConnection("?stringtype=unspecified&stringtype=unspecified");
         String queryString = connectionUrl.substring(connectionUrl.indexOf('?'));
@@ -22,7 +22,7 @@ public class PostgreSQLConnectionURLTest {
     }
 
     @Test
-    public void shouldCorrectlyAppendQueryStringWhenNoBaseParams() {
+    void shouldCorrectlyAppendQueryStringWhenNoBaseParams() {
         PostgreSQLContainer<?> postgres = new NoParamsUrlPostgreSQLContainer();
         String connectionUrl = postgres.constructUrlForConnection("?stringtype=unspecified&stringtype=unspecified");
         String queryString = connectionUrl.substring(connectionUrl.indexOf('?'));
@@ -35,7 +35,7 @@ public class PostgreSQLConnectionURLTest {
     }
 
     @Test
-    public void shouldReturnOriginalURLWhenEmptyQueryString() {
+    void shouldReturnOriginalURLWhenEmptyQueryString() {
         PostgreSQLContainer<?> postgres = new FixedJdbcUrlPostgreSQLContainer();
         String connectionUrl = postgres.constructUrlForConnection("");
 
@@ -43,7 +43,7 @@ public class PostgreSQLConnectionURLTest {
     }
 
     @Test
-    public void shouldRejectInvalidQueryString() {
+    void shouldRejectInvalidQueryString() {
         assertThat(
             catchThrowable(() -> {
                 new NoParamsUrlPostgreSQLContainer().constructUrlForConnection("stringtype=unspecified");

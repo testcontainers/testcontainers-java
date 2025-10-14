@@ -54,4 +54,11 @@ import java.lang.annotation.Target
 @Target([ElementType.TYPE, ElementType.METHOD])
 @ExtensionAnnotation(TestcontainersExtension)
 @interface Testcontainers {
+
+	/**
+	 * Whether tests should be disabled (rather than failing) when Docker is not available. Defaults to
+	 * {@code false}.
+	 * @return if the tests should be disabled when Docker is not available
+	 */
+	boolean disabledWithoutDocker() default false;
 }

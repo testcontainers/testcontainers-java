@@ -1,10 +1,23 @@
 # QuestDB Module
 
-Testcontainers module for [QuestDB](https://github.com/questdb/questdb). QuestDB is a high-performance, open-source SQL
-database for applications in financial services, IoT, machine learning, DevOps and observability.
+Testcontainers module for [QuestDB](https://hub.docker.com/r/questdb/questdb)
+
+## Usage example
+
+You can start a QuestDB container instance from any Java application by using:
+
+<!--codeinclude-->
+[Container creation](../../../modules/questdb/src/test/java/org/testcontainers/junit/questdb/SimpleQuestDBTest.java) inside_block:container
+<!--/codeinclude-->
 
 See [Database containers](./index.md) for documentation and usage that is common to all relational database container
 types.
+
+### Testcontainers JDBC URL
+
+`jdbc:tc:questdb:6.5.3:///databasename`
+
+See [JDBC](./jdbc.md) for documentation.
 
 ## Adding this module to your project dependencies
 

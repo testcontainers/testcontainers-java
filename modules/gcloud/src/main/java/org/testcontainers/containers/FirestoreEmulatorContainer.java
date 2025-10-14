@@ -9,7 +9,10 @@ import org.testcontainers.utility.DockerImageName;
  * Supported images: {@code gcr.io/google.com/cloudsdktool/google-cloud-cli}, {@code gcr.io/google.com/cloudsdktool/cloud-sdk}
  * <p>
  * Default port is 8080.
+ *
+ * @deprecated use {@link org.testcontainers.gcloud.FirestoreEmulatorContainer} instead.
  */
+@Deprecated
 public class FirestoreEmulatorContainer extends GenericContainer<FirestoreEmulatorContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse(
@@ -24,6 +27,8 @@ public class FirestoreEmulatorContainer extends GenericContainer<FirestoreEmulat
 
     private static final int PORT = 8080;
 
+    private String flags;
+
     public FirestoreEmulatorContainer(String image) {
         this(DockerImageName.parse(image));
     }
@@ -34,7 +39,20 @@ public class FirestoreEmulatorContainer extends GenericContainer<FirestoreEmulat
 
         withExposedPorts(PORT);
         setWaitStrategy(Wait.forLogMessage(".*running.*$", 1));
-        withCommand("/bin/sh", "-c", CMD);
+    }
+
+    @Override
+    protected void configure() {
+        String command = CMD;
+        if (this.flags != null && !this.flags.isEmpty()) {
+            command += " " + this.flags;
+        }
+        withCommand("/bin/sh", "-c", command);
+    }
+
+    public FirestoreEmulatorContainer withFlags(String flags) {
+        this.flags = flags;
+        return this;
     }
 
     /**

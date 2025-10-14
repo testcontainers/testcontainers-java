@@ -1,23 +1,27 @@
 package org.testcontainers.junit;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.ComposeContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
 import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ComposeContainerWithWaitStrategies {
+class ComposeContainerWithWaitStrategies {
 
     private static final int REDIS_PORT = 6379;
 
     @Test
-    public void testComposeContainerConstructor() {
+    void testComposeContainerConstructor() {
         try (
             // composeContainerWithCombinedWaitStrategies {
-            ComposeContainer compose = new ComposeContainer(new File("src/test/resources/composev2/compose-test.yml"))
+            ComposeContainer compose = new ComposeContainer(
+                DockerImageName.parse("docker:24.0.2"),
+                new File("src/test/resources/composev2/compose-test.yml")
+            )
                 .withExposedService("redis-1", REDIS_PORT, Wait.forSuccessfulCommand("redis-cli ping"))
                 .withExposedService("db-1", 3306, Wait.forLogMessage(".*ready for connections.*\\n", 1))
             // }
@@ -28,10 +32,13 @@ public class ComposeContainerWithWaitStrategies {
     }
 
     @Test
-    public void testComposeContainerWaitForPortWithTimeout() {
+    void testComposeContainerWaitForPortWithTimeout() {
         try (
             // composeContainerWaitForPortWithTimeout {
-            ComposeContainer compose = new ComposeContainer(new File("src/test/resources/composev2/compose-test.yml"))
+            ComposeContainer compose = new ComposeContainer(
+                DockerImageName.parse("docker:24.0.2"),
+                new File("src/test/resources/composev2/compose-test.yml")
+            )
                 .withExposedService(
                     "redis-1",
                     REDIS_PORT,

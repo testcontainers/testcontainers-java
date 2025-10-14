@@ -18,7 +18,9 @@ import java.util.Set;
  * <ul>
  *     <li>Database: 50000</li>
  * </ul>
+ * @deprecated use {@link org.testcontainers.db2.Db2Container} instead.
  */
+@Deprecated
 public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
 
     public static final String NAME = "db2";
@@ -79,7 +81,7 @@ public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
 
     @Override
     protected void configure() {
-        // If license was not accepted programatically, check if it was accepted via resource file
+        // If license was not accepted programmatically, check if it was accepted via resource file
         if (!getEnvMap().containsKey("LICENSE")) {
             LicenseAcceptance.assertLicenseAccepted(this.getDockerImageName());
             acceptLicense();

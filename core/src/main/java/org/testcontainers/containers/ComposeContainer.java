@@ -5,8 +5,6 @@ import com.google.common.annotations.VisibleForTesting;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.SystemUtils;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
@@ -18,6 +16,7 @@ import java.io.File;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -31,7 +30,7 @@ import java.util.function.Consumer;
  * It uses either Compose V2 contained within the Docker binary, or a containerised version of Compose V2.
  */
 @Slf4j
-public class ComposeContainer extends FailureDetectingExternalResource implements Startable {
+public class ComposeContainer implements Startable {
 
     private final Map<String, Integer> scalingPreferences = new HashMap<>();
 
@@ -61,7 +60,7 @@ public class ComposeContainer extends FailureDetectingExternalResource implement
 
     public static final String COMPOSE_EXECUTABLE = SystemUtils.IS_OS_WINDOWS ? "docker.exe" : "docker";
 
-    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("docker:24.0.2");
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("docker");
 
     private final ComposeDelegate composeDelegate;
 
@@ -69,54 +68,92 @@ public class ComposeContainer extends FailureDetectingExternalResource implement
 
     private List<String> filesInDirectory = new ArrayList<>();
 
-    public ComposeContainer(File... composeFiles) {
-        this(Arrays.asList(composeFiles));
+    /**
+     * Creates a new ComposeContainer using the specified Docker image and compose files.
+     *
+     * @param image        The Docker image to use for the container
+     * @param composeFiles One or more Docker Compose configuration files
+     */
+    public ComposeContainer(DockerImageName image, File... composeFiles) {
+        this(image, Arrays.asList(composeFiles));
     }
 
-    public ComposeContainer(List<File> composeFiles) {
-        this(Base58.randomString(6).toLowerCase(), composeFiles);
+    /**
+     * Creates a new ComposeContainer using the specified Docker image and compose files.
+     *
+     * @param image        The Docker image to use for the container
+     * @param composeFiles A list of Docker Compose configuration files
+     */
+    public ComposeContainer(DockerImageName image, List<File> composeFiles) {
+        this(image, Base58.randomString(6).toLowerCase(), composeFiles);
     }
 
-    public ComposeContainer(String identifier, File... composeFiles) {
-        this(identifier, Arrays.asList(composeFiles));
+    /**
+     * Creates a new ComposeContainer with the specified Docker image, identifier, and compose files.
+     *
+     * @param image        The Docker image to use for the container
+     * @param identifier   A unique identifier for this compose environment
+     * @param composeFiles One or more Docker Compose configuration files
+     */
+    public ComposeContainer(DockerImageName image, String identifier, File... composeFiles) {
+        this(image, identifier, Arrays.asList(composeFiles));
     }
 
-    public ComposeContainer(String identifier, List<File> composeFiles) {
+    /**
+     * Creates a new ComposeContainer with the specified Docker image, identifier, and a single compose file.
+     *
+     * @param image       The Docker image to use for the container
+     * @param identifier  A unique identifier for this compose environment
+     * @param composeFile A Docker Compose configuration file
+     */
+    public ComposeContainer(DockerImageName image, String identifier, File composeFile) {
+        this(image, identifier, Collections.singletonList(composeFile));
+    }
+
+    /**
+     * Creates a new ComposeContainer with the specified Docker image, identifier, and compose files.
+     *
+     * @param image        The Docker image to use for the container
+     * @param identifier   A unique identifier for this compose environment
+     * @param composeFiles A list of Docker Compose configuration files
+     */
+    public ComposeContainer(DockerImageName image, String identifier, List<File> composeFiles) {
+        image.assertCompatibleWith(DEFAULT_IMAGE_NAME);
         this.composeDelegate =
-            new ComposeDelegate(
-                ComposeDelegate.ComposeVersion.V2,
-                composeFiles,
-                identifier,
-                COMPOSE_EXECUTABLE,
-                DEFAULT_IMAGE_NAME
-            );
+            new ComposeDelegate(ComposeDelegate.ComposeVersion.V2, composeFiles, identifier, COMPOSE_EXECUTABLE, image);
         this.project = this.composeDelegate.getProject();
     }
 
-    @Override
-    @Deprecated
-    public Statement apply(Statement base, Description description) {
-        return super.apply(base, description);
+    /**
+     * Use the new constructor {@link #ComposeContainer(DockerImageName image, File... composeFiles)}
+     */
+    public ComposeContainer(File... composeFiles) {
+        this(DEFAULT_IMAGE_NAME, Arrays.asList(composeFiles));
+        this.localCompose = true;
     }
 
-    @Override
-    @Deprecated
-    public void starting(Description description) {
-        start();
+    /**
+     * Use the new constructor {@link #ComposeContainer(DockerImageName image, List composeFiles)}
+     */
+    public ComposeContainer(List<File> composeFiles) {
+        this(DEFAULT_IMAGE_NAME, composeFiles);
+        this.localCompose = true;
     }
 
-    @Override
-    @Deprecated
-    protected void succeeded(Description description) {}
+    /**
+     * Use the new constructor {@link #ComposeContainer(DockerImageName image, String identifier, File... composeFile)}
+     */
+    public ComposeContainer(String identifier, File... composeFiles) {
+        this(DEFAULT_IMAGE_NAME, identifier, Arrays.asList(composeFiles));
+        this.localCompose = true;
+    }
 
-    @Override
-    @Deprecated
-    protected void failed(Throwable e, Description description) {}
-
-    @Override
-    @Deprecated
-    public void finished(Description description) {
-        stop();
+    /**
+     * Use the new constructor {@link #ComposeContainer(DockerImageName image, String identifier, List composeFiles)}
+     */
+    public ComposeContainer(String identifier, List<File> composeFiles) {
+        this(DEFAULT_IMAGE_NAME, identifier, composeFiles);
+        this.localCompose = true;
     }
 
     @Override
@@ -259,16 +296,6 @@ public class ComposeContainer extends FailureDetectingExternalResource implement
 
     public ComposeContainer withEnv(Map<String, String> env) {
         env.forEach(this.env::put);
-        return this;
-    }
-
-    /**
-     * Use a local Docker Compose binary instead of a container.
-     *
-     * @return this instance, for chaining
-     */
-    public ComposeContainer withLocalCompose(boolean localCompose) {
-        this.localCompose = localCompose;
         return this;
     }
 

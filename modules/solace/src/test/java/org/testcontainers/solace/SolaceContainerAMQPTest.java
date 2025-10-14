@@ -1,8 +1,7 @@
 package org.testcontainers.solace;
 
 import org.apache.qpid.jms.JmsConnectionFactory;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,8 +18,9 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
-public class SolaceContainerAMQPTest {
+class SolaceContainerAMQPTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SolaceContainerAMQPTest.class);
 
@@ -29,9 +29,9 @@ public class SolaceContainerAMQPTest {
     private static final String TOPIC_NAME = "Topic/ActualTopic";
 
     @Test
-    public void testSolaceContainer() throws JMSException {
+    void testSolaceContainer() throws JMSException {
         try (
-            SolaceContainer solaceContainer = new SolaceContainer("solace/solace-pubsub-standard:10.2")
+            SolaceContainer solaceContainer = new SolaceContainer("solace/solace-pubsub-standard:10.25.0")
                 .withTopic(TOPIC_NAME, Service.AMQP)
                 .withVpn("amqp-vpn")
         ) {
@@ -57,7 +57,7 @@ public class SolaceContainerAMQPTest {
             connection.start();
             return session;
         } catch (Exception e) {
-            Assert.fail("Error connecting and setting up session! " + e.getMessage());
+            fail("Error connecting and setting up session! " + e.getMessage());
             return null;
         }
     }

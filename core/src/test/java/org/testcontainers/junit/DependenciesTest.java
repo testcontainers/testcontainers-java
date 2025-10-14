@@ -1,7 +1,7 @@
 package org.testcontainers.junit;
 
 import lombok.Getter;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.TestImages;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
@@ -18,10 +18,10 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class DependenciesTest {
+class DependenciesTest {
 
     @Test
-    public void shouldWorkWithSimpleDependency() {
+    void shouldWorkWithSimpleDependency() {
         InvocationCountingStartable startable = new InvocationCountingStartable();
 
         try (
@@ -37,7 +37,7 @@ public class DependenciesTest {
     }
 
     @Test
-    public void shouldWorkWithMutlipleDependencies() {
+    void shouldWorkWithMultipleDependencies() {
         InvocationCountingStartable startable1 = new InvocationCountingStartable();
         InvocationCountingStartable startable2 = new InvocationCountingStartable();
 
@@ -54,7 +54,7 @@ public class DependenciesTest {
     }
 
     @Test
-    public void shouldStartEveryTime() {
+    void shouldStartEveryTime() {
         InvocationCountingStartable startable = new InvocationCountingStartable();
 
         try (
@@ -76,7 +76,7 @@ public class DependenciesTest {
     }
 
     @Test
-    public void shouldStartTransitiveDependencies() {
+    void shouldStartTransitiveDependencies() {
         InvocationCountingStartable transitiveOfTransitiveStartable = new InvocationCountingStartable();
         InvocationCountingStartable transitiveStartable = new InvocationCountingStartable();
         transitiveStartable.getDependencies().add(transitiveOfTransitiveStartable);
@@ -101,7 +101,7 @@ public class DependenciesTest {
     }
 
     @Test
-    public void shouldHandleDiamondDependencies() throws Exception {
+    void shouldHandleDiamondDependencies() throws Exception {
         InvocationCountingStartable a = new InvocationCountingStartable();
         InvocationCountingStartable b = new InvocationCountingStartable();
         InvocationCountingStartable c = new InvocationCountingStartable();
@@ -124,7 +124,7 @@ public class DependenciesTest {
     }
 
     @Test
-    public void shouldHandleParallelStream() throws Exception {
+    void shouldHandleParallelStream() throws Exception {
         List<Startable> startables = Stream
             .generate(InvocationCountingStartable::new)
             .limit(10)

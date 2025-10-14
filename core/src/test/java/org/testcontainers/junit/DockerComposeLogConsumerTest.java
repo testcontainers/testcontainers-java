@@ -1,28 +1,29 @@
 package org.testcontainers.junit;
 
-import org.junit.Test;
-import org.junit.runner.Description;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.output.OutputFrame.OutputType;
 import org.testcontainers.containers.output.WaitingConsumer;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public class DockerComposeLogConsumerTest {
+class DockerComposeLogConsumerTest {
 
     @Test
-    public void testLogConsumer() throws TimeoutException {
+    void testLogConsumer() throws TimeoutException {
         WaitingConsumer logConsumer = new WaitingConsumer();
         DockerComposeContainer environment = new DockerComposeContainer(
+            DockerImageName.parse("docker/compose:1.29.2"),
             new File("src/test/resources/v2-compose-test.yml")
         )
             .withExposedService("redis_1", 6379)
             .withLogConsumer("redis_1", logConsumer);
 
         try {
-            environment.starting(Description.EMPTY);
+            environment.start();
             logConsumer.waitUntil(
                 frame -> {
                     return (
@@ -34,7 +35,7 @@ public class DockerComposeLogConsumerTest {
                 TimeUnit.SECONDS
             );
         } finally {
-            environment.finished(Description.EMPTY);
+            environment.stop();
         }
     }
 }

@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-22.04
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: ./.github/actions/setup-build
 
       - name: Install Stable Docker
@@ -43,7 +43,7 @@ jobs:
       - name: Notify to Slack on failures
         if: failure()
         id: slack
-        uses: slackapi/slack-github-action@v1.27.0
+        uses: slackapi/slack-github-action@v2.1.1
         with:
           payload: |
             {

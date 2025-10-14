@@ -2,6 +2,4 @@ description = "Testcontainers :: k6"
 
 dependencies {
     api project(':testcontainers')
-
-    testImplementation 'org.assertj:assertj-core:3.26.3'
 }

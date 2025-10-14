@@ -24,7 +24,7 @@ public enum PortForwardingContainer {
 
     private static ContainerDef DEFINITION = new ContainerDef() {
         {
-            setImage(DockerImageName.parse("testcontainers/sshd:1.2.0"));
+            setImage(DockerImageName.parse("testcontainers/sshd:1.3.0"));
             addExposedTcpPort(22);
             addEnvVar("PASSWORD", PASSWORD);
         }

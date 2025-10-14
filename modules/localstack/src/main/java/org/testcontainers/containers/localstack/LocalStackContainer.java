@@ -28,8 +28,11 @@ import java.util.stream.Collectors;
  * Supported images: {@code localstack/localstack}, {@code localstack/localstack-pro}
  * <p>
  * Exposed ports: 4566
+ *
+ * @deprecated use {@link org.testcontainers.localstack.LocalStackContainer} instead.
  */
 @Slf4j
+@Deprecated
 public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
 
     static final int PORT = 4566;

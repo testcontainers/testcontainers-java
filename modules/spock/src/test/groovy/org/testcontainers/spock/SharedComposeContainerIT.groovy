@@ -4,6 +4,7 @@ import org.apache.http.client.methods.HttpGet
 import org.apache.http.impl.client.HttpClientBuilder
 import org.testcontainers.containers.DockerComposeContainer
 import org.testcontainers.containers.wait.strategy.Wait
+import org.testcontainers.utility.DockerImageName
 import spock.lang.Shared
 import spock.lang.Specification
 
@@ -12,6 +13,7 @@ class SharedComposeContainerIT extends Specification {
 
 	@Shared
 	DockerComposeContainer composeContainer = new DockerComposeContainer(
+	DockerImageName.parse("docker/compose:debian-1.29.2"),
 	new File("src/test/resources/docker-compose.yml"))
 	.withExposedService("whoami_1", 80, Wait.forHttp("/"))
 

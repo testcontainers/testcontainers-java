@@ -1,6 +1,6 @@
 package org.testcontainers.ollama;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.DockerImageName;
 
@@ -9,10 +9,10 @@ import java.io.IOException;
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class OllamaContainerTest {
+class OllamaContainerTest {
 
     @Test
-    public void withDefaultConfig() {
+    void withDefaultConfig() {
         try ( // container {
             OllamaContainer ollama = new OllamaContainer("ollama/ollama:0.1.26")
             // }
@@ -25,7 +25,7 @@ public class OllamaContainerTest {
     }
 
     @Test
-    public void downloadModelAndCommitToImage() throws IOException, InterruptedException {
+    void downloadModelAndCommitToImage() throws IOException, InterruptedException {
         String newImageName = "tc-ollama-allminilm-" + Base58.randomString(4).toLowerCase();
         try (OllamaContainer ollama = new OllamaContainer("ollama/ollama:0.1.26")) {
             ollama.start();

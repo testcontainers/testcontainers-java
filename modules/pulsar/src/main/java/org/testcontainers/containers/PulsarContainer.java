@@ -14,18 +14,15 @@ import org.testcontainers.utility.DockerImageName;
  *     <li>Pulsar: 6650</li>
  *     <li>HTTP: 8080</li>
  * </ul>
+ *
+ * @deprecated use {@link org.testcontainers.pulsar.PulsarContainer} instead.
  */
+@Deprecated
 public class PulsarContainer extends GenericContainer<PulsarContainer> {
 
     public static final int BROKER_PORT = 6650;
 
     public static final int BROKER_HTTP_PORT = 8080;
-
-    /**
-     * @deprecated The metrics endpoint is no longer being used for the WaitStrategy.
-     */
-    @Deprecated
-    public static final String METRICS_ENDPOINT = "/metrics";
 
     private static final String ADMIN_CLUSTERS_ENDPOINT = "/admin/v2/clusters";
 

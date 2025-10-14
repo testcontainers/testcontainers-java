@@ -21,8 +21,6 @@ import java.util.Set;
  */
 public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContainer> {
 
-    private static final String NAME = "clickhouse";
-
     static final String CLICKHOUSE_CLICKHOUSE_SERVER = "clickhouse/clickhouse-server";
 
     private static final DockerImageName CLICKHOUSE_IMAGE_NAME = DockerImageName.parse(CLICKHOUSE_CLICKHOUSE_SERVER);
@@ -31,15 +29,17 @@ public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContain
 
     static final Integer NATIVE_PORT = 9000;
 
-    private static final String DRIVER_CLASS_NAME = "com.clickhouse.jdbc.ClickHouseDriver";
+    private static final String LEGACY_V1_DRIVER_CLASS_NAME = "com.clickhouse.jdbc.ClickHouseDriver";
 
-    private static final String JDBC_URL_PREFIX = "jdbc:" + NAME + "://";
+    private static final String DRIVER_CLASS_NAME = "com.clickhouse.jdbc.Driver";
+
+    private static final String JDBC_URL_PREFIX = "jdbc:clickhouse://";
 
     private static final String TEST_QUERY = "SELECT 1";
 
-    static final String DEFAULT_USER = "default";
+    static final String DEFAULT_USER = "test";
 
-    static final String DEFAULT_PASSWORD = "";
+    static final String DEFAULT_PASSWORD = "test";
 
     private String databaseName = "default";
 
@@ -80,7 +80,12 @@ public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContain
 
     @Override
     public String getDriverClassName() {
-        return DRIVER_CLASS_NAME;
+        try {
+            Class.forName(DRIVER_CLASS_NAME);
+            return DRIVER_CLASS_NAME;
+        } catch (ClassNotFoundException e) {
+            return LEGACY_V1_DRIVER_CLASS_NAME;
+        }
     }
 
     @Override
@@ -94,6 +99,10 @@ public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContain
             this.databaseName +
             constructUrlParameters("?", "&")
         );
+    }
+
+    public String getHttpUrl() {
+        return "http://" + getHost() + ":" + getMappedPort(HTTP_PORT);
     }
 
     @Override

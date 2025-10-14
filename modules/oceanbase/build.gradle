@@ -1,8 +1,8 @@
 description = "Testcontainers :: JDBC :: OceanBase"
 
 dependencies {
-    api project(':jdbc')
+    api project(':testcontainers-jdbc')
 
-    testImplementation project(':jdbc-test')
-    testRuntimeOnly 'mysql:mysql-connector-java:8.0.33'
+    testImplementation project(':testcontainers-jdbc-test')
+    testRuntimeOnly 'com.mysql:mysql-connector-j:8.2.0'
 }

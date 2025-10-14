@@ -29,7 +29,7 @@ You are not limited to Unit tests, and you can use an instance of the Neo4j Test
 A custom password can be provided:
 
 <!--codeinclude-->
-[Custom password](../../../modules/neo4j/src/test/java/org/testcontainers/containers/Neo4jContainerTest.java) inside_block:withAdminPassword
+[Custom password](../../../modules/neo4j/src/test/java/org/testcontainers/neo4j/Neo4jContainerTest.java) inside_block:withAdminPassword
 <!--/codeinclude-->
 
 ### Disable authentication
@@ -37,7 +37,7 @@ A custom password can be provided:
 Authentication can be disabled:
 
 <!--codeinclude-->
-[Disable authentication](../../../modules/neo4j/src/test/java/org/testcontainers/containers/Neo4jContainerTest.java) inside_block:withoutAuthentication
+[Disable authentication](../../../modules/neo4j/src/test/java/org/testcontainers/neo4j/Neo4jContainerTest.java) inside_block:withoutAuthentication
 <!--/codeinclude-->
 
 ### Random password
@@ -45,7 +45,7 @@ Authentication can be disabled:
 A random (`UUID`-random based) password can be set:
 
 <!--codeinclude-->
-[Random password](../../../modules/neo4j/src/test/java/org/testcontainers/containers/Neo4jContainerTest.java) inside_block:withRandomPassword
+[Random password](../../../modules/neo4j/src/test/java/org/testcontainers/neo4j/Neo4jContainerTest.java) inside_block:withRandomPassword
 <!--/codeinclude-->
 
 ### Neo4j-Configuration
@@ -54,7 +54,7 @@ Neo4j's Docker image needs Neo4j configuration options in a dedicated format.
 The container takes care of that, and you can configure the database with standard options like the following:
 
 <!--codeinclude-->
-[Neo4j configuration](../../../modules/neo4j/src/test/java/org/testcontainers/containers/Neo4jContainerTest.java) inside_block:neo4jConfiguration
+[Neo4j configuration](../../../modules/neo4j/src/test/java/org/testcontainers/neo4j/Neo4jContainerTest.java) inside_block:neo4jConfiguration
 <!--/codeinclude-->
 
 ### Add custom plugins
@@ -62,13 +62,13 @@ The container takes care of that, and you can configure the database with standa
 Custom plugins, like APOC, can be copied over to the container from any classpath or host resource like this:
 
 <!--codeinclude-->
-[Plugin jar](../../../modules/neo4j/src/test/java/org/testcontainers/containers/Neo4jContainerTest.java) inside_block:registerPluginsJar
+[Plugin jar](../../../modules/neo4j/src/test/java/org/testcontainers/neo4j/Neo4jContainerTest.java) inside_block:registerPluginsJar
 <!--/codeinclude-->
 
 Whole directories work as well:
 
 <!--codeinclude-->
-[Plugin folder](../../../modules/neo4j/src/test/java/org/testcontainers/containers/Neo4jContainerTest.java) inside_block:registerPluginsPath
+[Plugin folder](../../../modules/neo4j/src/test/java/org/testcontainers/neo4j/Neo4jContainerTest.java) inside_block:registerPluginsPath
 <!--/codeinclude-->
 
 ### Add Neo4j Docker Labs plugins
@@ -81,7 +81,7 @@ or [Neo4j 5 plugin list](https://neo4j.com/docs/operations-manual/5/configuratio
     Please the method `withPlugins(String... plugins)`.
 
 <!--codeinclude-->
-[Configure Neo4j Labs Plugins](../../../modules/neo4j/src/test/java/org/testcontainers/containers/Neo4jContainerTest.java) inside_block:configureLabsPlugins
+[Configure Neo4j Labs Plugins](../../../modules/neo4j/src/test/java/org/testcontainers/neo4j/Neo4jContainerTest.java) inside_block:configureLabsPlugins
 <!--/codeinclude-->
 
 
@@ -90,7 +90,7 @@ or [Neo4j 5 plugin list](https://neo4j.com/docs/operations-manual/5/configuratio
 If you have an existing database (`graph.db`) you want to work with, copy it over to the container like this:
 
 <!--codeinclude-->
-[Copy database](../../../modules/neo4j/src/test/java/org/testcontainers/containers/Neo4jContainerTest.java) inside_block:copyDatabase
+[Copy database](../../../modules/neo4j/src/test/java/org/testcontainers/neo4j/Neo4jContainerTest.java) inside_block:copyDatabase
 <!--/codeinclude-->
 
 !!! note
@@ -101,7 +101,7 @@ If you have an existing database (`graph.db`) you want to work with, copy it ove
 If you need the Neo4j enterprise license, you can declare your Neo4j container like this:
 
 <!--codeinclude-->
-[Enterprise edition](../../../modules/neo4j/src/test/java/org/testcontainers/containers/Neo4jContainerTest.java) inside_block:enterpriseEdition
+[Enterprise edition](../../../modules/neo4j/src/test/java/org/testcontainers/neo4j/Neo4jContainerTest.java) inside_block:enterpriseEdition
 <!--/codeinclude-->
 
 This creates a Testcontainers based on the Docker image build with the Enterprise version of Neo4j 4.4. 

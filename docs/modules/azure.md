@@ -10,9 +10,8 @@ Currently, the module supports `Azurite`, `Azure Event Hubs`, `Azure Service Bus
 Class | Container Image
 -|-
 AzuriteContainer | [mcr.microsoft.com/azure-storage/azurite](https://github.com/microsoft/containerregistry)
-AzureEventHubsContainer | [mcr.microsoft.com/azure-messaging/eventhubs-emulator](https://github.com/microsoft/containerregistry)
-AzureServiceBusEmulatorContainer | [mcr.microsoft.com/azure-messaging/servicebus-emulator](https://github.com/microsoft/containerregistry)
-AzureServiceBusContainer | [mcr.microsoft.com/azure-messaging/servicebus-emulator](https://github.com/microsoft/containerregistry)
+EventHubsEmulatorContainer | [mcr.microsoft.com/azure-messaging/eventhubs-emulator](https://github.com/microsoft/containerregistry)
+ServiceBusEmulatorContainer | [mcr.microsoft.com/azure-messaging/servicebus-emulator](https://github.com/microsoft/containerregistry)
 CosmosDBEmulatorContainer | [mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator](https://github.com/microsoft/containerregistry)
 
 ## Usage example
@@ -22,7 +21,7 @@ CosmosDBEmulatorContainer | [mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emula
 Start Azurite Emulator during a test:
 
 <!--codeinclude-->
-[Starting a Azurite container](../../modules/azure/src/test/java/org/testcontainers/azure/AzuriteContainerTest.java) inside_block:emulatorContainer
+[Starting an Azurite container](../../modules/azure/src/test/java/org/testcontainers/azure/AzuriteContainerTest.java) inside_block:emulatorContainer
 <!--/codeinclude-->
 
 !!! note
@@ -32,11 +31,11 @@ If the tested application needs to use more than one set of credentials, the con
 Please see some examples below.
 
 <!--codeinclude-->
-[Starting a Azurite Blob container with one account and two keys](../../modules/azure/src/test/java/org/testcontainers/azure/AzuriteContainerTest.java) inside_block:withTwoAccountKeys
+[Starting an Azurite Blob container with one account and two keys](../../modules/azure/src/test/java/org/testcontainers/azure/AzuriteContainerTest.java) inside_block:withTwoAccountKeys
 <!--/codeinclude-->
 
 <!--codeinclude-->
-[Starting a Azurite Blob container with more accounts and keys](../../modules/azure/src/test/java/org/testcontainers/azure/AzuriteContainerTest.java) inside_block:withMoreAccounts
+[Starting an Azurite Blob container with more accounts and keys](../../modules/azure/src/test/java/org/testcontainers/azure/AzuriteContainerTest.java) inside_block:withMoreAccounts
 <!--/codeinclude-->
 
 #### Using with Blob
@@ -84,15 +83,15 @@ Build Azure Table client:
 Start Azure Event Hubs Emulator during a test:
 
 <!--codeinclude-->
-[Setting up a network](../../modules/azure/src/test/java/org/testcontainers/azure/AzureEventHubsContainerTest.java) inside_block:network
+[Setting up a network](../../modules/azure/src/test/java/org/testcontainers/azure/EventHubsEmulatorContainerTest.java) inside_block:network
 <!--/codeinclude-->
 
 <!--codeinclude-->
-[Starting an Azurite container as dependency](../../modules/azure/src/test/java/org/testcontainers/azure/AzureEventHubsContainerTest.java) inside_block:azuriteContainer
+[Starting an Azurite container as dependency](../../modules/azure/src/test/java/org/testcontainers/azure/EventHubsEmulatorContainerTest.java) inside_block:azuriteContainer
 <!--/codeinclude-->
 
 <!--codeinclude-->
-[Starting an Azure Event Hubs Emulator container](../../modules/azure/src/test/java/org/testcontainers/azure/AzureEventHubsContainerTest.java) inside_block:emulatorContainer
+[Starting an Azure Event Hubs Emulator container](../../modules/azure/src/test/java/org/testcontainers/azure/EventHubsEmulatorContainerTest.java) inside_block:emulatorContainer
 <!--/codeinclude-->
 
 #### Using Azure Event Hubs clients
@@ -100,7 +99,7 @@ Start Azure Event Hubs Emulator during a test:
 Configure the consumer and the producer clients:
 
 <!--codeinclude-->
-[Configuring the clients](../../modules/azure/src/test/java/org/testcontainers/azure/AzureEventHubsContainerTest.java) inside_block:createProducerAndConsumer
+[Configuring the clients](../../modules/azure/src/test/java/org/testcontainers/azure/EventHubsEmulatorContainerTest.java) inside_block:createProducerAndConsumer
 <!--/codeinclude-->
 
 ### Azure Service Bus Emulator
@@ -112,15 +111,15 @@ Configure the consumer and the producer clients:
 Start Azure Service Bus Emulator during a test:
 
 <!--codeinclude-->
-[Setting up a network](../../modules/azure/src/test/java/org/testcontainers/azure/AzureServiceBusContainerTest.java) inside_block:network
+[Setting up a network](../../modules/azure/src/test/java/org/testcontainers/azure/ServiceBusEmulatorContainerTest.java) inside_block:network
 <!--/codeinclude-->
 
 <!--codeinclude-->
-[Starting a SQL Server container as dependency](../../modules/azure/src/test/java/org/testcontainers/azure/AzureServiceBusContainerTest.java) inside_block:sqlContainer
+[Starting a SQL Server container as dependency](../../modules/azure/src/test/java/org/testcontainers/azure/ServiceBusEmulatorContainerTest.java) inside_block:sqlContainer
 <!--/codeinclude-->
 
 <!--codeinclude-->
-[Starting a Service Bus Emulator container](../../modules/azure/src/test/java/org/testcontainers/azure/AzureServiceBusContainerTest.java) inside_block:emulatorContainer
+[Starting a Service Bus Emulator container](../../modules/azure/src/test/java/org/testcontainers/azure/ServiceBusEmulatorContainerTest.java) inside_block:emulatorContainer
 <!--/codeinclude-->
 
 #### Using Azure Service Bus clients
@@ -128,11 +127,11 @@ Start Azure Service Bus Emulator during a test:
 Configure the sender and the processor clients:
 
 <!--codeinclude-->
-[Configuring the sender client](../../modules/azure/src/test/java/org/testcontainers/azure/AzureServiceBusContainerTest.java) inside_block:senderClient
+[Configuring the sender client](../../modules/azure/src/test/java/org/testcontainers/azure/ServiceBusEmulatorContainerTest.java) inside_block:senderClient
 <!--/codeinclude-->
 
 <!--codeinclude-->
-[Configuring the processor client](../../modules/azure/src/test/java/org/testcontainers/azure/AzureServiceBusContainerTest.java) inside_block:processorClient
+[Configuring the processor client](../../modules/azure/src/test/java/org/testcontainers/azure/ServiceBusEmulatorContainerTest.java) inside_block:processorClient
 <!--/codeinclude-->
 
 ### CosmosDB
@@ -140,7 +139,7 @@ Configure the sender and the processor clients:
 Start Azure CosmosDB Emulator during a test:
 
 <!--codeinclude-->
-[Starting a Azure CosmosDB Emulator container](../../modules/azure/src/test/java/org/testcontainers/containers/CosmosDBEmulatorContainerTest.java) inside_block:emulatorContainer
+[Starting an Azure CosmosDB Emulator container](../../modules/azure/src/test/java/org/testcontainers/containers/CosmosDBEmulatorContainerTest.java) inside_block:emulatorContainer
 <!--/codeinclude-->
 
 Prepare KeyStore to use for SSL.

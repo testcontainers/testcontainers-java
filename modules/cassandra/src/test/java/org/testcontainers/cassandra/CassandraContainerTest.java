@@ -11,7 +11,7 @@ import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.session.ProgrammaticArguments;
 import com.datastax.oss.driver.internal.core.context.DefaultDriverContext;
 import com.datastax.oss.driver.internal.core.ssl.DefaultSslEngineFactory;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.utility.DockerImageName;
@@ -19,9 +19,10 @@ import org.testcontainers.utility.DockerImageName;
 import java.net.URL;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.fail;
 
-public class CassandraContainerTest {
+class CassandraContainerTest {
 
     private static final String CASSANDRA_IMAGE = "cassandra:3.11.15";
 
@@ -30,7 +31,7 @@ public class CassandraContainerTest {
     private static final String BASIC_QUERY = "SELECT release_version FROM system.local";
 
     @Test
-    public void testSimple() {
+    void testSimple() {
         try ( // container-definition {
             CassandraContainer cassandraContainer = new CassandraContainer(CASSANDRA_IMAGE)
             // }
@@ -43,7 +44,7 @@ public class CassandraContainerTest {
     }
 
     @Test
-    public void testSpecificVersion() {
+    void testSpecificVersion() {
         String cassandraVersion = "3.0.15";
         try (
             CassandraContainer cassandraContainer = new CassandraContainer(
@@ -58,7 +59,7 @@ public class CassandraContainerTest {
     }
 
     @Test
-    public void testConfigurationOverride() {
+    void testConfigurationOverride() {
         try (
             CassandraContainer cassandraContainer = new CassandraContainer(CASSANDRA_IMAGE)
                 .withConfigurationOverride("cassandra-test-configuration-example")
@@ -100,8 +101,10 @@ public class CassandraContainerTest {
         ) {
             cassandraContainer.start();
             try {
-                ResultSet resultSet = performQueryWithSslClientConfig(cassandraContainer,
-                    "SELECT cluster_name FROM system.local");
+                ResultSet resultSet = performQueryWithSslClientConfig(
+                    cassandraContainer,
+                    "SELECT cluster_name FROM system.local"
+                );
                 assertThat(resultSet.wasApplied()).as("Query was applied").isTrue();
                 assertThat(resultSet.one().getString(0))
                     .as("Cassandra configuration is configured with secured connection")
@@ -133,18 +136,18 @@ public class CassandraContainerTest {
         }
     }
 
-    @Test(expected = ContainerLaunchException.class)
-    public void testEmptyConfigurationOverride() {
+    @Test
+    void testEmptyConfigurationOverride() {
         try (
             CassandraContainer cassandraContainer = new CassandraContainer(CASSANDRA_IMAGE)
                 .withConfigurationOverride("cassandra-empty-configuration")
         ) {
-            cassandraContainer.start();
+            assertThatThrownBy(cassandraContainer::start).isInstanceOf(ContainerLaunchException.class);
         }
     }
 
     @Test
-    public void testInitScript() {
+    void testInitScript() {
         try (
             CassandraContainer cassandraContainer = new CassandraContainer(CASSANDRA_IMAGE)
                 .withInitScript("initial.cql")
@@ -155,7 +158,17 @@ public class CassandraContainerTest {
     }
 
     @Test
-    public void testInitScriptWithRequiredAuthentication() {
+    void testNonexistentInitScript() {
+        try (
+            CassandraContainer cassandraContainer = new CassandraContainer(CASSANDRA_IMAGE)
+                .withInitScript("unknown_script.cql")
+        ) {
+            assertThatThrownBy(cassandraContainer::start).isInstanceOf(ContainerLaunchException.class);
+        }
+    }
+
+    @Test
+    void testInitScriptWithRequiredAuthentication() {
         try (
             // init-with-auth {
             CassandraContainer cassandraContainer = new CassandraContainer(CASSANDRA_IMAGE)
@@ -168,18 +181,18 @@ public class CassandraContainerTest {
         }
     }
 
-    @Test(expected = ContainerLaunchException.class)
-    public void testInitScriptWithError() {
+    @Test
+    void testInitScriptWithError() {
         try (
             CassandraContainer cassandraContainer = new CassandraContainer(CASSANDRA_IMAGE)
                 .withInitScript("initial-with-error.cql")
         ) {
-            cassandraContainer.start();
+            assertThatThrownBy(cassandraContainer::start).isInstanceOf(ContainerLaunchException.class);
         }
     }
 
     @Test
-    public void testInitScriptWithLegacyCassandra() {
+    void testInitScriptWithLegacyCassandra() {
         try (
             CassandraContainer cassandraContainer = new CassandraContainer("cassandra:2.2.11")
                 .withInitScript("initial.cql")
@@ -226,24 +239,25 @@ public class CassandraContainerTest {
         return performQuery(cqlSession, cql);
     }
 
-    private ResultSet performQueryWithSslClientConfig(CassandraContainer cassandraContainer,
-                                                      String cql) {
-        final ProgrammaticDriverConfigLoaderBuilder driverConfigLoaderBuilder =
-            DriverConfigLoader.programmaticBuilder();
+    private ResultSet performQueryWithSslClientConfig(CassandraContainer cassandraContainer, String cql) {
+        final ProgrammaticDriverConfigLoaderBuilder driverConfigLoaderBuilder = DriverConfigLoader.programmaticBuilder();
         driverConfigLoaderBuilder.withBoolean(DefaultDriverOption.SSL_HOSTNAME_VALIDATION, false);
-        final URL trustStoreUrl = this.getClass().getClassLoader()
-            .getResource("cassandra-ssl-configuration/truststore.p12");
+        final URL trustStoreUrl =
+            this.getClass().getClassLoader().getResource("cassandra-ssl-configuration/truststore.p12");
         driverConfigLoaderBuilder.withString(DefaultDriverOption.SSL_TRUSTSTORE_PATH, trustStoreUrl.getFile());
         driverConfigLoaderBuilder.withString(DefaultDriverOption.SSL_TRUSTSTORE_PASSWORD, "cassandra");
-        final URL keyStoreUrl = this.getClass().getClassLoader()
-            .getResource("cassandra-ssl-configuration/keystore.p12");
+        final URL keyStoreUrl =
+            this.getClass().getClassLoader().getResource("cassandra-ssl-configuration/keystore.p12");
         driverConfigLoaderBuilder.withString(DefaultDriverOption.SSL_KEYSTORE_PATH, keyStoreUrl.getFile());
         driverConfigLoaderBuilder.withString(DefaultDriverOption.SSL_KEYSTORE_PASSWORD, "cassandra");
-        final DriverContext driverContext = new DefaultDriverContext(driverConfigLoaderBuilder.build(),
-            ProgrammaticArguments.builder().build());
+        final DriverContext driverContext = new DefaultDriverContext(
+            driverConfigLoaderBuilder.build(),
+            ProgrammaticArguments.builder().build()
+        );
 
         final CqlSessionBuilder sessionBuilder = CqlSession.builder();
-        final CqlSession cqlSession = sessionBuilder.addContactPoint(cassandraContainer.getContactPoint())
+        final CqlSession cqlSession = sessionBuilder
+            .addContactPoint(cassandraContainer.getContactPoint())
             .withLocalDatacenter(cassandraContainer.getLocalDatacenter())
             .withSslEngineFactory(new DefaultSslEngineFactory(driverContext))
             .build();

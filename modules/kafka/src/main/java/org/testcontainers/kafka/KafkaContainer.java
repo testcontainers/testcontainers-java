@@ -6,7 +6,7 @@ import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -28,9 +28,9 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     private static final String STARTER_SCRIPT = "/tmp/testcontainers_start.sh";
 
-    private final Set<String> listeners = new HashSet<>();
+    private final Set<String> listeners = new LinkedHashSet<>();
 
-    private final Set<Supplier<String>> advertisedListeners = new HashSet<>();
+    private final Set<Supplier<String>> advertisedListeners = new LinkedHashSet<>();
 
     public KafkaContainer(String imageName) {
         this(DockerImageName.parse(imageName));

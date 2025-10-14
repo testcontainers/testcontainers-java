@@ -14,7 +14,7 @@ import org.testcontainers.ext.ScriptUtils.ScriptStatementFailedException;
 /**
  * Cassandra database delegate
  *
- * @deprecated use {@link org.testcontainers.cassandra.delegate.CassandraDatabaseDelegate} instead.
+ * @deprecated use {@link org.testcontainers.cassandra.CassandraDatabaseDelegate} instead.
  */
 @Slf4j
 @RequiredArgsConstructor
