@@ -7,7 +7,6 @@ import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
-import org.testcontainers.utility.LicenseAcceptance;
 import org.testcontainers.utility.MountableFile;
 
 import java.net.HttpURLConnection;
@@ -40,13 +39,6 @@ public class Neo4jContainer extends GenericContainer<Neo4jContainer> {
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("neo4j");
 
     /**
-     * The default tag (version) to use.
-     */
-    private static final String DEFAULT_TAG = "4.4";
-
-    private static final String ENTERPRISE_TAG = DEFAULT_TAG + "-enterprise";
-
-    /**
      * Default port for the binary Bolt protocol.
      */
     private static final int DEFAULT_BOLT_PORT = 7687;
@@ -67,8 +59,6 @@ public class Neo4jContainer extends GenericContainer<Neo4jContainer> {
     private static final String DEFAULT_ADMIN_PASSWORD = "password";
 
     private static final String AUTH_FORMAT = "neo4j/%s";
-
-    private final boolean standardImage;
 
     private String adminPassword = DEFAULT_ADMIN_PASSWORD;
 
@@ -100,8 +90,6 @@ public class Neo4jContainer extends GenericContainer<Neo4jContainer> {
      */
     public Neo4jContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-        this.standardImage = dockerImageName.getUnversionedPart().equals(DEFAULT_IMAGE_NAME.getUnversionedPart());
-
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         waitingFor(
@@ -197,26 +185,12 @@ public class Neo4jContainer extends GenericContainer<Neo4jContainer> {
     }
 
     /**
-     * Configures the container to use the enterprise edition of the default docker image.
-     * <br><br>
-     * Please have a look at the <a href="https://neo4j.com/licensing/">Neo4j Licensing page</a>. While the Neo4j
-     * Community Edition can be used for free in your projects under the GPL v3 license, Neo4j Enterprise edition
-     * needs either a commercial, education or evaluation license.
+     * Accepts the license agreement of the container.
      *
-     * @return This container.
+     * @return this
      */
-    public Neo4jContainer withEnterpriseEdition() {
-        if (!standardImage) {
-            throw new IllegalStateException(
-                String.format("Cannot use enterprise version with alternative image %s.", getDockerImageName())
-            );
-        }
-
-        setDockerImageName(DEFAULT_IMAGE_NAME.withTag(ENTERPRISE_TAG).asCanonicalNameString());
-        LicenseAcceptance.assertLicenseAccepted(getDockerImageName());
-
+    public Neo4jContainer acceptLicense() {
         addEnv("NEO4J_ACCEPT_LICENSE_AGREEMENT", "yes");
-
         return self();
     }
 

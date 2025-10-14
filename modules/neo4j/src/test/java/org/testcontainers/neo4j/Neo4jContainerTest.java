@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assumptions.assumeThat;
@@ -133,24 +132,13 @@ class Neo4jContainerTest {
     }
 
     @Test
-    void shouldCheckEnterpriseLicense() {
-        assumeThat(Neo4jContainerTest.class.getResource(ACCEPTANCE_FILE_LOCATION)).isNull();
-
-        String expectedImageName = "neo4j:4.4-enterprise";
-
-        assertThatExceptionOfType(IllegalStateException.class)
-            .isThrownBy(() -> new Neo4jContainer("neo4j:4.4").withEnterpriseEdition())
-            .withMessageContaining("The image " + expectedImageName + " requires you to accept a license agreement.");
-    }
-
-    @Test
     void shouldRunEnterprise() {
         assumeThat(Neo4jContainerTest.class.getResource(ACCEPTANCE_FILE_LOCATION)).isNotNull();
 
         try (
             // enterpriseEdition {
-            Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4")
-                .withEnterpriseEdition()
+            Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4-enterprise")
+                .acceptLicense()
                 // }
                 .withAdminPassword("Picard123")
         ) {
