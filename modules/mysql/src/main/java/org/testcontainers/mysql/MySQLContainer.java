@@ -64,7 +64,7 @@ public class MySQLContainer extends JdbcDatabaseContainer<MySQLContainer> {
         optionallyMapResourceParameterAsVolume(
             MY_CNF_CONFIG_OVERRIDE_PARAM_NAME,
             "/etc/mysql/conf.d",
-            "mysql-default-conf",
+            null,
             Transferable.DEFAULT_DIR_MODE
         );
 
