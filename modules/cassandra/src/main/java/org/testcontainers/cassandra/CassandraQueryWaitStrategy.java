@@ -1,7 +1,6 @@
-package org.testcontainers.cassandra.wait;
+package org.testcontainers.cassandra;
 
 import org.rnorth.ducttape.TimeoutException;
-import org.testcontainers.cassandra.delegate.CassandraDatabaseDelegate;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
 import org.testcontainers.delegate.DatabaseDelegate;

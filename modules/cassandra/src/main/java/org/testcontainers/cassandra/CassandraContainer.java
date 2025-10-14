@@ -1,8 +1,6 @@
 package org.testcontainers.cassandra;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import org.testcontainers.cassandra.delegate.CassandraDatabaseDelegate;
-import org.testcontainers.cassandra.wait.CassandraQueryWaitStrategy;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.ext.ScriptUtils;
 import org.testcontainers.ext.ScriptUtils.ScriptLoadException;
