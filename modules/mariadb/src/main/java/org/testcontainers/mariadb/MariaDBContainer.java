@@ -58,7 +58,7 @@ public class MariaDBContainer extends JdbcDatabaseContainer<MariaDBContainer> {
         optionallyMapResourceParameterAsVolume(
             MY_CNF_CONFIG_OVERRIDE_PARAM_NAME,
             "/etc/mysql/conf.d",
-            "mariadb-default-conf",
+            null,
             Transferable.DEFAULT_DIR_MODE
         );
 
