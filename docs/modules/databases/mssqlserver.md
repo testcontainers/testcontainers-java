@@ -29,13 +29,13 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 === "Gradle"
     ```groovy
-    testImplementation "org.testcontainers:mssqlserver:{{latest_version}}"
+    testImplementation "org.testcontainers:testcontainers-mssqlserver:{{latest_version}}"
     ```
 === "Maven"
     ```xml
     <dependency>
         <groupId>org.testcontainers</groupId>
-        <artifactId>mssqlserver</artifactId>
+        <artifactId>testcontainers-mssqlserver</artifactId>
         <version>{{latest_version}}</version>
         <scope>test</scope>
     </dependency>

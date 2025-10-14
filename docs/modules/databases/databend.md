@@ -22,14 +22,14 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 === "Gradle"
     ```groovy
-    testImplementation "org.testcontainers:databend:{{latest_version}}"
+    testImplementation "org.testcontainers:testcontainers-databend:{{latest_version}}"
     ```
 
 === "Maven"
     ```xml
     <dependency>
         <groupId>org.testcontainers</groupId>
-        <artifactId>databend</artifactId>
+        <artifactId>testcontainers-databend</artifactId>
         <version>{{latest_version}}</version>
         <scope>test</scope>
     </dependency>

@@ -31,13 +31,13 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 === "Gradle"
     ```groovy
-    testImplementation "org.testcontainers:dynalite:{{latest_version}}"
+    testImplementation "org.testcontainers:testcontainers-dynalite:{{latest_version}}"
     ```
 === "Maven"
     ```xml
     <dependency>
         <groupId>org.testcontainers</groupId>
-        <artifactId>dynalite</artifactId>
+        <artifactId>testcontainers-dynalite</artifactId>
         <version>{{latest_version}}</version>
         <scope>test</scope>
     </dependency>

@@ -12,7 +12,7 @@ As long as you have Testcontainers and the appropriate R2DBC driver on your clas
 The started container will be terminated when the `ConnectionFactory` is closed.
 
 !!! warning
-    Both the database module (e.g. `org.testcontainers:mysql`) **and** `org.testcontainers:r2dbc` need to be on your application's classpath at runtime.
+    Both the database module (e.g. `org.testcontainers:testcontainers-mysql`) **and** `org.testcontainers:testcontainers-r2dbc` need to be on your application's classpath at runtime.
 
 **Original URL**: `r2dbc:mysql://localhost:3306/databasename`
 

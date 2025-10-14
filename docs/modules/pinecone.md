@@ -16,14 +16,14 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 === "Gradle"
 ```groovy
-testImplementation "org.testcontainers:pinecone:{{latest_version}}"
+testImplementation "org.testcontainers:testcontainers-pinecone:{{latest_version}}"
 ```
 
 === "Maven"
 ```xml
 <dependency>
     <groupId>org.testcontainers</groupId>
-    <artifactId>pinecone</artifactId>
+    <artifactId>testcontainers-pinecone</artifactId>
     <version>{{latest_version}}</version>
     <scope>test</scope>
 </dependency>

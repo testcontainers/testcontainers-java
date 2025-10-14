@@ -71,13 +71,13 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 === "Gradle"
     ```groovy
-    testImplementation "org.testcontainers:toxiproxy:{{latest_version}}"
+    testImplementation "org.testcontainers:testcontainers-toxiproxy:{{latest_version}}"
     ```
 === "Maven"
     ```xml
     <dependency>
         <groupId>org.testcontainers</groupId>
-        <artifactId>toxiproxy</artifactId>
+        <artifactId>testcontainers-toxiproxy</artifactId>
         <version>{{latest_version}}</version>
         <scope>test</scope>
     </dependency>

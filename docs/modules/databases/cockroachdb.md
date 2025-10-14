@@ -24,14 +24,14 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 === "Gradle"
     ```groovy
-    testImplementation "org.testcontainers:cockroachdb:{{latest_version}}"
+    testImplementation "org.testcontainers:testcontainers-cockroachdb:{{latest_version}}"
     ```
 
 === "Maven"
     ```xml
     <dependency>
         <groupId>org.testcontainers</groupId>
-        <artifactId>cockroachdb</artifactId>
+        <artifactId>testcontainers-cockroachdb</artifactId>
         <version>{{latest_version}}</version>
         <scope>test</scope>
     </dependency>

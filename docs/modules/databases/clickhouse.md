@@ -22,14 +22,14 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 === "Gradle"
     ```groovy
-    testImplementation "org.testcontainers:clickhouse:{{latest_version}}"
+    testImplementation "org.testcontainers:testcontainers-clickhouse:{{latest_version}}"
     ```
 
 === "Maven"
     ```xml
     <dependency>
         <groupId>org.testcontainers</groupId>
-        <artifactId>clickhouse</artifactId>
+        <artifactId>testcontainers-clickhouse</artifactId>
         <version>{{latest_version}}</version>
         <scope>test</scope>
     </dependency>
