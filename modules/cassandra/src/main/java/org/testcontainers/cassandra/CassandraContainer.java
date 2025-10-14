@@ -163,7 +163,7 @@ public class CassandraContainer extends GenericContainer<CassandraContainer> {
     /**
      * @return Whether a secure connection is required between the client and the Cassandra server.
      */
-    public boolean isSslRequired() {
+    boolean isSslRequired() {
         return StringUtils.isNoneBlank(this.clientCertFile, this.clientKeyFile);
     }
 
