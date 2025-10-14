@@ -1,15 +1,17 @@
-package org.testcontainers.containers;
+package org.testcontainers.solr;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
-import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.SolrClientUtils;
+import org.testcontainers.containers.SolrContainerConfiguration;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 
 import java.net.URL;
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -23,15 +25,10 @@ import java.util.Set;
  *     <li>Solr: 8983</li>
  *     <li>Zookeeper: 9983</li>
  * </ul>
- *
- * @deprecated use {@link org.testcontainers.solr.SolrContainer} instead.
  */
 public class SolrContainer extends GenericContainer<SolrContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("solr");
-
-    @Deprecated
-    public static final String DEFAULT_TAG = "8.3.0";
 
     public static final Integer ZOOKEEPER_PORT = 9983;
 
@@ -41,14 +38,6 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
 
     private final ComparableVersion imageVersion;
 
-    /**
-     * @deprecated use {@link #SolrContainer(DockerImageName)} instead
-     */
-    @Deprecated
-    public SolrContainer() {
-        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
-    }
-
     public SolrContainer(final String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
     }
@@ -57,10 +46,9 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
-        this.waitStrategy =
-            new LogMessageWaitStrategy()
-                .withRegEx(".*o\\.e\\.j\\.s\\.Server Started.*")
-                .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS));
+        waitingFor(
+            Wait.forLogMessage(".*o\\.e\\.j\\.s\\.Server Started.*", 1).withStartupTimeout(Duration.ofMinutes(1))
+        );
         this.configuration = new SolrContainerConfiguration();
         this.imageVersion = new ComparableVersion(dockerImageName.getVersionPart());
     }
@@ -109,11 +97,11 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
         // Generate Command Builder
         String command = "solr start -f";
         // Add Default Ports
-        this.addExposedPort(SOLR_PORT);
+        addExposedPort(SOLR_PORT);
 
         // Configure Zookeeper
         if (configuration.isZookeeper()) {
-            this.addExposedPort(ZOOKEEPER_PORT);
+            addExposedPort(ZOOKEEPER_PORT);
             if (this.imageVersion.isGreaterThanOrEqualTo("9.7.0")) {
                 command = "-DzkRun --host localhost";
             } else {
@@ -122,7 +110,7 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
         }
 
         // Apply generated Command
-        this.setCommand(command);
+        setCommand(command);
     }
 
     @Override
