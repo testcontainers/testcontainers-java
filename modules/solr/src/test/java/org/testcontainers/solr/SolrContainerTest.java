@@ -1,4 +1,4 @@
-package org.testcontainers.containers;
+package org.testcontainers.solr;
 
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -12,7 +12,7 @@ import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class SolrContainerTest {
+class SolrContainerTest {
 
     private SolrClient client = null;
 
