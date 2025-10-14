@@ -6,7 +6,7 @@ import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -22,9 +22,9 @@ public class ConfluentKafkaContainer extends GenericContainer<ConfluentKafkaCont
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("confluentinc/cp-kafka");
 
-    private final Set<String> listeners = new HashSet<>();
+    private final Set<String> listeners = new LinkedHashSet<>();
 
-    private final Set<Supplier<String>> advertisedListeners = new HashSet<>();
+    private final Set<Supplier<String>> advertisedListeners = new LinkedHashSet<>();
 
     public ConfluentKafkaContainer(String imageName) {
         this(DockerImageName.parse(imageName));
