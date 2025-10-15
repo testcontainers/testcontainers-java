@@ -70,13 +70,13 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 === "Gradle"
     ```groovy
-    testImplementation "org.testcontainers:junit-jupiter:{{latest_version}}"
+    testImplementation "org.testcontainers:testcontainers-junit-jupiter:{{latest_version}}"
     ```
 === "Maven"
     ```xml
     <dependency>
         <groupId>org.testcontainers</groupId>
-        <artifactId>junit-jupiter</artifactId>
+        <artifactId>testcontainers-junit-jupiter</artifactId>
         <version>{{latest_version}}</version>
         <scope>test</scope>
     </dependency>
