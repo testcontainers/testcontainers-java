@@ -11,5 +11,5 @@ dependencies {
     api 'org.apache.tomcat:tomcat-jdbc:11.0.11'
     api 'org.vibur:vibur-dbcp:26.0'
     api 'com.mysql:mysql-connector-j:8.2.0'
-    api 'org.junit.jupiter:junit-jupiter:5.13.4'
+    api 'org.junit.jupiter:junit-jupiter:6.0.0'
 }
