@@ -18,13 +18,13 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 === "Gradle"
     ```groovy
-    testImplementation "org.testcontainers:solr:{{latest_version}}"
+    testImplementation "org.testcontainers:testcontainers-solr:{{latest_version}}"
     ```
 === "Maven"
     ```xml
     <dependency>
         <groupId>org.testcontainers</groupId>
-        <artifactId>solr</artifactId>
+        <artifactId>testcontainers-solr</artifactId>
         <version>{{latest_version}}</version>
         <scope>test</scope>
     </dependency>

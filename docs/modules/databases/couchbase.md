@@ -29,13 +29,13 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 === "Gradle"
     ```groovy
-    testImplementation "org.testcontainers:couchbase:{{latest_version}}"
+    testImplementation "org.testcontainers:testcontainers-couchbase:{{latest_version}}"
     ```
 === "Maven"
     ```xml
     <dependency>
         <groupId>org.testcontainers</groupId>
-        <artifactId>couchbase</artifactId>
+        <artifactId>testcontainers-couchbase</artifactId>
         <version>{{latest_version}}</version>
         <scope>test</scope>
     </dependency>

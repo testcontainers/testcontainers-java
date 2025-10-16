@@ -43,14 +43,14 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 === "Gradle"
     ```groovy
-    testImplementation "org.testcontainers:activemq:{{latest_version}}"
+    testImplementation "org.testcontainers:testcontainers-activemq:{{latest_version}}"
     ```
 
 === "Maven"
     ```xml
     <dependency>
         <groupId>org.testcontainers</groupId>
-        <artifactId>activemq</artifactId>
+        <artifactId>testcontainers-activemq</artifactId>
         <version>{{latest_version}}</version>
         <scope>test</scope>
     </dependency>

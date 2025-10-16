@@ -120,13 +120,13 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 === "Gradle"
     ```groovy
-    testImplementation "org.testcontainers:neo4j:{{latest_version}}"
+    testImplementation "org.testcontainers:testcontainers-neo4j:{{latest_version}}"
     ```
 === "Maven"
     ```xml
     <dependency>
         <groupId>org.testcontainers</groupId>
-        <artifactId>neo4j</artifactId>
+        <artifactId>testcontainers-neo4j</artifactId>
         <version>{{latest_version}}</version>
         <scope>test</scope>
     </dependency>

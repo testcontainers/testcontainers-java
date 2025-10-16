@@ -89,13 +89,13 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 === "Gradle"
 ```groovy
-testImplementation "org.testcontainers:redpanda:{{latest_version}}"
+testImplementation "org.testcontainers:testcontainers-redpanda:{{latest_version}}"
 ```
 === "Maven"
 ```xml
 <dependency>
     <groupId>org.testcontainers</groupId>
-    <artifactId>redpanda</artifactId>
+    <artifactId>testcontainers-redpanda</artifactId>
     <version>{{latest_version}}</version>
     <scope>test</scope>
 </dependency>

@@ -16,14 +16,14 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 === "Gradle"
     ```groovy
-    testImplementation "org.testcontainers:openfga:{{latest_version}}"
+    testImplementation "org.testcontainers:testcontainers-openfga:{{latest_version}}"
     ```
 
 === "Maven"
     ```xml
     <dependency>
         <groupId>org.testcontainers</groupId>
-        <artifactId>openfga</artifactId>
+        <artifactId>testcontainers-openfga</artifactId>
         <version>{{latest_version}}</version>
         <scope>test</scope>
     </dependency>

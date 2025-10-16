@@ -77,13 +77,13 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 === "Gradle"
     ```groovy
-    testImplementation "org.testcontainers:mongodb:{{latest_version}}"
+    testImplementation "org.testcontainers:testcontainers-mongodb:{{latest_version}}"
     ```
 === "Maven"
     ```xml
     <dependency>
         <groupId>org.testcontainers</groupId>
-        <artifactId>mongodb</artifactId>
+        <artifactId>testcontainers-mongodb</artifactId>
         <version>{{latest_version}}</version>
         <scope>test</scope>
     </dependency>

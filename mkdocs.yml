@@ -58,7 +58,6 @@ nav:
                 - modules/databases/cratedb.md
                 - modules/databases/databend.md
                 - modules/databases/db2.md
-                - modules/databases/dynalite.md
                 - modules/databases/influxdb.md
                 - modules/databases/mariadb.md
                 - modules/databases/mongodb.md
@@ -141,4 +140,4 @@ nav:
           - bounty.md
 edit_uri: edit/main/docs/
 extra:
-    latest_version: 1.21.3
+    latest_version: 2.0.0

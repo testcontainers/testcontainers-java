@@ -27,13 +27,13 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 === "Gradle"
     ```groovy
-    testImplementation "org.testcontainers:db2:{{latest_version}}"
+    testImplementation "org.testcontainers:testcontainers-db2:{{latest_version}}"
     ```
 === "Maven"
     ```xml
     <dependency>
         <groupId>org.testcontainers</groupId>
-        <artifactId>db2</artifactId>
+        <artifactId>testcontainers-db2</artifactId>
         <version>{{latest_version}}</version>
         <scope>test</scope>
     </dependency>

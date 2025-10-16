@@ -1,26 +1,27 @@
-package org.testcontainers.oracle;
+package org.testcontainers.mariadb;
 
 import io.r2dbc.spi.ConnectionFactoryOptions;
+import org.mariadb.r2dbc.MariadbConnectionFactoryProvider;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.r2dbc.R2DBCDatabaseContainer;
 
 import java.util.Set;
 
-public class OracleR2DBCDatabaseContainer implements R2DBCDatabaseContainer {
+public class MariaDBR2DBCDatabaseContainer implements R2DBCDatabaseContainer {
 
-    private final OracleContainer container;
+    private final MariaDBContainer container;
 
-    public OracleR2DBCDatabaseContainer(OracleContainer container) {
+    public MariaDBR2DBCDatabaseContainer(MariaDBContainer container) {
         this.container = container;
     }
 
-    public static ConnectionFactoryOptions getOptions(OracleContainer container) {
+    public static ConnectionFactoryOptions getOptions(MariaDBContainer container) {
         ConnectionFactoryOptions options = ConnectionFactoryOptions
             .builder()
-            .option(ConnectionFactoryOptions.DRIVER, OracleR2DBCDatabaseContainerProvider.DRIVER)
+            .option(ConnectionFactoryOptions.DRIVER, MariadbConnectionFactoryProvider.MARIADB_DRIVER)
             .build();
 
-        return new OracleR2DBCDatabaseContainer(container).configure(options);
+        return new MariaDBR2DBCDatabaseContainer(container).configure(options);
     }
 
     @Override
@@ -28,7 +29,7 @@ public class OracleR2DBCDatabaseContainer implements R2DBCDatabaseContainer {
         return options
             .mutate()
             .option(ConnectionFactoryOptions.HOST, container.getHost())
-            .option(ConnectionFactoryOptions.PORT, container.getMappedPort(OracleContainer.ORACLE_PORT))
+            .option(ConnectionFactoryOptions.PORT, container.getMappedPort(MariaDBContainer.MARIADB_PORT))
             .option(ConnectionFactoryOptions.DATABASE, container.getDatabaseName())
             .option(ConnectionFactoryOptions.USER, container.getUsername())
             .option(ConnectionFactoryOptions.PASSWORD, container.getPassword())

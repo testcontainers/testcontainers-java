@@ -16,14 +16,14 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 === "Gradle"
     ```groovy
-    testImplementation "org.testcontainers:qdrant:{{latest_version}}"
+    testImplementation "org.testcontainers:testcontainers-qdrant:{{latest_version}}"
     ```
 
 === "Maven"
     ```xml
     <dependency>
         <groupId>org.testcontainers</groupId>
-        <artifactId>qdrant</artifactId>
+        <artifactId>testcontainers-qdrant</artifactId>
         <version>{{latest_version}}</version>
         <scope>test</scope>
     </dependency>

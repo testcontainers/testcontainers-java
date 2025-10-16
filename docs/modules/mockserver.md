@@ -22,13 +22,13 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 === "Gradle"
     ```groovy
-    testImplementation "org.testcontainers:mockserver:{{latest_version}}"
+    testImplementation "org.testcontainers:testcontainers-mockserver:{{latest_version}}"
     ```
 === "Maven"
     ```xml
     <dependency>
         <groupId>org.testcontainers</groupId>
-        <artifactId>mockserver</artifactId>
+        <artifactId>testcontainers-mockserver</artifactId>
         <version>{{latest_version}}</version>
         <scope>test</scope>
     </dependency>
