@@ -36,7 +36,7 @@ class ScriptSplitter {
                     //skip
                     break;
                 case WHITESPACE:
-                    if (sb.length() != 0 && sb.charAt(sb.length() - 1) != ' ') {
+                    if (sb.length() == 0 || sb.charAt(sb.length() - 1) != ' ') {
                         sb.append(' ');
                     }
                     break;
