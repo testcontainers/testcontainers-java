@@ -15,7 +15,9 @@ public abstract class AbstractContainerDatabaseTest {
     protected ResultSet performQuery(JdbcDatabaseContainer<?> container, String sql) throws SQLException {
         DataSource ds = getDataSource(container);
         Statement statement = ds.getConnection().createStatement();
-        statement.execute(sql);
+PreparedStatement ps = connection.prepareStatement("SELECT * FROM " + table + " WHERE id = ?");
+ps.setString(1, id);
+ResultSet rs = ps.executeQuery();
         ResultSet resultSet = statement.getResultSet();
 
         resultSet.next();
