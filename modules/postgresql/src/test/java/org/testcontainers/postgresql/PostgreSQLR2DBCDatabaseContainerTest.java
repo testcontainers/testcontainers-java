@@ -1,8 +1,11 @@
 package org.testcontainers.postgresql;
 
 import io.r2dbc.spi.ConnectionFactoryOptions;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.PostgreSQLTestImages;
 import org.testcontainers.r2dbc.AbstractR2DBCDatabaseContainerTest;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class PostgreSQLR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseContainerTest<PostgreSQLContainer> {
 
@@ -28,7 +31,7 @@ public class PostgreSQLR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseC
         return "r2dbc:tc:postgresql:///db?TC_IMAGE_TAG=10-alpine";
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void testGetR2dbcUrl() {
         try (PostgreSQLContainer container = createContainer()) {
             container.start();
@@ -36,13 +39,13 @@ public class PostgreSQLR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseC
             // Test static method
             String r2dbcUrlStatic = PostgreSQLR2DBCDatabaseContainer.getR2dbcUrl(container);
 
-            org.assertj.core.api.Assertions.assertThat(r2dbcUrlStatic).isNotNull();
-            org.assertj.core.api.Assertions.assertThat(r2dbcUrlStatic).startsWith("r2dbc:postgresql://");
-            org.assertj.core.api.Assertions.assertThat(r2dbcUrlStatic).contains(container.getHost());
-            org.assertj.core.api.Assertions.assertThat(r2dbcUrlStatic).contains(String.valueOf(container.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT)));
-            org.assertj.core.api.Assertions.assertThat(r2dbcUrlStatic).contains(container.getDatabaseName());
-            org.assertj.core.api.Assertions.assertThat(r2dbcUrlStatic).contains(container.getUsername());
-            org.assertj.core.api.Assertions.assertThat(r2dbcUrlStatic).contains(container.getPassword());
+            assertThat(r2dbcUrlStatic).isNotNull();
+            assertThat(r2dbcUrlStatic).startsWith("r2dbc:postgresql://");
+            assertThat(r2dbcUrlStatic).contains(container.getHost());
+            assertThat(r2dbcUrlStatic).contains(String.valueOf(container.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT)));
+            assertThat(r2dbcUrlStatic).contains(container.getDatabaseName());
+            assertThat(r2dbcUrlStatic).contains(container.getUsername());
+            assertThat(r2dbcUrlStatic).contains(container.getPassword());
 
             // Verify the format: r2dbc:postgresql://username:password@host:port/database
             String expectedUrl = String.format(
@@ -53,13 +56,13 @@ public class PostgreSQLR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseC
                 container.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT),
                 container.getDatabaseName()
             );
-            org.assertj.core.api.Assertions.assertThat(r2dbcUrlStatic).isEqualTo(expectedUrl);
+            assertThat(r2dbcUrlStatic).isEqualTo(expectedUrl);
 
             // Test instance method
             PostgreSQLR2DBCDatabaseContainer r2dbcContainer = new PostgreSQLR2DBCDatabaseContainer(container);
             String r2dbcUrlInstance = r2dbcContainer.getR2dbcUrl();
 
-            org.assertj.core.api.Assertions.assertThat(r2dbcUrlInstance).isEqualTo(r2dbcUrlStatic);
+            assertThat(r2dbcUrlInstance).isEqualTo(r2dbcUrlStatic);
         }
     }
 }
