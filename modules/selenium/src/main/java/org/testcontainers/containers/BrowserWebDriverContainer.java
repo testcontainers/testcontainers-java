@@ -46,7 +46,10 @@ import java.util.concurrent.TimeUnit;
  * {@code selenium/standalone-edge}, {@code selenium/standalone-chrome-debug}, {@code selenium/standalone-firefox-debug}
  * <p>
  * Exposed ports: 4444
+ *
+ * @deprecated use {@link org.testcontainers.selenium.BrowserWebDriverContainer} instead.
  */
+@Deprecated
 public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SELF>>
     extends GenericContainer<SELF>
     implements LinkableContainer, TestLifecycleAware {

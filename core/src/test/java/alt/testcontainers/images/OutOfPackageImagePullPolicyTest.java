@@ -1,6 +1,6 @@
 package alt.testcontainers.images;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.TestImages;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
@@ -8,10 +8,10 @@ import org.testcontainers.images.AbstractImagePullPolicy;
 import org.testcontainers.images.ImageData;
 import org.testcontainers.utility.DockerImageName;
 
-public class OutOfPackageImagePullPolicyTest {
+class OutOfPackageImagePullPolicyTest {
 
     @Test
-    public void shouldSupportCustomPoliciesOutOfTestcontainersPackage() {
+    void shouldSupportCustomPoliciesOutOfTestcontainersPackage() {
         try (
             GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
                 .withImagePullPolicy(

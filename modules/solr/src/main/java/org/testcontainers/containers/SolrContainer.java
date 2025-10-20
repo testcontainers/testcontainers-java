@@ -23,13 +23,12 @@ import java.util.Set;
  *     <li>Solr: 8983</li>
  *     <li>Zookeeper: 9983</li>
  * </ul>
+ *
+ * @deprecated use {@link org.testcontainers.solr.SolrContainer} instead.
  */
 public class SolrContainer extends GenericContainer<SolrContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("solr");
-
-    @Deprecated
-    public static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
 
     @Deprecated
     public static final String DEFAULT_TAG = "8.3.0";
@@ -50,9 +49,6 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
         this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
 
-    /**
-     * @deprecated use {@link #SolrContainer(DockerImageName)} instead
-     */
     public SolrContainer(final String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
     }

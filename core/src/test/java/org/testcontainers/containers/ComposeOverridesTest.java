@@ -3,13 +3,11 @@ package org.testcontainers.containers;
 import com.google.common.util.concurrent.Uninterruptibles;
 import org.apache.commons.lang3.SystemUtils;
 import org.assertj.core.api.Assumptions;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.utility.CommandLine;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -18,8 +16,7 @@ import java.net.Socket;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
-@RunWith(Parameterized.class)
-public class ComposeOverridesTest {
+class ComposeOverridesTest {
 
     private static final String DOCKER_EXECUTABLE = SystemUtils.IS_OS_WINDOWS ? "docker.exe" : "docker";
 
@@ -37,19 +34,6 @@ public class ComposeOverridesTest {
 
     private static final String SERVICE_NAME = "alpine-1";
 
-    private final boolean localMode;
-
-    private final String expectedEnvVar;
-
-    private final File[] composeFiles;
-
-    public ComposeOverridesTest(boolean localMode, String expectedEnvVar, File... composeFiles) {
-        this.localMode = localMode;
-        this.expectedEnvVar = expectedEnvVar;
-        this.composeFiles = composeFiles;
-    }
-
-    @Parameters(name = "{index}: local[{0}], composeFiles[{2}], expectedEnvVar[{1}]")
     public static Iterable<Object[]> data() {
         return Arrays.asList(
             new Object[][] {
@@ -61,53 +45,52 @@ public class ComposeOverridesTest {
         );
     }
 
-    @Before
-    public void setUp() {
+    @ParameterizedTest(name = "{index}: local[{0}], composeFiles[{2}], expectedEnvVar[{1}]")
+    @MethodSource("data")
+    void test(boolean localMode, String expectedEnvVar, File... composeFiles) {
+        ComposeContainer compose;
         if (localMode) {
             Assumptions
                 .assumeThat(CommandLine.executableExists(DOCKER_EXECUTABLE))
                 .as("docker executable exists")
                 .isTrue();
+            compose = new ComposeContainer(composeFiles).withExposedService(SERVICE_NAME, SERVICE_PORT);
+        } else {
+            compose =
+                new ComposeContainer(DockerImageName.parse("docker:25.0.2"), composeFiles)
+                    .withExposedService(SERVICE_NAME, SERVICE_PORT);
         }
-    }
 
-    @Test
-    public void test() {
-        try (
-            ComposeContainer compose = new ComposeContainer(composeFiles)
-                .withLocalCompose(localMode)
-                .withExposedService(SERVICE_NAME, SERVICE_PORT)
-        ) {
-            compose.start();
+        compose.start();
 
-            BufferedReader br = Unreliables.retryUntilSuccess(
-                10,
-                TimeUnit.SECONDS,
-                () -> {
-                    Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
+        BufferedReader br = Unreliables.retryUntilSuccess(
+            10,
+            TimeUnit.SECONDS,
+            () -> {
+                Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
 
-                    Socket socket = new Socket(
-                        compose.getServiceHost(SERVICE_NAME, SERVICE_PORT),
-                        compose.getServicePort(SERVICE_NAME, SERVICE_PORT)
-                    );
-                    return new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                }
-            );
+                Socket socket = new Socket(
+                    compose.getServiceHost(SERVICE_NAME, SERVICE_PORT),
+                    compose.getServicePort(SERVICE_NAME, SERVICE_PORT)
+                );
+                return new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            }
+        );
 
-            Unreliables.retryUntilTrue(
-                10,
-                TimeUnit.SECONDS,
-                () -> {
-                    while (br.ready()) {
-                        String line = br.readLine();
-                        if (line.contains(expectedEnvVar)) {
-                            return true;
-                        }
+        Unreliables.retryUntilTrue(
+            10,
+            TimeUnit.SECONDS,
+            () -> {
+                while (br.ready()) {
+                    String line = br.readLine();
+                    if (line.contains(expectedEnvVar)) {
+                        return true;
                     }
-                    Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
-                    return false;
                 }
-            );
-        }
+                Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
+                return false;
+            }
+        );
+        compose.stop();
     }
 }

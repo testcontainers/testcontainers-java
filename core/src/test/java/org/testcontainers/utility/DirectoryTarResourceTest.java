@@ -1,7 +1,7 @@
 package org.testcontainers.utility;
 
 import org.assertj.core.api.Condition;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 import org.testcontainers.images.builder.ImageFromDockerfile;
@@ -11,10 +11,10 @@ import java.util.function.Predicate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class DirectoryTarResourceTest {
+class DirectoryTarResourceTest {
 
     @Test
-    public void simpleRecursiveFileTest() {
+    void simpleRecursiveFileTest() {
         // 'src' is expected to be the project base directory, so all source code/resources should be copied in
         File directory = new File("src");
 
@@ -41,7 +41,7 @@ public class DirectoryTarResourceTest {
     }
 
     @Test
-    public void simpleRecursiveFileWithPermissionTest() {
+    void simpleRecursiveFileWithPermissionTest() {
         try (
             GenericContainer container = new GenericContainer(
                 new ImageFromDockerfile()
@@ -67,7 +67,7 @@ public class DirectoryTarResourceTest {
     }
 
     @Test
-    public void simpleRecursiveClasspathResourceTest() {
+    void simpleRecursiveClasspathResourceTest() {
         // This test combines the copying of classpath resources from JAR files with the recursive TAR approach, to allow JARed classpath resources to be copied in to an image
 
         try (

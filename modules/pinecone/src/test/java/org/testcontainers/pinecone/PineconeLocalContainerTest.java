@@ -1,16 +1,16 @@
 package org.testcontainers.pinecone;
 
 import io.pinecone.clients.Pinecone;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.openapitools.db_control.client.model.DeletionProtection;
 import org.openapitools.db_control.client.model.IndexModel;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class PineconeLocalContainerTest {
+class PineconeLocalContainerTest {
 
     @Test
-    public void testSimple() {
+    void testSimple() {
         try ( // container {
             PineconeLocalContainer container = new PineconeLocalContainer("ghcr.io/pinecone-io/pinecone-local:v0.7.0")
             // }

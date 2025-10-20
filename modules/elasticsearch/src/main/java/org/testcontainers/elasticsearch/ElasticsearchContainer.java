@@ -68,26 +68,12 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
     // default location of the automatically generated self-signed HTTP cert for versions >= 8
     private static final String DEFAULT_CERT_PATH = "/usr/share/elasticsearch/config/certs/http_ca.crt";
 
-    /**
-     * Elasticsearch Default version
-     */
-    @Deprecated
-    protected static final String DEFAULT_TAG = "7.9.2";
-
     @Deprecated
     private boolean isOss = false;
 
     private final boolean isAtLeastMajorVersion8;
 
     private String certPath = "";
-
-    /**
-     * @deprecated use {@link #ElasticsearchContainer(DockerImageName)} instead
-     */
-    @Deprecated
-    public ElasticsearchContainer() {
-        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
-    }
 
     /**
      * Create an Elasticsearch Container by passing the full docker image name

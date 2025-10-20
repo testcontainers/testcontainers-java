@@ -25,7 +25,7 @@ First, add Testcontainers as a dependency as follows:
     ```groovy
     testImplementation "org.junit.jupiter:junit-jupiter:5.8.1"
     testImplementation "org.testcontainers:testcontainers:{{latest_version}}"
-    testImplementation "org.testcontainers:junit-jupiter:{{latest_version}}"
+    testImplementation "org.testcontainers:testcontainers-junit-jupiter:{{latest_version}}"
     ```
 === "Maven"
     ```xml
@@ -43,7 +43,7 @@ First, add Testcontainers as a dependency as follows:
     </dependency>
     <dependency>
         <groupId>org.testcontainers</groupId>
-        <artifactId>junit-jupiter</artifactId>
+        <artifactId>testcontainers-junit-jupiter</artifactId>
         <version>{{latest_version}}</version>
         <scope>test</scope>
     </dependency>

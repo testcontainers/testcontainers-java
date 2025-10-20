@@ -82,7 +82,7 @@ and then use dependencies without specifying a version:
     ```xml
     <dependency>
         <groupId>org.testcontainers</groupId>
-        <artifactId>mysql</artifactId>
+        <artifactId>testcontainers-mysql</artifactId>
         <scope>test</scope>
     </dependency>
     ```
@@ -92,7 +92,7 @@ Using Gradle 5.0 or higher, you can add the following to the `dependencies` sect
 === "Gradle"
     ```groovy
     implementation platform('org.testcontainers:testcontainers-bom:{{latest_version}}') //import bom
-    testImplementation('org.testcontainers:mysql') //no version specified
+    testImplementation('org.testcontainers:testcontainers-mysql') //no version specified
     ```
 
 

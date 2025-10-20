@@ -5,8 +5,8 @@ buildscript {
         }
     }
     dependencies {
-        classpath "com.gradle.enterprise:com.gradle.enterprise.gradle.plugin:3.18.2"
-        classpath "com.gradle:common-custom-user-data-gradle-plugin:2.0.2"
+        classpath "com.gradle.enterprise:com.gradle.enterprise.gradle.plugin:3.19.2"
+        classpath "com.gradle:common-custom-user-data-gradle-plugin:2.4.0"
         classpath "org.gradle.toolchains:foojay-resolver:0.8.0"
     }
 }
@@ -23,12 +23,10 @@ include "testcontainers"
 project(':testcontainers').projectDir = "$rootDir/core" as File
 
 file('modules').eachDir { dir ->
-    include dir.name
-    project(":${dir.name}").projectDir = dir
+    include "testcontainers-${dir.name}"
+    project(":testcontainers-${dir.name}").projectDir = dir
 }
 
-include ':docs:examples:junit4:generic'
-include ':docs:examples:junit4:redis'
 include ':docs:examples:junit5:redis'
 include ':docs:examples:spock:redis'
 

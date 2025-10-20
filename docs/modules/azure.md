@@ -172,14 +172,14 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 === "Gradle"
     ```groovy
-    testImplementation "org.testcontainers:azure:{{latest_version}}"
+    testImplementation "org.testcontainers:testcontainers-azure:{{latest_version}}"
     ```
 
 === "Maven"
     ```xml
     <dependency>
         <groupId>org.testcontainers</groupId>
-        <artifactId>azure</artifactId>
+        <artifactId>testcontainers-azure</artifactId>
         <version>{{latest_version}}</version>
         <scope>test</scope>
     </dependency>

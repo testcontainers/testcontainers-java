@@ -1,7 +1,7 @@
 package org.testcontainers;
 
 import org.assertj.core.api.ListAssert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -9,23 +9,31 @@ import java.nio.file.Path;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class JarFileShadingTest extends AbstractJarFileTest {
+class JarFileShadingTest extends AbstractJarFileTest {
 
     @Test
-    public void testPackages() throws Exception {
+    void testPackages() throws Exception {
         assertThatFileList(root).containsOnly("org", "META-INF");
 
         assertThatFileList(root.resolve("org")).containsOnly("testcontainers");
     }
 
     @Test
-    public void testMetaInf() throws Exception {
+    void testMetaInf() throws Exception {
         assertThatFileList(root.resolve("META-INF"))
-            .containsOnly("MANIFEST.MF", "services", "versions", "native-image");
+            .containsOnly(
+                "MANIFEST.MF",
+                "services",
+                "versions",
+                "native-image",
+                "thirdparty-LICENSE",
+                "FastDoubleParser-NOTICE",
+                "FastDoubleParser-LICENSE"
+            );
     }
 
     @Test
-    public void testMetaInfServices() throws Exception {
+    void testMetaInfServices() throws Exception {
         assertThatFileList(root.resolve("META-INF").resolve("services"))
             .allMatch(it -> it.startsWith("org.testcontainers."));
     }

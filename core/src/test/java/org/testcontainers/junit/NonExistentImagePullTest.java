@@ -1,6 +1,7 @@
 package org.testcontainers.junit;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.testcontainers.containers.ContainerFetchException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
@@ -11,10 +12,11 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 /**
  * Created by rnorth on 20/03/2016.
  */
-public class NonExistentImagePullTest {
+class NonExistentImagePullTest {
 
-    @Test(timeout = 60_000L)
-    public void pullingNonExistentImageFailsGracefully() {
+    @Test
+    @Timeout(60)
+    void pullingNonExistentImageFailsGracefully() {
         assertThat(
             catchThrowable(() -> {
                 new GenericContainer<>(DockerImageName.parse("testcontainers/nonexistent:latest")).getDockerImageName();

@@ -8,6 +8,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Set;
 
+/**
+ * @deprecated use {@link org.testcontainers.nginx.NginxContainer} instead.
+ */
+@Deprecated
 public class NginxContainer<SELF extends NginxContainer<SELF>>
     extends GenericContainer<SELF>
     implements LinkableContainer {

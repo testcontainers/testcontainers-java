@@ -1,6 +1,6 @@
 package org.testcontainers.databend;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
 import java.sql.ResultSet;
@@ -8,11 +8,14 @@ import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class DatabendContainerTest extends AbstractContainerDatabaseTest {
+class DatabendContainerTest extends AbstractContainerDatabaseTest {
 
     @Test
-    public void testSimple() throws SQLException {
-        try (DatabendContainer databend = new DatabendContainer("datafuselabs/databend:v1.2.615")) {
+    void testSimple() throws SQLException {
+        try ( // container {
+            DatabendContainer databend = new DatabendContainer("datafuselabs/databend:v1.2.615")
+            // }
+        ) {
             databend.start();
 
             ResultSet resultSet = performQuery(databend, "SELECT 1");
@@ -23,7 +26,7 @@ public class DatabendContainerTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void customCredentialsWithUrlParams() throws SQLException {
+    void customCredentialsWithUrlParams() throws SQLException {
         try (
             DatabendContainer databend = new DatabendContainer("datafuselabs/databend:v1.2.615")
                 .withUsername("test")

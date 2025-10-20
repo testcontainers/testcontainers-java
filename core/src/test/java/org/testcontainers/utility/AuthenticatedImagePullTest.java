@@ -2,10 +2,9 @@ package org.testcontainers.utility;
 
 import com.github.dockerjava.api.model.AuthConfig;
 import org.intellij.lang.annotations.Language;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.testcontainers.DockerRegistryContainer;
 import org.testcontainers.TestImages;
@@ -37,7 +36,6 @@ public class AuthenticatedImagePullTest {
     /**
      * Containerised docker image registry, with simple hardcoded credentials
      */
-    @ClassRule
     public static DockerRegistryContainer authenticatedRegistry = new DockerRegistryContainer(
         new ImageFromDockerfile()
             .withDockerfileFromBuilder(builder -> {
@@ -54,8 +52,10 @@ public class AuthenticatedImagePullTest {
 
     private final DockerImageName testImageName = authenticatedRegistry.createImage();
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
+        authenticatedRegistry.start();
+
         originalAuthLocatorSingleton = RegistryAuthLocator.instance();
 
         String testRegistryAddress = authenticatedRegistry.getEndpoint();
@@ -77,13 +77,13 @@ public class AuthenticatedImagePullTest {
             .thenReturn(authConfig);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() {
         RegistryAuthLocator.setInstance(originalAuthLocatorSingleton);
     }
 
     @Test
-    public void testThatAuthLocatorIsUsedForContainerCreation() {
+    void testThatAuthLocatorIsUsedForContainerCreation() {
         // actually start a container, which will require an authenticated pull
         try (
             final GenericContainer<?> container = new GenericContainer<>(testImageName)
@@ -96,7 +96,7 @@ public class AuthenticatedImagePullTest {
     }
 
     @Test
-    public void testThatAuthLocatorIsUsedForDockerfileBuild() throws IOException {
+    void testThatAuthLocatorIsUsedForDockerfileBuild() throws IOException {
         // Prepare a simple temporary Dockerfile which requires our custom private image
         Path tempFile = getLocalTempFile(".Dockerfile");
         String dockerFileContent = "FROM " + testImageName.asCanonicalNameString();
@@ -116,7 +116,7 @@ public class AuthenticatedImagePullTest {
     }
 
     @Test
-    public void testThatAuthLocatorIsUsedForDockerComposePull() throws IOException {
+    void testThatAuthLocatorIsUsedForDockerComposePull() throws IOException {
         // Prepare a simple temporary Docker Compose manifest which requires our custom private image
         Path tempFile = getLocalTempFile(".docker-compose.yml");
         @Language("yaml")
@@ -130,7 +130,12 @@ public class AuthenticatedImagePullTest {
         Files.write(tempFile, composeFileContent.getBytes());
 
         // Start the docker compose project, which will require an authenticated pull
-        try (final DockerComposeContainer<?> compose = new DockerComposeContainer<>(tempFile.toFile())) {
+        try (
+            final DockerComposeContainer<?> compose = new DockerComposeContainer<>(
+                DockerImageName.parse("docker/compose:1.29.2"),
+                tempFile.toFile()
+            )
+        ) {
             compose.start();
 
             assertThat(

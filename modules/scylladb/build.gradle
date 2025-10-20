@@ -3,7 +3,6 @@ description = "Testcontainers :: ScyllaDB"
 dependencies {
     api project(":testcontainers")
 
-    testImplementation 'com.scylladb:java-driver-core:4.15.0.0'
-    testImplementation 'org.assertj:assertj-core:3.24.2'
-    testImplementation 'software.amazon.awssdk:dynamodb:2.28.6'
+    testImplementation 'com.scylladb:java-driver-core:4.19.0.1'
+    testImplementation 'software.amazon.awssdk:dynamodb:2.34.8'
 }

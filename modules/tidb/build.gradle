@@ -1,10 +1,9 @@
 description = "Testcontainers :: JDBC :: TiDB"
 
 dependencies {
-    api project(':jdbc')
+    api project(':testcontainers-jdbc')
 
-    testImplementation project(':jdbc-test')
-    testRuntimeOnly 'mysql:mysql-connector-java:8.0.33'
-
-    compileOnly 'org.jetbrains:annotations:24.1.0'
+    testImplementation project(':testcontainers-jdbc-test')
+    testRuntimeOnly 'com.mysql:mysql-connector-j:8.2.0'
+    compileOnly 'org.jetbrains:annotations:26.0.2-1'
 }
