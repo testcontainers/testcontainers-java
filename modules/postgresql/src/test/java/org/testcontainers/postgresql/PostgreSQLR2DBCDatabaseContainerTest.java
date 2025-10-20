@@ -7,7 +7,7 @@ import org.testcontainers.r2dbc.AbstractR2DBCDatabaseContainerTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class PostgreSQLR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseContainerTest<PostgreSQLContainer> {
+class PostgreSQLR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseContainerTest<PostgreSQLContainer> {
 
     @Override
     protected PostgreSQLContainer createContainer() {
@@ -59,10 +59,11 @@ public class PostgreSQLR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseC
             assertThat(r2dbcUrlStatic).isEqualTo(expectedUrl);
 
             // Test instance method
-            PostgreSQLR2DBCDatabaseContainer r2dbcContainer = new PostgreSQLR2DBCDatabaseContainer(container);
+            try(PostgreSQLR2DBCDatabaseContainer r2dbcContainer = new PostgreSQLR2DBCDatabaseContainer(container)) {
             String r2dbcUrlInstance = r2dbcContainer.getR2dbcUrl();
 
             assertThat(r2dbcUrlInstance).isEqualTo(r2dbcUrlStatic);
+            } 
         }
     }
 }
