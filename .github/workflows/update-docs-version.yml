@@ -20,14 +20,14 @@ jobs:
           ref: main
       - name: Update latest_version property in mkdocs.yml
         run: |
-          sed -i "s/latest_version: .*/latest_version: ${GITHUB_REF##*/}/g" mkdocs.yml
+          sed -i "s/latest_version: .*/latest_version: ${GITHUB_REF_NAME}/g" mkdocs.yml
           git diff
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v3.10.1
         with:
-          title: Update docs version to ${GITHUB_REF##*/}
+          title: Update docs version to ${{ github.ref_name }}
           body: |
-            Update docs version to ${GITHUB_REF##*/}
+            Update docs version to ${{ github.ref_name }}
             skip-checks: true
           branch: update-docs-version
           delete-branch: true
