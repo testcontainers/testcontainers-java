@@ -20,13 +20,17 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.ContainerNetwork;
-import lombok.Cleanup;
-import okhttp3.Credentials;
-import okhttp3.FormBody;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+import com.github.dockerjava.zerodep.shaded.org.apache.hc.client5.http.classic.methods.HttpGet;
+import com.github.dockerjava.zerodep.shaded.org.apache.hc.client5.http.classic.methods.HttpPost;
+import com.github.dockerjava.zerodep.shaded.org.apache.hc.client5.http.classic.methods.HttpPut;
+import com.github.dockerjava.zerodep.shaded.org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
+import com.github.dockerjava.zerodep.shaded.org.apache.hc.client5.http.impl.classic.BasicHttpClientResponseHandler;
+import com.github.dockerjava.zerodep.shaded.org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import com.github.dockerjava.zerodep.shaded.org.apache.hc.client5.http.impl.classic.HttpClients;
+import com.github.dockerjava.zerodep.shaded.org.apache.hc.core5.http.NameValuePair;
+import com.github.dockerjava.zerodep.shaded.org.apache.hc.core5.http.io.HttpClientResponseHandler;
+import com.github.dockerjava.zerodep.shaded.org.apache.hc.core5.http.io.entity.EntityUtils;
+import com.github.dockerjava.zerodep.shaded.org.apache.hc.core5.http.message.BasicNameValuePair;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
@@ -94,7 +98,9 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
-    private static final OkHttpClient HTTP_CLIENT = new OkHttpClient();
+    private AuthInterceptor authInterceptor;
+
+    private final HttpClientResponseHandler<String> httpBaseResponseHandler = new BasicHttpClientResponseHandler();
 
     private String username = "Administrator";
 
@@ -134,6 +140,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     /**
      * Create a new couchbase container with the specified image name.
+     *
      * @param dockerImageName the image name that should be used.
      */
     public CouchbaseContainer(final DockerImageName dockerImageName) {
@@ -182,11 +189,11 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         if (quotaMb < service.getMinimumQuotaMb()) {
             throw new IllegalArgumentException(
                 "The custom quota (" +
-                quotaMb +
-                ") must not be smaller than the " +
-                "minimum quota for the service (" +
-                service.getMinimumQuotaMb() +
-                ")"
+                    quotaMb +
+                    ") must not be smaller than the " +
+                    "minimum quota for the service (" +
+                    service.getMinimumQuotaMb() +
+                    ")"
             );
         }
         this.customServiceQuotas.put(service, quotaMb);
@@ -340,7 +347,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     @Override
     protected void containerIsStarting(final InspectContainerResponse containerInfo) {
         logger().debug("Couchbase container is starting, performing configuration.");
-
+        authInterceptor = new AuthInterceptor(username, password);
         timePhase("waitUntilNodeIsOnline", this::waitUntilNodeIsOnline);
         timePhase("initializeIsEnterprise", this::initializeIsEnterprise);
         timePhase("initializeHasTlsPorts", this::initializeHasTlsPorts);
@@ -381,11 +388,10 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
      * Fetches edition (enterprise or community) of started container.
      */
     private void initializeIsEnterprise() {
-        @Cleanup
-        Response response = doHttpRequest(MGMT_PORT, "/pools", "GET", null, true);
-
-        try {
-            isEnterprise = MAPPER.readTree(response.body().string()).get("isEnterprise").asBoolean();
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            String body = httpClient.execute(new HttpGet("http://" + getHost() + ":" + getMappedPort(MGMT_PORT) + "/pools"),
+                httpBaseResponseHandler);
+            isEnterprise = MAPPER.readTree(body).get("isEnterprise").asBoolean();
         } catch (IOException e) {
             throw new IllegalStateException("Couchbase /pools did not return valid JSON");
         }
@@ -407,19 +413,19 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
      * the "enterprise edition" flag.
      */
     private void initializeHasTlsPorts() {
-        @Cleanup
-        Response response = doHttpRequest(MGMT_PORT, "/pools/default/nodeServices", "GET", null, true);
-
-        try {
-            String clusterTopology = response.body().string();
-            hasTlsPorts =
-                !MAPPER
-                    .readTree(clusterTopology)
-                    .path("nodesExt")
-                    .path(0)
-                    .path("services")
-                    .path("mgmtSSL")
-                    .isMissingNode();
+        try (CloseableHttpClient httpClient = HttpClients
+            .custom()
+            .addRequestInterceptorFirst(authInterceptor)
+            .build()) {
+            String body = httpClient.execute(new HttpGet("http://" + getHost() + ":" + getMappedPort(MGMT_PORT) + "/pools/default/nodeServices"),
+                httpBaseResponseHandler);
+            hasTlsPorts = !MAPPER
+                .readTree(body)
+                .path("nodesExt")
+                .path(0)
+                .path("services")
+                .path("mgmtSSL")
+                .isMissingNode();
         } catch (IOException e) {
             throw new IllegalStateException("Couchbase /pools/default/nodeServices did not return valid JSON");
         }
@@ -433,17 +439,17 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
      */
     private void renameNode() {
         logger().debug("Renaming Couchbase Node from localhost to {}", getHost());
+        HttpPost httpPost = new HttpPost("http://" + getHost() + ":" + getMappedPort(MGMT_PORT) + "/node/controller/rename");
 
-        @Cleanup
-        Response response = doHttpRequest(
-            MGMT_PORT,
-            "/node/controller/rename",
-            "POST",
-            new FormBody.Builder().add("hostname", getInternalIpAddress()).build(),
-            false
-        );
+        List<NameValuePair> formParams = new ArrayList<>();
+        formParams.add(new BasicNameValuePair("hostname", getInternalIpAddress()));
+        httpPost.setEntity(new UrlEncodedFormEntity(formParams));
 
-        checkSuccessfulResponse(response, "Could not rename couchbase node");
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            httpClient.execute(httpPost, httpBaseResponseHandler);
+        } catch (IOException e) {
+            throw new IllegalStateException("Could not rename couchbase node");
+        }
     }
 
     /**
@@ -457,16 +463,17 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
             .map(CouchbaseService::getIdentifier)
             .collect(Collectors.joining(","));
 
-        @Cleanup
-        Response response = doHttpRequest(
-            MGMT_PORT,
-            "/node/controller/setupServices",
-            "POST",
-            new FormBody.Builder().add("services", services).build(),
-            false
-        );
+        HttpPost httpPost = new HttpPost("http://" + getHost() + ":" + getMappedPort(MGMT_PORT) + "/node/controller/setupServices");
 
-        checkSuccessfulResponse(response, "Could not enable couchbase services");
+        List<NameValuePair> formParams = new ArrayList<>();
+        formParams.add(new BasicNameValuePair("services", services));
+        httpPost.setEntity(new UrlEncodedFormEntity(formParams));
+
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            httpClient.execute(httpPost, httpBaseResponseHandler);
+        } catch (IOException e) {
+            throw new IllegalStateException("Could not enable couchbase services");
+        }
     }
 
     /**
@@ -477,7 +484,9 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     private void setMemoryQuotas() {
         logger().debug("Custom service memory quotas: {}", customServiceQuotas);
 
-        final FormBody.Builder quotaBuilder = new FormBody.Builder();
+        final List<NameValuePair> formParams = new ArrayList<>();
+        final HttpPost httpPost = new HttpPost("http://" + getHost() + ":" + getMappedPort(MGMT_PORT) + "/pools/default");
+
         for (CouchbaseService service : enabledServices) {
             if (!service.hasQuota()) {
                 continue;
@@ -485,16 +494,19 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
             int quota = customServiceQuotas.getOrDefault(service, service.getMinimumQuotaMb());
             if (CouchbaseService.KV.equals(service)) {
-                quotaBuilder.add("memoryQuota", Integer.toString(quota));
+                formParams.add(new BasicNameValuePair("memoryQuota", Integer.toString(quota)));
             } else {
-                quotaBuilder.add(service.getIdentifier() + "MemoryQuota", Integer.toString(quota));
+                formParams.add(new BasicNameValuePair(service.getIdentifier() + "MemoryQuota", Integer.toString(quota)));
             }
         }
 
-        @Cleanup
-        Response response = doHttpRequest(MGMT_PORT, "/pools/default", "POST", quotaBuilder.build(), false);
+        httpPost.setEntity(new UrlEncodedFormEntity(formParams));
 
-        checkSuccessfulResponse(response, "Could not configure service memory quotas");
+        try (final CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            httpClient.execute(httpPost, httpBaseResponseHandler);
+        } catch (IOException e) {
+            throw new IllegalStateException("Could not configure service memory quotas");
+        }
     }
 
     /**
@@ -505,20 +517,20 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     private void configureAdminUser() {
         logger().debug("Configuring couchbase admin user with username: \"{}\"", username);
 
-        @Cleanup
-        Response response = doHttpRequest(
-            MGMT_PORT,
-            "/settings/web",
-            "POST",
-            new FormBody.Builder()
-                .add("username", username)
-                .add("password", password)
-                .add("port", Integer.toString(MGMT_PORT))
-                .build(),
-            false
-        );
+        final HttpPost httpPost = new HttpPost("http://" + getHost() + ":" + getMappedPort(MGMT_PORT) + "/settings/web");
 
-        checkSuccessfulResponse(response, "Could not configure couchbase admin user");
+        final List<NameValuePair> formParams = new ArrayList<>();
+        formParams.add(new BasicNameValuePair("username", username));
+        formParams.add(new BasicNameValuePair("password", password));
+        formParams.add(new BasicNameValuePair("port", Integer.toString(MGMT_PORT)));
+
+        httpPost.setEntity(new UrlEncodedFormEntity(formParams));
+
+        try (final CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            httpClient.execute(httpPost, httpBaseResponseHandler);
+        } catch (IOException e) {
+            throw new IllegalStateException("Could not configure couchbase admin user");
+        }
     }
 
     /**
@@ -531,60 +543,61 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     private void configureExternalPorts() {
         logger().debug("Mapping external ports to the alternate address configuration");
 
-        final FormBody.Builder builder = new FormBody.Builder();
-        builder.add("hostname", getHost());
-        builder.add("mgmt", Integer.toString(getMappedPort(MGMT_PORT)));
+        final List<NameValuePair> formParams = new ArrayList<>();
+
+        formParams.add(new BasicNameValuePair("hostname", getHost()));
+        formParams.add(new BasicNameValuePair("mgmt", Integer.toString(getMappedPort(MGMT_PORT))));
         if (hasTlsPorts) {
-            builder.add("mgmtSSL", Integer.toString(getMappedPort(MGMT_SSL_PORT)));
+            formParams.add(new BasicNameValuePair("mgmtSSL", Integer.toString(getMappedPort(MGMT_SSL_PORT))));
         }
 
         if (enabledServices.contains(CouchbaseService.KV)) {
-            builder.add("kv", Integer.toString(getMappedPort(KV_PORT)));
-            builder.add("capi", Integer.toString(getMappedPort(VIEW_PORT)));
+            formParams.add(new BasicNameValuePair("kv", Integer.toString(getMappedPort(KV_PORT))));
+            formParams.add(new BasicNameValuePair("capi", Integer.toString(getMappedPort(VIEW_PORT))));
             if (hasTlsPorts) {
-                builder.add("kvSSL", Integer.toString(getMappedPort(KV_SSL_PORT)));
-                builder.add("capiSSL", Integer.toString(getMappedPort(VIEW_SSL_PORT)));
+                formParams.add(new BasicNameValuePair("kvSSL", Integer.toString(getMappedPort(KV_SSL_PORT))));
+                formParams.add(new BasicNameValuePair("capiSSL", Integer.toString(getMappedPort(VIEW_SSL_PORT))));
             }
         }
 
         if (enabledServices.contains(CouchbaseService.QUERY)) {
-            builder.add("n1ql", Integer.toString(getMappedPort(QUERY_PORT)));
+            formParams.add(new BasicNameValuePair("n1ql", Integer.toString(getMappedPort(QUERY_PORT))));
             if (hasTlsPorts) {
-                builder.add("n1qlSSL", Integer.toString(getMappedPort(QUERY_SSL_PORT)));
+                formParams.add(new BasicNameValuePair("n1qlSSL", Integer.toString(getMappedPort(QUERY_SSL_PORT))));
             }
         }
 
         if (enabledServices.contains(CouchbaseService.SEARCH)) {
-            builder.add("fts", Integer.toString(getMappedPort(SEARCH_PORT)));
+            formParams.add(new BasicNameValuePair("fts", Integer.toString(getMappedPort(SEARCH_PORT))));
             if (hasTlsPorts) {
-                builder.add("ftsSSL", Integer.toString(getMappedPort(SEARCH_SSL_PORT)));
+                formParams.add(new BasicNameValuePair("ftsSSL", Integer.toString(getMappedPort(SEARCH_SSL_PORT))));
             }
         }
 
         if (enabledServices.contains(CouchbaseService.ANALYTICS)) {
-            builder.add("cbas", Integer.toString(getMappedPort(ANALYTICS_PORT)));
+            formParams.add(new BasicNameValuePair("cbas", Integer.toString(getMappedPort(ANALYTICS_PORT))));
             if (hasTlsPorts) {
-                builder.add("cbasSSL", Integer.toString(getMappedPort(ANALYTICS_SSL_PORT)));
+                formParams.add(new BasicNameValuePair("cbasSSL", Integer.toString(getMappedPort(ANALYTICS_SSL_PORT))));
             }
         }
 
         if (enabledServices.contains(CouchbaseService.EVENTING)) {
-            builder.add("eventingAdminPort", Integer.toString(getMappedPort(EVENTING_PORT)));
+            formParams.add(new BasicNameValuePair("eventingAdminPort", Integer.toString(getMappedPort(EVENTING_PORT))));
             if (hasTlsPorts) {
-                builder.add("eventingSSL", Integer.toString(getMappedPort(EVENTING_SSL_PORT)));
+                formParams.add(new BasicNameValuePair("eventingSSL", Integer.toString(getMappedPort(EVENTING_SSL_PORT))));
             }
         }
 
-        @Cleanup
-        Response response = doHttpRequest(
-            MGMT_PORT,
-            "/node/controller/setupAlternateAddresses/external",
-            "PUT",
-            builder.build(),
-            true
-        );
+        final HttpPut httpPut = new HttpPut("http://" + getHost() + ":" + getMappedPort(MGMT_PORT) + "/node/controller/setupAlternateAddresses/external");
+        httpPut.setEntity(new UrlEncodedFormEntity(formParams));
 
-        checkSuccessfulResponse(response, "Could not configure external ports");
+        try (final CloseableHttpClient httpClient = HttpClients.custom()
+            .addRequestInterceptorFirst(authInterceptor)
+            .build()) {
+            httpClient.execute(httpPut, httpBaseResponseHandler);
+        } catch (IOException e) {
+            throw new IllegalStateException("Could not configure external ports");
+        }
     }
 
     /**
@@ -593,16 +606,21 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     private void configureIndexer() {
         logger().debug("Configuring the indexer service");
 
-        @Cleanup
-        Response response = doHttpRequest(
-            MGMT_PORT,
-            "/settings/indexes",
-            "POST",
-            new FormBody.Builder().add("storageMode", isEnterprise ? "memory_optimized" : "forestdb").build(),
-            true
-        );
+        final HttpPost httpPost = new HttpPost("http://" + getHost() + ":" + getMappedPort(MGMT_PORT) + "/settings/indexes");
 
-        checkSuccessfulResponse(response, "Could not configure the indexing service");
+        final List<NameValuePair> formParams = new ArrayList<>();
+        formParams.add(new BasicNameValuePair("storageMode", isEnterprise ? "memory_optimized" : "forestdb"));
+
+        httpPost.setEntity(new UrlEncodedFormEntity(formParams));
+
+        try (final CloseableHttpClient httpClient = HttpClients
+            .custom()
+            .addRequestInterceptorFirst(authInterceptor)
+            .build()) {
+            httpClient.execute(httpPost, httpBaseResponseHandler);
+        } catch (IOException e) {
+            throw new IllegalStateException("Could not configure the indexing service");
+        }
     }
 
     /**
@@ -614,21 +632,23 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
         for (BucketDefinition bucket : buckets) {
             logger().debug("Creating bucket \"{}\"", bucket.getName());
 
-            @Cleanup
-            Response response = doHttpRequest(
-                MGMT_PORT,
-                "/pools/default/buckets",
-                "POST",
-                new FormBody.Builder()
-                    .add("name", bucket.getName())
-                    .add("ramQuotaMB", Integer.toString(bucket.getQuota()))
-                    .add("flushEnabled", bucket.hasFlushEnabled() ? "1" : "0")
-                    .add("replicaNumber", Integer.toString(bucket.getNumReplicas()))
-                    .build(),
-                true
-            );
+            final HttpPost httpPost = new HttpPost("http://" + getHost() + ":" + getMappedPort(MGMT_PORT) + "/pools/default/buckets");
 
-            checkSuccessfulResponse(response, "Could not create bucket " + bucket.getName());
+            final List<NameValuePair> formParams = new ArrayList<>();
+            formParams.add(new BasicNameValuePair("name", bucket.getName()));
+            formParams.add(new BasicNameValuePair("ramQuotaMB", Integer.toString(bucket.getQuota())));
+            formParams.add(new BasicNameValuePair("flushEnabled", bucket.hasFlushEnabled() ? "1" : "0"));
+            formParams.add(new BasicNameValuePair("replicaNumber", Integer.toString(bucket.getNumReplicas())));
+
+            httpPost.setEntity(new UrlEncodedFormEntity(formParams));
+
+            try (final CloseableHttpClient httpClient = HttpClients.custom()
+                .addRequestInterceptorFirst(authInterceptor)
+                .build()) {
+                httpClient.execute(httpPost, httpBaseResponseHandler);
+            } catch (IOException e) {
+                throw new IllegalStateException("Could not create bucket " + bucket.getName());
+            }
 
             timePhase(
                 "createBucket:" + bucket.getName() + ":waitForAllServicesEnabled",
@@ -653,33 +673,30 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
                             1,
                             TimeUnit.MINUTES,
                             () -> {
-                                @Cleanup
-                                Response queryResponse = doHttpRequest(
-                                    QUERY_PORT,
-                                    "/query/service",
-                                    "POST",
-                                    new FormBody.Builder()
-                                        .add(
-                                            "statement",
-                                            "SELECT COUNT(*) > 0 as present FROM system:keyspaces WHERE name = \"" +
-                                            bucket.getName() +
-                                            "\""
-                                        )
-                                        .build(),
-                                    true
+                                final HttpPost selectQueryServiceHttp = new HttpPost(
+                                    "http://" + getHost() + ":" + getMappedPort(QUERY_PORT) + "/query/service"
                                 );
 
-                                String body = queryResponse.body() != null ? queryResponse.body().string() : null;
-                                checkSuccessfulResponse(
-                                    queryResponse,
-                                    "Could not poll query service state for bucket: " + bucket.getName()
-                                );
+                                final List<NameValuePair> queryFormParams = new ArrayList<>();
+                                queryFormParams.add(new BasicNameValuePair(
+                                    "statement",
+                                    "SELECT COUNT(*) > 0 as present FROM system:keyspaces WHERE name = \"" +
+                                        bucket.getName() +
+                                        "\""));
+                                selectQueryServiceHttp.setEntity(new UrlEncodedFormEntity(queryFormParams));
 
-                                return Optional
-                                    .of(MAPPER.readTree(body))
-                                    .map(n -> n.at("/results/0/present"))
-                                    .map(JsonNode::asBoolean)
-                                    .orElse(false);
+                                try (final CloseableHttpClient httpClient = HttpClients.custom()
+                                    .addRequestInterceptorFirst(authInterceptor)
+                                    .build()) {
+                                    String body = httpClient.execute(selectQueryServiceHttp, httpBaseResponseHandler);
+                                    return Optional
+                                        .of(MAPPER.readTree(body))
+                                        .map(n -> n.at("/results/0/present"))
+                                        .map(JsonNode::asBoolean)
+                                        .orElse(false);
+                                } catch (IllegalStateException e) {
+                                    throw new IllegalStateException("Could not poll query service state for bucket: " + bucket.getName());
+                                }
                             }
                         );
                     }
@@ -688,27 +705,32 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
             if (bucket.hasPrimaryIndex()) {
                 if (enabledServices.contains(CouchbaseService.QUERY)) {
-                    @Cleanup
-                    Response queryResponse = doHttpRequest(
-                        QUERY_PORT,
-                        "/query/service",
-                        "POST",
-                        new FormBody.Builder()
-                            .add("statement", "CREATE PRIMARY INDEX on `" + bucket.getName() + "`")
-                            .build(),
-                        true
+
+                    final HttpPost queryhttpPost = new HttpPost(
+                        "http://" + getHost() + ":" + getMappedPort(QUERY_PORT) + "/query/service"
                     );
 
-                    try {
-                        checkSuccessfulResponse(
-                            queryResponse,
-                            "Could not create primary index for bucket " + bucket.getName()
-                        );
-                    } catch (IllegalStateException ex) {
-                        // potentially ignore the error, the index will be eventually built.
-                        if (!ex.getMessage().contains("Index creation will be retried in background")) {
-                            throw ex;
-                        }
+                    final List<NameValuePair> queryFormParams = new ArrayList<>();
+                    queryFormParams.add(new BasicNameValuePair(
+                        "statement", "CREATE PRIMARY INDEX on `" + bucket.getName() + "`")
+                    );
+                    queryhttpPost.setEntity(new UrlEncodedFormEntity(queryFormParams));
+
+                    try (final CloseableHttpClient httpClient = HttpClients.custom()
+                        .addRequestInterceptorFirst(authInterceptor)
+                        .build()) {
+                        httpClient.execute(queryhttpPost, response -> {
+                            int statusCode = response.getCode();
+                            boolean isValid = statusCode >= 200 && statusCode < 300;
+                            String body = EntityUtils.toString(response.getEntity());
+                            if (!isValid && !body.contains("Index creation will be retried in background")) {
+                                throw new IllegalStateException("Cannot create index");
+                            }
+                            return body;
+                        });
+
+                    } catch (IOException e) {
+                        throw new IllegalStateException("Could not create primary index for bucket: " + bucket.getName());
                     }
 
                     timePhase(
@@ -718,33 +740,32 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
                                 1,
                                 TimeUnit.MINUTES,
                                 () -> {
-                                    @Cleanup
-                                    Response stateResponse = doHttpRequest(
-                                        QUERY_PORT,
-                                        "/query/service",
-                                        "POST",
-                                        new FormBody.Builder()
-                                            .add(
-                                                "statement",
-                                                "SELECT count(*) > 0 AS online FROM system:indexes where keyspace_id = \"" +
-                                                bucket.getName() +
-                                                "\" and is_primary = true and state = \"online\""
-                                            )
-                                            .build(),
-                                        true
+
+                                    final HttpPost selectIndexesQueryHttp = new HttpPost(
+                                        "http://" + getHost() + ":" + getMappedPort(QUERY_PORT) + "/query/service"
                                     );
 
-                                    String body = stateResponse.body() != null ? stateResponse.body().string() : null;
-                                    checkSuccessfulResponse(
-                                        stateResponse,
-                                        "Could not poll primary index state for bucket: " + bucket.getName()
-                                    );
+                                    final List<NameValuePair> selectIndexesQueryForm = new ArrayList<>();
+                                    selectIndexesQueryForm.add(new BasicNameValuePair(
+                                        "statement",
+                                        "SELECT count(*) > 0 AS online FROM system:indexes where keyspace_id = \"" +
+                                            bucket.getName() +
+                                            "\" and is_primary = true and state = \"online\""));
 
-                                    return Optional
-                                        .of(MAPPER.readTree(body))
-                                        .map(n -> n.at("/results/0/online"))
-                                        .map(JsonNode::asBoolean)
-                                        .orElse(false);
+                                    selectIndexesQueryHttp.setEntity(new UrlEncodedFormEntity(selectIndexesQueryForm));
+
+                                    try (final CloseableHttpClient httpClient = HttpClients.custom()
+                                        .addRequestInterceptorFirst(authInterceptor)
+                                        .build()) {
+                                        String body = httpClient.execute(selectIndexesQueryHttp, httpBaseResponseHandler);
+                                        return Optional
+                                            .of(MAPPER.readTree(body))
+                                            .map(n -> n.at("/results/0/online"))
+                                            .map(JsonNode::asBoolean)
+                                            .orElse(false);
+                                    } catch (IllegalStateException e) {
+                                        throw new IllegalStateException("Could not poll primary index state for bucket: " + bucket.getName());
+                                    }
                                 }
                             );
                         }
@@ -775,27 +796,6 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     }
 
     /**
-     * Helper method to check if the response is successful and release the body if needed.
-     *
-     * @param response the response to check.
-     * @param message the message that should be part of the exception of not successful.
-     */
-    private void checkSuccessfulResponse(final Response response, final String message) {
-        if (!response.isSuccessful()) {
-            String body = null;
-            if (response.body() != null) {
-                try {
-                    body = response.body().string();
-                } catch (IOException e) {
-                    logger().debug("Unable to read body of response: {}", response, e);
-                }
-            }
-
-            throw new IllegalStateException(message + ": " + response + ", body=" + (body == null ? "<null>" : body));
-        }
-    }
-
-    /**
      * Checks if already running and if so raises an exception to prevent too-late setters.
      */
     private void checkNotRunning() {
@@ -805,46 +805,9 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     }
 
     /**
-     * Helper method to perform a request against a couchbase server HTTP endpoint.
-     *
-     * @param port the (unmapped) original port that should be used.
-     * @param path the relative http path.
-     * @param method the http method to use.
-     * @param body if present, will be part of the payload.
-     * @param auth if authentication with the admin user and password should be used.
-     * @return the response of the request.
-     */
-    private Response doHttpRequest(
-        final int port,
-        final String path,
-        final String method,
-        final RequestBody body,
-        final boolean auth
-    ) {
-        try {
-            Request.Builder requestBuilder = new Request.Builder()
-                .url("http://" + getHost() + ":" + getMappedPort(port) + path);
-
-            if (auth) {
-                requestBuilder = requestBuilder.header("Authorization", Credentials.basic(username, password));
-            }
-
-            if (body == null) {
-                requestBuilder = requestBuilder.get();
-            } else {
-                requestBuilder = requestBuilder.method(method, body);
-            }
-
-            return HTTP_CLIENT.newCall(requestBuilder.build()).execute();
-        } catch (Exception ex) {
-            throw new RuntimeException("Could not perform request against couchbase HTTP endpoint ", ex);
-        }
-    }
-
-    /**
      * Helper method which times an individual phase and logs it for debugging and optimization purposes.
      *
-     * @param name the name of the phase.
+     * @param name   the name of the phase.
      * @param toTime the runnable that should be timed.
      */
     private void timePhase(final String name, final Runnable toTime) {
@@ -859,7 +822,7 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
      * In addition to getting a 200, we need to make sure that all services we need are enabled and available on
      * the bucket.
      * <p>
-     *  Fixes the issue observed in https://github.com/testcontainers/testcontainers-java/issues/2993
+     * Fixes the issue observed in https://github.com/testcontainers/testcontainers-java/issues/2993
      */
     private class AllServicesEnabledPredicate implements Predicate<String> {
 
