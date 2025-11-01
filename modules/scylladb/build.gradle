@@ -4,5 +4,5 @@ dependencies {
     api project(":testcontainers")
 
     testImplementation 'com.scylladb:java-driver-core:4.19.0.1'
-    testImplementation 'software.amazon.awssdk:dynamodb:2.34.8'
+    testImplementation 'software.amazon.awssdk:dynamodb:2.37.3'
 }
