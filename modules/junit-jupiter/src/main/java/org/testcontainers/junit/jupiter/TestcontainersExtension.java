@@ -12,6 +12,9 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ExtensionContext.Namespace;
 import org.junit.jupiter.api.extension.ExtensionContext.Store;
 import org.junit.jupiter.api.extension.ExtensionContext.Store.CloseableResource;
+import org.junit.jupiter.api.extension.ParameterContext;
+import org.junit.jupiter.api.extension.ParameterResolutionException;
+import org.junit.jupiter.api.extension.ParameterResolver;
 import org.junit.platform.commons.support.AnnotationSupport;
 import org.junit.platform.commons.support.HierarchyTraversalMode;
 import org.junit.platform.commons.support.ModifierSupport;
@@ -22,10 +25,14 @@ import org.testcontainers.lifecycle.TestDescription;
 import org.testcontainers.lifecycle.TestLifecycleAware;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -33,13 +40,25 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class TestcontainersExtension
-    implements BeforeEachCallback, BeforeAllCallback, AfterEachCallback, AfterAllCallback, ExecutionCondition {
+    implements
+        BeforeEachCallback,
+        BeforeAllCallback,
+        AfterEachCallback,
+        AfterAllCallback,
+        ExecutionCondition,
+        ParameterResolver {
 
     private static final Namespace NAMESPACE = Namespace.create(TestcontainersExtension.class);
 
     private static final String SHARED_LIFECYCLE_AWARE_CONTAINERS = "sharedLifecycleAwareContainers";
 
     private static final String LOCAL_LIFECYCLE_AWARE_CONTAINERS = "localLifecycleAwareContainers";
+
+    private static final String CONTAINER_PROVIDERS = "containerProviders";
+
+    private static final String CONTAINER_REGISTRY = "containerRegistry";
+
+    private static final String ACTIVE_CONTAINERS = "activeContainers";
 
     private final DockerAvailableDetector dockerDetector = new DockerAvailableDetector();
 
@@ -52,6 +71,22 @@ public class TestcontainersExtension
             });
 
         Store store = context.getStore(NAMESPACE);
+
+        // Discover and register container providers
+        Map<String, ProviderMethod> providers = discoverProviders(testClass, context);
+        store.put(CONTAINER_PROVIDERS, providers);
+
+        // Initialize container registry
+        ContainerRegistry registry = new ContainerRegistry();
+        store.put(CONTAINER_REGISTRY, registry);
+
+        // Initialize active containers map for parameter injection
+        store.put(ACTIVE_CONTAINERS, new HashMap<String, Startable>());
+
+        // Process class-level @ContainerConfig annotations
+        processClassLevelContainerConfigs(testClass, context);
+
+        // Existing @Container field logic
         List<StoreAdapter> sharedContainersStoreAdapters = findSharedContainers(testClass);
 
         startContainers(sharedContainersStoreAdapters, store, context);
@@ -93,6 +128,10 @@ public class TestcontainersExtension
     public void beforeEach(final ExtensionContext context) {
         Store store = context.getStore(NAMESPACE);
 
+        // Process method-level @ContainerConfig annotations
+        processMethodLevelContainerConfigs(context);
+
+        // Existing @Container field logic
         List<StoreAdapter> restartContainers = collectParentTestInstances(context)
             .parallelStream()
             .flatMap(this::findRestartContainers)
@@ -129,6 +168,19 @@ public class TestcontainersExtension
     @Override
     public void afterEach(ExtensionContext context) {
         signalAfterTestToContainersFor(LOCAL_LIFECYCLE_AWARE_CONTAINERS, context);
+
+        // Stop test-scoped containers (needNewInstance=true)
+        Store store = context.getStore(NAMESPACE);
+        ContainerRegistry registry = (ContainerRegistry) store.get(CONTAINER_REGISTRY);
+        if (registry != null) {
+            registry.stopTestContainers();
+        }
+
+        // Clear active containers for this test
+        Map<String, Startable> activeContainers = (Map<String, Startable>) store.get(ACTIVE_CONTAINERS);
+        if (activeContainers != null) {
+            activeContainers.clear();
+        }
     }
 
     private void signalBeforeTestToContainers(
@@ -281,5 +333,176 @@ public class TestcontainersExtension
         public void close() {
             container.stop();
         }
+    }
+
+    // ========== Container Provider Support ==========
+
+    /**
+     * Discovers all container provider methods in the test class hierarchy.
+     */
+    private Map<String, ProviderMethod> discoverProviders(Class<?> testClass, ExtensionContext context) {
+        Map<String, ProviderMethod> providers = new HashMap<>();
+
+        // Find all methods annotated with @ContainerProvider
+        List<Method> providerMethods = ReflectionSupport.findMethods(
+            testClass,
+            method -> AnnotationSupport.isAnnotated(method, ContainerProvider.class),
+            HierarchyTraversalMode.TOP_DOWN
+        );
+
+        for (Method method : providerMethods) {
+            ContainerProvider annotation = AnnotationSupport
+                .findAnnotation(method, ContainerProvider.class)
+                .orElseThrow();
+
+            ProviderMethod providerMethod = new ProviderMethod(method, annotation);
+
+            // Check for duplicate provider names
+            if (providers.containsKey(providerMethod.getName())) {
+                throw new ExtensionConfigurationException(
+                    String.format(
+                        "Duplicate container provider name '%s' found in class '%s'",
+                        providerMethod.getName(),
+                        testClass.getName()
+                    )
+                );
+            }
+
+            providers.put(providerMethod.getName(), providerMethod);
+        }
+
+        return providers;
+    }
+
+    /**
+     * Processes class-level @ContainerConfig annotations.
+     */
+    private void processClassLevelContainerConfigs(Class<?> testClass, ExtensionContext context) {
+        AnnotationSupport
+            .findAnnotation(testClass, ContainerConfig.class)
+            .ifPresent(config -> resolveAndStartContainer(config, context, null));
+    }
+
+    /**
+     * Processes method-level @ContainerConfig annotations.
+     */
+    private void processMethodLevelContainerConfigs(ExtensionContext context) {
+        Method testMethod = context.getRequiredTestMethod();
+
+        AnnotationSupport
+            .findAnnotation(testMethod, ContainerConfig.class)
+            .ifPresent(config -> resolveAndStartContainer(config, context, testMethod));
+    }
+
+    /**
+     * Resolves and starts a container based on the configuration.
+     */
+    private void resolveAndStartContainer(
+        ContainerConfig config,
+        ExtensionContext context,
+        Method testMethod
+    ) {
+        Store store = context.getStore(NAMESPACE);
+
+        @SuppressWarnings("unchecked")
+        Map<String, ProviderMethod> providers = (Map<String, ProviderMethod>) store.get(CONTAINER_PROVIDERS);
+
+        if (providers == null) {
+            throw new ExtensionConfigurationException(
+                "No container providers found. Ensure the test class is annotated with @Testcontainers"
+            );
+        }
+
+        ProviderMethod provider = providers.get(config.name());
+        if (provider == null) {
+            throw new ExtensionConfigurationException(
+                String.format(
+                    "No container provider found with name '%s'. Available providers: %s",
+                    config.name(),
+                    providers.keySet()
+                )
+            );
+        }
+
+        ContainerRegistry registry = (ContainerRegistry) store.get(CONTAINER_REGISTRY);
+        if (registry == null) {
+            throw new ExtensionConfigurationException("Container registry not initialized");
+        }
+
+        // Get or create the container
+        Startable container = registry.getOrCreate(
+            config.name(),
+            provider.getScope(),
+            config.needNewInstance(),
+            () -> {
+                Object testInstance = provider.isStatic() ? null : getTestInstance(context);
+                return provider.invoke(testInstance);
+            }
+        );
+
+        // Store container for parameter injection
+        @SuppressWarnings("unchecked")
+        Map<String, Startable> activeContainers = (Map<String, Startable>) store.get(ACTIVE_CONTAINERS);
+        if (activeContainers != null) {
+            activeContainers.put(config.name(), container);
+        }
+    }
+
+    /**
+     * Gets the test instance, handling nested test classes.
+     */
+    private Object getTestInstance(ExtensionContext context) {
+        return context
+            .getTestInstance()
+            .orElseThrow(() ->
+                new ExtensionConfigurationException("Test instance not available for non-static provider method")
+            );
+    }
+
+    // ========== Parameter Resolution Support ==========
+
+    @Override
+    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext)
+        throws ParameterResolutionException {
+        // Check if the test method has @ContainerConfig with injectAsParameter=true
+        Method testMethod = extensionContext.getRequiredTestMethod();
+        Optional<ContainerConfig> configOpt = AnnotationSupport.findAnnotation(testMethod, ContainerConfig.class);
+
+        if (!configOpt.isPresent() || !configOpt.get().injectAsParameter()) {
+            return false;
+        }
+
+        // Check if parameter type is compatible with Startable
+        Parameter parameter = parameterContext.getParameter();
+        return Startable.class.isAssignableFrom(parameter.getType());
+    }
+
+    @Override
+    public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext)
+        throws ParameterResolutionException {
+        Method testMethod = extensionContext.getRequiredTestMethod();
+        ContainerConfig config = AnnotationSupport
+            .findAnnotation(testMethod, ContainerConfig.class)
+            .orElseThrow(() ->
+                new ParameterResolutionException("@ContainerConfig annotation not found on test method")
+            );
+
+        Store store = extensionContext.getStore(NAMESPACE);
+
+        @SuppressWarnings("unchecked")
+        Map<String, Startable> activeContainers = (Map<String, Startable>) store.get(ACTIVE_CONTAINERS);
+
+        if (activeContainers == null) {
+            throw new ParameterResolutionException("Active containers map not initialized");
+        }
+
+        Startable container = activeContainers.get(config.name());
+        if (container == null) {
+            throw new ParameterResolutionException(
+                String.format("Container '%s' not found in active containers", config.name())
+            );
+        }
+
+        return container;
     }
 }
