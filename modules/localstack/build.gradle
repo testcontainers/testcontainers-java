@@ -10,9 +10,3 @@ dependencies {
     testImplementation 'software.amazon.awssdk:lambda'
     testImplementation 'software.amazon.awssdk:kms'
 }
-
-tasks.japicmp {
-    classExcludes = [
-        "org.testcontainers.containers.localstack.LocalStackContainer"
-    ]
-}

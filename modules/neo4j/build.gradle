@@ -35,10 +35,3 @@ dependencies {
 
     testImplementation 'org.neo4j.driver:neo4j-java-driver:4.4.21'
 }
-
-tasks.japicmp {
-    classExcludes = [
-        "org.testcontainers.containers.Neo4jContainer",
-        "org.testcontainers.containers.Neo4jLabsPlugin"
-    ]
-}

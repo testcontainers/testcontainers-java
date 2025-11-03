@@ -8,9 +8,3 @@ dependencies {
     testImplementation 'org.apache.tinkerpop:gremlin-driver:3.7.4'
     testImplementation "com.orientechnologies:orientdb-gremlin:3.2.44"
 }
-
-tasks.japicmp {
-    classExcludes = [
-        "org.testcontainers.containers.OrientDBContainer"
-    ]
-}

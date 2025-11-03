@@ -7,9 +7,3 @@ dependencies {
 
     testImplementation 'org.apache.solr:solr-solrj:8.11.4'
 }
-
-tasks.japicmp {
-    classExcludes = [
-        "org.testcontainers.containers.SolrContainer"
-    ]
-}
