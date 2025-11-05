@@ -9,28 +9,19 @@ import java.util.Map;
 /**
  * A consumer for container output that logs output to an SLF4J logger.
  */
-public class Slf4jLogConsumer extends BaseConsumer<Slf4jLogConsumer> {
+public class Slf4jLogConsumer extends BaseLogConsumer<Slf4jLogConsumer> {
 
     private final Logger logger;
 
     private final Map<String, String> mdc = new HashMap<>();
-
-    private boolean separateOutputStreams;
-
-    private String prefix = "";
 
     public Slf4jLogConsumer(Logger logger) {
         this(logger, false);
     }
 
     public Slf4jLogConsumer(Logger logger, boolean separateOutputStreams) {
+        super(separateOutputStreams);
         this.logger = logger;
-        this.separateOutputStreams = separateOutputStreams;
-    }
-
-    public Slf4jLogConsumer withPrefix(String prefix) {
-        this.prefix = "[" + prefix + "] ";
-        return this;
     }
 
     public Slf4jLogConsumer withMdc(String key, String value) {
@@ -43,39 +34,20 @@ public class Slf4jLogConsumer extends BaseConsumer<Slf4jLogConsumer> {
         return this;
     }
 
-    public Slf4jLogConsumer withSeparateOutputStreams() {
-        this.separateOutputStreams = true;
-        return this;
-    }
-
     @Override
     public void accept(OutputFrame outputFrame) {
-        final OutputFrame.OutputType outputType = outputFrame.getType();
-        final String utf8String = outputFrame.getUtf8StringWithoutLineEnding();
-
         final Map<String, String> originalMdc = MDC.getCopyOfContextMap();
         MDC.setContextMap(mdc);
         try {
-            switch (outputType) {
-                case END:
-                    break;
-                case STDOUT:
-                    if (separateOutputStreams) {
-                        logger.info("{}{}", prefix.isEmpty() ? "" : (prefix + ": "), utf8String);
-                    } else {
-                        logger.info("{}{}: {}", prefix, outputType, utf8String);
-                    }
-                    break;
-                case STDERR:
-                    if (separateOutputStreams) {
-                        logger.error("{}{}", prefix.isEmpty() ? "" : (prefix + ": "), utf8String);
-                    } else {
-                        logger.info("{}{}: {}", prefix, outputType, utf8String);
-                    }
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unexpected outputType " + outputType);
-            }
+            log((s) -> {
+                if (logger.isErrorEnabled()) {
+                    logger.error(s.get());
+                }
+            }, (s) -> {
+                if (logger.isInfoEnabled()) {
+                    logger.info(s.get());
+                }
+            }, outputFrame);
         } finally {
             if (originalMdc == null) {
                 MDC.clear();
