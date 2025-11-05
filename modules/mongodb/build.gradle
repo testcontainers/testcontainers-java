@@ -5,9 +5,3 @@ dependencies {
 
     testImplementation("org.mongodb:mongodb-driver-sync:5.1.4")
 }
-
-tasks.japicmp {
-    classExcludes = [
-        "org.testcontainers.containers.MongoDBContainer"
-    ]
-}

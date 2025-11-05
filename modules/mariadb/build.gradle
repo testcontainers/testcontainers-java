@@ -12,9 +12,3 @@ dependencies {
     testImplementation testFixtures(project(':testcontainers-r2dbc'))
     testRuntimeOnly 'org.mariadb:r2dbc-mariadb:1.0.3'
 }
-
-tasks.japicmp {
-    classExcludes = [
-        "org.testcontainers.containers.MariaDBContainer"
-    ]
-}

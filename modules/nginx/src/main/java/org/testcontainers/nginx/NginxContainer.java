@@ -27,4 +27,8 @@ public class NginxContainer extends GenericContainer<NginxContainer> {
     public URL getBaseUrl(String scheme, int port) throws MalformedURLException {
         return new URL(scheme + "://" + getHost() + ":" + getMappedPort(port));
     }
+
+    public URL getBaseUrl(String scheme) throws MalformedURLException {
+        return getBaseUrl(scheme, NGINX_DEFAULT_PORT);
+    }
 }

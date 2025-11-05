@@ -8,9 +8,3 @@ dependencies {
     testImplementation 'com.couchbase.client:java-client:3.9.1'
     testImplementation 'org.awaitility:awaitility:4.3.0'
 }
-
-tasks.japicmp {
-    classExcludes = [
-        "org.testcontainers.couchbase.CouchbaseContainer"
-    ]
-}

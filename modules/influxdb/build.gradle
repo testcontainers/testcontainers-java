@@ -8,9 +8,3 @@ dependencies {
     testImplementation 'org.influxdb:influxdb-java:2.25'
     testImplementation "com.influxdb:influxdb-client-java:7.3.0"
 }
-
-tasks.japicmp {
-    classExcludes = [
-        "org.testcontainers.containers.InfluxDBContainer"
-    ]
-}

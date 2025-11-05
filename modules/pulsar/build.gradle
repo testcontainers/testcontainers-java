@@ -7,9 +7,3 @@ dependencies {
     testImplementation 'org.apache.pulsar:pulsar-client'
     testImplementation 'org.apache.pulsar:pulsar-client-admin'
 }
-
-tasks.japicmp {
-    classExcludes = [
-        "org.testcontainers.containers.PulsarContainer"
-    ]
-}

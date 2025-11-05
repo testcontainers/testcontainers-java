@@ -6,9 +6,3 @@ dependencies {
 
     testImplementation 'redis.clients:jedis:6.2.0'
 }
-
-tasks.japicmp {
-    classExcludes = [
-        "org.testcontainers.containers.ToxiproxyContainer"
-    ]
-}

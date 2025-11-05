@@ -15,9 +15,3 @@ dependencies {
     // MSSQL's wait strategy requires the JDBC driver
     testImplementation testFixtures(project(':testcontainers-r2dbc'))
 }
-
-tasks.japicmp {
-    classExcludes = [
-        "org.testcontainers.containers.MSSQLServerContainer"
-    ]
-}
