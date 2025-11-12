@@ -28,14 +28,7 @@ public class OllamaHuggingFaceContainer extends OllamaContainer {
             executeCommand("apt-get", "upgrade", "-y");
             executeCommand("apt-get", "install", "-y", "python3-pip");
             executeCommand("pip", "install", "huggingface-hub");
-            executeCommand(
-                "huggingface-cli",
-                "download",
-                huggingFaceModel.repository,
-                huggingFaceModel.model,
-                "--local-dir",
-                "."
-            );
+            executeCommand("hf", "download", huggingFaceModel.repository, huggingFaceModel.model, "--local-dir", ".");
             executeCommand("sh", "-c", String.format("echo '%s' > Modelfile", huggingFaceModel.modelfileContent));
             executeCommand("ollama", "create", huggingFaceModel.model, "-f", "Modelfile");
             executeCommand("rm", huggingFaceModel.model);
@@ -48,7 +41,7 @@ public class OllamaHuggingFaceContainer extends OllamaContainer {
         ExecResult execResult = execInContainer(command);
         if (execResult.getExitCode() > 0) {
             throw new ContainerLaunchException(
-                "Failed to execute " + String.join(" ", command) + ": " + execResult.getStderr()
+                "Failed to execute " + String.join(" ", command) + ": " + execResult.getStdout()
             );
         }
     }
