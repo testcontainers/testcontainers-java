@@ -404,7 +404,7 @@ public abstract class DockerClientProviderStrategy {
         DefaultDockerClientConfig.Builder configBuilder = DefaultDockerClientConfig.createDefaultConfigBuilder();
 
         if (configBuilder.build().getApiVersion() == RemoteApiVersion.UNKNOWN_VERSION) {
-            configBuilder.withApiVersion(RemoteApiVersion.VERSION_1_32);
+            configBuilder.withApiVersion(RemoteApiVersion.VERSION_1_44);
         }
         Map<String, String> headers = new HashMap<>();
         headers.put("x-tc-sid", DockerClientFactory.SESSION_ID);
