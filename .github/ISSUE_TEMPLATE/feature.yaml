@@ -43,6 +43,7 @@ body:
         - MongoDB
         - MSSQLServer
         - MySQL
+        - NATS
         - Neo4j
         - NGINX
         - OceanBase

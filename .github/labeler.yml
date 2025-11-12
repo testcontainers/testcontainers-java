@@ -143,6 +143,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/mysql/**/*
+"modules/nats":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/nats/**/*
 "modules/neo4j":
   - changed-files:
     - any-glob-to-any-file:

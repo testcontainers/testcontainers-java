@@ -230,6 +230,11 @@ updates:
       interval: "monthly"
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
+    directory: "/modules/nats"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "gradle"
     directory: "/modules/neo4j"
     schedule:
       interval: "monthly"
