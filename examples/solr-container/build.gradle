@@ -15,7 +15,7 @@ dependencies {
     testImplementation 'org.testcontainers:testcontainers'
     testImplementation 'org.testcontainers:testcontainers-solr'
     testImplementation 'org.assertj:assertj-core:3.27.4'
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
+    testImplementation 'org.junit.jupiter:junit-jupiter:6.0.1'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
 }
 
