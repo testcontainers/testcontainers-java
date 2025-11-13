@@ -13,5 +13,5 @@ dependencies {
     testImplementation 'com.azure:azure-data-tables'
     testImplementation 'com.azure:azure-messaging-eventhubs'
     testImplementation 'com.azure:azure-messaging-servicebus'
-    testImplementation 'com.microsoft.sqlserver:mssql-jdbc:13.2.0.jre8'
+    testImplementation 'com.microsoft.sqlserver:mssql-jdbc:13.2.1.jre8'
 }
