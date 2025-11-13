@@ -19,7 +19,7 @@ class ComposeContainerOverrideTest {
     @Test
     void readEnvironment() {
         try (
-            ComposeContainer compose = new ComposeContainer(DockerImageName.parse("docker:24.0.2"), BASE)
+            ComposeContainer compose = new ComposeContainer(DockerImageName.parse("docker:25.0.5"), BASE)
                 .withExposedService("redis", 6379)
         ) {
             compose.start();
@@ -34,7 +34,7 @@ class ComposeContainerOverrideTest {
     @Test
     void resetEnvironment() {
         try (
-            ComposeContainer compose = new ComposeContainer(DockerImageName.parse("docker:24.0.2"), BASE, OVERRIDE)
+            ComposeContainer compose = new ComposeContainer(DockerImageName.parse("docker:25.0.5"), BASE, OVERRIDE)
                 .withExposedService("redis", 6379)
         ) {
             compose.start();
