@@ -10,6 +10,7 @@ import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
@@ -102,7 +103,7 @@ class DockerComposeContainerWithBuildTest {
             .instance()
             .client()
             .listImagesCmd()
-            .withImageNameFilter(imageName)
+            .withFilter("reference", Collections.singletonList(imageName))
             .exec()
             .stream()
             .findFirst()
