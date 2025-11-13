@@ -31,7 +31,7 @@ class ComposeContainerWithServicesTest {
     @Test
     void testDesiredSubsetOfServicesAreStarted() {
         try (
-            ComposeContainer compose = new ComposeContainer(DockerImageName.parse("docker:24.0.2"), SIMPLE_COMPOSE_FILE)
+            ComposeContainer compose = new ComposeContainer(DockerImageName.parse("docker:25.0.5"), SIMPLE_COMPOSE_FILE)
                 .withServices("redis")
         ) {
             compose.start();
@@ -43,7 +43,7 @@ class ComposeContainerWithServicesTest {
     @Test
     void testDesiredSubsetOfScaledServicesAreStarted() {
         try (
-            ComposeContainer compose = new ComposeContainer(DockerImageName.parse("docker:24.0.2"), SIMPLE_COMPOSE_FILE)
+            ComposeContainer compose = new ComposeContainer(DockerImageName.parse("docker:25.0.5"), SIMPLE_COMPOSE_FILE)
                 .withScaledService("redis", 2)
         ) {
             compose.start();
@@ -55,7 +55,7 @@ class ComposeContainerWithServicesTest {
     @Test
     void testDesiredSubsetOfSpecifiedAndScaledServicesAreStarted() {
         try (
-            ComposeContainer compose = new ComposeContainer(DockerImageName.parse("docker:24.0.2"), SIMPLE_COMPOSE_FILE)
+            ComposeContainer compose = new ComposeContainer(DockerImageName.parse("docker:25.0.5"), SIMPLE_COMPOSE_FILE)
                 .withServices("redis")
                 .withScaledService("redis", 2)
         ) {
@@ -68,7 +68,7 @@ class ComposeContainerWithServicesTest {
     @Test
     void testDesiredSubsetOfSpecifiedOrScaledServicesAreStarted() {
         try (
-            ComposeContainer compose = new ComposeContainer(DockerImageName.parse("docker:24.0.2"), SIMPLE_COMPOSE_FILE)
+            ComposeContainer compose = new ComposeContainer(DockerImageName.parse("docker:25.0.5"), SIMPLE_COMPOSE_FILE)
                 .withServices("other")
                 .withScaledService("redis", 2)
         ) {
@@ -81,7 +81,7 @@ class ComposeContainerWithServicesTest {
     @Test
     void testAllServicesAreStartedIfNotSpecified() {
         try (
-            ComposeContainer compose = new ComposeContainer(DockerImageName.parse("docker:24.0.2"), SIMPLE_COMPOSE_FILE)
+            ComposeContainer compose = new ComposeContainer(DockerImageName.parse("docker:25.0.5"), SIMPLE_COMPOSE_FILE)
         ) {
             compose.start();
 
@@ -93,7 +93,7 @@ class ComposeContainerWithServicesTest {
     void testScaleInComposeFileIsRespected() {
         try (
             ComposeContainer compose = new ComposeContainer(
-                DockerImageName.parse("docker:24.0.2"),
+                DockerImageName.parse("docker:25.0.5"),
                 COMPOSE_FILE_WITH_INLINE_SCALE
             )
         ) {
@@ -110,7 +110,7 @@ class ComposeContainerWithServicesTest {
             catchThrowable(() -> {
                 try (
                     ComposeContainer compose = new ComposeContainer(
-                        DockerImageName.parse("docker:24.0.2"),
+                        DockerImageName.parse("docker:25.0.5"),
                         SIMPLE_COMPOSE_FILE
                     )
                         .withServices("redis")
@@ -133,7 +133,7 @@ class ComposeContainerWithServicesTest {
     void testWaitingForHealthcheck() {
         try (
             ComposeContainer compose = new ComposeContainer(
-                DockerImageName.parse("docker:24.0.2"),
+                DockerImageName.parse("docker:25.0.5"),
                 COMPOSE_FILE_WITH_HEALTHCHECK
             )
                 .waitingFor("redis", Wait.forHealthcheck().withStartupTimeout(Duration.ofMinutes(2)))
@@ -148,7 +148,7 @@ class ComposeContainerWithServicesTest {
     void testWaitingForHealthcheckWithRestartDoesNotCrash() {
         try (
             ComposeContainer compose = new ComposeContainer(
-                DockerImageName.parse("docker:24.0.2"),
+                DockerImageName.parse("docker:25.0.5"),
                 COMPOSE_FILE_WITH_HEALTHCHECK
             )
                 .waitingFor("redis", Wait.forHealthcheck().withStartupTimeout(Duration.ofMinutes(1)))

@@ -11,7 +11,7 @@ import spock.lang.Specification
 class ComposeContainerIT extends Specification {
 
 	ComposeContainer composeContainer = new ComposeContainer(
-	DockerImageName.parse("docker:24.0.2"),
+	DockerImageName.parse("docker:25.0.5"),
 	new File("src/test/resources/docker-compose.yml"))
 	.withExposedService("whoami-1", 80, Wait.forHttp("/"))
 
