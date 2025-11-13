@@ -1,0 +1,7 @@
+description = "Testcontainers :: Valkey"
+
+dependencies {
+    api project(':testcontainers')
+
+    testImplementation("io.valkey:valkey-java:5.5.0")
+}

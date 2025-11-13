@@ -248,6 +248,10 @@
   - changed-files:
       - any-glob-to-any-file:
           - modules/typesense/**/*
+"modules/valkey":
+  - changed-files:
+      - any-glob-to-any-file:
+          - modules/valkey/**/*
 "modules/vault":
   - changed-files:
     - any-glob-to-any-file:
