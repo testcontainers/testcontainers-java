@@ -10,8 +10,8 @@ import com.azure.messaging.servicebus.ServiceBusSenderClient;
 import com.github.dockerjava.api.model.Capability;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.containers.Network;
+import org.testcontainers.mssqlserver.MSSQLServerContainer;
 import org.testcontainers.utility.MountableFile;
 
 import java.util.List;
@@ -31,7 +31,7 @@ class ServiceBusEmulatorContainerTest {
             Network network = Network.newNetwork();
             // }
             // sqlContainer {
-            MSSQLServerContainer<?> mssqlServerContainer = new MSSQLServerContainer<>(
+            MSSQLServerContainer mssqlServerContainer = new MSSQLServerContainer(
                 "mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04"
             )
                 .acceptLicense()
