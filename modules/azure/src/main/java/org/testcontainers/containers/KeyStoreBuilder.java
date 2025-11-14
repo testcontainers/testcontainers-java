@@ -65,7 +65,7 @@ final class KeyStoreBuilder {
     }
 
     private static Request buildRequest(String endpoint) {
-        return new Request.Builder().get().url(endpoint + "/_explorer/emulator.pem").build();
+        return new Request.Builder().get().url(endpoint + CosmosDBEmulatorContainer.CERTIFICATE_ENDPOINT).build();
     }
 
     private static KeyStore buildKeyStore(InputStream certificateStream, String keyStorePassword) throws Exception {
