@@ -194,7 +194,7 @@ public class ImageFromDockerfile
             String resolvedImageName = applyBuildArgsToImageName(imageName);
             try {
                 log.info(
-                    "Pre-emptively checking local images for '{}', referenced via a Dockerfile. If not available, it will be pulled.",
+                    "Preemptively checking local images for '{}', referenced via a Dockerfile. If not available, it will be pulled.",
                     resolvedImageName
                 );
                 new RemoteDockerImage(DockerImageName.parse(resolvedImageName))
