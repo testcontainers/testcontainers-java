@@ -6,15 +6,12 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.snakeyaml.engine.v2.api.Load;
+import org.snakeyaml.engine.v2.api.LoadSettings;
+import org.snakeyaml.engine.v2.constructor.StandardConstructor;
+import org.snakeyaml.engine.v2.nodes.Node;
+import org.snakeyaml.engine.v2.nodes.Tag;
 import org.testcontainers.images.ParsedDockerfile;
-import org.yaml.snakeyaml.DumperOptions;
-import org.yaml.snakeyaml.LoaderOptions;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.SafeConstructor;
-import org.yaml.snakeyaml.nodes.Node;
-import org.yaml.snakeyaml.nodes.Tag;
-import org.yaml.snakeyaml.representer.Representer;
-import org.yaml.snakeyaml.resolver.Resolver;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -42,12 +39,14 @@ class ParsedDockerComposeFile {
     private final Map<String, Set<String>> serviceNameToImageNames = new HashMap<>();
 
     ParsedDockerComposeFile(File composeFile) {
-        // The default is 50 and a big docker-compose.yml file can easily go above that number. 1,000 should give us some room
-        LoaderOptions options = new LoaderOptions();
-        options.setMaxAliasesForCollections(1_000);
-        DumperOptions dumperOptions = new DumperOptions();
+        LoadSettings loadSettings = LoadSettings
+            .builder()
+            // The default is 50 and a big docker-compose.yml file can easily go above that number.
+            // 1,000 should give us some room
+            .setMaxAliasesForCollections(1_000)
+            .build();
 
-        SafeConstructor constructor = new SafeConstructor(options) {
+        StandardConstructor constructor = new StandardConstructor(loadSettings) {
             @Override
             protected Object constructObject(Node node) {
                 if (node.getTag().equals(new Tag("!reset"))) {
@@ -56,9 +55,9 @@ class ParsedDockerComposeFile {
                 return super.constructObject(node);
             }
         };
-        Yaml yaml = new Yaml(constructor, new Representer(dumperOptions), dumperOptions, options, new Resolver());
+        Load load = new Load(loadSettings, constructor);
         try (FileInputStream fileInputStream = FileUtils.openInputStream(composeFile)) {
-            composeFileContent = yaml.load(fileInputStream);
+            composeFileContent = (Map<String, Object>) load.loadFromInputStream(fileInputStream);
         } catch (Exception e) {
             throw new IllegalArgumentException("Unable to parse YAML file from " + composeFile.getAbsolutePath(), e);
         }
