@@ -38,9 +38,11 @@ class SimpleOracleTest extends AbstractContainerDatabaseTest {
         assertThat(container.getPassword()).isEqualTo(password);
 
         container.start();
-        ResultSet resultSet = performQuery(container, "GRANT DBA TO " + username);
-        int resultSetInt = resultSet.getInt(1);
-        assertThat(resultSetInt).as("A basic system user query succeeds").isEqualTo(1);
+        ResultSet resultSet = performQuery(container, "SELECT USER FROM DUAL");
+        String currentUser = resultSet.getString(1);
+        assertThat(currentUser)
+            .as("Connected session should run as the system user")
+            .isEqualToIgnoringCase(username);
     }
 
     @Test
