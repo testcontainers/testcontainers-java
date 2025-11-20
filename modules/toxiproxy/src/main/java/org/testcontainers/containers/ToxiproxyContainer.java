@@ -26,10 +26,15 @@ import java.util.concurrent.atomic.AtomicInteger;
  *     <li>HTTP: 8474</li>
  *     <li>Proxied Ports: 8666-8697</li>
  * </ul>
+ *
+ * @deprecated use {@link org.testcontainers.toxiproxy.ToxiproxyContainer} instead.
  */
+@Deprecated
 public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("shopify/toxiproxy");
+
+    private static final String DEFAULT_TAG = "2.1.0";
 
     private static final DockerImageName GHCR_IMAGE_NAME = DockerImageName.parse("ghcr.io/shopify/toxiproxy");
 
@@ -44,6 +49,14 @@ public class ToxiproxyContainer extends GenericContainer<ToxiproxyContainer> {
     private final Map<String, ContainerProxy> proxies = new HashMap<>();
 
     private final AtomicInteger nextPort = new AtomicInteger(FIRST_PROXIED_PORT);
+
+    /**
+     * @deprecated use {@link #ToxiproxyContainer(DockerImageName)} instead
+     */
+    @Deprecated
+    public ToxiproxyContainer() {
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
+    }
 
     public ToxiproxyContainer(String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));

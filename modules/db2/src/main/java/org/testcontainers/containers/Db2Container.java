@@ -18,7 +18,9 @@ import java.util.Set;
  * <ul>
  *     <li>Database: 50000</li>
  * </ul>
+ * @deprecated use {@link org.testcontainers.db2.Db2Container} instead.
  */
+@Deprecated
 public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
 
     public static final String NAME = "db2";
@@ -41,6 +43,14 @@ public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
     private String username = "db2inst1";
 
     private String password = "foobar1234";
+
+    /**
+     * @deprecated use {@link #Db2Container(DockerImageName)} instead
+     */
+    @Deprecated
+    public Db2Container() {
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
+    }
 
     public Db2Container(String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));

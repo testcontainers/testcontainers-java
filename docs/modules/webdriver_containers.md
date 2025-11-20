@@ -23,14 +23,14 @@ every test.
 
 The following field in your JUnit UI test class will prepare a container running Chrome:
 <!--codeinclude-->
-[Chrome](../../modules/selenium/src/test/java/org/testcontainers/junit/ChromeWebDriverContainerTest.java) inside_block:junitRule
+[Chrome](../../modules/selenium/src/test/java/org/testcontainers/selenium/ChromeWebDriverContainerTest.java) inside_block:junitRule
 <!--/codeinclude-->
 
         
 Now, instead of instantiating an instance of WebDriver directly, use the following to obtain an instance inside your
 test methods:
 <!--codeinclude-->
-[RemoteWebDriver](../../modules/selenium/src/test/java/org/testcontainers/junit/LocalServerWebDriverContainerTest.java) inside_block:getWebDriver
+[RemoteWebDriver](../../modules/selenium/src/test/java/org/testcontainers/selenium/LocalServerWebDriverContainerTest.java) inside_block:getWebDriver
 <!--/codeinclude-->
 
 You can then use this driver instance like a regular WebDriver.
@@ -38,7 +38,7 @@ You can then use this driver instance like a regular WebDriver.
 Note that, if you want to test a **web application running on the host machine** (the machine the JUnit tests are
 running on - which is quite likely), you'll need to use [the host exposing](../features/networking.md#exposing-host-ports-to-the-container) feature of Testcontainers, e.g.:
 <!--codeinclude-->
-[Open Web Page](../../modules/selenium/src/test/java/org/testcontainers/junit/LocalServerWebDriverContainerTest.java) inside_block:getPage
+[Open Web Page](../../modules/selenium/src/test/java/org/testcontainers/selenium/LocalServerWebDriverContainerTest.java) inside_block:getPage
 <!--/codeinclude-->
 
 
@@ -48,9 +48,9 @@ running on - which is quite likely), you'll need to use [the host exposing](../f
 
 At the moment, Chrome, Firefox and Edge are supported. To switch, simply change the first parameter to the rule constructor:
 <!--codeinclude-->
-[Chrome](../../modules/selenium/src/test/java/org/testcontainers/junit/ChromeWebDriverContainerTest.java) inside_block:junitRule
-[Firefox](../../modules/selenium/src/test/java/org/testcontainers/junit/FirefoxWebDriverContainerTest.java) inside_block:junitRule
-[Edge](../../modules/selenium/src/test/java/org/testcontainers/junit/EdgeWebDriverContainerTest.java) inside_block:junitRule
+[Chrome](../../modules/selenium/src/test/java/org/testcontainers/selenium/ChromeWebDriverContainerTest.java) inside_block:junitRule
+[Firefox](../../modules/selenium/src/test/java/org/testcontainers/selenium/FirefoxWebDriverContainerTest.java) inside_block:junitRule
+[Edge](../../modules/selenium/src/test/java/org/testcontainers/selenium/EdgeWebDriverContainerTest.java) inside_block:junitRule
 <!--/codeinclude-->
 
 ### Recording videos
@@ -59,8 +59,8 @@ By default, no videos will be recorded. However, you can instruct Testcontainers
 just for failing tests.
 
 <!--codeinclude-->
-[Record all Tests](../../modules/selenium/src/test/java/org/testcontainers/junit/ChromeRecordingWebDriverContainerTest.java) inside_block:recordAll
-[Record failing Tests](../../modules/selenium/src/test/java/org/testcontainers/junit/ChromeRecordingWebDriverContainerTest.java) inside_block:recordFailing
+[Record all Tests](../../modules/selenium/src/test/java/org/testcontainers/selenium/ChromeRecordingWebDriverContainerTest.java) inside_block:recordAll
+[Record failing Tests](../../modules/selenium/src/test/java/org/testcontainers/selenium/ChromeRecordingWebDriverContainerTest.java) inside_block:recordFailing
 <!--/codeinclude-->
 
 Note that the second parameter of `withRecordingMode` should be a directory where recordings can be saved.
@@ -68,13 +68,13 @@ Note that the second parameter of `withRecordingMode` should be a directory wher
 By default, the video will be recorded in [FLV](https://en.wikipedia.org/wiki/Flash_Video) format, but you can specify it explicitly or change it to [MP4](https://en.wikipedia.org/wiki/MPEG-4_Part_14) using `withRecordingMode` method with `VncRecordingFormat` option:
 
 <!--codeinclude-->
-[Video Format in MP4](../../modules/selenium/src/test/java/org/testcontainers/junit/ChromeRecordingWebDriverContainerTest.java) inside_block:recordMp4
-[Video Format in FLV](../../modules/selenium/src/test/java/org/testcontainers/junit/ChromeRecordingWebDriverContainerTest.java) inside_block:recordFlv
+[Video Format in MP4](../../modules/selenium/src/test/java/org/testcontainers/selenium/ChromeRecordingWebDriverContainerTest.java) inside_block:recordMp4
+[Video Format in FLV](../../modules/selenium/src/test/java/org/testcontainers/selenium/ChromeRecordingWebDriverContainerTest.java) inside_block:recordFlv
 <!--/codeinclude-->
 
 If you would like to customise the file name of the recording, or provide a different directory at runtime based on the description of the test and/or its success or failure, you may provide a custom recording file factory as follows:
 <!--codeinclude-->
-[CustomRecordingFileFactory](../../modules/selenium/src/test/java/org/testcontainers/junit/ChromeRecordingWebDriverContainerTest.java) inside_block:withRecordingFileFactory
+[CustomRecordingFileFactory](../../modules/selenium/src/test/java/org/testcontainers/selenium/ChromeRecordingWebDriverContainerTest.java) inside_block:withRecordingFileFactory
 <!--/codeinclude-->
 
 
@@ -82,7 +82,7 @@ Note the factory must implement `org.testcontainers.containers.RecordingFileFact
 
 ## More examples
 
-A few different examples are shown in [ChromeWebDriverContainerTest.java](https://github.com/testcontainers/testcontainers-java/blob/main/modules/selenium/src/test/java/org/testcontainers/junit/ChromeWebDriverContainerTest.java).
+A few different examples are shown in [ChromeWebDriverContainerTest.java](https://github.com/testcontainers/testcontainers-java/blob/main/modules/selenium/src/test/java/org/testcontainers/selenium/ChromeWebDriverContainerTest.java).
 
 ## Adding this module to your project dependencies
 
@@ -90,13 +90,13 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 === "Gradle"
     ```groovy
-    testImplementation "org.testcontainers:selenium:{{latest_version}}"
+    testImplementation "org.testcontainers:testcontainers-selenium:{{latest_version}}"
     ```
 === "Maven"
     ```xml
     <dependency>
         <groupId>org.testcontainers</groupId>
-        <artifactId>selenium</artifactId>
+        <artifactId>testcontainers-selenium</artifactId>
         <version>{{latest_version}}</version>
         <scope>test</scope>
     </dependency>

@@ -5,20 +5,6 @@ dependencies {
     // TODO use JDK's HTTP client and/or Apache HttpClient5
     shaded 'com.squareup.okhttp3:okhttp:5.1.0'
 
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
-
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
-    testImplementation 'com.couchbase.client:java-client:3.9.0'
+    testImplementation 'com.couchbase.client:java-client:3.9.1'
     testImplementation 'org.awaitility:awaitility:4.3.0'
-    testImplementation 'org.assertj:assertj-core:3.27.4'
-}
-
-tasks.japicmp {
-    classExcludes = [
-        "org.testcontainers.couchbase.CouchbaseContainer"
-    ]
-}
-
-test {
-    useJUnitPlatform()
 }

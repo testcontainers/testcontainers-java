@@ -29,12 +29,17 @@ import java.util.Optional;
  *     <li>Database: 2424</li>
  *     <li>Studio: 2480</li>
  * </ul>
+ *
+ * @deprecated use {@link org.testcontainers.orientdb.OrientDBContainer} instead.
  */
+@Deprecated
 public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrientDBContainer.class);
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("orientdb");
+
+    private static final String DEFAULT_TAG = "3.0.24-tp3";
 
     private static final String DEFAULT_USERNAME = "admin";
 
@@ -57,6 +62,14 @@ public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
     private OrientDB orientDB;
 
     private ODatabaseSession session;
+
+    /**
+     * @deprecated use {@link #OrientDBContainer(DockerImageName)} instead
+     */
+    @Deprecated
+    public OrientDBContainer() {
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
+    }
 
     public OrientDBContainer(@NonNull String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));

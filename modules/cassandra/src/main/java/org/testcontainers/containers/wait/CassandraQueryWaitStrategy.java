@@ -13,7 +13,7 @@ import static org.rnorth.ducttape.unreliables.Unreliables.retryUntilSuccess;
 /**
  * Waits until Cassandra returns its version
  *
- * @deprecated use {@link org.testcontainers.cassandra.wait.CassandraQueryWaitStrategy} instead.
+ * @deprecated use {@link org.testcontainers.cassandra.CassandraQueryWaitStrategy} instead.
  */
 @Deprecated
 public class CassandraQueryWaitStrategy extends AbstractWaitStrategy {

@@ -26,7 +26,7 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
 === "Gradle"
 
 ```groovy
-testImplementation "org.testcontainers:questdb:{{latest_version}}"
+testImplementation "org.testcontainers:testcontainers-questdb:{{latest_version}}"
 ```
 
 === "Maven"
@@ -35,7 +35,7 @@ testImplementation "org.testcontainers:questdb:{{latest_version}}"
 
 <dependency>
     <groupId>org.testcontainers</groupId>
-    <artifactId>questdb</artifactId>
+    <artifactId>testcontainers-questdb</artifactId>
     <version>{{latest_version}}</version>
     <scope>test</scope>
 </dependency>

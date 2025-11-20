@@ -15,13 +15,13 @@ dependencies {
     testImplementation 'com.zaxxer:HikariCP:7.0.2'
     testImplementation 'org.apache.httpcomponents:httpclient:4.5.14'
 
-    testRuntimeOnly 'org.postgresql:postgresql:42.7.7'
-    testRuntimeOnly 'mysql:mysql-connector-java:8.0.33'
+    testRuntimeOnly 'org.postgresql:postgresql:42.7.8'
+    testRuntimeOnly 'com.mysql:mysql-connector-j:8.2.0'
     testRuntimeOnly platform('org.junit:junit-bom:5.13.4')
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testRuntimeOnly 'org.junit.platform:junit-platform-testkit'
 
-    testCompileOnly 'org.jetbrains:annotations:26.0.2'
+    testCompileOnly 'org.jetbrains:annotations:26.0.2-1'
 }
 
 tasks.withType(GroovyCompile) {
@@ -40,11 +40,4 @@ javadocJar {
     dependsOn groovydoc
     archiveClassifier = 'javadoc'
     from groovydoc.destinationDir
-}
-
-test {
-    useJUnitPlatform()
-    testLogging {
-        events "passed", "skipped", "failed"
-    }
 }

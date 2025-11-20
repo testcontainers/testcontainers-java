@@ -3,20 +3,7 @@ description = "Testcontainers :: JDBC :: CockroachDB"
 dependencies {
     api project(':testcontainers-jdbc')
 
-    testRuntimeOnly 'org.postgresql:postgresql:42.7.7'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
+    testRuntimeOnly 'org.postgresql:postgresql:42.7.8'
 
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
     testImplementation project(':testcontainers-jdbc-test')
-    testImplementation 'org.assertj:assertj-core:3.27.4'
-}
-
-tasks.japicmp {
-    classExcludes = [
-        "org.testcontainers.containers.CockroachContainer"
-    ]
-}
-
-test {
-    useJUnitPlatform()
 }

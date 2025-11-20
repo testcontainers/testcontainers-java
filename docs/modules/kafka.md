@@ -86,13 +86,13 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 === "Gradle"
     ```groovy
-    testImplementation "org.testcontainers:kafka:{{latest_version}}"
+    testImplementation "org.testcontainers:testcontainers-kafka:{{latest_version}}"
     ```
 === "Maven"
     ```xml
     <dependency>
         <groupId>org.testcontainers</groupId>
-        <artifactId>kafka</artifactId>
+        <artifactId>testcontainers-kafka</artifactId>
         <version>{{latest_version}}</version>
         <scope>test</scope>
     </dependency>

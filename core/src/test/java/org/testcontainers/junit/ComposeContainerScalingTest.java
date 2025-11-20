@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.ComposeContainer;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.TestEnvironment;
 import redis.clients.jedis.Jedis;
 
@@ -26,6 +27,7 @@ class ComposeContainerScalingTest {
 
     @AutoClose
     public ComposeContainer environment = new ComposeContainer(
+        DockerImageName.parse("docker:25.0.5"),
         new File("src/test/resources/composev2/scaled-compose-test.yml")
     )
         .withScaledService("redis", 3)

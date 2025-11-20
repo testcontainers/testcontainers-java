@@ -12,13 +12,13 @@ The MongoDB module provides two Testcontainers for MongoDB unit testing:
 The following example shows how to create a MongoDBContainer:
 
 <!--codeinclude-->
-[Creating a MongoDB container](../../../modules/mongodb/src/test/java/org/testcontainers/containers/MongoDBContainerTest.java) inside_block:creatingMongoDBContainer
+[Creating a MongoDB container](../../../modules/mongodb/src/test/java/org/testcontainers/mongodb/MongoDBContainerTest.java) inside_block:creatingMongoDBContainer
 <!--/codeinclude-->
 
 And how to start it:
 
 <!--codeinclude-->
-[Starting a MongoDB container](../../../modules/mongodb/src/test/java/org/testcontainers/containers/MongoDBContainerTest.java) inside_block:startingMongoDBContainer
+[Starting a MongoDB container](../../../modules/mongodb/src/test/java/org/testcontainers/mongodb/MongoDBContainerTest.java) inside_block:startingMongoDBContainer
 <!--/codeinclude-->
 
 !!! note
@@ -77,13 +77,13 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 === "Gradle"
     ```groovy
-    testImplementation "org.testcontainers:mongodb:{{latest_version}}"
+    testImplementation "org.testcontainers:testcontainers-mongodb:{{latest_version}}"
     ```
 === "Maven"
     ```xml
     <dependency>
         <groupId>org.testcontainers</groupId>
-        <artifactId>mongodb</artifactId>
+        <artifactId>testcontainers-mongodb</artifactId>
         <version>{{latest_version}}</version>
         <scope>test</scope>
     </dependency>

@@ -7,7 +7,7 @@ Testcontainers module for [TiDB](https://hub.docker.com/r/pingcap/tidb)
 You can start a TiDB container instance from any Java application by using:
 
 <!--codeinclude-->
-[Container creation](../../../modules/tidb/src/test/java/org/testcontainers/junit/tidb/SimpleTiDBTest.java) inside_block:container
+[Container creation](../../../modules/tidb/src/test/java/org/testcontainers/tidb/TiDBContainerTest.java) inside_block:container
 <!--/codeinclude-->
 
 See [Database containers](./index.md) for documentation and usage that is common to all relational database container types.
@@ -24,14 +24,14 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 === "Gradle"
     ```groovy
-    testImplementation "org.testcontainers:tidb:{{latest_version}}"
+    testImplementation "org.testcontainers:testcontainers-tidb:{{latest_version}}"
     ```
 
 === "Maven"
     ```xml
     <dependency>
         <groupId>org.testcontainers</groupId>
-        <artifactId>tidb</artifactId>
+        <artifactId>testcontainers-tidb</artifactId>
         <version>{{latest_version}}</version>
         <scope>test</scope>
     </dependency>

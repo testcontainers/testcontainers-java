@@ -3,24 +3,10 @@ description = "Testcontainers :: Localstack"
 dependencies {
     api project(':testcontainers')
 
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
-
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
-    testImplementation platform("software.amazon.awssdk:bom:2.32.29")
+    testImplementation platform("software.amazon.awssdk:bom:2.35.0")
     testImplementation 'software.amazon.awssdk:s3'
     testImplementation 'software.amazon.awssdk:sqs'
     testImplementation 'software.amazon.awssdk:cloudwatchlogs'
     testImplementation 'software.amazon.awssdk:lambda'
     testImplementation 'software.amazon.awssdk:kms'
-    testImplementation 'org.assertj:assertj-core:3.27.4'
-}
-
-tasks.japicmp {
-    classExcludes = [
-        "org.testcontainers.containers.localstack.LocalStackContainer"
-    ]
-}
-
-test {
-    useJUnitPlatform()
 }

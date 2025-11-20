@@ -24,14 +24,14 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 === "Gradle"
     ```groovy
-    testImplementation "org.testcontainers:oceanbase:{{latest_version}}"
+    testImplementation "org.testcontainers:testcontainers-oceanbase:{{latest_version}}"
     ```
 
 === "Maven"
     ```xml
     <dependency>
         <groupId>org.testcontainers</groupId>
-        <artifactId>oceanbase</artifactId>
+        <artifactId>testcontainers-oceanbase</artifactId>
         <version>{{latest_version}}</version>
         <scope>test</scope>
     </dependency>

@@ -3,20 +3,6 @@ description = "Testcontainers :: RabbitMQ"
 dependencies {
     api project(":testcontainers")
 
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
-
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
     testImplementation 'com.rabbitmq:amqp-client:5.26.0'
-    testImplementation 'org.assertj:assertj-core:3.27.3'
-    compileOnly 'org.jetbrains:annotations:26.0.2'
-}
-
-tasks.japicmp {
-    classExcludes = [
-        "org.testcontainers.containers.RabbitMQContainer"
-    ]
-}
-
-test {
-    useJUnitPlatform()
+    compileOnly 'org.jetbrains:annotations:26.0.2-1'
 }

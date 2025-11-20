@@ -91,7 +91,7 @@ jobs:
       - uses: actions/checkout@v5
       - uses: ./.github/actions/setup-java
       - name: Setup Gradle Build Action
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
       - id: set-matrix
         env:
           # Since we override the tests executor,
@@ -126,7 +126,7 @@ jobs:
       - uses: actions/checkout@v5
       - uses: ./.github/actions/setup-java
       - name: Setup Gradle Build Action
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
       - id: set-matrix
         working-directory: ./examples/
         env:
@@ -163,7 +163,7 @@ jobs:
       - uses: actions/checkout@v5
       - uses: ./.github/actions/setup-java
       - name: Setup Gradle Build Action
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
       - id: set-matrix
         env:
           # Since we override the tests executor,

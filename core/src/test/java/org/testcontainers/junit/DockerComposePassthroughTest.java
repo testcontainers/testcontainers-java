@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.ContainerState;
 import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.TestEnvironment;
 
 import java.io.File;
@@ -25,6 +26,7 @@ class DockerComposePassthroughTest {
         TestWaitStrategy waitStrategy = new TestWaitStrategy();
         try (
             DockerComposeContainer compose = new DockerComposeContainer(
+                DockerImageName.parse("docker/compose:1.29.2"),
                 new File("src/test/resources/v2-compose-test-passthrough.yml")
             )
                 .withEnv("foo", "bar")

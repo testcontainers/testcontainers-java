@@ -22,14 +22,14 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 === "Gradle"
     ```groovy
-    testImplementation "org.testcontainers:timeplus:{{latest_version}}"
+    testImplementation "org.testcontainers:testcontainers-timeplus:{{latest_version}}"
     ```
 
 === "Maven"
     ```xml
     <dependency>
         <groupId>org.testcontainers</groupId>
-        <artifactId>timeplus</artifactId>
+        <artifactId>testcontainers-timeplus</artifactId>
         <version>{{latest_version}}</version>
         <scope>test</scope>
     </dependency>

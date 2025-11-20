@@ -4,6 +4,7 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.ComposeContainer;
 import org.testcontainers.containers.ContainerState;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
 
@@ -17,7 +18,10 @@ class ComposeContainerOverrideTest {
 
     @Test
     void readEnvironment() {
-        try (ComposeContainer compose = new ComposeContainer(BASE).withExposedService("redis", 6379)) {
+        try (
+            ComposeContainer compose = new ComposeContainer(DockerImageName.parse("docker:25.0.5"), BASE)
+                .withExposedService("redis", 6379)
+        ) {
             compose.start();
             InspectContainerResponse container = compose
                 .getContainerByServiceName("redis-1")
@@ -29,7 +33,10 @@ class ComposeContainerOverrideTest {
 
     @Test
     void resetEnvironment() {
-        try (ComposeContainer compose = new ComposeContainer(BASE, OVERRIDE).withExposedService("redis", 6379)) {
+        try (
+            ComposeContainer compose = new ComposeContainer(DockerImageName.parse("docker:25.0.5"), BASE, OVERRIDE)
+                .withExposedService("redis", 6379)
+        ) {
             compose.start();
             InspectContainerResponse container = compose
                 .getContainerByServiceName("redis-1")

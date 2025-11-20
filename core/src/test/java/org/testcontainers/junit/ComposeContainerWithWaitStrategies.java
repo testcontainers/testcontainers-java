@@ -3,6 +3,7 @@ package org.testcontainers.junit;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.ComposeContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
 import java.time.Duration;
@@ -17,7 +18,10 @@ class ComposeContainerWithWaitStrategies {
     void testComposeContainerConstructor() {
         try (
             // composeContainerWithCombinedWaitStrategies {
-            ComposeContainer compose = new ComposeContainer(new File("src/test/resources/composev2/compose-test.yml"))
+            ComposeContainer compose = new ComposeContainer(
+                DockerImageName.parse("docker:25.0.5"),
+                new File("src/test/resources/composev2/compose-test.yml")
+            )
                 .withExposedService("redis-1", REDIS_PORT, Wait.forSuccessfulCommand("redis-cli ping"))
                 .withExposedService("db-1", 3306, Wait.forLogMessage(".*ready for connections.*\\n", 1))
             // }
@@ -31,7 +35,10 @@ class ComposeContainerWithWaitStrategies {
     void testComposeContainerWaitForPortWithTimeout() {
         try (
             // composeContainerWaitForPortWithTimeout {
-            ComposeContainer compose = new ComposeContainer(new File("src/test/resources/composev2/compose-test.yml"))
+            ComposeContainer compose = new ComposeContainer(
+                DockerImageName.parse("docker:25.0.5"),
+                new File("src/test/resources/composev2/compose-test.yml")
+            )
                 .withExposedService(
                     "redis-1",
                     REDIS_PORT,

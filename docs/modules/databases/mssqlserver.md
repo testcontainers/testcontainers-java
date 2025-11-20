@@ -7,7 +7,7 @@ Testcontainers module for [MS SQL Server](https://mcr.microsoft.com/en-us/artifa
 You can start a MS SQL Server container instance from any Java application by using:
 
 <!--codeinclude-->
-[Container definition](../../../modules/mssqlserver/src/test/java/org/testcontainers/junit/mssqlserver/SimpleMSSQLServerTest.java) inside_block:container
+[Container definition](../../../modules/mssqlserver/src/test/java/org/testcontainers/mssqlserver/MSSQLServerContainerTest.java) inside_block:container
 <!--/codeinclude-->
 
 !!! warning "EULA Acceptance"
@@ -29,13 +29,13 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 === "Gradle"
     ```groovy
-    testImplementation "org.testcontainers:mssqlserver:{{latest_version}}"
+    testImplementation "org.testcontainers:testcontainers-mssqlserver:{{latest_version}}"
     ```
 === "Maven"
     ```xml
     <dependency>
         <groupId>org.testcontainers</groupId>
-        <artifactId>mssqlserver</artifactId>
+        <artifactId>testcontainers-mssqlserver</artifactId>
         <version>{{latest_version}}</version>
         <scope>test</scope>
     </dependency>

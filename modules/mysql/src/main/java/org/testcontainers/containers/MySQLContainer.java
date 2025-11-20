@@ -12,7 +12,10 @@ import java.util.Set;
  * Supported image: {@code mysql}
  * <p>
  * Exposed ports: 3306
+ *
+ * @deprecated use {@link org.testcontainers.mysql.MySQLContainer} instead.
  */
+@Deprecated
 public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
 
     public static final String NAME = "mysql";
@@ -40,6 +43,14 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
     private String password = DEFAULT_PASSWORD;
 
     private static final String MYSQL_ROOT_USER = "root";
+
+    /**
+     * @deprecated use {@link #MySQLContainer(DockerImageName)} instead
+     */
+    @Deprecated
+    public MySQLContainer() {
+        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
+    }
 
     public MySQLContainer(String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));

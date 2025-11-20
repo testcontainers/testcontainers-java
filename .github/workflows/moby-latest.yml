@@ -2,6 +2,12 @@ name: Tests against recent Docker engine releases
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Docker version'
+        required: false
+        default: 'latest'
+        type: string
   schedule:
     # nightly build, at 23:59 CEST
     - cron:  '59 23 * * *'
@@ -14,9 +20,9 @@ jobs:
     strategy:
       matrix:
         include:
-          - { install-docker-type: "STABLE", channel: stable, rootless: false }
-          - { install-docker-type: "ROOTLESS", channel: stable, rootless: true }
-          - { install-docker-type: "ROOTFUL", channel: test, rootless: false }
+          - { install-docker-type: "STABLE", version: "${{ inputs.version }}", channel: stable, rootless: false }
+          - { install-docker-type: "ROOTLESS", version: "${{ inputs.version }}", channel: stable, rootless: true }
+          - { install-docker-type: "ROOTFUL", version: edge, channel: test, rootless: false }
     name: "Core tests using Docker ${{ matrix.install-docker-type }} (channel ${{ matrix.channel }})"
     runs-on: ubuntu-22.04
     continue-on-error: true
@@ -28,6 +34,7 @@ jobs:
         id: setup_docker
         uses: docker/setup-docker-action@v4
         with:
+          version: ${{ matrix.version }}
           channel: ${{ matrix.channel }}
           rootless: ${{ matrix.rootless }}
 

@@ -10,14 +10,5 @@ dependencies {
     api project(":testcontainers-database-commons")
     api "com.datastax.cassandra:cassandra-driver-core:3.10.0"
 
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
-
-    testImplementation 'org.assertj:assertj-core:3.27.4'
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
-    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.13.4'
     testImplementation 'com.datastax.oss:java-driver-core:4.17.0'
-}
-
-test {
-    useJUnitPlatform()
 }

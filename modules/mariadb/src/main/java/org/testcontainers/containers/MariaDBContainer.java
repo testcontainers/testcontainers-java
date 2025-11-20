@@ -12,7 +12,10 @@ import java.util.Set;
  * Supported image: {@code mariadb}
  * <p>
  * Exposed ports: 3306
+ *
+ * @deprecated use {@link org.testcontainers.mariadb.MariaDBContainer} instead.
  */
+@Deprecated
 public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("mariadb");

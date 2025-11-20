@@ -7,7 +7,7 @@ Testcontainers module for [MariaDB](https://hub.docker.com/_/mariadb)
 You can start a MySQL container instance from any Java application by using:
 
 <!--codeinclude-->
-[Container definition](../../../modules/mariadb/src/test/java/org/testcontainers/junit/mariadb/SimpleMariaDBTest.java) inside_block:container
+[Container definition](../../../modules/mariadb/src/test/java/org/testcontainers/mariadb/MariaDBContainerTest.java) inside_block:container
 <!--/codeinclude-->
 
 See [Database containers](./index.md) for documentation and usage that is common to all relational database container types.
@@ -30,13 +30,13 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 === "Gradle"
     ```groovy
-    testImplementation "org.testcontainers:mariadb:{{latest_version}}"
+    testImplementation "org.testcontainers:testcontainers-mariadb:{{latest_version}}"
     ```
 === "Maven"
     ```xml
     <dependency>
         <groupId>org.testcontainers</groupId>
-        <artifactId>mariadb</artifactId>
+        <artifactId>testcontainers-mariadb</artifactId>
         <version>{{latest_version}}</version>
         <scope>test</scope>
     </dependency>
