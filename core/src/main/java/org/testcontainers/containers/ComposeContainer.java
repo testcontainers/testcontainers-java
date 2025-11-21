@@ -60,7 +60,7 @@ public class ComposeContainer implements Startable {
 
     public static final String COMPOSE_EXECUTABLE = SystemUtils.IS_OS_WINDOWS ? "docker.exe" : "docker";
 
-    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("docker");
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("library/docker");
 
     private final ComposeDelegate composeDelegate;
 
