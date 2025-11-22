@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class ComposeContainerTest {
 
-    public static final String DOCKER_IMAGE = "docker:25.0.2";
+    public static final String DOCKER_IMAGE = "library/docker:25.0.2";
 
     private static final String COMPOSE_FILE_PATH = "src/test/resources/v2-compose-test.yml";
 
