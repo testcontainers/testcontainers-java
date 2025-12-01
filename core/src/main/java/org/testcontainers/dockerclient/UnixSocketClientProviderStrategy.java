@@ -13,7 +13,7 @@ import java.nio.file.Paths;
  * @deprecated this class is used by the SPI and should not be used directly
  */
 @Deprecated
-public final class UnixSocketClientProviderStrategy extends DockerClientProviderStrategy {
+public class UnixSocketClientProviderStrategy extends DockerClientProviderStrategy {
 
     protected static final String DOCKER_SOCK_PATH = "/var/run/docker.sock";
 
@@ -25,12 +25,19 @@ public final class UnixSocketClientProviderStrategy extends DockerClientProvider
 
     @Override
     public TransportConfig getTransportConfig() throws InvalidConfigurationException {
-        Path dockerSocketFile = Paths.get(DOCKER_SOCK_PATH);
+        String socketPath = DOCKER_SOCK_PATH;
+        String envPath = getDockerHostEnv();
+
+        if (envPath != null && envPath.startsWith("unix://")) {
+            socketPath = envPath.replace("unix://", "");
+        }
+
+        Path dockerSocketFile = Paths.get(socketPath);
         Integer mode;
         try {
             mode = (Integer) Files.getAttribute(dockerSocketFile, "unix:mode");
         } catch (IOException e) {
-            throw new InvalidConfigurationException("Could not find unix domain socket", e);
+            throw new InvalidConfigurationException("Could not find unix domain socket: " + socketPath, e);
         }
 
         if ((mode & 0xc000) != SOCKET_FILE_MODE_MASK) {
@@ -39,7 +46,14 @@ public final class UnixSocketClientProviderStrategy extends DockerClientProvider
             );
         }
 
-        return TransportConfig.builder().dockerHost(URI.create(SOCKET_LOCATION)).build();
+        return TransportConfig.builder().dockerHost(URI.create("unix://" + socketPath)).build();
+    }
+
+    /**
+     * Visible for testing.
+     */
+    protected String getDockerHostEnv() {
+        return System.getenv("DOCKER_HOST");
     }
 
     @Override
