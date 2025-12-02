@@ -153,6 +153,8 @@ updates:
     ignore:
       - dependency-name: "org.apache.tomcat:tomcat-jdbc"
         update-types: [ "version-update:semver-minor" ]
+      - dependency-name: "org.junit.jupiter:junit-jupiter"
+        update-types: [ "version-update:semver-major" ]
   - package-ecosystem: "gradle"
     directory: "/modules/junit-jupiter"
     schedule:
