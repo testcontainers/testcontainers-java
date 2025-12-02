@@ -38,6 +38,8 @@ updates:
         update-types: [ "version-update:semver-major" ]
       - dependency-name: "org.junit.platform:junit-platform-launcher"
         update-types: [ "version-update:semver-major" ]
+      - dependency-name: "com.gradleup.shadow"
+        update-types: [ "version-update:semver-major" ]
 
 # Explicit entry for each module
   - package-ecosystem: "gradle"
@@ -427,6 +429,8 @@ updates:
         update-types: [ "version-update:semver-major" ]
       - dependency-name: "org.junit.platform:junit-platform-launcher"
         update-types: [ "version-update:semver-major" ]
+      - dependency-name: "com.gradleup.shadow"
+        update-types: [ "version-update:semver-major" ]
 
 # Smoke test
   - package-ecosystem: "gradle"
@@ -442,6 +446,8 @@ updates:
       - dependency-name: "org.junit.jupiter:junit-jupiter"
         update-types: [ "version-update:semver-major" ]
       - dependency-name: "org.junit.platform:junit-platform-launcher"
+        update-types: [ "version-update:semver-major" ]
+      - dependency-name: "com.gradleup.shadow"
         update-types: [ "version-update:semver-major" ]
 
 # GitHub Actions
