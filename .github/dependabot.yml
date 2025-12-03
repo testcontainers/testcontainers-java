@@ -38,8 +38,6 @@ updates:
         update-types: [ "version-update:semver-major" ]
       - dependency-name: "org.junit.platform:junit-platform-launcher"
         update-types: [ "version-update:semver-major" ]
-      - dependency-name: "com.gradleup.shadow"
-        update-types: [ "version-update:semver-major" ]
 
 # Explicit entry for each module
   - package-ecosystem: "gradle"
