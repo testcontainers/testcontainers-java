@@ -161,6 +161,8 @@ updates:
     ignore:
       - dependency-name: "org.mockito:mockito-core"
         update-types: [ "version-update:semver-major" ]
+      - dependency-name: "org.junit:junit-bom"
+        update-types: [ "version-update:semver-major" ]
   - package-ecosystem: "gradle"
     directory: "/modules/k3s"
     schedule:
@@ -314,6 +316,8 @@ updates:
     ignore:
       - dependency-name: "io.r2dbc:r2dbc-spi"
         update-types: [ "version-update:semver-major", "version-update:semver-minor" ]
+      - dependency-name: "org.junit.jupiter:junit-jupiter"
+        update-types: [ "version-update:semver-major" ]
   - package-ecosystem: "gradle"
     directory: "/modules/rabbitmq"
     schedule:
