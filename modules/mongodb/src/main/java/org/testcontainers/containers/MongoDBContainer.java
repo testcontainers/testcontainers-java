@@ -236,10 +236,7 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
      * @return this container instance
      */
     public MongoDBContainer withInitScript(String scriptPath) {
-        withCopyFileToContainer(
-            MountableFile.forClasspathResource(scriptPath), 
-            "/docker-entrypoint-initdb.d/init.js"
-        );
+        withCopyFileToContainer(MountableFile.forClasspathResource(scriptPath), "/docker-entrypoint-initdb.d/init.js");
 
         this.waitStrategy = Wait.forLogMessage("(?i).*waiting for connections.*", 2);
 
