@@ -4,9 +4,42 @@ Testcontainers module for InfluxData [InfluxDB](https://www.influxdata.com/produ
 
 ## Important note
 
-There are breaking changes in InfluxDB 2.x.
-For more information refer to the main [documentation](https://docs.influxdata.com/influxdb/v2.0/upgrade/v1-to-v2/).
+There are breaking changes in InfluxDB 2.x. and InfluxDB 3.x. for more information refer to the main documentations:
+
+InfluxDB 3.x. [documentation](https://www.influxdata.com/blog/influxdb3-open-source-public-alpha/#heading2).
+
+InfluxDB 2.x. [documentation](https://docs.influxdata.com/influxdb/v2.0/upgrade/v1-to-v2/).
+
 You can find more information about the official InfluxDB image on [Docker Hub](https://hub.docker.com/_/influxdb).
+
+## InfluxDB 3.x usage example
+
+Running a `InfluxDBContainer` as a stand-in for InfluxDB in a test with default env variables:
+
+<!--codeinclude-->
+[Create an InfluxDB container](../../../modules/influxdb/src/test/java/org/testcontainers/influxdb/InfluxDBV3ContainerTest.java) inside_block:createInfluxDBContainerV3WithAuthTokenTest
+<!--/codeinclude-->
+
+
+The InfluxDB instance will be setup with the following data:<br/>
+
+| Property    | Default Value | 
+|-------------|:-------------:|
+| authDisable |     false     |
+
+For more details about the InfluxDB setup, please visit the official 
+
+[InfluxDB documentation](https://docs.influxdata.com/influxdb3/core/get-started/)
+
+[InfluxDB config options](https://docs.influxdata.com/influxdb3/core/reference/config-options/)
+
+It is possible to overwrite the default property values. Create a container with disabled auth token:
+<!--codeinclude-->
+[Create an InfluxDB container with admin token](../../../modules/influxdb/src/test/java/org/testcontainers/influxdb/InfluxDBV3ContainerTest.java) inside_block:createInfluxDBContainerV3WithDisableAuthTokenTest
+<!--/codeinclude-->
+
+!!! hint
+You can find the latest documentation about the InfluxDB 3.x Java client [here](https://github.com/InfluxCommunity/influxdb3-java).
 
 ## InfluxDB 2.x usage example
 
