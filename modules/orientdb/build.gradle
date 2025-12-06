@@ -5,6 +5,6 @@ dependencies {
 
     api "com.orientechnologies:orientdb-client:3.2.46"
 
-    testImplementation 'org.apache.tinkerpop:gremlin-driver:3.7.4'
+    testImplementation 'org.apache.tinkerpop:gremlin-driver:3.8.0'
     testImplementation "com.orientechnologies:orientdb-gremlin:3.2.46"
 }
