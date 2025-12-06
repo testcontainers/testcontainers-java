@@ -122,6 +122,28 @@ class PostgreSQLContainerTest extends AbstractContainerDatabaseTest {
         }
     }
 
+    @Test
+    void testCustomCredentials() {
+        try (
+
+            PostgreSQLContainer postgres = new PostgreSQLContainer(PostgreSQLTestImages.POSTGRES_TEST_IMAGE)
+                .withDatabaseName("my_db")
+                .withUsername("my_user")
+                .withPassword("my_secret")
+        ) {
+            postgres.start();
+
+            // Validações (Asserts)
+            assertThat(postgres.getDatabaseName()).isEqualTo("my_db");
+            assertThat(postgres.getUsername()).isEqualTo("my_user");
+            assertThat(postgres.getPassword()).isEqualTo("my_secret");
+
+            // Valida se a URL de conexão reflete as mudanças
+            String jdbcUrl = postgres.getJdbcUrl();
+            assertThat(jdbcUrl).contains("/my_db");
+        }
+    }
+
     private void assertHasCorrectExposedAndLivenessCheckPorts(PostgreSQLContainer postgres) {
         assertThat(postgres.getExposedPorts()).containsExactly(PostgreSQLContainer.POSTGRESQL_PORT);
         assertThat(postgres.getLivenessCheckPortNumbers())
