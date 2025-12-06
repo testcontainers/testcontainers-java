@@ -223,4 +223,26 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
             setEntrypoint("sh");
         }
     }
+
+    /**
+     * Executes a MongoDB initialization script from the classpath during startup.
+     * <p>
+     * The script will be copied to {@code /docker-entrypoint-initdb.d/init.js}.
+     * This method also adjusts the {@link org.testcontainers.containers.wait.strategy.WaitStrategy}
+     * to expect the "waiting for connections" log message twice, as the execution of an init script
+     * causes MongoDB to restart.
+     *
+     * @param scriptPath the path to the init script file on the classpath
+     * @return this container instance
+     */
+    public MongoDBContainer withInitScript(String scriptPath) {
+        withCopyFileToContainer(
+            MountableFile.forClasspathResource(scriptPath), 
+            "/docker-entrypoint-initdb.d/init.js"
+        );
+
+        this.waitStrategy = Wait.forLogMessage("(?i).*waiting for connections.*", 2);
+
+        return this;
+    }
 }
