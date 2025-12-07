@@ -5,7 +5,6 @@ import com.github.dockerjava.api.model.Info;
 import com.github.dockerjava.api.model.Network;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
-import com.github.dockerjava.core.RemoteApiVersion;
 import com.github.dockerjava.transport.DockerHttpClient;
 import com.github.dockerjava.transport.NamedPipeSocket;
 import com.github.dockerjava.transport.SSLConfig;
@@ -403,9 +402,6 @@ public abstract class DockerClientProviderStrategy {
 
         DefaultDockerClientConfig.Builder configBuilder = DefaultDockerClientConfig.createDefaultConfigBuilder();
 
-        if (configBuilder.build().getApiVersion() == RemoteApiVersion.UNKNOWN_VERSION) {
-            configBuilder.withApiVersion(RemoteApiVersion.VERSION_1_44);
-        }
         Map<String, String> headers = new HashMap<>();
         headers.put("x-tc-sid", DockerClientFactory.SESSION_ID);
         headers.put("User-Agent", String.format("tc-java/%s", DockerClientFactory.TESTCONTAINERS_VERSION));
