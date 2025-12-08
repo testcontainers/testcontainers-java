@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Trigger windows-test command
-        uses: peter-evans/slash-command-dispatch@13bc09769d122a64f75aa5037256f6f2d78be8c4 # v4.0.0
+        uses: peter-evans/slash-command-dispatch@5c11dc7efead556e3bdabf664302212f79eb26fa # v5.0.1
         with:
           token: ${{ secrets.WINDOWS_WORKERS_TOKEN }}
           # The command to trigger the pipeline: e.g. /windows-test
