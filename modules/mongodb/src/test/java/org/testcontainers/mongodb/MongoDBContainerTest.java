@@ -2,6 +2,8 @@ package org.testcontainers.mongodb;
 
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class MongoDBContainerTest extends AbstractMongo {
@@ -36,6 +38,19 @@ class MongoDBContainerTest extends AbstractMongo {
             mongoDBContainer.start();
             final String databaseName = "my-db";
             assertThat(mongoDBContainer.getReplicaSetUrl(databaseName)).endsWith(databaseName);
+        }
+    }
+
+    @Test
+    void testWithInitScript() {
+        try (
+            MongoDBContainer mongoDB = new MongoDBContainer("mongo:4.0.10")
+                .withInitScript("init.js")
+                .withStartupTimeout(Duration.ofSeconds(30))
+        ) {
+            mongoDB.start();
+
+            assertThat(mongoDB.isRunning()).isTrue();
         }
     }
 }
