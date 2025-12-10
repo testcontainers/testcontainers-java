@@ -133,12 +133,12 @@ class PostgreSQLContainerTest extends AbstractContainerDatabaseTest {
         ) {
             postgres.start();
 
-            // Validações (Asserts)
+            // Assertions
             assertThat(postgres.getDatabaseName()).isEqualTo("my_db");
             assertThat(postgres.getUsername()).isEqualTo("my_user");
             assertThat(postgres.getPassword()).isEqualTo("my_secret");
 
-            // Valida se a URL de conexão reflete as mudanças
+            // Verify that the connection URL reflects the changes
             String jdbcUrl = postgres.getJdbcUrl();
             assertThat(jdbcUrl).contains("/my_db");
         }
