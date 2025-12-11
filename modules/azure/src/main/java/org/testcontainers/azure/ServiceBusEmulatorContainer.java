@@ -1,9 +1,9 @@
 package org.testcontainers.azure;
 
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.builder.Transferable;
+import org.testcontainers.mssqlserver.MSSQLServerContainer;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.LicenseAcceptance;
 
@@ -25,7 +25,7 @@ public class ServiceBusEmulatorContainer extends GenericContainer<ServiceBusEmul
         "mcr.microsoft.com/azure-messaging/servicebus-emulator"
     );
 
-    private MSSQLServerContainer<?> msSqlServerContainer;
+    private MSSQLServerContainer msSqlServerContainer;
 
     /**
      * @param dockerImageName The specified docker image name to run
@@ -51,7 +51,7 @@ public class ServiceBusEmulatorContainer extends GenericContainer<ServiceBusEmul
      * @param msSqlServerContainer The MS SQL Server container used by Service Bus as a dependency
      * @return this
      */
-    public ServiceBusEmulatorContainer withMsSqlServerContainer(final MSSQLServerContainer<?> msSqlServerContainer) {
+    public ServiceBusEmulatorContainer withMsSqlServerContainer(final MSSQLServerContainer msSqlServerContainer) {
         dependsOn(msSqlServerContainer);
         this.msSqlServerContainer = msSqlServerContainer;
         return this;
