@@ -7,4 +7,11 @@ dependencies {
 
     testImplementation 'org.influxdb:influxdb-java:2.25'
     testImplementation "com.influxdb:influxdb-client-java:7.3.0"
+    testImplementation 'com.influxdb:influxdb3-java:1.2.0'
+}
+
+test {
+    jvmArgs = [
+        "--add-opens=java.base/java.nio=org.apache.arrow.memory.core,ALL-UNNAMED"
+    ]
 }
