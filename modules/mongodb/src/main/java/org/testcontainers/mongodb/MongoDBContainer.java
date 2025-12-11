@@ -41,9 +41,15 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
 
     private static final String STARTER_SCRIPT = "/testcontainers_start.sh";
 
+    private static final String SCRIPT_DESTINATION_DEFAULT = "/docker-entrypoint-initdb.d/init.js";
+
+    private static final String SCRIPT_DESTINATION_MANUAL = "/tmp/init.js";
+
     private boolean shardingEnabled;
 
     private boolean rsEnabled;
+
+    private String initScriptPath;
 
     public MongoDBContainer(@NonNull String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
@@ -67,6 +73,26 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
     protected void containerIsStarted(InspectContainerResponse containerInfo, boolean reused) {
         if (this.rsEnabled) {
             initReplicaSet(reused);
+        }
+
+        boolean isClusterMode = this.shardingEnabled || this.rsEnabled;
+
+        if (isClusterMode && this.initScriptPath != null) {
+            executeInitScriptInContainer();
+        }
+    }
+
+    @Override
+    protected void configure() {
+        super.configure();
+        boolean isClusterMode = this.shardingEnabled || this.rsEnabled;
+        if (this.initScriptPath != null) {
+            String destination = isClusterMode ? SCRIPT_DESTINATION_MANUAL : SCRIPT_DESTINATION_DEFAULT;
+            withCopyFileToContainer(MountableFile.forClasspathResource(this.initScriptPath), destination);
+        }
+
+        if (this.initScriptPath != null && !isClusterMode) {
+            this.waitStrategy = Wait.forLogMessage("(?i).*waiting for connections.*", 2);
         }
     }
 
@@ -203,5 +229,47 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
             throw new IllegalStateException("MongoDBContainer should be started first");
         }
         return getConnectionString() + "/" + databaseName;
+    }
+
+    /**
+     * Executes a MongoDB initialization script from the classpath during startup.
+     * <p>
+     * In standalone mode, the script will be copied to {@code /docker-entrypoint-initdb.d/init.js},
+     * and the {@link org.testcontainers.containers.wait.strategy.WaitStrategy} is adjusted
+     * to expect the "waiting for connections" log message twice.
+     * <p>
+     * In Replica Set or Sharding mode, the script is copied to a temporary location and executed
+     * manually after the cluster is initialized.
+     *
+     * @param scriptPath the path to the init script file on the classpath
+     * @return this container instance
+     */
+    public MongoDBContainer withInitScript(String scriptPath) {
+        this.initScriptPath = scriptPath;
+        return this;
+    }
+
+    @SneakyThrows
+    private void executeInitScriptInContainer() {
+        String cmd =
+            "mongosh " +
+            MONGODB_DATABASE_NAME_DEFAULT +
+            " " +
+            SCRIPT_DESTINATION_MANUAL +
+            " || mongo " +
+            MONGODB_DATABASE_NAME_DEFAULT +
+            " " +
+            SCRIPT_DESTINATION_MANUAL;
+
+        ExecResult result = execInContainer("sh", "-c", cmd);
+        if (result.getExitCode() != CONTAINER_EXIT_CODE_OK) {
+            throw new IllegalStateException(
+                String.format(
+                    "Failed to execute init script.\nStdout: %s\nStderr: %s",
+                    result.getStdout(),
+                    result.getStderr()
+                )
+            );
+        }
     }
 }
