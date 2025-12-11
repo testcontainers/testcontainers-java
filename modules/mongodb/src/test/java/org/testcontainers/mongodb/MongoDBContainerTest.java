@@ -72,9 +72,29 @@ class MongoDBContainerTest extends AbstractMongo {
                 String expectedComplexName = "test_col_\"_with_specials_!@#%^&*()";
                 String expectedJapaneseName = "日本語 コレクション ﾃｽﾄ";
 
-                assertThat(client.getDatabase("test").listCollectionNames())
-                    .as("Check if init script created the collections with special chars and Japanese")
-                    .contains(expectedComplexName, expectedJapaneseName);
+                com.mongodb.client.MongoDatabase database = client.getDatabase("test");
+
+                assertThat(database.listCollectionNames()).contains(expectedComplexName, expectedJapaneseName);
+
+                com.mongodb.client.MongoCollection<org.bson.Document> collection = database.getCollection(
+                    expectedComplexName
+                );
+
+                org.bson.Document doc = collection.find(new org.bson.Document("_id", 1)).first();
+
+                assertThat(doc).as("Document with _id=1 should exist").isNotNull();
+
+                assertThat(doc.getString("key_with_quotes"))
+                    .as("Double quotes should be preserved correctly")
+                    .isEqualTo("This is a \"double quoted\" string");
+
+                assertThat(doc.getString("key_with_json_chars"))
+                    .as("JSON special chars should be treated as plain text")
+                    .isEqualTo("{ } [ ] : ,");
+
+                assertThat(doc.getString("description"))
+                    .as("Japanese text should be preserved correctly")
+                    .isEqualTo("特殊記号を含むコレクションへの挿入テスト");
             }
         }
     }
