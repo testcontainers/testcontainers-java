@@ -4,7 +4,7 @@ dependencies {
     api project(':testcontainers')
     api project(':testcontainers-mssqlserver')
     // TODO use JDK's HTTP client and/or Apache HttpClient5
-    shaded 'com.squareup.okhttp3:okhttp:5.1.0'
+    shaded 'com.squareup.okhttp3:okhttp:5.3.2'
 
     testImplementation platform("com.azure:azure-sdk-bom:1.2.32")
     testImplementation 'com.azure:azure-cosmos'
