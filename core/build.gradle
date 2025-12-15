@@ -133,6 +133,7 @@ dependencies {
 tasks.generatePomFileForMavenJavaPublication.finalizedBy(
     tasks.register('checkPOMdependencies', org.testcontainers.build.ComparePOMWithLatestReleasedTask) {
         ignore = [
+            "junit:junit"
         ]
     }
 )
