@@ -4,5 +4,5 @@ dependencies {
     api project(':testcontainers')
 
     testImplementation "org.apache.activemq:activemq-client:6.2.0"
-    testImplementation "org.apache.activemq:artemis-jakarta-client:2.42.0"
+    testImplementation "org.apache.activemq:artemis-jakarta-client:2.44.0"
 }
