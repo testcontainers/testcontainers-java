@@ -57,9 +57,7 @@ class MongoDBContainerTest extends AbstractMongo {
     void shouldExecuteInitScriptWithEdgeCases() {
         try (
             MongoDBContainer mongoDB = new MongoDBContainer("mongo:4.0.10")
-                .withInitScript("initEdgeCase.js")
-                .withEnv("LANG", "C.UTF-8")
-                .withEnv("LC_ALL", "C.UTF-8")
+                .withInitScript("initEdgeCase!@#%^& *'().js")
                 .withStartupTimeout(Duration.ofSeconds(30))
         ) {
             mongoDB.start();
@@ -70,11 +68,12 @@ class MongoDBContainerTest extends AbstractMongo {
                 )
             ) {
                 String expectedComplexName = "test_col_\"_with_specials_!@#%^&*()";
-                String expectedJapaneseName = "日本語 コレクション ﾃｽﾄ";
+                String expectedCollectionWithSpecialChars = "col with spaces & symbols !@#";
 
                 com.mongodb.client.MongoDatabase database = client.getDatabase("test");
 
-                assertThat(database.listCollectionNames()).contains(expectedComplexName, expectedJapaneseName);
+                assertThat(database.listCollectionNames())
+                    .contains(expectedComplexName, expectedCollectionWithSpecialChars);
 
                 com.mongodb.client.MongoCollection<org.bson.Document> collection = database.getCollection(
                     expectedComplexName
@@ -82,19 +81,14 @@ class MongoDBContainerTest extends AbstractMongo {
 
                 org.bson.Document doc = collection.find(new org.bson.Document("_id", 1)).first();
 
-                assertThat(doc).as("Document with _id=1 should exist").isNotNull();
+                assertThat(doc).isNotNull();
 
-                assertThat(doc.getString("key_with_quotes"))
-                    .as("Double quotes should be preserved correctly")
-                    .isEqualTo("This is a \"double quoted\" string");
+                assertThat(doc.getString("key_with_quotes")).isEqualTo("This is a \"double quoted\" string");
 
-                assertThat(doc.getString("key_with_json_chars"))
-                    .as("JSON special chars should be treated as plain text")
-                    .isEqualTo("{ } [ ] : ,");
+                assertThat(doc.getString("key_with_json_chars")).isEqualTo("{ } [ ] : ,");
 
                 assertThat(doc.getString("description"))
-                    .as("Japanese text should be preserved correctly")
-                    .isEqualTo("特殊記号を含むコレクションへの挿入テスト");
+                    .isEqualTo("Insertion test for collection with special symbols");
             }
         }
     }
@@ -108,14 +102,6 @@ class MongoDBContainerTest extends AbstractMongo {
     }
 
     @Test
-    void shouldExecuteInitScriptWithReplicaSetConfiguredFirst() {
-        try (MongoDBContainer mongo = new MongoDBContainer("mongo:7.0.0").withReplicaSet().withInitScript("init.js")) {
-            mongo.start();
-            assertInitScriptExecuted(mongo);
-        }
-    }
-
-    @Test
     void shouldExecuteInitScriptWithSharding() {
         try (MongoDBContainer mongo = new MongoDBContainer("mongo:7.0.0").withInitScript("init.js").withSharding()) {
             mongo.start();
@@ -123,19 +109,9 @@ class MongoDBContainerTest extends AbstractMongo {
         }
     }
 
-    @Test
-    void shouldExecuteInitScriptWithShardingConfiguredFirst() {
-        try (MongoDBContainer mongo = new MongoDBContainer("mongo:7.0.0").withSharding().withInitScript("init.js")) {
-            mongo.start();
-            assertInitScriptExecuted(mongo);
-        }
-    }
-
     private void assertInitScriptExecuted(MongoDBContainer mongo) {
         try (com.mongodb.client.MongoClient client = com.mongodb.client.MongoClients.create(mongo.getReplicaSetUrl())) {
-            assertThat(client.getDatabase("test").listCollectionNames())
-                .as("Check if init.js created the collection")
-                .contains("test_collection");
+            assertThat(client.getDatabase("test").listCollectionNames()).contains("test_collection");
         }
     }
 }

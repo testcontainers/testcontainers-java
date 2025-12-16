@@ -6,10 +6,16 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.IOException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Enumeration;
 
 /**
  * Testcontainers implementation for MongoDB.
@@ -82,13 +88,56 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
         }
     }
 
+    /**
+     * Configures the container.
+     * <p>
+     * This method handles the transfer of the initialization script to the container.
+     * Unlike standard file copying mechanisms, this implementation explicitly reads the script content as bytes
+     * and uses {@link org.testcontainers.images.builder.Transferable} to copy it.
+     * <p>
+     * This approach is necessary to strictly support filenames containing special characters
+     * (e.g., "#", spaces, etc.) on the classpath. Standard resource loading methods may misinterpret
+     * these characters (e.g., treating "#" as a URL fragment), causing resolution failures.
+     * By manually resolving the file path and transferring the raw bytes, we ensure the script
+     * is correctly deployed regardless of its filename complexity.
+     */
     @Override
     protected void configure() {
         super.configure();
         boolean isClusterMode = this.shardingEnabled || this.rsEnabled;
         if (this.initScriptPath != null) {
-            String destination = isClusterMode ? SCRIPT_DESTINATION_MANUAL : SCRIPT_DESTINATION_DEFAULT;
-            withCopyFileToContainer(MountableFile.forClasspathResource(this.initScriptPath), destination);
+            try {
+                Path scriptPath = Paths.get(this.initScriptPath);
+                String fileName = scriptPath.getFileName().toString();
+                Path parentDir = scriptPath.getParent();
+                String resourceDir = (parentDir == null) ? "" : parentDir.toString();
+
+                Enumeration<URL> resources = this.getClass().getClassLoader().getResources(resourceDir);
+                byte[] fileContent = null;
+
+                while (resources.hasMoreElements()) {
+                    URL dirUrl = resources.nextElement();
+
+                    if ("file".equals(dirUrl.getProtocol())) {
+                        Path dirPath = Paths.get(dirUrl.toURI());
+                        Path candidatePath = dirPath.resolve(fileName);
+
+                        if (Files.exists(candidatePath) && !Files.isDirectory(candidatePath)) {
+                            fileContent = Files.readAllBytes(candidatePath);
+                            break;
+                        }
+                    }
+                }
+
+                if (fileContent == null) {
+                    throw new RuntimeException("Could not find init script on classpath: " + this.initScriptPath);
+                }
+
+                String destination = isClusterMode ? SCRIPT_DESTINATION_MANUAL : SCRIPT_DESTINATION_DEFAULT;
+                withCopyToContainer(Transferable.of(fileContent, 0777), destination);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to read or transfer init script: " + this.initScriptPath, e);
+            }
         }
 
         if (this.initScriptPath != null && !isClusterMode) {
