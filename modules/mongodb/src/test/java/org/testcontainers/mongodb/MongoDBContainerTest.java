@@ -2,8 +2,6 @@ package org.testcontainers.mongodb;
 
 import org.junit.jupiter.api.Test;
 
-import java.time.Duration;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 class MongoDBContainerTest extends AbstractMongo {
@@ -43,22 +41,16 @@ class MongoDBContainerTest extends AbstractMongo {
 
     @Test
     void shouldExecuteInitScript() {
-        try (
-            MongoDBContainer mongoDB = new MongoDBContainer("mongo:4.0.10")
-                .withInitScript("init.js")
-                .withStartupTimeout(Duration.ofSeconds(30))
-        ) {
+        try (MongoDBContainer mongoDB = new MongoDBContainer("mongo:4.0.10").withInitScript("init.js")) {
             mongoDB.start();
-            assertThat(mongoDB.isRunning()).isTrue();
+            assertInitScriptExecuted(mongoDB);
         }
     }
 
     @Test
     void shouldExecuteInitScriptWithEdgeCases() {
         try (
-            MongoDBContainer mongoDB = new MongoDBContainer("mongo:4.0.10")
-                .withInitScript("initEdgeCase!@#%^& *'().js")
-                .withStartupTimeout(Duration.ofSeconds(30))
+            MongoDBContainer mongoDB = new MongoDBContainer("mongo:4.0.10").withInitScript("initEdgeCase!@#%^& *'().js")
         ) {
             mongoDB.start();
 
