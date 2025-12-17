@@ -1,10 +1,18 @@
 package org.testcontainers.containers;
 
+import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static java.lang.String.format;
 
 /**
  * Testcontainers implementation for MinIO.
@@ -29,12 +37,15 @@ public class MinIOContainer extends GenericContainer<MinIOContainer> {
 
     private static final String DEFAULT_PASSWORD = "minioadmin";
 
+    private final List<String> buckets = new ArrayList<>();
+
     private String userName;
 
     private String password;
 
     /**
      * Constructs a MinIO container from the dockerImageName
+     *
      * @param dockerImageName the full image name to use
      */
     public MinIOContainer(final String dockerImageName) {
@@ -43,6 +54,7 @@ public class MinIOContainer extends GenericContainer<MinIOContainer> {
 
     /**
      * Constructs a MinIO container from the dockerImageName
+     *
      * @param dockerImageName the full image name to use
      */
     public MinIOContainer(final DockerImageName dockerImageName) {
@@ -60,6 +72,7 @@ public class MinIOContainer extends GenericContainer<MinIOContainer> {
 
     /**
      * Overrides the DEFAULT_USER
+     *
      * @param userName the Root user to override
      * @return this
      */
@@ -70,11 +83,23 @@ public class MinIOContainer extends GenericContainer<MinIOContainer> {
 
     /**
      * Overrides the DEFAULT_PASSWORD
+     *
      * @param password the Root user's password to override
      * @return this
      */
     public MinIOContainer withPassword(String password) {
         this.password = password;
+        return this;
+    }
+
+    /**
+     * Create buckets after container started
+     *
+     * @param buckets bucket list
+     * @return this
+     */
+    public MinIOContainer withBuckets(String... buckets) {
+        this.buckets.addAll(Arrays.stream(buckets).collect(Collectors.toList()));
         return this;
     }
 
@@ -99,7 +124,7 @@ public class MinIOContainer extends GenericContainer<MinIOContainer> {
      * @return the URL to upload/download objects from
      */
     public String getS3URL() {
-        return String.format("http://%s:%s", this.getHost(), getMappedPort(MINIO_S3_PORT));
+        return format("http://%s:%s", this.getHost(), getMappedPort(MINIO_S3_PORT));
     }
 
     /**
@@ -115,4 +140,28 @@ public class MinIOContainer extends GenericContainer<MinIOContainer> {
     public String getPassword() {
         return this.password;
     }
+
+    @Override
+    protected void containerIsStarted(InspectContainerResponse containerInfo) {
+        if (!buckets.isEmpty()) {
+            try {
+                ExecResult setAliasExecResult = execInContainer("mc", "alias", "set", "local", format("http://localhost:%s", MINIO_S3_PORT), userName, password);
+                if (setAliasExecResult.getExitCode() == 0) {
+                    for (String bucket : buckets) {
+                        ExecResult createBucketExecResult = execInContainer("mc", "mb", format("local/%s", bucket));
+                        if (createBucketExecResult.getExitCode() == 0) {
+                            logger().info("Create bucket {}", bucket);
+                        } else {
+                            logger().error("Cannot create bucket {}: {}", bucket, createBucketExecResult.getStderr());
+                        }
+                    }
+                } else {
+                    logger().error("Cannot set local alias {}", setAliasExecResult.getStderr());
+                }
+            } catch (IOException | InterruptedException e) {
+                logger().error("Cannot create buckets {}", buckets, e);
+            }
+        }
+    }
+
 }
