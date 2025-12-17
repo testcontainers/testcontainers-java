@@ -3,7 +3,7 @@ description = "Testcontainers :: Qdrant"
 dependencies {
     api project(':testcontainers')
 
-    testImplementation 'io.qdrant:client:1.15.0'
+    testImplementation 'io.qdrant:client:1.16.1'
     testImplementation platform('io.grpc:grpc-bom:1.75.0')
     testImplementation 'io.grpc:grpc-stub'
     testImplementation 'io.grpc:grpc-protobuf'
