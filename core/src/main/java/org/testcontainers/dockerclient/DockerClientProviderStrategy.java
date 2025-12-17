@@ -401,21 +401,34 @@ public abstract class DockerClientProviderStrategy {
                 throw new IllegalArgumentException("Unknown transport type '" + transportType + "'");
         }
 
-        DefaultDockerClientConfig.Builder configBuilder = DefaultDockerClientConfig.createDefaultConfigBuilder();
+        DefaultDockerClientConfig.Builder configBuilder = DefaultDockerClientConfig
+            .createDefaultConfigBuilder()
+            .withDockerHost(transportConfig.getDockerHost().toString());
 
-        if (configBuilder.build().getApiVersion() == RemoteApiVersion.UNKNOWN_VERSION) {
-            configBuilder.withApiVersion(RemoteApiVersion.VERSION_1_32);
-        }
         Map<String, String> headers = new HashMap<>();
         headers.put("x-tc-sid", DockerClientFactory.SESSION_ID);
         headers.put("User-Agent", String.format("tc-java/%s", DockerClientFactory.TESTCONTAINERS_VERSION));
 
-        return DockerClientImpl.getInstance(
-            new AuthDelegatingDockerClientConfig(
-                configBuilder.withDockerHost(transportConfig.getDockerHost().toString()).build()
-            ),
-            new HeadersAddingDockerHttpClient(dockerHttpClient, headers)
-        );
+        try {
+            if (configBuilder.build().getApiVersion() == RemoteApiVersion.UNKNOWN_VERSION) {
+                configBuilder.withApiVersion(RemoteApiVersion.VERSION_1_44);
+            }
+            DockerClient client = DockerClientImpl.getInstance(
+                new AuthDelegatingDockerClientConfig(configBuilder.build()),
+                new HeadersAddingDockerHttpClient(dockerHttpClient, headers)
+            );
+            log.debug("Pinging Docker API version 1.44.");
+            client.pingCmd().exec();
+            return client;
+        } catch (Exception ex) {
+            log.debug("Fallback to Docker API version 1.32.");
+            return DockerClientImpl.getInstance(
+                new AuthDelegatingDockerClientConfig(
+                    configBuilder.withApiVersion(RemoteApiVersion.VERSION_1_32).build()
+                ),
+                new HeadersAddingDockerHttpClient(dockerHttpClient, headers)
+            );
+        }
     }
 
     public synchronized String getDockerHostIpAddress() {

@@ -10,7 +10,7 @@ class ComposeWithNetworkTest extends BaseComposeTest {
 
     @AutoClose
     public ComposeContainer environment = new ComposeContainer(
-        DockerImageName.parse("docker:24.0.2"),
+        DockerImageName.parse("docker:25.0.5"),
         new File("src/test/resources/v2-compose-test-with-network.yml")
     )
         .withExposedService("redis-1", REDIS_PORT);

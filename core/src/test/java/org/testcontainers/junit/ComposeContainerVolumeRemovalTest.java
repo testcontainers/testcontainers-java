@@ -29,7 +29,7 @@ class ComposeContainerVolumeRemovalTest {
 
         final AtomicReference<String> volumeName = new AtomicReference<>("");
         try (
-            ComposeContainer environment = new ComposeContainer(DockerImageName.parse("docker:24.0.2"), composeFile)
+            ComposeContainer environment = new ComposeContainer(DockerImageName.parse("docker:25.0.5"), composeFile)
                 .withExposedService("redis", 6379)
                 .withRemoveVolumes(removeVolumes)
                 .withRemoveImages(ComposeContainer.RemoveImages.ALL)

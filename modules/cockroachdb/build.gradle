@@ -7,9 +7,3 @@ dependencies {
 
     testImplementation project(':testcontainers-jdbc-test')
 }
-
-tasks.japicmp {
-    classExcludes = [
-        "org.testcontainers.containers.CockroachContainer"
-    ]
-}

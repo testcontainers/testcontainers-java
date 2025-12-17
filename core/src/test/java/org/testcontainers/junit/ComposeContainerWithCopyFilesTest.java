@@ -18,7 +18,7 @@ class ComposeContainerWithCopyFilesTest {
     void testShouldCopyAllFilesByDefault() throws IOException {
         try (
             ComposeContainer environment = new ComposeContainer(
-                DockerImageName.parse("docker:24.0.2"),
+                DockerImageName.parse("docker:25.0.5"),
                 new File("src/test/resources/compose-file-copy-inclusions/compose.yml")
             )
                 .withExposedService("app", 8080)
@@ -34,7 +34,7 @@ class ComposeContainerWithCopyFilesTest {
     void testWithFileCopyInclusionUsingFilePath() throws IOException {
         try (
             ComposeContainer environment = new ComposeContainer(
-                DockerImageName.parse("docker:24.0.2"),
+                DockerImageName.parse("docker:25.0.5"),
                 new File("src/test/resources/compose-file-copy-inclusions/compose-root-only.yml")
             )
                 .withExposedService("app", 8080)
@@ -54,7 +54,7 @@ class ComposeContainerWithCopyFilesTest {
         try (
             // composeContainerWithCopyFiles {
             ComposeContainer environment = new ComposeContainer(
-                DockerImageName.parse("docker:24.0.2"),
+                DockerImageName.parse("docker:25.0.5"),
                 new File("src/test/resources/compose-file-copy-inclusions/compose-test-only.yml")
             )
                 .withExposedService("app", 8080)
@@ -73,7 +73,7 @@ class ComposeContainerWithCopyFilesTest {
     void testShouldNotBeAbleToStartIfNeededEnvFileIsNotCopied() {
         try (
             ComposeContainer environment = new ComposeContainer(
-                DockerImageName.parse("docker:24.0.2"),
+                DockerImageName.parse("docker:25.0.5"),
                 new File("src/test/resources/compose-file-copy-inclusions/compose-test-only.yml")
             )
                 .withExposedService("app", 8080)

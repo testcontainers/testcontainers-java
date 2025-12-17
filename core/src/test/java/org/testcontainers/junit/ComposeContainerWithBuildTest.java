@@ -10,6 +10,7 @@ import org.testcontainers.containers.ComposeContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
@@ -38,7 +39,7 @@ class ComposeContainerWithBuildTest {
         final AtomicReference<String> builtImageName = new AtomicReference<>("");
         final AtomicReference<String> pulledImageName = new AtomicReference<>("");
         try (
-            ComposeContainer environment = new ComposeContainer(DockerImageName.parse("docker:24.0.2"), composeFile)
+            ComposeContainer environment = new ComposeContainer(DockerImageName.parse("docker:25.0.5"), composeFile)
                 .withExposedService("customredis", 6379)
                 .withBuild(true)
                 .withRemoveImages(removeMode)
@@ -97,7 +98,7 @@ class ComposeContainerWithBuildTest {
             .instance()
             .client()
             .listImagesCmd()
-            .withImageNameFilter(imageName)
+            .withFilter("reference", Collections.singletonList(imageName))
             .exec()
             .stream()
             .findFirst()

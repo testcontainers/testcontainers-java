@@ -19,7 +19,7 @@ class ComposeContainerWithWaitStrategies {
         try (
             // composeContainerWithCombinedWaitStrategies {
             ComposeContainer compose = new ComposeContainer(
-                DockerImageName.parse("docker:24.0.2"),
+                DockerImageName.parse("docker:25.0.5"),
                 new File("src/test/resources/composev2/compose-test.yml")
             )
                 .withExposedService("redis-1", REDIS_PORT, Wait.forSuccessfulCommand("redis-cli ping"))
@@ -36,7 +36,7 @@ class ComposeContainerWithWaitStrategies {
         try (
             // composeContainerWaitForPortWithTimeout {
             ComposeContainer compose = new ComposeContainer(
-                DockerImageName.parse("docker:24.0.2"),
+                DockerImageName.parse("docker:25.0.5"),
                 new File("src/test/resources/composev2/compose-test.yml")
             )
                 .withExposedService(

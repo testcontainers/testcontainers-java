@@ -4,7 +4,7 @@ dependencies {
     api project(':testcontainers')
     api project(':testcontainers-mssqlserver')
     // TODO use JDK's HTTP client and/or Apache HttpClient5
-    shaded 'com.squareup.okhttp3:okhttp:5.1.0'
+    shaded 'com.squareup.okhttp3:okhttp:5.3.2'
 
     testImplementation platform("com.azure:azure-sdk-bom:1.2.32")
     testImplementation 'com.azure:azure-cosmos'
@@ -13,5 +13,5 @@ dependencies {
     testImplementation 'com.azure:azure-data-tables'
     testImplementation 'com.azure:azure-messaging-eventhubs'
     testImplementation 'com.azure:azure-messaging-servicebus'
-    testImplementation 'com.microsoft.sqlserver:mssql-jdbc:13.2.0.jre8'
+    testImplementation 'com.microsoft.sqlserver:mssql-jdbc:13.3.0.jre8-preview'
 }
