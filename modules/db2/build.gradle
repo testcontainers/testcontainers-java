@@ -4,5 +4,5 @@ dependencies {
     api project(':testcontainers-jdbc')
 
     testImplementation project(':testcontainers-jdbc-test')
-    testRuntimeOnly 'com.ibm.db2:jcc:12.1.2.0'
+    testRuntimeOnly 'com.ibm.db2:jcc:12.1.3.0'
 }
