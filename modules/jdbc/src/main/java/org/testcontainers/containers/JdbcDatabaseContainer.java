@@ -77,6 +77,26 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
     public abstract String getJdbcUrl();
 
     /**
+     * Returns an R2DBC URL that may be used to connect to the dockerized DB using reactive drivers.
+     * <p>
+     * The default implementation converts the JDBC URL to R2DBC format by replacing
+     * the "jdbc:" prefix with "r2dbc:". Subclasses may override this method if
+     * a different conversion is required.
+     *
+     * @return an R2DBC URL for reactive database connections
+     * @see <a href="https://r2dbc.io/spec/1.0.0.RELEASE/spec/html/">R2DBC Specification</a>
+     */
+    public String getR2dbcUrl() {
+        String jdbcUrl = getJdbcUrl();
+        if (jdbcUrl != null && jdbcUrl.startsWith("jdbc:")) {
+            return "r2dbc:" + jdbcUrl.substring(5);
+        }
+        throw new UnsupportedOperationException(
+            "Cannot convert JDBC URL to R2DBC format. Override getR2dbcUrl() in subclass."
+        );
+    }
+
+    /**
      * @return the database name
      */
     public String getDatabaseName() {
