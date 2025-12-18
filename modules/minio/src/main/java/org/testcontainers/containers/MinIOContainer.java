@@ -12,8 +12,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static java.lang.String.format;
-
 /**
  * Testcontainers implementation for MinIO.
  * <p>
@@ -124,7 +122,7 @@ public class MinIOContainer extends GenericContainer<MinIOContainer> {
      * @return the URL to upload/download objects from
      */
     public String getS3URL() {
-        return format("http://%s:%s", this.getHost(), getMappedPort(MINIO_S3_PORT));
+        return String.format("http://%s:%s", this.getHost(), getMappedPort(MINIO_S3_PORT));
     }
 
     /**
@@ -145,10 +143,10 @@ public class MinIOContainer extends GenericContainer<MinIOContainer> {
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
         if (!buckets.isEmpty()) {
             try {
-                ExecResult setAliasExecResult = execInContainer("mc", "alias", "set", "local", format("http://localhost:%s", MINIO_S3_PORT), userName, password);
+                ExecResult setAliasExecResult = execInContainer("mc", "alias", "set", "local", String.format("http://localhost:%s", MINIO_S3_PORT), userName, password);
                 if (setAliasExecResult.getExitCode() == 0) {
                     for (String bucket : buckets) {
-                        ExecResult createBucketExecResult = execInContainer("mc", "mb", format("local/%s", bucket));
+                        ExecResult createBucketExecResult = execInContainer("mc", "mb", String.format("local/%s", bucket));
                         if (createBucketExecResult.getExitCode() == 0) {
                             logger().info("Create bucket {}", bucket);
                         } else {
