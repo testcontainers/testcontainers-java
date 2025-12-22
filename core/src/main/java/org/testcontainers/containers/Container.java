@@ -376,6 +376,13 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     SELF withWorkingDirectory(String workDir);
 
     /**
+     * Set the container alias to distinguish between multiple containers.
+     *
+     * @param alias name
+     */
+    SELF withContainerAlias(String alias);
+
+    /**
      * <b>Resolve</b> Docker image and set it.
      *
      * @param dockerImageName image name
