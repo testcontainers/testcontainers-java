@@ -87,8 +87,15 @@ public final class DockerImageName {
         }
 
         if (remoteName.contains("@sha256:")) {
-            repository = remoteName.split("@sha256:")[0];
-            versioning = new Sha256Versioning(remoteName.split("@sha256:")[1]);
+            String[] parts = remoteName.split("@sha256:");
+            if (parts[0].contains(":")) {
+                String[] repositoryAndTag = parts[0].split(":");
+                repository = repositoryAndTag[0];
+                versioning = new Versioning.TagSha256Versioning(repositoryAndTag[1], parts[1]);
+            } else {
+                repository = parts[0];
+                versioning = new Sha256Versioning(parts[1]);
+            }
         } else if (remoteName.contains(":")) {
             repository = remoteName.split(":")[0];
             versioning = new TagVersioning(remoteName.split(":")[1]);
