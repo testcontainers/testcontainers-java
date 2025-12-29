@@ -3,10 +3,7 @@ package org.testcontainers.containers;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class TimescaleDBContainerTest extends AbstractContainerDatabaseTest {
 
@@ -15,9 +12,7 @@ class TimescaleDBContainerTest extends AbstractContainerDatabaseTest {
         try (JdbcDatabaseContainer<?> postgres = new TimescaleDBContainerProvider().newInstance()) {
             postgres.start();
 
-            ResultSet resultSet = performQuery(postgres, "SELECT 1");
-            int resultSetInt = resultSet.getInt(1);
-            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+            executeSelectOneQuery(postgres);
         }
     }
 
@@ -30,12 +25,7 @@ class TimescaleDBContainerTest extends AbstractContainerDatabaseTest {
         ) {
             postgres.start();
 
-            ResultSet resultSet = performQuery(
-                (JdbcDatabaseContainer<?>) postgres,
-                "SELECT current_setting('max_connections')"
-            );
-            String result = resultSet.getString(1);
-            assertThat(result).as("max_connections should be overridden").isEqualTo("42");
+            executeSelectMaxConnectionsQuery((JdbcDatabaseContainer<?>) postgres, "42");
         }
     }
 
@@ -49,12 +39,7 @@ class TimescaleDBContainerTest extends AbstractContainerDatabaseTest {
         ) {
             postgres.start();
 
-            ResultSet resultSet = performQuery(
-                (JdbcDatabaseContainer<?>) postgres,
-                "SELECT current_setting('max_connections')"
-            );
-            String result = resultSet.getString(1);
-            assertThat(result).as("max_connections should not be overridden").isNotEqualTo("42");
+            executeSelectMaxConnectionsQuery((JdbcDatabaseContainer<?>) postgres, "100");
         }
     }
 
@@ -67,10 +52,7 @@ class TimescaleDBContainerTest extends AbstractContainerDatabaseTest {
         ) {
             postgres.start();
 
-            ResultSet resultSet = performQuery(postgres, "SELECT foo FROM bar");
-
-            String firstColumnValue = resultSet.getString(1);
-            assertThat(firstColumnValue).as("Value from init script should equal real value").isEqualTo("hello world");
+            executeSelectFooBarQuery(postgres);
         }
     }
 }
