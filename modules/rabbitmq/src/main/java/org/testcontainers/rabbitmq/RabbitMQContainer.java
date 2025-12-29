@@ -1,6 +1,7 @@
 package org.testcontainers.rabbitmq;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
@@ -23,6 +24,7 @@ import java.util.List;
  *     <li>15672 (HTTP)</li>
  * </ul>
  */
+@Slf4j
 public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
 
     /**
@@ -84,6 +86,7 @@ public class RabbitMQContainer extends GenericContainer<RabbitMQContainer> {
                 logger().error("Could not execute command {}: {}", command, e.getMessage());
             }
         });
+        log.info("Access to the RabbitMQ management UI: {}", getHttpsUrl());
     }
 
     /**
