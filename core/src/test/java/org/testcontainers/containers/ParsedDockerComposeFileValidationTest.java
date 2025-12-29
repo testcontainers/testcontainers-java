@@ -22,26 +22,26 @@ class ParsedDockerComposeFileValidationTest {
     public Path temporaryFolder;
 
     @Test
-    void shouldValidate() {
+    void shouldIgnoreContainerNameV1() {
         File file = new File("src/test/resources/docker-compose-container-name-v1.yml");
-        assertThatThrownBy(() -> {
-                new ParsedDockerComposeFile(file);
-            })
-            .hasMessageContaining(file.getAbsolutePath())
-            .hasMessageContaining("'container_name' property set for service 'redis'");
+        // container_name should be ignored (with a warning log) instead of throwing an exception
+        assertThatNoException().isThrownBy(() -> new ParsedDockerComposeFile(file));
     }
 
     @Test
-    void shouldRejectContainerNameV1() {
-        assertThatThrownBy(() -> {
-                new ParsedDockerComposeFile(ImmutableMap.of("redis", ImmutableMap.of("container_name", "redis")));
-            })
-            .hasMessageContaining("'container_name' property set for service 'redis'");
+    void shouldIgnoreContainerNameInMapV1() {
+        // container_name should be ignored (with a warning log) instead of throwing an exception
+        assertThatNoException()
+            .isThrownBy(() ->
+                new ParsedDockerComposeFile(ImmutableMap.of("redis", ImmutableMap.of("container_name", "redis")))
+            );
     }
 
     @Test
-    void shouldRejectContainerNameV2() {
-        assertThatThrownBy(() -> {
+    void shouldIgnoreContainerNameV2() {
+        // container_name should be ignored (with a warning log) instead of throwing an exception
+        assertThatNoException()
+            .isThrownBy(() ->
                 new ParsedDockerComposeFile(
                     ImmutableMap.of(
                         "version",
@@ -49,9 +49,8 @@ class ParsedDockerComposeFileValidationTest {
                         "services",
                         ImmutableMap.of("redis", ImmutableMap.of("container_name", "redis"))
                     )
-                );
-            })
-            .hasMessageContaining("'container_name' property set for service 'redis'");
+                )
+            );
     }
 
     @Test
