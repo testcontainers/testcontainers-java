@@ -4,5 +4,5 @@ dependencies {
     api project(':testcontainers')
     api 'eu.rekawek.toxiproxy:toxiproxy-java:2.1.11'
 
-    testImplementation 'redis.clients:jedis:7.1.0'
+    testImplementation 'redis.clients:jedis:7.2.0'
 }
