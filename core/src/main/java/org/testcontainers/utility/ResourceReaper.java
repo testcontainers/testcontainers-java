@@ -74,7 +74,7 @@ public class ResourceReaper {
 
     public static synchronized ResourceReaper instance() {
         if (instance == null) {
-            boolean useRyuk = !Boolean.parseBoolean(System.getenv("TESTCONTAINERS_RYUK_DISABLED"));
+            boolean useRyuk = !TestcontainersConfiguration.getInstance().isRyukDisabled();
             if (useRyuk) {
                 //noinspection deprecation
                 instance = new RyukResourceReaper();

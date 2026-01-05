@@ -137,6 +137,10 @@ public class TestcontainersConfiguration {
         return getImage(ALPINE_IMAGE).asCanonicalNameString();
     }
 
+    public boolean isRyukDisabled() {
+        return Boolean.parseBoolean(getEnvVarOrProperty("ryuk.disabled", "false"));
+    }
+
     public boolean isRyukPrivileged() {
         return Boolean.parseBoolean(getEnvVarOrProperty("ryuk.container.privileged", "true"));
     }

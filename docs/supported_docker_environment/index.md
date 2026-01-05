@@ -49,11 +49,7 @@ Linux:
 export DOCKER_HOST=unix://${XDG_RUNTIME_DIR}/podman/podman.sock
 ```
 
-If you're running Podman in rootless mode, ensure to include the following line to disable Ryuk:
-
-```bash
-export TESTCONTAINERS_RYUK_DISABLED=true
-```
+If you're running Podman in rootless mode, make sure to [disable Ryuk](/docs/features/configuration/#disabling-ryuk).
 
 !!! note
     Previous to version 1.19.0, `export TESTCONTAINERS_RYUK_PRIVILEGED=true`
