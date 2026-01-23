@@ -10,6 +10,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+
 
 /**
  * Testcontainers implementation of the Docker MCP Gateway container.
@@ -78,23 +80,34 @@ public class DockerMcpGatewayContainer extends GenericContainer<DockerMcpGateway
     }
 
     public DockerMcpGatewayContainer withServer(String server, List<String> tools) {
+        Objects.requireNonNull(tools, "tools list must not be null");
+        Objects.requireNonNull(server, "server must not be null");
+
         this.servers.add(server);
         this.tools.addAll(tools);
         return this;
     }
 
     public DockerMcpGatewayContainer withServer(String server, String... tools) {
+        Objects.requireNonNull(tools, "tools array must not be null");
+        Objects.requireNonNull(server, "server must not be null");
+
         this.servers.add(server);
         this.tools.addAll(Arrays.asList(tools));
         return this;
     }
 
     public DockerMcpGatewayContainer withSecrets(Map<String, String> secrets) {
+        Objects.requireNonNull(secrets, "secrets map must not be null");
+
         this.secrets.putAll(secrets);
         return this;
     }
 
     public DockerMcpGatewayContainer withSecret(String secretKey, String secretValue) {
+        Objects.requireNonNull(secretKey, "secret key must not be null");
+        Objects.requireNonNull(secretValue, "secret value must not be null");
+
         this.secrets.put(secretKey, secretValue);
         return this;
     }
