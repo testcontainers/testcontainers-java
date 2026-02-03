@@ -98,4 +98,36 @@ interface Versioning {
             return "sha256:" + hash;
         }
     }
+
+    @EqualsAndHashCode
+    class TagSha256Versioning implements Versioning {
+
+        public static final String TAG_REGEX = "[\\w][\\w.\\-]{0,127}";
+
+        public static final String HASH_REGEX = "[0-9a-fA-F]{32,}";
+
+        private final String tag;
+
+        private final String hash;
+
+        TagSha256Versioning(String tag, String hash) {
+            this.tag = tag;
+            this.hash = hash;
+        }
+
+        @Override
+        public boolean isValid() {
+            return tag.matches(TAG_REGEX) && hash.matches(HASH_REGEX);
+        }
+
+        @Override
+        public String getSeparator() {
+            return ":";
+        }
+
+        @Override
+        public String toString() {
+            return tag + "@sha256:" + hash;
+        }
+    }
 }
