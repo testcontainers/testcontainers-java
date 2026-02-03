@@ -222,6 +222,7 @@ public class SolaceContainer extends GenericContainer<SolaceContainer> {
     private void waitOnCommandResult(String waitingFor, String... command) {
         Awaitility
             .await()
+            .dontCatchUncaughtExceptions()
             .pollInterval(Duration.ofMillis(500))
             .timeout(Duration.ofSeconds(30))
             .until(() -> {
