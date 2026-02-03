@@ -31,6 +31,20 @@ class SimpleOracleTest extends AbstractContainerDatabaseTest {
         assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
     }
 
+    private void runTestSystemUser(OracleContainer container, String databaseName, String username, String password)
+        throws SQLException {
+        assertThat(container.getDatabaseName()).isEqualTo(databaseName);
+        assertThat(container.getUsername()).isEqualTo(username);
+        assertThat(container.getPassword()).isEqualTo(password);
+
+        container.start();
+        ResultSet resultSet = performQuery(container, "SELECT USER FROM DUAL");
+        String currentUser = resultSet.getString(1);
+        assertThat(currentUser)
+            .as("Connected session should run as the system user")
+            .isEqualToIgnoringCase(username);
+    }
+
     @Test
     void testDefaultSettings() throws SQLException {
         try ( // container {
@@ -78,7 +92,7 @@ class SimpleOracleTest extends AbstractContainerDatabaseTest {
     @Test
     void testSID() throws SQLException {
         try (OracleContainer oracle = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME).usingSid();) {
-            runTest(oracle, "xepdb1", "system", "test");
+            runTestSystemUser(oracle, "xepdb1", "system", "test");
 
             // Match against the last ':'
             String urlSuffix = oracle.getJdbcUrl().split("(\\:)(?!.*\\:)", 2)[1];
@@ -93,7 +107,28 @@ class SimpleOracleTest extends AbstractContainerDatabaseTest {
                 .usingSid()
                 .withPassword("testPassword");
         ) {
-            runTest(oracle, "xepdb1", "system", "testPassword");
+            runTestSystemUser(oracle, "xepdb1", "system", "testPassword");
+        }
+    }
+
+    @Test
+    public void testSeparateSystemAndAppPasswords() throws SQLException {
+        try (
+            OracleContainer oracleSid = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME)
+                .usingSid()
+                .withSystemPassword("SysP@ss1!")
+                .withPassword("AppP@ss1!")
+        ) {
+            runTestSystemUser(oracleSid, "xepdb1", "system", "SysP@ss1!");
+        }
+
+        // Non-SID mode should use application user's password
+        try (
+            OracleContainer oraclePdb = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME)
+                .withSystemPassword("SysP@ss2!")
+                .withPassword("AppP@ss2!")
+        ) {
+            runTest(oraclePdb, "xepdb1", "test", "AppP@ss2!");
         }
     }
 

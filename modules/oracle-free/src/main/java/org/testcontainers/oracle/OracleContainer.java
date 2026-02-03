@@ -58,6 +58,18 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     private String password = APP_USER_PASSWORD;
 
+    /**
+     * Password for Oracle system user (e.g. SYSTEM/SYS). Defaults to {@link #APP_USER_PASSWORD}
+     * for backwards compatibility, but can be customized independently via {@link #withSystemPassword(String)}.
+     */
+    private String oraclePassword = APP_USER_PASSWORD;
+
+    /**
+     * Tracks whether {@link #withSystemPassword(String)} was called to avoid overriding
+     * the system password when {@link #withPassword(String)} is used for the application user only.
+     */
+    private boolean systemPasswordExplicitlySet = false;
+
     private boolean usingSid = false;
 
     public OracleContainer(String dockerImageName) {
@@ -112,7 +124,8 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     @Override
     public String getPassword() {
-        return password;
+        // When connecting via SID we authenticate as SYSTEM. Use the dedicated system password.
+        return isUsingSid() ? oraclePassword : password;
     }
 
     @Override
@@ -142,6 +155,27 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
             throw new IllegalArgumentException("Password cannot be null or empty");
         }
         this.password = password;
+        // Maintain backwards compatibility: if system password wasn't set explicitly,
+        // align it with the application user's password.
+        if (!systemPasswordExplicitlySet) {
+            this.oraclePassword = password;
+        }
+        return self();
+    }
+
+    /**
+     * Sets the password for the Oracle system user (SYSTEM/SYS). This is independent from the
+     * application user password set via {@link #withPassword(String)}.
+     *
+     * @param oraclePassword password for SYSTEM/SYS users inside the container
+     * @return this container instance
+     */
+    public OracleContainer withSystemPassword(String oraclePassword) {
+        if (StringUtils.isEmpty(oraclePassword)) {
+            throw new IllegalArgumentException("Oracle password cannot be null or empty");
+        }
+        this.oraclePassword = oraclePassword;
+        this.systemPasswordExplicitlySet = true;
         return self();
     }
 
@@ -185,7 +219,8 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     @Override
     protected void configure() {
-        withEnv("ORACLE_PASSWORD", password);
+        // Configure system user password independently from application user's password
+        withEnv("ORACLE_PASSWORD", oraclePassword);
 
         // Only set ORACLE_DATABASE if different than the default.
         if (databaseName != DEFAULT_DATABASE_NAME) {
