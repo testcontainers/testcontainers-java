@@ -14,7 +14,6 @@ import org.testcontainers.db.AbstractContainerDatabaseTest;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,10 +31,7 @@ class SimpleQuestDBTest extends AbstractContainerDatabaseTest {
         ) {
             questDB.start();
 
-            ResultSet resultSet = performQuery(questDB, questDB.getTestQueryString());
-
-            int resultSetInt = resultSet.getInt(1);
-            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+            executeSelectOneQuery(questDB);
         }
     }
 

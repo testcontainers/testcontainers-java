@@ -1,11 +1,11 @@
 package org.testcontainers.junit.cratedb;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.CrateDBTestImages;
 import org.testcontainers.cratedb.CrateDBContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -26,9 +26,7 @@ class SimpleCrateDBTest extends AbstractContainerDatabaseTest {
         ) {
             cratedb.start();
 
-            ResultSet resultSet = performQuery(cratedb, "SELECT 1");
-            int resultSetInt = resultSet.getInt(1);
-            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+            executeSelectOneQuery(cratedb);
             assertHasCorrectExposedAndLivenessCheckPorts(cratedb);
         }
     }
@@ -41,9 +39,18 @@ class SimpleCrateDBTest extends AbstractContainerDatabaseTest {
         ) {
             cratedb.start();
 
-            ResultSet resultSet = performQuery(cratedb, "select name from sys.cluster");
-            String result = resultSet.getString(1);
-            assertThat(result).as("cluster name should be overridden").isEqualTo("testcontainers");
+            executeQuery(
+                cratedb,
+                "select name from sys.cluster",
+                resultSet -> {
+                    Assertions
+                        .assertThatNoException()
+                        .isThrownBy(() -> {
+                            String result = resultSet.getString(1);
+                            assertThat(result).as("cluster name should be overridden").isEqualTo("testcontainers");
+                        });
+                }
+            );
         }
     }
 
@@ -55,10 +62,7 @@ class SimpleCrateDBTest extends AbstractContainerDatabaseTest {
         ) {
             cratedb.start();
 
-            ResultSet resultSet = performQuery(cratedb, "SELECT foo FROM bar");
-
-            String firstColumnValue = resultSet.getString(1);
-            assertThat(firstColumnValue).as("Value from init script should equal real value").isEqualTo("hello world");
+            executeSelectFooBarQuery(cratedb);
         }
     }
 
