@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.TestImages;
+import org.testcontainers.containers.output.ToStringConsumer;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
@@ -334,6 +335,46 @@ class GenericContainerTest {
                     .collect(Collectors.joining(", ", "[", "]"))
             )
         );
+    }
+
+    @Test
+    public void testPostHookExecutionOnStop() {
+        String scriptContent =
+            "#!/bin/bash\n" +
+            "function on_shutdown() {\n" +
+            "  echo 'HOOK_TRIGGERED'\n" +
+            "}\n" +
+            "trap on_shutdown SIGTERM SIGINT EXIT\n" +
+            "echo 'CONTAINER_STARTED'\n" +
+            "while true; do sleep 1; done\n";
+
+        ToStringConsumer logConsumer = new ToStringConsumer();
+
+        try (
+            GenericContainer<?> container = new GenericContainer<>(
+                new ImageFromDockerfile()
+                    .withFileFromString("entrypoint.sh", scriptContent)
+                    .withDockerfileFromBuilder(builder -> {
+                        builder
+                            .from("alpine:3.18")
+                            .run("apk add --no-cache tini bash")
+                            .copy("entrypoint.sh", "/entrypoint.sh")
+                            .run("chmod +x /entrypoint.sh")
+                            .entryPoint("/sbin/tini", "--", "/entrypoint.sh")
+                            .build();
+                    })
+            )
+                .withLogConsumer(logConsumer)
+                .waitingFor(Wait.forLogMessage(".*CONTAINER_STARTED.*", 1))
+        ) {
+            container.start();
+
+            container.stop();
+
+            assertThat(logConsumer.toUtf8String())
+                .as("The shutdown hook defined in 'trap' should be executed upon container stop")
+                .contains("HOOK_TRIGGERED");
+        }
     }
 
     static class NoopStartupCheckStrategy extends StartupCheckStrategy {
