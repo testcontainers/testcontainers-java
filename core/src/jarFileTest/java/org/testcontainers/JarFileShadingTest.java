@@ -38,6 +38,20 @@ class JarFileShadingTest extends AbstractJarFileTest {
             .allMatch(it -> it.startsWith("org.testcontainers."));
     }
 
+    @Test
+    void testJacksonAnnotationsAreShaded() throws Exception {
+        Path jacksonAnnotations = root.resolve("org/testcontainers/shaded/com/fasterxml/jackson/annotation");
+        assertThat(Files.exists(jacksonAnnotations))
+            .as("Jackson annotations should be shaded to avoid classpath conflicts")
+            .isTrue();
+    }
+
+    @Test
+    void testJacksonCoreIsShaded() throws Exception {
+        Path jacksonCore = root.resolve("org/testcontainers/shaded/com/fasterxml/jackson/core");
+        assertThat(Files.exists(jacksonCore)).as("Jackson core should be shaded to avoid classpath conflicts").isTrue();
+    }
+
     private ListAssert<String> assertThatFileList(Path path) throws IOException {
         return (ListAssert) assertThat(Files.list(path))
             .extracting(Path::getFileName)
