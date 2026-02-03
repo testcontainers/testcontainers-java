@@ -447,6 +447,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             // Wait until inspect container returns the mapped ports
             containerInfo =
                 await()
+                    .dontCatchUncaughtExceptions()
                     .atMost(5, TimeUnit.SECONDS)
                     .pollInterval(DynamicPollInterval.ofMillis(50))
                     .pollInSameThread()
