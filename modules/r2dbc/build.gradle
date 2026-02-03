@@ -13,5 +13,5 @@ dependencies {
 
     testFixturesImplementation 'io.projectreactor:reactor-core:3.8.1'
     testFixturesImplementation 'org.assertj:assertj-core:3.27.6'
-    testFixturesImplementation 'org.junit.jupiter:junit-jupiter:5.14.1'
+    testFixturesImplementation 'org.junit.jupiter:junit-jupiter:5.14.2'
 }
