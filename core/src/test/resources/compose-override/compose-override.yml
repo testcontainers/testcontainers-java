@@ -5,3 +5,5 @@ services:
       - 6379
     environment:
       foo: !reset null
+    labels: !override
+      label2: value2
