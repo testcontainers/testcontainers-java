@@ -164,7 +164,7 @@ class KibanaContainerTest {
         Assertions
             .assertThatThrownBy(() -> {
                 new KibanaContainer("docker.elastic.co/kibana/kibana:8.0.0")
-                    .withElasticsearchCredentials("user", "pass")
+                    .withKibanaUsernameAndPassword("user", "pass")
                     .withElasticsearchServiceAccountToken("token");
             })
             .isInstanceOf(IllegalStateException.class)
@@ -216,7 +216,7 @@ class KibanaContainerTest {
                 KibanaContainer kibana = new KibanaContainer("docker.elastic.co/kibana/kibana:9.2.2") //this minor version is intentionally below ES version
                     .withNetwork(network)
                     .withElasticsearchUrl("http://" + esHostname + ":9200")
-                    .withElasticsearchKibanaSystemPassword(kibanaSystemPassword)
+                    .withKibanaSystemPassword(kibanaSystemPassword)
             ) {
                 kibana.start();
                 String status = getKibanaStatus(kibana);

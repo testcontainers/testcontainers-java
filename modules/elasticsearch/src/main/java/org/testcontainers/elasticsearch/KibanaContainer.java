@@ -132,12 +132,12 @@ public class KibanaContainer extends GenericContainer<KibanaContainer> {
      * @param password the password for the kibana_system user
      * @return this container instance
      */
-    public KibanaContainer withElasticsearchKibanaSystemPassword(String password) {
-        return withElasticsearchCredentials(KIBANA_SYSTEM_USER, password);
+    public KibanaContainer withKibanaSystemPassword(String password) {
+        return withKibanaUsernameAndPassword(KIBANA_SYSTEM_USER, password);
     }
 
     /**
-     * Configures Elasticsearch credentials for authentication.
+     * Configures credentials Kibana will use for authentication.
      *
      * @param username the Elasticsearch username (cannot be 'elastic')
      * @param password the password
@@ -145,7 +145,7 @@ public class KibanaContainer extends GenericContainer<KibanaContainer> {
      * @throws IllegalStateException if a service account token is already configured
      * @throws IllegalArgumentException if credentials are invalid
      */
-    public KibanaContainer withElasticsearchCredentials(String username, String password) {
+    public KibanaContainer withKibanaUsernameAndPassword(String username, String password) {
         if (elasticsearchServiceAccountToken != null) {
             throw new IllegalStateException(
                 "Conflicting Elasticsearch credentials: provide either a service account token " +
