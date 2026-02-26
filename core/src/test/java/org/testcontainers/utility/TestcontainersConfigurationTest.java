@@ -218,6 +218,35 @@ class TestcontainersConfigurationTest {
     }
 
     @Test
+    void shouldReturnEmptyOptionalWhenContainerLogDriverNotSet() {
+        assertThat(newConfig().getContainerLogDriver()).as("no container log driver override by default").isEmpty();
+    }
+
+    @Test
+    void shouldReadContainerLogDriverFromClasspathProperties() {
+        classpathProperties.setProperty("container.log.driver", "json-file");
+        assertThat(newConfig().getContainerLogDriver())
+            .as("container log driver can be set via classpath properties")
+            .hasValue("json-file");
+    }
+
+    @Test
+    void shouldReadContainerLogDriverFromUserProperties() {
+        userProperties.setProperty("container.log.driver", "json-file");
+        assertThat(newConfig().getContainerLogDriver())
+            .as("container log driver can be set via user properties")
+            .hasValue("json-file");
+    }
+
+    @Test
+    void shouldReadContainerLogDriverFromEnvironmentVariable() {
+        environment.put("TESTCONTAINERS_CONTAINER_LOG_DRIVER", "json-file");
+        assertThat(newConfig().getContainerLogDriver())
+            .as("container log driver can be set via environment variable")
+            .hasValue("json-file");
+    }
+
+    @Test
     void shouldTrimImageNames() {
         userProperties.setProperty("ryuk.container.image", " testcontainers/ryuk:0.3.2 ");
         assertThat(newConfig().getRyukImage())

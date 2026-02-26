@@ -12,6 +12,7 @@ import com.github.dockerjava.api.model.ContainerNetwork;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Link;
+import com.github.dockerjava.api.model.LogConfig;
 import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Ports;
 import com.github.dockerjava.api.model.Volume;
@@ -609,6 +610,21 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         if (tmpFsMapping != null) {
             config.withTmpFs(tmpFsMapping);
         }
+        TestcontainersConfiguration
+            .getInstance()
+            .getContainerLogDriver()
+            .ifPresent(driver -> {
+                LogConfig.LoggingType type = LogConfig.LoggingType.fromValue(driver);
+                if (type != null) {
+                    config.withLogConfig(new LogConfig(type));
+                } else {
+                    logger()
+                        .warn(
+                            "Container log driver '{}' is not recognized by the docker-java client library and cannot be applied, ignoring.",
+                            driver
+                        );
+                }
+            });
         return config;
     }
 

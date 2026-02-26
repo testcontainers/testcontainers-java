@@ -220,6 +220,13 @@ public class TestcontainersConfiguration {
         return getEnvVarOrProperty("pull.policy", null);
     }
 
+    public Optional<String> getContainerLogDriver() {
+        return Optional
+            .ofNullable(getEnvVarOrProperty("container.log.driver", null))
+            .map(String::trim)
+            .filter(s -> !s.isEmpty());
+    }
+
     public Integer getClientPingTimeout() {
         return Integer.parseInt(getEnvVarOrProperty("client.ping.timeout", "10"));
     }
