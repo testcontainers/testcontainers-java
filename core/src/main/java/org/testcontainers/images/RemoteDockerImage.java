@@ -3,7 +3,6 @@ package org.testcontainers.images;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.PullImageCmd;
 import com.github.dockerjava.api.exception.DockerClientException;
-import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.google.common.util.concurrent.Futures;
 import lombok.AccessLevel;
@@ -18,6 +17,8 @@ import org.awaitility.pollinterval.PollInterval;
 import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ContainerFetchException;
+import org.testcontainers.images.retry.ImagePullRetryPolicy;
+import org.testcontainers.images.retry.PullRetryPolicy;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.DockerLoggerFactory;
 import org.testcontainers.utility.ImageNameSubstitutor;
@@ -45,6 +46,9 @@ public class RemoteDockerImage extends LazyFuture<String> {
 
     @With
     ImagePullPolicy imagePullPolicy = PullPolicy.defaultPolicy();
+
+    @With
+    private ImagePullRetryPolicy imagePullRetryPolicy = PullRetryPolicy.defaultRetryPolicy();
 
     @With
     private ImageNameSubstitutor imageNameSubstitutor = ImageNameSubstitutor.instance();
@@ -87,7 +91,6 @@ public class RemoteDockerImage extends LazyFuture<String> {
             );
 
             final Instant startedAt = Instant.now();
-            final Instant lastRetryAllowed = Instant.now().plus(PULL_RETRY_TIME_LIMIT);
             final AtomicReference<Exception> lastFailure = new AtomicReference<>();
             final PullImageCmd pullImageCmd = dockerClient
                 .pullImageCmd(imageName.getUnversionedPart())
@@ -100,6 +103,8 @@ public class RemoteDockerImage extends LazyFuture<String> {
                 .iterative(duration -> duration.multipliedBy(2))
                 .startDuration(Duration.ofMillis(50));
 
+            imagePullRetryPolicy.pullStarted();
+
             Awaitility
                 .await()
                 .pollInSameThread()
@@ -107,7 +112,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
                 .atMost(PULL_RETRY_TIME_LIMIT)
                 .pollInterval(interval)
                 .until(
-                    tryImagePullCommand(pullImageCmd, logger, dockerImageName, imageName, lastFailure, lastRetryAllowed)
+                    tryImagePullCommand(pullImageCmd, logger, dockerImageName, imageName, lastFailure, imagePullRetryPolicy)
                 );
 
             if (dockerImageName.get() == null) {
@@ -135,23 +140,23 @@ public class RemoteDockerImage extends LazyFuture<String> {
         AtomicReference<String> dockerImageName,
         DockerImageName imageName,
         AtomicReference<Exception> lastFailure,
-        Instant lastRetryAllowed
+        ImagePullRetryPolicy imagePullRetryPolicy
     ) {
         return () -> {
-            try {
-                pullImage(pullImageCmd, logger);
-                dockerImageName.set(imageName.asCanonicalNameString());
-                return true;
-            } catch (InterruptedException | InternalServerErrorException e) {
-                // these classes of exception often relate to timeout/connection errors so should be retried
-                lastFailure.set(e);
-                logger.warn(
-                    "Retrying pull for image: {} ({}s remaining)",
-                    imageName,
-                    Duration.between(Instant.now(), lastRetryAllowed).getSeconds()
-                );
-                return false;
-            }
+            boolean pull;
+
+            do {
+                try {
+                    pullImage(pullImageCmd, logger);
+                    dockerImageName.set(imageName.asCanonicalNameString());
+                    return true;
+                } catch (Exception e) {
+                    lastFailure.set(e);
+                    pull = imagePullRetryPolicy.shouldRetry(imageName, e);
+                }
+            } while (pull);
+
+            return false;
         };
     }
 
