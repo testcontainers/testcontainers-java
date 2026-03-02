@@ -15,3 +15,7 @@ dependencies {
     testImplementation 'com.azure:azure-messaging-servicebus'
     testImplementation 'com.microsoft.sqlserver:mssql-jdbc:13.3.0.jre8-preview'
 }
+
+tasks.japicmp {
+	methodExcludes = ["org.testcontainers.azure.ServiceBusEmulatorContainer#withMsSqlServerContainer(org.testcontainers.containers.MSSQLServerContainer)"]
+}
