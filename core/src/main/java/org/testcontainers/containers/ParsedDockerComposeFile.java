@@ -50,7 +50,7 @@ class ParsedDockerComposeFile {
         SafeConstructor constructor = new SafeConstructor(options) {
             @Override
             protected Object constructObject(Node node) {
-                if (node.getTag().equals(new Tag("!reset"))) {
+                if (node.getTag().equals(new Tag("!reset")) || node.getTag().equals(new Tag("!override"))) {
                     return null;
                 }
                 return super.constructObject(node);
