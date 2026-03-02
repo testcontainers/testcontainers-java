@@ -18,6 +18,10 @@ updates:
         update-types: [ "version-update:semver-major" ]
       - dependency-name: "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
         update-types: [ "version-update:semver-minor", "version-update:semver-patch" ]
+      - dependency-name: "org.junit.jupiter:junit-jupiter"
+        update-types: [ "version-update:semver-major" ]
+      - dependency-name: "org.junit.platform:junit-platform-launcher"
+        update-types: [ "version-update:semver-major" ]
   - package-ecosystem: "gradle"
     directory: "/"
     allow:
@@ -29,6 +33,10 @@ updates:
     open-pull-requests-limit: 10
     ignore:
       - dependency-name: "com.gradleup.shadow"
+        update-types: [ "version-update:semver-major" ]
+      - dependency-name: "org.junit.jupiter:junit-jupiter"
+        update-types: [ "version-update:semver-major" ]
+      - dependency-name: "org.junit.platform:junit-platform-launcher"
         update-types: [ "version-update:semver-major" ]
 
 # Explicit entry for each module
@@ -143,6 +151,8 @@ updates:
     ignore:
       - dependency-name: "org.apache.tomcat:tomcat-jdbc"
         update-types: [ "version-update:semver-minor" ]
+      - dependency-name: "org.junit.jupiter:junit-jupiter"
+        update-types: [ "version-update:semver-major" ]
   - package-ecosystem: "gradle"
     directory: "/modules/junit-jupiter"
     schedule:
@@ -150,6 +160,8 @@ updates:
     open-pull-requests-limit: 10
     ignore:
       - dependency-name: "org.mockito:mockito-core"
+        update-types: [ "version-update:semver-major" ]
+      - dependency-name: "org.junit:junit-bom"
         update-types: [ "version-update:semver-major" ]
   - package-ecosystem: "gradle"
     directory: "/modules/k3s"
@@ -304,6 +316,8 @@ updates:
     ignore:
       - dependency-name: "io.r2dbc:r2dbc-spi"
         update-types: [ "version-update:semver-major", "version-update:semver-minor" ]
+      - dependency-name: "org.junit.jupiter:junit-jupiter"
+        update-types: [ "version-update:semver-major" ]
   - package-ecosystem: "gradle"
     directory: "/modules/rabbitmq"
     schedule:
@@ -347,6 +361,9 @@ updates:
     directory: "/modules/spock"
     schedule:
       interval: "monthly"
+    ignore:
+      - dependency-name: "org.junit:junit-bom"
+        update-types: [ "version-update:semver-major" ]
     open-pull-requests-limit: 10
   - package-ecosystem: "gradle"
     directory: "/modules/tidb"
@@ -412,6 +429,12 @@ updates:
         update-types: [ "version-update:semver-major", "version-update:semver-minor" ]
       - dependency-name: "com.hazelcast:hazelcast"
         update-types: [ "version-update:semver-minor" ]
+      - dependency-name: "org.junit.jupiter:junit-jupiter"
+        update-types: [ "version-update:semver-major" ]
+      - dependency-name: "org.junit.platform:junit-platform-launcher"
+        update-types: [ "version-update:semver-major" ]
+      - dependency-name: "com.gradleup.shadow"
+        update-types: [ "version-update:semver-major" ]
 
 # Smoke test
   - package-ecosystem: "gradle"
@@ -424,6 +447,12 @@ updates:
         update-types: [ "version-update:semver-minor" ]
       - dependency-name: "com.diffplug.spotless"
         update-types: [ "version-update:semver-major", "version-update:semver-minor" ]
+      - dependency-name: "org.junit.jupiter:junit-jupiter"
+        update-types: [ "version-update:semver-major" ]
+      - dependency-name: "org.junit.platform:junit-platform-launcher"
+        update-types: [ "version-update:semver-major" ]
+      - dependency-name: "com.gradleup.shadow"
+        update-types: [ "version-update:semver-major" ]
 
 # GitHub Actions
   - package-ecosystem: "github-actions"

@@ -3,5 +3,5 @@ description = "Testcontainers :: Typesense"
 dependencies {
     api project(':testcontainers')
 
-    testImplementation 'org.typesense:typesense-java:1.3.0'
+    testImplementation 'org.typesense:typesense-java:2.0.0'
 }
