@@ -4,7 +4,6 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 import java.security.KeyStore;
-import java.time.Duration;
 
 /**
  * Testcontainers implementation for CosmosDB Emulator.
@@ -14,8 +13,6 @@ import java.time.Duration;
  * Exposed ports: 8081
  */
 public class CosmosDBEmulatorContainer extends GenericContainer<CosmosDBEmulatorContainer> {
-
-    static final String CERTIFICATE_ENDPOINT = "/_explorer/emulator.pem";
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse(
         "mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator"
@@ -30,16 +27,13 @@ public class CosmosDBEmulatorContainer extends GenericContainer<CosmosDBEmulator
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
         withExposedPorts(PORT);
-        // Wait.forLogMessage(".*Started\\r\\n$") is not sufficient with the current version of cosmos db emulator (vnext-EN20251022),
-        // see https://github.com/Azure/azure-cosmos-db-emulator-docker/issues/209 .
-        // On my machine it typically takes around 110s (!) before this endpoint becomes available.
-        waitingFor(Wait.forHttps(CERTIFICATE_ENDPOINT).allowInsecure().withStartupTimeout(Duration.ofSeconds(180)));
+        waitingFor(Wait.forLogMessage(".*Started\\r\\n$", 1));
     }
 
     /**
      * @return new KeyStore built with PKCS12
      */
-    public KeyStore buildNewKeyStore() throws InterruptedException {
+    public KeyStore buildNewKeyStore() {
         return KeyStoreBuilder.buildByDownloadingCertificate(getEmulatorEndpoint(), getEmulatorKey());
     }
 
