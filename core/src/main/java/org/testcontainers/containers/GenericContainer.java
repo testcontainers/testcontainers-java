@@ -138,6 +138,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Nullable
     private String workingDirectory = null;
 
+    @Nullable
+    private String containerAlias = null;
+
     /**
      * The shared memory size to use when starting the container.
      * This value is in bytes.
@@ -343,7 +346,14 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 }
             );
         } catch (Exception e) {
-            throw new ContainerLaunchException("Container startup failed for image " + getDockerImageName(), e);
+            String containerAliasStr = "";
+            if (StringUtils.isNotBlank(containerAlias)) {
+                containerAliasStr = " (containerAlias='" + containerAlias.trim() + "')";
+            }
+            throw new ContainerLaunchException(
+                "Container startup failed for image " + getDockerImageName() + containerAliasStr,
+                e
+            );
         }
     }
 
@@ -663,7 +673,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * @return a logger that references the docker image name
      */
     protected Logger logger() {
-        return DockerLoggerFactory.getLogger(this.getDockerImageName());
+        String loggerName = this.getDockerImageName();
+        if (StringUtils.isNotBlank(containerAlias)) {
+            loggerName = loggerName + "--" + containerAlias.trim();
+        }
+        return DockerLoggerFactory.getLogger(loggerName);
     }
 
     /**
@@ -1253,6 +1267,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public SELF withWorkingDirectory(String workDir) {
         this.setWorkingDirectory(workDir);
+        return self();
+    }
+
+    @Override
+    public SELF withContainerAlias(String alias) {
+        this.setContainerAlias(alias);
         return self();
     }
 
