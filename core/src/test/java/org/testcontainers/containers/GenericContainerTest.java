@@ -8,6 +8,7 @@ import com.github.dockerjava.api.command.InspectContainerResponse.ContainerState
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Info;
+import com.github.dockerjava.api.model.LogConfig;
 import com.github.dockerjava.api.model.Ports;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
@@ -229,6 +230,28 @@ class GenericContainerTest {
                 )
                 .filteredOn(event -> event.getMessage().matches(regexMatch))
                 .isNotEmpty();
+        }
+    }
+
+    @Test
+    void shouldApplyLogDriverFromHostConfig() {
+        String daemonDefault = DockerClientFactory.instance().client().infoCmd().exec().getLoggingDriver();
+        LogConfig.LoggingType overrideDriver = daemonDefault.equals(LogConfig.LoggingType.NONE.getType())
+            ? LogConfig.LoggingType.JSON_FILE
+            : LogConfig.LoggingType.NONE;
+
+        try (
+            GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
+                .withCreateContainerCmdModifier(cmd -> {
+                    cmd.getHostConfig().withLogConfig(new LogConfig(overrideDriver));
+                })
+                .withCommand("tail", "-f", "/dev/null")
+        ) {
+            container.start();
+
+            assertThat(container.getContainerInfo().getHostConfig().getLogConfig().getType().getType())
+                .as("container should use the configured log driver instead of the daemon default (%s)", daemonDefault)
+                .isEqualTo(overrideDriver.getType());
         }
     }
 
