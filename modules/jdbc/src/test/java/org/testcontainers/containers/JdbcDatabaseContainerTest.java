@@ -20,6 +20,32 @@ class JdbcDatabaseContainerTest {
         assertThatExceptionOfType(IllegalStateException.class).isThrownBy(jdbcContainer::waitUntilContainerStarted);
     }
 
+    @Test
+    void getR2dbcUrlReturnsR2dbcPrefixedUrl() {
+        JdbcDatabaseContainer<?> jdbcContainer = new JdbcDatabaseContainerStub("mysql:latest") {
+            @Override
+            public String getJdbcUrl() {
+                return "jdbc:mysql://localhost:3306/test";
+            }
+        };
+
+        String r2dbcUrl = jdbcContainer.getR2dbcUrl();
+        assert r2dbcUrl.equals("r2dbc:mysql://localhost:3306/test");
+    }
+
+    @Test
+    void getR2dbcUrlThrowsExceptionIfJdbcPrefixMissing() {
+        JdbcDatabaseContainer<?> jdbcContainer = new JdbcDatabaseContainerStub("mysql:latest") {
+            @Override
+            public String getJdbcUrl() {
+                return "mysql://localhost:3306/test";
+            }
+        };
+
+        assertThatExceptionOfType(IllegalStateException.class)
+            .isThrownBy(jdbcContainer::getR2dbcUrl);
+    }
+
     static class JdbcDatabaseContainerStub extends JdbcDatabaseContainer {
 
         public JdbcDatabaseContainerStub(@NonNull String dockerImageName) {
