@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import java.io.Closeable;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -110,7 +111,7 @@ class LoggedPullImageResultCallback extends PullImageResultCallback {
         super.onComplete();
 
         final long downloadedLayerSize = downloadedLayerSize();
-        final long duration = Duration.between(start, Instant.now()).getSeconds();
+        final double duration = Duration.between(start, Instant.now()).get(ChronoUnit.MILLIS) / 1000.0;
 
         if (completed) {
             logger.info(
