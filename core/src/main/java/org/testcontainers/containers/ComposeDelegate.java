@@ -282,8 +282,8 @@ class ComposeDelegate {
         /*
          * For every service/port pair that needs to be exposed, we register a target on an 'ambassador container'.
          *
-         * The ambassador container's role is to link (within the Docker network) to one of the
-         * compose services, and proxy TCP network I/O out to a port that the ambassador container
+         * The ambassador container's role is to be on the same Docker network as the compose
+         * services, and proxy TCP network I/O out to a port that the ambassador container
          * exposes.
          *
          * This avoids the need for the docker compose file to explicitly expose ports on all the
@@ -299,10 +299,7 @@ class ComposeDelegate {
             .computeIfAbsent(serviceInstanceName, __ -> new ConcurrentHashMap<>())
             .put(servicePort, ambassadorPort);
         ambassadorContainer.withTarget(ambassadorPort, serviceInstanceName, servicePort);
-        ambassadorContainer.addLink(
-            new FutureContainer(this.project + this.composeSeparator + serviceInstanceName),
-            serviceInstanceName
-        );
+        ambassadorContainer.withNetworkMode(this.project + "_default");
         addWaitStrategy(serviceInstanceName, waitStrategy);
     }
 

@@ -234,6 +234,13 @@ public interface ContainerState {
     }
 
     /**
+     * @return the name of the container
+     */
+    default String getContainerName() {
+        return getContainerInfo().getName();
+    }
+
+    /**
      * Returns the container inspect response. The response might be cached/outdated.
      *
      * @return the container info

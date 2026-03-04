@@ -7,7 +7,6 @@ import lombok.NonNull;
 import lombok.Value;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
-import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.images.ImagePullPolicy;
 import org.testcontainers.images.builder.Transferable;
@@ -22,7 +21,7 @@ import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public interface Container<SELF extends Container<SELF>> extends LinkableContainer, ContainerState {
+public interface Container<SELF extends Container<SELF>> extends ContainerState {
     /**
      * @return a reference to this container instance, cast to the expected generic type.
      */
@@ -96,16 +95,6 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
      */
     @Deprecated
     void addFileSystemBind(String hostPath, String containerPath, BindMode mode, SelinuxContext selinuxContext);
-
-    /**
-     * Add a link to another container.
-     *
-     * @param otherContainer the other container object to link to
-     * @param alias the alias (for the other container) that this container should be able to use
-     * @deprecated Links are deprecated (see <a href="https://github.com/testcontainers/testcontainers-java/issues/465">#465</a>). Please use {@link Network} features instead.
-     */
-    @Deprecated
-    void addLink(LinkableContainer otherContainer, String alias);
 
     /**
      * Add an exposed port. Consider using {@link #withExposedPorts(Integer...)}
@@ -453,12 +442,6 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
 
     List<Bind> getBinds();
 
-    /**
-     * @deprecated Links are deprecated (see <a href="https://github.com/testcontainers/testcontainers-java/issues/465">#465</a>). Please use {@link Network} features instead.
-     */
-    @Deprecated
-    Map<String, LinkableContainer> getLinkedContainers();
-
     void setExposedPorts(List<Integer> exposedPorts);
 
     void setPortBindings(List<String> portBindings);
@@ -472,12 +455,6 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     void setCommandParts(String[] commandParts);
 
     void setBinds(List<Bind> binds);
-
-    /**
-     * @deprecated Links are deprecated (see <a href="https://github.com/testcontainers/testcontainers-java/issues/465">#465</a>). Please use {@link Network} features instead.
-     */
-    @Deprecated
-    void setLinkedContainers(Map<String, LinkableContainer> linkedContainers);
 
     void setWaitStrategy(WaitStrategy waitStrategy);
 }
