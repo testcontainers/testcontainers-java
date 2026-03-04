@@ -11,7 +11,6 @@ import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.ContainerNetwork;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.HostConfig;
-import com.github.dockerjava.api.model.Link;
 import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Ports;
 import com.github.dockerjava.api.model.Volume;
@@ -40,7 +39,6 @@ import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.startupcheck.IsRunningStartupCheckStrategy;
 import org.testcontainers.containers.startupcheck.MinimumDurationRunningStartupCheckStrategy;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
-import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
@@ -72,7 +70,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -123,13 +120,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @NonNull
     private List<VolumesFrom> volumesFroms = new ArrayList<>();
-
-    /**
-     * @deprecated Links are deprecated (see <a href="https://github.com/testcontainers/testcontainers-java/issues/465">#465</a>). Please use {@link Network} features instead.
-     */
-    @NonNull
-    @Deprecated
-    private Map<String, LinkableContainer> linkedContainers = new HashMap<>();
 
     private StartupCheckStrategy startupCheckStrategy = new IsRunningStartupCheckStrategy();
 
@@ -781,45 +771,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         VolumesFrom[] volumesFromsArray = volumesFroms.stream().toArray(VolumesFrom[]::new);
         createCommand.withVolumesFrom(volumesFromsArray);
 
-        Set<Link> allLinks = new HashSet<>();
-        Set<String> allLinkedContainerNetworks = new HashSet<>();
-        for (Entry<String, LinkableContainer> linkEntries : linkedContainers.entrySet()) {
-            String alias = linkEntries.getKey();
-            LinkableContainer linkableContainer = linkEntries.getValue();
-
-            Set<Link> links = findLinksFromThisContainer(alias, linkableContainer);
-            allLinks.addAll(links);
-
-            if (allLinks.size() == 0) {
-                throw new ContainerLaunchException(
-                    "Aborting attempt to link to container " +
-                    linkableContainer.getContainerName() +
-                    " as it is not running"
-                );
-            }
-
-            Set<String> linkedContainerNetworks = findAllNetworksForLinkedContainers(linkableContainer);
-            allLinkedContainerNetworks.addAll(linkedContainerNetworks);
-        }
-
-        createCommand.withLinks(allLinks.toArray(new Link[allLinks.size()]));
-
-        allLinkedContainerNetworks.remove("bridge");
-        if (allLinkedContainerNetworks.size() > 1) {
-            logger()
-                .warn(
-                    "Container needs to be on more than one custom network to link to other " +
-                    "containers - this is not currently supported. Required networks are: {}",
-                    allLinkedContainerNetworks
-                );
-        }
-
-        Optional<String> networkForLinks = allLinkedContainerNetworks.stream().findFirst();
-        if (networkForLinks.isPresent()) {
-            logger().debug("Associating container with network: {}", networkForLinks.get());
-            createCommand.withNetworkMode(networkForLinks.get());
-        }
-
         if (hostAccessible) {
             PortForwardingContainer.INSTANCE.start();
         }
@@ -839,32 +790,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         for (CreateContainerCmdModifier createContainerCmdModifier : this.createContainerCmdModifiers) {
             createCommand = createContainerCmdModifier.modify(createCommand);
         }
-    }
-
-    private Set<Link> findLinksFromThisContainer(String alias, LinkableContainer linkableContainer) {
-        return dockerClient
-            .listContainersCmd()
-            .withStatusFilter(Arrays.asList("running"))
-            .exec()
-            .stream()
-            .flatMap(container -> Stream.of(container.getNames()))
-            .filter(name -> name.endsWith(linkableContainer.getContainerName()))
-            .map(name -> new Link(name, alias))
-            .collect(Collectors.toSet());
-    }
-
-    private Set<String> findAllNetworksForLinkedContainers(LinkableContainer linkableContainer) {
-        return dockerClient
-            .listContainersCmd()
-            .exec()
-            .stream()
-            .filter(container -> container.getNames()[0].endsWith(linkableContainer.getContainerName()))
-            .filter(container -> {
-                return container.getNetworkSettings() != null && container.getNetworkSettings().getNetworks() != null;
-            })
-            .flatMap(container -> container.getNetworkSettings().getNetworks().keySet().stream())
-            .distinct()
-            .collect(Collectors.toSet());
     }
 
     /**
@@ -1027,15 +952,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     private void addVolumesFrom(Container container, BindMode mode) {
         volumesFroms.add(new VolumesFrom(container.getContainerName(), mode.accessMode));
-    }
-
-    /**
-     * @deprecated Links are deprecated (see <a href="https://github.com/testcontainers/testcontainers-java/issues/465">#465</a>). Please use {@link Network} features instead.
-     */
-    @Deprecated
-    @Override
-    public void addLink(LinkableContainer otherContainer, String alias) {
-        this.linkedContainers.put(alias, otherContainer);
     }
 
     @Override

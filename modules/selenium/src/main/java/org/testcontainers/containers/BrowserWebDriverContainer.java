@@ -18,7 +18,6 @@ import org.rnorth.ducttape.unreliables.Unreliables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.VncRecordingContainer.VncRecordingFormat;
-import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
@@ -52,7 +51,7 @@ import java.util.concurrent.TimeUnit;
 @Deprecated
 public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SELF>>
     extends GenericContainer<SELF>
-    implements LinkableContainer, TestLifecycleAware {
+    implements TestLifecycleAware {
 
     private static final DockerImageName CHROME_IMAGE = DockerImageName.parse("selenium/standalone-chrome");
 
@@ -398,22 +397,6 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
             vncRecordingContainer.saveRecordingToFile(recordingFile);
         }
-    }
-
-    /**
-     * Remember any other containers this needs to link to. We have to pass these down to the container so that
-     * the other containers will be initialized before linking occurs.
-     *
-     * @param otherContainer the container rule to link to
-     * @param alias          the alias (hostname) that this other container should be referred to by
-     * @return this
-     *
-     * @deprecated Links are deprecated (see <a href="https://github.com/testcontainers/testcontainers-java/issues/465">#465</a>). Please use {@link Network} features instead.
-     */
-    @Deprecated
-    public SELF withLinkToContainer(LinkableContainer otherContainer, String alias) {
-        addLink(otherContainer, alias);
-        return self();
     }
 
     public SELF withRecordingMode(VncRecordingMode recordingMode, File vncRecordingDirectory) {
