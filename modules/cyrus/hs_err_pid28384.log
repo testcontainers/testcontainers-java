@@ -1,0 +1,287 @@
+#
+# There is insufficient memory for the Java Runtime Environment to continue.
+# Native memory allocation (mmap) failed to map 1073741824 bytes. Error detail: G1 virtual space
+# Possible reasons:
+#   The system is out of physical RAM or swap space
+#   This process is running with CompressedOops enabled, and the Java Heap may be blocking the growth of the native heap
+# Possible solutions:
+#   Reduce memory load on the system
+#   Increase physical memory or swap space
+#   Check if swap backing store is full
+#   Decrease Java heap size (-Xmx/-Xms)
+#   Decrease number of Java threads
+#   Decrease Java thread stack sizes (-Xss)
+#   Set larger code cache with -XX:ReservedCodeCacheSize=
+#   JVM is running with Zero Based Compressed Oops mode in which the Java heap is
+#     placed in the first 32GB address space. The Java Heap base address is the
+#     maximum limit for the native heap growth. Please use -XX:HeapBaseMinAddress
+#     to set the Java Heap base and to place the Java Heap above 32GB virtual address.
+# This output file may be truncated or incomplete.
+#
+#  Out of Memory Error (os_windows.cpp:3736), pid=28384, tid=11368
+#
+# JRE version:  (21.0.8+9) (build )
+# Java VM: OpenJDK 64-Bit Server VM (21.0.8+9-LTS, mixed mode, sharing, tiered, compressed oops, compressed class ptrs, g1 gc, windows-amd64)
+# No core dump will be written. Minidumps are not enabled by default on client versions of Windows
+#
+
+---------------  S U M M A R Y ------------
+
+Command Line: -Dfile.encoding=UTF-8 -Duser.country=DE -Duser.language=de -Duser.variant lombok.launch.Main delombok C:\Code\github\jguck\testcontainers-java\modules\cyrus\src\main\java -d C:\Code\github\jguck\testcontainers-java\modules\cyrus\build\delombok -f generateDelombokComment:skip
+
+Host: 12th Gen Intel(R) Core(TM) i7-12800HX, 24 cores, 63G,  Windows 11 , 64 bit Build 26100 (10.0.26100.7705)
+Time: Thu Mar  5 09:12:19 2026 Mitteleuropäische Zeit elapsed time: 0.012408 seconds (0d 0h 0m 0s)
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x0000027e78f83d90):  JavaThread "Unknown thread" [_thread_in_vm, id=11368, stack(0x000000bad4c00000,0x000000bad4d00000) (1024K)]
+
+Stack: [0x000000bad4c00000,0x000000bad4d00000]
+Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+V  [jvm.dll+0x6e1729]
+V  [jvm.dll+0x8bf47b]
+V  [jvm.dll+0x8c19aa]
+V  [jvm.dll+0x8c2083]
+V  [jvm.dll+0x289fd6]
+V  [jvm.dll+0x6de085]
+V  [jvm.dll+0x6d218a]
+V  [jvm.dll+0x366f6e]
+V  [jvm.dll+0x36ee1b]
+V  [jvm.dll+0x3c06b9]
+V  [jvm.dll+0x3c095b]
+V  [jvm.dll+0x33a8b7]
+V  [jvm.dll+0x33b3fb]
+V  [jvm.dll+0x888e5e]
+V  [jvm.dll+0x3cd611]
+V  [jvm.dll+0x871e5c]
+V  [jvm.dll+0x461261]
+V  [jvm.dll+0x462ea1]
+C  [jli.dll+0x52f0]
+C  [ucrtbase.dll+0x37b0]
+C  [KERNEL32.DLL+0x2e8d7]
+C  [ntdll.dll+0x8c40c]
+
+
+---------------  P R O C E S S  ---------------
+
+Threads class SMR info:
+_java_thread_list=0x00007fff32086288, length=0, elements={
+}
+
+Java Threads: ( => current thread )
+Total: 0
+
+Other Threads:
+  0x0000027e7b4d6590 WorkerThread "GC Thread#0"                     [id=48756, stack(0x000000bad4d00000,0x000000bad4e00000) (1024K)]
+  0x0000027e7b4dd040 ConcurrentGCThread "G1 Main Marker"            [id=16236, stack(0x000000bad4e00000,0x000000bad4f00000) (1024K)]
+  0x0000027e7b4de2e0 WorkerThread "G1 Conc#0"                       [id=38472, stack(0x000000bad4f00000,0x000000bad5000000) (1024K)]
+
+[error occurred during error reporting (printing all threads), id 0xc0000005, EXCEPTION_ACCESS_VIOLATION (0xc0000005) at pc=0x00007fff3177d307]
+VM state: not at safepoint (not fully initialized)
+
+VM Mutex/Monitor currently owned by a thread:  ([mutex/lock_event])
+[0x00007fff320fa8c8] Heap_lock - owner thread: 0x0000027e78f83d90
+
+Heap address: 0x0000000404800000, size: 16312 MB, Compressed Oops mode: Zero based, Oop shift amount: 3
+
+CDS archive(s) mapped at: [0x0000000000000000-0x0000000000000000-0x0000000000000000), size 0, SharedBaseAddress: 0x0000000800000000, ArchiveRelocationMode: 1.
+Narrow klass base: 0x0000000000000000, Narrow klass shift: 0, Narrow klass range: 0x0
+
+GC Precious Log:
+ CardTable entry size: 512
+ Card Set container configuration: InlinePtr #cards 4 size 8 Array Of Cards #cards 64 size 144 Howl #buckets 8 coarsen threshold 14745 Howl Bitmap #cards 2048 size 272 coarsen threshold 1843 Card regions per heap region 1 cards per card region 16384
+
+Heap:
+ garbage-first heap   total 0K, used 0K [0x0000000404800000, 0x0000000800000000)
+  region size 8192K, 0 young (0K), 0 survivors (0K)
+
+[error occurred during error reporting (printing heap information), id 0xc0000005, EXCEPTION_ACCESS_VIOLATION (0xc0000005) at pc=0x00007fff31b6ba99]
+GC Heap History (0 events):
+No events
+
+Dll operation events (1 events):
+Event: 0.006 Loaded shared library C:\Program Files\Microsoft\jdk-21.0.8.9-hotspot\bin\java.dll
+
+Deoptimization events (0 events):
+No events
+
+Classes loaded (0 events):
+No events
+
+Classes unloaded (0 events):
+No events
+
+Classes redefined (0 events):
+No events
+
+Internal exceptions (0 events):
+No events
+
+ZGC Phase Switch (0 events):
+No events
+
+VM Operations (0 events):
+No events
+
+Memory protections (0 events):
+No events
+
+Nmethod flushes (0 events):
+No events
+
+Events (0 events):
+No events
+
+
+Dynamic libraries:
+0x00007ff749650000 - 0x00007ff74965e000 	C:\Program Files\Microsoft\jdk-21.0.8.9-hotspot\bin\java.exe
+0x00007ff8012c0000 - 0x00007ff801528000 	C:\WINDOWS\SYSTEM32\ntdll.dll
+0x00007fffffe20000 - 0x00007fffffee9000 	C:\WINDOWS\System32\KERNEL32.DLL
+0x00007ffffec30000 - 0x00007fffff021000 	C:\WINDOWS\System32\KERNELBASE.dll
+0x00007ffffdcd0000 - 0x00007ffffde1b000 	C:\WINDOWS\System32\ucrtbase.dll
+0x00007fffe0b90000 - 0x00007fffe0ba8000 	C:\Program Files\Microsoft\jdk-21.0.8.9-hotspot\bin\jli.dll
+0x00007fffe0b70000 - 0x00007fffe0b8e000 	C:\Program Files\Microsoft\jdk-21.0.8.9-hotspot\bin\VCRUNTIME140.dll
+0x00007ff800fa0000 - 0x00007ff801166000 	C:\WINDOWS\System32\USER32.dll
+0x00007ffffe9f0000 - 0x00007ffffea17000 	C:\WINDOWS\System32\win32u.dll
+0x00007fffe97d0000 - 0x00007fffe9a63000 	C:\WINDOWS\WinSxS\amd64_microsoft.windows.common-controls_6595b64144ccf1df_6.0.26100.7824_none_3e0870b2e3345462\COMCTL32.dll
+0x00007ff8005f0000 - 0x00007ff80061b000 	C:\WINDOWS\System32\GDI32.dll
+0x00007fffffd70000 - 0x00007fffffe19000 	C:\WINDOWS\System32\msvcrt.dll
+0x00007ffffde20000 - 0x00007ffffdf4b000 	C:\WINDOWS\System32\gdi32full.dll
+0x00007ffffdb70000 - 0x00007ffffdc13000 	C:\WINDOWS\System32\msvcp_win.dll
+0x00007ff800dc0000 - 0x00007ff800df1000 	C:\WINDOWS\System32\IMM32.DLL
+0x00007fffe0c20000 - 0x00007fffe0c2c000 	C:\Program Files\Microsoft\jdk-21.0.8.9-hotspot\bin\vcruntime140_1.dll
+0x00007fff8d500000 - 0x00007fff8d589000 	C:\Program Files\Microsoft\jdk-21.0.8.9-hotspot\bin\msvcp140.dll
+0x00007fff31430000 - 0x00007fff321dc000 	C:\Program Files\Microsoft\jdk-21.0.8.9-hotspot\bin\server\jvm.dll
+0x00007ff800970000 - 0x00007ff800a24000 	C:\WINDOWS\System32\ADVAPI32.dll
+0x00007fffffa50000 - 0x00007fffffaf6000 	C:\WINDOWS\System32\sechost.dll
+0x00007fffff930000 - 0x00007fffffa48000 	C:\WINDOWS\System32\RPCRT4.dll
+0x00007fffffbe0000 - 0x00007fffffc54000 	C:\WINDOWS\System32\WS2_32.dll
+0x00007ffffc760000 - 0x00007ffffc7be000 	C:\WINDOWS\SYSTEM32\POWRPROF.dll
+0x00007ffff5c00000 - 0x00007ffff5c0b000 	C:\WINDOWS\SYSTEM32\VERSION.dll
+0x00007ffff54c0000 - 0x00007ffff54f5000 	C:\WINDOWS\SYSTEM32\WINMM.dll
+0x00007ffffc740000 - 0x00007ffffc754000 	C:\WINDOWS\SYSTEM32\UMPDC.dll
+0x00007ffffca10000 - 0x00007ffffca2b000 	C:\WINDOWS\SYSTEM32\kernel.appcore.dll
+0x00007fffc7580000 - 0x00007fffc758a000 	C:\Program Files\Microsoft\jdk-21.0.8.9-hotspot\bin\jimage.dll
+0x00007ffffb6c0000 - 0x00007ffffb902000 	C:\WINDOWS\SYSTEM32\DBGHELP.DLL
+0x00007ff800a30000 - 0x00007ff800db6000 	C:\WINDOWS\System32\combase.dll
+0x00007fffffb00000 - 0x00007fffffbd7000 	C:\WINDOWS\System32\OLEAUT32.dll
+0x00007fffcd350000 - 0x00007fffcd38b000 	C:\WINDOWS\SYSTEM32\dbgcore.DLL
+0x00007ffffdc20000 - 0x00007ffffdcc5000 	C:\WINDOWS\System32\bcryptPrimitives.dll
+0x00007fffc7550000 - 0x00007fffc7571000 	C:\Program Files\Microsoft\jdk-21.0.8.9-hotspot\bin\java.dll
+
+JVMTI agents: none
+
+dbghelp: loaded successfully - version: 4.0.5 - missing functions: none
+symbol engine: initialized successfully - sym options: 0x614 - pdb path: .;C:\Program Files\Microsoft\jdk-21.0.8.9-hotspot\bin;C:\WINDOWS\SYSTEM32;C:\WINDOWS\WinSxS\amd64_microsoft.windows.common-controls_6595b64144ccf1df_6.0.26100.7824_none_3e0870b2e3345462;C:\Program Files\Microsoft\jdk-21.0.8.9-hotspot\bin\server
+
+VM Arguments:
+jvm_args: -Dfile.encoding=UTF-8 -Duser.country=DE -Duser.language=de -Duser.variant 
+java_command: lombok.launch.Main delombok C:\Code\github\jguck\testcontainers-java\modules\cyrus\src\main\java -d C:\Code\github\jguck\testcontainers-java\modules\cyrus\build\delombok -f generateDelombokComment:skip
+java_class_path (initial): C:\Code\github\jguck\testcontainers-java\core\build\classes\java\main;C:\Users\joche\.gradle\caches\modules-2\files-2.1\org.projectlombok\lombok\1.18.30\f195ee86e6c896ea47a1d39defbe20eb59cd149d\lombok-1.18.30.jar;C:\Users\joche\.gradle\caches\modules-2\files-2.1\org.zeroturnaround\zt-exec\1.12\51a8d135518365a169a8c94e074c7eaaf864e147\zt-exec-1.12.jar;C:\Users\joche\.gradle\caches\modules-2\files-2.1\com.github.docker-java\docker-java-core\3.7.0\760ff9345121d4fd6ad0729035a8873bed15b66d\docker-java-core-3.7.0.jar;C:\Users\joche\.gradle\caches\modules-2\files-2.1\com.github.docker-java\docker-java-api\3.7.0\47d3e92a30fc1832197602cb1214b866024372cb\docker-java-api-3.7.0.jar;C:\Users\joche\.gradle\caches\modules-2\files-2.1\com.github.docker-java\docker-java-transport-zerodep\3.7.0\55185d3af96befa953dcb0b89de3751f95999511\docker-java-transport-zerodep-3.7.0.jar;C:\Users\joche\.gradle\caches\modules-2\files-2.1\org.slf4j\slf4j-api\1.7.36\6c62681a2f655b49963a5983b8b0950a6120ae14\slf4j-api-1.7.36.jar;C:\Users\joche\.gradle\caches\modules-2\files-2.1\org.apache.commons\commons-compress\1.28.0\e482f2c7a88dac3c497e96aa420b6a769f59c8d7\commons-compress-1.28.0.jar;C:\Users\joche\.gradle\caches\modules-2\files-2.1\org.rnorth.duct-tape\duct-tape\1.0.8\92edc22a9ab2f3e17c9bf700aaee377d50e8b530\duct-tape-1.0.8.jar;C:\Users\joche\.gradle\caches\modules-2\files-2.1\com.google.cloud.tools\jib-core\0.27.3\5916b17257df977aea79fd934b9f62a5d16e396c\jib-core-0.27.3.jar;C:\Users\joche\.gradle\caches\modules-2\files-2.1\org.awaitility\awaitility\4.3.0\f0c0bc1e404e500bab3f498b922eaedeae1c0207\awaitility-4.3.0.jar;C:\Users\joche\.gradle\caches\modules-2\files-2.1\com.google.guava\guava\33.3.1-jre\852f8b363da0111e819460021ca693cacca3e8db\guava-33.3.1-jre.jar;C:\Users\joche\.gradle\caches\modules-2\files-2.1\org.yaml\snakeyaml\2.5\2d53ddec134280cb384c1e35d094e5f71c1f2316\snakeyaml-2.5.jar;C:\Users\joche\.gradle\caches\modules-2\files-2.1\org.glassfish.main.external\trilead-ssh2-repackaged\4.1.2\5b72873bd34dff3fda779ade0b9a3e3a4aea94be\trilead-ssh2-repackaged-4.1.2.jar;C:\Users\joche\.gradle\caches\modules-2\files-2.1\com.github.docker-java\docker-java-transport\3.7.0\e68716970e65eb45c01c0207d15ff03bb32edf49\docker-java-transport-3.7.0.jar;C:\Users\joche\.gradle\caches\modules-2\files-2.1\commons-codec\commons-codec\1.19.0\8c0dbe3ae883fceda9b50a6c76e745e548073388\commons-codec-1.19.0.jar;C:\Users\joche\.gradle\caches\modules-2\files-2.1\commons-io\commons-io\2.21.0\52a6f68fe5afe335cde95461dd5c3412f04996f7\commons-io-2.21.0.jar;C:\Users\joche\.gradle\caches\modules-2\files-2.1\org.apache.commons\commons-lang3\3.19.0\d6524b169a6574cd253760c472d419b47bfd37e6\commons-lang3-3.19.0.jar;C:\Users\joche\.gradle\caches\modules-2\files-2.1\com.google.cloud.tools\jib-build-plan\0.4.0\b16394e7eda9aeff338841c6dc47ed5a8a9d8120\jib-build-plan-0.4.0.jar;C:\Users\joche\.gradle\caches\modules-2\files-2.1\org.hamcrest\hamcrest\2.1\9420ba32c29217b54eebd26ff7f9234d31c3fbb2\hamcrest-2.1.jar;C:\Users\joche\.gradle\caches\modules-2\files-2.1\com.google.guava\failureaccess\1.0.2\c4a06a64e650562f30b7bf9aaec1bfed43aca12b\failureaccess-1.0.2.jar;C:\Users\joche\.gradle\caches\modules-2\files-2.1\com.google.guava\listenablefuture\9999.0-empty-to-avoid-conflict-with-guava\b421526c5f297295adef1c886e5246c39d4ac629\listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar;C:\Users\joche\.gradle\caches\modules-2\files-2.1\com.google.code.findbugs\jsr305\3.0.2\25ea2e8b0c338a877313bd4672d3fe056ea78f0d\jsr305-3.0.2.jar;C:\Users\joche\.gradle\caches\modules-2\files-2.1\org.checkerframework\checker-qual\3.43.0\9425eee39e56b116d2b998b7c2cebcbd11a3c98b\checker-qual-3.43.0.jar;C:\Users\joche\.gradle\caches\modules-2\files-2.1\com.google.errorprone\error_prone_annotations\2.28.0\59fc00087ce372de42e394d2c789295dff2d19f0\error_prone_annotations-2.28.0.jar;C:\Users\joche\.gradle\caches\modules-2\files-2.1\com.google.j2objc\j2objc-annotations\3.0.0\7399e65dd7e9ff3404f4535b2f017093bdb134c7\j2objc-annotations-3.0.0.jar;C:\Users\joche\.gradle\caches\modules-2\files-2.1\com.fasterxml.jackson.core\jackson-core\2.20.1\5734323adfece72111769b0ae38a6cf803e3d178\jackson-core-2.20.1.jar;C:\Users\joche\.gradle\caches\modules-2\files-2.1\com.fasterxml.jackson.core\jackson-databind\2.20.1\9586a7fe0e1775de0e54237fa6a2c8455c93ac06\jackson-databind-2.20.1.jar;C:\Users\joche\.gradle\caches\modules-2\files-2.1\com.fasterxml.jackson.core\jackson-annotations\2.20\6a5e7291ea3f2b590a7ce400adb7b3aea4d7e12c\jackson-annotations-2.20.jar;C:\Users\joche\.gradle\caches\modules-2\files-2.1\org.bouncycastle\bcpkix-jdk18on\1.82\ad7b7155abac3e4e4f73579d5176c11f7659c560\bcpkix-jdk18on-1.82.jar;C:\Users\joche\.gradle\caches\modules-2\files-2.1\net.java.dev.jna\jna\5.18.1\b27ba04287cc4abe769642fe8318d39fc89bf937\jna-5.18.1.jar;C:\Users\joche\.gradle\caches\modules-2\files-2.1\org.bouncycastle\bcutil-jdk18on\1.82\1850911d674c91ce6444783ff10478e2c6e9bbf9\bcutil-jdk18on-1.82.jar;C:\Users\joche\.gradle\caches\modules-2\files-2.1\org.bouncycastle\bcprov-jdk18on\1.82\e1118397395d21909a1b7b15120d0c2a68d7fd0c\bcprov-jdk18on-1.82.jar
+Launcher Type: SUN_STANDARD
+
+[Global flags]
+     intx CICompilerCount                          = 12                                        {product} {ergonomic}
+     uint ConcGCThreads                            = 5                                         {product} {ergonomic}
+     uint G1ConcRefinementThreads                  = 18                                        {product} {ergonomic}
+   size_t G1HeapRegionSize                         = 8388608                                   {product} {ergonomic}
+    uintx GCDrainStackTargetSize                   = 64                                        {product} {ergonomic}
+   size_t InitialHeapSize                          = 1073741824                                {product} {ergonomic}
+   size_t MarkStackSize                            = 4194304                                   {product} {ergonomic}
+   size_t MaxHeapSize                              = 17104371712                               {product} {ergonomic}
+   size_t MinHeapDeltaBytes                        = 8388608                                   {product} {ergonomic}
+   size_t MinHeapSize                              = 8388608                                   {product} {ergonomic}
+    uintx NonNMethodCodeHeapSize                   = 7602480                                {pd product} {ergonomic}
+    uintx NonProfiledCodeHeapSize                  = 122027880                              {pd product} {ergonomic}
+    uintx ProfiledCodeHeapSize                     = 122027880                              {pd product} {ergonomic}
+    uintx ReservedCodeCacheSize                    = 251658240                              {pd product} {ergonomic}
+     bool SegmentedCodeCache                       = true                                      {product} {ergonomic}
+   size_t SoftMaxHeapSize                          = 17104371712                            {manageable} {ergonomic}
+     bool UseCompressedOops                        = true                           {product lp64_product} {ergonomic}
+     bool UseG1GC                                  = true                                      {product} {ergonomic}
+     bool UseLargePagesIndividualAllocation        = false                                  {pd product} {ergonomic}
+
+Logging:
+Log output configuration:
+ #0: stdout all=warning uptime,level,tags foldmultilines=false
+ #1: stderr all=off uptime,level,tags foldmultilines=false
+
+Environment Variables:
+JAVA_HOME=C:\Program Files\Microsoft\jdk-21.0.8.9-hotspot\
+PATH=C:\Users\joche\.codex\tmp\arg0\codex-arg0zDBWIO;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.1\bin\x64;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.1\bin;C:\Program Files\Microsoft\jdk-21.0.8.9-hotspot\bin;C:\Program Files\Eclipse Adoptium\jdk-21.0.6.7-hotspot\bin;C:\Python313\Scripts\;C:\Python313\;C:\Python312\Scripts\;C:\Python312\;C:\Python311\Scripts\;C:\Python311\;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\bin;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\libnvvp;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.7\bin;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.7\libnvvp;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\ProgramData\chocolatey\bin;C:\ProgramData\nvm;C:\Program Files\nodejs;C:\Program Files (x86)\Google\Cloud SDK\google-cloud-sdk\bin;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\Java\jdk1.8.0_211\bin;C:\Android\android-sdk\tools\bin;C:\Program Files (x86)\Lua\5.1;C:\Program Files (x86)\Lua\5.1\clibs;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\ProgramData\chocolatey\lib\maven\apache-maven-3.9.11\bin;C:\Program Files\Docker\Docker\resources\bin;C:\Program Files\Git\cmd;C:\Program Files\NVIDIA Corporation\Nsight Compute 2025.4.1\;C:\Users\joche\AppData\Local\Microsoft\WindowsApps;C:\Users\joche\AppData\Local\JetBrains\Toolbox\scripts;C:\Users\joche\AppData\Local\GitHubDesktop\bin;C:\ProgramData\chocolatey\lib\SQLite\tools;C:\ProgramData\chocolatey\lib\gcloudsdk\tools\google-cloud-sdk\bin;C:\Users\joche\.krew\bin;C:\Users\joche\AppData\Local\Microsoft\WindowsApps;C:\Users\joche\AppData\Local\Programs\Microsoft VS Code\bin;C:\Code\gitea\plantitude.ai\runtime\products\tdm\build\install\tdm-shadow\bin;C:\Code\gitea\plantitude.ai\runtime\products\plantitool\build\install\plantitool-shadow\bin;C:\Code\gitea\plantitude.ai\runtime\products\tdmV2\build\install\tdmV2-shadow\bin;C:\Program Files (x86)\Nmap;C:\Program Files (x86)\Lua\5.4;C:\Program Files (x86)\Lua\5.4.8;C:\Users\joche\AppData\Local\Programs\MiKTeX\miktex\bin\x64\;C:\Users\joche\AppData\Local\Programs\Ollama;C:\Program Files (x86)\Lua\5.5;;c:\Users\joche\.vscode\extensions\openai.chatgpt-0.4.79-win32-x64\bin\windows-x86_64
+USERNAME=joche
+OS=Windows_NT
+PROCESSOR_IDENTIFIER=Intel64 Family 6 Model 151 Stepping 2, GenuineIntel
+TMP=C:\Users\joche\AppData\Local\Temp
+TEMP=C:\Users\joche\AppData\Local\Temp
+
+
+
+
+Periodic native trim disabled
+
+---------------  S Y S T E M  ---------------
+
+OS:
+ Windows 11 , 64 bit Build 26100 (10.0.26100.7705)
+OS uptime: 3 days 17:38 hours
+Hyper-V role detected
+
+CPU: total 24 (initial active 24) (12 cores per cpu, 2 threads per core) family 6 model 151 stepping 2 microcode 0x22, cx8, cmov, fxsr, ht, mmx, 3dnowpref, sse, sse2, sse3, ssse3, sse4.1, sse4.2, popcnt, lzcnt, tsc, tscinvbit, avx, avx2, aes, erms, clmul, bmi1, bmi2, adx, sha, fma, vzeroupper, clflush, clflushopt, clwb, hv, serialize, rdtscp, rdpid, fsrm, f16c, cet_ibt, cet_ss
+Processor Information for processor 0
+  Max Mhz: 2000, Current Mhz: 2000, Mhz Limit: 2000
+Processor Information for processor 1
+  Max Mhz: 2000, Current Mhz: 1520, Mhz Limit: 2000
+Processor Information for processor 2
+  Max Mhz: 2000, Current Mhz: 2000, Mhz Limit: 2000
+Processor Information for processor 3
+  Max Mhz: 2000, Current Mhz: 2000, Mhz Limit: 2000
+Processor Information for processor 4
+  Max Mhz: 2000, Current Mhz: 2000, Mhz Limit: 2000
+Processor Information for processor 5
+  Max Mhz: 2000, Current Mhz: 2000, Mhz Limit: 2000
+Processor Information for processor 6
+  Max Mhz: 2000, Current Mhz: 2000, Mhz Limit: 2000
+Processor Information for processor 7
+  Max Mhz: 2000, Current Mhz: 2000, Mhz Limit: 2000
+Processor Information for processor 8
+  Max Mhz: 2000, Current Mhz: 2000, Mhz Limit: 2000
+Processor Information for processor 9
+  Max Mhz: 2000, Current Mhz: 2000, Mhz Limit: 2000
+Processor Information for processor 10
+  Max Mhz: 2000, Current Mhz: 2000, Mhz Limit: 2000
+Processor Information for processor 11
+  Max Mhz: 2000, Current Mhz: 2000, Mhz Limit: 2000
+Processor Information for processor 12
+  Max Mhz: 2000, Current Mhz: 2000, Mhz Limit: 2000
+Processor Information for processor 13
+  Max Mhz: 2000, Current Mhz: 2000, Mhz Limit: 2000
+Processor Information for processor 14
+  Max Mhz: 2000, Current Mhz: 2000, Mhz Limit: 2000
+Processor Information for processor 15
+  Max Mhz: 2000, Current Mhz: 2000, Mhz Limit: 2000
+Processor Information for processor 16
+  Max Mhz: 2000, Current Mhz: 1466, Mhz Limit: 2000
+Processor Information for processor 17
+  Max Mhz: 2000, Current Mhz: 2000, Mhz Limit: 2000
+Processor Information for processor 18
+  Max Mhz: 2000, Current Mhz: 2000, Mhz Limit: 2000
+Processor Information for processor 19
+  Max Mhz: 2000, Current Mhz: 2000, Mhz Limit: 2000
+Processor Information for processor 20
+  Max Mhz: 2000, Current Mhz: 1466, Mhz Limit: 2000
+Processor Information for processor 21
+  Max Mhz: 2000, Current Mhz: 1466, Mhz Limit: 2000
+Processor Information for processor 22
+  Max Mhz: 2000, Current Mhz: 2000, Mhz Limit: 2000
+Processor Information for processor 23
+  Max Mhz: 2000, Current Mhz: 1466, Mhz Limit: 2000
+
+Memory: 4k page, system-wide physical 65233M (10551M free)
+TotalPageFile size 75626M (AvailPageFile size 881M)
+current process WorkingSet (physical memory assigned to process): 13M, peak: 13M
+current process commit charge ("private bytes"): 82M, peak: 1106M
+
+vm_info: OpenJDK 64-Bit Server VM (21.0.8+9-LTS) for windows-amd64 JRE (21.0.8+9-LTS), built on 2025-07-10T20:22:44Z by "MicrosoftCorporation" with unknown MS VC++:1944
+
+END.

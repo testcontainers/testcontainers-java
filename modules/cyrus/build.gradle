@@ -1,0 +1,6 @@
+description = "Testcontainers :: Cyrus"
+
+dependencies {
+    api project(':testcontainers')
+    testImplementation 'com.sun.mail:jakarta.mail:2.0.1'
+}
