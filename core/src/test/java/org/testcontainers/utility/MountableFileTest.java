@@ -2,6 +2,7 @@ package org.testcontainers.utility;
 
 import lombok.Cleanup;
 import org.apache.commons.compress.archivers.ArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.jetbrains.annotations.NotNull;
@@ -129,6 +130,20 @@ class MountableFileTest {
         while ((entry = tais.getNextEntry()) != null) {
             assertThat(entry.getName()).as("no entries should have a trailing slash").doesNotEndWith("/");
         }
+    }
+
+    @Test
+    void tarEntriesShouldUseRootOwnership() throws Exception {
+        final Path file = createTempFile("owner-check.txt");
+        final MountableFile mountableFile = MountableFile.forHostPath(file.toString());
+
+        @Cleanup
+        final TarArchiveInputStream tais = intoTarArchive(taos -> mountableFile.transferTo(taos, "/owner-check.txt"));
+
+        final TarArchiveEntry entry = tais.getNextTarEntry();
+        assertThat(entry).isNotNull();
+        assertThat(entry.getLongUserId()).as("tar user id should not leak host uid").isZero();
+        assertThat(entry.getLongGroupId()).as("tar group id should not leak host gid").isZero();
     }
 
     private TarArchiveInputStream intoTarArchive(Consumer<TarArchiveOutputStream> consumer) throws IOException {
