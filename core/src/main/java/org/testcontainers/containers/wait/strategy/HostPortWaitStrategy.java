@@ -82,6 +82,7 @@ public class HostPortWaitStrategy extends AbstractWaitStrategy {
                         Instant now = Instant.now();
                         Awaitility
                             .await()
+                            .dontCatchUncaughtExceptions()
                             .pollInSameThread()
                             .pollInterval(Duration.ofMillis(100))
                             .pollDelay(Duration.ZERO)
