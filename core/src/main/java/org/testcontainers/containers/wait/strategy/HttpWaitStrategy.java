@@ -3,7 +3,7 @@ package org.testcontainers.containers.wait.strategy;
 import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
 import lombok.extern.slf4j.Slf4j;
-import org.rnorth.ducttape.TimeoutException;
+import org.testcontainers.utility.ducttape.TimeoutException;
 import org.testcontainers.containers.ContainerLaunchException;
 
 import java.io.BufferedReader;
@@ -34,7 +34,7 @@ import javax.net.ssl.SSLEngine;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509ExtendedTrustManager;
 
-import static org.rnorth.ducttape.unreliables.Unreliables.retryUntilSuccess;
+import static org.testcontainers.utility.ducttape.Unreliables.retryUntilSuccess;
 
 @Slf4j
 public class HttpWaitStrategy extends AbstractWaitStrategy {

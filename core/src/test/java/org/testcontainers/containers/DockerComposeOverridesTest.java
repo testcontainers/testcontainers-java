@@ -4,7 +4,7 @@ import com.google.common.util.concurrent.Uninterruptibles;
 import org.assertj.core.api.Assumptions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.rnorth.ducttape.unreliables.Unreliables;
+import org.testcontainers.utility.ducttape.Unreliables;
 import org.testcontainers.utility.CommandLine;
 import org.testcontainers.utility.DockerImageName;
 
