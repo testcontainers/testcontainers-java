@@ -1,6 +1,6 @@
 package org.testcontainers.utility;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.utility.ducttape.Timeouts;
 
 import java.util.concurrent.TimeUnit;
@@ -11,10 +11,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Verifies that {@link Timeouts} works correctly across shutdown/reuse cycles.
  * After {@code shutdown()} the executor is re-created on next use.
  */
-public class TimeoutsShutdownTest {
+class TimeoutsShutdownTest {
 
     @Test
-    public void timeoutsWorkAfterShutdown() {
+    void timeoutsWorkAfterShutdown() {
         // First use
         String result1 = Timeouts.getWithTimeout(5, TimeUnit.SECONDS, () -> "container-1-ready");
         assertThat(result1).isEqualTo("container-1-ready");
