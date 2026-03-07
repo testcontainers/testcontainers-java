@@ -9,20 +9,28 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class Timeouts {
 
-    private static final ExecutorService EXECUTOR_SERVICE = Executors.newCachedThreadPool(new ThreadFactory() {
+    private static final AtomicInteger THREAD_COUNTER = new AtomicInteger(0);
 
-        final AtomicInteger threadCounter = new AtomicInteger(0);
+    private static final ThreadFactory THREAD_FACTORY = r -> {
+        Thread thread = new Thread(r, "ducttape-" + THREAD_COUNTER.getAndIncrement());
+        thread.setDaemon(true);
+        return thread;
+    };
 
-        @Override
-        public Thread newThread(Runnable r) {
-            Thread thread = new Thread(r, "ducttape-" + threadCounter.getAndIncrement());
-            thread.setDaemon(true);
-            return thread;
+    private static volatile ExecutorService executorService;
+
+    private static synchronized ExecutorService getExecutorService() {
+        if (executorService == null || executorService.isShutdown()) {
+            executorService = Executors.newCachedThreadPool(THREAD_FACTORY);
         }
-    });
+        return executorService;
+    }
 
-    public static void shutdown() {
-        EXECUTOR_SERVICE.shutdown();
+    public static synchronized void shutdown() {
+        if (executorService != null) {
+            executorService.shutdown();
+            executorService = null;
+        }
     }
 
     /**
@@ -40,7 +48,7 @@ public class Timeouts {
 
         check("timeout must be greater than zero", timeout > 0);
 
-        Future<T> future = EXECUTOR_SERVICE.submit(lambda);
+        Future<T> future = getExecutorService().submit(lambda);
         return callFuture(timeout, timeUnit, future);
     }
 
@@ -57,7 +65,7 @@ public class Timeouts {
 
         check("timeout must be greater than zero", timeout > 0);
 
-        Future<?> future = EXECUTOR_SERVICE.submit(lambda);
+        Future<?> future = getExecutorService().submit(lambda);
         callFuture(timeout, timeUnit, future);
     }
 
