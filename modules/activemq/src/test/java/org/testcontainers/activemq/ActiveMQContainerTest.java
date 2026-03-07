@@ -3,23 +3,24 @@ package org.testcontainers.activemq;
 import jakarta.jms.Connection;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.Destination;
-import jakarta.jms.JMSException;
 import jakarta.jms.MessageConsumer;
 import jakarta.jms.MessageProducer;
 import jakarta.jms.Session;
 import jakarta.jms.TextMessage;
 import lombok.SneakyThrows;
 import org.apache.activemq.ActiveMQConnectionFactory;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ActiveMQContainerTest {
+class ActiveMQContainerTest {
 
     @Test
-    public void test() throws JMSException {
+    void test() {
         try ( // container {
-            ActiveMQContainer activemq = new ActiveMQContainer("apache/activemq-classic:5.18.3")
+            ActiveMQContainer activemq = new ActiveMQContainer("apache/activemq:5.18.7")
             // }
         ) {
             activemq.start();
@@ -30,11 +31,20 @@ public class ActiveMQContainerTest {
         }
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = { "apache/activemq-classic:5.18.7", "apache/activemq:5.18.7" })
+    void compatibility(String image) {
+        try (ActiveMQContainer activemq = new ActiveMQContainer(image)) {
+            activemq.start();
+            assertFunctionality(activemq, false);
+        }
+    }
+
     @Test
-    public void customCredentials() {
+    void customCredentials() {
         try (
             // settingCredentials {
-            ActiveMQContainer activemq = new ActiveMQContainer("apache/activemq-classic:5.18.3")
+            ActiveMQContainer activemq = new ActiveMQContainer("apache/activemq:5.18.7")
                 .withUser("testcontainers")
                 .withPassword("testcontainers")
             // }

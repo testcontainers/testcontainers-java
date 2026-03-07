@@ -8,14 +8,14 @@ import jakarta.jms.Session;
 import jakarta.jms.TextMessage;
 import lombok.SneakyThrows;
 import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ArtemisContainerTest {
+class ArtemisContainerTest {
 
     @Test
-    public void defaultCredentials() {
+    void defaultCredentials() {
         try (
             // container {
             ArtemisContainer artemis = new ArtemisContainer("apache/activemq-artemis:2.30.0-alpine")
@@ -30,7 +30,7 @@ public class ArtemisContainerTest {
     }
 
     @Test
-    public void customCredentials() {
+    void customCredentials() {
         try (
             // settingCredentials {
             ArtemisContainer artemis = new ArtemisContainer("apache/activemq-artemis:2.30.0-alpine")
@@ -47,7 +47,7 @@ public class ArtemisContainerTest {
     }
 
     @Test
-    public void allowAnonymousLogin() {
+    void allowAnonymousLogin() {
         try (
             // enableAnonymousLogin {
             ArtemisContainer artemis = new ArtemisContainer("apache/activemq-artemis:2.30.0-alpine")

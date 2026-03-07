@@ -5,19 +5,19 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.tomcat.jdbc.pool.PoolProperties;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.testcontainers.jdbc.ContainerDatabaseDriver;
 import org.vibur.dbcp.ViburDBCPDataSource;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import javax.sql.DataSource;
 
@@ -29,7 +29,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * the mysql module, to avoid circular dependencies.
  * TODO: Move to the jdbc module and either (a) implement a barebones {@link org.testcontainers.containers.JdbcDatabaseContainerProvider} for testing, or (b) refactor into a unit test.
  */
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("dataSourceSuppliers")
 public class JDBCDriverWithPoolTest {
 
     public static final String URL =
@@ -37,9 +38,8 @@ public class JDBCDriverWithPoolTest {
 
     private final DataSource dataSource;
 
-    @Parameterized.Parameters
-    public static Iterable<Supplier<DataSource>> dataSourceSuppliers() {
-        return Arrays.asList(
+    public static Stream<Supplier<DataSource>> dataSourceSuppliers() {
+        return Stream.of(
             JDBCDriverWithPoolTest::getTomcatDataSourceWithDriverClassName,
             JDBCDriverWithPoolTest::getTomcatDataSource,
             JDBCDriverWithPoolTest::getHikariDataSourceWithDriverClassName,
@@ -56,7 +56,7 @@ public class JDBCDriverWithPoolTest {
     private ExecutorService executorService = Executors.newFixedThreadPool(5);
 
     @Test
-    public void testMySQLWithConnectionPoolUsingSameContainer() throws SQLException, InterruptedException {
+    void testMySQLWithConnectionPoolUsingSameContainer() throws SQLException, InterruptedException {
         // Populate the database with some data in multiple threads, so that multiple connections from the pool will be used
         for (int i = 0; i < 100; i++) {
             executorService.submit(() -> {

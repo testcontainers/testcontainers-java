@@ -1,6 +1,6 @@
 package org.testcontainers.containers;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 
 import java.io.IOException;
@@ -8,10 +8,10 @@ import java.nio.file.Paths;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class MultiStageBuildTest {
+class MultiStageBuildTest {
 
     @Test
-    public void testDockerMultistageBuild() throws IOException, InterruptedException {
+    void testDockerMultistageBuild() throws IOException, InterruptedException {
         try (
             GenericContainer<?> container = new GenericContainer<>(
                 new ImageFromDockerfile()
@@ -27,7 +27,7 @@ public class MultiStageBuildTest {
     }
 
     @Test
-    public void shouldBuildMultistageBuildWithBuildImageCmdModifier() throws IOException, InterruptedException {
+    void shouldBuildMultistageBuildWithBuildImageCmdModifier() throws IOException, InterruptedException {
         try (
             GenericContainer<?> container = new GenericContainer<>(
                 new ImageFromDockerfile()

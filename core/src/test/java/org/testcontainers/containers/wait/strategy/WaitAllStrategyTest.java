@@ -1,7 +1,7 @@
 package org.testcontainers.containers.wait.strategy;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -20,7 +20,7 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-public class WaitAllStrategyTest {
+class WaitAllStrategyTest {
 
     @Mock
     private GenericContainer container;
@@ -34,7 +34,7 @@ public class WaitAllStrategyTest {
     @Mock
     private WaitStrategy strategy3;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         MockitoAnnotations.initMocks(this);
     }
@@ -43,7 +43,7 @@ public class WaitAllStrategyTest {
      * Dummy-based tests, to check that timeout values are propagated correctly, without involving actual timing-sensitive code
      */
     @Test
-    public void parentTimeoutApplies() {
+    void parentTimeoutApplies() {
         DummyStrategy child1 = new DummyStrategy(Duration.ofMillis(10));
         child1.withStartupTimeout(Duration.ofMillis(20));
 
@@ -55,7 +55,7 @@ public class WaitAllStrategyTest {
     }
 
     @Test
-    public void parentTimeoutAppliesToMultipleChildren() {
+    void parentTimeoutAppliesToMultipleChildren() {
         Duration defaultInnerWait = Duration.ofMillis(2);
         Duration outerWait = Duration.ofMillis(6);
 
@@ -73,7 +73,7 @@ public class WaitAllStrategyTest {
     }
 
     @Test
-    public void parentTimeoutAppliesToAdditionalChildren() {
+    void parentTimeoutAppliesToAdditionalChildren() {
         Duration defaultInnerWait = Duration.ofMillis(2);
         Duration outerWait = Duration.ofMillis(20);
 
@@ -94,7 +94,7 @@ public class WaitAllStrategyTest {
      * Mock-based tests to check overall behaviour, without involving timing-sensitive code
      */
     @Test
-    public void childExecutionTest() {
+    void childExecutionTest() {
         final WaitStrategy underTest = new WaitAllStrategy().withStrategy(strategy1).withStrategy(strategy2);
 
         doNothing().when(strategy1).waitUntilReady(eq(container));
@@ -108,7 +108,7 @@ public class WaitAllStrategyTest {
     }
 
     @Test
-    public void withoutOuterTimeoutShouldRelyOnInnerStrategies() {
+    void withoutOuterTimeoutShouldRelyOnInnerStrategies() {
         final WaitStrategy underTest = new WaitAllStrategy(WaitAllStrategy.Mode.WITH_INDIVIDUAL_TIMEOUTS_ONLY)
             .withStrategy(strategy1)
             .withStrategy(strategy2)
@@ -132,7 +132,7 @@ public class WaitAllStrategyTest {
     }
 
     @Test
-    public void timeoutChangeShouldNotBePossibleWithIndividualTimeoutMode() {
+    void timeoutChangeShouldNotBePossibleWithIndividualTimeoutMode() {
         final WaitStrategy underTest = new WaitAllStrategy(WaitAllStrategy.Mode.WITH_INDIVIDUAL_TIMEOUTS_ONLY);
 
         assertThat(
@@ -145,7 +145,7 @@ public class WaitAllStrategyTest {
     }
 
     @Test
-    public void shouldNotMessWithIndividualTimeouts() {
+    void shouldNotMessWithIndividualTimeouts() {
         new WaitAllStrategy(WaitAllStrategy.Mode.WITH_INDIVIDUAL_TIMEOUTS_ONLY)
             .withStrategy(strategy1)
             .withStrategy(strategy2);
@@ -155,7 +155,7 @@ public class WaitAllStrategyTest {
     }
 
     @Test
-    public void shouldOverwriteIndividualTimeouts() {
+    void shouldOverwriteIndividualTimeouts() {
         Duration someSeconds = Duration.ofSeconds(23);
         new WaitAllStrategy().withStartupTimeout(someSeconds).withStrategy(strategy1).withStrategy(strategy2);
 

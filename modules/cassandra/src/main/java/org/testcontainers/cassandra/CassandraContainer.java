@@ -1,18 +1,14 @@
 package org.testcontainers.cassandra;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import org.testcontainers.cassandra.delegate.CassandraDatabaseDelegate;
-import org.testcontainers.cassandra.wait.CassandraQueryWaitStrategy;
+import org.apache.commons.lang3.StringUtils;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.ext.ScriptUtils;
 import org.testcontainers.ext.ScriptUtils.ScriptLoadException;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
-import java.io.File;
 import java.net.InetSocketAddress;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.Optional;
 
 /**
@@ -30,6 +26,8 @@ public class CassandraContainer extends GenericContainer<CassandraContainer> {
 
     private static final String DEFAULT_LOCAL_DATACENTER = "datacenter1";
 
+    private static final String DEFAULT_INIT_SCRIPT_FILENAME = "init.cql";
+
     private static final String CONTAINER_CONFIG_LOCATION = "/etc/cassandra";
 
     private static final String USERNAME = "cassandra";
@@ -39,6 +37,10 @@ public class CassandraContainer extends GenericContainer<CassandraContainer> {
     private String configLocation;
 
     private String initScriptPath;
+
+    private String clientCertFile;
+
+    private String clientKeyFile;
 
     public CassandraContainer(String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
@@ -69,6 +71,15 @@ public class CassandraContainer extends GenericContainer<CassandraContainer> {
             .ofNullable(configLocation)
             .map(MountableFile::forClasspathResource)
             .ifPresent(mountableFile -> withCopyFileToContainer(mountableFile, CONTAINER_CONFIG_LOCATION));
+
+        // If a secure connection is required by Cassandra configuration, copy the user certificate and key to a
+        // dedicated location and define a cqlshrc file with the appropriate SSL configuration.
+        // See: https://docs.datastax.com/en/cassandra-oss/3.x/cassandra/configuration/secureCqlshSSL.html
+        if (isSslRequired()) {
+            withCopyFileToContainer(MountableFile.forClasspathResource(clientCertFile), "ssl/user_cert.pem");
+            withCopyFileToContainer(MountableFile.forClasspathResource(clientKeyFile), "ssl/user_key.pem");
+            withCopyFileToContainer(MountableFile.forClasspathResource("cqlshrc"), "/root/.cassandra/cqlshrc");
+        }
     }
 
     @Override
@@ -80,26 +91,25 @@ public class CassandraContainer extends GenericContainer<CassandraContainer> {
      * Load init script content and apply it to the database if initScriptPath is set
      */
     private void runInitScriptIfRequired() {
-        if (initScriptPath != null) {
+        if (this.initScriptPath != null) {
             try {
-                URL resource = Thread.currentThread().getContextClassLoader().getResource(initScriptPath);
-                if (resource == null) {
-                    logger().warn("Could not load classpath init script: {}", initScriptPath);
-                    throw new ScriptLoadException(
-                        "Could not load classpath init script: " + initScriptPath + ". Resource not found."
-                    );
-                }
-                // The init script is executed as is by the cqlsh command, so copy it into the container.
-                String targetInitScriptName = new File(resource.toURI()).getName();
-                copyFileToContainer(MountableFile.forClasspathResource(initScriptPath), targetInitScriptName);
-                new CassandraDatabaseDelegate(this).execute(null, targetInitScriptName, -1, false, false);
-            } catch (URISyntaxException e) {
-                logger().warn("Could not copy init script into container: {}", initScriptPath);
-                throw new ScriptLoadException("Could not copy init script into container: " + initScriptPath, e);
+                final MountableFile originalInitScript = MountableFile.forClasspathResource(this.initScriptPath);
+                // The init script is executed as is by the cqlsh command, so copy it into the container. The name
+                // of the script is generic since it's not important to keep the original name.
+                copyFileToContainer(originalInitScript, DEFAULT_INIT_SCRIPT_FILENAME);
+                new CassandraDatabaseDelegate(this).execute(null, DEFAULT_INIT_SCRIPT_FILENAME, -1, false, false);
+            } catch (IllegalArgumentException e) {
+                // MountableFile.forClasspathResource will throw an IllegalArgumentException if the resource cannot
+                // be found.
+                logger().warn("Could not load classpath init script: {}", this.initScriptPath);
+                throw new ScriptLoadException(
+                    "Could not load classpath init script: " + this.initScriptPath + ". Resource not found.",
+                    e
+                );
             } catch (ScriptUtils.ScriptStatementFailedException e) {
-                logger().error("Error while executing init script: {}", initScriptPath, e);
+                logger().error("Error while executing init script: {}", this.initScriptPath, e);
                 throw new ScriptUtils.UncategorizedScriptException(
-                    "Error while executing init script: " + initScriptPath,
+                    "Error while executing init script: " + this.initScriptPath,
                     e
                 );
             }
@@ -110,9 +120,11 @@ public class CassandraContainer extends GenericContainer<CassandraContainer> {
      * Initialize Cassandra with the custom overridden Cassandra configuration
      * <p>
      * Be aware, that Docker effectively replaces all /etc/cassandra content with the content of config location, so if
-     * Cassandra.yaml in configLocation is absent or corrupted, then Cassandra just won't launch
+     * Cassandra.yaml in configLocation is absent or corrupted, then Cassandra just won't launch.
      *
-     * @param configLocation relative classpath with the directory that contains cassandra.yaml and other configuration files
+     * @param configLocation relative classpath with the directory that contains cassandra.yaml and other configuration
+     *                       files
+     * @return The updated {@link CassandraContainer}.
      */
     public CassandraContainer withConfigurationOverride(String configLocation) {
         this.configLocation = configLocation;
@@ -126,6 +138,7 @@ public class CassandraContainer extends GenericContainer<CassandraContainer> {
      * </p>
      *
      * @param initScriptPath relative classpath resource
+     * @return The updated {@link CassandraContainer}.
      */
     public CassandraContainer withInitScript(String initScriptPath) {
         this.initScriptPath = initScriptPath;
@@ -133,8 +146,30 @@ public class CassandraContainer extends GenericContainer<CassandraContainer> {
     }
 
     /**
-     * Get username
+     * Configure secured connection (TLS) when required by the Cassandra configuration
+     * (i.e. cassandra.yaml file contains the property {@code client_encryption_options.optional} with value
+     * {@code false}).
      *
+     * @param clientCertFile The client certificate required to execute CQL scripts.
+     * @param clientKeyFile  The client key required to execute CQL scripts.
+     * @return The updated {@link CassandraContainer}.
+     */
+    public CassandraContainer withSsl(String clientCertFile, String clientKeyFile) {
+        this.clientCertFile = clientCertFile;
+        this.clientKeyFile = clientKeyFile;
+        return self();
+    }
+
+    /**
+     * @return Whether a secure connection is required between the client and the Cassandra server.
+     */
+    boolean isSslRequired() {
+        return StringUtils.isNoneBlank(this.clientCertFile, this.clientKeyFile);
+    }
+
+    /**
+     * Get username
+     * <p>
      * By default, Cassandra has authenticator: AllowAllAuthenticator in cassandra.yaml
      * If username and password need to be used, then authenticator should be set as PasswordAuthenticator
      * (through custom Cassandra configuration) and through CQL with default cassandra-cassandra credentials
@@ -146,7 +181,7 @@ public class CassandraContainer extends GenericContainer<CassandraContainer> {
 
     /**
      * Get password
-     *
+     * <p>
      * By default, Cassandra has authenticator: AllowAllAuthenticator in cassandra.yaml
      * If username and password need to be used, then authenticator should be set as PasswordAuthenticator
      * (through custom Cassandra configuration) and through CQL with default cassandra-cassandra credentials
@@ -159,7 +194,7 @@ public class CassandraContainer extends GenericContainer<CassandraContainer> {
     /**
      * Retrieve an {@link InetSocketAddress} for connecting to the Cassandra container via the driver.
      *
-     * @return A InetSocketAddrss representation of this Cassandra container's host and port.
+     * @return A InetSocketAddress representation of this Cassandra container's host and port.
      */
     public InetSocketAddress getContactPoint() {
         return new InetSocketAddress(getHost(), getMappedPort(CQL_PORT));

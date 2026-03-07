@@ -15,7 +15,10 @@ import java.util.Set;
  * Supported image: {@code trinodb/trino}
  * <p>
  * Exposed ports: 8080
+ *
+ * @deprecated use {@link org.testcontainers.trino.TrinoContainer} instead.
  */
+@Deprecated
 public class TrinoContainer extends JdbcDatabaseContainer<TrinoContainer> {
 
     static final String NAME = "trino";

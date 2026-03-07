@@ -17,7 +17,7 @@ A Toxiproxy container can be placed in between test code and a container, or in 
 In either scenario, it is necessary to create a `ToxiproxyContainer` instance on the same Docker network, as follows:
 
 <!--codeinclude-->
-[Creating a Toxiproxy container](../../modules/toxiproxy/src/test/java/org/testcontainers/containers/ToxiproxyTest.java) inside_block:creatingProxy
+[Creating a Toxiproxy container](../../modules/toxiproxy/src/test/java/org/testcontainers/toxiproxy/ToxiproxyContainerTest.java) inside_block:creatingProxy
 <!--/codeinclude-->
 
 Next, it is necessary to instruct Toxiproxy to start proxying connections. 
@@ -26,13 +26,13 @@ Each `ToxiproxyContainer` can proxy to many target containers if necessary.
 We do this as follows:
 
 <!--codeinclude-->
-[Starting proxying connections to a target container](../../modules/toxiproxy/src/test/java/org/testcontainers/containers/ToxiproxyTest.java) inside_block:obtainProxyObject
+[Starting proxying connections to a target container](../../modules/toxiproxy/src/test/java/org/testcontainers/toxiproxy/ToxiproxyContainerTest.java) inside_block:obtainProxyObject
 <!--/codeinclude-->
 
 To establish a connection from the test code (on the host machine) to the target container via Toxiproxy, we obtain **Toxiproxy's** proxy host IP and port:
 
 <!--codeinclude-->
-[Obtaining proxied host and port](../../modules/toxiproxy/src/test/java/org/testcontainers/containers/ToxiproxyTest.java) inside_block:obtainProxiedHostAndPortForHostMachine
+[Obtaining proxied host and port](../../modules/toxiproxy/src/test/java/org/testcontainers/toxiproxy/ToxiproxyContainerTest.java) inside_block:obtainProxiedHostAndPortForHostMachine
 <!--/codeinclude-->
 
 Code under test should connect to this proxied host IP and port.
@@ -56,13 +56,13 @@ Please see the [Toxiproxy documentation](https://github.com/Shopify/toxiproxy#to
 As one example, we can introduce latency and random jitter to proxied connections as follows:
 
 <!--codeinclude-->
-[Adding latency to a connection](../../modules/toxiproxy/src/test/java/org/testcontainers/containers/ToxiproxyTest.java) inside_block:addingLatency
+[Adding latency to a connection](../../modules/toxiproxy/src/test/java/org/testcontainers/toxiproxy/ToxiproxyContainerTest.java) inside_block:addingLatency
 <!--/codeinclude-->
 
 Additionally we can disable the proxy to simulate a complete interruption to the network connection:
 
 <!--codeinclude-->
-[Cutting a connection](../../modules/toxiproxy/src/test/java/org/testcontainers/containers/ToxiproxyTest.java) inside_block:disableProxy
+[Cutting a connection](../../modules/toxiproxy/src/test/java/org/testcontainers/toxiproxy/ToxiproxyContainerTest.java) inside_block:disableProxy
 <!--/codeinclude-->
 
 ## Adding this module to your project dependencies
@@ -71,13 +71,13 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 === "Gradle"
     ```groovy
-    testImplementation "org.testcontainers:toxiproxy:{{latest_version}}"
+    testImplementation "org.testcontainers:testcontainers-toxiproxy:{{latest_version}}"
     ```
 === "Maven"
     ```xml
     <dependency>
         <groupId>org.testcontainers</groupId>
-        <artifactId>toxiproxy</artifactId>
+        <artifactId>testcontainers-toxiproxy</artifactId>
         <version>{{latest_version}}</version>
         <scope>test</scope>
     </dependency>
@@ -86,5 +86,3 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
 ## Acknowledgements
 
 This module was inspired by a [hotels.com blog post](https://medium.com/hotels-com-technology/i-dont-know-about-resilience-testing-and-so-can-you-b3c59d80012d).
-
-[toxiproxy-java](https://github.com/trekawek/toxiproxy-java) is used to help control failure conditions.

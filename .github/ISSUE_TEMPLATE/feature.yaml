@@ -23,6 +23,7 @@ body:
         - CrateDB
         - Consul
         - Couchbase
+        - Databend
         - DB2
         - Dynalite
         - Elasticsearch
@@ -33,6 +34,7 @@ body:
         - K3S
         - K6
         - Kafka
+        - LDAP
         - LocalStack
         - MariaDB
         - Milvus
@@ -49,6 +51,7 @@ body:
         - Oracle Free
         - Oracle XE
         - OrientDB
+        - Pinecone
         - PostgreSQL
         - Qdrant
         - QuestDB
@@ -56,6 +59,7 @@ body:
         - Pulsar
         - RabbitMQ
         - Redpanda
+        - ScyllaDB
         - Selenium
         - Solace
         - Solr
@@ -63,6 +67,7 @@ body:
         - Timeplus
         - ToxiProxy
         - Trino
+        - Typesense
         - Vault
         - Weaviate
         - YugabyteDB

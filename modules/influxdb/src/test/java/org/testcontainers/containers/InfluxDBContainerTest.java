@@ -11,7 +11,7 @@ import com.influxdb.client.domain.WritePrecision;
 import com.influxdb.client.write.Point;
 import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Instant;
@@ -20,7 +20,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class InfluxDBContainerTest {
+class InfluxDBContainerTest {
 
     private static final String USERNAME = "new-test-user";
 
@@ -37,7 +37,7 @@ public class InfluxDBContainerTest {
     private static final int SECONDS_IN_WEEK = 604800;
 
     @Test
-    public void getInfluxDBClient() {
+    void getInfluxDBClient() {
         try (
             // constructorWithDefaultVariables {
             final InfluxDBContainer<?> influxDBContainer = new InfluxDBContainer<>(
@@ -55,7 +55,7 @@ public class InfluxDBContainerTest {
     }
 
     @Test
-    public void getInfluxDBClientWithAdminToken() {
+    void getInfluxDBClientWithAdminToken() {
         try (
             // constructorWithAdminToken {
             final InfluxDBContainer<?> influxDBContainer = new InfluxDBContainer<>(
@@ -81,7 +81,7 @@ public class InfluxDBContainerTest {
     }
 
     @Test
-    public void getBucket() {
+    void getBucket() {
         try (
             // constructorWithCustomVariables {
             final InfluxDBContainer<?> influxDBContainer = new InfluxDBContainer<>(
@@ -111,7 +111,7 @@ public class InfluxDBContainerTest {
     }
 
     @Test
-    public void queryForWriteAndRead() {
+    void queryForWriteAndRead() {
         try (
             final InfluxDBContainer<?> influxDBContainer = new InfluxDBContainer<>(
                 InfluxDBTestUtils.INFLUXDB_V2_TEST_IMAGE

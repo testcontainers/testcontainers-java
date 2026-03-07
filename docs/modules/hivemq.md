@@ -212,13 +212,13 @@ can be customized as desired.
 Add to `build.gradle`:
 
 ````groovy
-testImplementation 'org.testcontainers:hivemq:{{latest_version}}'
+testImplementation 'org.testcontainers:testcontainers-hivemq:{{latest_version}}'
 ````
 
 Add to `build.gradle.kts`:
 
 ````kotlin
-testImplementation("org.testcontainers:hivemq:{{latest_version}}")
+testImplementation("org.testcontainers:testcontainers-hivemq:{{latest_version}}")
 ````
 
 ### Maven
@@ -228,7 +228,7 @@ Add to `pom.xml`:
 ```xml
 <dependency>
     <groupId>org.testcontainers</groupId>
-    <artifactId>hivemq</artifactId>
+    <artifactId>testcontainers-hivemq</artifactId>
     <version>{{latest_version}}</version>
     <scope>test</scope>
 </dependency>

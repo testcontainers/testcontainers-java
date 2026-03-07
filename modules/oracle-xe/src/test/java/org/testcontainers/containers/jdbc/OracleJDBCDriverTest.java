@@ -4,17 +4,17 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class OracleJDBCDriverTest {
+class OracleJDBCDriverTest {
 
     @Test
-    public void testOracleWithNoSpecifiedVersion() throws SQLException {
+    void testOracleWithNoSpecifiedVersion() throws SQLException {
         performSimpleTest("jdbc:tc:oracle://hostname/databasename");
     }
 

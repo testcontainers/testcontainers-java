@@ -1,18 +1,20 @@
 package org.testcontainers.solace;
 
 import com.solacesystems.jcsmp.BytesXMLMessage;
+import com.solacesystems.jcsmp.ConsumerFlowProperties;
+import com.solacesystems.jcsmp.EndpointProperties;
 import com.solacesystems.jcsmp.JCSMPException;
 import com.solacesystems.jcsmp.JCSMPFactory;
 import com.solacesystems.jcsmp.JCSMPProperties;
 import com.solacesystems.jcsmp.JCSMPSession;
 import com.solacesystems.jcsmp.JCSMPStreamingPublishCorrelatingEventHandler;
+import com.solacesystems.jcsmp.Queue;
 import com.solacesystems.jcsmp.TextMessage;
 import com.solacesystems.jcsmp.Topic;
 import com.solacesystems.jcsmp.XMLMessageConsumer;
 import com.solacesystems.jcsmp.XMLMessageListener;
 import com.solacesystems.jcsmp.XMLMessageProducer;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.utility.MountableFile;
@@ -21,8 +23,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
-public class SolaceContainerSMFTest {
+class SolaceContainerSMFTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SolaceContainerSMFTest.class);
 
@@ -30,40 +33,75 @@ public class SolaceContainerSMFTest {
 
     private static final Topic TOPIC = JCSMPFactory.onlyInstance().createTopic("Topic/ActualTopic");
 
+    private static final Queue QUEUE = JCSMPFactory.onlyInstance().createQueue("Queue");
+
     @Test
-    public void testSolaceContainerWithSimpleAuthentication() {
+    void testSolaceContainerWithSimpleAuthentication() {
         try (
             // solaceContainerSetup {
-            SolaceContainer solaceContainer = new SolaceContainer("solace/solace-pubsub-standard:10.2")
+            SolaceContainer solaceContainer = new SolaceContainer("solace/solace-pubsub-standard:10.25.0")
                 .withCredentials("user", "pass")
-                .withTopic("Topic/ActualTopic", Service.SMF)
+                .withTopic(TOPIC.getName(), Service.SMF)
                 .withVpn("test_vpn")
             // }
         ) {
             solaceContainer.start();
             JCSMPSession session = createSessionWithBasicAuth(solaceContainer);
             assertThat(session).isNotNull();
-            assertThat(consumeMessageFromSolace(session)).isEqualTo(MESSAGE);
+            consumeMessageFromTopics(session);
             session.closeSession();
         }
     }
 
     @Test
-    public void testSolaceContainerWithCertificates() {
+    void testSolaceContainerWithCreateFlow() {
+        try (
+            SolaceContainer solaceContainer = new SolaceContainer("solace/solace-pubsub-standard:10.25.0")
+                .withCredentials("user", "pass")
+                .withTopic(TOPIC.getName(), Service.SMF)
+                .withVpn("test_vpn")
+        ) {
+            solaceContainer.start();
+            JCSMPSession session = createSessionWithBasicAuth(solaceContainer);
+            assertThat(session).isNotNull();
+            testCreateFlow(session);
+            session.closeSession();
+        }
+    }
+
+    private static void testCreateFlow(JCSMPSession session) {
+        try {
+            EndpointProperties endpointProperties = new EndpointProperties();
+            endpointProperties.setAccessType(EndpointProperties.ACCESSTYPE_NONEXCLUSIVE);
+            endpointProperties.setQuota(1000);
+            session.provision(QUEUE, endpointProperties, JCSMPSession.FLAG_IGNORE_ALREADY_EXISTS);
+            session.addSubscription(QUEUE, TOPIC, JCSMPSession.WAIT_FOR_CONFIRM);
+            ConsumerFlowProperties flowProperties = new ConsumerFlowProperties().setEndpoint(QUEUE);
+            TestConsumer listener = new TestConsumer();
+            session.createFlow(listener, flowProperties).start();
+            publishMessageToSolaceTopic(session);
+            listener.waitForMessage();
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot process message using solace topic/queue: " + e.getMessage(), e);
+        }
+    }
+
+    @Test
+    void testSolaceContainerWithCertificates() {
         try (
             // solaceContainerUsageSSL {
-            SolaceContainer solaceContainer = new SolaceContainer("solace/solace-pubsub-standard:10.6")
+            SolaceContainer solaceContainer = new SolaceContainer("solace/solace-pubsub-standard:10.25.0")
                 .withClientCert(
                     MountableFile.forClasspathResource("solace.pem"),
                     MountableFile.forClasspathResource("rootCA.crt")
                 )
-                .withTopic("Topic/ActualTopic", Service.SMF_SSL)
+                .withTopic(TOPIC.getName(), Service.SMF_SSL)
             // }
         ) {
             solaceContainer.start();
             JCSMPSession session = createSessionWithCertificates(solaceContainer);
             assertThat(session).isNotNull();
-            assertThat(consumeMessageFromSolace(session)).isEqualTo(MESSAGE);
+            consumeMessageFromTopics(session);
             session.closeSession();
         }
     }
@@ -107,12 +145,12 @@ public class SolaceContainerSMFTest {
             session.connect();
             return session;
         } catch (Exception e) {
-            Assert.fail("Error connecting and setting up session! " + e.getMessage());
+            fail("Error connecting and setting up session! " + e.getMessage());
             return null;
         }
     }
 
-    private void publishMessageToSolace(JCSMPSession session) throws JCSMPException {
+    private static void publishMessageToSolaceTopic(JCSMPSession session) throws JCSMPException {
         XMLMessageProducer producer = session.getMessageProducer(
             new JCSMPStreamingPublishCorrelatingEventHandler() {
                 @Override
@@ -131,37 +169,49 @@ public class SolaceContainerSMFTest {
         producer.send(msg, TOPIC);
     }
 
-    private String consumeMessageFromSolace(JCSMPSession session) {
-        CountDownLatch latch = new CountDownLatch(1);
+    private static void consumeMessageFromTopics(JCSMPSession session) {
         try {
-            String[] result = new String[1];
-            XMLMessageConsumer cons = session.getMessageConsumer(
-                new XMLMessageListener() {
-                    @Override
-                    public void onReceive(BytesXMLMessage msg) {
-                        if (msg instanceof TextMessage) {
-                            TextMessage textMessage = (TextMessage) msg;
-                            String message = textMessage.getText();
-                            result[0] = message;
-                            LOGGER.info("TextMessage received: " + message);
-                        }
-                        latch.countDown();
-                    }
-
-                    @Override
-                    public void onException(JCSMPException e) {
-                        LOGGER.error("Exception received: " + e.getMessage());
-                        latch.countDown();
-                    }
-                }
-            );
+            TestConsumer listener = new TestConsumer();
+            XMLMessageConsumer cons = session.getMessageConsumer(listener);
             session.addSubscription(TOPIC);
             cons.start();
-            publishMessageToSolace(session);
-            assertThat(latch.await(10L, TimeUnit.SECONDS)).isTrue();
-            return result[0];
+            publishMessageToSolaceTopic(session);
+            listener.waitForMessage();
         } catch (Exception e) {
-            throw new RuntimeException("Cannot receive message from solace", e);
+            throw new RuntimeException("Cannot process message using solace: " + e.getMessage(), e);
+        }
+    }
+
+    static class TestConsumer implements XMLMessageListener {
+
+        private final CountDownLatch latch = new CountDownLatch(1);
+
+        private String result;
+
+        @Override
+        public void onReceive(BytesXMLMessage msg) {
+            if (msg instanceof TextMessage) {
+                TextMessage textMessage = (TextMessage) msg;
+                String message = textMessage.getText();
+                result = message;
+                LOGGER.info("Message received: " + message);
+            }
+            latch.countDown();
+        }
+
+        @Override
+        public void onException(JCSMPException e) {
+            LOGGER.error("Exception received: " + e.getMessage());
+            latch.countDown();
+        }
+
+        private void waitForMessage() {
+            try {
+                assertThat(latch.await(10L, TimeUnit.SECONDS)).isTrue();
+                assertThat(result).isEqualTo(MESSAGE);
+            } catch (Exception e) {
+                throw new RuntimeException("Cannot receive message from solace: " + e.getMessage(), e);
+            }
         }
     }
 }

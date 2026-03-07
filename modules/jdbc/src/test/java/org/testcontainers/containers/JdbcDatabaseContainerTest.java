@@ -1,7 +1,7 @@
 package org.testcontainers.containers;
 
 import lombok.NonNull;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 import java.sql.Connection;
@@ -10,10 +10,10 @@ import java.sql.SQLException;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.mock;
 
-public class JdbcDatabaseContainerTest {
+class JdbcDatabaseContainerTest {
 
     @Test
-    public void anExceptionIsThrownIfJdbcIsNotAvailable() {
+    void anExceptionIsThrownIfJdbcIsNotAvailable() {
         JdbcDatabaseContainer<?> jdbcContainer = new JdbcDatabaseContainerStub("mysql:latest")
             .withStartupTimeoutSeconds(1);
 

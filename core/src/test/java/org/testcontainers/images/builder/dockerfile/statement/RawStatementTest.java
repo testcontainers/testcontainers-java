@@ -1,11 +1,16 @@
 package org.testcontainers.images.builder.dockerfile.statement;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 
-public class RawStatementTest extends AbstractStatementTest {
+class RawStatementTest extends AbstractStatementTest {
+
+    RawStatementTest(TestInfo testInfo) {
+        super(testInfo);
+    }
 
     @Test
-    public void simpleTest() throws Exception {
+    void simpleTest() throws Exception {
         assertStatement(new RawStatement("TEST", "value\nas\t\\\nis"));
     }
 }

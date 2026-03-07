@@ -1,11 +1,12 @@
 package org.testcontainers.junit;
 
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
+import org.assertj.core.api.Assumptions;
+import org.junit.jupiter.api.AutoClose;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.ComposeContainer;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.TestEnvironment;
 import redis.clients.jedis.Jedis;
 
@@ -13,19 +14,20 @@ import java.io.File;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ComposeContainerScalingTest {
+class ComposeContainerScalingTest {
 
     private static final int REDIS_PORT = 6379;
 
     private Jedis[] clients = new Jedis[3];
 
-    @BeforeClass
+    @BeforeAll
     public static void checkVersion() {
-        Assume.assumeTrue(TestEnvironment.dockerApiAtLeast("1.22"));
+        Assumptions.assumeThat(TestEnvironment.dockerApiAtLeast("1.22")).isTrue();
     }
 
-    @Rule
+    @AutoClose
     public ComposeContainer environment = new ComposeContainer(
+        DockerImageName.parse("docker:25.0.5"),
         new File("src/test/resources/composev2/scaled-compose-test.yml")
     )
         .withScaledService("redis", 3)
@@ -33,7 +35,11 @@ public class ComposeContainerScalingTest {
         .withExposedService("redis-2", REDIS_PORT) // explicit service index
         .withExposedService("redis", 3, REDIS_PORT); // explicit service index via parameter
 
-    @Before
+    ComposeContainerScalingTest() {
+        environment.start();
+    }
+
+    @BeforeEach
     public void setupClients() {
         for (int i = 0; i < 3; i++) {
             String name = String.format("redis-%d", i + 1);
@@ -44,7 +50,7 @@ public class ComposeContainerScalingTest {
     }
 
     @Test
-    public void simpleTest() {
+    void simpleTest() {
         for (int i = 0; i < 3; i++) {
             clients[i].incr("somekey");
 

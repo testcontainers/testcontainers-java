@@ -1,7 +1,7 @@
 package org.testcontainers.utility;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -9,20 +9,20 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class PrefixingImageNameSubstitutorTest {
+class PrefixingImageNameSubstitutorTest {
 
     private TestcontainersConfiguration mockConfiguration;
 
     private PrefixingImageNameSubstitutor underTest;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         mockConfiguration = mock(TestcontainersConfiguration.class);
         underTest = new PrefixingImageNameSubstitutor(mockConfiguration);
     }
 
     @Test
-    public void testHappyPath() {
+    void testHappyPath() {
         when(mockConfiguration.getEnvVarOrProperty(eq(PrefixingImageNameSubstitutor.PREFIX_PROPERTY_KEY), any()))
             .thenReturn("someregistry.com/our-mirror/");
 
@@ -34,7 +34,7 @@ public class PrefixingImageNameSubstitutorTest {
     }
 
     @Test
-    public void hubIoRegistryIsNotChanged() {
+    void hubIoRegistryIsNotChanged() {
         when(mockConfiguration.getEnvVarOrProperty(eq(PrefixingImageNameSubstitutor.PREFIX_PROPERTY_KEY), any()))
             .thenReturn("someregistry.com/our-mirror/");
 
@@ -44,7 +44,7 @@ public class PrefixingImageNameSubstitutorTest {
     }
 
     @Test
-    public void hubComRegistryIsNotChanged() {
+    void hubComRegistryIsNotChanged() {
         when(mockConfiguration.getEnvVarOrProperty(eq(PrefixingImageNameSubstitutor.PREFIX_PROPERTY_KEY), any()))
             .thenReturn("someregistry.com/our-mirror/");
 
@@ -56,7 +56,7 @@ public class PrefixingImageNameSubstitutorTest {
     }
 
     @Test
-    public void thirdPartyRegistriesNotAffected() {
+    void thirdPartyRegistriesNotAffected() {
         when(mockConfiguration.getEnvVarOrProperty(eq(PrefixingImageNameSubstitutor.PREFIX_PROPERTY_KEY), any()))
             .thenReturn("someregistry.com/our-mirror/");
 
@@ -68,7 +68,7 @@ public class PrefixingImageNameSubstitutorTest {
     }
 
     @Test
-    public void testNoDoublePrefixing() {
+    void testNoDoublePrefixing() {
         when(mockConfiguration.getEnvVarOrProperty(eq(PrefixingImageNameSubstitutor.PREFIX_PROPERTY_KEY), any()))
             .thenReturn("someregistry.com/our-mirror/");
 
@@ -80,7 +80,7 @@ public class PrefixingImageNameSubstitutorTest {
     }
 
     @Test
-    public void testHandlesEmptyValue() {
+    void testHandlesEmptyValue() {
         when(mockConfiguration.getEnvVarOrProperty(eq(PrefixingImageNameSubstitutor.PREFIX_PROPERTY_KEY), any()))
             .thenReturn("");
 
@@ -92,7 +92,7 @@ public class PrefixingImageNameSubstitutorTest {
     }
 
     @Test
-    public void testHandlesRegistryOnlyWithTrailingSlash() {
+    void testHandlesRegistryOnlyWithTrailingSlash() {
         when(mockConfiguration.getEnvVarOrProperty(eq(PrefixingImageNameSubstitutor.PREFIX_PROPERTY_KEY), any()))
             .thenReturn("someregistry.com/");
 
@@ -104,7 +104,7 @@ public class PrefixingImageNameSubstitutorTest {
     }
 
     @Test
-    public void testCombinesLiterallyForRegistryOnlyWithoutTrailingSlash() {
+    void testCombinesLiterallyForRegistryOnlyWithoutTrailingSlash() {
         when(mockConfiguration.getEnvVarOrProperty(eq(PrefixingImageNameSubstitutor.PREFIX_PROPERTY_KEY), any()))
             .thenReturn("someregistry.com");
 
@@ -116,7 +116,7 @@ public class PrefixingImageNameSubstitutorTest {
     }
 
     @Test
-    public void testCombinesLiterallyForBothPartsWithoutTrailingSlash() {
+    void testCombinesLiterallyForBothPartsWithoutTrailingSlash() {
         when(mockConfiguration.getEnvVarOrProperty(eq(PrefixingImageNameSubstitutor.PREFIX_PROPERTY_KEY), any()))
             .thenReturn("someregistry.com/our-mirror");
 

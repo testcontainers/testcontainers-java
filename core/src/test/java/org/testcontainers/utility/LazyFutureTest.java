@@ -2,7 +2,8 @@ package org.testcontainers.utility;
 
 import com.google.common.util.concurrent.Futures;
 import lombok.SneakyThrows;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.util.Collections;
 import java.util.List;
@@ -18,10 +19,10 @@ import java.util.stream.IntStream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
-public class LazyFutureTest {
+class LazyFutureTest {
 
     @Test
-    public void testLazyness() throws Exception {
+    void testLaziness() throws Exception {
         AtomicInteger counter = new AtomicInteger();
 
         Future<Integer> lazyFuture = new LazyFuture<Integer>() {
@@ -39,8 +40,9 @@ public class LazyFutureTest {
         assertThat(lazyFuture.get()).as("result of resolve() must be cached").isEqualTo(1);
     }
 
-    @Test(timeout = 5_000)
-    public void timeoutWorks() {
+    @Test
+    @Timeout(5)
+    void timeoutWorks() {
         Future<Void> lazyFuture = new LazyFuture<Void>() {
             @Override
             @SneakyThrows(InterruptedException.class)
@@ -55,8 +57,9 @@ public class LazyFutureTest {
             .isInstanceOf(TimeoutException.class);
     }
 
-    @Test(timeout = 5_000)
-    public void testThreadSafety() throws Exception {
+    @Test
+    @Timeout(5)
+    void testThreadSafety() throws Exception {
         final int numOfThreads = 3;
         CountDownLatch latch = new CountDownLatch(numOfThreads);
         AtomicInteger counter = new AtomicInteger();

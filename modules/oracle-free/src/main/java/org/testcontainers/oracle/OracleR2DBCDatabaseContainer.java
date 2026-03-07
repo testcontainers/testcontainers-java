@@ -1,16 +1,18 @@
 package org.testcontainers.oracle;
 
 import io.r2dbc.spi.ConnectionFactoryOptions;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.Delegate;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.r2dbc.R2DBCDatabaseContainer;
 
-@RequiredArgsConstructor
+import java.util.Set;
+
 public class OracleR2DBCDatabaseContainer implements R2DBCDatabaseContainer {
 
-    @Delegate(types = Startable.class)
     private final OracleContainer container;
+
+    public OracleR2DBCDatabaseContainer(OracleContainer container) {
+        this.container = container;
+    }
 
     public static ConnectionFactoryOptions getOptions(OracleContainer container) {
         ConnectionFactoryOptions options = ConnectionFactoryOptions
@@ -31,5 +33,25 @@ public class OracleR2DBCDatabaseContainer implements R2DBCDatabaseContainer {
             .option(ConnectionFactoryOptions.USER, container.getUsername())
             .option(ConnectionFactoryOptions.PASSWORD, container.getPassword())
             .build();
+    }
+
+    @Override
+    public Set<Startable> getDependencies() {
+        return this.container.getDependencies();
+    }
+
+    @Override
+    public void start() {
+        this.container.start();
+    }
+
+    @Override
+    public void stop() {
+        this.container.stop();
+    }
+
+    @Override
+    public void close() {
+        this.container.close();
     }
 }

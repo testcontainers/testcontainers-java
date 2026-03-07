@@ -1,8 +1,8 @@
 package org.testcontainers.images;
 
 import com.github.dockerjava.api.exception.NotFoundException;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AutoClose;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.DockerRegistryContainer;
@@ -14,22 +14,26 @@ import org.testcontainers.utility.DockerImageName;
 import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 
-public class ImagePullPolicyTest {
+class ImagePullPolicyTest {
 
-    @ClassRule
+    @AutoClose
     public static DockerRegistryContainer registry = new DockerRegistryContainer();
 
     private final DockerImageName imageName = registry.createImage();
 
+    static {
+        registry.start();
+    }
+
     @Test
-    public void pullsByDefault() {
+    void pullsByDefault() {
         try (GenericContainer<?> container = new GenericContainer<>(imageName).withExposedPorts(8080)) {
             container.start();
         }
     }
 
     @Test
-    public void shouldAlwaysPull() {
+    void shouldAlwaysPull() {
         try (GenericContainer<?> container = new GenericContainer<>(imageName).withExposedPorts(8080)) {
             container.start();
         }
@@ -52,7 +56,7 @@ public class ImagePullPolicyTest {
     }
 
     @Test
-    public void shouldSupportCustomPolicies() {
+    void shouldSupportCustomPolicies() {
         try (
             // custom_image_pull_policy {
             GenericContainer<?> container = new GenericContainer<>(imageName)
@@ -72,7 +76,7 @@ public class ImagePullPolicyTest {
     }
 
     @Test
-    public void shouldCheckPolicy() {
+    void shouldCheckPolicy() {
         ImagePullPolicy policy = Mockito.spy(
             new AbstractImagePullPolicy() {
                 @Override
@@ -93,7 +97,7 @@ public class ImagePullPolicyTest {
     }
 
     @Test
-    public void shouldNotForcePulling() {
+    void shouldNotForcePulling() {
         try (
             GenericContainer<?> container = new GenericContainer<>(imageName)
                 .withImagePullPolicy(__ -> false)

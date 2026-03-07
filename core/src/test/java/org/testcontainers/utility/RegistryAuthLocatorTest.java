@@ -5,7 +5,7 @@ import com.google.common.io.Resources;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.jetbrains.annotations.NotNull;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,10 +17,10 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class RegistryAuthLocatorTest {
+class RegistryAuthLocatorTest {
 
     @Test
-    public void lookupAuthConfigWithoutCredentials() throws URISyntaxException, IOException {
+    void lookupAuthConfigWithoutCredentials() throws URISyntaxException, IOException {
         final RegistryAuthLocator authLocator = createTestAuthLocator("config-empty.json");
 
         final AuthConfig authConfig = authLocator.lookupAuthConfig(
@@ -36,7 +36,7 @@ public class RegistryAuthLocatorTest {
     }
 
     @Test
-    public void lookupAuthConfigWithBasicAuthCredentials() throws URISyntaxException, IOException {
+    void lookupAuthConfigWithBasicAuthCredentials() throws URISyntaxException, IOException {
         final RegistryAuthLocator authLocator = createTestAuthLocator("config-basic-auth.json");
 
         final AuthConfig authConfig = authLocator.lookupAuthConfig(
@@ -52,7 +52,7 @@ public class RegistryAuthLocatorTest {
     }
 
     @Test
-    public void lookupAuthConfigWithJsonKeyCredentials() throws URISyntaxException, IOException {
+    void lookupAuthConfigWithJsonKeyCredentials() throws URISyntaxException, IOException {
         final RegistryAuthLocator authLocator = createTestAuthLocator("config-with-json-key.json");
 
         final AuthConfig authConfig = authLocator.lookupAuthConfig(
@@ -68,8 +68,7 @@ public class RegistryAuthLocatorTest {
     }
 
     @Test
-    public void lookupAuthConfigWithJsonKeyCredentialsPartialMatchShouldGiveNoResult()
-        throws URISyntaxException, IOException {
+    void lookupAuthConfigWithJsonKeyCredentialsPartialMatchShouldGiveNoResult() throws URISyntaxException, IOException {
         // contains entry for registry.example.com
         final RegistryAuthLocator authLocator = createTestAuthLocator("config-with-json-key.json");
 
@@ -83,7 +82,7 @@ public class RegistryAuthLocatorTest {
     }
 
     @Test
-    public void lookupAuthConfigUsingStore() throws URISyntaxException, IOException {
+    void lookupAuthConfigUsingStore() throws URISyntaxException, IOException {
         final RegistryAuthLocator authLocator = createTestAuthLocator("config-with-store.json");
 
         final AuthConfig authConfig = authLocator.lookupAuthConfig(
@@ -103,7 +102,7 @@ public class RegistryAuthLocatorTest {
     }
 
     @Test
-    public void lookupAuthConfigUsingHelper() throws URISyntaxException, IOException {
+    void lookupAuthConfigUsingHelper() throws URISyntaxException, IOException {
         final RegistryAuthLocator authLocator = createTestAuthLocator("config-with-helper.json");
 
         final AuthConfig authConfig = authLocator.lookupAuthConfig(
@@ -123,7 +122,7 @@ public class RegistryAuthLocatorTest {
     }
 
     @Test
-    public void lookupAuthConfigUsingHelperWithToken() throws URISyntaxException, IOException {
+    void lookupAuthConfigUsingHelperWithToken() throws URISyntaxException, IOException {
         final RegistryAuthLocator authLocator = createTestAuthLocator("config-with-helper-using-token.json");
 
         final AuthConfig authConfig = authLocator.lookupAuthConfig(
@@ -131,13 +130,16 @@ public class RegistryAuthLocatorTest {
             new AuthConfig()
         );
 
+        assertThat(authConfig.getRegistryAddress())
+            .as("Correct server URL is obtained from a credential store")
+            .isEqualTo("url");
         assertThat(authConfig.getIdentitytoken())
             .as("Correct identitytoken is obtained from a credential store")
             .isEqualTo("secret");
     }
 
     @Test
-    public void lookupUsingHelperEmptyAuth() throws URISyntaxException, IOException {
+    void lookupUsingHelperEmptyAuth() throws URISyntaxException, IOException {
         final RegistryAuthLocator authLocator = createTestAuthLocator("config-empty-auth-with-helper.json");
 
         final AuthConfig authConfig = authLocator.lookupAuthConfig(
@@ -157,7 +159,7 @@ public class RegistryAuthLocatorTest {
     }
 
     @Test
-    public void lookupNonEmptyAuthWithHelper() throws URISyntaxException, IOException {
+    void lookupNonEmptyAuthWithHelper() throws URISyntaxException, IOException {
         final RegistryAuthLocator authLocator = createTestAuthLocator("config-existing-auth-with-helper.json");
 
         final AuthConfig authConfig = authLocator.lookupAuthConfig(
@@ -177,7 +179,46 @@ public class RegistryAuthLocatorTest {
     }
 
     @Test
-    public void lookupAuthConfigWithCredentialsNotFound() throws URISyntaxException, IOException {
+    void lookupAuthConfigUsingHelperNoServerUrl() throws URISyntaxException, IOException {
+        final RegistryAuthLocator authLocator = createTestAuthLocator("config-with-helper-no-server-url.json");
+
+        final AuthConfig authConfig = authLocator.lookupAuthConfig(
+            DockerImageName.parse("registrynoserverurl.example.com/org/repo"),
+            new AuthConfig()
+        );
+
+        assertThat(authConfig.getRegistryAddress())
+            .as("Fallback (registry) server URL is used")
+            .isEqualTo("registrynoserverurl.example.com");
+        assertThat(authConfig.getUsername())
+            .as("Correct username is obtained from a credential store")
+            .isEqualTo("username");
+        assertThat(authConfig.getPassword())
+            .as("Correct secret is obtained from a credential store")
+            .isEqualTo("secret");
+    }
+
+    @Test
+    void lookupAuthConfigUsingHelperNoServerUrlWithToken() throws URISyntaxException, IOException {
+        final RegistryAuthLocator authLocator = createTestAuthLocator(
+            "config-with-helper-no-server-url-using-token.json"
+        );
+
+        final AuthConfig authConfig = authLocator.lookupAuthConfig(
+            DockerImageName.parse("registrynoserverurltoken.example.com/org/repo"),
+            new AuthConfig()
+        );
+
+        assertThat(authConfig.getRegistryAddress())
+            .as("Fallback (registry) server URL is used")
+            .isEqualTo("registrynoserverurltoken.example.com");
+        assertThat(authConfig.getIdentitytoken())
+            .as("Correct identitytoken is obtained from a credential store")
+            .isEqualTo("secret");
+    }
+
+    @Test
+    void lookupAuthConfigWithCredentialsNotFound() throws URISyntaxException, IOException {
         Map<String, String> notFoundMessagesReference = new HashMap<>();
         final RegistryAuthLocator authLocator = createTestAuthLocator(
             "config-with-store.json",
@@ -199,11 +240,11 @@ public class RegistryAuthLocatorTest {
 
         assertThat(discoveredMessage)
             .as("Not correct message discovered")
-            .isEqualTo("Fake credentials not found on credentials store 'https://not.a.real.registry/url'");
+            .isEqualTo("Fake credentials not found on credentials store 'registry2.example.com'");
     }
 
     @Test
-    public void lookupAuthConfigWithCredStoreEmpty() throws URISyntaxException, IOException {
+    void lookupAuthConfigWithCredStoreEmpty() throws URISyntaxException, IOException {
         final RegistryAuthLocator authLocator = createTestAuthLocator("config-with-store-empty.json");
 
         DockerImageName dockerImageName = DockerImageName.parse("registry2.example.com/org/repo");
@@ -213,7 +254,7 @@ public class RegistryAuthLocatorTest {
     }
 
     @Test
-    public void lookupAuthConfigFromEnvVarWithCredStoreEmpty() throws URISyntaxException, IOException {
+    void lookupAuthConfigFromEnvVarWithCredStoreEmpty() throws URISyntaxException, IOException {
         final RegistryAuthLocator authLocator = createTestAuthLocator(null, "config-with-store-empty.json");
 
         DockerImageName dockerImageName = DockerImageName.parse("registry2.example.com/org/repo");
@@ -223,7 +264,7 @@ public class RegistryAuthLocatorTest {
     }
 
     @Test
-    public void lookupAuthConfigWithoutConfigFile() throws URISyntaxException, IOException {
+    void lookupAuthConfigWithoutConfigFile() throws URISyntaxException, IOException {
         final RegistryAuthLocator authLocator = createTestAuthLocator(null);
 
         final AuthConfig authConfig = authLocator.lookupAuthConfig(
@@ -239,7 +280,7 @@ public class RegistryAuthLocatorTest {
     }
 
     @Test
-    public void lookupAuthConfigRespectsCheckOrderPreference() throws URISyntaxException, IOException {
+    void lookupAuthConfigRespectsCheckOrderPreference() throws URISyntaxException, IOException {
         final RegistryAuthLocator authLocator = createTestAuthLocator("config-empty.json", "config-basic-auth.json");
 
         final AuthConfig authConfig = authLocator.lookupAuthConfig(
@@ -255,7 +296,7 @@ public class RegistryAuthLocatorTest {
     }
 
     @Test
-    public void lookupAuthConfigFromEnvironmentVariable() throws URISyntaxException, IOException {
+    void lookupAuthConfigFromEnvironmentVariable() throws URISyntaxException, IOException {
         final RegistryAuthLocator authLocator = createTestAuthLocator(null, "config-basic-auth.json");
 
         final AuthConfig authConfig = authLocator.lookupAuthConfig(

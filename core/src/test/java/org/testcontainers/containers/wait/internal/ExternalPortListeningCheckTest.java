@@ -1,9 +1,9 @@
 package org.testcontainers.containers.wait.internal;
 
 import com.google.common.collect.ImmutableSet;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 
 import java.net.ServerSocket;
@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class ExternalPortListeningCheckTest {
+class ExternalPortListeningCheckTest {
 
     private ServerSocket listeningSocket1;
 
@@ -23,7 +23,7 @@ public class ExternalPortListeningCheckTest {
 
     private WaitStrategyTarget mockContainer;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         listeningSocket1 = new ServerSocket(0);
         listeningSocket2 = new ServerSocket(0);
@@ -36,7 +36,7 @@ public class ExternalPortListeningCheckTest {
     }
 
     @Test
-    public void singleListening() {
+    void singleListening() {
         final ExternalPortListeningCheck check = new ExternalPortListeningCheck(
             mockContainer,
             ImmutableSet.of(listeningSocket1.getLocalPort())
@@ -48,7 +48,7 @@ public class ExternalPortListeningCheckTest {
     }
 
     @Test
-    public void multipleListening() {
+    void multipleListening() {
         final ExternalPortListeningCheck check = new ExternalPortListeningCheck(
             mockContainer,
             ImmutableSet.of(listeningSocket1.getLocalPort(), listeningSocket2.getLocalPort())
@@ -60,7 +60,7 @@ public class ExternalPortListeningCheckTest {
     }
 
     @Test
-    public void oneNotListening() {
+    void oneNotListening() {
         final ExternalPortListeningCheck check = new ExternalPortListeningCheck(
             mockContainer,
             ImmutableSet.of(listeningSocket1.getLocalPort(), nonListeningSocket.getLocalPort())
@@ -71,7 +71,7 @@ public class ExternalPortListeningCheckTest {
             .isInstanceOf(IllegalStateException.class);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         listeningSocket1.close();
         listeningSocket2.close();

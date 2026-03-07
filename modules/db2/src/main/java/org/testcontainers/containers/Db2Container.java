@@ -1,5 +1,6 @@
 package org.testcontainers.containers;
 
+import com.github.dockerjava.api.model.Capability;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.LicenseAcceptance;
@@ -17,7 +18,9 @@ import java.util.Set;
  * <ul>
  *     <li>Database: 50000</li>
  * </ul>
+ * @deprecated use {@link org.testcontainers.db2.Db2Container} instead.
  */
+@Deprecated
 public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
 
     public static final String NAME = "db2";
@@ -57,7 +60,7 @@ public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_NEW_IMAGE_NAME, DEFAULT_IMAGE_NAME);
 
-        withPrivilegedMode(true);
+        withCreateContainerCmdModifier(cmd -> cmd.withCapAdd(Capability.IPC_LOCK).withCapAdd(Capability.IPC_OWNER));
         this.waitStrategy =
             new LogMessageWaitStrategy()
                 .withRegEx(".*Setup has completed\\..*")
@@ -78,7 +81,7 @@ public class Db2Container extends JdbcDatabaseContainer<Db2Container> {
 
     @Override
     protected void configure() {
-        // If license was not accepted programatically, check if it was accepted via resource file
+        // If license was not accepted programmatically, check if it was accepted via resource file
         if (!getEnvMap().containsKey("LICENSE")) {
             LicenseAcceptance.assertLicenseAccepted(this.getDockerImageName());
             acceptLicense();

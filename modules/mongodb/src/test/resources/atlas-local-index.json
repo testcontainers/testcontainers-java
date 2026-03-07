@@ -1,0 +1,18 @@
+{
+    "mappings": {
+        "dynamic": false,
+        "fields": {
+            "test": {
+                "type": "string"
+            },
+            "test2": {
+                "type": "number",
+                "representation": "int64",
+                "indexDoubles": false
+            },
+            "test3": {
+                "type": "boolean"
+            }
+        }
+    }
+}

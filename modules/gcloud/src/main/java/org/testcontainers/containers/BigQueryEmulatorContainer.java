@@ -7,7 +7,10 @@ import org.testcontainers.utility.DockerImageName;
  * <p>
  * Supported image: {@code ghcr.io/goccy/bigquery-emulator}
  * <p>
+ *
+ * @deprecated use {@link org.testcontainers.gcloud.BigQueryEmulatorContainer} instead.
  */
+@Deprecated
 public class BigQueryEmulatorContainer extends GenericContainer<BigQueryEmulatorContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("ghcr.io/goccy/bigquery-emulator");
@@ -31,6 +34,10 @@ public class BigQueryEmulatorContainer extends GenericContainer<BigQueryEmulator
 
     public String getEmulatorHttpEndpoint() {
         return String.format("http://%s:%d", getHost(), getMappedPort(HTTP_PORT));
+    }
+
+    public Integer getEmulatorGrpcPort() {
+        return getMappedPort(GRPC_PORT);
     }
 
     public String getProjectId() {

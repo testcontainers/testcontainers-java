@@ -1,46 +1,14 @@
 # OrientDB Module
 
-!!! note
-    This module is INCUBATING. While it is ready for use and operational in the current version of Testcontainers, it is possible that it may receive breaking changes in the future. See [our contributing guidelines](/contributing/#incubating-modules) for more information on our incubating modules policy.
-
-
-This module helps running [OrientDB](https://orientdb.org/download) using Testcontainers.
-
-Note that it's based on the [official Docker image](https://hub.docker.com/_/orientdb/) provided by OrientDB.
+Testcontainers module for [OrientDB](https://hub.docker.com/_/orientdb/)
 
 ## Usage example
 
-Declare your Testcontainers instance as a `@ClassRule` or `@Rule` in a JUnit 4 test or as static or member attribute of a JUnit 5 test annotated with `@Container` as you would with other Testcontainers.
-You can call `getDbUrl()` OrientDB container and build the `ODatabaseSession` by your own, but a more useful `getSession()` method is provided.
-On the JVM you would most likely use the [Java driver](https://github.com/).
+You can start an OrientDB container instance from any Java application by using:
 
-The following example uses the JUnit 5 extension `@Testcontainers` and demonstrates both the usage of the Java Client:
-
-=== "JUnit 5 example"
-    ```java
-    @Testcontainers
-    public class ExampleTest {
-    
-        @Container
-        private static OrientDBContainer container = new OrientDBContainer();
-    
-        @Test
-        void testDbCreation() {
-    
-            final ODatabaseSession session = container.getSession();
-    
-            session.command("CREATE CLASS Person EXTENDS V");
-            session.command("INSERT INTO Person set name='john'");
-            session.command("INSERT INTO Person set name='jane'");
-    
-            assertThat(session.query("SELECT FROM Person").stream()).hasSize(2);
-        }
-    
-    }
-    ```
-
-You are not limited to Unit tests and can of course use an instance of the OrientDB Testcontainers implementation in vanilla Java code as well.
-
+<!--codeinclude-->
+[Container creation](../../../modules/orientdb/src/test/java/org/testcontainers/orientdb/OrientDBContainerTest.java) inside_block:container
+<!--/codeinclude-->
 
 ## Adding this module to your project dependencies
 
@@ -48,13 +16,13 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 === "Gradle"
     ```groovy
-    testImplementation "org.testcontainers:orientdb:{{latest_version}}"
+    testImplementation "org.testcontainers:testcontainers-orientdb:{{latest_version}}"
     ```
 === "Maven"
     ```xml
     <dependency>
         <groupId>org.testcontainers</groupId>
-        <artifactId>orientdb</artifactId>
+        <artifactId>testcontainers-orientdb</artifactId>
         <version>{{latest_version}}</version>
         <scope>test</scope>
     </dependency>

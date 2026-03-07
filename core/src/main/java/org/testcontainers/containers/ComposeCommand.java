@@ -1,14 +1,12 @@
 package org.testcontainers.containers;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.Set;
 
 class ComposeCommand {
 
     static String getDownCommand(ComposeDelegate.ComposeVersion composeVersion, Set<String> options) {
         String composeOptions = optionsAsString(options);
-        if (composeOptions == null || composeOptions.equals("")) {
+        if (composeOptions.isEmpty()) {
             return composeVersion == ComposeDelegate.ComposeVersion.V1 ? "down" : "compose down";
         }
         String cmd = composeVersion == ComposeDelegate.ComposeVersion.V1 ? "%s down" : "compose %s down";
@@ -17,7 +15,7 @@ class ComposeCommand {
 
     static String getUpCommand(ComposeDelegate.ComposeVersion composeVersion, Set<String> options) {
         String composeOptions = optionsAsString(options);
-        if (composeOptions == null || composeOptions.equals("")) {
+        if (composeOptions.isEmpty()) {
             return composeVersion == ComposeDelegate.ComposeVersion.V1 ? "up -d" : "compose up -d";
         }
         String cmd = composeVersion == ComposeDelegate.ComposeVersion.V1 ? "%s up -d" : "compose %s up -d";
@@ -31,7 +29,7 @@ class ComposeCommand {
             return optionsString;
         } else {
             // otherwise two spaces would appear between 'docker-compose' and 'up'
-            return StringUtils.EMPTY;
+            return "";
         }
     }
 }

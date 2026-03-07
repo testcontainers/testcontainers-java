@@ -1,21 +1,21 @@
 package org.testcontainers.utility;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class DockerImageNameCompatibilityTest {
+class DockerImageNameCompatibilityTest {
 
     @Test
-    public void testPlainImage() {
+    void testPlainImage() {
         DockerImageName subject = DockerImageName.parse("foo");
 
         assertThat(subject.isCompatibleWith(DockerImageName.parse("bar"))).as("image name foo != bar").isFalse();
     }
 
     @Test
-    public void testNoTagTreatedAsWildcard() {
+    void testNoTagTreatedAsWildcard() {
         final DockerImageName subject = DockerImageName.parse("foo:4.5.6");
         /*
         foo:1.2.3 != foo:4.5.6
@@ -28,7 +28,7 @@ public class DockerImageNameCompatibilityTest {
     }
 
     @Test
-    public void testImageWithAutomaticCompatibilityForFullPath() {
+    void testImageWithAutomaticCompatibilityForFullPath() {
         DockerImageName subject = DockerImageName.parse("repo/foo:1.2.3");
 
         assertThat(subject.isCompatibleWith(DockerImageName.parse("repo/foo")))
@@ -37,7 +37,7 @@ public class DockerImageNameCompatibilityTest {
     }
 
     @Test
-    public void testImageWithClaimedCompatibility() {
+    void testImageWithClaimedCompatibility() {
         DockerImageName subject = DockerImageName.parse("foo").asCompatibleSubstituteFor("bar");
 
         assertThat(subject.isCompatibleWith(DockerImageName.parse("bar"))).as("foo(bar) ~= bar").isTrue();
@@ -45,14 +45,14 @@ public class DockerImageNameCompatibilityTest {
     }
 
     @Test
-    public void testImageWithClaimedCompatibilityAndVersion() {
+    void testImageWithClaimedCompatibilityAndVersion() {
         DockerImageName subject = DockerImageName.parse("foo:1.2.3").asCompatibleSubstituteFor("bar");
 
         assertThat(subject.isCompatibleWith(DockerImageName.parse("bar"))).as("foo:1.2.3(bar) ~= bar").isTrue();
     }
 
     @Test
-    public void testImageWithClaimedCompatibilityForFullPath() {
+    void testImageWithClaimedCompatibilityForFullPath() {
         DockerImageName subject = DockerImageName.parse("foo").asCompatibleSubstituteFor("registry/repo/bar");
 
         assertThat(subject.isCompatibleWith(DockerImageName.parse("registry/repo/bar")))
@@ -67,7 +67,7 @@ public class DockerImageNameCompatibilityTest {
     }
 
     @Test
-    public void testImageWithClaimedCompatibilityForVersion() {
+    void testImageWithClaimedCompatibilityForVersion() {
         DockerImageName subject = DockerImageName.parse("foo").asCompatibleSubstituteFor("bar:1.2.3");
 
         assertThat(subject.isCompatibleWith(DockerImageName.parse("bar"))).as("foo(bar:1.2.3) ~= bar").isTrue();
@@ -86,19 +86,19 @@ public class DockerImageNameCompatibilityTest {
     }
 
     @Test
-    public void testAssertMethodAcceptsCompatible() {
+    void testAssertMethodAcceptsCompatible() {
         DockerImageName subject = DockerImageName.parse("foo").asCompatibleSubstituteFor("bar");
         subject.assertCompatibleWith(DockerImageName.parse("bar"));
     }
 
     @Test
-    public void testAssertMethodAcceptsCompatibleLibraryPrefix() {
+    void testAssertMethodAcceptsCompatibleLibraryPrefix() {
         DockerImageName subject = DockerImageName.parse("library/foo");
         subject.assertCompatibleWith(DockerImageName.parse("foo"));
     }
 
     @Test
-    public void testAssertMethodRejectsIncompatible() {
+    void testAssertMethodRejectsIncompatible() {
         DockerImageName subject = DockerImageName.parse("foo");
         assertThatThrownBy(() -> subject.assertCompatibleWith(DockerImageName.parse("bar")))
             .isInstanceOf(IllegalStateException.class)

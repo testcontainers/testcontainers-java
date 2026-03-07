@@ -50,6 +50,10 @@ class KafkaHelper {
         envVars.put("KAFKA_CONTROLLER_LISTENER_NAMES", "CONTROLLER");
 
         envVars.put("KAFKA_NODE_ID", "1");
+
+        String controllerQuorumVoters = String.format("%s@localhost:9094", envVars.get("KAFKA_NODE_ID"));
+        envVars.put("KAFKA_CONTROLLER_QUORUM_VOTERS", controllerQuorumVoters);
+
         envVars.put("KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", DEFAULT_INTERNAL_TOPIC_RF);
         envVars.put("KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS", DEFAULT_INTERNAL_TOPIC_RF);
         envVars.put("KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR", DEFAULT_INTERNAL_TOPIC_RF);

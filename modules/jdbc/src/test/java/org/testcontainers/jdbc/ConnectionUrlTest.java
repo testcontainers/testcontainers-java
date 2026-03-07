@@ -1,18 +1,14 @@
 package org.testcontainers.jdbc;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class ConnectionUrlTest {
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
+class ConnectionUrlTest {
 
     @Test
-    public void testConnectionUrl1() {
+    void testConnectionUrl1() {
         String urlString = "jdbc:tc:mysql:8.0.36://somehostname:3306/databasename?a=b&c=d";
         ConnectionUrl url = ConnectionUrl.newInstance(urlString);
 
@@ -31,7 +27,7 @@ public class ConnectionUrlTest {
     }
 
     @Test
-    public void testConnectionUrl2() {
+    void testConnectionUrl2() {
         String urlString = "jdbc:tc:mysql://somehostname/databasename";
         ConnectionUrl url = ConnectionUrl.newInstance(urlString);
 
@@ -49,13 +45,13 @@ public class ConnectionUrlTest {
     }
 
     @Test
-    public void testEmptyQueryParameter() {
+    void testEmptyQueryParameter() {
         ConnectionUrl url = ConnectionUrl.newInstance("jdbc:tc:mysql://somehostname/databasename?key=");
         assertThat(url.getQueryParameters().get("key")).as("'key' property value").isEqualTo("");
     }
 
     @Test
-    public void testTmpfsOption() {
+    void testTmpfsOption() {
         String urlString = "jdbc:tc:mysql://somehostname/databasename?TC_TMPFS=key:value,key1:value1";
         ConnectionUrl url = ConnectionUrl.newInstance(urlString);
 
@@ -69,7 +65,7 @@ public class ConnectionUrlTest {
     }
 
     @Test
-    public void testInitScriptPathCapture() {
+    void testInitScriptPathCapture() {
         String urlString =
             "jdbc:tc:mysql:8.0.36://somehostname:3306/databasename?a=b&c=d&TC_INITSCRIPT=somepath/init_mysql.sql";
         ConnectionUrl url = ConnectionUrl.newInstance(urlString);
@@ -83,13 +79,14 @@ public class ConnectionUrlTest {
             .containsEntry("TC_INITSCRIPT", "somepath/init_mysql.sql");
 
         //Parameter sets are unmodifiable
-        thrown.expect(UnsupportedOperationException.class);
-        url.getContainerParameters().remove("TC_INITSCRIPT");
-        url.getQueryParameters().remove("a");
+        assertThatThrownBy(() -> url.getContainerParameters().remove("TC_INITSCRIPT"))
+            .isInstanceOf(UnsupportedOperationException.class);
+        assertThatThrownBy(() -> url.getQueryParameters().remove("a"))
+            .isInstanceOf(UnsupportedOperationException.class);
     }
 
     @Test
-    public void testInitFunctionCapture() {
+    void testInitFunctionCapture() {
         String urlString =
             "jdbc:tc:mysql:8.0.36://somehostname:3306/databasename?a=b&c=d&TC_INITFUNCTION=org.testcontainers.jdbc.JDBCDriverTest::sampleInitFunction";
         ConnectionUrl url = ConnectionUrl.newInstance(urlString);
@@ -105,10 +102,26 @@ public class ConnectionUrlTest {
     }
 
     @Test
-    public void testDaemonCapture() {
+    void testDaemonCapture() {
         String urlString = "jdbc:tc:mysql:8.0.36://somehostname:3306/databasename?a=b&c=d&TC_DAEMON=true";
         ConnectionUrl url = ConnectionUrl.newInstance(urlString);
 
         assertThat(url.isInDaemonMode()).as("Daemon flag is set to true.").isTrue();
+    }
+
+    @Test
+    void testHostLessConnectionUrl() {
+        String urlString = "jdbc:tc:mysql:8.0.36:///databasename?a=b&c=d";
+        ConnectionUrl url = ConnectionUrl.newInstance(urlString);
+
+        assertThat(url.getDatabaseType()).as("Database Type value is as expected").isEqualTo("mysql");
+        assertThat(url.getImageTag()).as("Database Image tag value is as expected").contains("8.0.36");
+        assertThat(url.getQueryString()).as("Query String value is as expected").contains("?a=b&c=d");
+        assertThat(url.getDatabaseHost()).as("Database Host value is as expected").isEmpty();
+        assertThat(url.getDatabasePort()).as("Database Port value is as expected").isEmpty();
+        assertThat(url.getDatabaseName()).as("Database Name value is as expected").contains("databasename");
+
+        assertThat(url.getQueryParameters()).as("Parameter a is captured").containsEntry("a", "b");
+        assertThat(url.getQueryParameters()).as("Parameter c is captured").containsEntry("c", "d");
     }
 }

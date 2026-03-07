@@ -1,0 +1,7 @@
+description = "Testcontainers :: Typesense"
+
+dependencies {
+    api project(':testcontainers')
+
+    testImplementation 'org.typesense:typesense-java:2.0.0'
+}

@@ -12,9 +12,10 @@ import org.apache.kafka.common.config.SaslConfigs;
 import org.apache.kafka.common.errors.SaslAuthenticationException;
 import org.apache.kafka.common.errors.TopicAuthorizationException;
 import org.awaitility.Awaitility;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
+import org.testcontainers.containers.SocatContainer;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 
@@ -29,14 +30,14 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class RedpandaContainerTest extends AbstractRedpanda {
+class RedpandaContainerTest extends AbstractRedpanda {
 
     private static final String REDPANDA_IMAGE = "docker.redpanda.com/redpandadata/redpanda:v22.2.1";
 
     private static final DockerImageName REDPANDA_DOCKER_IMAGE = DockerImageName.parse(REDPANDA_IMAGE);
 
     @Test
-    public void testUsage() throws Exception {
+    void testUsage() throws Exception {
         try (RedpandaContainer container = new RedpandaContainer(REDPANDA_DOCKER_IMAGE)) {
             container.start();
             testKafkaFunctionality(container.getBootstrapServers());
@@ -44,7 +45,7 @@ public class RedpandaContainerTest extends AbstractRedpanda {
     }
 
     @Test
-    public void testUsageWithStringImage() throws Exception {
+    void testUsageWithStringImage() throws Exception {
         try (
             // constructorWithVersion {
             RedpandaContainer container = new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v23.1.2")
@@ -60,28 +61,21 @@ public class RedpandaContainerTest extends AbstractRedpanda {
     }
 
     @Test
-    public void testNotCompatibleVersion() {
+    void testNotCompatibleVersion() {
         assertThatThrownBy(() -> new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v21.11.19"))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("Redpanda version must be >= v22.2.1");
     }
 
     @Test
-    public void vectorizedRedpandaImageVersion2221ShouldNotBeCompatible() {
-        assertThatThrownBy(() -> new RedpandaContainer("docker.redpanda.com/vectorized/redpanda:v21.11.19"))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("Redpanda version must be >= v22.2.1");
-    }
-
-    @Test
-    public void redpandadataRedpandaImageVersion2221ShouldNotBeCompatible() {
+    void redpandadataRedpandaImageVersion2221ShouldNotBeCompatible() {
         assertThatThrownBy(() -> new RedpandaContainer("redpandadata/redpanda:v21.11.19"))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("Redpanda version must be >= v22.2.1");
     }
 
     @Test
-    public void testSchemaRegistry() {
+    void testSchemaRegistry() {
         try (RedpandaContainer container = new RedpandaContainer(REDPANDA_DOCKER_IMAGE)) {
             container.start();
 
@@ -111,16 +105,43 @@ public class RedpandaContainerTest extends AbstractRedpanda {
     }
 
     @Test
-    public void testUsageWithListener() throws Exception {
+    void testUsageWithListener() throws Exception {
         try (
             Network network = Network.newNetwork();
-            // registerListener {
             RedpandaContainer redpanda = new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v23.1.7")
                 .withListener(() -> "redpanda:19092")
                 .withNetwork(network);
+            GenericContainer<?> kcat = new GenericContainer<>("confluentinc/cp-kcat:7.9.0")
+                .withCreateContainerCmdModifier(cmd -> {
+                    cmd.withEntrypoint("sh");
+                })
+                .withCopyToContainer(Transferable.of("Message produced by kcat"), "/data/msgs.txt")
+                .withNetwork(network)
+                .withCommand("-c", "tail -f /dev/null")
+        ) {
+            redpanda.start();
+            kcat.start();
+
+            kcat.execInContainer("kcat", "-b", "redpanda:19092", "-t", "msgs", "-P", "-l", "/data/msgs.txt");
+            String stdout = kcat
+                .execInContainer("kcat", "-b", "redpanda:19092", "-C", "-t", "msgs", "-c", "1")
+                .getStdout();
+
+            assertThat(stdout).contains("Message produced by kcat");
+        }
+    }
+
+    @Test
+    void testUsageWithListenerInTheSameNetwork() throws Exception {
+        try (
+            Network network = Network.newNetwork();
+            // registerListener {
+            RedpandaContainer kafka = new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v23.1.7")
+                .withListener("kafka:19092")
+                .withNetwork(network);
             // }
             // createKCatContainer {
-            GenericContainer<?> kcat = new GenericContainer<>("confluentinc/cp-kcat:7.4.1")
+            GenericContainer<?> kcat = new GenericContainer<>("confluentinc/cp-kcat:7.9.0")
                 .withCreateContainerCmdModifier(cmd -> {
                     cmd.withEntrypoint("sh");
                 })
@@ -129,20 +150,44 @@ public class RedpandaContainerTest extends AbstractRedpanda {
                 .withCommand("-c", "tail -f /dev/null")
             // }
         ) {
-            redpanda.start();
+            kafka.start();
             kcat.start();
+
             // produceConsumeMessage {
-            kcat.execInContainer("kcat", "-b", "redpanda:19092", "-t", "msgs", "-P", "-l", "/data/msgs.txt");
+            kcat.execInContainer("kcat", "-b", "kafka:19092", "-t", "msgs", "-P", "-l", "/data/msgs.txt");
             String stdout = kcat
-                .execInContainer("kcat", "-b", "redpanda:19092", "-C", "-t", "msgs", "-c", "1")
+                .execInContainer("kcat", "-b", "kafka:19092", "-C", "-t", "msgs", "-c", "1")
                 .getStdout();
             // }
+
             assertThat(stdout).contains("Message produced by kcat");
         }
     }
 
     @Test
-    public void testUsageWithListenerAndSasl() throws Exception {
+    void testUsageWithListenerFromProxy() throws Exception {
+        try (
+            Network network = Network.newNetwork();
+            // createProxy {
+            SocatContainer socat = new SocatContainer().withNetwork(network).withTarget(2000, "kafka", 19092);
+            // }
+            // registerListenerAndAdvertisedListener {
+            RedpandaContainer kafka = new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v23.1.7")
+                .withListener("kafka:19092", () -> socat.getHost() + ":" + socat.getMappedPort(2000))
+                .withNetwork(network)
+            // }
+        ) {
+            socat.start();
+            kafka.start();
+            // produceConsumeMessageFromProxy {
+            String bootstrapServers = String.format("%s:%s", socat.getHost(), socat.getMappedPort(2000));
+            testKafkaFunctionality(bootstrapServers);
+            // }
+        }
+    }
+
+    @Test
+    void testUsageWithListenerAndSasl() throws Exception {
         final String username = "panda";
         final String password = "pandapass";
         final String algorithm = "SCRAM-SHA-256";
@@ -153,9 +198,9 @@ public class RedpandaContainerTest extends AbstractRedpanda {
                 .enableAuthorization()
                 .enableSasl()
                 .withSuperuser("panda")
-                .withListener(() -> "my-panda:29092")
+                .withListener("my-panda:29092")
                 .withNetwork(network);
-            GenericContainer<?> kcat = new GenericContainer<>("confluentinc/cp-kcat:7.4.1")
+            GenericContainer<?> kcat = new GenericContainer<>("confluentinc/cp-kcat:7.9.0")
                 .withCreateContainerCmdModifier(cmd -> {
                     cmd.withEntrypoint("sh");
                 })
@@ -221,7 +266,7 @@ public class RedpandaContainerTest extends AbstractRedpanda {
 
     @SneakyThrows
     @Test
-    public void enableSaslWithSuccessfulTopicCreation() {
+    void enableSaslWithSuccessfulTopicCreation() {
         try (
             // security {
             RedpandaContainer redpanda = new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v23.1.7")
@@ -244,7 +289,7 @@ public class RedpandaContainerTest extends AbstractRedpanda {
     }
 
     @Test
-    public void enableSaslWithUnsuccessfulTopicCreation() {
+    void enableSaslWithUnsuccessfulTopicCreation() {
         try (
             RedpandaContainer redpanda = new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v23.1.7")
                 .enableAuthorization()
@@ -268,7 +313,7 @@ public class RedpandaContainerTest extends AbstractRedpanda {
     }
 
     @Test
-    public void enableSaslAndWithAuthenticationError() {
+    void enableSaslAndWithAuthenticationError() {
         try (
             RedpandaContainer redpanda = new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v23.1.7")
                 .enableAuthorization()
@@ -290,7 +335,7 @@ public class RedpandaContainerTest extends AbstractRedpanda {
     }
 
     @Test
-    public void schemaRegistryWithHttpBasic() {
+    void schemaRegistryWithHttpBasic() {
         try (
             RedpandaContainer redpanda = new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v23.1.7")
                 .enableSchemaRegistryHttpBasicAuth()
@@ -317,7 +362,7 @@ public class RedpandaContainerTest extends AbstractRedpanda {
 
     @SneakyThrows
     @Test
-    public void testRestProxy() {
+    void testRestProxy() {
         try (RedpandaContainer redpanda = new RedpandaContainer("docker.redpanda.com/redpandadata/redpanda:v23.1.7")) {
             redpanda.start();
 

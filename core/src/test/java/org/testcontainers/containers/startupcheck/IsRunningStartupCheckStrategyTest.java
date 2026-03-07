@@ -1,24 +1,24 @@
 package org.testcontainers.containers.startupcheck;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.TestImages;
 import org.testcontainers.containers.GenericContainer;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class IsRunningStartupCheckStrategyTest {
+class IsRunningStartupCheckStrategyTest {
 
     @Test
-    public void testCommandQuickExitSuccess() {
+    void testCommandQuickExitSuccess() {
         try (GenericContainer container = new GenericContainer<>(TestImages.TINY_IMAGE).withCommand("/bin/true")) {
             container.start(); // should start with no Exception
         }
     }
 
     @Test
-    @Ignore("This test can fail to throw an AssertionError if the container doesn't fail quickly enough")
-    public void testCommandQuickExitFailure() {
+    @Disabled("This test can fail to throw an AssertionError if the container doesn't fail quickly enough")
+    void testCommandQuickExitFailure() {
         try (GenericContainer container = new GenericContainer<>(TestImages.TINY_IMAGE).withCommand("/bin/false")) {
             assertThatThrownBy(container::start)
                 .hasStackTraceContaining("Container startup failed")
@@ -27,7 +27,7 @@ public class IsRunningStartupCheckStrategyTest {
     }
 
     @Test
-    public void testCommandStaysRunning() {
+    void testCommandStaysRunning() {
         try (
             GenericContainer container = new GenericContainer<>(TestImages.TINY_IMAGE).withCommand("/bin/sleep", "60")
         ) {

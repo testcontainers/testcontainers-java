@@ -1,8 +1,7 @@
 package org.testcontainers.containers;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.Collections;
 import java.util.List;
@@ -12,10 +11,8 @@ import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@RunWith(Parameterized.class)
-public class ContainerStateTest {
+class ContainerStateTest {
 
-    @Parameterized.Parameters(name = "{0} ({1} -> {2})")
     public static Object[][] params() {
         return new Object[][] {
             new Object[] { "regular mapping", "80:8080/tcp", Collections.singletonList(80) },
@@ -27,17 +24,9 @@ public class ContainerStateTest {
         };
     }
 
-    @Parameterized.Parameter(0)
-    public String name;
-
-    @Parameterized.Parameter(1)
-    public String testSet;
-
-    @Parameterized.Parameter(2)
-    public List<Integer> expectedResult;
-
-    @Test
-    public void test() {
+    @ParameterizedTest(name = "{0} ({1} -> {2})")
+    @MethodSource("params")
+    void test(String name, String testSet, List<Integer> expectedResult) {
         ContainerState containerState = mock(ContainerState.class);
         doCallRealMethod().when(containerState).getBoundPortNumbers();
 

@@ -6,7 +6,7 @@ import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.ConnectionFactoryMetadata;
 import io.r2dbc.spi.ConnectionFactoryOptions;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -28,7 +28,7 @@ public abstract class AbstractR2DBCDatabaseContainerTest<T extends GenericContai
     }
 
     @Test
-    public final void testGetOptions() {
+    void testGetOptions() {
         try (T container = createContainer()) {
             container.start();
 
@@ -38,13 +38,13 @@ public abstract class AbstractR2DBCDatabaseContainerTest<T extends GenericContai
     }
 
     @Test
-    public final void testUrlSupport() {
+    void testUrlSupport() {
         ConnectionFactory connectionFactory = ConnectionFactories.get(createR2DBCUrl());
         runTestQuery(connectionFactory);
     }
 
     @Test
-    public final void testGetMetadata() {
+    void testGetMetadata() {
         ConnectionFactory connectionFactory = ConnectionFactories.get(createR2DBCUrl());
         ConnectionFactoryMetadata metadata = connectionFactory.getMetadata();
         assertThat(metadata).isNotNull();

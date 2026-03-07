@@ -1,9 +1,6 @@
 package org.testcontainers.jdbc;
 
-import org.hamcrest.CoreMatchers;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -11,25 +8,23 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class ContainerDatabaseDriverTest {
+class ContainerDatabaseDriverTest {
 
     private static final String PLAIN_POSTGRESQL_JDBC_URL = "jdbc:postgresql://localhost:5432/test";
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
-
     @Test
-    public void shouldNotTryToConnectToNonMatchingJdbcUrlDirectly() throws SQLException {
+    void shouldNotTryToConnectToNonMatchingJdbcUrlDirectly() throws SQLException {
         ContainerDatabaseDriver driver = new ContainerDatabaseDriver();
         Connection connection = driver.connect(PLAIN_POSTGRESQL_JDBC_URL, new Properties());
         assertThat(connection).isNull();
     }
 
     @Test
-    public void shouldNotTryToConnectToNonMatchingJdbcUrlViaDriverManager() throws SQLException {
-        thrown.expect(SQLException.class);
-        thrown.expectMessage(CoreMatchers.startsWith("No suitable driver found for "));
-        DriverManager.getConnection(PLAIN_POSTGRESQL_JDBC_URL);
+    void shouldNotTryToConnectToNonMatchingJdbcUrlViaDriverManager() throws SQLException {
+        assertThatThrownBy(() -> DriverManager.getConnection(PLAIN_POSTGRESQL_JDBC_URL))
+            .isInstanceOf(SQLException.class)
+            .hasMessageStartingWith("No suitable driver found for ");
     }
 }

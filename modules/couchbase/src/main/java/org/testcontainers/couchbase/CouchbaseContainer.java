@@ -92,8 +92,6 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("couchbase/server");
 
-    private static final String DEFAULT_TAG = "6.5.1";
-
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private static final OkHttpClient HTTP_CLIENT = new OkHttpClient();
@@ -124,15 +122,6 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     private boolean isEnterprise = false;
 
     private boolean hasTlsPorts = false;
-
-    /**
-     * Creates a new couchbase container with the default image and version.
-     * @deprecated use {@link #CouchbaseContainer(DockerImageName)} instead
-     */
-    @Deprecated
-    public CouchbaseContainer() {
-        this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
-    }
 
     /**
      * Creates a new couchbase container with the specified image name.
@@ -342,6 +331,13 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
     }
 
     @Override
+    protected void containerIsStarting(InspectContainerResponse containerInfo, boolean reused) {
+        if (!reused) {
+            containerIsStarting(containerInfo);
+        }
+    }
+
+    @Override
     protected void containerIsStarting(final InspectContainerResponse containerInfo) {
         logger().debug("Couchbase container is starting, performing configuration.");
 
@@ -356,6 +352,13 @@ public class CouchbaseContainer extends GenericContainer<CouchbaseContainer> {
 
         if (enabledServices.contains(CouchbaseService.INDEX)) {
             timePhase("configureIndexer", this::configureIndexer);
+        }
+    }
+
+    @Override
+    protected void containerIsStarted(InspectContainerResponse containerInfo, boolean reused) {
+        if (!reused) {
+            this.containerIsStarted(containerInfo);
         }
     }
 

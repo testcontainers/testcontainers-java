@@ -1,8 +1,8 @@
 package org.testcontainers.junit;
 
-import org.junit.Assume;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.assertj.core.api.Assumptions;
+import org.junit.jupiter.api.AutoClose;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.TestImages;
 import org.testcontainers.containers.ExecConfig;
 import org.testcontainers.containers.GenericContainer;
@@ -12,17 +12,21 @@ import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ExecInContainerTest {
+class ExecInContainerTest {
 
-    @ClassRule
+    @AutoClose
     public static GenericContainer<?> redis = new GenericContainer<>(TestImages.REDIS_IMAGE).withExposedPorts(6379);
 
+    static {
+        redis.start();
+    }
+
     @Test
-    public void shouldExecuteCommand() throws Exception {
+    void shouldExecuteCommand() throws Exception {
         // The older "lxc" execution driver doesn't support "exec". At the time of writing (2016/03/29),
         // that's the case for CircleCI.
         // Once they resolve the issue, this clause can be removed.
-        Assume.assumeTrue(TestEnvironment.dockerExecutionDriverSupportsExec());
+        Assumptions.assumeThat(TestEnvironment.dockerExecutionDriverSupportsExec()).isTrue();
 
         final GenericContainer.ExecResult result = redis.execInContainer("redis-cli", "role");
         assertThat(result.getStdout())
@@ -33,11 +37,11 @@ public class ExecInContainerTest {
     }
 
     @Test
-    public void shouldExecuteCommandWithUser() throws Exception {
+    void shouldExecuteCommandWithUser() throws Exception {
         // The older "lxc" execution driver doesn't support "exec". At the time of writing (2016/03/29),
         // that's the case for CircleCI.
         // Once they resolve the issue, this clause can be removed.
-        Assume.assumeTrue(TestEnvironment.dockerExecutionDriverSupportsExec());
+        Assumptions.assumeThat(TestEnvironment.dockerExecutionDriverSupportsExec()).isTrue();
 
         final GenericContainer.ExecResult result = redis.execInContainerWithUser("redis", "whoami");
         assertThat(result.getStdout())
@@ -48,8 +52,8 @@ public class ExecInContainerTest {
     }
 
     @Test
-    public void shouldExecuteCommandWithWorkdir() throws Exception {
-        Assume.assumeTrue(TestEnvironment.dockerExecutionDriverSupportsExec());
+    void shouldExecuteCommandWithWorkdir() throws Exception {
+        Assumptions.assumeThat(TestEnvironment.dockerExecutionDriverSupportsExec()).isTrue();
 
         final GenericContainer.ExecResult result = redis.execInContainer(
             ExecConfig.builder().workDir("/opt").command(new String[] { "pwd" }).build()
@@ -58,8 +62,8 @@ public class ExecInContainerTest {
     }
 
     @Test
-    public void shouldExecuteCommandWithEnvVars() throws Exception {
-        Assume.assumeTrue(TestEnvironment.dockerExecutionDriverSupportsExec());
+    void shouldExecuteCommandWithEnvVars() throws Exception {
+        Assumptions.assumeThat(TestEnvironment.dockerExecutionDriverSupportsExec()).isTrue();
 
         final GenericContainer.ExecResult result = redis.execInContainer(
             ExecConfig

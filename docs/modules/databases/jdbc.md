@@ -37,11 +37,11 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 
 #### Using CrateDB
 
-`jdbc:tc:cratedb:5.2.3//localhost:5432/crate`
+`jdbc:tc:cratedb:5.2.3:///databasename`
 
 #### Using DB2
 
-`jdbc:tc:db2:11.5.0.0a//localhost:5432/crate`
+`jdbc:tc:db2:11.5.0.0a:///databasename`
 
 #### Using MariaDB
 
@@ -135,7 +135,7 @@ By default database container is being stopped as soon as last connection is clo
 
  `jdbc:tc:mysql:8.0.36:///databasename?TC_DAEMON=true`
 
-With this parameter database container will keep running even when there're no open connections.
+With this parameter database container will keep running even when there's no open connections.
 
 
 ### Running container with tmpfs options

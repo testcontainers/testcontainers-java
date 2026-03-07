@@ -1,0 +1,7 @@
+description = "Testcontainers :: Pinecone"
+
+dependencies {
+    api project(':testcontainers')
+
+    testImplementation 'io.pinecone:pinecone-client:3.1.0'
+}

@@ -6,16 +6,16 @@ import io.minio.MinioClient;
 import io.minio.StatObjectArgs;
 import io.minio.StatObjectResponse;
 import io.minio.UploadObjectArgs;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.net.URL;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class MinIOContainerTest {
+class MinIOContainerTest {
 
     @Test
-    public void testBasicUsage() throws Exception {
+    void testBasicUsage() throws Exception {
         try (
             // minioContainer {
             MinIOContainer container = new MinIOContainer("minio/minio:RELEASE.2023-09-04T19-57-37Z");
@@ -57,7 +57,7 @@ public class MinIOContainerTest {
     }
 
     @Test
-    public void testDefaultUserPassword() {
+    void testDefaultUserPassword() {
         try (MinIOContainer container = new MinIOContainer("minio/minio:RELEASE.2023-09-04T19-57-37Z")) {
             container.start();
             assertThat(container.getUserName()).isEqualTo("minioadmin");
@@ -66,7 +66,7 @@ public class MinIOContainerTest {
     }
 
     @Test
-    public void testOverwriteUserPassword() {
+    void testOverwriteUserPassword() {
         try (
             // minioOverrides {
             MinIOContainer container = new MinIOContainer("minio/minio:RELEASE.2023-09-04T19-57-37Z")

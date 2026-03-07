@@ -1,7 +1,7 @@
 package org.testcontainers.jdbc;
 
 import com.google.common.base.Throwables;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -12,10 +12,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
-public class MissingJdbcDriverTest {
+class MissingJdbcDriverTest {
 
     @Test
-    public void shouldFailFastIfNoDriverFound() {
+    void shouldFailFastIfNoDriverFound() {
         final MissingDriverContainer container = new MissingDriverContainer();
 
         try {

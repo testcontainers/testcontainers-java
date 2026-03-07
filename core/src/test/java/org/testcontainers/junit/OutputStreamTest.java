@@ -1,7 +1,9 @@
 package org.testcontainers.junit;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.TestImages;
@@ -21,16 +23,26 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 /**
  * Simple test for following container output.
  */
-public class OutputStreamTest {
-
-    @Rule
-    public GenericContainer container = new GenericContainer(TestImages.ALPINE_IMAGE)
-        .withCommand("ping -c 5 127.0.0.1");
+class OutputStreamTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OutputStreamTest.class);
 
-    @Test(timeout = 60_000L)
-    public void testFetchStdout() throws TimeoutException {
+    public GenericContainer container = new GenericContainer(TestImages.ALPINE_IMAGE)
+        .withCommand("ping -c 5 127.0.0.1");
+
+    @BeforeEach
+    void setUp() {
+        container.start();
+    }
+
+    @AfterEach
+    void tearDown() {
+        container.stop();
+    }
+
+    @Test
+    @Timeout(value = 60)
+    void testFetchStdout() throws TimeoutException {
         WaitingConsumer consumer = new WaitingConsumer();
 
         container.followOutput(consumer, OutputFrame.OutputType.STDOUT);
@@ -42,8 +54,9 @@ public class OutputStreamTest {
         );
     }
 
-    @Test(timeout = 60_000L)
-    public void testFetchStdoutWithTimeout() {
+    @Test
+    @Timeout(value = 60)
+    void testFetchStdoutWithTimeout() {
         WaitingConsumer consumer = new WaitingConsumer();
 
         container.followOutput(consumer, OutputFrame.OutputType.STDOUT);
@@ -65,8 +78,9 @@ public class OutputStreamTest {
             .isInstanceOf(TimeoutException.class);
     }
 
-    @Test(timeout = 60_000L)
-    public void testFetchStdoutWithNoLimit() throws TimeoutException {
+    @Test
+    @Timeout(value = 60)
+    void testFetchStdoutWithNoLimit() throws TimeoutException {
         WaitingConsumer consumer = new WaitingConsumer();
 
         container.followOutput(consumer, OutputFrame.OutputType.STDOUT);
@@ -76,8 +90,9 @@ public class OutputStreamTest {
         });
     }
 
-    @Test(timeout = 60_000L)
-    public void testLogConsumer() throws TimeoutException {
+    @Test
+    @Timeout(value = 60)
+    void testLogConsumer() throws TimeoutException {
         WaitingConsumer waitingConsumer = new WaitingConsumer();
         Slf4jLogConsumer logConsumer = new Slf4jLogConsumer(LOGGER);
 
@@ -89,8 +104,9 @@ public class OutputStreamTest {
         });
     }
 
-    @Test(timeout = 60_000L)
-    public void testToStringConsumer() throws TimeoutException {
+    @Test
+    @Timeout(value = 60)
+    void testToStringConsumer() throws TimeoutException {
         WaitingConsumer waitingConsumer = new WaitingConsumer();
         ToStringConsumer toStringConsumer = new ToStringConsumer();
 

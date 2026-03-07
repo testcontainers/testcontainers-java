@@ -1,7 +1,7 @@
 package com.example.kafkacluster;
 
 import org.apache.kafka.common.Uuid;
-import org.testcontainers.utility.ducttape.Unreliables;
+import org.awaitility.Awaitility;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.KafkaContainer;
@@ -11,9 +11,10 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
 import java.util.Collection;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class KafkaContainerKraftCluster implements Startable {
 
@@ -24,12 +25,14 @@ public class KafkaContainerKraftCluster implements Startable {
     private final Collection<KafkaContainer> brokers;
 
     public KafkaContainerKraftCluster(String confluentPlatformVersion, int brokersNum, int internalTopicsRf) {
-        if (brokersNum < 0) {
+        if (brokersNum <= 0) {
             throw new IllegalArgumentException("brokersNum '" + brokersNum + "' must be greater than 0");
         }
-        if (internalTopicsRf < 0 || internalTopicsRf > brokersNum) {
+        if (internalTopicsRf <= 0 || internalTopicsRf > brokersNum) {
             throw new IllegalArgumentException(
-                "internalTopicsRf '" + internalTopicsRf + "' must be less than brokersNum and greater than 0"
+                "internalTopicsRf '" +
+                internalTopicsRf +
+                "' must be less than or equal to brokersNum and greater than 0"
             );
         }
 
@@ -79,10 +82,10 @@ public class KafkaContainerKraftCluster implements Startable {
         // Needs to start all the brokers at once
         brokers.parallelStream().forEach(GenericContainer::start);
 
-        Unreliables.retryUntilTrue(
-            30,
-            TimeUnit.SECONDS,
-            () -> {
+        Awaitility
+            .await()
+            .atMost(Duration.ofSeconds(30))
+            .untilAsserted(() -> {
                 Container.ExecResult result =
                     this.brokers.stream()
                         .findFirst()
@@ -94,13 +97,12 @@ public class KafkaContainerKraftCluster implements Startable {
                         );
                 String brokers = result.getStdout().replace("\n", "");
 
-                return brokers != null && Integer.valueOf(brokers) == this.brokersNum;
-            }
-        );
+                assertThat(brokers).asInt().isEqualTo(this.brokersNum);
+            });
     }
 
     @Override
     public void stop() {
-        this.brokers.stream().parallel().forEach(GenericContainer::stop);
+        this.brokers.parallelStream().forEach(GenericContainer::stop);
     }
 }

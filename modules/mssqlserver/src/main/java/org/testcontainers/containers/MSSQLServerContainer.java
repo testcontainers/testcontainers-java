@@ -13,7 +13,10 @@ import java.util.stream.Stream;
  * Supported image: {@code mcr.microsoft.com/mssql/server}
  * <p>
  * Exposed ports: 1433
+ *
+ * @deprecated use {@link org.testcontainers.mssqlserver.MSSQLServerContainer} instead.
  */
+@Deprecated
 public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("mcr.microsoft.com/mssql/server");
@@ -72,7 +75,7 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
 
     @Override
     protected void configure() {
-        // If license was not accepted programatically, check if it was accepted via resource file
+        // If license was not accepted programmatically, check if it was accepted via resource file
         if (!getEnvMap().containsKey("ACCEPT_EULA")) {
             LicenseAcceptance.assertLicenseAccepted(this.getDockerImageName());
             acceptLicense();

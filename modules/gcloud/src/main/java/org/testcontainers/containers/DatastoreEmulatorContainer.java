@@ -9,7 +9,10 @@ import org.testcontainers.utility.DockerImageName;
  * Supported images: {@code gcr.io/google.com/cloudsdktool/google-cloud-cli}, {@code gcr.io/google.com/cloudsdktool/cloud-sdk}
  * <p>
  * Default port is 8081.
+ *
+ * @deprecated use {@link org.testcontainers.gcloud.DatastoreEmulatorContainer} instead.
  */
+@Deprecated
 public class DatastoreEmulatorContainer extends GenericContainer<DatastoreEmulatorContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse(

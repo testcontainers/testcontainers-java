@@ -1,9 +1,16 @@
 name: Set up Build
 description: Sets up Build
+inputs:
+  java-version:
+    description: 'The Java version to set up'
+    required: true
+    default: '17'
 runs:
   using: "composite"
   steps:
     - uses: ./.github/actions/setup-java
+      with:
+        java-version: ${{ inputs.java-version }}
     - name: Clear existing docker image cache
       shell: bash
       run: docker image prune -af

@@ -1,0 +1,8 @@
+description = "Testcontainers :: ScyllaDB"
+
+dependencies {
+    api project(":testcontainers")
+
+    testImplementation 'com.scylladb:java-driver-core:4.19.0.4'
+    testImplementation 'software.amazon.awssdk:dynamodb:2.40.4'
+}

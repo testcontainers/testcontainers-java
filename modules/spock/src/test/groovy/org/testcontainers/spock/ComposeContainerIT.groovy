@@ -2,24 +2,26 @@ package org.testcontainers.spock
 
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.impl.client.HttpClientBuilder
-import org.testcontainers.containers.DockerComposeContainer
+import org.testcontainers.containers.ComposeContainer
 import org.testcontainers.containers.wait.strategy.Wait
+import org.testcontainers.utility.DockerImageName
 import spock.lang.Specification
 
 @Testcontainers
 class ComposeContainerIT extends Specification {
 
-	DockerComposeContainer composeContainer = new DockerComposeContainer(
+	ComposeContainer composeContainer = new ComposeContainer(
+	DockerImageName.parse("docker:25.0.5"),
 	new File("src/test/resources/docker-compose.yml"))
-	.withExposedService("whoami_1", 80, Wait.forHttp("/"))
+	.withExposedService("whoami-1", 80, Wait.forHttp("/"))
 
 	String host
 
 	int port
 
 	def setup() {
-		host = composeContainer.getServiceHost("whoami_1", 80)
-		port = composeContainer.getServicePort("whoami_1", 80)
+		host = composeContainer.getServiceHost("whoami-1", 80)
+		port = composeContainer.getServicePort("whoami-1", 80)
 	}
 
 	def "running compose defined container is accessible on configured port"() {

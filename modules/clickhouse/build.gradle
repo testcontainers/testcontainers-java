@@ -2,9 +2,15 @@ description = "Testcontainers :: JDBC :: ClickHouse"
 
 dependencies {
     api project(':testcontainers')
-    api project(':jdbc')
+    api project(':testcontainers-jdbc')
 
-    testImplementation project(':jdbc-test')
-    testRuntimeOnly 'ru.yandex.clickhouse:clickhouse-jdbc:0.3.2'
-    testImplementation 'org.assertj:assertj-core:3.26.3'
+    compileOnly project(':testcontainers-r2dbc')
+    compileOnly(group: 'com.clickhouse', name: 'clickhouse-r2dbc', version: '0.9.4', classifier: 'http')
+
+    testImplementation project(':testcontainers-jdbc-test')
+    testRuntimeOnly(group: 'com.clickhouse', name: 'clickhouse-jdbc', version: '0.9.4', classifier: 'all')
+
+    testImplementation 'com.clickhouse:client-v2:0.9.4'
+    testImplementation testFixtures(project(':testcontainers-r2dbc'))
+    testRuntimeOnly(group: 'com.clickhouse', name: 'clickhouse-r2dbc', version: '0.9.4', classifier: 'http')
 }

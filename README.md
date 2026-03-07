@@ -2,6 +2,8 @@
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.testcontainers/testcontainers/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.testcontainers/testcontainers)
 
+[![Netlify Status](https://api.netlify.com/api/v1/badges/189f28a2-7faa-42ff-b03c-738142079cc9/deploy-status)](https://app.netlify.com/sites/testcontainers/deploys)
+
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=main&repo=33816473&machine=standardLinux32gb&devcontainer_path=.devcontainer%2Fdevcontainer.json&location=EastUs)
 
 [![Revved up by Develocity](https://img.shields.io/badge/Revved%20up%20by-Develocity-06A0CE?logo=Gradle&labelColor=02303A)](https://ge.testcontainers.org/scans)

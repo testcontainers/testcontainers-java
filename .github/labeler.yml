@@ -55,6 +55,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/cratedb/**/*
+"modules/databend":
+  - changed-files:
+      - any-glob-to-any-file:
+          - modules/databend/**/*
 "modules/db2":
   - changed-files:
     - any-glob-to-any-file:
@@ -103,6 +107,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/kafka/**/*
+"modules/ldap":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/ldap/**/*
 "modules/localstack":
   - changed-files:
     - any-glob-to-any-file:
@@ -164,6 +172,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/orientdb/**/*
+"modules/pinecone":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/pinecone/**/*
 "modules/postgres":
   - changed-files:
     - any-glob-to-any-file:
@@ -196,6 +208,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/redpanda/**/*
+"modules/scylladb":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/scylladb/**/*
 "modules/selenium":
   - changed-files:
     - any-glob-to-any-file:
@@ -228,6 +244,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/trino/**/*
+"modules/typesense":
+  - changed-files:
+      - any-glob-to-any-file:
+          - modules/typesense/**/*
 "modules/vault":
   - changed-files:
     - any-glob-to-any-file:

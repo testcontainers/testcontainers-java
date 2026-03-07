@@ -20,7 +20,7 @@ import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.Cluster;
 import com.couchbase.client.java.Collection;
 import com.couchbase.client.java.json.JsonObject;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.ContainerLaunchException;
 
 import java.time.Duration;
@@ -30,7 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 
-public class CouchbaseContainerTest {
+class CouchbaseContainerTest {
 
     private static final String COUCHBASE_IMAGE_ENTERPRISE = "couchbase/server:enterprise-7.0.3";
 
@@ -41,22 +41,22 @@ public class CouchbaseContainerTest {
     private static final String COUCHBASE_IMAGE_COMMUNITY_RECENT = "couchbase/server:community-7.6.2";
 
     @Test
-    public void testBasicContainerUsageForEnterpriseContainer() {
+    void testBasicContainerUsageForEnterpriseContainer() {
         testBasicContainerUsage(COUCHBASE_IMAGE_ENTERPRISE);
     }
 
     @Test
-    public void testBasicContainerUsageForEnterpriseContainerRecent() {
+    void testBasicContainerUsageForEnterpriseContainerRecent() {
         testBasicContainerUsage(COUCHBASE_IMAGE_ENTERPRISE_RECENT);
     }
 
     @Test
-    public void testBasicContainerUsageForCommunityContainer() {
+    void testBasicContainerUsageForCommunityContainer() {
         testBasicContainerUsage(COUCHBASE_IMAGE_COMMUNITY);
     }
 
     @Test
-    public void testBasicContainerUsageForCommunityContainerRecent() {
+    void testBasicContainerUsageForCommunityContainerRecent() {
         testBasicContainerUsage(COUCHBASE_IMAGE_COMMUNITY_RECENT);
     }
 
@@ -89,7 +89,7 @@ public class CouchbaseContainerTest {
     }
 
     @Test
-    public void testBucketIsFlushableIfEnabled() {
+    void testBucketIsFlushableIfEnabled() {
         BucketDefinition bucketDefinition = new BucketDefinition("mybucket").withFlushEnabled(true);
 
         try (
@@ -119,7 +119,7 @@ public class CouchbaseContainerTest {
      * edition which is not supported.
      */
     @Test
-    public void testFailureIfCommunityUsedWithAnalytics() {
+    void testFailureIfCommunityUsedWithAnalytics() {
         try (
             CouchbaseContainer container = new CouchbaseContainer(COUCHBASE_IMAGE_COMMUNITY)
                 .withEnabledServices(CouchbaseService.KV, CouchbaseService.ANALYTICS)
@@ -136,7 +136,7 @@ public class CouchbaseContainerTest {
      * edition which is not supported.
      */
     @Test
-    public void testFailureIfCommunityUsedWithEventing() {
+    void testFailureIfCommunityUsedWithEventing() {
         try (
             CouchbaseContainer container = new CouchbaseContainer(COUCHBASE_IMAGE_COMMUNITY)
                 .withEnabledServices(CouchbaseService.KV, CouchbaseService.EVENTING)

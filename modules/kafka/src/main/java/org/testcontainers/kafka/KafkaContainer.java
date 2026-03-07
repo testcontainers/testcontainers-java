@@ -2,12 +2,11 @@ package org.testcontainers.kafka;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -29,9 +28,9 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     private static final String STARTER_SCRIPT = "/tmp/testcontainers_start.sh";
 
-    private final Set<String> listeners = new HashSet<>();
+    private final Set<String> listeners = new LinkedHashSet<>();
 
-    private final Set<Supplier<String>> advertisedListeners = new HashSet<>();
+    private final Set<Supplier<String>> advertisedListeners = new LinkedHashSet<>();
 
     public KafkaContainer(String imageName) {
         this(DockerImageName.parse(imageName));
@@ -44,16 +43,13 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         withExposedPorts(KAFKA_PORT);
         withEnv(KafkaHelper.envVars());
 
-        withCommand("sh", "-c", "while [ ! -f " + STARTER_SCRIPT + " ]; do sleep 0.1; done; " + STARTER_SCRIPT);
-        waitingFor(Wait.forLogMessage(".*Transitioning from RECOVERY to RUNNING.*", 1));
+        withCommand(KafkaHelper.COMMAND);
+        waitingFor(KafkaHelper.WAIT_STRATEGY);
     }
 
     @Override
     protected void configure() {
         KafkaHelper.resolveListeners(this, this.listeners);
-
-        String controllerQuorumVoters = String.format("%s@localhost:9094", getEnvMap().get("KAFKA_NODE_ID"));
-        withEnv("KAFKA_CONTROLLER_QUORUM_VOTERS", controllerQuorumVoters);
     }
 
     @Override

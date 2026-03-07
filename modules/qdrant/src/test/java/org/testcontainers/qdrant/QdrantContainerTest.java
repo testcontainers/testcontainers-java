@@ -3,7 +3,7 @@ package org.testcontainers.qdrant;
 import io.qdrant.client.QdrantClient;
 import io.qdrant.client.QdrantGrpcClient;
 import io.qdrant.client.grpc.QdrantOuterClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.images.builder.Transferable;
 
 import java.util.UUID;
@@ -12,10 +12,10 @@ import java.util.concurrent.ExecutionException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class QdrantContainerTest {
+class QdrantContainerTest {
 
     @Test
-    public void shouldReturnVersion() throws ExecutionException, InterruptedException {
+    void shouldReturnVersion() throws ExecutionException, InterruptedException {
         try (
             // qdrantContainer {
             QdrantContainer qdrant = new QdrantContainer("qdrant/qdrant:v1.7.4")
@@ -34,7 +34,7 @@ public class QdrantContainerTest {
     }
 
     @Test
-    public void shouldSetApiKey() throws ExecutionException, InterruptedException {
+    void shouldSetApiKey() throws ExecutionException, InterruptedException {
         String apiKey = UUID.randomUUID().toString();
         try (QdrantContainer qdrant = new QdrantContainer("qdrant/qdrant:v1.7.4").withApiKey(apiKey)) {
             qdrant.start();
@@ -59,7 +59,7 @@ public class QdrantContainerTest {
     }
 
     @Test
-    public void shouldSetApiKeyUsingConfigFile() throws ExecutionException, InterruptedException {
+    void shouldSetApiKeyUsingConfigFile() throws ExecutionException, InterruptedException {
         String apiKey = UUID.randomUUID().toString();
         String configFile = "service:\n    api_key: " + apiKey;
         try (

@@ -7,25 +7,22 @@ import org.testcontainers.utility.DockerImageName;
 /**
  * Testcontainers implementation for Apache Pulsar.
  * <p>
- * Supported image: {@code apachepulsar/pulsar}
+ * Supported images: {@code apachepulsar/pulsar}, {@code apachepulsar/pulsar-all}
  * <p>
  * Exposed ports:
  * <ul>
  *     <li>Pulsar: 6650</li>
  *     <li>HTTP: 8080</li>
  * </ul>
+ *
+ * @deprecated use {@link org.testcontainers.pulsar.PulsarContainer} instead.
  */
+@Deprecated
 public class PulsarContainer extends GenericContainer<PulsarContainer> {
 
     public static final int BROKER_PORT = 6650;
 
     public static final int BROKER_HTTP_PORT = 8080;
-
-    /**
-     * @deprecated The metrics endpoint is no longer being used for the WaitStrategy.
-     */
-    @Deprecated
-    public static final String METRICS_ENDPOINT = "/metrics";
 
     private static final String ADMIN_CLUSTERS_ENDPOINT = "/admin/v2/clusters";
 
@@ -64,7 +61,7 @@ public class PulsarContainer extends GenericContainer<PulsarContainer> {
 
     public PulsarContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DockerImageName.parse("apachepulsar/pulsar"));
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, DockerImageName.parse("apachepulsar/pulsar-all"));
         withExposedPorts(BROKER_PORT, BROKER_HTTP_PORT);
         setWaitStrategy(waitAllStrategy);
     }

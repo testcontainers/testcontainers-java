@@ -1,7 +1,7 @@
 package org.testcontainers.images.builder;
 
 import com.github.dockerjava.api.exception.DockerClientException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 import org.testcontainers.utility.DockerImageName;
@@ -12,12 +12,12 @@ import java.nio.file.Paths;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
-public class DockerignoreTest {
+class DockerignoreTest {
 
     private static final Path INVALID_DOCKERIGNORE_PATH = Paths.get("src/test/resources/dockerfile-build-invalid");
 
     @Test
-    public void testInvalidDockerignore() throws Exception {
+    void testInvalidDockerignore() throws Exception {
         try {
             new ImageFromDockerfile()
                 .withFileFromPath(".", INVALID_DOCKERIGNORE_PATH)
@@ -33,7 +33,7 @@ public class DockerignoreTest {
 
     @SuppressWarnings("resource")
     @Test
-    public void testValidDockerignore() throws Exception {
+    void testValidDockerignore() throws Exception {
         ImageFromDockerfile img = new ImageFromDockerfile()
             .withFileFromPath(".", DockerfileBuildTest.RESOURCE_PATH)
             .withDockerfile(DockerfileBuildTest.RESOURCE_PATH.resolve("Dockerfile-currentdir"));

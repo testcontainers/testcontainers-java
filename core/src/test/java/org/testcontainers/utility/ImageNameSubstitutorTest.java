@@ -1,10 +1,10 @@
 package org.testcontainers.utility;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 import org.testcontainers.containers.GenericContainer;
 
@@ -20,19 +20,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.eq;
 
-public class ImageNameSubstitutorTest {
+@ExtendWith(MockTestcontainersConfigurationExtension.class)
+class ImageNameSubstitutorTest {
 
-    @Rule
-    public TemporaryFolder tempFolder = new TemporaryFolder();
-
-    @Rule
-    public MockTestcontainersConfigurationRule config = new MockTestcontainersConfigurationRule();
+    @TempDir
+    public Path tempFolder;
 
     private ImageNameSubstitutor originalInstance;
 
     private ImageNameSubstitutor originalDefaultImplementation;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         originalInstance = ImageNameSubstitutor.instance;
         originalDefaultImplementation = ImageNameSubstitutor.defaultImplementation;
@@ -46,14 +44,14 @@ public class ImageNameSubstitutorTest {
         Mockito.doReturn("default implementation").when(ImageNameSubstitutor.defaultImplementation).getDescription();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         ImageNameSubstitutor.instance = originalInstance;
         ImageNameSubstitutor.defaultImplementation = originalDefaultImplementation;
     }
 
     @Test
-    public void simpleConfigurationTest() {
+    void simpleConfigurationTest() {
         Mockito
             .doReturn(FakeImageSubstitutor.class.getCanonicalName())
             .when(TestcontainersConfiguration.getInstance())
@@ -68,7 +66,7 @@ public class ImageNameSubstitutorTest {
     }
 
     @Test
-    public void testWorksWithoutConfiguredImplementation() {
+    void testWorksWithoutConfiguredImplementation() {
         Mockito.doReturn(null).when(TestcontainersConfiguration.getInstance()).getImageSubstitutorClassName();
 
         final ImageNameSubstitutor imageNameSubstitutor = ImageNameSubstitutor.instance();
@@ -80,7 +78,7 @@ public class ImageNameSubstitutorTest {
     }
 
     @Test
-    public void testImageNameSubstitutorToString() {
+    void testImageNameSubstitutorToString() {
         Mockito
             .doReturn(FakeImageSubstitutor.class.getCanonicalName())
             .when(TestcontainersConfiguration.getInstance())
@@ -95,8 +93,8 @@ public class ImageNameSubstitutorTest {
     }
 
     @Test
-    public void testImageNameSubstitutorFromServiceLoader() throws IOException {
-        Path tempDir = this.tempFolder.newFolder("image-name-substitutor-test").toPath();
+    void testImageNameSubstitutorFromServiceLoader() throws IOException {
+        Path tempDir = this.tempFolder.resolve("image-name-substitutor-test");
         Path metaInfDir = Paths.get(tempDir.toString(), "META-INF", "services");
         Files.createDirectories(metaInfDir);
 

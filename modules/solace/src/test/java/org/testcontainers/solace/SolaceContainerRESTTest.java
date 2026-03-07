@@ -12,23 +12,23 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
-public class SolaceContainerRESTTest {
+class SolaceContainerRESTTest {
 
     private static final String MESSAGE = "HelloWorld";
 
     private static final String TOPIC_NAME = "Topic/ActualTopic";
 
     @Test
-    public void testSolaceContainer() throws IOException {
+    void testSolaceContainer() throws IOException {
         try (
-            SolaceContainer solaceContainer = new SolaceContainer("solace/solace-pubsub-standard:10.2")
+            SolaceContainer solaceContainer = new SolaceContainer("solace/solace-pubsub-standard:10.25.0")
                 .withTopic(TOPIC_NAME, Service.REST)
                 .withVpn("rest-vpn")
         ) {
@@ -44,7 +44,7 @@ public class SolaceContainerRESTTest {
         request.addHeader(HttpHeaders.CONTENT_TYPE, "text/plain");
         HttpResponse response = client.execute(request);
         if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-            Assert.fail("Cannot send message to solace - " + EntityUtils.toString(response.getEntity()));
+            fail("Cannot send message to solace - " + EntityUtils.toString(response.getEntity()));
         }
         assertThat(EntityUtils.toString(response.getEntity())).isEmpty();
     }

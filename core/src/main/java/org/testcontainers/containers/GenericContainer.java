@@ -51,8 +51,6 @@ import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.lifecycle.Startables;
-import org.testcontainers.lifecycle.TestDescription;
-import org.testcontainers.lifecycle.TestLifecycleAware;
 import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.CommandLine;
 import org.testcontainers.utility.DockerImageName;
@@ -63,7 +61,6 @@ import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.PathUtils;
 import org.testcontainers.utility.ResourceReaper;
 import org.testcontainers.utility.TestcontainersConfiguration;
-import org.testcontainers.utility.ducttape.RateLimiter;
 import org.testcontainers.utility.ducttape.RateLimiterBuilder;
 import org.testcontainers.utility.ducttape.Timeouts;
 import org.testcontainers.utility.ducttape.Unreliables;
@@ -109,7 +106,6 @@ import static org.awaitility.Awaitility.await;
  */
 @Data
 public class GenericContainer<SELF extends GenericContainer<SELF>>
-    extends FailureDetectingExternalResource
     implements Container<SELF>, AutoCloseable, WaitStrategyTarget, Startable {
 
     public static final int CONTAINER_RUNNING_TIMEOUT_SEC = 30;
@@ -193,12 +189,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private List<Consumer<OutputFrame>> logConsumers = new ArrayList<>();
 
     private static final Set<String> AVAILABLE_IMAGE_NAME_CACHE = new HashSet<>();
-
-    private static final RateLimiter DOCKER_CLIENT_RATE_LIMITER = RateLimiterBuilder
-        .newBuilder()
-        .withRate(1, TimeUnit.SECONDS)
-        .withConstantThroughput()
-        .build();
 
     @Nullable
     private Map<String, String> tmpFsMapping;
@@ -559,6 +549,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 } else {
                     logger().error("There are no stdout/stderr logs available for the failed container");
                 }
+                stop();
             }
 
             throw new ContainerLaunchException("Could not create/start container", e);
@@ -631,7 +622,14 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             .map(ContainerNetwork::getNetworkID)
             .ifPresent(networkId -> {
                 if (!Arrays.asList(networkId, "none", "host").contains(networkMode)) {
-                    dockerClient.connectToNetworkCmd().withContainerId(containerId).withNetworkId(networkId).exec();
+                    com.github.dockerjava.api.model.Network network =
+                        this.dockerClient.inspectNetworkCmd().withNetworkId(networkId).exec();
+                    if (!network.getContainers().containsKey(this.containerId)) {
+                        this.dockerClient.connectToNetworkCmd()
+                            .withContainerId(this.containerId)
+                            .withNetworkId(networkId)
+                            .exec();
+                    }
                 }
             });
     }
@@ -838,7 +836,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 withExtraHost(INTERNAL_HOST_HOSTNAME, it.getIpAddress());
             });
 
-        String[] extraHostsArray = extraHosts.stream().toArray(String[]::new);
+        String[] extraHostsArray = extraHosts.stream().distinct().toArray(String[]::new);
         createCommand.withExtraHosts(extraHostsArray);
 
         if (workingDirectory != null) {
@@ -1055,57 +1053,6 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public void addExposedPorts(int... ports) {
         this.containerDef.addExposedTcpPorts(ports);
-    }
-
-    private TestDescription toDescription(Description description) {
-        return new TestDescription() {
-            @Override
-            public String getTestId() {
-                return description.getDisplayName();
-            }
-
-            @Override
-            public String getFilesystemFriendlyName() {
-                return description.getClassName() + "-" + description.getMethodName();
-            }
-        };
-    }
-
-    @Override
-    @Deprecated
-    public Statement apply(Statement base, Description description) {
-        return super.apply(base, description);
-    }
-
-    @Override
-    @Deprecated
-    protected void starting(Description description) {
-        if (this instanceof TestLifecycleAware) {
-            ((TestLifecycleAware) this).beforeTest(toDescription(description));
-        }
-        this.start();
-    }
-
-    @Override
-    @Deprecated
-    protected void succeeded(Description description) {
-        if (this instanceof TestLifecycleAware) {
-            ((TestLifecycleAware) this).afterTest(toDescription(description), Optional.empty());
-        }
-    }
-
-    @Override
-    @Deprecated
-    protected void failed(Throwable e, Description description) {
-        if (this instanceof TestLifecycleAware) {
-            ((TestLifecycleAware) this).afterTest(toDescription(description), Optional.of(e));
-        }
-    }
-
-    @Override
-    @Deprecated
-    protected void finished(Description description) {
-        this.stop();
     }
 
     /**

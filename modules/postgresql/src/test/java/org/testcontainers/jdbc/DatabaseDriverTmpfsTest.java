@@ -1,6 +1,6 @@
 package org.testcontainers.jdbc;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 
@@ -15,10 +15,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  * the mysql module, to avoid circular dependencies.
  * TODO: Move to the jdbc module and either (a) implement a barebones {@link org.testcontainers.containers.JdbcDatabaseContainerProvider} for testing, or (b) refactor into a unit test.
  */
-public class DatabaseDriverTmpfsTest {
+class DatabaseDriverTmpfsTest {
 
     @Test
-    public void testDatabaseHasTmpFsViaConnectionString() throws Exception {
+    void testDatabaseHasTmpFsViaConnectionString() throws Exception {
         final String jdbcUrl = "jdbc:tc:postgresql:9.6.8://hostname/databasename?TC_TMPFS=/testtmpfs:rw";
         try (Connection ignored = DriverManager.getConnection(jdbcUrl)) {
             JdbcDatabaseContainer<?> container = ContainerDatabaseDriver.getContainer(jdbcUrl);

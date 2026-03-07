@@ -1,10 +1,9 @@
 package org.testcontainers.junit;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.ComposeContainer;
 import org.testcontainers.containers.ContainerState;
-import org.testcontainers.containers.DockerComposeContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,14 +14,21 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ComposeContainerTest extends BaseComposeTest {
+class ComposeContainerTest extends BaseComposeTest {
 
-    @Rule
+    // composeContainerConstructor {
     public ComposeContainer environment = new ComposeContainer(
+        DockerImageName.parse("docker:25.0.5"),
         new File("src/test/resources/composev2/compose-test.yml")
     )
         .withExposedService("redis-1", REDIS_PORT)
         .withExposedService("db-1", 3306);
+
+    // }
+
+    ComposeContainerTest() {
+        environment.start();
+    }
 
     @Override
     protected ComposeContainer getEnvironment() {
@@ -30,16 +36,22 @@ public class ComposeContainerTest extends BaseComposeTest {
     }
 
     @Test
-    public void testGetServicePort() {
+    void testGetServiceHostAndPort() {
+        // getServiceHostAndPort {
+        String serviceHost = environment.getServiceHost("redis-1", REDIS_PORT);
         int serviceWithInstancePort = environment.getServicePort("redis-1", REDIS_PORT);
+        // }
+
+        assertThat(serviceHost).as("Service host is not blank").isNotBlank();
         assertThat(serviceWithInstancePort).as("Port is set for service with instance number").isNotNull();
+
         int serviceWithoutInstancePort = environment.getServicePort("redis", REDIS_PORT);
         assertThat(serviceWithoutInstancePort).as("Port is set for service with instance number").isNotNull();
         assertThat(serviceWithoutInstancePort).as("Service ports are the same").isEqualTo(serviceWithInstancePort);
     }
 
     @Test
-    public void shouldRetrieveContainerByServiceName() {
+    void shouldRetrieveContainerByServiceName() {
         String existingServiceName = "db-1";
         Optional<ContainerState> result = environment.getContainerByServiceName(existingServiceName);
         assertThat(result)
@@ -51,7 +63,7 @@ public class ComposeContainerTest extends BaseComposeTest {
     }
 
     @Test
-    public void shouldReturnEmptyResultOnNoneExistingService() {
+    void shouldReturnEmptyResultOnNoneExistingService() {
         String notExistingServiceName = "db-256";
         Optional<ContainerState> result = environment.getContainerByServiceName(notExistingServiceName);
         assertThat(result)
@@ -60,7 +72,7 @@ public class ComposeContainerTest extends BaseComposeTest {
     }
 
     @Test
-    public void shouldCreateContainerWhenFileNotPrefixedWithPath() throws IOException {
+    void shouldCreateContainerWhenFileNotPrefixedWithPath() throws IOException {
         String validYaml =
             "version: '2.2'\n" +
             "services:\n" +
@@ -75,7 +87,8 @@ public class ComposeContainerTest extends BaseComposeTest {
         filePathNotStartWithDotSlash.deleteOnExit();
         Files.write(filePathNotStartWithDotSlash.toPath(), validYaml.getBytes(StandardCharsets.UTF_8));
 
-        final DockerComposeContainer<?> dockerComposeContainer = new DockerComposeContainer<>(
+        final ComposeContainer dockerComposeContainer = new ComposeContainer(
+            DockerImageName.parse("docker:25.0.5"),
             filePathNotStartWithDotSlash
         );
         assertThat(dockerComposeContainer).as("Container created using docker compose file").isNotNull();

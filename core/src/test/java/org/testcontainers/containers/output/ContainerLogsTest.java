@@ -1,18 +1,18 @@
 package org.testcontainers.containers.output;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.TestImages;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ContainerLogsTest {
+class ContainerLogsTest {
 
     @Test
-    @Ignore("fails due to the timing of the shell's decision to flush")
-    public void getLogsReturnsAllLogsToDate() {
+    @Disabled("fails due to the timing of the shell's decision to flush")
+    void getLogsReturnsAllLogsToDate() {
         try (GenericContainer<?> container = shortLivedContainer()) {
             container.start();
 
@@ -22,7 +22,7 @@ public class ContainerLogsTest {
     }
 
     @Test
-    public void getLogsContainsBothOutputTypes() {
+    void getLogsContainsBothOutputTypes() {
         try (GenericContainer<?> container = shortLivedContainer()) {
             container.start();
 
@@ -35,7 +35,7 @@ public class ContainerLogsTest {
     }
 
     @Test
-    public void getLogsReturnsStdOutToDate() {
+    void getLogsReturnsStdOutToDate() {
         try (GenericContainer<?> container = shortLivedContainer()) {
             container.start();
 
@@ -47,7 +47,7 @@ public class ContainerLogsTest {
     }
 
     @Test
-    public void getLogsReturnsStdErrToDate() {
+    void getLogsReturnsStdErrToDate() {
         try (GenericContainer<?> container = shortLivedContainer()) {
             container.start();
 
@@ -59,7 +59,7 @@ public class ContainerLogsTest {
     }
 
     @Test
-    public void getLogsForLongRunningContainer() throws InterruptedException {
+    void getLogsForLongRunningContainer() throws InterruptedException {
         try (GenericContainer<?> container = longRunningContainer()) {
             container.start();
 

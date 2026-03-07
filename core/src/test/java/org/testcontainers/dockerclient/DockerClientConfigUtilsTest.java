@@ -2,19 +2,20 @@ package org.testcontainers.dockerclient;
 
 import com.github.dockerjava.api.DockerClient;
 import org.assertj.core.api.Assumptions;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.testcontainers.DockerClientFactory;
 
 import java.net.URI;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class DockerClientConfigUtilsTest {
+class DockerClientConfigUtilsTest {
 
     DockerClient client = DockerClientFactory.lazyClient();
 
     @Test
-    public void getDockerHostIpAddressShouldReturnLocalhostWhenUnixSocket() {
+    void getDockerHostIpAddressShouldReturnLocalhostWhenUnixSocket() {
         Assumptions.assumeThat(DockerClientConfigUtils.IN_A_CONTAINER).as("in a container").isFalse();
 
         String actual = DockerClientProviderStrategy.resolveDockerHostIpAddress(
@@ -26,7 +27,7 @@ public class DockerClientConfigUtilsTest {
     }
 
     @Test
-    public void getDockerHostIpAddressShouldReturnDockerHostIpWhenHttpsUri() {
+    void getDockerHostIpAddressShouldReturnDockerHostIpWhenHttpsUri() {
         String actual = DockerClientProviderStrategy.resolveDockerHostIpAddress(
             client,
             URI.create("http://12.23.34.45"),
@@ -36,7 +37,7 @@ public class DockerClientConfigUtilsTest {
     }
 
     @Test
-    public void getDockerHostIpAddressShouldReturnDockerHostIpWhenTcpUri() {
+    void getDockerHostIpAddressShouldReturnDockerHostIpWhenTcpUri() {
         String actual = DockerClientProviderStrategy.resolveDockerHostIpAddress(
             client,
             URI.create("tcp://12.23.34.45"),
@@ -46,7 +47,7 @@ public class DockerClientConfigUtilsTest {
     }
 
     @Test
-    public void getDockerHostIpAddressShouldReturnNullWhenUnsupportedUriScheme() {
+    void getDockerHostIpAddressShouldReturnNullWhenUnsupportedUriScheme() {
         String actual = DockerClientProviderStrategy.resolveDockerHostIpAddress(
             client,
             URI.create("gopher://12.23.34.45"),
@@ -55,8 +56,9 @@ public class DockerClientConfigUtilsTest {
         assertThat(actual).isNull();
     }
 
-    @Test(timeout = 5_000)
-    public void getDefaultGateway() {
+    @Test
+    @Timeout(5)
+    void getDefaultGateway() {
         assertThat(DockerClientConfigUtils.getDefaultGateway()).isNotNull();
     }
 }

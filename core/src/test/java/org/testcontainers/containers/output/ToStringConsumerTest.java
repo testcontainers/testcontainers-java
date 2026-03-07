@@ -1,14 +1,15 @@
 package org.testcontainers.containers.output;
 
 import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.testcontainers.containers.Container.ExecResult;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ToStringConsumerTest {
+class ToStringConsumerTest {
 
     private static final String LARGE_PAYLOAD;
 
@@ -22,7 +23,7 @@ public class ToStringConsumerTest {
     }
 
     @Test
-    public void newlines_are_not_added_to_exec_output() throws Exception {
+    void newlines_are_not_added_to_exec_output() throws Exception {
         try (GenericContainer<?> container = new GenericContainer<>("alpine:3.17")) {
             container.withCommand("sleep", "2m");
             container.start();
@@ -32,8 +33,9 @@ public class ToStringConsumerTest {
         }
     }
 
-    @Test(timeout = 60_000L)
-    public void newlines_are_not_added_to_exec_output_with_tty() throws Exception {
+    @Test
+    @Timeout(60)
+    void newlines_are_not_added_to_exec_output_with_tty() throws Exception {
         try (GenericContainer<?> container = new GenericContainer<>("alpine:3.17")) {
             container.withCreateContainerCmdModifier(cmd -> {
                 cmd.withAttachStdin(true).withStdinOpen(true).withTty(true);
@@ -47,7 +49,7 @@ public class ToStringConsumerTest {
     }
 
     @Test
-    public void newlines_are_not_added_to_container_output() {
+    void newlines_are_not_added_to_container_output() {
         try (GenericContainer<?> container = new GenericContainer<>("alpine:3.17")) {
             container.withCommand("echo", "-n", LARGE_PAYLOAD);
             container.setStartupCheckStrategy(new OneShotStartupCheckStrategy());
@@ -60,7 +62,7 @@ public class ToStringConsumerTest {
     }
 
     @Test
-    public void newlines_are_not_added_to_container_output_with_tty() {
+    void newlines_are_not_added_to_container_output_with_tty() {
         try (GenericContainer<?> container = new GenericContainer<>("alpine:3.17")) {
             container.withCreateContainerCmdModifier(cmd -> {
                 cmd.withTty(true);

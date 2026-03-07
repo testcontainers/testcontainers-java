@@ -1,6 +1,7 @@
 package org.testcontainers.images;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.LazyFuture;
@@ -11,17 +12,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class RemoteDockerImageTest {
+class RemoteDockerImageTest {
 
     @Test
-    public void toStringContainsOnlyImageName() {
+    void toStringContainsOnlyImageName() {
         String imageName = Base58.randomString(8).toLowerCase();
         RemoteDockerImage remoteDockerImage = new RemoteDockerImage(DockerImageName.parse(imageName));
         assertThat(remoteDockerImage.toString()).contains("imageName=" + imageName);
     }
 
     @Test
-    public void toStringWithExceptionContainsOnlyImageNameFuture() {
+    void toStringWithExceptionContainsOnlyImageNameFuture() {
         CompletableFuture<String> imageNameFuture = new CompletableFuture<>();
         imageNameFuture.completeExceptionally(new RuntimeException("arbitrary"));
 
@@ -29,8 +30,9 @@ public class RemoteDockerImageTest {
         assertThat(remoteDockerImage.toString()).contains("imageName=java.lang.RuntimeException: arbitrary");
     }
 
-    @Test(timeout = 5000L)
-    public void toStringDoesntResolveImageNameFuture() {
+    @Test
+    @Timeout(5)
+    void toStringDoesntResolveImageNameFuture() {
         CompletableFuture<String> imageNameFuture = new CompletableFuture<>();
 
         // verify that we've set up the test properly
@@ -47,8 +49,9 @@ public class RemoteDockerImageTest {
         assertThat(remoteDockerImage.toString()).contains("imageName=" + imageName);
     }
 
-    @Test(timeout = 5000L)
-    public void toStringDoesntResolveLazyFuture() throws Exception {
+    @Test
+    @Timeout(5)
+    void toStringDoesntResolveLazyFuture() throws Exception {
         String imageName = Base58.randomString(8).toLowerCase();
         AtomicBoolean resolved = new AtomicBoolean(false);
         Future<String> imageNameFuture = new LazyFuture<String>() {

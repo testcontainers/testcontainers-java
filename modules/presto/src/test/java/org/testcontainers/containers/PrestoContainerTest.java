@@ -1,6 +1,6 @@
 package org.testcontainers.containers;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.PrestoTestImages;
 
 import java.sql.Connection;
@@ -14,10 +14,10 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class PrestoContainerTest {
+class PrestoContainerTest {
 
     @Test
-    public void testSimple() throws Exception {
+    void testSimple() throws Exception {
         try (PrestoContainer<?> prestoSql = new PrestoContainer<>(PrestoTestImages.PRESTO_TEST_IMAGE)) {
             prestoSql.start();
             try (
@@ -35,7 +35,7 @@ public class PrestoContainerTest {
     }
 
     @Test
-    public void testSpecificVersion() throws Exception {
+    void testSpecificVersion() throws Exception {
         try (
             PrestoContainer<?> prestoSql = new PrestoContainer<>(PrestoTestImages.PRESTO_PREVIOUS_VERSION_TEST_IMAGE)
         ) {
@@ -54,7 +54,7 @@ public class PrestoContainerTest {
     }
 
     @Test
-    public void testQueryMemoryAndTpch() throws SQLException {
+    void testQueryMemoryAndTpch() throws SQLException {
         try (PrestoContainer<?> prestoSql = new PrestoContainer<>(PrestoTestImages.PRESTO_TEST_IMAGE)) {
             prestoSql.start();
             try (
@@ -88,7 +88,7 @@ public class PrestoContainerTest {
     }
 
     @Test
-    public void testInitScript() throws Exception {
+    void testInitScript() throws Exception {
         try (PrestoContainer<?> prestoSql = new PrestoContainer<>(PrestoTestImages.PRESTO_TEST_IMAGE)) {
             prestoSql.withInitScript("initial.sql");
             prestoSql.start();
@@ -105,7 +105,7 @@ public class PrestoContainerTest {
     }
 
     @Test
-    public void testTcJdbcUri() throws Exception {
+    void testTcJdbcUri() throws Exception {
         try (
             Connection connection = DriverManager.getConnection(
                 String.format("jdbc:tc:presto:%s://hostname/", PrestoContainer.DEFAULT_TAG)

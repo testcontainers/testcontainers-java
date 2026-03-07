@@ -1,23 +1,13 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
 // https://github.com/microsoft/vscode-dev-containers/tree/v0.241.1/containers/java-8
 {
-	"name": "Java 8",
-    "image": "mcr.microsoft.com/devcontainers/java:1-8-bullseye",
+	"name": "Java 17",
+    "image": "mcr.microsoft.com/devcontainers/java:0-17",
 
 	// Configure tool-specific properties.
 	"customizations": {
 		// Configure properties specific to VS Code.
 		"vscode": {
-			// Set *default* container specific settings.json values on container create.
-			"settings": {
-				"java.import.gradle.java.home": "/usr/local/sdkman/candidates/java/current",
-				"java.configuration.runtimes": [{
-					"default": true,
-					"name": "JavaSE-1.8",
-					"path": "/usr/local/sdkman/candidates/java/current"
-				}]
-			},
-
 			// Add the IDs of extensions you want installed when the container is created.
 			"extensions": [
 				"vscjava.vscode-java-pack"

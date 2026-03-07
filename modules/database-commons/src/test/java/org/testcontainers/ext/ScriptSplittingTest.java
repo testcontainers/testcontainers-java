@@ -1,6 +1,6 @@
 package org.testcontainers.ext;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,10 +10,10 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class ScriptSplittingTest {
+class ScriptSplittingTest {
 
     @Test
-    public void testStringDemarcation() {
+    void testStringDemarcation() {
         String script = "SELECT 'foo `bar`'; SELECT 'foo -- `bar`'; SELECT 'foo /* `bar`';";
 
         List<String> expected = Arrays.asList("SELECT 'foo `bar`'", "SELECT 'foo -- `bar`'", "SELECT 'foo /* `bar`'");
@@ -22,7 +22,7 @@ public class ScriptSplittingTest {
     }
 
     @Test
-    public void testIssue1547Case1() {
+    void testIssue1547Case1() {
         String script =
             "create database if not exists ttt;\n" +
             "\n" +
@@ -51,7 +51,7 @@ public class ScriptSplittingTest {
     }
 
     @Test
-    public void testIssue1547Case2() {
+    void testIssue1547Case2() {
         String script =
             "CREATE TABLE bar (\n" +
             "  end_time VARCHAR(255)\n" +
@@ -69,7 +69,7 @@ public class ScriptSplittingTest {
     }
 
     @Test
-    public void testSplittingEnquotedSemicolon() {
+    void testSplittingEnquotedSemicolon() {
         String script = "CREATE TABLE `bar;bar` (\n" + "  end_time VARCHAR(255)\n" + ");";
 
         List<String> expected = Arrays.asList("CREATE TABLE `bar;bar` ( end_time VARCHAR(255) )");
@@ -78,7 +78,7 @@ public class ScriptSplittingTest {
     }
 
     @Test
-    public void testUnusualSemicolonPlacement() {
+    void testUnusualSemicolonPlacement() {
         String script = "SELECT 1;;;;;SELECT 2;\n;SELECT 3\n; SELECT 4;\n SELECT 5";
 
         List<String> expected = Arrays.asList("SELECT 1", "SELECT 2", "SELECT 3", "SELECT 4", "SELECT 5");
@@ -87,7 +87,7 @@ public class ScriptSplittingTest {
     }
 
     @Test
-    public void testCommentedSemicolon() {
+    void testCommentedSemicolon() {
         String script =
             "CREATE TABLE bar (\n" + "  foo VARCHAR(255)\n" + "); \nDROP PROCEDURE IF EXISTS -- ;\n" + "    count_foo";
 
@@ -100,7 +100,7 @@ public class ScriptSplittingTest {
     }
 
     @Test
-    public void testStringEscaping() {
+    void testStringEscaping() {
         String script =
             "SELECT \"a /* string literal containing comment characters like -- here\";\n" +
             "SELECT \"a 'quoting' \\\"scenario ` involving BEGIN keyword\\\" here\";\n" +
@@ -116,7 +116,7 @@ public class ScriptSplittingTest {
     }
 
     @Test
-    public void testBlockCommentExclusion() {
+    void testBlockCommentExclusion() {
         String script = "INSERT INTO bar (foo) /* ; */ VALUES ('hello world');";
 
         List<String> expected = Arrays.asList("INSERT INTO bar (foo) VALUES ('hello world')");
@@ -125,7 +125,7 @@ public class ScriptSplittingTest {
     }
 
     @Test
-    public void testBeginEndKeywordCorrectDetection() {
+    void testBeginEndKeywordCorrectDetection() {
         String script =
             "INSERT INTO something_end (begin_with_the_token, another_field) /*end*/ VALUES /* end */ (' begin ', `end`)-- begin\n;";
 
@@ -137,7 +137,7 @@ public class ScriptSplittingTest {
     }
 
     @Test
-    public void testCommentInStrings() {
+    void testCommentInStrings() {
         String script =
             "CREATE TABLE bar (foo VARCHAR(255));\n" +
             "\n" +
@@ -161,7 +161,7 @@ public class ScriptSplittingTest {
     }
 
     @Test
-    public void testMultipleBeginEndDetection() {
+    void testMultipleBeginEndDetection() {
         String script =
             "CREATE TABLE bar (foo VARCHAR(255));\n" +
             "\n" +
@@ -205,7 +205,7 @@ public class ScriptSplittingTest {
     }
 
     @Test
-    public void testProcedureBlock() {
+    void testProcedureBlock() {
         String script =
             "CREATE PROCEDURE count_foo()\n" +
             "  BEGIN\n" +
@@ -264,7 +264,7 @@ public class ScriptSplittingTest {
     }
 
     @Test
-    public void testUnclosedBlockComment() {
+    void testUnclosedBlockComment() {
         String script = "SELECT 'foo `bar`'; /*";
         assertThatThrownBy(() -> doSplit(script, ScriptUtils.DEFAULT_STATEMENT_SEPARATOR))
             .isInstanceOf(ScriptUtils.ScriptParseException.class)
@@ -272,7 +272,7 @@ public class ScriptSplittingTest {
     }
 
     @Test
-    public void testIssue1452Case() {
+    void testIssue1452Case() {
         String script =
             "create table test (text VARCHAR(255));\n" +
             "\n" +
@@ -288,7 +288,7 @@ public class ScriptSplittingTest {
     }
 
     @Test
-    public void testIfLoopBlocks() {
+    void testIfLoopBlocks() {
         String script =
             "BEGIN\n" +
             "    rec_loop: LOOP\n" +
@@ -310,7 +310,7 @@ public class ScriptSplittingTest {
     }
 
     @Test
-    public void testIfLoopBlocksSpecificSeparator() {
+    void testIfLoopBlocksSpecificSeparator() {
         String script =
             "BEGIN\n" +
             "    rec_loop: LOOP\n" +
@@ -336,14 +336,14 @@ public class ScriptSplittingTest {
     }
 
     @Test
-    public void oracleStyleBlocks() {
+    void oracleStyleBlocks() {
         String script = "BEGIN END; /\n" + "BEGIN END;";
         List<String> expected = Arrays.asList("BEGIN END;", "BEGIN END;");
         splitAndCompare(script, expected, "/");
     }
 
     @Test
-    public void testMultiProcedureMySQLScript() {
+    void testMultiProcedureMySQLScript() {
         String script =
             "CREATE PROCEDURE doiterate(p1 INT)\n" +
             "  BEGIN\n" +
@@ -398,7 +398,7 @@ public class ScriptSplittingTest {
     }
 
     @Test
-    public void testDollarQuotedStrings() {
+    void testDollarQuotedStrings() {
         String script =
             "CREATE FUNCTION f ()\n" +
             "RETURNS INT\n" +
@@ -418,7 +418,7 @@ public class ScriptSplittingTest {
     }
 
     @Test
-    public void testNestedDollarQuotedString() {
+    void testNestedDollarQuotedString() {
         //see https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-DOLLAR-QUOTING
         String script =
             "CREATE FUNCTION f() AS $function$\n" +
@@ -439,7 +439,7 @@ public class ScriptSplittingTest {
     }
 
     @Test
-    public void testUnclosedDollarQuotedString() {
+    void testUnclosedDollarQuotedString() {
         String script = "SELECT $tag$ ..... $";
         assertThatThrownBy(() -> doSplit(script, ScriptUtils.DEFAULT_STATEMENT_SEPARATOR))
             .isInstanceOf(ScriptUtils.ScriptParseException.class)
@@ -470,12 +470,12 @@ public class ScriptSplittingTest {
     }
 
     @Test
-    public void testIgnoreDelimitersInLiteralsAndComments() {
+    void testIgnoreDelimitersInLiteralsAndComments() {
         assertThat(ScriptUtils.containsSqlScriptDelimiters("'@' /*@*/ \"@\" $tag$@$tag$ --@", "@")).isFalse();
     }
 
     @Test
-    public void testContainsDelimiters() {
+    void testContainsDelimiters() {
         assertThat(ScriptUtils.containsSqlScriptDelimiters("'@' /*@*/ @ \"@\" --@", "@")).isTrue();
     }
 }

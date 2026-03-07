@@ -31,7 +31,6 @@ import java.io.File;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
-import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
@@ -207,17 +206,15 @@ public abstract class DockerClientProviderStrategy {
         }
 
         try (Socket socket = socketProvider.call()) {
-            Duration timeout = Duration.ofMillis(200);
             Awaitility
                 .await()
-                .atMost(TestcontainersConfiguration.getInstance().getClientPingTimeout(), TimeUnit.SECONDS)
-                .pollInterval(timeout)
+                .atMost(TestcontainersConfiguration.getInstance().getClientPingTimeout(), TimeUnit.SECONDS) // timeout after configured duration
+                .pollInterval(Duration.ofMillis(200)) // check state every 200ms
                 .pollDelay(Duration.ofSeconds(0)) // start checking immediately
-                .ignoreExceptionsInstanceOf(SocketTimeoutException.class)
-                .untilAsserted(() -> socket.connect(socketAddress, (int) timeout.toMillis()));
+                .untilAsserted(() -> socket.connect(socketAddress));
             return true;
         } catch (Exception e) {
-            log.warn("DOCKER_HOST {} is not listening", dockerHost);
+            log.warn("DOCKER_HOST {} is not listening", dockerHost, e);
             return false;
         }
     }
@@ -404,21 +401,34 @@ public abstract class DockerClientProviderStrategy {
                 throw new IllegalArgumentException("Unknown transport type '" + transportType + "'");
         }
 
-        DefaultDockerClientConfig.Builder configBuilder = DefaultDockerClientConfig.createDefaultConfigBuilder();
+        DefaultDockerClientConfig.Builder configBuilder = DefaultDockerClientConfig
+            .createDefaultConfigBuilder()
+            .withDockerHost(transportConfig.getDockerHost().toString());
 
-        if (configBuilder.build().getApiVersion() == RemoteApiVersion.UNKNOWN_VERSION) {
-            configBuilder.withApiVersion(RemoteApiVersion.VERSION_1_32);
-        }
         Map<String, String> headers = new HashMap<>();
         headers.put("x-tc-sid", DockerClientFactory.SESSION_ID);
         headers.put("User-Agent", String.format("tc-java/%s", DockerClientFactory.TESTCONTAINERS_VERSION));
 
-        return DockerClientImpl.getInstance(
-            new AuthDelegatingDockerClientConfig(
-                configBuilder.withDockerHost(transportConfig.getDockerHost().toString()).build()
-            ),
-            new HeadersAddingDockerHttpClient(dockerHttpClient, headers)
-        );
+        try {
+            if (configBuilder.build().getApiVersion() == RemoteApiVersion.UNKNOWN_VERSION) {
+                configBuilder.withApiVersion(RemoteApiVersion.VERSION_1_44);
+            }
+            DockerClient client = DockerClientImpl.getInstance(
+                new AuthDelegatingDockerClientConfig(configBuilder.build()),
+                new HeadersAddingDockerHttpClient(dockerHttpClient, headers)
+            );
+            log.debug("Pinging Docker API version 1.44.");
+            client.pingCmd().exec();
+            return client;
+        } catch (Exception ex) {
+            log.debug("Fallback to Docker API version 1.32.");
+            return DockerClientImpl.getInstance(
+                new AuthDelegatingDockerClientConfig(
+                    configBuilder.withApiVersion(RemoteApiVersion.VERSION_1_32).build()
+                ),
+                new HeadersAddingDockerHttpClient(dockerHttpClient, headers)
+            );
+        }
     }
 
     public synchronized String getDockerHostIpAddress() {

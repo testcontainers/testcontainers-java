@@ -1,0 +1,7 @@
+description = "Testcontainers :: LDAP"
+
+dependencies {
+    api project(':testcontainers')
+
+    testImplementation 'com.unboundid:unboundid-ldapsdk:7.0.4'
+}

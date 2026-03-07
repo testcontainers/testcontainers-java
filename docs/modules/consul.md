@@ -21,14 +21,14 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 === "Gradle"
     ```groovy
-    testImplementation "org.testcontainers:consul:{{latest_version}}"
+    testImplementation "org.testcontainers:testcontainers-consul:{{latest_version}}"
     ```
 
 === "Maven"
     ```xml
     <dependency>
         <groupId>org.testcontainers</groupId>
-        <artifactId>consul</artifactId>
+        <artifactId>testcontainers-consul</artifactId>
         <version>{{latest_version}}</version>
         <scope>test</scope>
     </dependency>

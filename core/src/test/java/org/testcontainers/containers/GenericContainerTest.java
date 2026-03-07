@@ -5,16 +5,19 @@ import ch.qos.logback.core.read.ListAppender;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse.ContainerState;
+import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Info;
 import com.github.dockerjava.api.model.Ports;
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.assertj.core.api.Assumptions;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.utility.ducttape.Unreliables;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.TestImages;
@@ -28,9 +31,12 @@ import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
+import java.time.Duration;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -40,13 +46,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
-public class GenericContainerTest {
+class GenericContainerTest {
 
     @Test
-    public void shouldReportOOMAfterWait() {
+    void shouldReportOOMAfterWait() {
         Info info = DockerClientFactory.instance().client().infoCmd().exec();
         // Poor man's rootless Docker detection :D
-        Assumptions.assumeThat(info.getSecurityOptions()).doesNotContain("rootless");
+        Assumptions.assumeThat(info.getSecurityOptions()).doesNotContain("name=rootless");
         try (
             GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
                 .withStartupCheckStrategy(new NoopStartupCheckStrategy())
@@ -69,7 +75,7 @@ public class GenericContainerTest {
     }
 
     @Test
-    public void shouldReportErrorAfterWait() {
+    void shouldReportErrorAfterWait() {
         try (
             GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
                 .withStartupCheckStrategy(new NoopStartupCheckStrategy())
@@ -84,7 +90,7 @@ public class GenericContainerTest {
     }
 
     @Test
-    public void shouldCopyTransferableAsFile() {
+    void shouldCopyTransferableAsFile() {
         try (
             // transferableFile {
             GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
@@ -101,7 +107,7 @@ public class GenericContainerTest {
     }
 
     @Test
-    public void shouldCopyTransferableAsFileWithFileMode() {
+    void shouldCopyTransferableAsFileWithFileMode() {
         try (
             // transferableWithFileMode {
             GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
@@ -118,7 +124,7 @@ public class GenericContainerTest {
     }
 
     @Test
-    public void shouldCopyTransferableAfterMountableFile() {
+    void shouldCopyTransferableAfterMountableFile() {
         try (
             GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
                 .withStartupCheckStrategy(new NoopStartupCheckStrategy())
@@ -134,7 +140,7 @@ public class GenericContainerTest {
     }
 
     @Test
-    public void shouldOnlyPublishExposedPorts() {
+    void shouldOnlyPublishExposedPorts() {
         ImageFromDockerfile image = new ImageFromDockerfile("publish-multiple")
             .withDockerfileFromBuilder(builder -> {
                 builder
@@ -170,7 +176,7 @@ public class GenericContainerTest {
     }
 
     @Test
-    public void shouldWaitUntilExposedPortIsMapped() {
+    void shouldWaitUntilExposedPortIsMapped() {
         ImageFromDockerfile image = new ImageFromDockerfile("publish-multiple")
             .withDockerfileFromBuilder(builder -> {
                 builder
@@ -192,7 +198,7 @@ public class GenericContainerTest {
     }
 
     @Test
-    public void testArchitectureCheck() {
+    void testArchitectureCheck() {
         assumeThat(DockerClientFactory.instance().client().versionCmd().exec().getArch()).isNotEqualTo("amd64");
         // Choose an image that is *different* from the server architecture--this ensures we always get a warning.
         final String image;
@@ -227,7 +233,7 @@ public class GenericContainerTest {
     }
 
     @Test
-    public void shouldReturnTheProvidedImage() {
+    void shouldReturnTheProvidedImage() {
         GenericContainer container = new GenericContainer(TestImages.REDIS_IMAGE);
         assertThat(container.getImage().get()).isEqualTo("redis:6-alpine");
         container.setImage(new RemoteDockerImage(TestImages.ALPINE_IMAGE));
@@ -235,7 +241,7 @@ public class GenericContainerTest {
     }
 
     @Test
-    public void shouldContainDefaultNetworkAlias() {
+    void shouldContainDefaultNetworkAlias() {
         try (GenericContainer<?> container = new GenericContainer<>("testcontainers/helloworld:1.1.0")) {
             container.start();
             assertThat(container.getNetworkAliases()).hasSize(1);
@@ -243,7 +249,7 @@ public class GenericContainerTest {
     }
 
     @Test
-    public void shouldContainDefaultNetworkAliasWhenUsingGenericContainer() {
+    void shouldContainDefaultNetworkAliasWhenUsingGenericContainer() {
         try (HelloWorldContainer container = new HelloWorldContainer("testcontainers/helloworld:1.1.0")) {
             container.start();
             assertThat(container.getNetworkAliases()).hasSize(1);
@@ -251,7 +257,7 @@ public class GenericContainerTest {
     }
 
     @Test
-    public void shouldContainDefaultNetworkAliasWhenUsingContainerDef() {
+    void shouldContainDefaultNetworkAliasWhenUsingContainerDef() {
         try (TcHelloWorldContainer container = new TcHelloWorldContainer("testcontainers/helloworld:1.1.0")) {
             container.start();
             assertThat(container.getNetworkAliases()).hasSize(1);
@@ -259,7 +265,7 @@ public class GenericContainerTest {
     }
 
     @Test
-    public void shouldRespectWaitStrategy() {
+    void shouldRespectWaitStrategy() {
         try (
             HelloWorldLogStrategyContainer container = new HelloWorldLogStrategyContainer(
                 "testcontainers/helloworld:1.1.0"
@@ -271,6 +277,63 @@ public class GenericContainerTest {
                 .extracting("regEx", "times")
                 .containsExactly(".*Starting server on port.*", 1);
         }
+    }
+
+    @Test
+    void testStartupAttemptsDoesNotLeaveContainersRunningWhenWrongWaitStrategyIsUsed() {
+        try (
+            GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
+                .withLabel("waitstrategy", "wrong")
+                .withStartupAttempts(3)
+                .waitingFor(
+                    Wait.forLogMessage("this text does not exist in logs", 1).withStartupTimeout(Duration.ofMillis(1))
+                )
+                .withCommand("tail", "-f", "/dev/null");
+        ) {
+            assertThatThrownBy(container::start).hasStackTraceContaining("Retry limit hit with exception");
+        }
+        assertThat(reportLeakedContainers()).isEmpty();
+    }
+
+    private static Optional<String> reportLeakedContainers() {
+        @SuppressWarnings("resource") // Throws when close is attempted, as this is a global instance.
+        DockerClient dockerClient = DockerClientFactory.lazyClient();
+
+        List<Container> containers = dockerClient
+            .listContainersCmd()
+            .withAncestorFilter(Collections.singletonList("alpine:3.17"))
+            .withLabelFilter(
+                Arrays.asList(
+                    DockerClientFactory.TESTCONTAINERS_SESSION_ID_LABEL + "=" + DockerClientFactory.SESSION_ID,
+                    "waitstrategy=wrong"
+                )
+            )
+            // ignore status "exited" - for example, failed containers after using `withStartupAttempts()`
+            .withStatusFilter(Arrays.asList("created", "restarting", "running", "paused"))
+            .exec()
+            .stream()
+            .collect(ImmutableList.toImmutableList());
+
+        if (containers.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(
+            String.format(
+                "Leaked containers: %s",
+                containers
+                    .stream()
+                    .map(container -> {
+                        return MoreObjects
+                            .toStringHelper("container")
+                            .add("id", container.getId())
+                            .add("image", container.getImage())
+                            .add("imageId", container.getImageId())
+                            .toString();
+                    })
+                    .collect(Collectors.joining(", ", "[", "]"))
+            )
+        );
     }
 
     static class NoopStartupCheckStrategy extends StartupCheckStrategy {

@@ -1,6 +1,6 @@
 package org.testcontainers;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 
 import java.io.File;
@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.fail;
 /**
  * This test forks a new JVM, otherwise it's not possible to reliably diff the threads
  */
-public class DaemonTest {
+class DaemonTest {
 
     public static void main(String[] args) {
         Thread mainThread = Thread.currentThread();
@@ -46,7 +46,7 @@ public class DaemonTest {
     }
 
     @Test
-    public void testThatAllThreadsAreDaemons() throws Exception {
+    void testThatAllThreadsAreDaemons() throws Exception {
         ProcessBuilder processBuilder = new ProcessBuilder(
             new File(System.getProperty("java.home")).toPath().resolve("bin").resolve("java").toString(),
             "-ea",

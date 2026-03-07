@@ -6,7 +6,7 @@ import io.kubernetes.client.openapi.apis.CoreV1Api;
 import io.kubernetes.client.openapi.models.V1NodeList;
 import io.kubernetes.client.util.Config;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -16,15 +16,15 @@ import java.io.StringReader;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Slf4j
-public class OfficialClientK3sContainerTest {
+class OfficialClientK3sContainerTest {
 
     @Test
-    public void shouldStartAndHaveListableNode() throws IOException, ApiException {
+    void shouldStartAndHaveListableNode() throws IOException, ApiException {
         runK3s(DockerImageName.parse("rancher/k3s:v1.21.3-k3s1"));
     }
 
     @Test
-    public void shouldStartAndHaveListableNodeUsingLowerVersion() throws IOException, ApiException {
+    void shouldStartAndHaveListableNodeUsingLowerVersion() throws IOException, ApiException {
         runK3s(DockerImageName.parse("rancher/k3s:v1.20.15-k3s1"));
     }
 

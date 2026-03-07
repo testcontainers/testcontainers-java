@@ -12,7 +12,10 @@ import java.util.Set;
  * Supported image: {@code mysql}
  * <p>
  * Exposed ports: 3306
+ *
+ * @deprecated use {@link org.testcontainers.mysql.MySQLContainer} instead.
  */
+@Deprecated
 public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
 
     public static final String NAME = "mysql";

@@ -1,12 +1,13 @@
 package org.testcontainers.junit;
 
-import org.junit.Assume;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
+import org.assertj.core.api.Assumptions;
+import org.junit.jupiter.api.AutoClose;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.ComposeContainer;
 import org.testcontainers.containers.ContainerState;
 import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.TestEnvironment;
 
 import java.io.File;
@@ -15,24 +16,29 @@ import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ComposePassthroughTest {
+class ComposePassthroughTest {
 
     private final TestWaitStrategy waitStrategy = new TestWaitStrategy();
 
-    @BeforeClass
+    @BeforeAll
     public static void checkVersion() {
-        Assume.assumeTrue(TestEnvironment.dockerApiAtLeast("1.22"));
+        Assumptions.assumeThat(TestEnvironment.dockerApiAtLeast("1.22")).isTrue();
     }
 
-    @Rule
+    @AutoClose
     public ComposeContainer compose = new ComposeContainer(
+        DockerImageName.parse("docker:25.0.5"),
         new File("src/test/resources/v2-compose-test-passthrough.yml")
     )
         .withEnv("foo", "bar")
         .withExposedService("alpine-1", 3000, waitStrategy);
 
+    ComposePassthroughTest() {
+        compose.start();
+    }
+
     @Test
-    public void testContainerInstanceProperties() {
+    void testContainerInstanceProperties() {
         final ContainerState container = waitStrategy.getContainer();
 
         //check environment variable was set

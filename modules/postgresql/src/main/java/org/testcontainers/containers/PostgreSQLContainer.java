@@ -14,7 +14,10 @@ import java.util.Set;
  * Supported images: {@code postgres}, {@code pgvector/pgvector}
  * <p>
  * Exposed ports: 5432
+ *
+ * @deprecated use {@link org.testcontainers.postgresql.PostgreSQLContainer} instead.
  */
+@Deprecated
 public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends JdbcDatabaseContainer<SELF> {
 
     public static final String NAME = "postgresql";

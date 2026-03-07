@@ -62,7 +62,7 @@ Since this module has a dependency onto JUnit Jupiter and on Testcontainers core
 has a dependency onto JUnit 4.x, projects using this module will end up with both, JUnit Jupiter
 and JUnit 4.x in the test classpath.
 
-This extension has only be tested with sequential test execution. Using it with parallel test execution is unsupported and may have unintended side effects.
+This extension has only been tested with sequential test execution. Using it with parallel test execution is unsupported and may have unintended side effects.
 
 ## Adding Testcontainers JUnit 5 support to your project dependencies
 
@@ -70,13 +70,13 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 === "Gradle"
     ```groovy
-    testImplementation "org.testcontainers:junit-jupiter:{{latest_version}}"
+    testImplementation "org.testcontainers:testcontainers-junit-jupiter:{{latest_version}}"
     ```
 === "Maven"
     ```xml
     <dependency>
         <groupId>org.testcontainers</groupId>
-        <artifactId>junit-jupiter</artifactId>
+        <artifactId>testcontainers-junit-jupiter</artifactId>
         <version>{{latest_version}}</version>
         <scope>test</scope>
     </dependency>

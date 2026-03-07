@@ -1,6 +1,6 @@
 package org.testcontainers.kafka;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.AbstractKafka;
 import org.testcontainers.KCatContainer;
 import org.testcontainers.containers.Network;
@@ -8,10 +8,10 @@ import org.testcontainers.containers.SocatContainer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class KafkaContainerTest extends AbstractKafka {
+class KafkaContainerTest extends AbstractKafka {
 
     @Test
-    public void testUsage() throws Exception {
+    void testUsage() throws Exception {
         try ( // constructorWithVersion {
             KafkaContainer kafka = new KafkaContainer("apache/kafka-native:3.8.0")
             // }
@@ -22,12 +22,14 @@ public class KafkaContainerTest extends AbstractKafka {
     }
 
     @Test
-    public void testUsageWithListener() throws Exception {
+    void testUsageWithListener() throws Exception {
         try (
             Network network = Network.newNetwork();
+            // registerListener {
             KafkaContainer kafka = new KafkaContainer("apache/kafka-native:3.8.0")
                 .withListener("kafka:19092")
                 .withNetwork(network);
+            // }
             KCatContainer kcat = new KCatContainer().withNetwork(network)
         ) {
             kafka.start();
@@ -43,7 +45,7 @@ public class KafkaContainerTest extends AbstractKafka {
     }
 
     @Test
-    public void testUsageWithListenerFromProxy() throws Exception {
+    void testUsageWithListenerFromProxy() throws Exception {
         try (
             Network network = Network.newNetwork();
             SocatContainer socat = new SocatContainer().withNetwork(network).withTarget(2000, "kafka", 19092);

@@ -1,6 +1,6 @@
 package org.testcontainers.k6;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.output.WaitingConsumer;
 import org.testcontainers.utility.MountableFile;
 
@@ -8,10 +8,10 @@ import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class K6ContainerTests {
+class K6ContainerTests {
 
     @Test
-    public void k6StandardTest() throws Exception {
+    void k6StandardTest() throws Exception {
         try (
             // standard_k6 {
             K6Container container = new K6Container("grafana/k6:0.49.0")

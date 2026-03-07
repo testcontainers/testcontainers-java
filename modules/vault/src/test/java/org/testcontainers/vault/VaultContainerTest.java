@@ -4,8 +4,9 @@ import com.bettercloud.vault.Vault;
 import com.bettercloud.vault.VaultConfig;
 import com.bettercloud.vault.response.LogicalResponse;
 import io.restassured.response.Response;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 
 import java.util.HashMap;
@@ -18,11 +19,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  * This test shows the pattern to use the VaultContainer @ClassRule for a junit test. It also has tests that ensure
  * the secrets were added correctly by reading from Vault with the CLI, over HTTP and over Client Library.
  */
-public class VaultContainerTest {
+class VaultContainerTest {
 
     private static final String VAULT_TOKEN = "my-root-token";
 
-    @ClassRule
     // vaultContainer {
     public static VaultContainer<?> vaultContainer = new VaultContainer<>("hashicorp/vault:1.13")
         .withVaultToken(VAULT_TOKEN)
@@ -35,8 +35,18 @@ public class VaultContainerTest {
 
     // }
 
+    @BeforeAll
+    static void setUp() {
+        vaultContainer.start();
+    }
+
+    @AfterAll
+    static void tearDown() {
+        vaultContainer.stop();
+    }
+
     @Test
-    public void readFirstSecretPathWithCli() throws Exception {
+    void readFirstSecretPathWithCli() throws Exception {
         GenericContainer.ExecResult result = vaultContainer.execInContainer(
             "vault",
             "kv",
@@ -48,7 +58,7 @@ public class VaultContainerTest {
     }
 
     @Test
-    public void readSecondSecretPathWithCli() throws Exception {
+    void readSecondSecretPathWithCli() throws Exception {
         GenericContainer.ExecResult result = vaultContainer.execInContainer(
             "vault",
             "kv",
@@ -66,7 +76,7 @@ public class VaultContainerTest {
     }
 
     @Test
-    public void readFirstSecretPathOverHttpApi() {
+    void readFirstSecretPathOverHttpApi() {
         Response response = given()
             .header("X-Vault-Token", VAULT_TOKEN)
             .when()
@@ -76,7 +86,7 @@ public class VaultContainerTest {
     }
 
     @Test
-    public void readSecondSecretPathOverHttpApi() throws InterruptedException {
+    void readSecondSecretPathOverHttpApi() throws InterruptedException {
         Response response = given()
             .header("X-Vault-Token", VAULT_TOKEN)
             .when()
@@ -90,7 +100,7 @@ public class VaultContainerTest {
     }
 
     @Test
-    public void readTransitKeyOverHttpApi() throws InterruptedException {
+    void readTransitKeyOverHttpApi() throws InterruptedException {
         Response response = given()
             .header("X-Vault-Token", VAULT_TOKEN)
             .when()
@@ -102,7 +112,7 @@ public class VaultContainerTest {
 
     @Test
     // readWithLibrary {
-    public void readFirstSecretPathOverClientLibrary() throws Exception {
+    void readFirstSecretPathOverClientLibrary() throws Exception {
         final VaultConfig config = new VaultConfig()
             .address(vaultContainer.getHttpHostAddress())
             .token(VAULT_TOKEN)
@@ -118,7 +128,7 @@ public class VaultContainerTest {
     // }
 
     @Test
-    public void readSecondSecretPathOverClientLibrary() throws Exception {
+    void readSecondSecretPathOverClientLibrary() throws Exception {
         final VaultConfig config = new VaultConfig()
             .address(vaultContainer.getHttpHostAddress())
             .token(VAULT_TOKEN)
@@ -135,7 +145,7 @@ public class VaultContainerTest {
     }
 
     @Test
-    public void writeSecretOverClientLibrary() throws Exception {
+    void writeSecretOverClientLibrary() throws Exception {
         final VaultConfig config = new VaultConfig()
             .address(vaultContainer.getHttpHostAddress())
             .token(VAULT_TOKEN)

@@ -1,11 +1,11 @@
 package org.testcontainers.junit;
 
 import com.github.dockerjava.api.model.Network;
-import org.junit.After;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ComposeContainer;
 import org.testcontainers.utility.TestEnvironment;
@@ -25,13 +25,13 @@ public abstract class BaseComposeTest {
 
     private List<String> existingNetworks = new ArrayList<>();
 
-    @BeforeClass
+    @BeforeAll
     public static void checkVersion() {
-        Assume.assumeTrue(TestEnvironment.dockerApiAtLeast("1.22"));
+        Assumptions.assumeTrue(TestEnvironment.dockerApiAtLeast("1.22"));
     }
 
     @Test
-    public void simpleTest() {
+    void simpleTest() {
         Jedis jedis = new Jedis(
             getEnvironment().getServiceHost("redis-1", REDIS_PORT),
             getEnvironment().getServicePort("redis-1", REDIS_PORT)
@@ -45,7 +45,7 @@ public abstract class BaseComposeTest {
     }
 
     @Test
-    public void secondTest() {
+    void secondTest() {
         // used in manual checking for cleanup in between tests
         Jedis jedis = new Jedis(
             getEnvironment().getServiceHost("redis-1", REDIS_PORT),
@@ -58,15 +58,15 @@ public abstract class BaseComposeTest {
 
         assertThat(jedis.get("test")).as("Tests use fresh container instances").isEqualTo("3");
         // if these end up using the same container one of the test methods will fail.
-        // However, @Rule creates a separate DockerComposeContainer instance per test, so this just shouldn't happen
+        // However, @Rule creates a separate ComposeContainer instance per test, so this just shouldn't happen
     }
 
-    @Before
+    @BeforeEach
     public void captureNetworks() {
         existingNetworks.addAll(findAllNetworks());
     }
 
-    @After
+    @AfterEach
     public void verifyNoNetworks() {
         assertThat(findAllNetworks()).as("The networks").isEqualTo(existingNetworks);
     }

@@ -4,6 +4,7 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.PullImageCmd;
 import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.exception.InternalServerErrorException;
+import com.github.dockerjava.api.exception.NotFoundException;
 import com.google.common.util.concurrent.Futures;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -21,6 +22,7 @@ import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.DockerLoggerFactory;
 import org.testcontainers.utility.ImageNameSubstitutor;
 import org.testcontainers.utility.LazyFuture;
+import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -34,7 +36,9 @@ import java.util.concurrent.atomic.AtomicReference;
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 public class RemoteDockerImage extends LazyFuture<String> {
 
-    private static final Duration PULL_RETRY_TIME_LIMIT = Duration.ofMinutes(2);
+    private static final Duration PULL_RETRY_TIME_LIMIT = Duration.ofSeconds(
+        TestcontainersConfiguration.getInstance().getImagePullTimeout()
+    );
 
     @ToString.Exclude
     private Future<DockerImageName> imageNameFuture;
@@ -155,7 +159,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
         throws InterruptedException {
         try {
             return pullImageCmd.exec(new TimeLimitedLoggedPullImageResultCallback(logger)).awaitCompletion();
-        } catch (DockerClientException e) {
+        } catch (DockerClientException | NotFoundException e) {
             // Try to fallback to x86
             return pullImageCmd
                 .withPlatform("linux/amd64")

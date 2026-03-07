@@ -4,9 +4,11 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.lang3.SystemUtils;
-import org.junit.AfterClass;
-import org.junit.Test;
-import org.junit.runners.Parameterized.Parameter;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.Parameter;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -15,8 +17,10 @@ import java.sql.Statement;
 import java.util.EnumSet;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assume.assumeFalse;
+import static org.assertj.core.api.Assumptions.assumeThat;
 
+@ParameterizedClass
+@MethodSource("data")
 public class AbstractJDBCDriverTest {
 
     protected enum Options {
@@ -27,7 +31,7 @@ public class AbstractJDBCDriverTest {
         PmdKnownBroken,
     }
 
-    @Parameter
+    @Parameter(0)
     public String jdbcUrl;
 
     @Parameter(1)
@@ -39,13 +43,13 @@ public class AbstractJDBCDriverTest {
         connection.createStatement().execute("CREATE TABLE my_counter (\n" + "  n INT\n" + ");");
     }
 
-    @AfterClass
+    @AfterAll
     public static void testCleanup() {
         ContainerDatabaseDriver.killContainers();
     }
 
     @Test
-    public void test() throws SQLException {
+    void test() throws SQLException {
         try (HikariDataSource dataSource = getDataSource(jdbcUrl, 1)) {
             performSimpleTest(dataSource);
 
@@ -203,7 +207,7 @@ public class AbstractJDBCDriverTest {
     }
 
     private void performTestForCustomIniFile(HikariDataSource dataSource) throws SQLException {
-        assumeFalse(SystemUtils.IS_OS_WINDOWS);
+        assumeThat(SystemUtils.IS_OS_WINDOWS).isFalse();
         Statement statement = dataSource.getConnection().createStatement();
         statement.execute("SELECT @@GLOBAL.innodb_max_undo_log_size");
         ResultSet resultSet = statement.getResultSet();

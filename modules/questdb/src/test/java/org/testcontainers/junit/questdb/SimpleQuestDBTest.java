@@ -6,7 +6,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.QuestDBTestImages;
 import org.testcontainers.containers.QuestDBContainer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
@@ -20,13 +20,16 @@ import java.sql.SQLException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
-public class SimpleQuestDBTest extends AbstractContainerDatabaseTest {
+class SimpleQuestDBTest extends AbstractContainerDatabaseTest {
 
     private static final String TABLE_NAME = "mytable";
 
     @Test
-    public void testSimple() throws SQLException {
-        try (QuestDBContainer questDB = new QuestDBContainer(QuestDBTestImages.QUESTDB_IMAGE)) {
+    void testSimple() throws SQLException {
+        try ( // container {
+            QuestDBContainer questDB = new QuestDBContainer("questdb/questdb:9.2.2")
+            // }
+        ) {
             questDB.start();
 
             ResultSet resultSet = performQuery(questDB, questDB.getTestQueryString());
@@ -37,7 +40,7 @@ public class SimpleQuestDBTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
-    public void testRest() throws IOException {
+    void testRest() throws IOException {
         try (QuestDBContainer questdb = new QuestDBContainer(QuestDBTestImages.QUESTDB_IMAGE)) {
             questdb.start();
             populateByInfluxLineProtocol(questdb, 1_000);
@@ -57,7 +60,7 @@ public class SimpleQuestDBTest extends AbstractContainerDatabaseTest {
     }
 
     private static void populateByInfluxLineProtocol(QuestDBContainer questdb, int rowCount) {
-        try (Sender sender = Sender.builder().address(questdb.getIlpUrl()).build()) {
+        try (Sender sender = Sender.builder(Sender.Transport.TCP).address(questdb.getIlpUrl()).build()) {
             for (int i = 0; i < rowCount; i++) {
                 sender
                     .table(TABLE_NAME)

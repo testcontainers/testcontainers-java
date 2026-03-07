@@ -1,20 +1,22 @@
 package org.testcontainers.junit;
 
 import io.restassured.RestAssured;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.DockerComposeContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
 import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class DockerComposeContainerWithCopyFilesTest {
+class DockerComposeContainerWithCopyFilesTest {
 
     @Test
-    public void testShouldCopyAllFilesByDefault() throws IOException {
+    void testShouldCopyAllFilesByDefault() throws IOException {
         try (
             DockerComposeContainer environment = new DockerComposeContainer(
+                DockerImageName.parse("docker/compose:1.29.2"),
                 new File("src/test/resources/compose-file-copy-inclusions/compose.yml")
             )
                 .withExposedService("app", 8080)
@@ -27,9 +29,10 @@ public class DockerComposeContainerWithCopyFilesTest {
     }
 
     @Test
-    public void testWithFileCopyInclusionUsingFilePath() throws IOException {
+    void testWithFileCopyInclusionUsingFilePath() throws IOException {
         try (
             DockerComposeContainer environment = new DockerComposeContainer(
+                DockerImageName.parse("docker/compose:1.29.2"),
                 new File("src/test/resources/compose-file-copy-inclusions/compose-root-only.yml")
             )
                 .withExposedService("app", 8080)
@@ -45,9 +48,10 @@ public class DockerComposeContainerWithCopyFilesTest {
     }
 
     @Test
-    public void testWithFileCopyInclusionUsingDirectoryPath() throws IOException {
+    void testWithFileCopyInclusionUsingDirectoryPath() throws IOException {
         try (
             DockerComposeContainer environment = new DockerComposeContainer(
+                DockerImageName.parse("docker/compose:1.29.2"),
                 new File("src/test/resources/compose-file-copy-inclusions/compose-test-only.yml")
             )
                 .withExposedService("app", 8080)

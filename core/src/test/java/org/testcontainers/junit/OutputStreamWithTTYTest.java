@@ -1,9 +1,10 @@
 package org.testcontainers.junit;
 
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.AutoClose;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.testcontainers.TestImages;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.OutputFrame;
@@ -20,19 +21,22 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
 @Slf4j
-public class OutputStreamWithTTYTest {
+@Timeout(10)
+class OutputStreamWithTTYTest {
 
-    @Rule
+    @AutoClose
     public GenericContainer<?> container = new GenericContainer<>(TestImages.ALPINE_IMAGE)
         .withCommand("ls -1")
         .withStartupCheckStrategy(new OneShotStartupCheckStrategy())
         .withCreateContainerCmdModifier(command -> command.withTty(true));
 
-    @Rule
-    public Timeout globalTimeout = Timeout.seconds(10);
+    @BeforeEach
+    void setUp() {
+        container.start();
+    }
 
     @Test
-    public void testFetchStdout() throws TimeoutException {
+    void testFetchStdout() throws TimeoutException {
         WaitingConsumer consumer = new WaitingConsumer();
 
         container.followOutput(consumer, OutputFrame.OutputType.STDOUT);
@@ -47,7 +51,7 @@ public class OutputStreamWithTTYTest {
     }
 
     @Test
-    public void testFetchStdoutWithTimeout() {
+    void testFetchStdoutWithTimeout() {
         WaitingConsumer consumer = new WaitingConsumer();
 
         container.followOutput(consumer, OutputFrame.OutputType.STDOUT);
@@ -70,7 +74,7 @@ public class OutputStreamWithTTYTest {
     }
 
     @Test
-    public void testFetchStdoutWithNoLimit() throws TimeoutException {
+    void testFetchStdoutWithNoLimit() throws TimeoutException {
         WaitingConsumer consumer = new WaitingConsumer();
 
         container.followOutput(consumer, OutputFrame.OutputType.STDOUT);
@@ -81,7 +85,7 @@ public class OutputStreamWithTTYTest {
     }
 
     @Test
-    public void testLogConsumer() throws TimeoutException {
+    void testLogConsumer() throws TimeoutException {
         WaitingConsumer waitingConsumer = new WaitingConsumer();
         Slf4jLogConsumer logConsumer = new Slf4jLogConsumer(log);
 
@@ -94,7 +98,7 @@ public class OutputStreamWithTTYTest {
     }
 
     @Test
-    public void testToStringConsumer() throws TimeoutException {
+    void testToStringConsumer() throws TimeoutException {
         WaitingConsumer waitingConsumer = new WaitingConsumer();
         ToStringConsumer toStringConsumer = new ToStringConsumer();
 

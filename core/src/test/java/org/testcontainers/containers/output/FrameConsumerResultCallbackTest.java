@@ -2,7 +2,7 @@ package org.testcontainers.containers.output;
 
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.StreamType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -12,7 +12,7 @@ import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class FrameConsumerResultCallbackTest {
+class FrameConsumerResultCallbackTest {
 
     private static final String FRAME_PAYLOAD =
         "\u001B[0;32mТест1\u001B[0m\n\u001B[1;33mTest2\u001B[0m\n\u001B[0;31mTest3\u001B[0m";
@@ -20,7 +20,7 @@ public class FrameConsumerResultCallbackTest {
     private static final String LOG_RESULT = "Тест1\nTest2\nTest3";
 
     @Test
-    public void passStderrFrameWithoutColors() throws IOException {
+    void passStderrFrameWithoutColors() throws IOException {
         FrameConsumerResultCallback callback = new FrameConsumerResultCallback();
         ToStringConsumer consumer = new ToStringConsumer();
         callback.addConsumer(OutputFrame.OutputType.STDERR, consumer);
@@ -30,7 +30,7 @@ public class FrameConsumerResultCallbackTest {
     }
 
     @Test
-    public void passStderrFrameWithColors() throws IOException {
+    void passStderrFrameWithColors() throws IOException {
         FrameConsumerResultCallback callback = new FrameConsumerResultCallback();
         ToStringConsumer consumer = new ToStringConsumer().withRemoveAnsiCodes(false);
         callback.addConsumer(OutputFrame.OutputType.STDERR, consumer);
@@ -40,7 +40,7 @@ public class FrameConsumerResultCallbackTest {
     }
 
     @Test
-    public void passStdoutFrameWithoutColors() throws IOException {
+    void passStdoutFrameWithoutColors() throws IOException {
         FrameConsumerResultCallback callback = new FrameConsumerResultCallback();
         ToStringConsumer consumer = new ToStringConsumer();
         callback.addConsumer(OutputFrame.OutputType.STDOUT, consumer);
@@ -50,7 +50,7 @@ public class FrameConsumerResultCallbackTest {
     }
 
     @Test
-    public void passStdoutFrameWithColors() throws IOException {
+    void passStdoutFrameWithColors() throws IOException {
         FrameConsumerResultCallback callback = new FrameConsumerResultCallback();
         ToStringConsumer consumer = new ToStringConsumer().withRemoveAnsiCodes(false);
         callback.addConsumer(OutputFrame.OutputType.STDOUT, consumer);
@@ -60,7 +60,7 @@ public class FrameConsumerResultCallbackTest {
     }
 
     @Test
-    public void basicConsumer() throws IOException {
+    void basicConsumer() throws IOException {
         FrameConsumerResultCallback callback = new FrameConsumerResultCallback();
         BasicConsumer consumer = new BasicConsumer();
         callback.addConsumer(OutputFrame.OutputType.STDOUT, consumer);
@@ -70,7 +70,7 @@ public class FrameConsumerResultCallbackTest {
     }
 
     @Test
-    public void passStdoutNull() throws IOException {
+    void passStdoutNull() throws IOException {
         FrameConsumerResultCallback callback = new FrameConsumerResultCallback();
         ToStringConsumer consumer = new ToStringConsumer().withRemoveAnsiCodes(false);
         callback.addConsumer(OutputFrame.OutputType.STDOUT, consumer);
@@ -80,7 +80,7 @@ public class FrameConsumerResultCallbackTest {
     }
 
     @Test
-    public void passStdoutEmptyLine() throws IOException {
+    void passStdoutEmptyLine() throws IOException {
         String payload = "";
         FrameConsumerResultCallback callback = new FrameConsumerResultCallback();
         ToStringConsumer consumer = new ToStringConsumer().withRemoveAnsiCodes(false);
@@ -91,7 +91,7 @@ public class FrameConsumerResultCallbackTest {
     }
 
     @Test
-    public void passStdoutSingleLine() throws IOException {
+    void passStdoutSingleLine() throws IOException {
         String payload = "Test";
         FrameConsumerResultCallback callback = new FrameConsumerResultCallback();
         ToStringConsumer consumer = new ToStringConsumer().withRemoveAnsiCodes(false);
@@ -102,7 +102,7 @@ public class FrameConsumerResultCallbackTest {
     }
 
     @Test
-    public void passStdoutSingleLineWithNewline() throws IOException {
+    void passStdoutSingleLineWithNewline() throws IOException {
         String payload = "Test\n";
         FrameConsumerResultCallback callback = new FrameConsumerResultCallback();
         ToStringConsumer consumer = new ToStringConsumer().withRemoveAnsiCodes(false);
@@ -113,7 +113,7 @@ public class FrameConsumerResultCallbackTest {
     }
 
     @Test
-    public void passRawFrameWithoutColors() throws TimeoutException, IOException {
+    void passRawFrameWithoutColors() throws TimeoutException, IOException {
         FrameConsumerResultCallback callback = new FrameConsumerResultCallback();
         WaitingConsumer waitConsumer = new WaitingConsumer();
         callback.addConsumer(OutputFrame.OutputType.STDOUT, waitConsumer);
@@ -148,7 +148,7 @@ public class FrameConsumerResultCallbackTest {
     }
 
     @Test
-    public void passRawFrameWithColors() throws TimeoutException, IOException {
+    void passRawFrameWithColors() throws TimeoutException, IOException {
         FrameConsumerResultCallback callback = new FrameConsumerResultCallback();
         WaitingConsumer waitConsumer = new WaitingConsumer().withRemoveAnsiCodes(false);
         callback.addConsumer(OutputFrame.OutputType.STDOUT, waitConsumer);
@@ -203,7 +203,7 @@ public class FrameConsumerResultCallbackTest {
     }
 
     @Test
-    public void reconstructBreakedUnicode() throws IOException {
+    void reconstructBreakedUnicode() throws IOException {
         String payload = "Тест";
         byte[] payloadBytes = payload.getBytes(StandardCharsets.UTF_8);
         byte[] bytes1 = new byte[(int) (payloadBytes.length * 0.6)];

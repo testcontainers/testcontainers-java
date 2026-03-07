@@ -1,16 +1,21 @@
 package org.testcontainers.images.builder.dockerfile.statement;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 
-public class MultiArgsStatementTest extends AbstractStatementTest {
+class MultiArgsStatementTest extends AbstractStatementTest {
+
+    MultiArgsStatementTest(TestInfo testInfo) {
+        super(testInfo);
+    }
 
     @Test
-    public void simpleTest() throws Exception {
+    void simpleTest() {
         assertStatement(new MultiArgsStatement("TEST", "a", "b", "c"));
     }
 
     @Test
-    public void multilineTest() throws Exception {
+    void multilineTest() {
         assertStatement(new MultiArgsStatement("TEST", "some\nmultiline\nargument"));
     }
 }

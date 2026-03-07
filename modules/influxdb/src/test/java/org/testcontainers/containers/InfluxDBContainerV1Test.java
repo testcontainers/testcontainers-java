@@ -5,14 +5,14 @@ import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.Point;
 import org.influxdb.dto.Query;
 import org.influxdb.dto.QueryResult;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.utility.DockerImageName;
 
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class InfluxDBContainerV1Test {
+class InfluxDBContainerV1Test {
 
     private static final String TEST_VERSION = InfluxDBTestUtils.INFLUXDB_V1_TEST_IMAGE.getVersionPart();
 
@@ -23,7 +23,7 @@ public class InfluxDBContainerV1Test {
     private static final String PASSWORD = "new-test-password";
 
     @Test
-    public void createInfluxDBOnlyWithUrlAndCorrectVersion() {
+    void createInfluxDBOnlyWithUrlAndCorrectVersion() {
         try (
             // constructorWithDefaultVariables {
             final InfluxDBContainer<?> influxDBContainer = new InfluxDBContainer<>(
@@ -43,7 +43,7 @@ public class InfluxDBContainerV1Test {
     }
 
     @Test
-    public void getNewInfluxDBWithCorrectVersion() {
+    void getNewInfluxDBWithCorrectVersion() {
         try (
             final InfluxDBContainer<?> influxDBContainer = new InfluxDBContainer<>(
                 InfluxDBTestUtils.INFLUXDB_V1_TEST_IMAGE
@@ -61,7 +61,7 @@ public class InfluxDBContainerV1Test {
     }
 
     @Test
-    public void describeDatabases() {
+    void describeDatabases() {
         try (
             // constructorWithUserPassword {
             final InfluxDBContainer<?> influxDBContainer = new InfluxDBContainer<>(
@@ -82,7 +82,7 @@ public class InfluxDBContainerV1Test {
     }
 
     @Test
-    public void queryForWriteAndRead() {
+    void queryForWriteAndRead() {
         try (
             final InfluxDBContainer<?> influxDBContainer = new InfluxDBContainer<>(
                 InfluxDBTestUtils.INFLUXDB_V1_TEST_IMAGE

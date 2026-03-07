@@ -2,13 +2,11 @@ package org.testcontainers.dockerclient;
 
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.transport.SSLConfig;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.testcontainers.utility.MockTestcontainersConfigurationRule;
+import org.testcontainers.utility.MockTestcontainersConfigurationExtension;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.io.IOException;
@@ -18,6 +16,7 @@ import java.nio.file.Path;
 import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -26,17 +25,14 @@ import static org.mockito.ArgumentMatchers.isNull;
  * Test that we can use Testcontainers configuration file to override settings. We assume that docker-java has test
  * coverage for detection of environment variables (e.g. DOCKER_HOST) and its own properties config file.
  */
-@RunWith(MockitoJUnitRunner.class)
-public class EnvironmentAndSystemPropertyClientProviderStrategyTest {
-
-    @Rule
-    public MockTestcontainersConfigurationRule mockConfig = new MockTestcontainersConfigurationRule();
+@ExtendWith(MockTestcontainersConfigurationExtension.class)
+class EnvironmentAndSystemPropertyClientProviderStrategyTest {
 
     private URI defaultDockerHost;
 
     private com.github.dockerjava.core.SSLConfig defaultSSLConfig;
 
-    @Before
+    @BeforeEach
     public void checkEnvironmentClear() {
         // If docker-java picks up non-default settings from the environment, our test needs to know to expect those
         DefaultDockerClientConfig defaultConfig = DefaultDockerClientConfig.createDefaultConfigBuilder().build();
@@ -45,7 +41,7 @@ public class EnvironmentAndSystemPropertyClientProviderStrategyTest {
     }
 
     @Test
-    public void testWhenConfigAbsent() {
+    void testWhenConfigAbsent() {
         Mockito
             .doReturn("auto")
             .when(TestcontainersConfiguration.getInstance())
@@ -71,7 +67,7 @@ public class EnvironmentAndSystemPropertyClientProviderStrategyTest {
     }
 
     @Test
-    public void testWhenDockerHostPresent() {
+    void testWhenDockerHostPresent() {
         Mockito
             .doReturn("auto")
             .when(TestcontainersConfiguration.getInstance())
@@ -97,7 +93,7 @@ public class EnvironmentAndSystemPropertyClientProviderStrategyTest {
     }
 
     @Test
-    public void testWhenDockerHostAndSSLConfigPresent() throws IOException {
+    void testWhenDockerHostAndSSLConfigPresent() throws IOException {
         Path tempDir = Files.createTempDirectory("testcontainers-test");
         String tempDirPath = tempDir.toAbsolutePath().toString();
 
@@ -128,7 +124,7 @@ public class EnvironmentAndSystemPropertyClientProviderStrategyTest {
     }
 
     @Test
-    public void applicableWhenIgnoringUserPropertiesAndConfigured() {
+    void applicableWhenIgnoringUserPropertiesAndConfigured() {
         Mockito
             .doReturn("autoIgnoringUserProperties")
             .when(TestcontainersConfiguration.getInstance())
@@ -146,7 +142,9 @@ public class EnvironmentAndSystemPropertyClientProviderStrategyTest {
     }
 
     @Test
-    public void notApplicableWhenIgnoringUserPropertiesAndNotConfigured() {
+    void notApplicableWhenIgnoringUserPropertiesAndNotConfigured() {
+        assumeThat(System.getenv("DOCKER_HOST")).isNull();
+
         Mockito
             .doReturn("autoIgnoringUserProperties")
             .when(TestcontainersConfiguration.getInstance())

@@ -27,6 +27,12 @@ redpanda:
       port: ${listener.port}
       authentication_method: ${listener.authentication_method}
 </#list>
+<#list kafka.listeners as listener>
+    - address: ${listener.address}
+      name: ${listener.name}
+      port: ${listener.port}
+      authentication_method: ${listener.authentication_method}
+</#list>
 
   advertised_kafka_api:
     - address: ${ kafkaApi.advertisedHost }
@@ -38,6 +44,11 @@ redpanda:
 <#list kafkaApi.listeners as listener>
     - address: ${listener.address}
       name: ${listener.address}
+      port: ${listener.port}
+</#list>
+<#list kafka.advertisedListeners as listener>
+    - address: ${listener.address}
+      name: ${listener.name}
       port: ${listener.port}
 </#list>
 

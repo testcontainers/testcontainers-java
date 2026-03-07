@@ -4,16 +4,16 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class DockerLoggerFactoryTest {
+class DockerLoggerFactoryTest {
 
     private static final Logger LOGGER = (Logger) DockerLoggerFactory.getLogger("dockerImageName");
 
     @Test
-    public void debugIsNotSwallowedForContainerLogs() {
+    void debugIsNotSwallowedForContainerLogs() {
         ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
         listAppender.start();
         LOGGER.addAppender(listAppender);

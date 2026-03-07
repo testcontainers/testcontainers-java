@@ -1,4 +1,5 @@
 apply plugin: 'maven-publish'
+apply plugin: 'org.jreleaser'
 
 task sourceJar(type: Jar) {
     archiveClassifier.set( 'sources')
@@ -95,10 +96,27 @@ publishing {
     }
     repositories {
         maven {
-            url("https://oss.sonatype.org/service/local/staging/deploy/maven2")
-            credentials {
-                username = System.getenv("OSSRH_USERNAME")
-                password = System.getenv("OSSRH_PASSWORD")
+            url = layout.buildDirectory.dir('staging-deploy')
+        }
+    }
+}
+
+jreleaser {
+    signing {
+        active = 'ALWAYS'
+        armored = true
+    }
+    deploy {
+        maven {
+            mavenCentral {
+                central {
+                    active = 'ALWAYS'
+                    url = 'https://central.sonatype.com/api/v1/publisher'
+                    stagingRepository(layout.buildDirectory.dir("staging-deploy").get().toString())
+                    stage = 'UPLOAD'
+                    applyMavenCentralRules = true
+                    namespace = 'org.testcontainers'
+                }
             }
         }
     }

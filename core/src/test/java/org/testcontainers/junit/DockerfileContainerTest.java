@@ -4,8 +4,8 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AutoClose;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 
@@ -16,9 +16,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Simple test case / demonstration of creating a fresh container image from a Dockerfile DSL
  */
-public class DockerfileContainerTest {
+class DockerfileContainerTest {
 
-    @Rule
+    @AutoClose
     public GenericContainer dslContainer = new GenericContainer(
         new ImageFromDockerfile("tcdockerfile/nginx", false)
             .withDockerfileFromBuilder(builder -> {
@@ -32,7 +32,9 @@ public class DockerfileContainerTest {
         .withExposedPorts(80);
 
     @Test
-    public void simpleDslTest() throws IOException {
+    void simpleDslTest() throws IOException {
+        dslContainer.start();
+
         String address = String.format("http://%s:%s", dslContainer.getHost(), dslContainer.getMappedPort(80));
 
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();

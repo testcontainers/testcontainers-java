@@ -4,9 +4,8 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Event;
 import com.github.dockerjava.core.command.EventsResultCallback;
 import org.jetbrains.annotations.NotNull;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.TestImages;
 import org.testcontainers.containers.GenericContainer;
@@ -20,16 +19,14 @@ import java.util.concurrent.TimeUnit;
 /**
  * Test that event streaming from the {@link DockerClient} works correctly
  */
-public class EventStreamTest {
-
-    @Rule
-    public Timeout timeout = new Timeout(10, TimeUnit.SECONDS);
+@Timeout(10)
+class EventStreamTest {
 
     /**
      * Test that docker events can be streamed from the client.
      */
     @Test
-    public void test() throws IOException, InterruptedException {
+    void test() throws IOException, InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
 
         try (

@@ -45,7 +45,7 @@ Below is an example of how to create the `AdminClient`:
 
 There are scenarios where additional listeners are needed because the consumer/producer can be another
 container in the same network or a different process where the port to connect differs from the default
-exposed port `9092`. E.g [Toxiproxy](../../docs/modules/toxiproxy.md).
+exposed port `9092`. E.g [Toxiproxy](../modules/toxiproxy.md).
 
 <!--codeinclude-->
 [Register additional listener](../../modules/redpanda/src/test/java/org/testcontainers/redpanda/RedpandaContainerTest.java) inside_block:registerListener
@@ -63,19 +63,39 @@ Client using the new registered listener:
 [Produce/Consume via new listener](../../modules/redpanda/src/test/java/org/testcontainers/redpanda/RedpandaContainerTest.java) inside_block:produceConsumeMessage
 <!--/codeinclude-->
 
+The following examples shows how to register a proxy as a new listener in `RedpandaContainer`:
+
+Use `SocatContainer` to create the proxy
+
+<!--codeinclude-->
+[Create Proxy](../../modules/redpanda/src/test/java/org/testcontainers/redpanda/RedpandaContainerTest.java) inside_block:createProxy
+<!--/codeinclude-->
+
+Register the listener and advertised listener
+
+<!--codeinclude-->
+[Register Listener](../../modules/redpanda/src/test/java/org/testcontainers/redpanda/RedpandaContainerTest.java) inside_block:registerListenerAndAdvertisedListener
+<!--/codeinclude-->
+
+Client using the new registered listener:
+
+<!--codeinclude-->
+[Produce/Consume via new listener](../../modules/redpanda/src/test/java/org/testcontainers/redpanda/RedpandaContainerTest.java) inside_block:produceConsumeMessageFromProxy
+<!--/codeinclude-->
+
 ## Adding this module to your project dependencies
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 === "Gradle"
 ```groovy
-testImplementation "org.testcontainers:redpanda:{{latest_version}}"
+testImplementation "org.testcontainers:testcontainers-redpanda:{{latest_version}}"
 ```
 === "Maven"
 ```xml
 <dependency>
     <groupId>org.testcontainers</groupId>
-    <artifactId>redpanda</artifactId>
+    <artifactId>testcontainers-redpanda</artifactId>
     <version>{{latest_version}}</version>
     <scope>test</scope>
 </dependency>

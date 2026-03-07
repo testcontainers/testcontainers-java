@@ -1,20 +1,22 @@
 package org.testcontainers.junit;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.DockerComposeContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
-public class DockerComposeErrorHandlingTest {
+class DockerComposeErrorHandlingTest {
 
     @Test
-    public void simpleTest() {
+    void simpleTest() {
         assertThat(
             catchThrowable(() -> {
                 DockerComposeContainer environment = new DockerComposeContainer(
+                    DockerImageName.parse("docker/compose:1.29.2"),
                     new File("src/test/resources/invalid-compose.yml")
                 )
                     .withExposedService("something", 123);

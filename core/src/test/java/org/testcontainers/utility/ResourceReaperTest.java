@@ -5,7 +5,7 @@ import com.github.dockerjava.api.DockerClient;
 import lombok.SneakyThrows;
 import org.awaitility.Awaitility;
 import org.awaitility.core.ConditionFactory;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.zeroturnaround.exec.ProcessExecutor;
@@ -21,17 +21,17 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ResourceReaperTest {
+class ResourceReaperTest {
 
     @Test
-    public void shouldCleanupWithRyuk() {
+    void shouldCleanupWithRyuk() {
         Map<String, String> labels = runProcess(processExecutor -> {});
 
         assertCleanup(labels);
     }
 
     @Test
-    public void shouldCleanupWithJVM() {
+    void shouldCleanupWithJVM() {
         Map<String, String> labels = runProcess(processExecutor -> {
             processExecutor.environment("TESTCONTAINERS_RYUK_DISABLED", "true");
         });

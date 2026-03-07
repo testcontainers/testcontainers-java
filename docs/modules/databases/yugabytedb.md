@@ -1,11 +1,11 @@
 # YugabyteDB Module
 
-!!! note
-    This module is INCUBATING. While it is ready for use and operational in the current version of Testcontainers, it is possible that it may receive breaking changes in the future. See [our contributing guidelines](/contributing/#incubating-modules) for more information on our incubating modules policy.
+Testcontainers module for [YugabyteDB](https://hub.docker.com/r/yugabytedb/yugabyte)
 
 See [Database containers](./index.md) for documentation and usage that is common to all database container types.
 
-YugabyteDB supports two APIs. 
+YugabyteDB supports two APIs.
+
 - Yugabyte Structured Query Language [YSQL](https://docs.yugabyte.com/latest/api/ysql/) is a fully-relational API that is built by the PostgreSQL code
 - Yugabyte Cloud Query Language [YCQL](https://docs.yugabyte.com/latest/api/ycql/) is a semi-relational SQL API that has its roots in the Cassandra Query Language
 
@@ -17,21 +17,16 @@ YugabyteDB supports two APIs.
 [Creating a YSQL container](../../../modules/yugabytedb/src/test/java/org/testcontainers/junit/yugabytedb/YugabyteDBYSQLTest.java) inside_block:creatingYSQLContainer
 <!--/codeinclude-->
 
+### Testcontainers JDBC URL
 
-<!--codeinclude-->
-[Starting a YSQL container](../../../modules/yugabytedb/src/test/java/org/testcontainers/junit/yugabytedb/YugabyteDBYSQLTest.java) inside_block:startingYSQLContainer
-<!--/codeinclude-->
+`jdbc:tc:yugabyte:2.14.4.0-b26:///databasename`
 
+See [JDBC](./jdbc.md) for documentation.
 
 ### YCQL API
 
 <!--codeinclude-->
 [Creating a YCQL container](../../../modules/yugabytedb/src/test/java/org/testcontainers/junit/yugabytedb/YugabyteDBYCQLTest.java) inside_block:creatingYCQLContainer
-<!--/codeinclude-->
-
-
-<!--codeinclude-->
-[Starting a YCQL container](../../../modules/yugabytedb/src/test/java/org/testcontainers/junit/yugabytedb/YugabyteDBYCQLTest.java) inside_block:startingYCQLContainer
 <!--/codeinclude-->
 
 
@@ -41,13 +36,13 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 === "Gradle"
     ```groovy
-    testImplementation "org.testcontainers:yugabytedb:{{latest_version}}"
+    testImplementation "org.testcontainers:testcontainers-yugabytedb:{{latest_version}}"
     ```
 === "Maven"
     ```xml
     <dependency>
         <groupId>org.testcontainers</groupId>
-        <artifactId>yugabytedb</artifactId>
+        <artifactId>testcontainers-yugabytedb</artifactId>
         <version>{{latest_version}}</version>
         <scope>test</scope>
     </dependency>

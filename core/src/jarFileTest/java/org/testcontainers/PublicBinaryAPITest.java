@@ -2,12 +2,12 @@ package org.testcontainers;
 
 import lombok.RequiredArgsConstructor;
 import org.assertj.core.api.Assertions;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.Parameter;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -30,15 +30,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * This test checks that we don't expose any shaded class in our public API.
- * We use {@link Parameterized} runner here to create a test per public class in Testcontainers' JAR file.
  */
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("data")
 @RequiredArgsConstructor
 public class PublicBinaryAPITest extends AbstractJarFileTest {
 
-    private static String SHADED_PACKAGE = "org.testcontainers.shaded.";
+    private static final String SHADED_PACKAGE = "org.testcontainers.shaded.";
 
-    private static String SHADED_PACKAGE_PATH = SHADED_PACKAGE.replaceAll("\\.", "/");
+    private static final String SHADED_PACKAGE_PATH = SHADED_PACKAGE.replaceAll("\\.", "/");
 
     static {
         Assertions.registerFormatterForType(ClassNode.class, it -> it.name);
@@ -46,7 +46,6 @@ public class PublicBinaryAPITest extends AbstractJarFileTest {
         Assertions.registerFormatterForType(MethodNode.class, it -> it.name + it.desc);
     }
 
-    @Parameters(name = "{0}")
     public static List<Object[]> data() throws Exception {
         List<Object[]> result = new ArrayList<>();
 
@@ -85,11 +84,13 @@ public class PublicBinaryAPITest extends AbstractJarFileTest {
         return result;
     }
 
-    private final String fileName;
+    @Parameter(0)
+    private String fileName;
 
-    private final ClassNode classNode;
+    @Parameter(1)
+    private ClassNode classNode;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         switch (classNode.name) {
             // Necessary evil
@@ -97,29 +98,29 @@ public class PublicBinaryAPITest extends AbstractJarFileTest {
             case "org/testcontainers/dockerclient/DockerClientProviderStrategy":
             case "org/testcontainers/dockerclient/WindowsClientProviderStrategy":
             case "org/testcontainers/utility/DynamicPollInterval":
-                Assume.assumeTrue(false);
+                Assumptions.assumeTrue(false);
         }
     }
 
     @Test
-    public void testSuperClass() {
+    void testSuperClass() {
         assertThat(classNode.superName).doesNotStartWith(SHADED_PACKAGE_PATH);
     }
 
     @Test
-    public void testInterfaces() {
+    void testInterfaces() {
         assertThat(classNode.interfaces).allSatisfy(it -> assertThat(it).doesNotStartWith(SHADED_PACKAGE_PATH));
     }
 
     @Test
-    public void testMethodReturnTypes() {
+    void testMethodReturnTypes() {
         assertThat(classNode.methods)
             .filteredOn(it -> (it.access & (Opcodes.ACC_PUBLIC | Opcodes.ACC_PROTECTED)) != 0)
             .allSatisfy(it -> assertThat(Type.getReturnType(it.desc).getClassName()).doesNotStartWith(SHADED_PACKAGE));
     }
 
     @Test
-    public void testMethodArguments() {
+    void testMethodArguments() {
         assertThat(classNode.methods)
             .filteredOn(it -> (it.access & (Opcodes.ACC_PUBLIC | Opcodes.ACC_PROTECTED)) != 0)
             .allSatisfy(method -> {
@@ -130,7 +131,7 @@ public class PublicBinaryAPITest extends AbstractJarFileTest {
     }
 
     @Test
-    public void testFields() {
+    void testFields() {
         assertThat(classNode.fields)
             .filteredOn(it -> (it.access & (Opcodes.ACC_PUBLIC | Opcodes.ACC_PROTECTED)) != 0)
             .allSatisfy(it -> assertThat(Type.getType(it.desc).getClassName()).doesNotStartWith(SHADED_PACKAGE));

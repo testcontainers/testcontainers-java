@@ -4,8 +4,9 @@ import com.ecwid.consul.v1.ConsulClient;
 import com.ecwid.consul.v1.Response;
 import com.ecwid.consul.v1.kv.model.GetValue;
 import io.restassured.RestAssured;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 
 import java.io.IOException;
@@ -16,25 +17,30 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * This test shows the pattern to use the ConsulContainer @ClassRule for a junit test. It also has tests that ensure
- * the properties were added correctly by reading from Consul with the CLI and over HTTP.
- */
-public class ConsulContainerTest {
+class ConsulContainerTest {
 
-    @ClassRule
-    public static ConsulContainer consulContainer = new ConsulContainer("hashicorp/consul:1.15")
+    private static ConsulContainer consul = new ConsulContainer("hashicorp/consul:1.15")
         .withConsulCommand("kv put config/testing1 value123");
 
+    @BeforeAll
+    static void setup() {
+        consul.start();
+    }
+
+    @AfterAll
+    static void teardown() {
+        consul.stop();
+    }
+
     @Test
-    public void readFirstPropertyPathWithCli() throws IOException, InterruptedException {
-        GenericContainer.ExecResult result = consulContainer.execInContainer("consul", "kv", "get", "config/testing1");
+    void readFirstPropertyPathWithCli() throws IOException, InterruptedException {
+        GenericContainer.ExecResult result = consul.execInContainer("consul", "kv", "get", "config/testing1");
         final String output = result.getStdout().replaceAll("\\r?\\n", "");
         assertThat(output).contains("value123");
     }
 
     @Test
-    public void readFirstSecretPathOverHttpApi() {
+    void readFirstSecretPathOverHttpApi() {
         io.restassured.response.Response response = RestAssured
             .given()
             .when()
@@ -46,11 +52,8 @@ public class ConsulContainerTest {
     }
 
     @Test
-    public void writeAndReadMultipleValuesUsingClient() {
-        final ConsulClient consulClient = new ConsulClient(
-            consulContainer.getHost(),
-            consulContainer.getFirstMappedPort()
-        );
+    void writeAndReadMultipleValuesUsingClient() {
+        final ConsulClient consulClient = new ConsulClient(consul.getHost(), consul.getFirstMappedPort());
 
         final Map<String, String> properties = new HashMap<>();
         properties.put("value", "world");
@@ -70,6 +73,6 @@ public class ConsulContainerTest {
     }
 
     private String getHostAndPort() {
-        return consulContainer.getHost() + ":" + consulContainer.getMappedPort(8500);
+        return consul.getHost() + ":" + consul.getMappedPort(8500);
     }
 }

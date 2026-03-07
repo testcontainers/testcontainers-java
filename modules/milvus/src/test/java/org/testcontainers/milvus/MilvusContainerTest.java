@@ -2,17 +2,17 @@ package org.testcontainers.milvus;
 
 import io.milvus.client.MilvusServiceClient;
 import io.milvus.param.ConnectParam;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.Wait;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class MilvusContainerTest {
+class MilvusContainerTest {
 
     @Test
-    public void withDefaultConfig() {
+    void withDefaultConfig() {
         try (
             // milvusContainer {
             MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:v2.3.9")
@@ -26,7 +26,7 @@ public class MilvusContainerTest {
     }
 
     @Test
-    public void withExternalEtcd() {
+    void withExternalEtcd() {
         try (
             // externalEtcd {
             Network network = Network.newNetwork();

@@ -4,6 +4,7 @@ import org.spockframework.runtime.extension.AbstractMethodInterceptor
 import org.spockframework.runtime.extension.IMethodInvocation
 import org.spockframework.runtime.model.FieldInfo
 import org.spockframework.runtime.model.SpecInfo
+import org.testcontainers.containers.ComposeContainer
 import org.testcontainers.containers.DockerComposeContainer
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.lifecycle.TestLifecycleAware
@@ -24,6 +25,9 @@ class TestcontainersMethodInterceptor extends AbstractMethodInterceptor {
 		def containers = findAllContainers(true)
 		startContainers(containers, invocation)
 
+		def dockerCompose = findAllDockerComposeContainers(true)
+		startDockerComposeContainers(dockerCompose, invocation)
+
 		def compose = findAllComposeContainers(true)
 		startComposeContainers(compose, invocation)
 
@@ -35,6 +39,9 @@ class TestcontainersMethodInterceptor extends AbstractMethodInterceptor {
 		def containers = findAllContainers(true)
 		stopContainers(containers, invocation)
 
+		def dockerCompose = findAllDockerComposeContainers(true)
+		stopDockerComposeContainers(dockerCompose, invocation)
+
 		def compose = findAllComposeContainers(true)
 		stopComposeContainers(compose, invocation)
 
@@ -45,6 +52,9 @@ class TestcontainersMethodInterceptor extends AbstractMethodInterceptor {
 	void interceptSetupMethod(IMethodInvocation invocation) throws Throwable {
 		def containers = findAllContainers(false)
 		startContainers(containers, invocation)
+
+		def dockerCompose = findAllDockerComposeContainers(false)
+		startDockerComposeContainers(dockerCompose, invocation)
 
 		def compose = findAllComposeContainers(false)
 		startComposeContainers(compose, invocation)
@@ -58,6 +68,9 @@ class TestcontainersMethodInterceptor extends AbstractMethodInterceptor {
 		def containers = findAllContainers(false)
 		stopContainers(containers, invocation)
 
+		def dockerCompose = findAllDockerComposeContainers(false)
+		stopDockerComposeContainers(dockerCompose, invocation)
+
 		def compose = findAllComposeContainers(false)
 		stopComposeContainers(compose, invocation)
 
@@ -70,9 +83,15 @@ class TestcontainersMethodInterceptor extends AbstractMethodInterceptor {
 		}
 	}
 
-	private List<FieldInfo> findAllComposeContainers(boolean shared) {
+	private List<FieldInfo> findAllDockerComposeContainers(boolean shared) {
 		spec.allFields.findAll { FieldInfo f ->
 			DockerComposeContainer.isAssignableFrom(f.type) && f.shared == shared
+		}
+	}
+
+	private List<FieldInfo> findAllComposeContainers(boolean shared) {
+		spec.allFields.findAll { FieldInfo f ->
+			ComposeContainer.isAssignableFrom(f.type) && f.shared == shared
 		}
 	}
 
@@ -105,16 +124,30 @@ class TestcontainersMethodInterceptor extends AbstractMethodInterceptor {
 		}
 	}
 
-	private static void startComposeContainers(List<FieldInfo> compose, IMethodInvocation invocation) {
+	private static void startDockerComposeContainers(List<FieldInfo> compose, IMethodInvocation invocation) {
 		compose.each { FieldInfo f ->
 			DockerComposeContainer c = f.readValue(invocation.instance) as DockerComposeContainer
 			c.start()
 		}
 	}
 
-	private static void stopComposeContainers(List<FieldInfo> compose, IMethodInvocation invocation) {
+	private static void startComposeContainers(List<FieldInfo> compose, IMethodInvocation invocation) {
+		compose.each { FieldInfo f ->
+			ComposeContainer c = f.readValue(invocation.instance) as ComposeContainer
+			c.start()
+		}
+	}
+
+	private static void stopDockerComposeContainers(List<FieldInfo> compose, IMethodInvocation invocation) {
 		compose.each { FieldInfo f ->
 			DockerComposeContainer c = f.readValue(invocation.instance) as DockerComposeContainer
+			c.stop()
+		}
+	}
+
+	private static void stopComposeContainers(List<FieldInfo> compose, IMethodInvocation invocation) {
+		compose.each { FieldInfo f ->
+			ComposeContainer c = f.readValue(invocation.instance) as ComposeContainer
 			c.stop()
 		}
 	}

@@ -29,7 +29,10 @@ import java.util.Optional;
  *     <li>Database: 2424</li>
  *     <li>Studio: 2480</li>
  * </ul>
+ *
+ * @deprecated use {@link org.testcontainers.orientdb.OrientDBContainer} instead.
  */
+@Deprecated
 public class OrientDBContainer extends GenericContainer<OrientDBContainer> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrientDBContainer.class);

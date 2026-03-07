@@ -2,16 +2,16 @@ package org.testcontainers.images.builder;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.InspectImageResponse;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.utility.Base58;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ImageFromDockerfileTest {
+class ImageFromDockerfileTest {
 
     @Test
-    public void shouldAddDefaultLabels() {
+    void shouldAddDefaultLabels() {
         ImageFromDockerfile image = new ImageFromDockerfile().withDockerfileFromBuilder(it -> it.from("scratch"));
 
         String imageId = image.resolve();
@@ -25,7 +25,7 @@ public class ImageFromDockerfileTest {
     }
 
     @Test
-    public void shouldNotAddSessionLabelIfDeleteOnExitIsFalse() {
+    void shouldNotAddSessionLabelIfDeleteOnExitIsFalse() {
         ImageFromDockerfile image = new ImageFromDockerfile(
             "localhost/testcontainers/" + Base58.randomString(16).toLowerCase(),
             false

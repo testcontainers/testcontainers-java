@@ -1,19 +1,20 @@
 package org.testcontainers.utility;
 
-import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@RunWith(Enclosed.class)
-public class DockerImageNameTest {
+class DockerImageNameTest {
 
-    @RunWith(Parameterized.class)
-    public static class ValidNames {
+    @Nested
+    class ValidNames {
 
-        @Parameterized.Parameters(name = "{0}")
         public static String[] getNames() {
             return new String[] {
                 "myname:latest",
@@ -30,19 +31,16 @@ public class DockerImageNameTest {
             };
         }
 
-        @Parameterized.Parameter
-        public String imageName;
-
-        @Test
-        public void testValidNameAccepted() {
+        @ParameterizedTest
+        @MethodSource("getNames")
+        void testValidNameAccepted(String imageName) {
             DockerImageName.parse(imageName).assertValid();
         }
     }
 
-    @RunWith(Parameterized.class)
-    public static class InvalidNames {
+    @Nested
+    class InvalidNames {
 
-        @Parameterized.Parameters(name = "{0}")
         public static String[] getNames() {
             return new String[] {
                 ":latest",
@@ -53,62 +51,58 @@ public class DockerImageNameTest {
             };
         }
 
-        @Parameterized.Parameter
-        public String imageName;
-
-        @Test(expected = IllegalArgumentException.class)
-        public void testInvalidNameRejected() {
-            DockerImageName.parse(imageName).assertValid();
+        @ParameterizedTest
+        @MethodSource("getNames")
+        void testInvalidNameRejected(String imageName) {
+            assertThatThrownBy(() -> DockerImageName.parse(imageName).assertValid())
+                .isInstanceOf(IllegalArgumentException.class);
         }
     }
 
-    @RunWith(Parameterized.class)
-    public static class Parsing {
+    @Nested
+    class Parsing {
 
-        @Parameterized.Parameters(name = "{0}{1}{2}{3}{4}")
-        public static String[][] getNames() {
-            return new String[][] {
-                { "", "", "myname", ":", null },
-                { "", "", "myname", ":", "latest" },
-                { "", "", "repo/myname", ":", null },
-                { "", "", "repo/myname", ":", "latest" },
-                { "registry.foo.com:1234", "/", "my-name", ":", null },
-                { "registry.foo.com:1234", "/", "my-name", ":", "1.0" },
-                { "registry.foo.com", "/", "my-name", ":", "1.0" },
-                { "registry.foo.com:1234", "/", "repo_here/my-name", ":", null },
-                { "registry.foo.com:1234", "/", "repo_here/my-name", ":", "1.0" },
-                { "1.2.3.4:1234", "/", "repo_here/my-name", ":", null },
-                { "1.2.3.4:1234", "/", "repo_here/my-name", ":", "1.0" },
-                { "1.2.3.4:1234", "/", "my-name", ":", null },
-                { "1.2.3.4:1234", "/", "my-name", ":", "1.0" },
-                { "", "", "myname", "@", "sha256:1234abcd1234abcd1234abcd1234abcd" },
-                { "", "", "repo/myname", "@", "sha256:1234abcd1234abcd1234abcd1234abcd" },
-                { "registry.foo.com:1234", "/", "repo-here/my-name", "@", "sha256:1234abcd1234abcd1234abcd1234abcd" },
-                { "registry.foo.com:1234", "/", "my-name", "@", "sha256:1234abcd1234abcd1234abcd1234abcd" },
-                { "1.2.3.4", "/", "my-name", "@", "sha256:1234abcd1234abcd1234abcd1234abcd" },
-                { "1.2.3.4:1234", "/", "my-name", "@", "sha256:1234abcd1234abcd1234abcd1234abcd" },
-                { "1.2.3.4", "/", "my-name", "@", "sha256:1234abcd1234abcd1234abcd1234abcd" },
-                { "1.2.3.4:1234", "/", "my-name", "@", "sha256:1234abcd1234abcd1234abcd1234abcd" },
-            };
+        public static Stream<Arguments> getNames() {
+            return Stream.of(
+                Arguments.of("", "", "myname", ":", null),
+                Arguments.of("", "", "myname", ":", "latest"),
+                Arguments.of("", "", "repo/myname", ":", null),
+                Arguments.of("", "", "repo/myname", ":", "latest"),
+                Arguments.of("registry.foo.com:1234", "/", "my-name", ":", null),
+                Arguments.of("registry.foo.com:1234", "/", "my-name", ":", "1.0"),
+                Arguments.of("registry.foo.com", "/", "my-name", ":", "1.0"),
+                Arguments.of("registry.foo.com:1234", "/", "repo_here/my-name", ":", null),
+                Arguments.of("registry.foo.com:1234", "/", "repo_here/my-name", ":", "1.0"),
+                Arguments.of("1.2.3.4:1234", "/", "repo_here/my-name", ":", null),
+                Arguments.of("1.2.3.4:1234", "/", "repo_here/my-name", ":", "1.0"),
+                Arguments.of("1.2.3.4:1234", "/", "my-name", ":", null),
+                Arguments.of("1.2.3.4:1234", "/", "my-name", ":", "1.0"),
+                Arguments.of("", "", "myname", "@", "sha256:1234abcd1234abcd1234abcd1234abcd"),
+                Arguments.of("", "", "repo/myname", "@", "sha256:1234abcd1234abcd1234abcd1234abcd"),
+                Arguments.of(
+                    "registry.foo.com:1234",
+                    "/",
+                    "repo-here/my-name",
+                    "@",
+                    "sha256:1234abcd1234abcd1234abcd1234abcd"
+                ),
+                Arguments.of("registry.foo.com:1234", "/", "my-name", "@", "sha256:1234abcd1234abcd1234abcd1234abcd"),
+                Arguments.of("1.2.3.4", "/", "my-name", "@", "sha256:1234abcd1234abcd1234abcd1234abcd"),
+                Arguments.of("1.2.3.4:1234", "/", "my-name", "@", "sha256:1234abcd1234abcd1234abcd1234abcd"),
+                Arguments.of("1.2.3.4", "/", "my-name", "@", "sha256:1234abcd1234abcd1234abcd1234abcd"),
+                Arguments.of("1.2.3.4:1234", "/", "my-name", "@", "sha256:1234abcd1234abcd1234abcd1234abcd")
+            );
         }
 
-        @Parameterized.Parameter(0)
-        public String registry;
-
-        @Parameterized.Parameter(1)
-        public String registrySeparator;
-
-        @Parameterized.Parameter(2)
-        public String repo;
-
-        @Parameterized.Parameter(3)
-        public String versionSeparator;
-
-        @Parameterized.Parameter(4)
-        public String version;
-
-        @Test
-        public void testParsing() {
+        @ParameterizedTest
+        @MethodSource("getNames")
+        void testParsing(
+            String registry,
+            String registrySeparator,
+            String repo,
+            String versionSeparator,
+            String version
+        ) {
             final String unversionedPart = registry + registrySeparator + repo;
 
             String combined;

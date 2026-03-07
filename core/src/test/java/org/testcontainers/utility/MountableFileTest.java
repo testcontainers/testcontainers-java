@@ -5,7 +5,7 @@ import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.jetbrains.annotations.NotNull;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -17,7 +17,7 @@ import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class MountableFileTest {
+class MountableFileTest {
 
     private static final int TEST_FILE_MODE = 0532;
 
@@ -26,35 +26,35 @@ public class MountableFileTest {
     private static final int BASE_DIR_MODE = 0040000;
 
     @Test
-    public void forClasspathResource() throws Exception {
+    void forClasspathResource() throws Exception {
         final MountableFile mountableFile = MountableFile.forClasspathResource("mappable-resource/test-resource.txt");
 
         performChecks(mountableFile);
     }
 
     @Test
-    public void forClasspathResourceWithAbsolutePath() throws Exception {
+    void forClasspathResourceWithAbsolutePath() throws Exception {
         final MountableFile mountableFile = MountableFile.forClasspathResource("/mappable-resource/test-resource.txt");
 
         performChecks(mountableFile);
     }
 
     @Test
-    public void forClasspathResourceFromJar() throws Exception {
+    void forClasspathResourceFromJar() throws Exception {
         final MountableFile mountableFile = MountableFile.forClasspathResource("META-INF/dummy_unique_name.txt");
 
         performChecks(mountableFile);
     }
 
     @Test
-    public void forClasspathResourceFromJarWithAbsolutePath() throws Exception {
+    void forClasspathResourceFromJarWithAbsolutePath() throws Exception {
         final MountableFile mountableFile = MountableFile.forClasspathResource("/META-INF/dummy_unique_name.txt");
 
         performChecks(mountableFile);
     }
 
     @Test
-    public void forHostPath() throws Exception {
+    void forHostPath() throws Exception {
         final Path file = createTempFile("somepath");
         final MountableFile mountableFile = MountableFile.forHostPath(file.toString());
 
@@ -62,7 +62,7 @@ public class MountableFileTest {
     }
 
     @Test
-    public void forHostPathWithSpaces() throws Exception {
+    void forHostPathWithSpaces() throws Exception {
         final Path file = createTempFile("some path");
         final MountableFile mountableFile = MountableFile.forHostPath(file.toString());
 
@@ -75,7 +75,7 @@ public class MountableFileTest {
     }
 
     @Test
-    public void forHostPathWithPlus() throws Exception {
+    void forHostPathWithPlus() throws Exception {
         final Path file = createTempFile("some+path");
         final MountableFile mountableFile = MountableFile.forHostPath(file.toString());
 
@@ -88,7 +88,7 @@ public class MountableFileTest {
     }
 
     @Test
-    public void forClasspathResourceWithPermission() throws Exception {
+    void forClasspathResourceWithPermission() throws Exception {
         final MountableFile mountableFile = MountableFile.forClasspathResource(
             "mappable-resource/test-resource.txt",
             TEST_FILE_MODE
@@ -99,7 +99,7 @@ public class MountableFileTest {
     }
 
     @Test
-    public void forHostFilePathWithPermission() throws Exception {
+    void forHostFilePathWithPermission() throws Exception {
         final Path file = createTempFile("somepath");
         final MountableFile mountableFile = MountableFile.forHostPath(file.toString(), TEST_FILE_MODE);
         performChecks(mountableFile);
@@ -107,7 +107,7 @@ public class MountableFileTest {
     }
 
     @Test
-    public void forHostDirPathWithPermission() throws Exception {
+    void forHostDirPathWithPermission() throws Exception {
         final Path dir = createTempDir();
         final MountableFile mountableFile = MountableFile.forHostPath(dir.toString(), TEST_FILE_MODE);
         performChecks(mountableFile);
@@ -115,7 +115,7 @@ public class MountableFileTest {
     }
 
     @Test
-    public void noTrailingSlashesInTarEntryNames() throws Exception {
+    void noTrailingSlashesInTarEntryNames() throws Exception {
         final MountableFile mountableFile = MountableFile.forClasspathResource("mappable-resource/test-resource.txt");
 
         @Cleanup

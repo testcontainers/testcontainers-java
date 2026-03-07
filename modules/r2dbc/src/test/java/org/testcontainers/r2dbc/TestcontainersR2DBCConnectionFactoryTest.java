@@ -6,7 +6,7 @@ import io.r2dbc.spi.Connection;
 import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.Result;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -15,10 +15,10 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class TestcontainersR2DBCConnectionFactoryTest {
+class TestcontainersR2DBCConnectionFactoryTest {
 
     @Test
-    public void failsOnUnknownProvider() {
+    void failsOnUnknownProvider() {
         String nonExistingProvider = UUID.randomUUID().toString();
         assertThatThrownBy(() -> {
                 ConnectionFactories.get(String.format("r2dbc:tc:%s:///db", nonExistingProvider));
@@ -28,7 +28,7 @@ public class TestcontainersR2DBCConnectionFactoryTest {
     }
 
     @Test
-    public void reusesUntilConnectionFactoryIsClosed() {
+    void reusesUntilConnectionFactoryIsClosed() {
         String url = "r2dbc:tc:postgresql:///db?TC_IMAGE_TAG=10-alpine";
         ConnectionFactory connectionFactory = ConnectionFactories.get(url);
 

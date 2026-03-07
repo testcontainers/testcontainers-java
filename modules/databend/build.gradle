@@ -1,0 +1,8 @@
+description = "Testcontainers :: JDBC :: Databend"
+
+dependencies {
+    api project(':testcontainers-jdbc')
+
+    testImplementation project(':testcontainers-jdbc-test')
+    testRuntimeOnly 'com.databend:databend-jdbc:0.4.1'
+}
