@@ -12,6 +12,7 @@ class K6ContainerTests {
 
     @Test
     void k6StandardTest() throws Exception {
+        // standard_k6_test {
         try (
             // standard_k6 {
             K6Container container = new K6Container("grafana/k6:0.49.0")
@@ -37,5 +38,6 @@ class K6ContainerTests {
 
             assertThat(container.getLogs()).contains("k6 tests are cool!");
         }
+        // }
     }
 }
