@@ -218,6 +218,141 @@ Merge probability:
 2. `#8797` R2DBC helper PR
 3. `#3066` MongoDB wait-strategy/init-script PR
 
+## First PR Recommendation
+
+### Recommended first merged PR
+
+Issue:
+
+- `#8780` `[Enhancement]: Add example test to the K6 module docs`
+
+Link:
+
+- `https://github.com/testcontainers/testcontainers-java/issues/8780`
+
+Why this is the best first PR:
+
+- the issue scope is concrete
+- the user pain is already written clearly in the issue
+- it avoids deep design arguments
+- it matches the small-PR preference observed in recent merged work
+
+Problem analysis:
+
+- `docs/modules/k6.md` already exposes API usage through codeinclude
+- however, it still does not clearly show the "expected JUnit-style test shape" that users look for
+- the issue reporter explicitly compared the docs to quickstart-style guidance and found the current page harder to follow
+
+Root cause:
+
+- the docs expose a runnable snippet
+- but the onboarding flow is weaker than in more polished Testcontainers pages
+- the page answers "what API exists" better than "how should I write my first test"
+
+Recommended solution shape:
+
+1. Update `docs/modules/k6.md`
+2. Reuse the existing runnable snippet from `modules/k6/src/test/java/org/testcontainers/k6/K6ContainerTests.java`
+3. Add a short JUnit-style explanation section
+4. Keep the change limited to docs and snippet framing unless maintainers request more
+
+Why this should merge well:
+
+- it is easy to review
+- it improves user onboarding directly
+- it does not expand the public API
+- it does not create cross-module risk
+
+Estimated merge probability:
+
+- high, assuming the PR stays small and aligned with existing docs conventions
+
+## Maintainer Interaction Strategy
+
+### Who is most likely to matter
+
+Based on issue and PR review activity observed during research:
+
+- `eddumelendez`
+- `kiview`
+
+This does not mean directly targeting them personally. It means:
+
+- write the issue comment in a way that makes review easy for maintainers who already triage this area
+- keep scope explicit
+- make it obvious that the change is intentionally narrow
+
+### Best way to approach `#8780`
+
+Suggested issue comment:
+
+> I’d like to work on this.  
+> My plan is to improve the K6 docs by adding a clearer JUnit-style example section based on the existing module test, while keeping the change small and aligned with the current docs/codeinclude style.
+
+This is strong because:
+
+- it signals ownership
+- it shows you read the existing docs structure
+- it reduces reviewer uncertainty
+
+### Best PR description style for `#8780`
+
+Suggested PR structure:
+
+```md
+## Summary
+Improve the K6 module documentation with a clearer JUnit-style example test.
+
+## Problem
+The current docs show the API usage, but it is still hard to understand the expected test structure quickly.
+
+## Changes
+- add a clearer example section to the K6 docs
+- reuse the existing runnable test snippet
+- keep the documentation aligned with the current codeinclude style
+
+## Why
+This makes the module easier to adopt for users looking for a quickstart-like testing example.
+```
+
+## Second PR Recommendation
+
+### Best first code PR after the docs PR
+
+Issue:
+
+- `#8797` `Add getR2dbcUrl helper method to JdbcDatabaseContainer`
+
+Link:
+
+- `https://github.com/testcontainers/testcontainers-java/issues/8797`
+
+Why this is the strongest backend-signaling follow-up:
+
+- aligns closely with Spring / reactive database usage
+- gives a better hiring signal than docs-only work
+- maintainers already discussed an acceptable design direction
+
+Important caution:
+
+- a previous attempt, PR `#9569`, was closed
+- the feature was not rejected
+- the attempt appears to have become too broad and got stuck in tests, especially around MSSQL
+
+Best way to revive it:
+
+Suggested issue comment:
+
+> I’d like to revive this using the static `getR2dbcUrl(container)` approach discussed above.  
+> To keep the scope reviewable, I plan to start with the stable implementations first and include tests for each one, leaving any problematic driver-specific follow-up for a separate PR if needed.  
+> Does that still match the expected direction?
+
+Why this approach should improve merge odds:
+
+- it respects prior maintainer discussion
+- it shows you learned from the closed PR
+- it reduces fear of a large cross-driver change
+
 ## Suggested PR Positioning
 
 ### For `#8780`
