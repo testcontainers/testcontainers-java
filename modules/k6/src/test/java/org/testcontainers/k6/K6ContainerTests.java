@@ -23,6 +23,7 @@ class K6ContainerTests {
         ) {
             container.start();
 
+			// wait {
             WaitingConsumer consumer = new WaitingConsumer();
             container.followOutput(consumer);
 
@@ -34,6 +35,7 @@ class K6ContainerTests {
                 3,
                 TimeUnit.SECONDS
             );
+			// }
 
             assertThat(container.getLogs()).contains("k6 tests are cool!");
         }
