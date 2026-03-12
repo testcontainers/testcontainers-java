@@ -21,7 +21,11 @@ import java.time.Duration;
  */
 public class ActiveMQContainer extends GenericContainer<ActiveMQContainer> {
 
-    private static final DockerImageName DEFAULT_IMAGE = DockerImageName.parse("apache/activemq-classic");
+    private static final DockerImageName APACHE_ACTIVEMQ_CLASSIC_IMAGE = DockerImageName.parse(
+        "apache/activemq-classic"
+    );
+
+    private static final DockerImageName DEFAULT_IMAGE = DockerImageName.parse("apache/activemq");
 
     private static final int WEB_CONSOLE_PORT = 8161;
 
@@ -45,7 +49,7 @@ public class ActiveMQContainer extends GenericContainer<ActiveMQContainer> {
 
     public ActiveMQContainer(DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE, APACHE_ACTIVEMQ_CLASSIC_IMAGE);
 
         withExposedPorts(WEB_CONSOLE_PORT, TCP_PORT, AMQP_PORT, STOMP_PORT, MQTT_PORT, WS_PORT);
         waitingFor(Wait.forLogMessage(".*Apache ActiveMQ.*started.*", 1).withStartupTimeout(Duration.ofMinutes(1)));

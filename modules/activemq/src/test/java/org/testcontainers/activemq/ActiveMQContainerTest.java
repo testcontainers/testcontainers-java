@@ -10,6 +10,8 @@ import jakarta.jms.TextMessage;
 import lombok.SneakyThrows;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -18,7 +20,7 @@ class ActiveMQContainerTest {
     @Test
     void test() {
         try ( // container {
-            ActiveMQContainer activemq = new ActiveMQContainer("apache/activemq-classic:5.18.3")
+            ActiveMQContainer activemq = new ActiveMQContainer("apache/activemq:5.18.7")
             // }
         ) {
             activemq.start();
@@ -29,11 +31,20 @@ class ActiveMQContainerTest {
         }
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = { "apache/activemq-classic:5.18.7", "apache/activemq:5.18.7" })
+    void compatibility(String image) {
+        try (ActiveMQContainer activemq = new ActiveMQContainer(image)) {
+            activemq.start();
+            assertFunctionality(activemq, false);
+        }
+    }
+
     @Test
     void customCredentials() {
         try (
             // settingCredentials {
-            ActiveMQContainer activemq = new ActiveMQContainer("apache/activemq-classic:5.18.3")
+            ActiveMQContainer activemq = new ActiveMQContainer("apache/activemq:5.18.7")
                 .withUser("testcontainers")
                 .withPassword("testcontainers")
             // }

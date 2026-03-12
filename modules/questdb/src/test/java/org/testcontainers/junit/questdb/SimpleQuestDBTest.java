@@ -27,7 +27,7 @@ class SimpleQuestDBTest extends AbstractContainerDatabaseTest {
     @Test
     void testSimple() throws SQLException {
         try ( // container {
-            QuestDBContainer questDB = new QuestDBContainer("questdb/questdb:6.5.3")
+            QuestDBContainer questDB = new QuestDBContainer("questdb/questdb:9.2.2")
             // }
         ) {
             questDB.start();
