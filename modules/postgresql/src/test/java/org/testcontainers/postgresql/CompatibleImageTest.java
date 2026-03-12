@@ -4,10 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 import org.testcontainers.utility.DockerImageName;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class CompatibleImageTest extends AbstractContainerDatabaseTest {
 
@@ -20,9 +17,7 @@ class CompatibleImageTest extends AbstractContainerDatabaseTest {
         ) {
             pgvector.start();
 
-            ResultSet resultSet = performQuery(pgvector, "SELECT 1");
-            int resultSetInt = resultSet.getInt(1);
-            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+            executeSelectOneQuery(pgvector);
         }
     }
 
@@ -37,9 +32,7 @@ class CompatibleImageTest extends AbstractContainerDatabaseTest {
         ) {
             postgis.start();
 
-            ResultSet resultSet = performQuery(postgis, "SELECT 1");
-            int resultSetInt = resultSet.getInt(1);
-            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+            executeSelectOneQuery(postgis);
         }
     }
 
@@ -54,9 +47,7 @@ class CompatibleImageTest extends AbstractContainerDatabaseTest {
         ) {
             timescaledb.start();
 
-            ResultSet resultSet = performQuery(timescaledb, "SELECT 1");
-            int resultSetInt = resultSet.getInt(1);
-            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+            executeSelectOneQuery(timescaledb);
         }
     }
 }
