@@ -209,8 +209,97 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
         return this;
     }
 
+    protected String getCertPath() {
+        return certPath;
+    }
+
     public String getHttpHostAddress() {
         return getHost() + ":" + getMappedPort(ELASTICSEARCH_DEFAULT_PORT);
+    }
+
+    /**
+     * Checks env first if this implies HTTP/HTTPS.
+     * Otherwise, detects the scheme used by Elasticsearch using <code>curl</code>
+     *
+     * @return "http" or "https"
+     */
+    public String getHttpScheme() {
+        String securityEnabled = getEnvMap().get("xpack.security.enabled");
+        String httpSslEnabled = getEnvMap().get("xpack.security.http.ssl.enabled");
+
+        // Respect explicit user config
+        if ("false".equalsIgnoreCase(securityEnabled) || "false".equalsIgnoreCase(httpSslEnabled)) {
+            return "http";
+        }
+        if ("true".equalsIgnoreCase(httpSslEnabled)) {
+            return "https";
+        }
+
+        if (!isRunning()) {
+            throw new IllegalStateException(
+                "Cannot determine HTTP scheme: environment variables are not set and container is not running for curl probe"
+            );
+        }
+
+        ExecResult httpsResult = null;
+        ExecResult httpResult = null;
+        try {
+            // HTTPS probe: any HTTP response (200/401/403/...) => scheme is HTTPS.
+            // http_code == 000 means we didn't get an HTTP response (TLS/connect failure/timeout).
+            httpsResult =
+                execInContainer(
+                    "curl",
+                    "-sS",
+                    "-k",
+                    "--connect-timeout",
+                    "2",
+                    "--max-time",
+                    "4",
+                    "-o",
+                    "/dev/null",
+                    "-w",
+                    "%{http_code}",
+                    "https://localhost:" + ELASTICSEARCH_DEFAULT_PORT + "/"
+                );
+            if (httpsResult.getExitCode() == 0 && !"000".equals(httpsResult.getStdout().trim())) {
+                return "https";
+            }
+
+            // HTTP probe
+            httpResult =
+                execInContainer(
+                    "curl",
+                    "-sS",
+                    "--connect-timeout",
+                    "2",
+                    "--max-time",
+                    "4",
+                    "-o",
+                    "/dev/null",
+                    "-w",
+                    "%{http_code}",
+                    "http://localhost:" + ELASTICSEARCH_DEFAULT_PORT + "/"
+                );
+            if (httpResult.getExitCode() == 0 && !"000".equals(httpResult.getStdout().trim())) {
+                return "http";
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to detect protocol via curl", e);
+        }
+
+        throw new RuntimeException(
+            String.format(
+                "Failed to detect protocol via curl. Both HTTPS and HTTP probes failed. " +
+                "HTTPS probe - exit code: %d, stdout: %s, stderr: %s; " +
+                "HTTP probe - exit code: %d, stdout: %s, stderr: %s",
+                httpsResult.getExitCode(),
+                httpsResult.getStdout(),
+                httpsResult.getStderr(),
+                httpResult.getExitCode(),
+                httpResult.getStdout(),
+                httpResult.getStderr()
+            )
+        );
     }
 
     // The TransportClient will be removed in Elasticsearch 8. No need to expose this port anymore in the future.
