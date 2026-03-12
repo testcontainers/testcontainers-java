@@ -266,6 +266,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
         Properties properties = new Properties(info);
         properties.put("user", this.getUsername());
         properties.put("password", this.getPassword());
+        properties.putAll(info);
         final String url = constructUrlForConnection(queryString);
 
         final Driver jdbcDriverInstance = getJdbcDriverInstance();
