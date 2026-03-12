@@ -5,6 +5,6 @@ dependencies {
     shaded 'org.freemarker:freemarker:2.3.34'
 
     testImplementation 'org.apache.kafka:kafka-clients:4.1.1'
-    testImplementation 'io.rest-assured:rest-assured:5.5.6'
+    testImplementation 'io.rest-assured:rest-assured:6.0.0'
     testImplementation 'org.awaitility:awaitility:4.3.0'
 }
