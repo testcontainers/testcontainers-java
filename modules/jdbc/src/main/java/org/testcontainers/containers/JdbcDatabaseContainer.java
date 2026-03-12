@@ -6,7 +6,6 @@ import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.testcontainers.containers.traits.LinkableContainer;
 import org.testcontainers.delegate.DatabaseDelegate;
 import org.testcontainers.ext.ScriptUtils;
 import org.testcontainers.jdbc.JdbcDatabaseDelegate;
@@ -31,9 +30,7 @@ import java.util.stream.Collectors;
 /**
  * Base class for containers that expose a JDBC connection
  */
-public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<SELF>>
-    extends GenericContainer<SELF>
-    implements LinkableContainer {
+public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<SELF>> extends GenericContainer<SELF> {
 
     private static final Object DRIVER_LOAD_MUTEX = new Object();
 
