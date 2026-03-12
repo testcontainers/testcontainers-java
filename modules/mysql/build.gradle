@@ -7,7 +7,7 @@ dependencies {
     compileOnly 'io.asyncer:r2dbc-mysql:1.4.1'
 
     testImplementation project(':testcontainers-jdbc-test')
-    testRuntimeOnly 'com.mysql:mysql-connector-j:9.5.0'
+    testRuntimeOnly 'com.mysql:mysql-connector-j:9.6.0'
 
     testImplementation testFixtures(project(':testcontainers-r2dbc'))
     testRuntimeOnly 'io.asyncer:r2dbc-mysql:1.4.1'
