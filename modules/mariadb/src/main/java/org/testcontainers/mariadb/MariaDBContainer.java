@@ -1,6 +1,5 @@
 package org.testcontainers.mariadb;
 
-import com.google.common.collect.Sets;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.images.builder.Transferable;
@@ -50,7 +49,7 @@ public class MariaDBContainer extends JdbcDatabaseContainer<MariaDBContainer> {
 
     @Override
     public Set<Integer> getLivenessCheckPortNumbers() {
-        return Sets.newHashSet(MARIADB_PORT);
+        return super.getLivenessCheckPortNumbers();
     }
 
     @Override
