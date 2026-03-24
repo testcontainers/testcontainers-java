@@ -10,14 +10,20 @@ You can start a LocalStack container instance from any Java application by using
 [Container creation](../../modules/localstack/src/test/java/org/testcontainers/localstack/LocalStackContainerTest.java) inside_block:container
 <!--/codeinclude-->
 
+Environment variables listed in the [LocalStack configuration documentation](https://docs.localstack.cloud/references/configuration/) may be used to customize LocalStack's configuration.
+Use the `.withEnv(key, value)` method on `LocalStackContainer` to apply configuration settings.
+
+!!! note
+    Starting March 23, 2026, `localstack/localstack` requires authentication via a `LOCALSTACK_AUTH_TOKEN` environment variable. Without it, the container will fail to start.
+
+    Use `.withEnv("LOCALSTACK_AUTH_TOKEN", System.getenv("LOCALSTACK_AUTH_TOKEN"))` to pass the token.
+    See the [LocalStack blog post](https://blog.localstack.cloud/localstack-single-image-next-steps/) for more details.
+
 ## Creating a client using AWS SDK
 
 <!--codeinclude-->
 [AWS SDK V2](../../modules/localstack/src/test/java/org/testcontainers/localstack/LocalStackContainerTest.java) inside_block:with_aws_sdk_v2
 <!--/codeinclude-->
-
-Environment variables listed in [Localstack's README](https://github.com/localstack/localstack#configurations) may be used to customize Localstack's configuration. 
-Use the `.withEnv(key, value)` method on `LocalStackContainer` to apply configuration settings.
 
 ## Adding this module to your project dependencies
 
