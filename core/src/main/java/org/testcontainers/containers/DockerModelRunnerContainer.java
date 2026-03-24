@@ -79,10 +79,20 @@ public class DockerModelRunnerContainer extends SocatContainer {
         return this;
     }
 
+    /**
+     * Returns the base endpoint URL for the Docker Model Runner service.
+     *
+     * @return the base URL in the format {@code http://<host>:<port>}
+     */
     public String getBaseEndpoint() {
         return "http://" + getHost() + ":" + getMappedPort(PORT);
     }
 
+    /**
+     * Returns the OpenAI-compatible API endpoint URL for the Docker Model Runner service.
+     *
+     * @return the OpenAI-compatible endpoint URL in the format {@code http://<host>:<port>/engines}
+     */
     public String getOpenAIEndpoint() {
         return getBaseEndpoint() + "/engines";
     }
