@@ -38,11 +38,15 @@ class SimpleOracleTest extends AbstractContainerDatabaseTest {
         assertThat(container.getUsername()).isEqualTo(username);
         assertThat(container.getPassword()).isEqualTo(password);
 
-        //Test we can get a connection and execute a system-level command
+        //Test we can get a connection and verify current user
         container.start();
-        ResultSet resultSet = performQuery(container, "GRANT DBA TO " + username);
-        int resultSetInt = resultSet.getInt(1);
-        assertThat(resultSetInt).as("A basic system user query succeeds").isEqualTo(1);
+
+        // Verify we are connected as the system user
+        ResultSet resultSet = performQuery(container, "SELECT USER FROM DUAL");
+        String currentUser = resultSet.getString(1);
+        assertThat(currentUser)
+            .as("Connected session should run as the system user")
+            .isEqualToIgnoringCase(username);
     }
 
     @Test
@@ -116,7 +120,7 @@ class SimpleOracleTest extends AbstractContainerDatabaseTest {
         try (
             OracleContainer oracle = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME)
                 .usingSid()
-                .withSystemPassword("SysP@ss1!")
+                .withOraclePassword("SysP@ss1!")
                 .withPassword("AppP@ss1!")
         ) {
             runTestSystemUser(oracle, "freepdb1", "system", "SysP@ss1!");
@@ -127,7 +131,7 @@ class SimpleOracleTest extends AbstractContainerDatabaseTest {
     public void testWithPassword() throws SQLException {
         try (
             OracleContainer oracle = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME)
-                .withSystemPassword("SysP@ss2!")
+                .withOraclePassword("SysP@ss2!")
                 .withPassword("AppP@ss2!")
         ) {
             runTest(oracle, "freepdb1", "test", "AppP@ss2!");

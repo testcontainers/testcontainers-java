@@ -63,12 +63,12 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     /**
      * Password for Oracle system user (e.g. SYSTEM/SYS). Defaults to {@link #APP_USER_PASSWORD}
-     * for backwards compatibility, but can be customized independently via {@link #withSystemPassword(String)}.
+     * for backwards compatibility, but can be customized independently via {@link #withOraclePassword(String)}.
      */
     private String systemPassword = APP_USER_PASSWORD;
 
     /**
-     * Tracks whether {@link #withSystemPassword(String)} was called to avoid overriding
+     * Tracks whether {@link #withOraclePassword(String)} was called to avoid overriding
      * the system password when {@link #withPassword(String)} is used for the application user only.
      */
     private boolean systemPasswordExplicitlySet = false;
@@ -176,7 +176,7 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
             throw new IllegalArgumentException("Password cannot be null or empty");
         }
         this.password = password;
-        // Maintain backwards compatibility: if oracle password wasn't set explicitly,
+        // Maintain backwards compatibility: if system password wasn't set explicitly,
         // align it with the application user's password.
         if (!systemPasswordExplicitlySet) {
             this.systemPassword = password;
@@ -188,14 +188,14 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
      * Sets the password for the Oracle system user (SYSTEM/SYS). This is independent from the
      * application user password set via {@link #withPassword(String)}.
      *
-     * @param oraclePassword password for SYSTEM/SYS users inside the container
+     * @param systemPassword password for SYSTEM/SYS users inside the container
      * @return this container instance
      */
-    public OracleContainer withSystemPassword(String oraclePassword) {
-        if (StringUtils.isEmpty(oraclePassword)) {
+    public OracleContainer withOraclePassword(String systemPassword) {
+        if (StringUtils.isEmpty(systemPassword)) {
             throw new IllegalArgumentException("Oracle password cannot be null or empty");
         }
-        this.systemPassword = oraclePassword;
+        this.systemPassword = systemPassword;
         this.systemPasswordExplicitlySet = true;
         return self();
     }

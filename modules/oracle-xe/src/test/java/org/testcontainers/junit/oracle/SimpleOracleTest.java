@@ -38,6 +38,8 @@ class SimpleOracleTest extends AbstractContainerDatabaseTest {
         assertThat(container.getPassword()).isEqualTo(password);
 
         container.start();
+
+        // Verify we are connected as the system user
         ResultSet resultSet = performQuery(container, "SELECT USER FROM DUAL");
         String currentUser = resultSet.getString(1);
         assertThat(currentUser)
@@ -116,7 +118,7 @@ class SimpleOracleTest extends AbstractContainerDatabaseTest {
         try (
             OracleContainer oracleSid = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME)
                 .usingSid()
-                .withSystemPassword("SysP@ss1!")
+                .withOraclePassword("SysP@ss1!")
                 .withPassword("AppP@ss1!")
         ) {
             runTestSystemUser(oracleSid, "xepdb1", "system", "SysP@ss1!");
@@ -125,7 +127,7 @@ class SimpleOracleTest extends AbstractContainerDatabaseTest {
         // Non-SID mode should use application user's password
         try (
             OracleContainer oraclePdb = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME)
-                .withSystemPassword("SysP@ss2!")
+                .withOraclePassword("SysP@ss2!")
                 .withPassword("AppP@ss2!")
         ) {
             runTest(oraclePdb, "xepdb1", "test", "AppP@ss2!");
