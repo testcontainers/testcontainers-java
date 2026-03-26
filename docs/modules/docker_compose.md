@@ -72,7 +72,7 @@ accessible via the static factory methods from of the `Wait` class.
 
 For instance, we can wait for exposed port and set a custom timeout:
 <!--codeinclude-->
-[Wait for the exposed port and use a custom timeout](../../core/src/test/java/org/testcontainers/junit/ComposeContainerWithWaitStrategies.java) inside_block:composeContainerWaitForPortWithTimeout
+[Wait for the exposed port and use a custom timeout](../../core/src/test/java/org/testcontainers/junit/ComposeContainerWithWaitStrategiesTest.java) inside_block:composeContainerWaitForPortWithTimeout
 <!--/codeinclude-->
 
 Needless to say, we can define different strategies for each service in our Docker Compose setup. 
@@ -81,7 +81,7 @@ For example, our Redis container can wait for a successful redis-cli command,
 while our db service waits for a specific log message:
 
 <!--codeinclude-->
-[Wait for a custom command and a log message](../../core/src/test/java/org/testcontainers/junit/ComposeContainerWithWaitStrategies.java) inside_block:composeContainerWithCombinedWaitStrategies
+[Wait for a custom command and a log message](../../core/src/test/java/org/testcontainers/junit/ComposeContainerWithWaitStrategiesTest.java) inside_block:composeContainerWithCombinedWaitStrategies
 <!--/codeinclude-->
 
 

@@ -96,7 +96,7 @@ publishing {
     }
     repositories {
         maven {
-            url = layout.buildDirectory.dir('staging-deploy')
+            url = rootProject.layout.buildDirectory.dir('staging-deploy')
         }
     }
 }
@@ -112,7 +112,7 @@ jreleaser {
                 central {
                     active = 'ALWAYS'
                     url = 'https://central.sonatype.com/api/v1/publisher'
-                    stagingRepository(layout.buildDirectory.dir("staging-deploy").get().toString())
+                    stagingRepository(rootProject.layout.buildDirectory.dir("staging-deploy").get().toString())
                     stage = 'UPLOAD'
                     applyMavenCentralRules = true
                     namespace = 'org.testcontainers'

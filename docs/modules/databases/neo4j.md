@@ -9,18 +9,11 @@ the Testcontainers integration supports also newer 5.x images of Neo4j.
 
 ## Usage example
 
-Declare your Testcontainers as a `@ClassRule` or `@Rule` in a JUnit 4 test or as static or member attribute of a JUnit 5 test annotated with `@Container` as you would with other Testcontainers.
-You can either use call `getBoltUrl()` or `getHttpUrl()` on the Neo4j container.
-`getBoltUrl()` is meant to be used with one of the [official Bolt drivers](https://neo4j.com/developer/language-guides/) while `getHttpUrl()` gives you the HTTP-address of the transactional HTTP endpoint.
-On the JVM you would most likely use the [Java driver](https://github.com/neo4j/neo4j-java-driver).
-
-The following example uses the JUnit 5 extension `@Testcontainers` and demonstrates both the usage of the Java Driver and the REST endpoint:
+You can start a Neo4j container instance from any Java application by using:
 
 <!--codeinclude-->
-[JUnit 5 example](../../../examples/neo4j-container/src/test/java/org/testcontainers/containers/Neo4jExampleTest.java) inside_block:junitExample
+[Neo4j container](../../../modules/neo4j/src/test/java/org/testcontainers/neo4j/Neo4jContainerTest.java) inside_block:container
 <!--/codeinclude-->
-
-You are not limited to Unit tests, and you can use an instance of the Neo4j Testcontainers in vanilla Java code as well.
 
 ## Additional features
 
