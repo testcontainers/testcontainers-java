@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
-// junitExample {
 @Testcontainers
 class Neo4jExampleTest {
 
@@ -68,4 +67,3 @@ class Neo4jExampleTest {
         }
     }
 }
-// }
