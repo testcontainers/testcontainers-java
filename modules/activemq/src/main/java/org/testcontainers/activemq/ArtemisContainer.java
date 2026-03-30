@@ -9,6 +9,8 @@ import java.time.Duration;
 /**
  * Testcontainers implementation for Apache ActiveMQ Artemis.
  * <p>
+ * Supported images: {@code apache/artemis}, {@code apache/activemq-artemis}
+ * <p>
  * Exposed ports:
  * <ul>
  *     <li>Console: 8161</li>
@@ -23,6 +25,8 @@ import java.time.Duration;
 public class ArtemisContainer extends GenericContainer<ArtemisContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE = DockerImageName.parse("apache/activemq-artemis");
+
+    private static final DockerImageName APACHE_ARTEMIS_IMAGE = DockerImageName.parse("apache/artemis");
 
     private static final int WEB_CONSOLE_PORT = 8161;
 
@@ -49,7 +53,7 @@ public class ArtemisContainer extends GenericContainer<ArtemisContainer> {
 
     public ArtemisContainer(DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE, APACHE_ARTEMIS_IMAGE);
 
         withExposedPorts(WEB_CONSOLE_PORT, TCP_PORT, HORNETQ_STOMP_PORT, AMQP_PORT, STOMP_PORT, MQTT_PORT, WS_PORT);
         waitingFor(Wait.forLogMessage(".*HTTP Server started.*", 1).withStartupTimeout(Duration.ofMinutes(1)));

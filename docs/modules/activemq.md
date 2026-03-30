@@ -1,7 +1,7 @@
 # ActiveMQ
 
 Testcontainers module for [ActiveMQ](https://hub.docker.com/r/apache/activemq-classic) and
-[Artemis](https://hub.docker.com/r/apache/activemq-artemis).
+[Artemis](https://hub.docker.com/r/apache/artemis).
 
 ## ActiveMQContainer's usage examples
 

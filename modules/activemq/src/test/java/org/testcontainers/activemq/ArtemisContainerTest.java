@@ -9,6 +9,8 @@ import jakarta.jms.TextMessage;
 import lombok.SneakyThrows;
 import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -18,7 +20,7 @@ class ArtemisContainerTest {
     void defaultCredentials() {
         try (
             // container {
-            ArtemisContainer artemis = new ArtemisContainer("apache/activemq-artemis:2.30.0-alpine")
+            ArtemisContainer artemis = new ArtemisContainer("apache/activemq-artemis:2.32.0-alpine")
             // }
         ) {
             artemis.start();
@@ -33,7 +35,7 @@ class ArtemisContainerTest {
     void customCredentials() {
         try (
             // settingCredentials {
-            ArtemisContainer artemis = new ArtemisContainer("apache/activemq-artemis:2.30.0-alpine")
+            ArtemisContainer artemis = new ArtemisContainer("apache/activemq-artemis:2.32.0-alpine")
                 .withUser("testcontainers")
                 .withPassword("testcontainers")
             // }
@@ -50,7 +52,7 @@ class ArtemisContainerTest {
     void allowAnonymousLogin() {
         try (
             // enableAnonymousLogin {
-            ArtemisContainer artemis = new ArtemisContainer("apache/activemq-artemis:2.30.0-alpine")
+            ArtemisContainer artemis = new ArtemisContainer("apache/activemq-artemis:2.32.0-alpine")
                 .withEnv("ANONYMOUS_LOGIN", "true")
             // }
         ) {
@@ -59,6 +61,15 @@ class ArtemisContainerTest {
             assertFunctionality(artemis, true);
         }
     }
+
+	@ParameterizedTest
+	@ValueSource(strings = { "apache/activemq-artemis:2.32.0-alpine", "apache/artemis:2.53.0-alpine" })
+	void compatibility(String image) {
+		try (ArtemisContainer artemis = new ArtemisContainer(image)) {
+			artemis.start();
+			assertFunctionality(artemis, false);
+		}
+	}
 
     @SneakyThrows
     private void assertFunctionality(ArtemisContainer artemis, boolean anonymousLogin) {
