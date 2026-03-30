@@ -62,14 +62,14 @@ class ArtemisContainerTest {
         }
     }
 
-	@ParameterizedTest
-	@ValueSource(strings = { "apache/activemq-artemis:2.32.0-alpine", "apache/artemis:2.53.0-alpine" })
-	void compatibility(String image) {
-		try (ArtemisContainer artemis = new ArtemisContainer(image)) {
-			artemis.start();
-			assertFunctionality(artemis, false);
-		}
-	}
+    @ParameterizedTest
+    @ValueSource(strings = { "apache/activemq-artemis:2.32.0-alpine", "apache/artemis:2.53.0-alpine" })
+    void compatibility(String image) {
+        try (ArtemisContainer artemis = new ArtemisContainer(image)) {
+            artemis.start();
+            assertFunctionality(artemis, false);
+        }
+    }
 
     @SneakyThrows
     private void assertFunctionality(ArtemisContainer artemis, boolean anonymousLogin) {
