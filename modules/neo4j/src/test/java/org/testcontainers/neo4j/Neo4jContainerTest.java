@@ -31,17 +31,32 @@ class Neo4jContainerTest {
     private static final String ACCEPTANCE_FILE_LOCATION = "/container-license-acceptance.txt";
 
     @Test
+    void authenticated() {
+        try (
+            // container {
+            Neo4jContainer neo4j = new Neo4jContainer("neo4j:4.4")
+            // }
+        ) {
+            neo4j.start();
+            try (Driver driver = getDriver(neo4j); Session session = driver.session()) {
+                long one = session.run("RETURN 1", Collections.emptyMap()).next().get(0).asLong();
+                assertThat(one).isEqualTo(1L);
+            }
+        }
+    }
+
+    @Test
     void shouldDisableAuthentication() {
         try (
             // spotless:off
             // withoutAuthentication {
-            Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4")
+            Neo4jContainer neo4j = new Neo4jContainer("neo4j:4.4")
                 .withoutAuthentication()
             // }
             // spotless:on
         ) {
-            neo4jContainer.start();
-            try (Driver driver = getDriver(neo4jContainer); Session session = driver.session()) {
+            neo4j.start();
+            try (Driver driver = getDriver(neo4j); Session session = driver.session()) {
                 long one = session.run("RETURN 1", Collections.emptyMap()).next().get(0).asLong();
                 assertThat(one).isEqualTo(1L);
             }
@@ -54,12 +69,12 @@ class Neo4jContainerTest {
         assumeThat(DockerClientFactory.instance().getInfo().getArchitecture()).isNotEqualTo("aarch64");
         try (
             // copyDatabase {
-            Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:3.5.30")
+            Neo4jContainer neo4j = new Neo4jContainer("neo4j:3.5.30")
                 .withDatabase(MountableFile.forClasspathResource("/test-graph.db"))
             // }
         ) {
-            neo4jContainer.start();
-            try (Driver driver = getDriver(neo4jContainer); Session session = driver.session()) {
+            neo4j.start();
+            try (Driver driver = getDriver(neo4j); Session session = driver.session()) {
                 Result result = session.run("MATCH (t:Thing) RETURN t");
                 assertThat(result.list().stream().map(r -> r.get("t").get("name").asString()))
                     .containsExactlyInAnyOrder("Thing", "Thing 2", "Thing 3", "A box");
@@ -98,12 +113,12 @@ class Neo4jContainerTest {
     void shouldCopyPlugins() {
         try (
             // registerPluginsPath {
-            Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4")
+            Neo4jContainer neo4j = new Neo4jContainer("neo4j:4.4")
                 .withPlugins(MountableFile.forClasspathResource("/custom-plugins"))
             // }
         ) {
-            neo4jContainer.start();
-            try (Driver driver = getDriver(neo4jContainer); Session session = driver.session()) {
+            neo4j.start();
+            try (Driver driver = getDriver(neo4j); Session session = driver.session()) {
                 assertThatCustomPluginWasCopied(session);
             }
         }
@@ -113,12 +128,12 @@ class Neo4jContainerTest {
     void shouldCopyPlugin() {
         try (
             // registerPluginsJar {
-            Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4")
+            Neo4jContainer neo4j = new Neo4jContainer("neo4j:4.4")
                 .withPlugins(MountableFile.forClasspathResource("/custom-plugins/hello-world.jar"))
             // }
         ) {
-            neo4jContainer.start();
-            try (Driver driver = getDriver(neo4jContainer); Session session = driver.session()) {
+            neo4j.start();
+            try (Driver driver = getDriver(neo4j); Session session = driver.session()) {
                 assertThatCustomPluginWasCopied(session);
             }
         }
@@ -137,13 +152,13 @@ class Neo4jContainerTest {
 
         try (
             // enterpriseEdition {
-            Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4-enterprise")
+            Neo4jContainer neo4j = new Neo4jContainer("neo4j:4.4-enterprise")
                 .acceptLicense()
                 // }
                 .withAdminPassword("Picard123")
         ) {
-            neo4jContainer.start();
-            try (Driver driver = getDriver(neo4jContainer); Session session = driver.session()) {
+            neo4j.start();
+            try (Driver driver = getDriver(neo4j); Session session = driver.session()) {
                 String edition = session
                     .run("CALL dbms.components() YIELD edition RETURN edition", Collections.emptyMap())
                     .next()
@@ -157,110 +172,109 @@ class Neo4jContainerTest {
     @Test
     void shouldAddConfigToEnvironment() {
         // neo4jConfiguration {
-        Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4")
+        Neo4jContainer neo4j = new Neo4jContainer("neo4j:4.4")
             .withNeo4jConfig("dbms.security.procedures.unrestricted", "apoc.*,algo.*")
             .withNeo4jConfig("dbms.tx_log.rotation.size", "42M");
         // }
 
-        assertThat(neo4jContainer.getEnvMap())
-            .containsEntry("NEO4J_dbms_security_procedures_unrestricted", "apoc.*,algo.*");
-        assertThat(neo4jContainer.getEnvMap()).containsEntry("NEO4J_dbms_tx__log_rotation_size", "42M");
+        assertThat(neo4j.getEnvMap()).containsEntry("NEO4J_dbms_security_procedures_unrestricted", "apoc.*,algo.*");
+        assertThat(neo4j.getEnvMap()).containsEntry("NEO4J_dbms_tx__log_rotation_size", "42M");
     }
 
     @Test
     void shouldRespectEnvironmentAuth() {
-        Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4").withEnv("NEO4J_AUTH", "neo4j/secret");
+        Neo4jContainer neo4j = new Neo4jContainer("neo4j:4.4").withEnv("NEO4J_AUTH", "neo4j/secret");
 
-        neo4jContainer.configure();
+        neo4j.configure();
 
-        assertThat(neo4jContainer.getEnvMap()).containsEntry("NEO4J_AUTH", "neo4j/secret");
+        assertThat(neo4j.getEnvMap()).containsEntry("NEO4J_AUTH", "neo4j/secret");
     }
 
     @Test
     void shouldSetCustomPasswordCorrectly() {
         // withAdminPassword {
-        Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4").withAdminPassword("verySecret");
+        Neo4jContainer neo4j = new Neo4jContainer("neo4j:4.4").withAdminPassword("verySecret");
         // }
 
-        neo4jContainer.configure();
+        neo4j.configure();
 
-        assertThat(neo4jContainer.getEnvMap()).containsEntry("NEO4J_AUTH", "neo4j/verySecret");
+        assertThat(neo4j.getEnvMap()).containsEntry("NEO4J_AUTH", "neo4j/verySecret");
     }
 
     @Test
-    void containerAdminPasswordOverrulesEnvironmentAuth() {
-        Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4")
+    void adminPasswordOverrulesEnvironmentAuth() {
+        Neo4jContainer neo4j = new Neo4jContainer("neo4j:4.4")
             .withEnv("NEO4J_AUTH", "neo4j/secret")
             .withAdminPassword("anotherSecret");
 
-        neo4jContainer.configure();
+        neo4j.configure();
 
-        assertThat(neo4jContainer.getEnvMap()).containsEntry("NEO4J_AUTH", "neo4j/anotherSecret");
+        assertThat(neo4j.getEnvMap()).containsEntry("NEO4J_AUTH", "neo4j/anotherSecret");
     }
 
     @Test
-    void containerWithoutAuthenticationOverrulesEnvironmentAuth() {
-        Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4")
+    void shouldWithoutAuthenticationOverrulesEnvironmentAuth() {
+        Neo4jContainer neo4j = new Neo4jContainer("neo4j:4.4")
             .withEnv("NEO4J_AUTH", "neo4j/secret")
             .withoutAuthentication();
 
-        neo4jContainer.configure();
+        neo4j.configure();
 
-        assertThat(neo4jContainer.getEnvMap()).containsEntry("NEO4J_AUTH", "none");
+        assertThat(neo4j.getEnvMap()).containsEntry("NEO4J_AUTH", "none");
     }
 
     @Test
     void shouldRespectAlreadyDefinedPortMappingsBolt() {
-        Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4").withExposedPorts(7687);
+        Neo4jContainer neo4j = new Neo4jContainer("neo4j:4.4").withExposedPorts(7687);
 
-        neo4jContainer.configure();
+        neo4j.configure();
 
-        assertThat(neo4jContainer.getExposedPorts()).containsExactly(7687);
+        assertThat(neo4j.getExposedPorts()).containsExactly(7687);
     }
 
     @Test
     void shouldRespectAlreadyDefinedPortMappingsHttp() {
-        Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4").withExposedPorts(7474);
+        Neo4jContainer neo4j = new Neo4jContainer("neo4j:4.4").withExposedPorts(7474);
 
-        neo4jContainer.configure();
+        neo4j.configure();
 
-        assertThat(neo4jContainer.getExposedPorts()).containsExactly(7474);
+        assertThat(neo4j.getExposedPorts()).containsExactly(7474);
     }
 
     @Test
     void shouldRespectAlreadyDefinedPortMappingsWithoutHttps() {
-        Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4").withExposedPorts(7687, 7474);
+        Neo4jContainer neo4j = new Neo4jContainer("neo4j:4.4").withExposedPorts(7687, 7474);
 
-        neo4jContainer.configure();
+        neo4j.configure();
 
-        assertThat(neo4jContainer.getExposedPorts()).containsExactlyInAnyOrder(7474, 7687);
+        assertThat(neo4j.getExposedPorts()).containsExactlyInAnyOrder(7474, 7687);
     }
 
     @Test
     void shouldDefaultExportBoltHttpAndHttps() {
-        Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4");
+        Neo4jContainer neo4j = new Neo4jContainer("neo4j:4.4");
 
-        neo4jContainer.configure();
+        neo4j.configure();
 
-        assertThat(neo4jContainer.getExposedPorts()).containsExactlyInAnyOrder(7473, 7474, 7687);
+        assertThat(neo4j.getExposedPorts()).containsExactlyInAnyOrder(7473, 7474, 7687);
     }
 
     @Test
     void shouldRespectCustomWaitStrategy() {
-        Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4").waitingFor(new CustomDummyWaitStrategy());
+        Neo4jContainer neo4j = new Neo4jContainer("neo4j:4.4").waitingFor(new CustomDummyWaitStrategy());
 
-        neo4jContainer.configure();
+        neo4j.configure();
 
-        assertThat(neo4jContainer).extracting("waitStrategy").isInstanceOf(CustomDummyWaitStrategy.class);
+        assertThat(neo4j).extracting("waitStrategy").isInstanceOf(CustomDummyWaitStrategy.class);
     }
 
     @Test
     void shouldConfigureSinglePluginByName() {
-        try (Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4").withPlugins("apoc")) {
+        try (Neo4jContainer neo4j = new Neo4jContainer("neo4j:4.4").withPlugins("apoc")) {
             // needs to get called explicitly for setup
-            neo4jContainer.configure();
+            neo4j.configure();
 
-            assertThat(neo4jContainer.getEnvMap()).containsEntry("NEO4JLABS_PLUGINS", "[\"apoc\"]");
+            assertThat(neo4j.getEnvMap()).containsEntry("NEO4JLABS_PLUGINS", "[\"apoc\"]");
         }
     }
 
@@ -268,14 +282,14 @@ class Neo4jContainerTest {
     void shouldConfigureMultiplePluginsByName() {
         try (
             // configureLabsPlugins {
-            Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4") //
+            Neo4jContainer neo4j = new Neo4jContainer("neo4j:4.4") //
                 .withPlugins("apoc", "bloom");
             // }
         ) {
             // needs to get called explicitly for setup
-            neo4jContainer.configure();
+            neo4j.configure();
 
-            assertThat(neo4jContainer.getEnvMap().get("NEO4JLABS_PLUGINS"))
+            assertThat(neo4j.getEnvMap().get("NEO4JLABS_PLUGINS"))
                 .containsAnyOf("[\"apoc\",\"bloom\"]", "[\"bloom\",\"apoc\"]");
         }
     }
@@ -284,26 +298,26 @@ class Neo4jContainerTest {
     void shouldCreateRandomUuidBasedPasswords() {
         try (
             // withRandomPassword {
-            Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4").withRandomPassword();
+            Neo4jContainer neo4j = new Neo4jContainer("neo4j:4.4").withRandomPassword();
             // }
         ) {
             // It will throw an exception if it's not UUID parsable.
-            assertThatNoException().isThrownBy(neo4jContainer::configure);
+            assertThatNoException().isThrownBy(neo4j::configure);
             // This basically is always true at if the random password is UUID-like.
-            assertThat(neo4jContainer.getAdminPassword())
+            assertThat(neo4j.getAdminPassword())
                 .satisfies(password -> assertThat(UUID.fromString(password).toString()).isEqualTo(password));
         }
     }
 
     @Test
     void shouldWarnOnPasswordTooShort() {
-        try (Neo4jContainer neo4jContainer = new Neo4jContainer("neo4j:4.4");) {
+        try (Neo4jContainer neo4j = new Neo4jContainer("neo4j:4.4");) {
             Logger logger = (Logger) DockerLoggerFactory.getLogger("neo4j:4.4");
             TestLogAppender testLogAppender = new TestLogAppender();
             logger.addAppender(testLogAppender);
             testLogAppender.start();
 
-            neo4jContainer.withAdminPassword("short");
+            neo4j.withAdminPassword("short");
 
             testLogAppender.stop();
 
@@ -337,11 +351,11 @@ class Neo4jContainerTest {
         }
     }
 
-    private static Driver getDriver(Neo4jContainer container) {
+    private static Driver getDriver(Neo4jContainer neo4j) {
         AuthToken authToken = AuthTokens.none();
-        if (container.getAdminPassword() != null) {
-            authToken = AuthTokens.basic("neo4j", container.getAdminPassword());
+        if (neo4j.getAdminPassword() != null) {
+            authToken = AuthTokens.basic("neo4j", neo4j.getAdminPassword());
         }
-        return GraphDatabase.driver(container.getBoltUrl(), authToken);
+        return GraphDatabase.driver(neo4j.getBoltUrl(), authToken);
     }
 }
