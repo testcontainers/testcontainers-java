@@ -72,20 +72,31 @@ enum LocalImagesCache {
 
     private void populateFromList(List<Image> images) {
         for (Image image : images) {
-            String[] repoTags = image.getRepoTags();
-            if (repoTags == null) {
-                log.debug("repoTags is null, skipping image: {}", image);
-                continue;
-            }
+            ImageData imageData = ImageData.from(image);
 
-            cache.putAll(
+            // Index by repo tags (e.g. "name:tag")
+            String[] repoTags = image.getRepoTags();
+            if (repoTags != null) {
                 Stream
                     .of(repoTags)
-                    // Protection against some edge case where local image repository tags end up with duplicates
-                    // making toMap crash at merge time.
                     .distinct()
-                    .collect(Collectors.toMap(DockerImageName::new, it -> ImageData.from(image)))
-            );
+                    .forEach(tag -> cache.put(new DockerImageName(tag), imageData));
+            }
+
+            // Index by repo digests (e.g. "name@sha256:abc...")
+            String[] repoDigests = image.getRepoDigests();
+            if (repoDigests != null) {
+                Stream
+                    .of(repoDigests)
+                    .distinct()
+                    .forEach(digest -> cache.put(new DockerImageName(digest), imageData));
+            }
+
+            // Index by image ID (e.g. "sha256:abc...")
+            String id = image.getId();
+            if (id != null) {
+                cache.put(new DockerImageName(id), imageData);
+            }
         }
     }
 }
