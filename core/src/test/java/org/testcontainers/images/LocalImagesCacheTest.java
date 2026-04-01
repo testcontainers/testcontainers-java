@@ -67,8 +67,8 @@ class LocalImagesCacheTest {
     }
 
     @Test
-    void shouldSkipImageWithNullTagsAndNullDigests() {
-        Image image = createImage(null, null, "sha256:ddd444", 1000L);
+    void shouldSkipImageWithNullTagsAndNullDigestsAndNullId() {
+        Image image = createImage(null, null, null, 1000L);
 
         populateCache(image);
 
@@ -108,6 +108,42 @@ class LocalImagesCacheTest {
         populateCache(image);
 
         assertThat(LocalImagesCache.INSTANCE.cache).containsKey(new DockerImageName("alpine:3.17"));
+    }
+
+    @Test
+    void shouldCacheImageById() {
+        Image image = createImage(
+            new String[] { "alpine:3.17" },
+            null,
+            "sha256:8cf620617c6203b24af7c5bf15a7212386c27ad008fc4c6ff7e37a1bf0a3cdd2",
+            1000L
+        );
+
+        populateCache(image);
+
+        assertThat(LocalImagesCache.INSTANCE.cache)
+            .containsKey(new DockerImageName("alpine:3.17"))
+            .containsKey(
+                new DockerImageName("sha256:8cf620617c6203b24af7c5bf15a7212386c27ad008fc4c6ff7e37a1bf0a3cdd2")
+            );
+    }
+
+    @Test
+    void shouldCacheImageByIdWhenNoTagsOrDigests() {
+        Image image = createImage(
+            null,
+            null,
+            "sha256:8cf620617c6203b24af7c5bf15a7212386c27ad008fc4c6ff7e37a1bf0a3cdd2",
+            1000L
+        );
+
+        populateCache(image);
+
+        assertThat(LocalImagesCache.INSTANCE.cache)
+            .hasSize(1)
+            .containsKey(
+                new DockerImageName("sha256:8cf620617c6203b24af7c5bf15a7212386c27ad008fc4c6ff7e37a1bf0a3cdd2")
+            );
     }
 
     @Test

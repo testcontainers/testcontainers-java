@@ -97,8 +97,13 @@ enum LocalImagesCache {
                     });
             }
 
-            if (repoTags == null && repoDigests == null) {
-                log.debug("repoTags and repoDigests are both null, skipping image: {}", image);
+            String id = image.getId();
+            if (id != null) {
+                cache.put(new DockerImageName(id), imageData);
+            }
+
+            if (repoTags == null && repoDigests == null && id == null) {
+                log.debug("repoTags, repoDigests, and id are all null, skipping image: {}", image);
             }
         }
     }
