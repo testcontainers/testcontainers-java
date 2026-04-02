@@ -40,11 +40,12 @@ public class JdbcDatabaseDelegate extends AbstractDatabaseDelegate<Statement> {
 
     @Override
     public void execute(
-            String statement,
-            String scriptPath,
-            int lineNumber,
-            boolean continueOnError,
-            boolean ignoreFailedDrops) {
+        String statement,
+        String scriptPath,
+        int lineNumber,
+        boolean continueOnError,
+        boolean ignoreFailedDrops
+    ) {
         try {
             boolean rowsAffected = getConnection().execute(statement);
             log.debug("{} returned as updateCount for SQL: {}", rowsAffected, statement);
@@ -52,11 +53,12 @@ public class JdbcDatabaseDelegate extends AbstractDatabaseDelegate<Statement> {
             boolean dropStatement = statement.trim().toLowerCase().startsWith("drop");
             if (continueOnError || (dropStatement && ignoreFailedDrops)) {
                 log.debug(
-                        "Failed to execute SQL script statement at line {} of resource {}: {}",
-                        lineNumber,
-                        scriptPath,
-                        statement,
-                        ex);
+                    "Failed to execute SQL script statement at line {} of resource {}: {}",
+                    lineNumber,
+                    scriptPath,
+                    statement,
+                    ex
+                );
             } else {
                 throw new ScriptUtils.ScriptStatementFailedException(statement, lineNumber, scriptPath, ex);
             }
