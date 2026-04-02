@@ -86,6 +86,33 @@ class DockerImageNameCompatibilityTest {
     }
 
     @Test
+    void testDigestOnlyImageIsCompatible() {
+        DockerImageName subject = DockerImageName.parse("postgres@sha256:1234abcd1234abcd1234abcd1234abcd");
+
+        assertThat(subject.isCompatibleWith(DockerImageName.parse("postgres")))
+            .as("postgres@sha256:... ~= postgres")
+            .isTrue();
+    }
+
+    @Test
+    void testTagAndDigestImageIsCompatible() {
+        DockerImageName subject = DockerImageName.parse("postgres:16.8@sha256:1234abcd1234abcd1234abcd1234abcd");
+
+        assertThat(subject.isCompatibleWith(DockerImageName.parse("postgres")))
+            .as("postgres:16.8@sha256:... ~= postgres")
+            .isTrue();
+    }
+
+    @Test
+    void testTagAndDigestImageWithRegistryIsCompatible() {
+        DockerImageName subject = DockerImageName.parse("registry.foo.com/repo:tag@sha256:1234abcd1234abcd1234abcd1234abcd");
+
+        assertThat(subject.isCompatibleWith(DockerImageName.parse("registry.foo.com/repo")))
+            .as("registry.foo.com/repo:tag@sha256:... ~= registry.foo.com/repo")
+            .isTrue();
+    }
+
+    @Test
     void testAssertMethodAcceptsCompatible() {
         DockerImageName subject = DockerImageName.parse("foo").asCompatibleSubstituteFor("bar");
         subject.assertCompatibleWith(DockerImageName.parse("bar"));
