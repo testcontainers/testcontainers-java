@@ -105,7 +105,9 @@ class DockerImageNameCompatibilityTest {
 
     @Test
     void testTagAndDigestImageWithRegistryIsCompatible() {
-        DockerImageName subject = DockerImageName.parse("registry.foo.com/repo:tag@sha256:1234abcd1234abcd1234abcd1234abcd");
+        DockerImageName subject = DockerImageName.parse(
+            "registry.foo.com/repo:tag@sha256:1234abcd1234abcd1234abcd1234abcd"
+        );
 
         assertThat(subject.isCompatibleWith(DockerImageName.parse("registry.foo.com/repo")))
             .as("registry.foo.com/repo:tag@sha256:... ~= registry.foo.com/repo")

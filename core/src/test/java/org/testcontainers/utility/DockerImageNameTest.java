@@ -160,16 +160,24 @@ class DockerImageNameTest {
 
             assertThat(imageName.getRegistry()).isEqualTo("");
             assertThat(imageName.getUnversionedPart()).isEqualTo("myname");
-            assertThat(imageName.getVersionPart()).isEqualTo("sha256:1234abcd1234abcd1234abcd1234abcd");
+            assertThat(imageName.getVersionPart()).isEqualTo("latest");
+            assertThat(imageName.getDigest()).isEqualTo("sha256:1234abcd1234abcd1234abcd1234abcd");
+            assertThat(imageName.asCanonicalNameString())
+                .isEqualTo("myname:latest@sha256:1234abcd1234abcd1234abcd1234abcd");
         }
 
         @Test
         void testTagAndDigestWithRepoPath() {
-            DockerImageName imageName = DockerImageName.parse("repo/myname:1.0@sha256:1234abcd1234abcd1234abcd1234abcd");
+            DockerImageName imageName = DockerImageName.parse(
+                "repo/myname:1.0@sha256:1234abcd1234abcd1234abcd1234abcd"
+            );
 
             assertThat(imageName.getRegistry()).isEqualTo("");
             assertThat(imageName.getUnversionedPart()).isEqualTo("repo/myname");
-            assertThat(imageName.getVersionPart()).isEqualTo("sha256:1234abcd1234abcd1234abcd1234abcd");
+            assertThat(imageName.getVersionPart()).isEqualTo("1.0");
+            assertThat(imageName.getDigest()).isEqualTo("sha256:1234abcd1234abcd1234abcd1234abcd");
+            assertThat(imageName.asCanonicalNameString())
+                .isEqualTo("repo/myname:1.0@sha256:1234abcd1234abcd1234abcd1234abcd");
         }
 
         @Test
@@ -180,7 +188,18 @@ class DockerImageNameTest {
 
             assertThat(imageName.getRegistry()).isEqualTo("registry.foo.com:1234");
             assertThat(imageName.getUnversionedPart()).isEqualTo("registry.foo.com:1234/repo-here/my-name");
+            assertThat(imageName.getVersionPart()).isEqualTo("1.0");
+            assertThat(imageName.getDigest()).isEqualTo("sha256:1234abcd1234abcd1234abcd1234abcd");
+            assertThat(imageName.asCanonicalNameString())
+                .isEqualTo("registry.foo.com:1234/repo-here/my-name:1.0@sha256:1234abcd1234abcd1234abcd1234abcd");
+        }
+
+        @Test
+        void testDigestOnlyHasNoTag() {
+            DockerImageName imageName = DockerImageName.parse("myname@sha256:1234abcd1234abcd1234abcd1234abcd");
+
             assertThat(imageName.getVersionPart()).isEqualTo("sha256:1234abcd1234abcd1234abcd1234abcd");
+            assertThat(imageName.getDigest()).isEqualTo("sha256:1234abcd1234abcd1234abcd1234abcd");
         }
     }
 }

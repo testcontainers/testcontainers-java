@@ -79,8 +79,20 @@ interface Versioning {
 
         private final String hash;
 
+        @EqualsAndHashCode.Exclude
+        private final String tag;
+
         Sha256Versioning(String hash) {
+            this(hash, null);
+        }
+
+        Sha256Versioning(String hash, String tag) {
             this.hash = hash;
+            this.tag = tag;
+        }
+
+        String getTag() {
+            return tag;
         }
 
         @Override
