@@ -195,6 +195,22 @@ class DockerImageNameTest {
         }
 
         @Test
+        void testMalformedTagWithExtraColonIsRejected() {
+            assertThatThrownBy(() ->
+                    DockerImageName.parse("repo/image:tag:extra@sha256:1234abcd1234abcd1234abcd1234abcd").assertValid()
+                )
+                .isInstanceOf(IllegalArgumentException.class);
+        }
+
+        @Test
+        void testDifferentTagsSameDigestAreNotEqual() {
+            DockerImageName a = DockerImageName.parse("repo/image:1.0@sha256:1234abcd1234abcd1234abcd1234abcd");
+            DockerImageName b = DockerImageName.parse("repo/image:latest@sha256:1234abcd1234abcd1234abcd1234abcd");
+
+            assertThat(a).isNotEqualTo(b);
+        }
+
+        @Test
         void testDigestOnlyHasNoTag() {
             DockerImageName imageName = DockerImageName.parse("myname@sha256:1234abcd1234abcd1234abcd1234abcd");
 

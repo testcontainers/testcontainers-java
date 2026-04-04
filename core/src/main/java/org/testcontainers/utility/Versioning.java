@@ -79,7 +79,6 @@ interface Versioning {
 
         private final String hash;
 
-        @EqualsAndHashCode.Exclude
         private final String tag;
 
         Sha256Versioning(String hash) {
@@ -97,6 +96,9 @@ interface Versioning {
 
         @Override
         public boolean isValid() {
+            if (tag != null && !tag.matches(TagVersioning.TAG_REGEX)) {
+                return false;
+            }
             return hash.matches(HASH_REGEX);
         }
 
