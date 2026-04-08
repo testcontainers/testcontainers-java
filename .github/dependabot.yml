@@ -22,6 +22,8 @@ updates:
         update-types: [ "version-update:semver-major" ]
       - dependency-name: "org.junit.platform:junit-platform-launcher"
         update-types: [ "version-update:semver-major" ]
+      - dependency-name: "io.rest-assured:rest-assured"
+        update-types: [ "version-update:semver-major" ]
   - package-ecosystem: "gradle"
     directory: "/"
     allow:
@@ -63,6 +65,9 @@ updates:
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "io.rest-assured:rest-assured"
+        update-types: [ "version-update:semver-major" ]
   - package-ecosystem: "gradle"
     directory: "/modules/clickhouse"
     schedule:
@@ -78,6 +83,9 @@ updates:
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "io.rest-assured:rest-assured"
+        update-types: [ "version-update:semver-major" ]
   - package-ecosystem: "gradle"
     directory: "/modules/couchbase"
     schedule:
@@ -122,6 +130,9 @@ updates:
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "io.rest-assured:rest-assured"
+        update-types: [ "version-update:semver-major" ]
   - package-ecosystem: "gradle"
     directory: "/modules/hivemq"
     schedule:
@@ -214,6 +225,9 @@ updates:
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "io.rest-assured:rest-assured"
+        update-types: [ "version-update:semver-major" ]
   - package-ecosystem: "gradle"
     directory: "/modules/mongodb"
     schedule:
@@ -254,6 +268,9 @@ updates:
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "io.rest-assured:rest-assured"
+        update-types: [ "version-update:semver-major" ]
   - package-ecosystem: "gradle"
     directory: "/modules/openfga"
     schedule:
@@ -328,6 +345,9 @@ updates:
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "io.rest-assured:rest-assured"
+        update-types: [ "version-update:semver-major" ]
   - package-ecosystem: "gradle"
     directory: "/modules/scylladb"
     schedule:
@@ -395,6 +415,9 @@ updates:
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "io.rest-assured:rest-assured"
+        update-types: [ "version-update:semver-major" ]
   - package-ecosystem: "gradle"
     directory: "/modules/weaviate"
     schedule:
