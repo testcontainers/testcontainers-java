@@ -456,6 +456,8 @@ updates:
         update-types: [ "version-update:semver-major" ]
       - dependency-name: "org.junit.platform:junit-platform-launcher"
         update-types: [ "version-update:semver-major" ]
+      - dependency-name: "org.junit:junit-bom"
+        update-types: [ "version-update:semver-major" ]
       - dependency-name: "com.gradleup.shadow"
         update-types: [ "version-update:semver-major" ]
 
