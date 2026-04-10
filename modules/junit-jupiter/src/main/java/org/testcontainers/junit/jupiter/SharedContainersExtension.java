@@ -1,6 +1,7 @@
 package org.testcontainers.junit.jupiter;
 
 import lombok.Getter;
+import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
@@ -39,9 +40,12 @@ import java.util.stream.Stream;
  * {@code static} {@link Container}-annotated fields in the <em>root</em> store so that
  * they are started at most once per JVM session and live until the JVM exits.</p>
  */
-public class SharedContainersExtension implements BeforeEachCallback, BeforeAllCallback, AfterEachCallback, ExecutionCondition {
+public class SharedContainersExtension
+    implements BeforeEachCallback, BeforeAllCallback, AfterEachCallback, AfterAllCallback, ExecutionCondition {
 
     private static final Namespace NAMESPACE = Namespace.create(SharedContainersExtension.class);
+
+    private static final String SHARED_LIFECYCLE_AWARE_CONTAINERS = "sharedLifecycleAwareContainers";
 
     private static final String LOCAL_LIFECYCLE_AWARE_CONTAINERS = "localLifecycleAwareContainers";
 
@@ -65,7 +69,21 @@ public class SharedContainersExtension implements BeforeEachCallback, BeforeAllC
             .map(adapter -> (TestLifecycleAware) adapter.container)
             .collect(Collectors.toList());
 
+        // Store in class-level store so afterAll can retrieve and signal afterTest()
+        context.getStore(NAMESPACE).put(SHARED_LIFECYCLE_AWARE_CONTAINERS, lifecycleAwareContainers);
         signalBeforeTestToContainers(lifecycleAwareContainers, testDescriptionFrom(context));
+    }
+
+    @Override
+    public void afterAll(ExtensionContext context) {
+        List<TestLifecycleAware> containers = (List<TestLifecycleAware>) context
+            .getStore(NAMESPACE)
+            .get(SHARED_LIFECYCLE_AWARE_CONTAINERS);
+        if (containers != null) {
+            TestDescription description = testDescriptionFrom(context);
+            Optional<Throwable> throwable = context.getExecutionException();
+            containers.forEach(c -> c.afterTest(description, throwable));
+        }
     }
 
     @Override
