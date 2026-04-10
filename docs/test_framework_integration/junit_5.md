@@ -50,6 +50,22 @@ This is because nested test classes have to be defined non-static and can't ther
 [Shared Container](../../modules/junit-jupiter/src/test/java/org/testcontainers/junit/jupiter/MixedLifecycleTests.java) lines:18-23,32-33,35-36
 <!--/codeinclude-->
 
+## Shared containers across test classes
+
+When multiple test classes extend a common base class, using `@Testcontainers` causes containers
+to be stopped and restarted for each test class. To share containers for the entire JVM session
+instead, use `@SharedContainers`.
+
+`@SharedContainers` stores `static` `@Container` fields in a JVM-wide store so they are started
+only once and stopped automatically at the end of the test suite.
+
+<!--codeinclude-->
+[Shared Across Classes](../../modules/junit-jupiter/src/test/java/org/testcontainers/junit/jupiter/SharedContainersBaseTest.java)
+<!--/codeinclude-->
+
+**Note:** Do not combine `@SharedContainers` with `@Testcontainers` on the same class hierarchy,
+as this may produce unexpected lifecycle behaviour.
+
 ## Singleton containers
 
 Note that the [singleton container pattern](manual_lifecycle_control.md#singleton-containers) is also an option when

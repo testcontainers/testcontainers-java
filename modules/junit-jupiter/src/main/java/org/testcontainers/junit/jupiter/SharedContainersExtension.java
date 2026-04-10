@@ -108,12 +108,16 @@ public class SharedContainersExtension implements BeforeEachCallback, BeforeAllC
 
     private ConditionEvaluationResult evaluate(SharedContainers annotation) {
         if (annotation.disabledWithoutDocker()) {
-            if (dockerDetector.isDockerAvailable()) {
+            if (isDockerAvailable()) {
                 return ConditionEvaluationResult.enabled("Docker is available");
             }
             return ConditionEvaluationResult.disabled("disabledWithoutDocker is true and Docker is not available");
         }
         return ConditionEvaluationResult.enabled("disabledWithoutDocker is false");
+    }
+
+    boolean isDockerAvailable() {
+        return this.dockerDetector.isDockerAvailable();
     }
 
     private Optional<SharedContainers> findSharedContainersAnnotation(ExtensionContext context) {
