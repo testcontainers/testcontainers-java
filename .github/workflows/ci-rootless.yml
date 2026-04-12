@@ -48,7 +48,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Setup rootless Docker
-        uses: docker/setup-docker-action@v4
+        uses: docker/setup-docker-action@v5
         with:
           rootless: true
       - uses: ./.github/actions/setup-build
