@@ -51,8 +51,7 @@ jobs:
         uses: docker/setup-docker-action@v4
         with:
           rootless: true
-      - name: Setup Gradle Build Action
-        uses: gradle/actions/setup-gradle@v6
+      - uses: ./.github/actions/setup-build
       - name: Build with Gradle
         run: ./gradlew --no-daemon --scan testcontainers:test --tests '*GenericContainerRuleTest'
       - uses: ./.github/actions/setup-junit-report
