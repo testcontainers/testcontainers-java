@@ -1,6 +1,8 @@
 package org.testcontainers.junit.jupiter;
 
 import lombok.Getter;
+import lombok.Synchronized;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
@@ -12,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ExtensionContext.Namespace;
 import org.junit.jupiter.api.extension.ExtensionContext.Store;
 import org.junit.jupiter.api.extension.ExtensionContext.Store.CloseableResource;
+import org.junit.jupiter.api.extension.TestInstancePostProcessor;
 import org.junit.platform.commons.support.AnnotationSupport;
 import org.junit.platform.commons.support.HierarchyTraversalMode;
 import org.junit.platform.commons.support.ModifierSupport;
@@ -33,7 +36,13 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class TestcontainersExtension
-    implements BeforeEachCallback, BeforeAllCallback, AfterEachCallback, AfterAllCallback, ExecutionCondition {
+    implements
+        BeforeEachCallback,
+        BeforeAllCallback,
+        AfterEachCallback,
+        AfterAllCallback,
+        ExecutionCondition,
+        TestInstancePostProcessor {
 
     private static final Namespace NAMESPACE = Namespace.create(TestcontainersExtension.class);
 
@@ -44,7 +53,22 @@ public class TestcontainersExtension
     private final DockerAvailableDetector dockerDetector = new DockerAvailableDetector();
 
     @Override
+    public void postProcessTestInstance(Object testInstance, ExtensionContext context) {
+        TestInstance.Lifecycle lifecycle = context.getTestInstanceLifecycle().orElse(null);
+        if (lifecycle == TestInstance.Lifecycle.PER_CLASS) {
+            beforeAllImpl(context);
+        }
+    }
+
+    @Override
     public void beforeAll(ExtensionContext context) {
+        TestInstance.Lifecycle lifecycle = context.getTestInstanceLifecycle().orElse(null);
+        if (lifecycle != TestInstance.Lifecycle.PER_CLASS) {
+            beforeAllImpl(context);
+        }
+    }
+
+    private void beforeAllImpl(ExtensionContext context) {
         Class<?> testClass = context
             .getTestClass()
             .orElseThrow(() -> {
@@ -71,16 +95,14 @@ public class TestcontainersExtension
             return;
         }
 
+        List<StoreAdapter> storedAdapters = storeAdapters
+            .stream()
+            .map(adapter -> (StoreAdapter) store.getOrComputeIfAbsent(adapter.getKey(), k -> adapter))
+            .collect(Collectors.toList());
         if (isParallelExecutionEnabled(context)) {
-            Stream<Startable> startables = storeAdapters
-                .stream()
-                .map(storeAdapter -> {
-                    store.getOrComputeIfAbsent(storeAdapter.getKey(), k -> storeAdapter);
-                    return storeAdapter.container;
-                });
-            Startables.deepStart(startables).join();
+            Startables.deepStart(storedAdapters).join();
         } else {
-            storeAdapters.forEach(adapter -> store.getOrComputeIfAbsent(adapter.getKey(), k -> adapter.start()));
+            storedAdapters.forEach(StoreAdapter::start);
         }
     }
 
@@ -260,7 +282,7 @@ public class TestcontainersExtension
      * thereby letting the JUnit automatically stop containers once the current
      * {@link ExtensionContext} is closed.
      */
-    private static class StoreAdapter implements CloseableResource, AutoCloseable {
+    private static class StoreAdapter implements Startable, CloseableResource, AutoCloseable {
 
         @Getter
         private String key;
@@ -272,14 +294,29 @@ public class TestcontainersExtension
             this.container = container;
         }
 
-        private StoreAdapter start() {
-            container.start();
-            return this;
+        private boolean started;
+
+        @Override
+        @Synchronized
+        public void start() {
+            if (!started) {
+                container.start();
+                started = true;
+            }
+        }
+
+        @Override
+        @Synchronized
+        public void stop() {
+            if (started) {
+                container.stop();
+                started = false;
+            }
         }
 
         @Override
         public void close() {
-            container.stop();
+            stop();
         }
     }
 }
