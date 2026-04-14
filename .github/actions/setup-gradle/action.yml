@@ -4,7 +4,7 @@ runs:
   using: "composite"
   steps:
     - name: Setup Gradle Build Action
-      uses: gradle/actions/setup-gradle@v4
+      uses: gradle/actions/setup-gradle@v6
       with:
         gradle-home-cache-includes: |
           caches

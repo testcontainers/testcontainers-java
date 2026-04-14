@@ -1,6 +1,6 @@
 # Testcontainers
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.testcontainers/testcontainers/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.testcontainers/testcontainers)
+![Maven Central Version](https://img.shields.io/maven-central/v/org.testcontainers/testcontainers)
 
 [![Netlify Status](https://api.netlify.com/api/v1/badges/189f28a2-7faa-42ff-b03c-738142079cc9/deploy-status)](https://app.netlify.com/sites/testcontainers/deploys)
 
