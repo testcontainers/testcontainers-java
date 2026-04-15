@@ -5,8 +5,9 @@ import org.junit.jupiter.api.extension.ConditionEvaluationResult;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+
 
 public class SharedContainersExtensionTests {
 
@@ -40,7 +41,7 @@ public class SharedContainersExtensionTests {
 
     private ExtensionContext extensionContext(Class<?> clazz) {
         ExtensionContext extensionContext = mock(ExtensionContext.class);
-        when(extensionContext.getRequiredTestClass()).thenReturn(clazz);
+        doReturn(clazz).when(extensionContext).getRequiredTestClass();
         return extensionContext;
     }
 
