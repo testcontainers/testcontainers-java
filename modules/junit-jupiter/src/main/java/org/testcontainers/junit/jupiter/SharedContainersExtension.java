@@ -76,14 +76,7 @@ public class SharedContainersExtension
 
     @Override
     public void afterAll(ExtensionContext context) {
-        List<TestLifecycleAware> containers = (List<TestLifecycleAware>) context
-            .getStore(NAMESPACE)
-            .get(SHARED_LIFECYCLE_AWARE_CONTAINERS);
-        if (containers != null) {
-            TestDescription description = testDescriptionFrom(context);
-            Optional<Throwable> throwable = context.getExecutionException();
-            containers.forEach(c -> c.afterTest(description, throwable));
-        }
+        signalAfterTestToContainersFor(SHARED_LIFECYCLE_AWARE_CONTAINERS, context);
     }
 
     @Override
@@ -107,14 +100,7 @@ public class SharedContainersExtension
 
     @Override
     public void afterEach(ExtensionContext context) {
-        List<TestLifecycleAware> containers = (List<TestLifecycleAware>) context
-            .getStore(NAMESPACE)
-            .get(LOCAL_LIFECYCLE_AWARE_CONTAINERS);
-        if (containers != null) {
-            TestDescription description = testDescriptionFrom(context);
-            Optional<Throwable> throwable = context.getExecutionException();
-            containers.forEach(c -> c.afterTest(description, throwable));
-        }
+        signalAfterTestToContainersFor(LOCAL_LIFECYCLE_AWARE_CONTAINERS, context);
     }
 
     @Override
@@ -243,6 +229,17 @@ public class SharedContainersExtension
 
     private void signalBeforeTestToContainers(List<TestLifecycleAware> containers, TestDescription description) {
         containers.forEach(c -> c.beforeTest(description));
+    }
+
+    private void signalAfterTestToContainersFor(String storeKey, ExtensionContext context) {
+        List<TestLifecycleAware> lifecycleAwareContainers = (List<TestLifecycleAware>) context
+            .getStore(NAMESPACE)
+            .get(storeKey);
+        if (lifecycleAwareContainers != null) {
+            TestDescription description = testDescriptionFrom(context);
+            Optional<Throwable> throwable = context.getExecutionException();
+            lifecycleAwareContainers.forEach(container -> container.afterTest(description, throwable));
+        }
     }
 
     private Set<Object> collectParentTestInstances(ExtensionContext context) {
