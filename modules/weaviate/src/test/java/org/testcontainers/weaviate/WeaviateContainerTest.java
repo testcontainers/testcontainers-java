@@ -1,9 +1,7 @@
 package org.testcontainers.weaviate;
 
-import io.weaviate.client.Config;
-import io.weaviate.client.WeaviateClient;
-import io.weaviate.client.base.Result;
-import io.weaviate.client.v1.misc.model.Meta;
+import io.weaviate.client6.v1.api.InstanceMetadata;
+import io.weaviate.client6.v1.api.WeaviateClient;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 
@@ -17,22 +15,30 @@ import static org.assertj.core.api.Assertions.assertThat;
 class WeaviateContainerTest {
 
     @Test
-    void testWeaviate() {
+    void testWeaviate() throws Exception {
         try ( // container {
-            WeaviateContainer weaviate = new WeaviateContainer("cr.weaviate.io/semitechnologies/weaviate:1.29.0")
+            WeaviateContainer weaviate = new WeaviateContainer("cr.weaviate.io/semitechnologies/weaviate:1.32.0")
             // }
         ) {
             weaviate.start();
-            Config config = new Config("http", weaviate.getHttpHostAddress());
-            config.setGRPCHost(weaviate.getGrpcHostAddress());
-            WeaviateClient client = new WeaviateClient(config);
-            Result<Meta> meta = client.misc().metaGetter().run();
-            assertThat(meta.getResult().getVersion()).isEqualTo("1.29.0");
+            try (
+                WeaviateClient client = WeaviateClient.connectToCustom(conn -> {
+                    return conn
+                        .scheme("http")
+                        .httpHost(weaviate.getHost())
+                        .httpPort(weaviate.getMappedPort(8080))
+                        .grpcHost(weaviate.getHost())
+                        .grpcPort(weaviate.getMappedPort(50051));
+                })
+            ) {
+                InstanceMetadata meta = client.meta();
+                assertThat(meta.version()).isEqualTo("1.32.0");
+            }
         }
     }
 
     @Test
-    void testWeaviateWithModules() {
+    void testWeaviateWithModules() throws Exception {
         List<String> enableModules = Arrays.asList(
             "backup-filesystem",
             "text2vec-openai",
@@ -43,22 +49,30 @@ class WeaviateContainerTest {
         Map<String, String> env = new HashMap<>();
         env.put("ENABLE_MODULES", String.join(",", enableModules));
         env.put("BACKUP_FILESYSTEM_PATH", "/tmp/backups");
-        try (WeaviateContainer weaviate = new WeaviateContainer("semitechnologies/weaviate:1.29.0").withEnv(env)) {
+        try (WeaviateContainer weaviate = new WeaviateContainer("semitechnologies/weaviate:1.32.0").withEnv(env)) {
             weaviate.start();
-            Config config = new Config("http", weaviate.getHttpHostAddress());
-            config.setGRPCHost(weaviate.getGrpcHostAddress());
-            WeaviateClient client = new WeaviateClient(config);
-            Result<Meta> meta = client.misc().metaGetter().run();
-            assertThat(meta.getResult().getVersion()).isEqualTo("1.29.0");
-            Object modules = meta.getResult().getModules();
-            assertThat(modules)
-                .isNotNull()
-                .asInstanceOf(InstanceOfAssertFactories.map(String.class, Object.class))
-                .extracting(Map::keySet)
-                .satisfies(keys -> {
-                    assertThat(keys.size()).isEqualTo(enableModules.size());
-                    keys.forEach(key -> assertThat(enableModules.contains(key)).isTrue());
-                });
+            try (
+                WeaviateClient client = WeaviateClient.connectToCustom(conn -> {
+                    return conn
+                        .scheme("http")
+                        .httpHost(weaviate.getHost())
+                        .httpPort(weaviate.getMappedPort(8080))
+                        .grpcHost(weaviate.getHost())
+                        .grpcPort(weaviate.getMappedPort(50051));
+                })
+            ) {
+                InstanceMetadata meta = client.meta();
+                assertThat(meta.version()).isEqualTo("1.32.0");
+                Map<String, Object> modules = meta.modules();
+                assertThat(modules)
+                    .isNotNull()
+                    .asInstanceOf(InstanceOfAssertFactories.map(String.class, Object.class))
+                    .extracting(Map::keySet)
+                    .satisfies(keys -> {
+                        assertThat(keys.size()).isEqualTo(enableModules.size());
+                        keys.forEach(key -> assertThat(enableModules.contains(key)).isTrue());
+                    });
+            }
         }
     }
 }
