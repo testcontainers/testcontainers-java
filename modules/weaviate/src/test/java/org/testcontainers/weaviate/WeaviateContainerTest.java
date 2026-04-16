@@ -22,14 +22,14 @@ class WeaviateContainerTest {
         ) {
             weaviate.start();
             try (
-                WeaviateClient client = WeaviateClient.connectToCustom(conn ->
-                    conn
+                WeaviateClient client = WeaviateClient.connectToCustom(conn -> {
+                    return conn
                         .scheme("http")
                         .httpHost(weaviate.getHost())
                         .httpPort(weaviate.getMappedPort(8080))
                         .grpcHost(weaviate.getHost())
-                        .grpcPort(weaviate.getMappedPort(50051))
-                )
+                        .grpcPort(weaviate.getMappedPort(50051));
+                })
             ) {
                 InstanceMetadata meta = client.meta();
                 assertThat(meta.version()).isEqualTo("1.32.0");
@@ -52,14 +52,14 @@ class WeaviateContainerTest {
         try (WeaviateContainer weaviate = new WeaviateContainer("semitechnologies/weaviate:1.32.0").withEnv(env)) {
             weaviate.start();
             try (
-                WeaviateClient client = WeaviateClient.connectToCustom(conn ->
-                    conn
+                WeaviateClient client = WeaviateClient.connectToCustom(conn -> {
+                    return conn
                         .scheme("http")
                         .httpHost(weaviate.getHost())
                         .httpPort(weaviate.getMappedPort(8080))
                         .grpcHost(weaviate.getHost())
-                        .grpcPort(weaviate.getMappedPort(50051))
-                )
+                        .grpcPort(weaviate.getMappedPort(50051));
+                })
             ) {
                 InstanceMetadata meta = client.meta();
                 assertThat(meta.version()).isEqualTo("1.32.0");
