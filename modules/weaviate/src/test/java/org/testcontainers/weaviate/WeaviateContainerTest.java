@@ -26,9 +26,9 @@ class WeaviateContainerTest {
                     return conn
                         .scheme("http")
                         .httpHost(weaviate.getHost())
-                        .httpPort(weaviate.getMappedPort(8080))
+                        .httpPort(weaviate.getHttpPort())
                         .grpcHost(weaviate.getHost())
-                        .grpcPort(weaviate.getMappedPort(50051));
+                        .grpcPort(weaviate.getGrpcPort());
                 })
             ) {
                 InstanceMetadata meta = client.meta();
@@ -56,9 +56,9 @@ class WeaviateContainerTest {
                     return conn
                         .scheme("http")
                         .httpHost(weaviate.getHost())
-                        .httpPort(weaviate.getMappedPort(8080))
+                        .httpPort(weaviate.getHttpPort())
                         .grpcHost(weaviate.getHost())
-                        .grpcPort(weaviate.getMappedPort(50051));
+                        .grpcPort(weaviate.getGrpcPort());
                 })
             ) {
                 InstanceMetadata meta = client.meta();
