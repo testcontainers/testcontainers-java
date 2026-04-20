@@ -647,7 +647,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             } catch (Exception e) {
                 imageName = "<unknown>";
             }
-
+            try {
+                dockerClient.stopContainerCmd(containerId).exec();
+            } catch (Exception e) {
+                logger().warn("Failed to stop container gracefully: {}", e.getMessage());
+            }
             containerIsStopping(containerInfo);
             ResourceReaper.instance().stopAndRemoveContainer(containerId, imageName);
             containerIsStopped(containerInfo);
