@@ -46,13 +46,12 @@ jobs:
     permissions:
       checks: write
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Setup rootless Docker
-        uses: docker/setup-docker-action@v4
+        uses: docker/setup-docker-action@v5
         with:
           rootless: true
-      - name: Setup Gradle Build Action
-        uses: gradle/actions/setup-gradle@v5
+      - uses: ./.github/actions/setup-build
       - name: Build with Gradle
         run: ./gradlew --no-daemon --scan testcontainers:test --tests '*GenericContainerRuleTest'
       - uses: ./.github/actions/setup-junit-report

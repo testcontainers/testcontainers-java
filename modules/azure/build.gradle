@@ -13,7 +13,7 @@ dependencies {
     testImplementation 'com.azure:azure-data-tables'
     testImplementation 'com.azure:azure-messaging-eventhubs'
     testImplementation 'com.azure:azure-messaging-servicebus'
-    testImplementation 'com.microsoft.sqlserver:mssql-jdbc:13.3.0.jre8-preview'
+    testImplementation 'com.microsoft.sqlserver:mssql-jdbc:13.4.0.jre11'
 }
 
 tasks.japicmp {
