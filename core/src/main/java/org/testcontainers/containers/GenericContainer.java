@@ -28,6 +28,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.SneakyThrows;
+import lombok.Synchronized;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.jetbrains.annotations.NotNull;
@@ -169,7 +170,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Setter(AccessLevel.NONE)
     @VisibleForTesting
-    String containerId;
+    volatile String containerId;
 
     @Setter(AccessLevel.NONE)
     private InspectContainerResponse containerInfo;
@@ -306,6 +307,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * Starts the container using docker, pulling an image if necessary.
      */
     @Override
+    @Synchronized
     @SneakyThrows({ InterruptedException.class, ExecutionException.class })
     public void start() {
         if (containerId != null) {
@@ -634,6 +636,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * Kill and remove the container.
      */
     @Override
+    @Synchronized
     public void stop() {
         if (containerId == null) {
             return;

@@ -2,6 +2,7 @@ package org.testcontainers.mysql;
 
 import io.asyncer.r2dbc.mysql.MySqlConnectionFactoryProvider;
 import io.r2dbc.spi.ConnectionFactoryOptions;
+import lombok.Synchronized;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.r2dbc.R2DBCDatabaseContainer;
 
@@ -42,11 +43,13 @@ public class MySQLR2DBCDatabaseContainer implements R2DBCDatabaseContainer {
     }
 
     @Override
+    @Synchronized
     public void start() {
         this.container.start();
     }
 
     @Override
+    @Synchronized
     public void stop() {
         this.container.stop();
     }
