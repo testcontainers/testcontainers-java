@@ -3,8 +3,6 @@ package org.testcontainers.containers;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 
-import java.util.Set;
-
 /**
  * Testcontainers implementation for MariaDB.
  * <p>
@@ -52,11 +50,6 @@ public class MariaDBContainer<SELF extends MariaDBContainer<SELF>> extends JdbcD
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         addExposedPort(MARIADB_PORT);
-    }
-
-    @Override
-    public Set<Integer> getLivenessCheckPortNumbers() {
-        return super.getLivenessCheckPortNumbers();
     }
 
     @Override
