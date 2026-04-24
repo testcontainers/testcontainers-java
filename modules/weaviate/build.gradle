@@ -3,5 +3,18 @@ description = "Testcontainers :: Weaviate"
 dependencies {
     api project(':testcontainers')
 
-    testImplementation 'io.weaviate:client:5.5.0'
+    testImplementation 'io.weaviate:client6:6.1.0'
+}
+
+test {
+	javaLauncher = javaToolchains.launcherFor {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+compileTestJava {
+	javaCompiler = javaToolchains.compilerFor {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+	options.release.set(17)
 }
