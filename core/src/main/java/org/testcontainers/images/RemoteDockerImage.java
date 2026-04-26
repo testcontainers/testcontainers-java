@@ -89,9 +89,10 @@ public class RemoteDockerImage extends LazyFuture<String> {
             final Instant startedAt = Instant.now();
             final Instant lastRetryAllowed = Instant.now().plus(PULL_RETRY_TIME_LIMIT);
             final AtomicReference<Exception> lastFailure = new AtomicReference<>();
+            String pullTag = imageName.getDigest() != null ? imageName.getDigest() : imageName.getVersionPart();
             final PullImageCmd pullImageCmd = dockerClient
                 .pullImageCmd(imageName.getUnversionedPart())
-                .withTag(imageName.getVersionPart());
+                .withTag(pullTag);
             final AtomicReference<String> dockerImageName = new AtomicReference<>();
 
             // The following poll interval in ms: 50, 100, 200, 400, 800....

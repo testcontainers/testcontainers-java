@@ -79,12 +79,26 @@ interface Versioning {
 
         private final String hash;
 
+        private final String tag;
+
         Sha256Versioning(String hash) {
+            this(hash, null);
+        }
+
+        Sha256Versioning(String hash, String tag) {
             this.hash = hash;
+            this.tag = tag;
+        }
+
+        String getTag() {
+            return tag;
         }
 
         @Override
         public boolean isValid() {
+            if (tag != null && !tag.matches(TagVersioning.TAG_REGEX)) {
+                return false;
+            }
             return hash.matches(HASH_REGEX);
         }
 
