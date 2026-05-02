@@ -20,6 +20,8 @@ public class MySQLContainer extends JdbcDatabaseContainer<MySQLContainer> {
     public static final String NAME = "mysql";
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("mysql");
+    private static final DockerImageName ORACLE_IMAGE_NAME =
+        DockerImageName.parse("container-registry.oracle.com/mysql/community-server");
 
     static final String DEFAULT_USER = "test";
 
@@ -43,7 +45,7 @@ public class MySQLContainer extends JdbcDatabaseContainer<MySQLContainer> {
 
     public MySQLContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, ORACLE_IMAGE_NAME);
 
         addExposedPort(MYSQL_PORT);
     }

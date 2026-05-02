@@ -7,6 +7,7 @@ import org.testcontainers.MySQLTestImages;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
 import java.net.URL;
@@ -28,6 +29,8 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assumptions.assumeThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
+
 
 class MySQLContainerTest extends AbstractContainerDatabaseTest {
 
@@ -268,6 +271,15 @@ class MySQLContainerTest extends AbstractContainerDatabaseTest {
             int resultSetInt = resultSet.getInt(1);
             assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
         }
+    }
+
+    @Test
+    void shouldAcceptOracleImageName() {
+        DockerImageName oracleImage = DockerImageName
+            .parse("container-registry.oracle.com/mysql/community-server:8.0");
+
+        assertThatNoException()
+            .isThrownBy(() -> new MySQLContainer(oracleImage));
     }
 
     private void assertHasCorrectExposedAndLivenessCheckPorts(MySQLContainer mysql) {

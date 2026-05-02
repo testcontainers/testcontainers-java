@@ -22,6 +22,9 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("mysql");
 
+    private static final DockerImageName ORACLE_IMAGE_NAME =
+        DockerImageName.parse("container-registry.oracle.com/mysql/community-server");
+
     @Deprecated
     public static final String DEFAULT_TAG = "5.7.34";
 
@@ -58,7 +61,7 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends JdbcDatab
 
     public MySQLContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, ORACLE_IMAGE_NAME);
 
         addExposedPort(MYSQL_PORT);
     }
