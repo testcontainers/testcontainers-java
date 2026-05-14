@@ -1,7 +1,6 @@
 package org.testcontainers.oracle;
 
 import io.r2dbc.spi.ConnectionFactoryOptions;
-import lombok.Synchronized;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.r2dbc.R2DBCDatabaseContainer;
 
@@ -42,14 +41,12 @@ public class OracleR2DBCDatabaseContainer implements R2DBCDatabaseContainer {
     }
 
     @Override
-    @Synchronized
-    public void start() {
+    public synchronized void start() {
         this.container.start();
     }
 
     @Override
-    @Synchronized
-    public void stop() {
+    public synchronized void stop() {
         this.container.stop();
     }
 
