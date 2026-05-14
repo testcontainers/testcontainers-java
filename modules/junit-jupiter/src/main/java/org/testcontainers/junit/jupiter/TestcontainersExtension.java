@@ -1,7 +1,5 @@
 package org.testcontainers.junit.jupiter;
 
-import lombok.Getter;
-import lombok.Synchronized;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
@@ -97,7 +95,7 @@ public class TestcontainersExtension
 
         List<StoreAdapter> storedAdapters = storeAdapters
             .stream()
-            .map(adapter -> (StoreAdapter) store.getOrComputeIfAbsent(adapter.getKey(), k -> adapter))
+            .map(adapter -> (StoreAdapter) store.getOrComputeIfAbsent(adapter.key, k -> adapter))
             .collect(Collectors.toList());
         if (isParallelExecutionEnabled(context)) {
             Startables.deepStart(storedAdapters).join();
@@ -284,10 +282,9 @@ public class TestcontainersExtension
      */
     private static class StoreAdapter implements Startable, CloseableResource, AutoCloseable {
 
-        @Getter
-        private String key;
+        private final String key;
 
-        private Startable container;
+        private final Startable container;
 
         private StoreAdapter(Class<?> declaringClass, String fieldName, Startable container) {
             this.key = declaringClass.getName() + "." + fieldName;
@@ -297,8 +294,7 @@ public class TestcontainersExtension
         private boolean started;
 
         @Override
-        @Synchronized
-        public void start() {
+        public synchronized void start() {
             if (!started) {
                 container.start();
                 started = true;
@@ -306,8 +302,7 @@ public class TestcontainersExtension
         }
 
         @Override
-        @Synchronized
-        public void stop() {
+        public synchronized void stop() {
             if (started) {
                 container.stop();
                 started = false;
