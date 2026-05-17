@@ -5,3 +5,7 @@ plugins {
 repositories {
     mavenCentral()
 }
+
+dependencies {
+    implementation 'org.apache.maven:maven-artifact:3.9.9'
+}
