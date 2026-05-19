@@ -3,10 +3,10 @@ package org.testcontainers.junit.wait.strategy;
 import org.assertj.core.api.Assertions;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
-import org.rnorth.ducttape.RetryCountExceededException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.images.builder.ImageFromDockerfile;
+import org.testcontainers.utility.RetryCountExceededException;
 
 import java.time.Duration;
 import java.util.HashMap;
