@@ -263,7 +263,10 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
      */
     public Connection createConnection(String queryString, Properties info)
         throws SQLException, NoDriverFoundException {
-        Properties properties = new Properties(info);
+        Properties properties = new Properties();
+        if (info != null) {
+            properties.putAll(info);
+        }
         properties.put("user", this.getUsername());
         properties.put("password", this.getPassword());
         final String url = constructUrlForConnection(queryString);
