@@ -117,7 +117,7 @@ class RyukResourceReaper extends ResourceReaper {
                                 }
                             }
                         } catch (IOException e) {
-                            log.warn("Can not connect to Ryuk at {}:{}", host, ryukPort, e);
+                            log.info("Attempt failed: Cannot connect to Ryuk at {}:{}. Will retry", host, ryukPort);
                         }
                     });
                 }
