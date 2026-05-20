@@ -66,6 +66,7 @@ dependencies {
     compileOnly 'org.jetbrains:annotations:26.1.0'
     testCompileOnly 'org.jetbrains:annotations:26.1.0'
     api 'org.apache.commons:commons-compress:1.28.0'
+    api 'org.apache.commons:commons-lang3:3.20.0'
     api ('org.rnorth.duct-tape:duct-tape:1.0.8') {
         exclude(group: 'org.jetbrains', module: 'annotations')
     }
@@ -129,6 +130,10 @@ dependencies {
 tasks.generatePomFileForMavenJavaPublication.finalizedBy(
     tasks.register('checkPOMdependencies', org.testcontainers.build.ComparePOMWithLatestReleasedTask) {
         ignore = [
+            'org.apache.commons:commons-lang3',
+        ]
+        minimumVersions = [
+            'org.apache.commons:commons-lang3': '3.18.0',
         ]
     }
 )
