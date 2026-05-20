@@ -223,7 +223,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
      *
      * @return "http" or "https"
      */
-    public String getHttpScheme() {
+    String getHttpScheme() {
         String securityEnabled = getEnvMap().get("xpack.security.enabled");
         String httpSslEnabled = getEnvMap().get("xpack.security.http.ssl.enabled");
 
