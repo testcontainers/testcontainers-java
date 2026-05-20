@@ -209,7 +209,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
         return this;
     }
 
-    protected String getCertPath() {
+    String getCertPath() {
         return certPath;
     }
 
