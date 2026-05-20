@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.rnorth.ducttape.Preconditions;
+
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -184,7 +184,9 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
         super.configure();
 
         if (this.servicesEnvVarRequired) {
-            Preconditions.check("services list must not be empty", !services.isEmpty());
+            if (services.isEmpty()) {
+                throw new IllegalStateException("services list must not be empty");
+            }
         }
 
         if (!services.isEmpty()) {

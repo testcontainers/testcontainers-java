@@ -18,7 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.assertj.core.api.Assumptions;
 import org.junit.jupiter.api.Test;
-import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.TestImages;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
@@ -30,6 +29,7 @@ import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
+import org.testcontainers.utility.Unreliables;
 
 import java.time.Duration;
 import java.util.Arrays;
