@@ -30,6 +30,33 @@ You can turn on security by providing a password:
 [HttpClient](../../modules/elasticsearch/src/test/java/org/testcontainers/elasticsearch/ElasticsearchContainerTest.java) inside_block:httpClientSecuredContainer
 <!--/codeinclude-->
 
+## Kibana container
+
+This module also provides a `KibanaContainer` for testing with [Kibana](https://www.elastic.co/kibana).
+Kibana requires a connection to Elasticsearch and `KibanaContainer` supports two modes: managed and external.
+
+### Managed mode
+
+In managed mode, `KibanaContainer` automatically connects to an `ElasticsearchContainer`:
+
+<!--codeinclude-->
+[Kibana with Elasticsearch](../../modules/elasticsearch/src/test/java/org/testcontainers/elasticsearch/KibanaContainerTest.java) inside_block:managedModeCanStartAndReachElasticsearchInSameExplicitNetwork
+<!--/codeinclude-->
+
+When using managed mode with explicit networks, both containers must share the same `Network` instance.
+Alternatively, you can omit the network configuration entirely, and `KibanaContainer` will do its best effort to create a shared, ad-hoc network automatically.
+
+### External mode
+
+In external mode, `KibanaContainer` connects to an external Elasticsearch instance via URL and using provided credentials:
+
+<!--codeinclude-->
+[Kibana with external Elasticsearch](../../modules/elasticsearch/src/test/java/org/testcontainers/elasticsearch/KibanaContainerTest.java) inside_block:externalModeCanWorkWithUsernamePassword
+<!--/codeinclude-->
+
+For external mode with HTTPS, use `withElasticsearchCaCertificate()` to provide the CA certificate.
+You can authenticate using either username/password (`withElasticsearchCredentials()`) or service account tokens (`withElasticsearchServiceAccountToken()`).
+
 ## Adding this module to your project dependencies
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
