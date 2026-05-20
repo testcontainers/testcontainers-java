@@ -7,10 +7,32 @@ import org.slf4j.Logger;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.mock;
 
 class JdbcDatabaseContainerTest {
+
+    @Test
+    void getR2dbcUrlConvertsJdbcUrlToR2dbcFormat() {
+        JdbcDatabaseContainer<?> container = new JdbcDatabaseContainerStubWithUrl(
+            "mysql:latest",
+            "jdbc:mysql://localhost:3306/testdb"
+        );
+
+        String r2dbcUrl = container.getR2dbcUrl();
+
+        assertThat(r2dbcUrl).isEqualTo("r2dbc:mysql://localhost:3306/testdb");
+    }
+
+    @Test
+    void getR2dbcUrlThrowsExceptionWhenJdbcUrlIsNull() {
+        JdbcDatabaseContainer<?> container = new JdbcDatabaseContainerStub("mysql:latest");
+
+        assertThatExceptionOfType(UnsupportedOperationException.class)
+            .isThrownBy(container::getR2dbcUrl)
+            .withMessageContaining("Cannot convert JDBC URL to R2DBC format");
+    }
 
     @Test
     void anExceptionIsThrownIfJdbcIsNotAvailable() {
@@ -68,5 +90,20 @@ class JdbcDatabaseContainerTest {
 
         @Override
         public void setDockerImageName(@NonNull String dockerImageName) {}
+    }
+
+    static class JdbcDatabaseContainerStubWithUrl extends JdbcDatabaseContainerStub {
+
+        private final String jdbcUrl;
+
+        public JdbcDatabaseContainerStubWithUrl(@NonNull String dockerImageName, String jdbcUrl) {
+            super(dockerImageName);
+            this.jdbcUrl = jdbcUrl;
+        }
+
+        @Override
+        public String getJdbcUrl() {
+            return jdbcUrl;
+        }
     }
 }
