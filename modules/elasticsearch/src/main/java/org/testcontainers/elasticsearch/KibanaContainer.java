@@ -39,15 +39,15 @@ import java.util.concurrent.TimeUnit;
  */
 public class KibanaContainer extends GenericContainer<KibanaContainer> {
 
-    public static final String ES_CA_CERT_PATH = "/usr/share/kibana/config/certs/es-ca.crt";
+    private static final String ES_CA_CERT_PATH = "/usr/share/kibana/config/certs/es-ca.crt";
 
     private static final Logger log = LoggerFactory.getLogger(KibanaContainer.class);
 
-    public static final int KIBANA_DEFAULT_PORT = 5601;
+    private static final int KIBANA_DEFAULT_PORT = 5601;
 
-    public static final String KIBANA_SYSTEM_USER = "kibana_system";
+    private static final String KIBANA_SYSTEM_USER = "kibana_system";
 
-    public static final String MINIMUM_SUPPORTED_VERSION = "8.0.0";
+    private static final String MINIMUM_SUPPORTED_VERSION = "8.0.0";
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("docker.elastic.co/kibana/kibana");
 
