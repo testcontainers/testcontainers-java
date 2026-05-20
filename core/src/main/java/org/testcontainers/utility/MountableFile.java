@@ -356,6 +356,10 @@ public class MountableFile implements Transferable {
 
             // TarArchiveEntry automatically sets the mode for file/directory, but we can update to ensure that the mode is set exactly (inc executable bits)
             tarEntry.setMode(getUnixFileMode(itemPath));
+            // Avoid propagating host UID/GID into containers. This is important for rootless Docker setups
+            // where host IDs may be unmapped and cause permission issues after copyArchiveToContainer.
+            tarEntry.setUserId(0);
+            tarEntry.setGroupId(0);
             tarArchive.putArchiveEntry(tarEntry);
 
             if (sourceFile.isFile()) {
