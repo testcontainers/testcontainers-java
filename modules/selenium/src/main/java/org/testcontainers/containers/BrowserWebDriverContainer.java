@@ -84,6 +84,8 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
     private static final String TC_TEMP_DIR_PREFIX = "tc";
 
+    private boolean customStartupAttempts = false;
+
     @Nullable
     private Capabilities capabilities;
 
@@ -139,6 +141,12 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     public SELF withCapabilities(Capabilities capabilities) {
         this.capabilities = capabilities;
         return self();
+    }
+
+    @Override
+    public SELF withStartupAttempts(int attempts) {
+        this.customStartupAttempts = true;
+        return super.withStartupAttempts(attempts);
     }
 
     /**
@@ -227,8 +235,11 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
 
         /*
          * Some unreliability of the selenium browser containers has been observed, so allow multiple attempts to start.
+         * If user did not specify a value for startupAttempts default to 3 to maintain previous behavior
          */
-        setStartupAttempts(3);
+        if(!customStartupAttempts) {
+            setStartupAttempts(3);
+        }
     }
 
     /**
