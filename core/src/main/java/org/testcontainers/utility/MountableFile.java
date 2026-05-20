@@ -170,6 +170,7 @@ public class MountableFile implements Transferable {
                 .decode(resource.replaceAll("\\+", "%2B"), Charsets.UTF_8.name())
                 .replaceFirst("jar:", "")
                 .replaceFirst("file:", "")
+                .replaceFirst("resource:", "")
                 .replaceAll("!.*", "");
         } catch (UnsupportedEncodingException e) {
             throw new IllegalStateException(e);
@@ -217,6 +218,8 @@ public class MountableFile implements Transferable {
     private String getResourcePath() {
         if (path.contains(".jar!")) {
             resourcePath = extractClassPathResourceToTempLocation(this.path);
+        } else if (this.path.startsWith("resource:")) {
+            this.resourcePath = extractClassPathGraalVMResourceToTempLocation(this.path);
         } else {
             resourcePath = unencodeResourceURIToFilePath(path);
         }
@@ -256,6 +259,54 @@ public class MountableFile implements Transferable {
         } catch (IOException e) {
             throw new IllegalStateException(
                 "Failed to process JAR file when extracting classpath resource: " + hostPath,
+                e
+            );
+        }
+
+        // Mark temporary files/dirs for deletion at JVM shutdown
+        deleteOnExit(tmpLocation.toPath());
+
+        try {
+            return tmpLocation.getCanonicalPath();
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private String extractClassPathGraalVMResourceToTempLocation(String hostPath) {
+        File tmpLocation = createTempDirectory();
+        //noinspection ResultOfMethodCallIgnored
+        tmpLocation.delete();
+
+        String urldecodedResourcePath = unencodeResourceURIToFilePath(hostPath);
+        if (urldecodedResourcePath.startsWith("/")) {
+            urldecodedResourcePath = urldecodedResourcePath.replaceFirst("/", "");
+        }
+
+        try {
+            log.debug(
+                "Copying classpath GraalVM resource(s) from {} to {} to permit Docker to bind",
+                hostPath,
+                tmpLocation
+            );
+
+            try (
+                InputStream is = Thread
+                    .currentThread()
+                    .getContextClassLoader()
+                    .getResourceAsStream(urldecodedResourcePath)
+            ) {
+                if (is == null) {
+                    throw new IllegalStateException(
+                        urldecodedResourcePath +
+                        " not found in classpath, probably need to update GraalVM's reachability-metadata.json"
+                    );
+                }
+                Files.copy(is, tmpLocation.toPath());
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException(
+                "Failed to process GraalVM file when extracting classpath resource: " + hostPath,
                 e
             );
         }
