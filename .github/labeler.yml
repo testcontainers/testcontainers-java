@@ -67,6 +67,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/dynalite/**/*
+"modules/doris":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/doris/**/*
 "modules/elasticsearch":
   - changed-files:
     - any-glob-to-any-file:

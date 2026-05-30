@@ -26,6 +26,7 @@ body:
         - Databend
         - DB2
         - Dynalite
+        - Doris
         - Elasticsearch
         - GCloud
         - Grafana
