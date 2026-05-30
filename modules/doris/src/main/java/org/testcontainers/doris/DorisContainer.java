@@ -146,9 +146,9 @@ public class DorisContainer extends JdbcDatabaseContainer<DorisContainer> {
 
         super.withNetwork(network);
         super.withNetworkAliases(FE_NETWORK_ALIAS);
-        withCreateContainerCmdModifier(cmd ->
-            cmd.withIpv4Address(FE_ADDRESS).withEntrypoint("bash", "-c").withCmd(FE_STARTUP_COMMAND)
-        );
+        withCreateContainerCmdModifier(cmd -> {
+            cmd.withIpv4Address(FE_ADDRESS).withEntrypoint("bash", "-c").withCmd(FE_STARTUP_COMMAND);
+        });
         addEnv("FE_SERVERS", FE_SERVERS);
         addEnv("FE_ID", "1");
     }
@@ -156,7 +156,7 @@ public class DorisContainer extends JdbcDatabaseContainer<DorisContainer> {
     private Network createNetwork() {
         return Network
             .builder()
-            .createNetworkCmdModifier(cmd ->
+            .createNetworkCmdModifier(cmd -> {
                 cmd.withIpam(
                     new com.github.dockerjava.api.model.Network.Ipam()
                         .withConfig(
@@ -164,8 +164,8 @@ public class DorisContainer extends JdbcDatabaseContainer<DorisContainer> {
                                 .withSubnet(DORIS_NETWORK_SUBNET)
                                 .withGateway(DORIS_NETWORK_GATEWAY)
                         )
-                )
-            )
+                );
+            })
             .build();
     }
 
@@ -270,9 +270,9 @@ public class DorisContainer extends JdbcDatabaseContainer<DorisContainer> {
                     .withNetwork(network)
                     .withNetworkAliases(BE_NETWORK_ALIAS)
                     .withExposedPorts(BE_HTTP_PORT, BE_HEARTBEAT_PORT)
-                    .withCreateContainerCmdModifier(cmd ->
-                        cmd.withIpv4Address(BE_ADDRESS).withEntrypoint("bash", "-c").withCmd(BE_STARTUP_COMMAND)
-                    )
+                    .withCreateContainerCmdModifier(cmd -> {
+                        cmd.withIpv4Address(BE_ADDRESS).withEntrypoint("bash", "-c").withCmd(BE_STARTUP_COMMAND);
+                    })
                     .withEnv("FE_SERVERS", FE_SERVERS)
                     .withEnv("BE_ADDR", BE_ADDRESS + ":" + BE_HEARTBEAT_PORT)
                     .withEnv("MASTER_FE_IP", FE_ADDRESS)
