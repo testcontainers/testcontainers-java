@@ -43,6 +43,10 @@ Insert `tc:` after `jdbc:` as follows. Note that the hostname, port and database
 
 `jdbc:tc:db2:11.5.0.0a:///databasename`
 
+#### Using Apache Doris
+
+`jdbc:tc:doris:3.1.0:///databasename`
+
 #### Using MariaDB
 
 `jdbc:tc:mariadb:10.3.39:///databasename`
