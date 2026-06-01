@@ -20,7 +20,7 @@ As a sponsor, the process for creating a bounty is as follows:
 
 * Raise an issue, or find an existing issue that describes the bug or feature.
 * Start a discussion with the [Testcontainers org core maintainers](#organisation-core-maintainers) to agree that the issue is suitable for a bounty, and how much the reward amount should be.
-* Once agreed, we will assign a label to the issue so that interested developers can find it.
+- Once agreed, we will assign the `bounty` label to the issue so that interested developers can find it. You can view all open bounty issues at: https://github.com/testcontainers/testcontainers-java/labels/bounty
 
 Sponsors can create up to 1 or 3 bounties (according to tier) _per calendar month_ - i.e. the counter resets on the 1st of each month. 
 If a sponsor does not use their full quota of bounty credits in a calendar month, they cannot be rolled over to the next month.
