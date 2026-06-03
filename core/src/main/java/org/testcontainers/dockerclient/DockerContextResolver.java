@@ -127,10 +127,7 @@ public final class DockerContextResolver {
         try {
             root = OBJECT_MAPPER.readTree(metaFile.toFile());
         } catch (IOException e) {
-            throw new InvalidConfigurationException(
-                "Failed to read Docker context metadata at " + metaFile,
-                e
-            );
+            throw new InvalidConfigurationException("Failed to read Docker context metadata at " + metaFile, e);
         }
         JsonNode dockerEndpoint = root.path("Endpoints").path("docker");
         JsonNode hostNode = dockerEndpoint.get("Host");
@@ -155,19 +152,11 @@ public final class DockerContextResolver {
     }
 
     static Path contextMetaFile(Path dockerConfigDir, String contextName) {
-        return dockerConfigDir
-            .resolve("contexts")
-            .resolve("meta")
-            .resolve(sha256(contextName))
-            .resolve("meta.json");
+        return dockerConfigDir.resolve("contexts").resolve("meta").resolve(sha256(contextName)).resolve("meta.json");
     }
 
     static Path contextTlsDir(Path dockerConfigDir, String contextName) {
-        return dockerConfigDir
-            .resolve("contexts")
-            .resolve("tls")
-            .resolve(sha256(contextName))
-            .resolve("docker");
+        return dockerConfigDir.resolve("contexts").resolve("tls").resolve(sha256(contextName)).resolve("docker");
     }
 
     private static String sha256(String input) {

@@ -80,7 +80,10 @@ class DockerContextClientProviderStrategyTest {
             "{\"Name\":\"ghost\",\"Endpoints\":{\"docker\":{\"Host\":\"unix:///definitely/not/here.sock\"}}}"
         );
 
-        DockerContextClientProviderStrategy strategy = new DockerContextClientProviderStrategy(dockerConfigDir, "ghost");
+        DockerContextClientProviderStrategy strategy = new DockerContextClientProviderStrategy(
+            dockerConfigDir,
+            "ghost"
+        );
 
         assertThatThrownBy(strategy::getTransportConfig)
             .isInstanceOf(InvalidConfigurationException.class)
@@ -170,9 +173,8 @@ class DockerContextClientProviderStrategyTest {
             assumeThat(e).as("DockerClientFactory can initialize").isNull();
         }
 
-        assertThat(
-            org.testcontainers.DockerClientFactory.instance().isUsing(DockerContextClientProviderStrategy.class)
-        ).isTrue();
+        assertThat(org.testcontainers.DockerClientFactory.instance().isUsing(DockerContextClientProviderStrategy.class))
+            .isTrue();
     }
 
     private static void writeConfig(Path dockerConfigDir, String json) throws IOException {

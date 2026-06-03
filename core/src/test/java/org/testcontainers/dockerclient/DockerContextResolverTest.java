@@ -61,10 +61,7 @@ class DockerContextResolverTest {
     void blankDockerContextEnvIsIgnored(@TempDir Path dockerConfigDir) throws IOException {
         writeConfig(dockerConfigDir, "{\"currentContext\":\"desktop-linux\"}");
 
-        String name = DockerContextResolver.resolveCurrentContextName(
-            dockerConfigDir,
-            mapEnv("DOCKER_CONTEXT", "  ")
-        );
+        String name = DockerContextResolver.resolveCurrentContextName(dockerConfigDir, mapEnv("DOCKER_CONTEXT", "  "));
 
         assertThat(name).isEqualTo("desktop-linux");
     }

@@ -107,7 +107,10 @@ public final class DockerContextClientProviderStrategy extends DockerClientProvi
             Path socketPath = java.nio.file.Paths.get(host.getPath());
             if (!Files.exists(socketPath)) {
                 throw new InvalidConfigurationException(
-                    "Docker context '" + endpoint.getContextName() + "' points at " + socketPath +
+                    "Docker context '" +
+                    endpoint.getContextName() +
+                    "' points at " +
+                    socketPath +
                     " but the socket does not exist"
                 );
             }
