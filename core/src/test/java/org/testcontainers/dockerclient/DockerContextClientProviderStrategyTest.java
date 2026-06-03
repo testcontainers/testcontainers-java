@@ -130,14 +130,16 @@ class DockerContextClientProviderStrategyTest {
         DockerContextClientProviderStrategy strategy = new DockerContextClientProviderStrategy();
         assumeThat(strategy.isApplicable()).as("strategy is applicable").isTrue();
 
-        TransportConfig config = strategy.getTransportConfig();
-        assumeThat(config.getDockerHost().getScheme()).as("scheme").isIn("unix", "tcp", "http", "https", "npipe");
-
-        // Actually exercise the docker daemon — if Docker Desktop is reachable via context this
-        // succeeds; otherwise the assumption short-circuits.
-        try (com.github.dockerjava.api.DockerClient client = strategy.getDockerClient()) {
-            client.pingCmd().exec();
-            assertThat(client.infoCmd().exec().getOsType()).isEqualTo("linux");
+        // Resolve config and exercise the daemon under a single guard. A stopped daemon shows up
+        // as a missing socket (InvalidConfigurationException from getTransportConfig) or a refused
+        // connection (from pingCmd) — both should skip rather than fail.
+        try {
+            TransportConfig config = strategy.getTransportConfig();
+            assumeThat(config.getDockerHost().getScheme()).as("scheme").isIn("unix", "tcp", "http", "https", "npipe");
+            try (com.github.dockerjava.api.DockerClient client = strategy.getDockerClient()) {
+                client.pingCmd().exec();
+                assertThat(client.infoCmd().exec().getOsType()).isEqualTo("linux");
+            }
         } catch (Exception e) {
             assumeThat(e).as("docker daemon reachable via active context").isNull();
         }
