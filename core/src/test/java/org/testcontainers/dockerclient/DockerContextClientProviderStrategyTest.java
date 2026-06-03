@@ -1,5 +1,6 @@
 package org.testcontainers.dockerclient;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -36,11 +37,11 @@ class DockerContextClientProviderStrategyTest {
 
     @Test
     void resolvesNamedContextThroughExplicitConstructor(@TempDir Path dockerConfigDir) throws IOException {
-        Path socket = createFakeUnixSocket(dockerConfigDir, "fake.sock");
+        String host = fakeEndpointHost(dockerConfigDir, "fake");
         writeMeta(
             dockerConfigDir,
             "my-ctx",
-            "{\"Name\":\"my-ctx\",\"Endpoints\":{\"docker\":{\"Host\":\"unix://" + socket + "\"}}}"
+            "{\"Name\":\"my-ctx\",\"Endpoints\":{\"docker\":{\"Host\":\"" + host + "\"}}}"
         );
 
         DockerContextClientProviderStrategy strategy = new DockerContextClientProviderStrategy(
@@ -50,25 +51,25 @@ class DockerContextClientProviderStrategyTest {
 
         assertThat(strategy.isApplicable()).isTrue();
         TransportConfig config = strategy.getTransportConfig();
-        assertThat(config.getDockerHost().toString()).isEqualTo("unix://" + socket);
+        assertThat(config.getDockerHost().toString()).isEqualTo(host);
         assertThat(config.getSslConfig()).isNull();
-        assertThat(strategy.getDescription()).contains("my-ctx").contains(socket.toString());
+        assertThat(strategy.getDescription()).contains("my-ctx").contains(host);
     }
 
     @Test
     void usesCurrentContextFromConfigWhenNoExplicitName(@TempDir Path dockerConfigDir) throws IOException {
-        Path socket = createFakeUnixSocket(dockerConfigDir, "current.sock");
+        String host = fakeEndpointHost(dockerConfigDir, "current");
         writeConfig(dockerConfigDir, "{\"currentContext\":\"picked\"}");
         writeMeta(
             dockerConfigDir,
             "picked",
-            "{\"Name\":\"picked\",\"Endpoints\":{\"docker\":{\"Host\":\"unix://" + socket + "\"}}}"
+            "{\"Name\":\"picked\",\"Endpoints\":{\"docker\":{\"Host\":\"" + host + "\"}}}"
         );
 
         DockerContextClientProviderStrategy strategy = new DockerContextClientProviderStrategy(dockerConfigDir, null);
 
         assertThat(strategy.isApplicable()).isTrue();
-        assertThat(strategy.getTransportConfig().getDockerHost().getPath()).isEqualTo(socket.toString());
+        assertThat(strategy.getTransportConfig().getDockerHost().toString()).isEqualTo(host);
     }
 
     @Test
@@ -183,9 +184,17 @@ class DockerContextClientProviderStrategyTest {
         Files.write(metaFile, json.getBytes(StandardCharsets.UTF_8));
     }
 
-    private static Path createFakeUnixSocket(Path dir, String name) throws IOException {
-        Path socket = dir.resolve(name);
+    /**
+     * Builds a Docker endpoint host suitable for the current OS: a real unix socket on POSIX (whose
+     * existence the strategy verifies) and an npipe address on Windows (which needs no backing
+     * file). Both forms use forward slashes, so they embed safely into the JSON meta fixtures.
+     */
+    private static String fakeEndpointHost(Path dir, String name) throws IOException {
+        if (SystemUtils.IS_OS_WINDOWS) {
+            return "npipe:////./pipe/" + name;
+        }
+        Path socket = dir.resolve(name + ".sock");
         Files.write(socket, new byte[0]);
-        return socket.toAbsolutePath();
+        return "unix://" + socket.toAbsolutePath();
     }
 }
