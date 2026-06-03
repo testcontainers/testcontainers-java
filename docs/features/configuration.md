@@ -110,6 +110,12 @@ However, sometimes customization is required. Testcontainers will respect the fo
 > **DOCKER_HOST** = unix:///var/run/docker.sock  
 > See [Docker environment variables](https://docs.docker.com/engine/reference/commandline/cli/#environment-variables)
 >
+> **DOCKER_CONTEXT**  
+> Name of a Docker CLI context to use (e.g. `desktop-linux`, `orbstack`). When set — and `DOCKER_HOST` is not — Testcontainers resolves the endpoint from `$DOCKER_CONFIG/contexts/meta/<sha256(name)>/meta.json` just like `docker(1)`. If neither variable is set, the `currentContext` field in `$DOCKER_CONFIG/config.json` (default `~/.docker/config.json`) is used.
+>
+> **DOCKER_CONFIG**  
+> Overrides the Docker config directory (default `~/.docker`) where `config.json` and the `contexts/` subtree are read from.
+>
 > **TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE**  
 > Path to Docker's socket. Used by Ryuk, Docker Compose, and a few other containers that need to perform Docker actions.  
 > Example: `/var/run/docker-alt.sock`

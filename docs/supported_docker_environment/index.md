@@ -99,6 +99,7 @@ Testcontainers will try to connect to a Docker daemon using the following strate
 	* `DOCKER_HOST=https://localhost:2376`
 	* `DOCKER_TLS_VERIFY=1`
 	* `DOCKER_CERT_PATH=~/.docker`
+* The active Docker CLI context, resolved the same way `docker(1)` does — from `DOCKER_CONTEXT`, falling back to `currentContext` in `$DOCKER_CONFIG/config.json` (default `~/.docker/config.json`). The endpoint host is read from `$DOCKER_CONFIG/contexts/meta/<sha256(name)>/meta.json`, and per-context TLS material under `contexts/tls/<sha256(name)>/docker/` is picked up automatically when present. `DOCKER_HOST` overrides this, matching the CLI's behaviour.
 * If Docker Machine is installed, the docker machine environment for the *first* machine found. Docker Machine needs to be on the PATH for this to succeed.
 * If you're going to run your tests inside a container, please read [Patterns for running tests inside a docker container](continuous_integration/dind_patterns.md) first.
 
