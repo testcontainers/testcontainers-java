@@ -5,7 +5,17 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
+/**
+ * @deprecated Use the MockServer-maintained module instead:
+ * {@code org.mock-server:mockserver-testcontainers}
+ * (class {@code org.mockserver.testcontainers.MockServerContainer}). It tracks current MockServer
+ * releases, derives its image tag from the client library so the two stay in lockstep, and adds
+ * configuration helpers (DNS, transparent proxy, HTTP/3, initialization JSON, log level, arbitrary
+ * properties) plus direct {@code MockServerClient} wiring. See
+ * https://www.mock-server.com/mock_server/mockserver_testcontainers.html
+ */
 @Slf4j
+@Deprecated
 public class MockServerContainer extends GenericContainer<MockServerContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("jamesdbloom/mockserver");
