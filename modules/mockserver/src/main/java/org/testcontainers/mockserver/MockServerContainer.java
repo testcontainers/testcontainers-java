@@ -18,9 +18,9 @@ import org.testcontainers.utility.DockerImageName;
 @Deprecated
 public class MockServerContainer extends GenericContainer<MockServerContainer> {
 
-    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("jamesdbloom/mockserver");
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("mockserver/mockserver");
 
-    private static final String DEFAULT_TAG = "mockserver-5.5.4";
+    private static final String DEFAULT_TAG = "mockserver-7.0.0";
 
     @Deprecated
     public static final String VERSION = DEFAULT_TAG;
