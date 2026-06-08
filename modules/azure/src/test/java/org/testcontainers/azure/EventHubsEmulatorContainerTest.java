@@ -43,14 +43,10 @@ class EventHubsEmulatorContainerTest {
             emulator.start();
             // createProducerAndConsumer {
             EventHubProducerClient producer = new EventHubClientBuilder()
-                .connectionString(emulator.getConnectionString())
-                .fullyQualifiedNamespace("emulatorNs1")
-                .eventHubName("eh1")
+                .connectionString(emulator.getConnectionString(), "eh1")
                 .buildProducerClient();
             EventHubConsumerClient consumer = new EventHubClientBuilder()
-                .connectionString(emulator.getConnectionString())
-                .fullyQualifiedNamespace("emulatorNs1")
-                .eventHubName("eh1")
+                .connectionString(emulator.getConnectionString(), "eh1")
                 .consumerGroup("cg1")
                 .buildConsumerClient();
             // }
