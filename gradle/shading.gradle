@@ -57,10 +57,34 @@ project.afterEvaluate {
     }
 
     // Add shaded JARs first
-    tasks.test.classpath = findShadedProjects(project)
-        .plus(project)
+    def shadedProjects = findShadedProjects(project).plus(project)
+    tasks.test.classpath = shadedProjects
         .sum { it.tasks.findByName("shadowJar").outputs.files }
         .plus(sourceSets.test.runtimeClasspath)
+
+    // Gradle 8: declare explicit task dependencies for all jar/shadowJar tasks whose outputs
+    // are added to the test classpath, to satisfy strict implicit dependency validation.
+    // Both jar and shadowJar must be declared because non-published modules (e.g. test-support,
+    // docs examples) do not set jar.archiveClassifier, so both tasks write the same filename.
+    shadedProjects.each { p ->
+        def shadowJarTask = p.tasks.findByName("shadowJar")
+        if (shadowJarTask != null) {
+            tasks.test.dependsOn(shadowJarTask)
+        }
+        def jarTask = p.tasks.findByName("jar")
+        if (jarTask != null) {
+            tasks.test.dependsOn(jarTask)
+        }
+    }
+
+    // Also declare explicit dependency on shadowJar tasks from testImplementation project
+    // dependencies, since their shadowJar output (classifier=null) is the resolved artifact.
+    configurations.testImplementation.dependencies.withType(ProjectDependency).each { dep ->
+        def shadowJarTask = dep.dependencyProject.tasks.findByName("shadowJar")
+        if (shadowJarTask != null) {
+            tasks.test.dependsOn(shadowJarTask)
+        }
+    }
 }
 
 static Set<Project> findShadedProjects(Project project) {
