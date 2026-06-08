@@ -51,6 +51,7 @@ public class AzuriteContainer extends GenericContainer<AzuriteContainer> {
     private MountableFile key = null;
 
     private String pwd = null;
+    private boolean skipApiVersionCheck = false;
 
     /**
      * @param dockerImageName specified docker image name to run
@@ -93,6 +94,17 @@ public class AzuriteContainer extends GenericContainer<AzuriteContainer> {
         this.cert = pemCert;
         this.key = pemKey;
         this.certExtension = ".pem";
+        return this;
+    }
+
+    /**
+     * Configure the container to skip version checks.
+     * This is useful as Azure SDK update are more frequent than Azurite releases.
+     *
+     * @return this
+     */
+    public AzuriteContainer withSkipApiVersionCheck() {
+        this.skipApiVersionCheck = true;
         return this;
     }
 
@@ -152,6 +164,9 @@ public class AzuriteContainer extends GenericContainer<AzuriteContainer> {
         args.append(" --blobHost ").append(ALLOW_ALL_CONNECTIONS);
         args.append(" --queueHost ").append(ALLOW_ALL_CONNECTIONS);
         args.append(" --tableHost ").append(ALLOW_ALL_CONNECTIONS);
+        if (this.skipApiVersionCheck) {
+            args.append(" --skipApiVersionCheck");
+        }
         if (this.cert != null) {
             args.append(" --cert ").append("/cert").append(this.certExtension);
             if (this.pwd != null) {

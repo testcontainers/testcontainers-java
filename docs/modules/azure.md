@@ -27,6 +27,18 @@ Start Azurite Emulator during a test:
 !!! note
     SSL configuration is possible using the `withSsl(MountableFile, String)` and  `withSsl(MountableFile, MountableFile)` methods.
 
+!!! note
+    The Azure SDK evolves faster than the Azurite image in some cases. If your client fails to connect with an error such as
+    `The API version {{version}} is not supported by Azurite. Please upgrade Azurite to latest version and retry.`,
+    you can disable the version check with `withSkipApiVersionCheck()`.
+
+Example:
+
+```java
+AzuriteContainer azurite = new AzuriteContainer("mcr.microsoft.com/azure-storage/azurite:latest")
+    .withSkipApiVersionCheck();
+```
+
 If the tested application needs to use more than one set of credentials, the container can be configured to use custom credentials.
 Please see some examples below.
 

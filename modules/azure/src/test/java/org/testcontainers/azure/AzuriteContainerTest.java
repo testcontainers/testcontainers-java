@@ -155,6 +155,35 @@ class AzuriteContainerTest {
     }
 
     @Test
+    void testWithIgnoreApiVersionCheckAlone() {
+        AzuriteContainer withoutSsl = new AzuriteContainer("mcr.microsoft.com/azure-storage/azurite:3.33.0")
+            .withSkipApiVersionCheck();
+
+        assertThat(withoutSsl.getCommandLine())
+            .contains("--skipApiVersionCheck")
+            .doesNotContain("--cert")
+            .doesNotContain("--key");
+    }
+
+    @Test
+    void testWithIgnoreApiVersionCheckWithSsl() {
+        AzuriteContainer withSsl = new AzuriteContainer("mcr.microsoft.com/azure-storage/azurite:3.33.0")
+            .withSkipApiVersionCheck()
+            .withSsl(MountableFile.forClasspathResource("/keystore.pfx"), PASSWORD);
+
+        assertThat(withSsl.getCommandLine())
+            .contains("--skipApiVersionCheck")
+            .contains("--cert /cert.pfx")
+            .contains("--pwd " + PASSWORD);
+    }
+
+    @Test
+    void testDefaultCommandLineDoesNotContainSkipApiVersionCheck() {
+        AzuriteContainer container = new AzuriteContainer("mcr.microsoft.com/azure-storage/azurite:3.33.0");
+        assertThat(container.getCommandLine()).doesNotContain("--skipApiVersionCheck");
+    }
+
+    @Test
     void testTwoAccountKeysWithBlobServiceClient() {
         try (
             // withTwoAccountKeys {
