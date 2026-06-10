@@ -96,7 +96,9 @@ jobs:
           # we should not push empty results to the cache
           READ_ONLY_REMOTE_GRADLE_CACHE: true
         run: |
-          TASKS=$(./gradlew --no-daemon --parallel -q testMatrix | jq 'del(.[] | select(. == ":testcontainers:check" or startswith(":docs:")))' --compact-output)
+          set -o pipefail
+          ./gradlew --no-daemon --parallel -q testMatrix > matrix.json
+          TASKS=$(jq 'del(.[] | select(. == ":testcontainers:check" or startswith(":docs:")))' --compact-output matrix.json)
           echo $TASKS
           echo "matrix={\"gradle_args\":$TASKS}" >> $GITHUB_OUTPUT
   check:
@@ -130,7 +132,9 @@ jobs:
           # we should not push empty results to the cache
           READ_ONLY_REMOTE_GRADLE_CACHE: true
         run: |
-          TASKS=$(./gradlew --no-daemon --parallel -q testMatrix)
+          set -o pipefail
+          ./gradlew --no-daemon --parallel -q testMatrix > matrix.json
+          TASKS=$(cat matrix.json)
           echo $TASKS
           echo "matrix={\"gradle_args\":$TASKS}" >> $GITHUB_OUTPUT
   check_examples:
@@ -164,7 +168,9 @@ jobs:
           # we should not push empty results to the cache
           READ_ONLY_REMOTE_GRADLE_CACHE: true
         run: |
-          TASKS=$(./gradlew --no-daemon --parallel -q testMatrix | jq 'map(select(startswith(":docs:")))' --compact-output)
+          set -o pipefail
+          ./gradlew --no-daemon --parallel -q testMatrix > matrix.json
+          TASKS=$(jq 'map(select(startswith(":docs:")))' --compact-output matrix.json)
           echo $TASKS
           echo "matrix={\"gradle_args\":$TASKS}" >> $GITHUB_OUTPUT
   check_docs_examples:
