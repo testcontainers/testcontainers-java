@@ -159,7 +159,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
         throws InterruptedException {
         try {
             return pullImageCmd.exec(new TimeLimitedLoggedPullImageResultCallback(logger)).awaitCompletion();
-        } catch (DockerClientException | NotFoundException e) {
+        } catch (DockerClientException | NotFoundException | InternalServerErrorException e) {
             // Try to fallback to x86
             return pullImageCmd
                 .withPlatform("linux/amd64")
