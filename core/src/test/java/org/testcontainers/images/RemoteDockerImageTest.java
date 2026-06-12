@@ -1,9 +1,8 @@
 package org.testcontainers.images;
+
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.PullImageCmd;
-import com.github.dockerjava.api.exception.InternalServerErrorException;
-import org.testcontainers.utility.ImageNameSubstitutor;
-
+import org.testcontainers.images.TimeLimitedLoggedPullImageResultCallback;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -85,29 +84,23 @@ class RemoteDockerImageTest {
         assertThat(remoteDockerImage.toString()).contains("imageName=" + imageName);
     }
     @Test
-    void fallsBackToAmd64WhenPullFailsWithInternalServerError() throws Exception {
-        DockerImageName imageName = DockerImageName.parse("test/image:latest");
+    void passesExplicitPlatformToPullImageCommand() throws Exception {
         DockerClient dockerClient = mock(DockerClient.class);
         PullImageCmd pullImageCmd = mock(PullImageCmd.class);
 
         when(dockerClient.pullImageCmd("test/image")).thenReturn(pullImageCmd);
         when(pullImageCmd.withTag("latest")).thenReturn(pullImageCmd);
         when(pullImageCmd.withPlatform("linux/amd64")).thenReturn(pullImageCmd);
+        TimeLimitedLoggedPullImageResultCallback callback = mock(TimeLimitedLoggedPullImageResultCallback.class);
+        when(pullImageCmd.exec(any(TimeLimitedLoggedPullImageResultCallback.class))).thenReturn(callback);
+        when(callback.awaitCompletion()).thenReturn(callback);
 
-        when(pullImageCmd.exec(any(TimeLimitedLoggedPullImageResultCallback.class)))
-            .thenThrow(new InternalServerErrorException("no image found in manifest list for architecture \"arm64\""))
-            .thenReturn(mock(TimeLimitedLoggedPullImageResultCallback.class));
+        RemoteDockerImage remoteDockerImage = new RemoteDockerImage(DockerImageName.parse("test/image:latest"))
+            .withImagePlatform("linux/amd64");
 
-        RemoteDockerImage remoteDockerImage = new RemoteDockerImage(
-            CompletableFuture.completedFuture(imageName),
-            __ -> true,
-            ImageNameSubstitutor.noop(),
-            dockerClient
-        );
-
-        remoteDockerImage.resolve();
+        remoteDockerImage.withDockerClient(dockerClient).get();
 
         verify(pullImageCmd).withPlatform("linux/amd64");
     }
-
+    
 }
