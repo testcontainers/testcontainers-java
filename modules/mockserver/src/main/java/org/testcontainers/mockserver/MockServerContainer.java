@@ -11,8 +11,9 @@ import org.testcontainers.utility.DockerImageName;
  * (class {@code org.mockserver.testcontainers.MockServerContainer}). It tracks current MockServer
  * releases, derives its image tag from the client library so the two stay in lockstep, and adds
  * configuration helpers (DNS, transparent proxy, HTTP/3, initialization JSON, log level, arbitrary
- * properties) plus direct {@code MockServerClient} wiring. See
- * https://www.mock-server.com/mock_server/mockserver_testcontainers.html
+ * properties) plus direct {@code MockServerClient} wiring.
+ *
+ * @see <a href="https://www.mock-server.com/mock_server/mockserver_testcontainers.html">MockServer Testcontainers module</a>
  */
 @Slf4j
 @Deprecated
@@ -20,7 +21,9 @@ public class MockServerContainer extends GenericContainer<MockServerContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("mockserver/mockserver");
 
-    private static final String DEFAULT_TAG = "mockserver-7.0.0";
+    // Keep this tag aligned with the mockserver-client-java version in build.gradle: the tests derive
+    // their image tag from that client jar, so the default here must track the same MockServer release.
+    private static final String DEFAULT_TAG = "mockserver-7.1.0";
 
     @Deprecated
     public static final String VERSION = DEFAULT_TAG;

@@ -10,13 +10,17 @@ import org.testcontainers.utility.DockerImageName;
  * (class {@code org.mockserver.testcontainers.MockServerContainer}). It tracks current MockServer
  * releases, derives its image tag from the client library so the two stay in lockstep, and adds
  * configuration helpers (DNS, transparent proxy, HTTP/3, initialization JSON, log level, arbitrary
- * properties) plus direct {@code MockServerClient} wiring. See
- * https://www.mock-server.com/mock_server/mockserver_testcontainers.html
+ * properties) plus direct {@code MockServerClient} wiring.
+ *
+ * @see <a href="https://www.mock-server.com/mock_server/mockserver_testcontainers.html">MockServer Testcontainers module</a>
  */
 @Slf4j
 @Deprecated
 public class MockServerContainer extends GenericContainer<MockServerContainer> {
 
+    // Intentionally frozen at this legacy image/tag: this superseded redirect stub keeps its original
+    // jamesdbloom/mockserver default for backwards compatibility. New code should use the
+    // MockServer-maintained module referenced in the deprecation notice above.
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("jamesdbloom/mockserver");
 
     private static final String DEFAULT_TAG = "mockserver-5.5.4";

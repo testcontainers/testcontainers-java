@@ -15,6 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
+@SuppressWarnings("deprecation") // testing the deprecated bundled module
 class MockServerContainerTest {
 
     public static final DockerImageName MOCKSERVER_IMAGE = DockerImageName
@@ -34,7 +35,9 @@ class MockServerContainerTest {
             try (MockServerClient client = new MockServerClient(mockServer.getHost(), mockServer.getServerPort())) {
                 assertThat(client.hasStarted()).as("Mockserver running").isTrue();
 
+                // testSimpleExpectation {
                 client.when(request().withPath("/hello")).respond(response().withBody(expectedBody));
+                // }
 
                 assertThat(given().when().get(mockServer.getEndpoint() + "/hello").then().extract().body().asString())
                     .as("MockServer returns correct result")
