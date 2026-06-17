@@ -5,8 +5,8 @@ buildscript {
         }
     }
     dependencies {
-        classpath "com.gradle.enterprise:com.gradle.enterprise.gradle.plugin:3.19.2"
-        classpath "com.gradle:common-custom-user-data-gradle-plugin:2.5.0"
+        classpath "com.gradle:develocity-gradle-plugin:4.4.1"
+        classpath "com.gradle:common-custom-user-data-gradle-plugin:2.6.0"
         classpath "org.gradle.toolchains:foojay-resolver:0.8.0"
     }
 }
@@ -45,13 +45,16 @@ buildCache {
 }
 
 develocity {
+    server = "https://community.develocity.cloud"
+    projectId = "testcontainers"
     buildScan {
-        server = "https://ge.testcontainers.org/"
         publishing.onlyIf {
             it.authenticated
         }
         uploadInBackground = !isCI
         capture.fileFingerprints = true
+        obfuscation {
+            ipAddresses { it.collect { "0.0.0.0" } }
+        }
     }
-
 }
