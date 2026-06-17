@@ -39,8 +39,9 @@ buildCache {
         enabled = !isCI
     }
     remote(develocity.buildCache) {
-        push = isCI && !System.getenv("READ_ONLY_REMOTE_GRADLE_CACHE") && System.getenv("DEVELOCITY_ACCESS_KEY")
         enabled = true
+        // Check access key presence to avoid build cache errors on PR builds when access key is not present
+        push = isCI && !System.getenv("READ_ONLY_REMOTE_GRADLE_CACHE") && System.getenv("DEVELOCITY_ACCESS_KEY") != null
     }
 }
 
@@ -52,7 +53,6 @@ develocity {
             it.authenticated
         }
         uploadInBackground = !isCI
-        capture.fileFingerprints = true
         obfuscation {
             ipAddresses { it.collect { "0.0.0.0" } }
         }
