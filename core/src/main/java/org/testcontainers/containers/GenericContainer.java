@@ -37,6 +37,7 @@ import org.slf4j.Logger;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.UnstableAPI;
 import org.testcontainers.containers.output.OutputFrame;
+import org.testcontainers.containers.output.ToStringConsumer;
 import org.testcontainers.containers.startupcheck.IsRunningStartupCheckStrategy;
 import org.testcontainers.containers.startupcheck.MinimumDurationRunningStartupCheckStrategy;
 import org.testcontainers.containers.startupcheck.StartupCheckStrategy;
@@ -183,6 +184,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     protected WaitStrategy waitStrategy = DEFAULT_WAIT_STRATEGY;
 
     private List<Consumer<OutputFrame>> logConsumers = new ArrayList<>();
+
+    /**
+     * In-memory log buffer used by {@link #withLogCapture()}.
+     */
+    private ToStringConsumer capturedLogsConsumer;
 
     private static final Set<String> AVAILABLE_IMAGE_NAME_CACHE = new HashSet<>();
 
@@ -1360,6 +1366,34 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         this.logConsumers.add(consumer);
 
         return self();
+    }
+
+    /**
+     * Enables in-memory capture of container logs.
+     * <p>
+     * This is useful for debugging startup failures or containers that exit quickly,
+     * where {@link #getLogs()} may return empty output.
+     *
+     * @return this container instance
+     */
+    public SELF withLogCapture() {
+        if (capturedLogsConsumer == null) {
+            capturedLogsConsumer = new ToStringConsumer();
+            withLogConsumer(capturedLogsConsumer);
+        }
+        return self();
+    }
+
+    /**
+     * Returns logs captured in memory when {@link #withLogCapture()} is enabled.
+     * <p>
+     * This is useful for debugging startup failures or containers that exit quickly,
+     * where {@link #getLogs()} may return empty output.
+     *
+     * @return captured container output (stdout and stderr), or an empty string if log capture is not enabled
+     */
+    public String getCapturedLogs() {
+        return capturedLogsConsumer != null ? capturedLogsConsumer.toUtf8String() : "";
     }
 
     /**
