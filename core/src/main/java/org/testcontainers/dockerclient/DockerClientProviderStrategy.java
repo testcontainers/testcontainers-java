@@ -154,6 +154,12 @@ public abstract class DockerClientProviderStrategy {
      */
     @UnstableAPI
     protected boolean test() {
+        // Skip connectivity test if checks are disabled (useful for Windows/WSL2)
+        if (TestcontainersConfiguration.getInstance().isDisableChecks()) {
+            log.debug("Checks are disabled, skipping Docker connectivity test");
+            return true;
+        }
+
         TransportConfig transportConfig = getTransportConfig();
         URI dockerHost = transportConfig.getDockerHost();
 
