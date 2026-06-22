@@ -1,9 +1,9 @@
 package org.testcontainers.images;
 
+import org.jetbrains.annotations.Nullable;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.PullImageCmd;
 import com.github.dockerjava.api.exception.DockerClientException;
-import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.google.common.util.concurrent.Futures;
 import lombok.AccessLevel;
@@ -47,8 +47,13 @@ public class RemoteDockerImage extends LazyFuture<String> {
     ImagePullPolicy imagePullPolicy = PullPolicy.defaultPolicy();
 
     @With
+    @Nullable
+    private String imagePlatform;
+
+    @With
     private ImageNameSubstitutor imageNameSubstitutor = ImageNameSubstitutor.instance();
 
+    @With
     @ToString.Exclude
     private DockerClient dockerClient = DockerClientFactory.lazyClient();
 
@@ -92,6 +97,9 @@ public class RemoteDockerImage extends LazyFuture<String> {
             final PullImageCmd pullImageCmd = dockerClient
                 .pullImageCmd(imageName.getUnversionedPart())
                 .withTag(imageName.getVersionPart());
+            if (imagePlatform != null) {
+                pullImageCmd.withPlatform(imagePlatform);
+            }
             final AtomicReference<String> dockerImageName = new AtomicReference<>();
 
             // The following poll interval in ms: 50, 100, 200, 400, 800....
@@ -142,7 +150,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
                 pullImage(pullImageCmd, logger);
                 dockerImageName.set(imageName.asCanonicalNameString());
                 return true;
-            } catch (InterruptedException | InternalServerErrorException e) {
+            } catch (InterruptedException e) {
                 // these classes of exception often relate to timeout/connection errors so should be retried
                 lastFailure.set(e);
                 logger.warn(

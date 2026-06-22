@@ -1,5 +1,12 @@
 package org.testcontainers.images;
 
+import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.PullImageCmd;
+import org.testcontainers.images.TimeLimitedLoggedPullImageResultCallback;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.testcontainers.utility.Base58;
@@ -76,4 +83,24 @@ class RemoteDockerImageTest {
         imageNameFuture.get();
         assertThat(remoteDockerImage.toString()).contains("imageName=" + imageName);
     }
+    @Test
+    void passesExplicitPlatformToPullImageCommand() throws Exception {
+        DockerClient dockerClient = mock(DockerClient.class);
+        PullImageCmd pullImageCmd = mock(PullImageCmd.class);
+
+        when(dockerClient.pullImageCmd("test/image")).thenReturn(pullImageCmd);
+        when(pullImageCmd.withTag("latest")).thenReturn(pullImageCmd);
+        when(pullImageCmd.withPlatform("linux/amd64")).thenReturn(pullImageCmd);
+        TimeLimitedLoggedPullImageResultCallback callback = mock(TimeLimitedLoggedPullImageResultCallback.class);
+        when(pullImageCmd.exec(any(TimeLimitedLoggedPullImageResultCallback.class))).thenReturn(callback);
+        when(callback.awaitCompletion()).thenReturn(callback);
+
+        RemoteDockerImage remoteDockerImage = new RemoteDockerImage(DockerImageName.parse("test/image:latest"))
+            .withImagePlatform("linux/amd64");
+
+        remoteDockerImage.withDockerClient(dockerClient).get();
+
+        verify(pullImageCmd).withPlatform("linux/amd64");
+    }
+    
 }
