@@ -77,6 +77,23 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
     public abstract String getJdbcUrl();
 
     /**
+     * @return a R2DBC URL that may be used to connect to the dockerized DB
+     */
+    public String getR2dbcUrl() {
+        String jdbcUrl = getJdbcUrl();
+        if (jdbcUrl == null) {
+            return null;
+        }
+        if (jdbcUrl.startsWith("jdbc:sqlserver:")) {
+            return jdbcUrl.replace("jdbc:sqlserver:", "r2dbc:mssql:");
+        }
+        if (jdbcUrl.startsWith("jdbc:oracle:thin:@")) {
+            return jdbcUrl.replace("jdbc:oracle:thin:@", "r2dbc:oracle://");
+        }
+        return jdbcUrl.replace("jdbc:", "r2dbc:");
+    }
+
+    /**
      * @return the database name
      */
     public String getDatabaseName() {
