@@ -358,15 +358,29 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
         }
     }
 
-    /**
-     * Load init script content and apply it to the database if initScriptPath is set
-     */
-    protected void runInitScriptIfRequired() {
-        initScriptPaths
-            .stream()
-            .filter(Objects::nonNull)
-            .forEach(path -> ScriptUtils.runInitScript(getDatabaseDelegate(), path));
-    }
+
+/**
+ * Load init script content and apply it to the database if initScriptPath is set
+ */
+protected void runInitScriptIfRequired() {
+    initScriptPaths
+        .stream()
+        .filter(Objects::nonNull)
+        .forEach(path -> ScriptUtils.runInitScript(getDatabaseDelegate(), path, getStatementSeparator()));
+}
+
+/**
+ * Returns the statement separator for SQL scripts.
+ * Override this method to use a different separator (e.g. "GO" for MSSQL).
+ *
+ * @return the statement separator, defaults to {@link ScriptUtils#DEFAULT_STATEMENT_SEPARATOR}
+ */
+protected String getStatementSeparator() {
+    return ScriptUtils.DEFAULT_STATEMENT_SEPARATOR;
+}
+
+
+    
 
     public void setParameters(Map<String, String> parameters) {
         this.parameters = parameters;
