@@ -148,13 +148,8 @@ public interface ContainerState {
      * Get the actual mapped port for a given port exposed by the container.
      * It should be used in conjunction with {@link #getHost()}.
      * <p>
-     * Note: The returned port number might be outdated (for instance, after disconnecting from a network and reconnecting
-     * again). If you always need up-to-date value, override the {@link #getContainerInfo()} to return the
-     * {@link #getCurrentContainerInfo()}.
-     *
      * @param originalPort the original TCP port that is exposed
      * @return the port that the exposed port is mapped to, or null if it is not exposed
-     * @see #getContainerInfo()
      * @see #getCurrentContainerInfo()
      */
     default Integer getMappedPort(int originalPort) {
@@ -164,7 +159,7 @@ public interface ContainerState {
         );
 
         Ports.Binding[] binding = new Ports.Binding[0];
-        final InspectContainerResponse containerInfo = this.getContainerInfo();
+        final InspectContainerResponse containerInfo = this.getCurrentContainerInfo();
         if (containerInfo != null) {
             binding = containerInfo.getNetworkSettings().getPorts().getBindings().get(new ExposedPort(originalPort));
         }
@@ -186,7 +181,7 @@ public interface ContainerState {
      */
     default List<String> getPortBindings() {
         List<String> portBindings = new ArrayList<>();
-        final Ports hostPortBindings = this.getContainerInfo().getHostConfig().getPortBindings();
+        final Ports hostPortBindings = this.getCurrentContainerInfo().getHostConfig().getPortBindings();
         for (Map.Entry<ExposedPort, Ports.Binding[]> binding : hostPortBindings.getBindings().entrySet()) {
             for (Ports.Binding portBinding : binding.getValue()) {
                 portBindings.add(String.format("%s:%s", portBinding.toString(), binding.getKey()));
