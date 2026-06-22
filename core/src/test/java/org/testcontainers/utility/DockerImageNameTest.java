@@ -1,6 +1,7 @@
 package org.testcontainers.utility;
 
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -24,6 +25,8 @@ class DockerImageNameTest {
                 "registry.foo.com:1234/repo_here/my-name:1.0",
                 "registry.foo.com:1234/repo-here/my-name@sha256:1234abcd1234abcd1234abcd1234abcd",
                 "registry.foo.com:1234/my-name@sha256:1234abcd1234abcd1234abcd1234abcd",
+                "myname:latest@sha256:1234abcd1234abcd1234abcd1234abcd",
+                "registry.foo.com:1234/repo-here/my-name:1.0@sha256:1234abcd1234abcd1234abcd1234abcd",
                 "1.2.3.4/my-name:1.0",
                 "1.2.3.4:1234/my-name:1.0",
                 "1.2.3.4/repo-here/my-name:1.0",
@@ -145,6 +148,74 @@ class DockerImageNameTest {
                     .as(combined + " has version part: " + version)
                     .isEqualTo(version);
             }
+        }
+    }
+
+    @Nested
+    class TagAndDigestParsing {
+
+        @Test
+        void testTagAndDigestStripsTagFromRepository() {
+            DockerImageName imageName = DockerImageName.parse("myname:latest@sha256:1234abcd1234abcd1234abcd1234abcd");
+
+            assertThat(imageName.getRegistry()).isEqualTo("");
+            assertThat(imageName.getUnversionedPart()).isEqualTo("myname");
+            assertThat(imageName.getVersionPart()).isEqualTo("latest");
+            assertThat(imageName.getDigest()).isEqualTo("sha256:1234abcd1234abcd1234abcd1234abcd");
+            assertThat(imageName.asCanonicalNameString())
+                .isEqualTo("myname:latest@sha256:1234abcd1234abcd1234abcd1234abcd");
+        }
+
+        @Test
+        void testTagAndDigestWithRepoPath() {
+            DockerImageName imageName = DockerImageName.parse(
+                "repo/myname:1.0@sha256:1234abcd1234abcd1234abcd1234abcd"
+            );
+
+            assertThat(imageName.getRegistry()).isEqualTo("");
+            assertThat(imageName.getUnversionedPart()).isEqualTo("repo/myname");
+            assertThat(imageName.getVersionPart()).isEqualTo("1.0");
+            assertThat(imageName.getDigest()).isEqualTo("sha256:1234abcd1234abcd1234abcd1234abcd");
+            assertThat(imageName.asCanonicalNameString())
+                .isEqualTo("repo/myname:1.0@sha256:1234abcd1234abcd1234abcd1234abcd");
+        }
+
+        @Test
+        void testTagAndDigestWithRegistry() {
+            DockerImageName imageName = DockerImageName.parse(
+                "registry.foo.com:1234/repo-here/my-name:1.0@sha256:1234abcd1234abcd1234abcd1234abcd"
+            );
+
+            assertThat(imageName.getRegistry()).isEqualTo("registry.foo.com:1234");
+            assertThat(imageName.getUnversionedPart()).isEqualTo("registry.foo.com:1234/repo-here/my-name");
+            assertThat(imageName.getVersionPart()).isEqualTo("1.0");
+            assertThat(imageName.getDigest()).isEqualTo("sha256:1234abcd1234abcd1234abcd1234abcd");
+            assertThat(imageName.asCanonicalNameString())
+                .isEqualTo("registry.foo.com:1234/repo-here/my-name:1.0@sha256:1234abcd1234abcd1234abcd1234abcd");
+        }
+
+        @Test
+        void testMalformedTagWithExtraColonIsRejected() {
+            assertThatThrownBy(() ->
+                    DockerImageName.parse("repo/image:tag:extra@sha256:1234abcd1234abcd1234abcd1234abcd").assertValid()
+                )
+                .isInstanceOf(IllegalArgumentException.class);
+        }
+
+        @Test
+        void testDifferentTagsSameDigestAreNotEqual() {
+            DockerImageName a = DockerImageName.parse("repo/image:1.0@sha256:1234abcd1234abcd1234abcd1234abcd");
+            DockerImageName b = DockerImageName.parse("repo/image:latest@sha256:1234abcd1234abcd1234abcd1234abcd");
+
+            assertThat(a).isNotEqualTo(b);
+        }
+
+        @Test
+        void testDigestOnlyHasNoTag() {
+            DockerImageName imageName = DockerImageName.parse("myname@sha256:1234abcd1234abcd1234abcd1234abcd");
+
+            assertThat(imageName.getVersionPart()).isEqualTo("sha256:1234abcd1234abcd1234abcd1234abcd");
+            assertThat(imageName.getDigest()).isEqualTo("sha256:1234abcd1234abcd1234abcd1234abcd");
         }
     }
 }
