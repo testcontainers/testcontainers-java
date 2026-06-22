@@ -19,13 +19,13 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.awaitility.Awaitility;
 import org.jetbrains.annotations.Nullable;
-import org.rnorth.ducttape.TimeoutException;
-import org.rnorth.ducttape.ratelimits.RateLimiter;
-import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
-import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.UnstableAPI;
+import org.testcontainers.utility.RateLimiter;
+import org.testcontainers.utility.RateLimiterBuilder;
 import org.testcontainers.utility.TestcontainersConfiguration;
+import org.testcontainers.utility.TimeoutException;
+import org.testcontainers.utility.Unreliables;
 
 import java.io.File;
 import java.net.InetSocketAddress;

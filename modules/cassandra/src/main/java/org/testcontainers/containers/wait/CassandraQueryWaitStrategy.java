@@ -1,6 +1,6 @@
 package org.testcontainers.containers.wait;
 
-import org.rnorth.ducttape.TimeoutException;
+import org.testcontainers.utility.TimeoutException;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.delegate.CassandraDatabaseDelegate;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
@@ -8,7 +8,7 @@ import org.testcontainers.delegate.DatabaseDelegate;
 
 import java.util.concurrent.TimeUnit;
 
-import static org.rnorth.ducttape.unreliables.Unreliables.retryUntilSuccess;
+import static org.testcontainers.utility.Unreliables.retryUntilSuccess;
 
 /**
  * Waits until Cassandra returns its version
