@@ -2,19 +2,19 @@
 
 <p align=center><strong>Not using Java? Here are other supported languages!</strong></p>
 <div class="card-grid">
-    <a class="card-grid-item"><img src="language-logos/java.svg"/>Java</a>
-    <a href="https://golang.testcontainers.org/" class="card-grid-item"><img src="language-logos/go.svg"/>Go</a>
-    <a href="https://dotnet.testcontainers.org/" class="card-grid-item"><img src="language-logos/dotnet.svg"/>.NET</a>
-    <a href="https://node.testcontainers.org/" class="card-grid-item"><img src="language-logos/nodejs.svg"/>Node.js</a>
-    <a href="https://testcontainers-python.readthedocs.io/en/latest/" class="card-grid-item"><img src="language-logos/python.svg"/>Python</a>
-    <a href="https://rust.testcontainers.org/" class="card-grid-item"><img src="language-logos/rust.svg"/>Rust</a>
-    <a href="https://github.com/testcontainers/testcontainers-ruby/" class="card-grid-item"><img src="language-logos/ruby.svg"/>Ruby</a>
-    <a href="https://php.testcontainers.org/" class="card-grid-item"><img src="language-logos/php.svg"/>PHP</a>
-    <a href="https://github.com/testcontainers/testcontainers-hs/" class="card-grid-item"><img src="language-logos/haskell.svg"/>Haskell</a>
-    <a href="https://cljdoc.org/d/clj-test-containers/clj-test-containers/" class="card-grid-item"><img src="language-logos/clojure.svg"/>Clojure</a>
-    <a href="https://github.com/testcontainers/testcontainers-elixir" class="card-grid-item"><img src="language-logos/elixir.svg"/>Elixir</a>
-    <a href="https://github.com/testcontainers/testcontainers-scala/" class="card-grid-item"><img src="language-logos/scala.svg"/>Scala</a>
-    <a href="https://github.com/testcontainers/testcontainers-native" class="card-grid-item"><img src="language-logos/c.svg"/>Native</a>
+    <a class="card-grid-item"><img src="language-logos/java.svg" alt=""/>Java</a>
+    <a href="https://golang.testcontainers.org/" class="card-grid-item"><img src="language-logos/go.svg" alt=""/>Go</a>
+    <a href="https://dotnet.testcontainers.org/" class="card-grid-item"><img src="language-logos/dotnet.svg" alt=""/>.NET</a>
+    <a href="https://node.testcontainers.org/" class="card-grid-item"><img src="language-logos/nodejs.svg" alt=""/>Node.js</a>
+    <a href="https://testcontainers-python.readthedocs.io/en/latest/" class="card-grid-item"><img src="language-logos/python.svg" alt=""/>Python</a>
+    <a href="https://rust.testcontainers.org/" class="card-grid-item"><img src="language-logos/rust.svg" alt=""/>Rust</a>
+    <a href="https://github.com/testcontainers/testcontainers-ruby/" class="card-grid-item"><img src="language-logos/ruby.svg" alt=""/>Ruby</a>
+    <a href="https://php.testcontainers.org/" class="card-grid-item"><img src="language-logos/php.svg" alt=""/>PHP</a>
+    <a href="https://github.com/testcontainers/testcontainers-hs/" class="card-grid-item"><img src="language-logos/haskell.svg" alt=""/>Haskell</a>
+    <a href="https://cljdoc.org/d/clj-test-containers/clj-test-containers/" class="card-grid-item"><img src="language-logos/clojure.svg" alt=""/>Clojure</a>
+    <a href="https://github.com/testcontainers/testcontainers-elixir" class="card-grid-item"><img src="language-logos/elixir.svg" alt=""/>Elixir</a>
+    <a href="https://github.com/testcontainers/testcontainers-scala/" class="card-grid-item"><img src="language-logos/scala.svg" alt=""/>Scala</a>
+    <a href="https://github.com/testcontainers/testcontainers-native" class="card-grid-item"><img src="language-logos/c.svg" alt=""/>Native</a>
 </div>
 
 ## About Testcontainers for Java
