@@ -37,6 +37,14 @@ With anonymous login:
 [Allow anonymous login](../../modules/activemq/src/test/java/org/testcontainers/activemq/ArtemisContainerTest.java) inside_block:enableAnonymousLogin
 <!--/codeinclude-->
 
+### Executing Artemis CLI commands
+
+The Artemis image ships with a built-in CLI that can be used to administer the broker (e.g. create queues for AMQP 1.0 clients). `ArtemisContainer` exposes an `execArtemisCommand` helper that automatically prepends the binary path and appends the broker credentials, so you only need to supply the sub-command and its options:
+
+<!--codeinclude-->
+[Executing an Artemis CLI command](../../modules/activemq/src/test/java/org/testcontainers/activemq/ArtemisContainerTest.java) inside_block:execArtemisCommand
+<!--/codeinclude-->
+
 ## Adding this module to your project dependencies
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:

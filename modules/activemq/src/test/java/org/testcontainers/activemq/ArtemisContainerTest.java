@@ -71,6 +71,25 @@ class ArtemisContainerTest {
         }
     }
 
+    @Test
+    void execArtemisCommand() throws Exception {
+        try (ArtemisContainer artemis = new ArtemisContainer("apache/activemq-artemis:2.32.0-alpine")) {
+            artemis.start();
+
+            // execArtemisCommand {
+            var result = artemis.execArtemisCommand(
+                "queue",
+                "create",
+                "--name=test-amqp-queue",
+                "--auto-create-address",
+                "--anycast",
+                "--silent"
+            );
+            // }
+            assertThat(result.getExitCode()).isEqualTo(0);
+        }
+    }
+
     @SneakyThrows
     private void assertFunctionality(ArtemisContainer artemis, boolean anonymousLogin) {
         ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(artemis.getBrokerUrl());

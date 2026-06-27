@@ -4,6 +4,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
+import java.io.IOException;
 import java.time.Duration;
 
 /**
@@ -27,6 +28,8 @@ public class ArtemisContainer extends GenericContainer<ArtemisContainer> {
     private static final DockerImageName DEFAULT_IMAGE = DockerImageName.parse("apache/activemq-artemis");
 
     private static final DockerImageName APACHE_ARTEMIS_IMAGE = DockerImageName.parse("apache/artemis");
+
+    private static final String ARTEMIS_CLI_PATH = "/var/lib/artemis-instance/bin/artemis";
 
     private static final int WEB_CONSOLE_PORT = 8161;
 
@@ -85,5 +88,23 @@ public class ArtemisContainer extends GenericContainer<ArtemisContainer> {
 
     public String getPassword() {
         return getEnvMap().get("ARTEMIS_PASSWORD");
+    }
+
+    /**
+     * Execute an Artemis CLI command inside the container. The broker credentials are
+     * automatically appended so callers only need to supply the sub-command and its options.
+     *
+     * @param commands the sub-command and its arguments, e.g. {@code "queue", "create", "--name=myQueue", ...}
+     * @return the result of the command execution
+     */
+    public ExecResult execArtemisCommand(String... commands) throws IOException, InterruptedException {
+        String[] fullCommand = new String[commands.length + 5];
+        fullCommand[0] = ARTEMIS_CLI_PATH;
+        System.arraycopy(commands, 0, fullCommand, 1, commands.length);
+        fullCommand[commands.length + 1] = "--user";
+        fullCommand[commands.length + 2] = getUser();
+        fullCommand[commands.length + 3] = "--password";
+        fullCommand[commands.length + 4] = getPassword();
+        return execInContainer(fullCommand);
     }
 }
