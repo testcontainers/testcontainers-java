@@ -495,7 +495,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 }
 
                 if (inspectContainerResponse == null) {
-                    throw new IllegalStateException("Wait strategy failed. Container is removed", e);
+                    throw new IllegalStateException(
+                        "Wait strategy failed. Container " + containerId + " is removed",
+                        e
+                    );
                 }
 
                 InspectContainerResponse.ContainerState state = inspectContainerResponse.getState();
@@ -538,14 +541,23 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
             if (containerId != null) {
                 // Log output if startup failed, either due to a container failure or exception (including timeout)
-                final String containerLogs = getLogs();
-
-                if (containerLogs.length() > 0) {
+                String containerLogs = null;
+                try {
+                    containerLogs = getLogs();
+                } catch (Exception e2) {
+                    logger().error("Could not retrieve logs for container {}: container not found", containerId, e2);
+                }
+                if (containerLogs != null && !containerLogs.isEmpty()) {
                     logger().error("Log output from the failed container:\n{}", containerLogs);
                 } else {
                     logger().error("There are no stdout/stderr logs available for the failed container");
                 }
-                stop();
+
+                try {
+                    stop();
+                } catch (Exception e2) {
+                    logger().debug("Failed to stop container {}", containerId, e2);
+                }
             }
 
             throw new ContainerLaunchException("Could not create/start container", e);
