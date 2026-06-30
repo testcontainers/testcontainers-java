@@ -22,7 +22,10 @@ public class IsRunningStartupCheckStrategy extends StartupCheckStrategy {
             // one live Docker inspect to detect stale state (e.g., container crashed
             // between the port-mapping check and this startup check).
             try {
-                if (checkStartupState(container.getDockerClient(), container.getContainerId()) == StartupStatus.SUCCESSFUL) {
+                if (
+                    checkStartupState(container.getDockerClient(), container.getContainerId()) ==
+                    StartupStatus.SUCCESSFUL
+                ) {
                     return true;
                 }
                 // Live state doesn't match cached — container may have crashed.
