@@ -3,7 +3,7 @@ description = "Testcontainers :: JDBC :: CrateDB"
 dependencies {
     api project(':testcontainers-jdbc')
 
-    testRuntimeOnly 'org.postgresql:postgresql:42.7.10'
+    testRuntimeOnly 'org.postgresql:postgresql:42.7.12'
 
     testImplementation project(':testcontainers-jdbc-test')
 
