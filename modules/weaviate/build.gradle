@@ -3,7 +3,7 @@ description = "Testcontainers :: Weaviate"
 dependencies {
     api project(':testcontainers')
 
-    testImplementation 'io.weaviate:client6:6.1.0'
+    testImplementation 'io.weaviate:client6:6.3.0'
 }
 
 test {
