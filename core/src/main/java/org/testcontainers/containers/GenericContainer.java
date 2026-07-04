@@ -635,6 +635,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public void stop() {
+        // Read the mutable state once: a concurrent or reentrant stop() call nulls the
+        // fields in its finally block, and a second read would pass a null containerId
+        // to the ResourceReaper (see GH-11492).
+        String containerId = this.containerId;
+        InspectContainerResponse containerInfo = this.containerInfo;
         if (containerId == null) {
             return;
         }
@@ -652,8 +657,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             ResourceReaper.instance().stopAndRemoveContainer(containerId, imageName);
             containerIsStopped(containerInfo);
         } finally {
-            containerId = null;
-            containerInfo = null;
+            this.containerId = null;
+            this.containerInfo = null;
         }
     }
 
