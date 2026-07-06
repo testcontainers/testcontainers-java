@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
@@ -223,6 +224,24 @@ class TestcontainersConfigurationTest {
         assertThat(newConfig().getRyukImage())
             .as("trailing whitespace was not removed from image name property")
             .isEqualTo("testcontainers/ryuk:0.3.2");
+    }
+
+    @Test
+    void shouldReadEnvVarRegardlessOfDefaultLocale() {
+        // Property names such as "image.substitutor" contain the letter 'i', which
+        // upper-cases to a dotted capital 'İ' (U+0130) under the Turkish locale. The
+        // derived environment variable name must not depend on the JVM default locale,
+        // otherwise the lookup silently fails and the environment variable is ignored.
+        Locale previousDefault = Locale.getDefault();
+        try {
+            Locale.setDefault(new Locale("tr", "TR"));
+            environment.put("TESTCONTAINERS_IMAGE_SUBSTITUTOR", "com.example.MySubstitutor");
+            assertThat(newConfig().getImageSubstitutorClassName())
+                .as("environment variables are resolved independently of the default locale")
+                .isEqualTo("com.example.MySubstitutor");
+        } finally {
+            Locale.setDefault(previousDefault);
+        }
     }
 
     private TestcontainersConfiguration newConfig() {
