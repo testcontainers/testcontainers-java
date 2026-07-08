@@ -41,6 +41,10 @@ public class TestcontainersExtension
 
     private static final String LOCAL_LIFECYCLE_AWARE_CONTAINERS = "localLifecycleAwareContainers";
 
+    private static final String TEST_CLASS_LABEL = "testcontainers/test-class";
+
+    private static final String TEST_FIELD_LABEL = "testcontainers/test-field";
+
     private final DockerAvailableDetector dockerDetector = new DockerAvailableDetector();
 
     @Override
@@ -267,12 +271,24 @@ public class TestcontainersExtension
 
         private Startable container;
 
+        private Class<?> declaringClass;
+
+        private String fieldName;
+
         private StoreAdapter(Class<?> declaringClass, String fieldName, Startable container) {
+            this.declaringClass = declaringClass;
+            this.fieldName = fieldName;
             this.key = declaringClass.getName() + "." + fieldName;
             this.container = container;
         }
 
         private StoreAdapter start() {
+            if (container instanceof org.testcontainers.containers.Container) {
+                ((org.testcontainers.containers.Container<?>) container)
+                    .withLabel(TEST_CLASS_LABEL, declaringClass.getName());
+                ((org.testcontainers.containers.Container<?>) container)
+                    .withLabel(TEST_FIELD_LABEL, fieldName);
+            }
             container.start();
             return this;
         }
