@@ -102,6 +102,7 @@ public class RemoteDockerImage extends LazyFuture<String> {
 
             Awaitility
                 .await()
+                .dontCatchUncaughtExceptions() // don't replace the global uncaught exception handler, see #11483
                 .pollInSameThread()
                 .pollDelay(Duration.ZERO) // start checking immediately
                 .atMost(PULL_RETRY_TIME_LIMIT)

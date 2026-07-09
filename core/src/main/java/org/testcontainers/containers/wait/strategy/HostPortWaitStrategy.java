@@ -82,6 +82,7 @@ public class HostPortWaitStrategy extends AbstractWaitStrategy {
                         Instant now = Instant.now();
                         Awaitility
                             .await()
+                            .dontCatchUncaughtExceptions() // don't replace the global uncaught exception handler, see #11483
                             .pollInSameThread()
                             .pollInterval(Duration.ofMillis(100))
                             .pollDelay(Duration.ZERO)
