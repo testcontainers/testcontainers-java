@@ -233,15 +233,13 @@ public final class DockerImageName {
      * @return whether this image has declared compatibility.
      */
     public boolean isCompatibleWith(DockerImageName other) {
-        // Make sure we always compare against a version of the image name containing the LIBRARY_PREFIX
-        String finalImageName;
-        if (this.repository.startsWith(LIBRARY_PREFIX)) {
-            finalImageName = this.repository;
-        } else {
-            finalImageName = LIBRARY_PREFIX + this.repository;
+        if (other.equals(this)) {
+            return true;
         }
-        DockerImageName imageWithLibraryPrefix = DockerImageName.parse(finalImageName);
-        if (other.equals(this) || imageWithLibraryPrefix.equals(this)) {
+
+        // 'library/foo' and 'foo' refer to the same official Docker Hub image, so compare both
+        // names normalized to include the LIBRARY_PREFIX.
+        if (withLibraryPrefix(other).equals(withLibraryPrefix(this))) {
             return true;
         }
 
@@ -250,6 +248,13 @@ public final class DockerImageName {
         }
 
         return this.compatibleSubstituteFor.isCompatibleWith(other);
+    }
+
+    private static DockerImageName withLibraryPrefix(DockerImageName image) {
+        if (!image.registry.isEmpty() || image.repository.startsWith(LIBRARY_PREFIX)) {
+            return image;
+        }
+        return image.withRepository(LIBRARY_PREFIX + image.repository);
     }
 
     /**
