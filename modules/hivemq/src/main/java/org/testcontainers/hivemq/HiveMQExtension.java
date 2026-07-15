@@ -152,7 +152,7 @@ public class HiveMQExtension {
             for (final String subClassName : subClassNames) {
                 final String className = subClassName.replaceAll("/", ".");
 
-                if (!className.startsWith("[L")) {
+                if (!className.startsWith("[")) {
                     LOGGER.debug("Trying to package subclass '{}' into extension '{}'.", className, extensionId);
                     javaArchive.addClass(className);
                 } else {
