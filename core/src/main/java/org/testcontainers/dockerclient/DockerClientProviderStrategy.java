@@ -391,11 +391,21 @@ public abstract class DockerClientProviderStrategy {
         String transportType = TestcontainersConfiguration.getInstance().getTransportType();
         switch (transportType) {
             case "httpclient5":
-                dockerHttpClient =
-                    new ZerodepDockerHttpClient.Builder()
-                        .dockerHost(transportConfig.getDockerHost())
-                        .sslConfig(transportConfig.getSslConfig())
-                        .build();
+                ZerodepDockerHttpClient.Builder builder = new ZerodepDockerHttpClient.Builder()
+                    .dockerHost(transportConfig.getDockerHost())
+                    .sslConfig(transportConfig.getSslConfig());
+
+                Duration connectionTimeout = TestcontainersConfiguration.getInstance().getClientConnectionTimeout();
+                if (connectionTimeout != null) {
+                    builder.connectionTimeout(connectionTimeout);
+                }
+
+                Duration responseTimeout = TestcontainersConfiguration.getInstance().getClientResponseTimeout();
+                if (responseTimeout != null) {
+                    builder.responseTimeout(responseTimeout);
+                }
+
+                dockerHttpClient = builder.build();
                 break;
             default:
                 throw new IllegalArgumentException("Unknown transport type '" + transportType + "'");

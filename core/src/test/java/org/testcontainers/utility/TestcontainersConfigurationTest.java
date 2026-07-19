@@ -225,6 +225,22 @@ class TestcontainersConfigurationTest {
             .isEqualTo("testcontainers/ryuk:0.3.2");
     }
 
+    @Test
+    void shouldReadClientConnectionTimeout() {
+        assertThat(newConfig().getClientConnectionTimeout()).isNull();
+
+        userProperties.setProperty("client.connection.timeout", "45");
+        assertThat(newConfig().getClientConnectionTimeout()).isEqualTo(java.time.Duration.ofSeconds(45));
+    }
+
+    @Test
+    void shouldReadClientResponseTimeout() {
+        assertThat(newConfig().getClientResponseTimeout()).isNull();
+
+        userProperties.setProperty("client.response.timeout", "120");
+        assertThat(newConfig().getClientResponseTimeout()).isEqualTo(java.time.Duration.ofSeconds(120));
+    }
+
     private TestcontainersConfiguration newConfig() {
         return new TestcontainersConfiguration(userProperties, classpathProperties, environment);
     }

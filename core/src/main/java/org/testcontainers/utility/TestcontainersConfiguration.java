@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
+import java.time.Duration;
 import java.util.stream.Stream;
 
 /**
@@ -222,6 +223,18 @@ public class TestcontainersConfiguration {
 
     public Integer getClientPingTimeout() {
         return Integer.parseInt(getEnvVarOrProperty("client.ping.timeout", "10"));
+    }
+
+    @Nullable
+    public Duration getClientConnectionTimeout() {
+        String timeout = getEnvVarOrProperty("client.connection.timeout", null);
+        return timeout != null ? Duration.ofSeconds(Integer.parseInt(timeout)) : null;
+    }
+
+    @Nullable
+    public Duration getClientResponseTimeout() {
+        String timeout = getEnvVarOrProperty("client.response.timeout", null);
+        return timeout != null ? Duration.ofSeconds(Integer.parseInt(timeout)) : null;
     }
 
     @Nullable
