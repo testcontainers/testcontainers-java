@@ -101,6 +101,14 @@ but does not allow starting privileged containers, you can turn off the Ryuk con
 > **client.ping.timeout = 10**
 > Specifies for how long Testcontainers will try to connect to the Docker client to obtain valid info about the client before giving up and trying next strategy, if applicable (in seconds).
 
+## Customizing client connection and response timeouts
+
+> **client.connection.timeout = (not set)**
+> Specifies the maximum time allowed to establish a connection to the Docker daemon (in seconds). If not configured, the default connection timeout of the underlying transport client (3 minutes) is used.
+
+> **client.response.timeout = (not set)**
+> Specifies the maximum time allowed to wait for a response from the Docker daemon after a connection is established (in seconds). If not configured, the default response timeout of the underlying transport client is used.
+
 ## Customizing Docker host detection
 
 Testcontainers will attempt to detect the Docker environment and configure everything to work automatically.
