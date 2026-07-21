@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.HashMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
@@ -22,36 +23,37 @@ class ParsedDockerComposeFileValidationTest {
     public Path temporaryFolder;
 
     @Test
-    void shouldValidate() {
+    void shouldIgnoreContainerNameV1() {
         File file = new File("src/test/resources/docker-compose-container-name-v1.yml");
-        assertThatThrownBy(() -> {
+        assertThatNoException()
+            .isThrownBy(() -> {
                 new ParsedDockerComposeFile(file);
-            })
-            .hasMessageContaining(file.getAbsolutePath())
-            .hasMessageContaining("'container_name' property set for service 'redis'");
+            });
     }
 
     @Test
-    void shouldRejectContainerNameV1() {
-        assertThatThrownBy(() -> {
-                new ParsedDockerComposeFile(ImmutableMap.of("redis", ImmutableMap.of("container_name", "redis")));
-            })
-            .hasMessageContaining("'container_name' property set for service 'redis'");
+    void shouldIgnoreContainerNameInMapV1() {
+        assertThatNoException()
+            .isThrownBy(() -> {
+                new ParsedDockerComposeFile(
+                    ImmutableMap.of("redis", new HashMap<>(ImmutableMap.of("container_name", "redis")))
+                );
+            });
     }
 
     @Test
-    void shouldRejectContainerNameV2() {
-        assertThatThrownBy(() -> {
+    void shouldIgnoreContainerNameV2() {
+        assertThatNoException()
+            .isThrownBy(() -> {
                 new ParsedDockerComposeFile(
                     ImmutableMap.of(
                         "version",
                         "2",
                         "services",
-                        ImmutableMap.of("redis", ImmutableMap.of("container_name", "redis"))
+                        ImmutableMap.of("redis", new HashMap<>(ImmutableMap.of("container_name", "redis")))
                     )
                 );
-            })
-            .hasMessageContaining("'container_name' property set for service 'redis'");
+            });
     }
 
     @Test

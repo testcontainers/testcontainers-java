@@ -130,13 +130,12 @@ class ParsedDockerComposeFile {
     }
 
     private void validateNoContainerNameSpecified(String serviceName, Map<String, ?> serviceDefinitionMap) {
-        if (serviceDefinitionMap.containsKey("container_name")) {
-            throw new IllegalStateException(
-                String.format(
-                    "Compose file %s has 'container_name' property set for service '%s' but this property is not supported by Testcontainers, consider removing it",
-                    composeFileName,
-                    serviceName
-                )
+        if (serviceDefinitionMap.remove("container_name") != null) {
+            log.warn(
+                "Compose file {} has 'container_name' property set for service '{}'. " +
+                "This property is not supported by Testcontainers and will be ignored.",
+                composeFileName,
+                serviceName
             );
         }
     }
