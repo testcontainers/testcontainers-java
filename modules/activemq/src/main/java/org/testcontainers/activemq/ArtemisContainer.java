@@ -1,9 +1,11 @@
 package org.testcontainers.activemq;
 
+import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
+import java.io.IOException;
 import java.time.Duration;
 
 /**
@@ -85,5 +87,23 @@ public class ArtemisContainer extends GenericContainer<ArtemisContainer> {
 
     public String getPassword() {
         return getEnvMap().get("ARTEMIS_PASSWORD");
+    }
+
+    /**
+     * Executes a command using the Artemis CLI inside the container.
+     * The command is executed as the configured user.
+     *
+     * @param command the command parts to execute (e.g. "queue", "create", "--name=my-queue")
+     * @return the result of the execution
+     * @throws IOException if an I/O error occurs
+     * @throws InterruptedException if the execution is interrupted
+     */
+    public Container.ExecResult execInBroker(String... command) throws IOException, InterruptedException {
+        String[] execCommand = new String[command.length + 3];
+        execCommand[0] = "/var/lib/artemis-instance/bin/artemis";
+        System.arraycopy(command, 0, execCommand, 1, command.length);
+        execCommand[command.length + 1] = "--user=" + getUser();
+        execCommand[command.length + 2] = "--password=" + getPassword();
+        return execInContainer(execCommand);
     }
 }
