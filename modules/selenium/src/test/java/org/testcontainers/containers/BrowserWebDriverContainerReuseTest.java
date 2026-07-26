@@ -1,4 +1,4 @@
-package org.testcontainers.selenium;
+package org.testcontainers.containers;
 
 import com.github.dockerjava.api.model.Bind;
 import org.junit.jupiter.api.Test;
@@ -15,7 +15,7 @@ class BrowserWebDriverContainerReuseTest {
     @Test
     @DisabledOnOs(OS.WINDOWS)
     void configureDoesNotAddDuplicateShmBindOnReuse() {
-        BrowserWebDriverContainer container = new BrowserWebDriverContainer(CHROME_IMAGE);
+        BrowserWebDriverContainer<?> container = new BrowserWebDriverContainer<>(CHROME_IMAGE);
 
         // configure() runs on every start(), so a reused container that is started
         // more than once must not accumulate duplicate /dev/shm binds (see #11941).
