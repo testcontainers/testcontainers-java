@@ -29,7 +29,6 @@ If any keys conflict, the value will be taken on the basis of the first value fo
 Before running any containers Testcontainers will perform a set of startup checks to ensure that your environment is configured correctly. Usually they look like this:
 ```
         ℹ︎ Checking the system...
-        ✔ Docker version should be at least 1.6.0
         ✔ File should be mountable
         ✔ A port exposed by a docker container should be accessible
 ```
