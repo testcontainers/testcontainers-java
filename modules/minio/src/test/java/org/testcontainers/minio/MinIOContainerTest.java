@@ -1,4 +1,4 @@
-package org.testcontainers.containers;
+package org.testcontainers.minio;
 
 import io.minio.BucketExistsArgs;
 import io.minio.MakeBucketArgs;

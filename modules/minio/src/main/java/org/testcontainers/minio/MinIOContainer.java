@@ -1,5 +1,6 @@
-package org.testcontainers.containers;
+package org.testcontainers.minio;
 
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
@@ -16,8 +17,6 @@ import java.time.temporal.ChronoUnit;
  *     <li>S3: 9000</li>
  *     <li>Console: 9001</li>
  * </ul>
- *
- * @deprecated use {@link org.testcontainers.minio.MinIOContainer} instead.
  */
 public class MinIOContainer extends GenericContainer<MinIOContainer> {
 
