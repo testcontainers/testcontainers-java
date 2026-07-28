@@ -237,7 +237,7 @@ class GenericContainerTest {
         GenericContainer container = new GenericContainer(TestImages.REDIS_IMAGE);
         assertThat(container.getImage().get()).isEqualTo("redis:6-alpine");
         container.setImage(new RemoteDockerImage(TestImages.ALPINE_IMAGE));
-        assertThat(container.getImage().get()).isEqualTo("alpine:3.17");
+        assertThat(container.getImage().get()).isEqualTo("alpine:3.24");
     }
 
     @Test
@@ -301,7 +301,7 @@ class GenericContainerTest {
 
         List<Container> containers = dockerClient
             .listContainersCmd()
-            .withAncestorFilter(Collections.singletonList("alpine:3.17"))
+            .withAncestorFilter(Collections.singletonList("alpine:3.24"))
             .withLabelFilter(
                 Arrays.asList(
                     DockerClientFactory.TESTCONTAINERS_SESSION_ID_LABEL + "=" + DockerClientFactory.SESSION_ID,
