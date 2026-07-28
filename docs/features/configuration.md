@@ -101,6 +101,11 @@ but does not allow starting privileged containers, you can turn off the Ryuk con
 > **client.ping.timeout = 10**
 > Specifies for how long Testcontainers will try to connect to the Docker client to obtain valid info about the client before giving up and trying next strategy, if applicable (in seconds).
 
+## Customizing container startup behaviour
+
+> **container.port.mapping.timeout = 5**
+> Specifies for how long Testcontainers will wait for the Docker daemon to report the mapped ports of a starting container before giving up (in seconds).
+
 ## Customizing Docker host detection
 
 Testcontainers will attempt to detect the Docker environment and configure everything to work automatically.

@@ -218,6 +218,28 @@ class TestcontainersConfigurationTest {
     }
 
     @Test
+    void shouldReadContainerPortMappingTimeout() {
+        assertThat(newConfig().getContainerPortMappingTimeout())
+            .as("port mapping timeout is 5 seconds by default")
+            .isEqualTo(5);
+
+        classpathProperties.setProperty("container.port.mapping.timeout", "31");
+        assertThat(newConfig().getContainerPortMappingTimeout())
+            .as("port mapping timeout is changed by classpath properties")
+            .isEqualTo(31);
+
+        userProperties.setProperty("container.port.mapping.timeout", "32");
+        assertThat(newConfig().getContainerPortMappingTimeout())
+            .as("port mapping timeout is changed by user properties")
+            .isEqualTo(32);
+
+        environment.put("TESTCONTAINERS_CONTAINER_PORT_MAPPING_TIMEOUT", "33");
+        assertThat(newConfig().getContainerPortMappingTimeout())
+            .as("port mapping timeout is changed by env var")
+            .isEqualTo(33);
+    }
+
+    @Test
     void shouldTrimImageNames() {
         userProperties.setProperty("ryuk.container.image", " testcontainers/ryuk:0.3.2 ");
         assertThat(newConfig().getRyukImage())

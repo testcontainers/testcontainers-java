@@ -224,6 +224,10 @@ public class TestcontainersConfiguration {
         return Integer.parseInt(getEnvVarOrProperty("client.ping.timeout", "10"));
     }
 
+    public Integer getContainerPortMappingTimeout() {
+        return Integer.parseInt(getEnvVarOrProperty("container.port.mapping.timeout", "5"));
+    }
+
     @Nullable
     @Contract("_, !null, _ -> !null")
     private String getConfigurable(
