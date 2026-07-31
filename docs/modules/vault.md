@@ -4,7 +4,7 @@ Testcontainers module for [Vault](https://github.com/hashicorp/vault). Vault is 
 
 ## Usage example
 
-Start Vault container as a `@ClassRule`:
+You can start a Vault container instance from any Java application by using:
 
 <!--codeinclude-->
 [Starting a Vault container](../../modules/vault/src/test/java/org/testcontainers/vault/VaultContainerTest.java) inside_block:vaultContainer
@@ -21,21 +21,6 @@ Use Http API to read data from Vault container:
 <!--codeinclude-->
 [Use Http API to read data](../../modules/vault/src/test/java/org/testcontainers/vault/VaultContainerTest.java) inside_block:readFirstSecretPathOverHttpApi
 <!--/codeinclude-->
-
-Use client library to read data from Vault container:
-
-<!--codeinclude-->
-[Use library to read data](../../modules/vault/src/test/java/org/testcontainers/vault/VaultContainerTest.java) inside_block:readWithLibrary
-<!--/codeinclude-->
-
-[See full example.](https://github.com/testcontainers/testcontainers-java/blob/master/modules/vault/src/test/java/org/testcontainers/vault/VaultContainerTest.java)
-
-## Why Vault in Junit tests?
-
-With the increasing popularity of Vault and secret management, applications are now needing to source secrets from Vault.
-This can prove challenging in the development phase without a running Vault instance readily on hand. This library 
-aims to solve your apps integration testing with Vault. You can also use it to
-test how your application behaves with Vault by writing different test scenarios in Junit.
 
 ## Adding this module to your project dependencies
 

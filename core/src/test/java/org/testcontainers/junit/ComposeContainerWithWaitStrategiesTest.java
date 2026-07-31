@@ -10,7 +10,7 @@ import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ComposeContainerWithWaitStrategies {
+class ComposeContainerWithWaitStrategiesTest {
 
     private static final int REDIS_PORT = 6379;
 

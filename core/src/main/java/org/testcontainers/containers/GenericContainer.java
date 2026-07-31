@@ -541,7 +541,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 final String containerLogs = getLogs();
 
                 if (containerLogs.length() > 0) {
-                    logger().error("Log output from the failed container:\n{}", getLogs());
+                    logger().error("Log output from the failed container:\n{}", containerLogs);
                 } else {
                     logger().error("There are no stdout/stderr logs available for the failed container");
                 }
@@ -1115,7 +1115,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public SELF withLabel(String key, String value) {
         if (key.startsWith("org.testcontainers")) {
-            throw new IllegalArgumentException("The org.testcontainers namespace is reserved for interal use");
+            throw new IllegalArgumentException("The org.testcontainers namespace is reserved for internal use");
         }
         this.containerDef.addLabel(key, value);
         return self();

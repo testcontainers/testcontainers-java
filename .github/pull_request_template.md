@@ -1,6 +1,8 @@
 <!--
-Thanks for contributing to Testcontainers. Please review the following notes before
-submitting a pull request.
+Thanks for contributing to Testcontainers. Before submitting a pull request, please
+review our contributing guidelines at https://java.testcontainers.org/contributing/
+
+Please also review the following notes before submitting a pull request.
 
 New Modules:
 

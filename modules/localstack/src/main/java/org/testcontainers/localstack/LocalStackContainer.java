@@ -168,7 +168,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
      * The access key can be used to construct AWS SDK v2 clients:
      * <pre><code>S3Client s3 = S3Client
              .builder()
-             .endpointOverride(localstack.getEndpointOverride(LocalStackContainer.Service.S3))
+             .endpointOverride(localstack.getEndpoint())
              .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(
              localstack.getAccessKey(), localstack.getSecretKey()
              )))
@@ -187,7 +187,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
      * The secret key can be used to construct AWS SDK v2 clients:
      * <pre><code>S3Client s3 = S3Client
              .builder()
-             .endpointOverride(localstack.getEndpointOverride(LocalStackContainer.Service.S3))
+             .endpointOverride(localstack.getEndpoint())
              .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(
              localstack.getAccessKey(), localstack.getSecretKey()
              )))
@@ -205,7 +205,7 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
      * The region can be used to construct AWS SDK v2 clients:
      * <pre><code>S3Client s3 = S3Client
              .builder()
-             .endpointOverride(localstack.getEndpointOverride(LocalStackContainer.Service.S3))
+             .endpointOverride(localstack.getEndpoint())
              .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(
              localstack.getAccessKey(), localstack.getSecretKey()
              )))

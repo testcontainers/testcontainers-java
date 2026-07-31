@@ -1,7 +1,6 @@
 # Manual container lifecycle control
 
-While Testcontainers was originally built with JUnit 4 integration in mind, it is fully usable with other test 
-frameworks, or with no framework at all.
+Testcontainers is fully usable with any test framework, or with no framework at all.
 
 ## Manually starting/stopping containers
 

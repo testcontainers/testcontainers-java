@@ -602,4 +602,37 @@ class ElasticsearchContainerTest {
         assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
         assertThat(EntityUtils.toString(response.getEntity())).contains("cluster_name");
     }
+
+    @Test
+    void testGetHttpSchemeForElasticsearch7ReturnsHttp() {
+        try (ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE)) {
+            container.start();
+            assertThat(container.getHttpScheme()).isEqualTo("http");
+        }
+    }
+
+    @Test
+    void testGetHttpSchemeForElasticsearch8ReturnsHttps() {
+        try (
+            ElasticsearchContainer container = new ElasticsearchContainer(
+                "docker.elastic.co/elasticsearch/elasticsearch:8.1.2"
+            )
+        ) {
+            container.start();
+            assertThat(container.getHttpScheme()).isEqualTo("https");
+        }
+    }
+
+    @Test
+    void testGetHttpSchemeForElasticsearch8WithSslDisabledReturnsHttp() {
+        try (
+            ElasticsearchContainer container = new ElasticsearchContainer(
+                "docker.elastic.co/elasticsearch/elasticsearch:8.1.2"
+            )
+                .withEnv("xpack.security.http.ssl.enabled", "false")
+        ) {
+            container.start();
+            assertThat(container.getHttpScheme()).isEqualTo("http");
+        }
+    }
 }

@@ -45,4 +45,35 @@ class ComposeContainerOverrideTest {
             assertThat(container.getConfig().getEnv()).doesNotContain("foo=bar");
         }
     }
+
+    @Test
+    void readLabel() {
+        try (
+            ComposeContainer compose = new ComposeContainer(DockerImageName.parse("docker:25.0.5"), BASE)
+                .withExposedService("redis", 6379)
+        ) {
+            compose.start();
+            InspectContainerResponse container = compose
+                .getContainerByServiceName("redis-1")
+                .map(ContainerState::getContainerInfo)
+                .get();
+            assertThat(container.getConfig().getLabels()).containsKey("label1");
+        }
+    }
+
+    @Test
+    void readOverriddenLabel() {
+        try (
+            ComposeContainer compose = new ComposeContainer(DockerImageName.parse("docker:25.0.5"), BASE, OVERRIDE)
+                .withExposedService("redis", 6379)
+        ) {
+            compose.start();
+            InspectContainerResponse container = compose
+                .getContainerByServiceName("redis-1")
+                .map(ContainerState::getContainerInfo)
+                .get();
+            assertThat(container.getConfig().getLabels()).doesNotContainKey("label1");
+            assertThat(container.getConfig().getLabels()).containsKey("label2");
+        }
+    }
 }
