@@ -136,6 +136,23 @@ class DockerImageNameCompatibilityTest {
     }
 
     @Test
+    void testLibraryPrefixOnlyAppliesToSingleSegmentNames() {
+        // 'library/' is the single-segment official-image namespace, so a multi-segment user namespace
+        // (e.g. 'foo/bar') must not be treated as interchangeable with a 'library/'-prefixed form.
+        assertThat(DockerImageName.parse("foo/bar").isCompatibleWith(DockerImageName.parse("library/foo/bar")))
+            .as("foo/bar != library/foo/bar")
+            .isFalse();
+        assertThat(
+            DockerImageName.parse("myuser/myimage:1").isCompatibleWith(DockerImageName.parse("library/myuser/myimage"))
+        )
+            .as("myuser/myimage:1 != library/myuser/myimage")
+            .isFalse();
+        assertThat(DockerImageName.parse("library/foo/bar").isCompatibleWith(DockerImageName.parse("foo/bar")))
+            .as("library/foo/bar != foo/bar")
+            .isFalse();
+    }
+
+    @Test
     void testLibraryPrefixedImageWithClaimedCompatibility() {
         DockerImageName subject = DockerImageName.parse("library/foo:1.2.3").asCompatibleSubstituteFor("bar");
 

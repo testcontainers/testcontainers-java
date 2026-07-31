@@ -254,6 +254,10 @@ public final class DockerImageName {
         if (!image.registry.isEmpty() || image.repository.startsWith(LIBRARY_PREFIX)) {
             return image;
         }
+        if (image.repository.indexOf('/') >= 0) {
+            // Not a Docker Hub official image; the library/ namespace only applies to single-segment names.
+            return image;
+        }
         return image.withRepository(LIBRARY_PREFIX + image.repository);
     }
 
