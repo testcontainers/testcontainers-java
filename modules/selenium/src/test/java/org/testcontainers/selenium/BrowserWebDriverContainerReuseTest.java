@@ -4,6 +4,7 @@ import com.github.dockerjava.api.model.Bind;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledOnOs;
 import org.junit.jupiter.api.condition.OS;
+import org.testcontainers.containers.BindMode;
 import org.testcontainers.utility.DockerImageName;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,5 +31,19 @@ class BrowserWebDriverContainerReuseTest {
             .count();
 
         assertThat(shmBinds).isEqualTo(1);
+    }
+
+    @Test
+    @DisabledOnOs(OS.WINDOWS)
+    void configureKeepsACallerSuppliedShmBind() {
+        BrowserWebDriverContainer container = new BrowserWebDriverContainer(CHROME_IMAGE);
+        container.withFileSystemBind("/tmp/shm", "/dev/shm", BindMode.READ_ONLY);
+
+        container.configure();
+
+        assertThat(container.getBinds())
+            .filteredOn(bind -> "/dev/shm".equals(bind.getVolume().getPath()))
+            .singleElement()
+            .satisfies(bind -> assertThat(bind.getPath()).isEqualTo("/tmp/shm"));
     }
 }

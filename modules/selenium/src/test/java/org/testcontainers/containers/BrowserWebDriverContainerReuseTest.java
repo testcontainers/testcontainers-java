@@ -31,4 +31,18 @@ class BrowserWebDriverContainerReuseTest {
 
         assertThat(shmBinds).isEqualTo(1);
     }
+
+    @Test
+    @DisabledOnOs(OS.WINDOWS)
+    void configureKeepsACallerSuppliedShmBind() {
+        BrowserWebDriverContainer<?> container = new BrowserWebDriverContainer<>(CHROME_IMAGE);
+        container.withFileSystemBind("/tmp/shm", "/dev/shm", BindMode.READ_ONLY);
+
+        container.configure();
+
+        assertThat(container.getBinds())
+            .filteredOn(bind -> "/dev/shm".equals(bind.getVolume().getPath()))
+            .singleElement()
+            .satisfies(bind -> assertThat(bind.getPath()).isEqualTo("/tmp/shm"));
+    }
 }
