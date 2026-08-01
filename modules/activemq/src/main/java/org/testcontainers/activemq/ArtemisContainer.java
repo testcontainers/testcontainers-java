@@ -1,10 +1,13 @@
 package org.testcontainers.activemq;
 
+import lombok.SneakyThrows;
+import org.testcontainers.containers.Container.ExecResult;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
+import java.util.stream.Stream;
 
 /**
  * Testcontainers implementation for Apache ActiveMQ Artemis.
@@ -42,6 +45,8 @@ public class ArtemisContainer extends GenericContainer<ArtemisContainer> {
     private static final int MQTT_PORT = 1883;
 
     private static final int WS_PORT = 61614;
+
+    private static final String ARTEMIS_CLI = "/var/lib/artemis-instance/bin/artemis";
 
     private String username = "artemis";
 
@@ -85,5 +90,20 @@ public class ArtemisContainer extends GenericContainer<ArtemisContainer> {
 
     public String getPassword() {
         return getEnvMap().get("ARTEMIS_PASSWORD");
+    }
+
+    /**
+     * Executes an Artemis CLI command inside the container, automatically prepending the binary
+     * path and injecting the configured user and password credentials.
+     *
+     * @param command the CLI arguments (e.g. {@code "queue", "create", "--name=myqueue"})
+     * @return the result of the command execution
+     */
+    @SneakyThrows
+    public ExecResult execInArtemis(String... command) {
+        String[] fullCommand = Stream
+            .concat(Stream.of(ARTEMIS_CLI), Stream.concat(Stream.of(command), Stream.of("--user=" + getUser(), "--password=" + getPassword())))
+            .toArray(String[]::new);
+        return execInContainer(fullCommand);
     }
 }
