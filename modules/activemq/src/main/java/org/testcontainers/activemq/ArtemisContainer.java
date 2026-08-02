@@ -7,7 +7,9 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
-import java.util.stream.Stream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Testcontainers implementation for Apache ActiveMQ Artemis.
@@ -93,17 +95,22 @@ public class ArtemisContainer extends GenericContainer<ArtemisContainer> {
     }
 
     /**
-     * Executes an Artemis CLI command inside the container, automatically prepending the binary
-     * path and injecting the configured user and password credentials.
+     * Executes an Artemis CLI command, prepending the binary path and injecting credentials unless already supplied.
      *
-     * @param command the CLI arguments (e.g. {@code "queue", "create", "--name=myqueue"})
-     * @return the result of the command execution
+     * @param command the CLI arguments (e.g. {@code "queue", "create", "--name=myqueue"}).
+     * @return the result of the command execution.
      */
     @SneakyThrows
     public ExecResult execInArtemis(String... command) {
-        String[] fullCommand = Stream
-            .concat(Stream.of(ARTEMIS_CLI), Stream.concat(Stream.of(command), Stream.of("--user=" + getUser(), "--password=" + getPassword())))
-            .toArray(String[]::new);
-        return execInContainer(fullCommand);
+        List<String> fullCommand = new ArrayList<>();
+        fullCommand.add(ARTEMIS_CLI);
+        fullCommand.addAll(Arrays.asList(command));
+        if (Arrays.stream(command).noneMatch(arg -> arg.startsWith("--user"))) {
+            fullCommand.add("--user=" + getUser());
+        }
+        if (Arrays.stream(command).noneMatch(arg -> arg.startsWith("--password"))) {
+            fullCommand.add("--password=" + getPassword());
+        }
+        return execInContainer(fullCommand.toArray(new String[0]));
     }
 }

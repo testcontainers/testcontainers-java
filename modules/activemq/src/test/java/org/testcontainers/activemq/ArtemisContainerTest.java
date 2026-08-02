@@ -69,10 +69,18 @@ class ArtemisContainerTest {
         try (ArtemisContainer artemis = new ArtemisContainer("apache/activemq-artemis:2.32.0-alpine")) {
             artemis.start();
 
-            ExecResult result = artemis.execInArtemis(
-                "queue", "create", "--name=exec-test-queue", "--auto-create-address", "--anycast", "--silent"
+            // execInArtemis {
+            artemis.execInArtemis(
+                "queue",
+                "create",
+                "--name=exec-test-queue",
+                "--auto-create-address",
+                "--anycast",
+                "--silent"
             );
-            assertThat(result.getExitCode()).isEqualTo(0);
+            ExecResult stat = artemis.execInArtemis("queue", "stat", "--queueName=exec-test-queue");
+            assertThat(stat.getStdout()).contains("exec-test-queue");
+            // }
         }
     }
 
