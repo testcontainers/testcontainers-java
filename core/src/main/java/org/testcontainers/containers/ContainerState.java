@@ -148,13 +148,12 @@ public interface ContainerState {
      * Get the actual mapped port for a given port exposed by the container.
      * It should be used in conjunction with {@link #getHost()}.
      * <p>
-     * Note: The returned port number might be outdated (for instance, after disconnecting from a network and reconnecting
-     * again). If you always need up-to-date value, override the {@link #getContainerInfo()} to return the
-     * {@link #getCurrentContainerInfo()}.
+     * The host port is resolved from a live container inspect so it stays correct after Docker
+     * reassigns published ports (for example after disconnecting from a network and reconnecting,
+     * or after attaching the container to an additional network).
      *
      * @param originalPort the original TCP port that is exposed
      * @return the port that the exposed port is mapped to, or null if it is not exposed
-     * @see #getContainerInfo()
      * @see #getCurrentContainerInfo()
      */
     default Integer getMappedPort(int originalPort) {
@@ -164,7 +163,9 @@ public interface ContainerState {
         );
 
         Ports.Binding[] binding = new Ports.Binding[0];
-        final InspectContainerResponse containerInfo = this.getContainerInfo();
+        // Live inspect: cached {@link #getContainerInfo()} can hold stale host ports after
+        // network attach/detach (see https://github.com/testcontainers/testcontainers-java/issues/11779).
+        final InspectContainerResponse containerInfo = this.getCurrentContainerInfo();
         if (containerInfo != null) {
             binding = containerInfo.getNetworkSettings().getPorts().getBindings().get(new ExposedPort(originalPort));
         }
