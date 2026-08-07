@@ -37,6 +37,7 @@ body:
         - LDAP
         - LocalStack
         - MariaDB
+        - Memcached
         - Milvus
         - MinIO
         - MockServer
