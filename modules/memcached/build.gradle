@@ -1,0 +1,7 @@
+description = "Testcontainers :: Memcached"
+
+dependencies {
+    api project(':testcontainers')
+
+    testImplementation 'net.spy:spymemcached:2.12.3'
+}
