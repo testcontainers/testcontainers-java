@@ -1,11 +1,11 @@
 package org.testcontainers.activemq;
 
-import lombok.SneakyThrows;
 import org.testcontainers.containers.Container.ExecResult;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -100,8 +100,7 @@ public class ArtemisContainer extends GenericContainer<ArtemisContainer> {
      * @param command the CLI arguments (e.g. {@code "queue", "create", "--name=myqueue"}).
      * @return the result of the command execution.
      */
-    @SneakyThrows
-    public ExecResult execInArtemis(String... command) {
+    public ExecResult execInArtemis(String... command) throws IOException, InterruptedException {
         List<String> fullCommand = new ArrayList<>();
         fullCommand.add(ARTEMIS_CLI);
         fullCommand.addAll(Arrays.asList(command));
