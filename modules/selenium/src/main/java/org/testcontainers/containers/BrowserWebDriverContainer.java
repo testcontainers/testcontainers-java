@@ -280,7 +280,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
         try {
             return new URL("http", getHost(), getMappedPort(SELENIUM_PORT), "/wd/hub");
         } catch (MalformedURLException e) {
-            throw new IllegalStateException("Failed to construct Selenium address", e);
+            throw new ContainerLaunchException("Could not construct Selenium address", e);
         }
     }
 
