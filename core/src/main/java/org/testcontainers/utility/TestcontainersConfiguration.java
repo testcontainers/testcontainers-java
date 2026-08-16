@@ -224,6 +224,32 @@ public class TestcontainersConfiguration {
         return Integer.parseInt(getEnvVarOrProperty("client.ping.timeout", "10"));
     }
 
+    /**
+     * Gets the Docker socket override path from configuration.
+     * <p>
+     * This method checks for the Docker socket override in the following order:
+     * <ol>
+     *   <li>{@code TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE} environment variable (if not empty)</li>
+     *   <li>{@code docker.socket.override} property from {@code ~/.testcontainers.properties}</li>
+     *   <li>{@code DOCKER_SOCKET_OVERRIDE} environment variable (unprefixed)</li>
+     * </ol>
+     * </p>
+     *
+     * @return the configured Docker socket override path, or {@code null} if not set
+     */
+    @UnstableAPI
+    public String getDockerSocketOverride() {
+        // Special handling similar to docker.client.strategy
+        // Looks for TESTCONTAINERS_ prefixed env var only
+        String prefixedEnvVarOverride = environment.get("TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE");
+        if (prefixedEnvVarOverride != null && !prefixedEnvVarOverride.isEmpty()) {
+            return prefixedEnvVarOverride;
+        }
+
+        // looks for unprefixed env var or unprefixed property, or null if not set
+        return getEnvVarOrUserProperty("docker.socket.override", null);
+    }
+
     @Nullable
     @Contract("_, !null, _ -> !null")
     private String getConfigurable(
