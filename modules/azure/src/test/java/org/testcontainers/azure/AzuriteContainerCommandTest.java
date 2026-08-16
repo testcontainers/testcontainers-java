@@ -19,12 +19,13 @@ class AzuriteContainerCommandTest {
     @Test
     void commandLineIncludesExtraOptions() {
         // commandOptions {
-        AzuriteContainer emulator = new AzuriteContainer(IMAGE).withCommandOptions("--skipApiVersionCheck");
+        AzuriteContainer emulator = new AzuriteContainer("mcr.microsoft.com/azure-storage/azurite:3.33.0")
+            .withCommandOptions("--skipApiVersionCheck");
         // }
 
         assertThat(emulator.getCommandLine())
             .startsWith("azurite --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0")
-            .contains("--skipApiVersionCheck");
+            .endsWith("--skipApiVersionCheck");
     }
 
     @Test
@@ -32,7 +33,7 @@ class AzuriteContainerCommandTest {
         AzuriteContainer emulator = new AzuriteContainer(IMAGE)
             .withCommandOptions("--skipApiVersionCheck", "--disableProductStyleUrl");
 
-        assertThat(emulator.getCommandLine()).contains("--skipApiVersionCheck").contains("--disableProductStyleUrl");
+        assertThat(emulator.getCommandLine()).endsWith("--skipApiVersionCheck --disableProductStyleUrl");
     }
 
     @Test
@@ -43,19 +44,19 @@ class AzuriteContainerCommandTest {
 
         assertThat(emulator.getCommandLine())
             .contains("--cert /cert.pfx")
-            .contains("--pwd changeit")
-            .contains("--skipApiVersionCheck");
+            .endsWith("--pwd changeit --skipApiVersionCheck");
     }
 
     @Test
     void configureAppliesCommandOptionsEvenIfWithCommandWasUsed() {
         AzuriteContainer emulator = new AzuriteContainer(IMAGE)
-            .withCommand("azurite --skipApiVersionCheck")
+            .withCommand("azurite --ignored")
             .withCommandOptions("--skipApiVersionCheck");
 
         emulator.configure();
 
-        assertThat(String.join(" ", emulator.getCommandParts())).contains("--skipApiVersionCheck");
+        assertThat(String.join(" ", emulator.getCommandParts()))
+            .isEqualTo("azurite --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0 --skipApiVersionCheck");
         assertThat(emulator.getCommandLine()).contains("--blobHost 0.0.0.0").contains("--skipApiVersionCheck");
     }
 }
