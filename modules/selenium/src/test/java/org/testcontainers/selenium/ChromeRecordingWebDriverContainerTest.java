@@ -63,21 +63,60 @@ class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContainerTest {
             TimeUnit.MILLISECONDS.sleep(MINIMUM_VIDEO_DURATION_MILLISECONDS);
             doSimpleExplore(container, new ChromeOptions());
             container.afterTest(
-                new TestDescription() {
-                    @Override
-                    public String getTestId() {
-                        return getFilesystemFriendlyName();
-                    }
-
-                    @Override
-                    public String getFilesystemFriendlyName() {
-                        return "ChromeThatRecordsAllTests-recordingTestThatShouldBeRecordedAndRetained";
-                    }
-                },
+                testDescription("ChromeThatRecordsAllTests-recordingTestThatShouldBeRecordedAndRetained"),
                 Optional.empty()
             );
 
             return vncRecordingDirectory.toFile().listFiles(new PatternFilenameFilter(fileNamePattern));
+        }
+
+        private TestDescription testDescription(String filesystemFriendlyName) {
+            return new TestDescription() {
+                @Override
+                public String getTestId() {
+                    return getFilesystemFriendlyName();
+                }
+
+                @Override
+                public String getFilesystemFriendlyName() {
+                    return filesystemFriendlyName;
+                }
+            };
+        }
+
+        @Test
+        void restartVncRecordingProducesASeparateFileForEachTest() throws InterruptedException {
+            File target = vncRecordingDirectory.toFile();
+            try (
+                // restart {
+                BrowserWebDriverContainer chrome = new BrowserWebDriverContainer("selenium/standalone-chrome:4.13.0")
+                    .withRecordingMode(VncRecordingMode.RECORD_ALL, target)
+                    .withRecordingFileFactory(new DefaultRecordingFileFactory())
+                    .withNetwork(NETWORK)
+            ) {
+                chrome.start();
+
+                TimeUnit.MILLISECONDS.sleep(MINIMUM_VIDEO_DURATION_MILLISECONDS);
+                doSimpleExplore(chrome, new ChromeOptions());
+                chrome.afterTest(
+                    testDescription("restartVncRecordingProducesASeparateFileForEachTest-first"),
+                    Optional.empty()
+                );
+
+                // Call this before each subsequent test so its recording doesn't get appended to the previous one
+                chrome.restartVncRecording();
+                // }
+
+                TimeUnit.MILLISECONDS.sleep(MINIMUM_VIDEO_DURATION_MILLISECONDS);
+                doSimpleExplore(chrome, new ChromeOptions());
+                chrome.afterTest(
+                    testDescription("restartVncRecordingProducesASeparateFileForEachTest-second"),
+                    Optional.empty()
+                );
+
+                File[] files = vncRecordingDirectory.toFile().listFiles(new PatternFilenameFilter("PASSED-.*\\.flv"));
+                assertThat(files).as("a separate recording file exists per test").hasSize(2);
+            }
         }
 
         @Test

@@ -201,6 +201,52 @@ public class BrowserWebDriverContainer
         retainRecordingIfNeeded(description.getFilesystemFriendlyName(), !throwable.isPresent());
     }
 
+    /**
+     * Restarts VNC recording, so that a separate recording is captured for each test method when a single
+     * {@link BrowserWebDriverContainer} instance is reused across multiple tests (e.g. to avoid the cost of
+     * starting a new browser container per test). Call this before each test starts; {@link #afterTest} will then
+     * save the recording captured since the last restart.
+     * <p>
+     * Does nothing if recording is not enabled ({@link VncRecordingMode#SKIP}) or the container has not started yet.
+     *
+     * @throws ContainerLaunchException if the replacement recording container fails to start. The previous
+     * recording container is stopped regardless, so recording is disabled (as if {@link VncRecordingMode#SKIP} had
+     * been used) rather than left in a stale or partially-started state.
+     */
+    public void restartVncRecording() {
+        if (recordingMode == VncRecordingMode.SKIP || vncRecordingContainer == null) {
+            return;
+        }
+
+        VncRecordingContainer previousRecordingContainer = vncRecordingContainer;
+        // Clear the field before starting the replacement below: if start() throws, a stale reference to this
+        // now-stopped container must not be left in place for afterTest() to save from.
+        vncRecordingContainer = null;
+        try {
+            previousRecordingContainer.stop();
+        } catch (Exception e) {
+            LOGGER.debug("Failed to stop vncRecordingContainer", e);
+        }
+
+        VncRecordingContainer nextRecordingContainer = new VncRecordingContainer(this)
+            .withVncPassword(DEFAULT_PASSWORD)
+            .withVncPort(VNC_PORT)
+            .withVideoFormat(recordingFormat);
+        try {
+            nextRecordingContainer.start();
+        } catch (Exception e) {
+            // start() may have already created the underlying container (e.g. its wait strategy timed out) -
+            // stop it explicitly so it isn't left running until Ryuk reaps it.
+            try {
+                nextRecordingContainer.stop();
+            } catch (Exception stopException) {
+                e.addSuppressed(stopException);
+            }
+            throw new ContainerLaunchException("Failed to restart VNC recording container", e);
+        }
+        vncRecordingContainer = nextRecordingContainer;
+    }
+
     @Override
     public void stop() {
         if (vncRecordingContainer != null) {
@@ -230,6 +276,12 @@ public class BrowserWebDriverContainer
         }
 
         if (shouldRecord) {
+            if (vncRecordingContainer == null) {
+                // Can happen if restartVncRecording() failed to start a replacement recording container.
+                LOGGER.warn("No VNC recording container available for test {} - recording will not be saved", prefix);
+                return;
+            }
+
             File recordingFile = recordingFileFactory.recordingFileForTest(
                 vncRecordingDirectory,
                 prefix,
