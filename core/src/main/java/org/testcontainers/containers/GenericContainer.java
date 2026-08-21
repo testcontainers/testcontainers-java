@@ -541,7 +541,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 final String containerLogs = getLogs();
 
                 if (containerLogs.length() > 0) {
-                    logger().error("Log output from the failed container:\n{}", getLogs());
+                    logger().error("Log output from the failed container:\n{}", containerLogs);
                 } else {
                     logger().error("There are no stdout/stderr logs available for the failed container");
                 }
