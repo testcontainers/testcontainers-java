@@ -27,6 +27,12 @@ Start Azurite Emulator during a test:
 !!! note
     SSL configuration is possible using the `withSsl(MountableFile, String)` and  `withSsl(MountableFile, MountableFile)` methods.
 
+Newer Azure Storage SDK versions can send API versions that Azurite does not support. Use `withCommandOptions(...)` to append extra Azurite flags such as `--skipApiVersionCheck`. `AzuriteContainer` rebuilds its process command in `configure()`, so `.withCommand(...)` cannot be used for extra flags.
+
+<!--codeinclude-->
+[Pass extra Azurite command options](../../modules/azure/src/test/java/org/testcontainers/azure/AzuriteContainerCommandTest.java) inside_block:commandOptions
+<!--/codeinclude-->
+
 If the tested application needs to use more than one set of credentials, the container can be configured to use custom credentials.
 Please see some examples below.
 
