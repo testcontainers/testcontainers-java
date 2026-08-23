@@ -134,6 +134,7 @@ class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContainerTest {
                 // the interval captured after the restart.
                 assertThat(secondRecordingDuration)
                     .as("the second recording excludes the first test's interval")
+                    .isGreaterThan(Duration.ZERO)
                     .isLessThan(firstRecordingDuration.multipliedBy(3).dividedBy(2));
             }
         }
