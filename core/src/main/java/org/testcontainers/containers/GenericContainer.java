@@ -1180,6 +1180,13 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         this.image = this.image.withImagePullPolicy(imagePullPolicy);
         return self();
     }
+    /**
+    * Sets the platform to use when pulling the image, for example linux/amd64.
+    */
+    public SELF withImagePlatform(String imagePlatform) {
+        this.image = this.image.withImagePlatform(imagePlatform);
+        return self();
+    }
 
     /**
      * {@inheritDoc}
