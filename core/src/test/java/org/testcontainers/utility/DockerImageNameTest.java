@@ -196,9 +196,9 @@ class DockerImageNameTest {
 
         @Test
         void testMalformedTagWithExtraColonIsRejected() {
-            assertThatThrownBy(() ->
-                    DockerImageName.parse("repo/image:tag:extra@sha256:1234abcd1234abcd1234abcd1234abcd").assertValid()
-                )
+            assertThatThrownBy(() -> {
+                    DockerImageName.parse("repo/image:tag:extra@sha256:1234abcd1234abcd1234abcd1234abcd").assertValid();
+                })
                 .isInstanceOf(IllegalArgumentException.class);
         }
 
