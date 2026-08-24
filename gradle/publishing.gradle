@@ -58,7 +58,7 @@ publishing {
 
                 def dependenciesNode = rootNode.appendNode('dependencies')
 
-                def apiDeps= project.configurations.api.resolvedConfiguration.firstLevelModuleDependencies
+                def apiDeps= project.configurations.apiResolvable.resolvedConfiguration.firstLevelModuleDependencies
                 def providedDeps = project.configurations.provided.resolvedConfiguration.firstLevelModuleDependencies
                 def newApiDeps = apiDeps - providedDeps
 

@@ -13,7 +13,7 @@ tasks.japicmp {
 
     // Disable if baseline dependencies cannot be resolved - such as when developing a new module that doesn't
     // have an existing published version.
-    enabled = ! configurations.baseline.copy().resolvedConfiguration.lenientConfiguration.getFiles().empty
+    enabled = ! configurations.baseline.copy().incoming.artifactView { lenient(true) }.files.empty
 
     oldClasspath.from(configurations.baseline)
     newClasspath.from(shadowJar.outputs.files)
@@ -24,7 +24,7 @@ tasks.japicmp {
     failOnSourceIncompatibility = true
 
     onlyBinaryIncompatibleModified = true
-    htmlOutputFile = file("$buildDir/reports/japi.html")
+    htmlOutputFile = layout.buildDirectory.file("reports/japi.html").get().asFile
     packageExcludes = [
         "org.testcontainers.shaded.*",
     ]

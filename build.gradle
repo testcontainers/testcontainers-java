@@ -11,7 +11,6 @@ buildscript {
 }
 
 plugins {
-    id 'io.franzbecker.gradle-lombok' version '5.0.0'
     id 'com.gradleup.shadow' version '8.3.9'
     id 'me.champeau.gradle.japicmp' version '0.4.3' apply false
     id 'com.diffplug.spotless' version '6.22.0' apply false
@@ -30,7 +29,6 @@ subprojects {
     apply plugin: 'java'
     apply plugin: 'java-library'
     apply plugin: 'idea'
-    apply plugin: 'io.franzbecker.gradle-lombok'
     apply from: "$rootDir/gradle/shading.gradle"
     apply from: "$rootDir/gradle/spotless.gradle"
     apply plugin: 'checkstyle'
@@ -60,17 +58,26 @@ subprojects {
         api.extendsFrom(provided)
     }
 
-    lombok {
-        version = '1.18.30'
+    // The io.franzbecker.gradle-lombok plugin is incompatible with Gradle 9 and no longer maintained,
+    // so its behavior (lombok dependencies and the delombok task type) is replicated here
+    ext.lombok = [version: '1.18.30']
+
+    dependencies {
+        compileOnly "org.projectlombok:lombok:${lombok.version}"
+        annotationProcessor "org.projectlombok:lombok:${lombok.version}"
+        testCompileOnly "org.projectlombok:lombok:${lombok.version}"
+        testAnnotationProcessor "org.projectlombok:lombok:${lombok.version}"
     }
 
-
-    task delombok(type: io.franzbecker.gradle.lombok.task.DelombokTask) {
+    task delombok(type: JavaExec) {
         outputs.cacheIf {
             true
         }
+        mainClass = 'lombok.launch.Main'
+        classpath(project.sourceSets.main.compileClasspath)
+        args('delombok')
         argumentProviders.addAll(
-            new org.testcontainers.build.DelombokArgumentProvider(srcDirs: project.sourceSets.main.java.srcDirs, outputDir: file("$buildDir/delombok"))
+            new org.testcontainers.build.DelombokArgumentProvider(srcDirs: project.sourceSets.main.java.srcDirs, outputDir: layout.buildDirectory.dir("delombok").get().asFile)
         )
     }
     delombok.onlyIf {

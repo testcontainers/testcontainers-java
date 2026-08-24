@@ -8,7 +8,7 @@ sourceSets {
 
 test.maxParallelForks = 4
 
-idea.module.testSourceDirs += sourceSets.jarFileTest.allSource.srcDirs
+idea.module.testSources.from(sourceSets.jarFileTest.allSource.srcDirs)
 
 jar {
     manifest {
