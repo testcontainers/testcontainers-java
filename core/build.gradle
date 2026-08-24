@@ -96,7 +96,7 @@ dependencies {
 
     shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
 
-    shaded 'org.zeroturnaround:zt-exec:1.12'
+    shaded 'org.zeroturnaround:zt-exec:1.13.0'
 
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.14.3'
 
