@@ -5,8 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.rnorth.ducttape.TimeoutException;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.utility.TimeoutException;
 
 import java.time.Duration;
 

@@ -17,8 +17,6 @@ import org.bson.Document;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.rnorth.ducttape.RetryCountExceededException;
-import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.TestImages;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.Container;
@@ -26,6 +24,8 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.SelinuxContext;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 import org.testcontainers.utility.Base58;
+import org.testcontainers.utility.RetryCountExceededException;
+import org.testcontainers.utility.Unreliables;
 
 import java.io.BufferedReader;
 import java.io.File;

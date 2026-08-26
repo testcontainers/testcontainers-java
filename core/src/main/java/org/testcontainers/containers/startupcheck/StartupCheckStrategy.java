@@ -2,10 +2,10 @@ package org.testcontainers.containers.startupcheck;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import org.rnorth.ducttape.ratelimits.RateLimiter;
-import org.rnorth.ducttape.ratelimits.RateLimiterBuilder;
-import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.utility.RateLimiter;
+import org.testcontainers.utility.RateLimiterBuilder;
+import org.testcontainers.utility.Unreliables;
 
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;

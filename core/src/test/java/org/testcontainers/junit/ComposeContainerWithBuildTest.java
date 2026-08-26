@@ -4,10 +4,10 @@ import com.github.dockerjava.api.model.Container;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ComposeContainer;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.Unreliables;
 
 import java.io.File;
 import java.util.Collections;

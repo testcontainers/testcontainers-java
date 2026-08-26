@@ -49,7 +49,17 @@ tasks.japicmp {
 
     classExcludes = []
 
-    methodExcludes = []
+    // Binary-breaking changes introduced when replacing the ducttape RateLimiter
+    // with org.testcontainers.utility.RateLimiter. getRateLimiter()'s return type
+    // and withRateLimiter()'s parameter type both changed from
+    // org.rnorth.ducttape.ratelimits.RateLimiter, so japicmp flags them against
+    // the ducttape baseline. Source-compat is preserved for callers that go
+    // through the AbstractWaitStrategy API; only users explicitly importing the
+    // ducttape types break.
+    methodExcludes = [
+        "org.testcontainers.containers.wait.strategy.AbstractWaitStrategy#getRateLimiter()",
+        "org.testcontainers.containers.wait.strategy.AbstractWaitStrategy#withRateLimiter(org.rnorth.ducttape.ratelimits.RateLimiter)",
+    ]
 
     fieldExcludes = []
 }
@@ -66,10 +76,6 @@ dependencies {
     compileOnly 'org.jetbrains:annotations:26.1.0'
     testCompileOnly 'org.jetbrains:annotations:26.1.0'
     api 'org.apache.commons:commons-compress:1.28.0'
-    api ('org.rnorth.duct-tape:duct-tape:1.0.8') {
-        exclude(group: 'org.jetbrains', module: 'annotations')
-    }
-
     provided('com.google.cloud.tools:jib-core:0.28.1') {
         exclude group: 'com.google.guava', module: 'guava'
         exclude group: 'com.fasterxml.jackson.datatype', module: 'jackson-datatype-jsr310'
@@ -79,6 +85,9 @@ dependencies {
     }
 
     shaded 'org.awaitility:awaitility:4.3.0'
+
+    shaded 'io.github.resilience4j:resilience4j-timelimiter:1.7.1'
+    shaded 'io.github.resilience4j:resilience4j-ratelimiter:1.7.1'
 
     api platform('com.github.docker-java:docker-java-bom:3.7.1')
     shaded platform('com.github.docker-java:docker-java-bom:3.7.1')

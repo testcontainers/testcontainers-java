@@ -2,11 +2,11 @@ package org.testcontainers.junit.wait.strategy;
 
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
-import org.rnorth.ducttape.RetryCountExceededException;
 import org.testcontainers.TestImages;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
+import org.testcontainers.utility.RetryCountExceededException;
 
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicBoolean;

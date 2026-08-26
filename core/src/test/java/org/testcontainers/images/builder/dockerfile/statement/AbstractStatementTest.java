@@ -4,7 +4,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.jupiter.api.TestInfo;
-import org.rnorth.ducttape.Preconditions;
 
 import java.io.InputStream;
 import java.util.Arrays;
@@ -26,7 +25,9 @@ public abstract class AbstractStatementTest {
             String path = "fixtures/statements/" + getClass().getSimpleName() + "/" + testName;
             InputStream inputStream = getClass().getClassLoader().getResourceAsStream(path);
 
-            Preconditions.check("inputStream is null for path " + path, inputStream != null);
+            if (inputStream == null) {
+                throw new IllegalStateException("inputStream is null for path " + path);
+            }
 
             String content = IOUtils.toString(inputStream);
             IOUtils.closeQuietly(inputStream);

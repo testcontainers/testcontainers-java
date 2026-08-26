@@ -11,7 +11,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.concurrent.TimeUnit;
 
-import static org.rnorth.ducttape.unreliables.Unreliables.retryUntilSuccess;
+import static org.testcontainers.utility.Unreliables.retryUntilSuccess;
 
 /**
  * Custom wait strategy for YSQL API.
