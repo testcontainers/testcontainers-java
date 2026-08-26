@@ -2,6 +2,8 @@
 
 ![Maven Central Version](https://img.shields.io/maven-central/v/org.testcontainers/testcontainers)
 
+[![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/testcontainers/testcontainers-java?utm_source=oss&utm_medium=github&utm_campaign=testcontainers%2Ftestcontainers-java&labelColor=171717&color=FF570A&label=CodeRabbit+Reviews)](https://coderabbit.ai)
+
 [![Netlify Status](https://api.netlify.com/api/v1/badges/189f28a2-7faa-42ff-b03c-738142079cc9/deploy-status)](https://app.netlify.com/sites/testcontainers/deploys)
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=main&repo=33816473&machine=standardLinux32gb&devcontainer_path=.devcontainer%2Fdevcontainer.json&location=EastUs)
