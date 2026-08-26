@@ -440,6 +440,51 @@ class KibanaContainerTest {
         }
     }
 
+    @Test
+    void withReuseShouldReuseTheSameContainer() {
+        final String kibanaImage = "docker.elastic.co/kibana/kibana:9.2.4";
+
+        // Kibana reaches ES via host.docker.internal (available on Docker Desktop without any
+        // TC configuration, so no extra-host entry enters the CreateContainerCmd hash).
+        // No withNetwork() on Kibana keeps the hash fully deterministic:
+        //   - no dynamic network ID
+        //   - the random tc-* alias added by GenericContainer's constructor is only serialised
+        //     into the CreateContainerCmd when withNetwork() has been called, so it is absent here
+        // The first Kibana container must stay running while the second one starts, because
+        // withReuse(true) only skips JVM-shutdown cleanup — an explicit stop() still removes the
+        // container, so there would be nothing to find.
+        try (
+            ElasticsearchContainer es = new ElasticsearchContainer(ES_IMAGE)
+                .withEnv("xpack.security.enabled", "false")
+                .withEnv("xpack.security.http.ssl.enabled", "false")
+        ) {
+            es.start();
+            String esUrl = "http://host.docker.internal:" + es.getMappedPort(9200);
+
+            KibanaContainer kibana1 = new KibanaContainer(kibanaImage)
+                .withElasticsearchUrl(esUrl)
+                .withReuse(true);
+            KibanaContainer kibana2 = new KibanaContainer(kibanaImage)
+                .withElasticsearchUrl(esUrl)
+                .withReuse(true);
+
+            try {
+                kibana1.start();
+                // kibana2 is started while kibana1 is still running; the reuse mechanism should
+                // find kibana1's container by hash and return the same container ID.
+                kibana2.start();
+
+                Assertions
+                    .assertThat(kibana2.getContainerId())
+                    .as("KibanaContainer with withReuse(true) should reuse the same container on subsequent starts")
+                    .isEqualTo(kibana1.getContainerId());
+            } finally {
+                kibana1.stop();
+                kibana2.stop();
+            }
+        }
+    }
+
     private static void applyTls(ElasticsearchContainer c, byte[] caCrt, byte[] nodeCrt, byte[] nodeKey) {
         final String certDir = "/usr/share/elasticsearch/config/certs";
 

@@ -20,6 +20,9 @@ import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -52,6 +55,8 @@ public class KibanaContainer extends GenericContainer<KibanaContainer> {
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("docker.elastic.co/kibana/kibana");
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+    private String encryptionKey;
 
     private ElasticsearchContainer elasticsearch;
 
@@ -105,10 +110,56 @@ public class KibanaContainer extends GenericContainer<KibanaContainer> {
         super(dockerImageName);
         ensureCompatibleVersion(dockerImageName.getVersionPart());
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        this.encryptionKey = deriveDefaultEncryptionKey(dockerImageName);
 
         withExposedPorts(KIBANA_DEFAULT_PORT);
         //we have to explicitly set wait the strategy later on in configure, once we know the security configuration
         setWaitStrategy(null);
+    }
+
+    /**
+     * Sets the encryption key used for Kibana's encrypted saved objects.
+     * The key must be at least 32 characters. When not set, a deterministic default derived from
+     * the image name is used, which is required for {@link #withReuse(boolean)} to work correctly.
+     *
+     * @param encryptionKey the encryption key
+     * @return this container instance
+     */
+    public KibanaContainer withEncryptionKey(String encryptionKey) {
+        if (encryptionKey == null || encryptionKey.length() < 32) {
+            throw new IllegalArgumentException("Kibana encryption key must be at least 32 characters long");
+        }
+        this.encryptionKey = encryptionKey;
+        return this;
+    }
+
+    /**
+     * Enables or disables container reuse across JVM runs.
+     *
+     * <p><b>Supported in external mode only.</b> When Kibana is configured via
+     * {@link #withElasticsearchUrl(String)}, the container configuration is fully deterministic
+     * and TC can reliably locate the running container on subsequent runs.
+     *
+     * <p>Reuse is <b>not supported in managed mode</b> (i.e. when this container was created with
+     * an {@link ElasticsearchContainer}). Managed mode introduces several non-deterministic inputs
+     * into the container hash on every run (ad-hoc network ID, random network alias, fresh service
+     * account token), so TC always sees a different hash and starts a fresh container instead of
+     * reusing the existing one. This is a framework-level characteristic that affects any container
+     * connected via {@code withNetwork()} — not specific to {@code KibanaContainer}.
+     *
+     * @param reusable whether to enable container reuse
+     * @return this container instance
+     * @throws IllegalStateException if {@code reusable} is {@code true} and managed mode is active
+     */
+    @Override
+    public KibanaContainer withReuse(boolean reusable) {
+        if (reusable && elasticsearch != null) {
+            throw new IllegalStateException(
+                "withReuse(true) is not supported for KibanaContainer in managed mode. " +
+                "Use external mode (withElasticsearchUrl) to enable reuse."
+            );
+        }
+        return super.withReuse(reusable);
     }
 
     /**
@@ -212,7 +263,7 @@ public class KibanaContainer extends GenericContainer<KibanaContainer> {
     protected void configure() {
         super.configure();
 
-        addEnv("XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY", generateRandomKey(32));
+        addEnv("XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY", encryptionKey);
         addEnv("SERVER_NAME", "kibana");
 
         if (elasticsearchCaCertificate != null) {
@@ -541,8 +592,18 @@ public class KibanaContainer extends GenericContainer<KibanaContainer> {
         );
     }
 
-    private String generateRandomKey(int length) {
-        return Base58.randomString(length);
+    private static String deriveDefaultEncryptionKey(DockerImageName imageName) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(imageName.asCanonicalNameString().getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder(64);
+            for (byte b : hash) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.substring(0, 32);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA-256 not available", e);
+        }
     }
 
     /**
