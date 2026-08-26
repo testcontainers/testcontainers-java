@@ -16,11 +16,15 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.api.Assumptions;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.Testcontainers;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.ContainerLaunchException;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.images.builder.Transferable;
+import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -442,14 +446,21 @@ class KibanaContainerTest {
 
     @Test
     void withReuseShouldReuseTheSameContainer() {
+        Assumptions
+            .assumeThat(TestcontainersConfiguration.getInstance().environmentSupportsReuse())
+            .as("testcontainers.reuse.enable must be true")
+            .isTrue();
+
         final String kibanaImage = "docker.elastic.co/kibana/kibana:9.2.4";
 
-        // Kibana reaches ES via host.docker.internal (available on Docker Desktop without any
-        // TC configuration, so no extra-host entry enters the CreateContainerCmd hash).
+        // Testcontainers.exposeHostPorts + host.testcontainers.internal lets Kibana reach ES
+        // from inside the container on any platform (Linux Docker Engine included).
         // No withNetwork() on Kibana keeps the hash fully deterministic:
         //   - no dynamic network ID
         //   - the random tc-* alias added by GenericContainer's constructor is only serialised
         //     into the CreateContainerCmd when withNetwork() has been called, so it is absent here
+        // The host.testcontainers.internal extra-host IP is the same for kibana1 and kibana2
+        // because they start in the same JVM (same PortForwardingContainer instance).
         // The first Kibana container must stay running while the second one starts, because
         // withReuse(true) only skips JVM-shutdown cleanup — an explicit stop() still removes the
         // container, so there would be nothing to find.
@@ -459,7 +470,9 @@ class KibanaContainerTest {
                 .withEnv("xpack.security.http.ssl.enabled", "false")
         ) {
             es.start();
-            String esUrl = "http://host.docker.internal:" + es.getMappedPort(9200);
+            int esMappedPort = es.getMappedPort(9200);
+            Testcontainers.exposeHostPorts(esMappedPort);
+            String esUrl = "http://" + GenericContainer.INTERNAL_HOST_HOSTNAME + ":" + esMappedPort;
 
             KibanaContainer kibana1 = new KibanaContainer(kibanaImage)
                 .withElasticsearchUrl(esUrl)

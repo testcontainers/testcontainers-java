@@ -21,10 +21,9 @@ import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -110,7 +109,7 @@ public class KibanaContainer extends GenericContainer<KibanaContainer> {
         super(dockerImageName);
         ensureCompatibleVersion(dockerImageName.getVersionPart());
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
-        this.encryptionKey = deriveDefaultEncryptionKey(dockerImageName);
+        this.encryptionKey = stableConfigKey(dockerImageName);
 
         withExposedPorts(KIBANA_DEFAULT_PORT);
         //we have to explicitly set wait the strategy later on in configure, once we know the security configuration
@@ -592,18 +591,14 @@ public class KibanaContainer extends GenericContainer<KibanaContainer> {
         );
     }
 
-    private static String deriveDefaultEncryptionKey(DockerImageName imageName) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(imageName.asCanonicalNameString().getBytes(StandardCharsets.UTF_8));
-            StringBuilder sb = new StringBuilder(64);
-            for (byte b : hash) {
-                sb.append(String.format("%02x", b));
-            }
-            return sb.substring(0, 32);
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("SHA-256 not available", e);
-        }
+    private static String stableConfigKey(DockerImageName imageName) {
+        // UUID v3 (name-based) gives a deterministic 32-character string from the image name,
+        // keeping xpack.encryptedSavedObjects.encryptionKey identical across JVM runs —
+        // a prerequisite for container reuse. Call withEncryptionKey() for real secret management.
+        return UUID
+            .nameUUIDFromBytes(imageName.asCanonicalNameString().getBytes(StandardCharsets.UTF_8))
+            .toString()
+            .replace("-", "");
     }
 
     /**
