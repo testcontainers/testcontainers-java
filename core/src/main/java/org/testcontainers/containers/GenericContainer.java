@@ -325,7 +325,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
             configure();
 
-            logger().debug("Starting container: {}", getDockerImageName());
+            if (logger().isDebugEnabled()) logger().debug("Starting container: " + getDockerImageName());
 
             AtomicInteger attempt = new AtomicInteger(0);
             Unreliables.retryUntilSuccess(
@@ -368,7 +368,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private void tryStart() {
         try {
             String dockerImageName = getDockerImageName();
-            logger().debug("Starting container: {}", dockerImageName);
+            if (logger().isDebugEnabled()) logger().debug("Starting container: " + dockerImageName);
 
             Instant startedAt = Instant.now();
             logger().info("Creating container for image: {}", dockerImageName);
@@ -663,7 +663,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * @return a logger that references the docker image name
      */
     protected Logger logger() {
-        return DockerLoggerFactory.getLogger(this.getDockerImageName());
+        return DockerLoggerFactory.getLogger("tc.genericcontainer");
     }
 
     /**
