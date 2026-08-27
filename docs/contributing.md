@@ -92,15 +92,14 @@ New modules should have the following warning at the top of their documentation 
 We will evaluate incubating modules periodically, and remove the label when appropriate.
 
 
-## Combining Dependabot PRs
+## Reviewing Dependabot PRs
 
-Since we generally get a lot of Dependabot PRs, we regularly combine them into single commits.
-For this, we are using the [gh-combine-prs](https://github.com/rnorth/gh-combine-prs) extension for [GitHub CLI](https://cli.github.com/).
+Dependabot uses a native multi-ecosystem group to create one weekly pull request for eligible Gradle and GitHub Actions updates.
+Version updates are delayed by the configured cooldown, while security updates continue to be handled separately.
 
-The whole process is as follows:
+Before merging the grouped pull request:
 
-1. Check that all open Dependabot PRs did succeed their build. If they did not succeed, trigger a rerun if the cause were external factors or else document the reason if obvious.
-2. Run the extension from an up-to-date local `main` branch: `gh combine-prs --query "author:app/dependabot"`
-3. Merge conflicts might appear. Just ignore them, we will get those PRs in a future run.
-4. Once the build of the combined PR did succeed, temporarily enable merge commits and merge the PR using a merge commit through the GitHub UI.
-5. After the merge, disable merge commits again.
+1. Review the complete diff and confirm that every included update is expected.
+2. Check that CI discovered a non-empty test matrix covering every affected module or example, plus the relevant smoke-test and documentation checks.
+3. Investigate failures individually. Rerun failures caused by external factors, but do not merge while an included dependency update has an unexplained failure.
+4. If an update is incompatible with a module's constraints, add the narrowest possible ignore rule to that module's entry in `.github/dependabot.yml` and let Dependabot refresh the group.

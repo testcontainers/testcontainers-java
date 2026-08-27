@@ -30,50 +30,276 @@ updates:
       - dependency-name: "com.gradleup.shadow"
         update-types: ["version-update:semver-major"]
 
-  # Java dependencies across the library, modules, examples, and smoke tests.
+  # Core dependencies have compatibility constraints that do not apply to every module.
   - package-ecosystem: "gradle"
-    directories:
-      - "/core"
-      - "/modules/*"
-      - "/examples"
-      - "/smoke-test"
+    directory: "/core"
     patterns:
       - "*"
     multi-ecosystem-group: dependencies
     cooldown:
       default-days: 7
-    # Keep updates known to conflict with the Java 8 compatibility baseline or
-    # with constraints imposed by the corresponding module.
+    ignore:
+      - dependency-name: "org.slf4j:slf4j-api"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.mockito:mockito-core"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
+        update-types: ["version-update:semver-minor", "version-update:semver-patch"]
+      - dependency-name: "org.junit.jupiter:junit-jupiter"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.junit.platform:junit-platform-launcher"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "io.rest-assured:rest-assured"
+        update-types: ["version-update:semver-major"]
+
+  # Modules without additional compatibility constraints.
+  - package-ecosystem: "gradle"
+    directories:
+      - "/modules/activemq"
+      - "/modules/azure"
+      - "/modules/clickhouse"
+      - "/modules/cockroachdb"
+      - "/modules/couchbase"
+      - "/modules/cratedb"
+      - "/modules/database-commons"
+      - "/modules/databend"
+      - "/modules/db2"
+      - "/modules/elasticsearch"
+      - "/modules/gcloud"
+      - "/modules/hivemq"
+      - "/modules/k6"
+      - "/modules/kafka"
+      - "/modules/ldap"
+      - "/modules/localstack"
+      - "/modules/milvus"
+      - "/modules/minio"
+      - "/modules/mongodb"
+      - "/modules/mssqlserver"
+      - "/modules/mysql"
+      - "/modules/nginx"
+      - "/modules/oceanbase"
+      - "/modules/openfga"
+      - "/modules/oracle-free"
+      - "/modules/oracle-xe"
+      - "/modules/orientdb"
+      - "/modules/postgresql"
+      - "/modules/presto"
+      - "/modules/qdrant"
+      - "/modules/questdb"
+      - "/modules/rabbitmq"
+      - "/modules/scylladb"
+      - "/modules/tidb"
+      - "/modules/timeplus"
+      - "/modules/toxiproxy"
+      - "/modules/trino"
+      - "/modules/typesense"
+      - "/modules/weaviate"
+      - "/modules/yugabytedb"
+    patterns:
+      - "*"
+    multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 7
+
+  # Modules sharing the same REST Assured compatibility constraint.
+  - package-ecosystem: "gradle"
+    directories:
+      - "/modules/chromadb"
+      - "/modules/consul"
+      - "/modules/grafana"
+      - "/modules/mockserver"
+      - "/modules/ollama"
+      - "/modules/redpanda"
+      - "/modules/vault"
+    patterns:
+      - "*"
+    multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 7
+    ignore:
+      - dependency-name: "io.rest-assured:rest-assured"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "gradle"
+    directory: "/modules/cassandra"
+    patterns: ["*"]
+    multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 7
+    ignore:
+      - dependency-name: "io.dropwizard.metrics:metrics-core"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "gradle"
+    directory: "/modules/influxdb"
+    patterns: ["*"]
+    multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 7
+    ignore:
+      - dependency-name: "com.influxdb:influxdb-java-client"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "gradle"
+    directory: "/modules/jdbc"
+    patterns: ["*"]
+    multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 7
+    ignore:
+      - dependency-name: "org.mockito:mockito-core"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "gradle"
+    directory: "/modules/jdbc-test"
+    patterns: ["*"]
+    multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 7
+    ignore:
+      - dependency-name: "org.apache.tomcat:tomcat-jdbc"
+        update-types: ["version-update:semver-minor"]
+      - dependency-name: "org.junit.jupiter:junit-jupiter"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "gradle"
+    directory: "/modules/junit-jupiter"
+    patterns: ["*"]
+    multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 7
+    ignore:
+      - dependency-name: "org.mockito:mockito-core"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.junit:junit-bom"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "gradle"
+    directory: "/modules/k3s"
+    patterns: ["*"]
+    multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 7
+    ignore:
+      - dependency-name: "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml"
+        update-types: ["version-update:semver-minor", "version-update:semver-patch"]
+
+  - package-ecosystem: "gradle"
+    directory: "/modules/mariadb"
+    patterns: ["*"]
+    multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 7
+    ignore:
+      - dependency-name: "org.mariadb:r2dbc-mariadb"
+        update-types: ["version-update:semver-minor"]
+
+  - package-ecosystem: "gradle"
+    directory: "/modules/neo4j"
+    patterns: ["*"]
+    multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 7
+    ignore:
+      - dependency-name: "org.neo4j.driver:neo4j-java-driver"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.neo4j:neo4j"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "gradle"
+    directory: "/modules/pinecone"
+    patterns: ["*"]
+    multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 7
+    ignore:
+      - dependency-name: "io.pinecone:pinecone-client"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "gradle"
+    directory: "/modules/pulsar"
+    patterns: ["*"]
+    multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 7
+    ignore:
+      - dependency-name: "org.apache.pulsar:pulsar-bom"
+        update-types: ["version-update:semver-patch"]
+
+  - package-ecosystem: "gradle"
+    directory: "/modules/r2dbc"
+    patterns: ["*"]
+    multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 7
+    ignore:
+      - dependency-name: "io.r2dbc:r2dbc-spi"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "org.junit.jupiter:junit-jupiter"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "gradle"
+    directory: "/modules/selenium"
+    patterns: ["*"]
+    multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 7
+    ignore:
+      - dependency-name: "org.seleniumhq.selenium:selenium-bom"
+        update-types: ["version-update:semver-minor"]
+
+  - package-ecosystem: "gradle"
+    directory: "/modules/solace"
+    patterns: ["*"]
+    multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 7
+    ignore:
+      - dependency-name: "org.apache.qpid:qpid-jms-client"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "gradle"
+    directory: "/modules/solr"
+    patterns: ["*"]
+    multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 7
+    ignore:
+      - dependency-name: "org.apache.solr:solr-solrj"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "gradle"
+    directory: "/modules/spock"
+    patterns: ["*"]
+    multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 7
+    ignore:
+      - dependency-name: "org.junit:junit-bom"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "gradle"
+    directory: "/examples"
+    patterns: ["*"]
+    multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 7
     ignore:
       - dependency-name: "ch.qos.logback:logback-classic"
         update-types: ["version-update:semver-minor"]
-      - dependency-name: "com.diffplug.spotless"
-        update-types: ["version-update:semver-major", "version-update:semver-minor"]
-      - dependency-name: "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml"
-        update-types: ["version-update:semver-minor", "version-update:semver-patch"]
-      - dependency-name: "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
-        update-types: ["version-update:semver-minor", "version-update:semver-patch"]
-      - dependency-name: "com.gradleup.shadow"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "com.hazelcast:hazelcast"
-        update-types: ["version-update:semver-minor"]
-      - dependency-name: "com.influxdb:influxdb-java-client"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "io.dropwizard.metrics:metrics-core"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "io.pinecone:pinecone-client"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "io.r2dbc:r2dbc-spi"
-        update-types: ["version-update:semver-major", "version-update:semver-minor"]
-      - dependency-name: "io.rest-assured:rest-assured"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "org.apache.pulsar:pulsar-bom"
-        update-types: ["version-update:semver-patch"]
-      - dependency-name: "org.apache.qpid:qpid-jms-client"
-        update-types: ["version-update:semver-major"]
       - dependency-name: "org.apache.solr:solr-solrj"
         update-types: ["version-update:semver-major"]
-      - dependency-name: "org.apache.tomcat:tomcat-jdbc"
+      - dependency-name: "org.neo4j.driver:neo4j-java-driver"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.testng:testng"
+        update-types: ["version-update:semver-minor"]
+      - dependency-name: "org.slf4j:slf4j-api"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.springframework.boot"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "com.diffplug.spotless"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "com.hazelcast:hazelcast"
         update-types: ["version-update:semver-minor"]
       - dependency-name: "org.junit.jupiter:junit-jupiter"
         update-types: ["version-update:semver-major"]
@@ -81,25 +307,31 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "org.junit:junit-bom"
         update-types: ["version-update:semver-major"]
-      - dependency-name: "org.mariadb:r2dbc-mariadb"
+      - dependency-name: "com.gradleup.shadow"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "gradle"
+    directory: "/smoke-test"
+    patterns: ["*"]
+    multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 7
+    ignore:
+      - dependency-name: "ch.qos.logback:logback-classic"
         update-types: ["version-update:semver-minor"]
-      - dependency-name: "org.mockito:mockito-core"
+      - dependency-name: "com.diffplug.spotless"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "org.junit.jupiter:junit-jupiter"
         update-types: ["version-update:semver-major"]
-      - dependency-name: "org.neo4j.driver:neo4j-java-driver"
+      - dependency-name: "org.junit.platform:junit-platform-launcher"
         update-types: ["version-update:semver-major"]
-      - dependency-name: "org.neo4j:neo4j"
+      - dependency-name: "com.gradleup.shadow"
         update-types: ["version-update:semver-major"]
-      - dependency-name: "org.seleniumhq.selenium:selenium-bom"
-        update-types: ["version-update:semver-minor"]
-      - dependency-name: "org.slf4j:slf4j-api"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "org.springframework.boot"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "org.testng:testng"
-        update-types: ["version-update:semver-minor"]
 
   - package-ecosystem: "github-actions"
-    directory: "/"
+    directories:
+      - "/"
+      - "/.github/actions/**"
     patterns:
       - "*"
     multi-ecosystem-group: dependencies
