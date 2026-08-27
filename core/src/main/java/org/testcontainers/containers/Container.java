@@ -124,6 +124,14 @@ public interface Container<SELF extends Container<SELF>> extends LinkableContain
     void addExposedPorts(int... ports);
 
     /**
+     * Add an exposed port with the specified protocol.
+     *
+     * @param port the port to expose
+     * @param protocol the protocol (TCP or UDP)
+     */
+    void addExposedPort(int port, InternetProtocol protocol);
+
+    /**
      * Specify the {@link WaitStrategy} to use to determine if the container is ready.
      *
      * @see org.testcontainers.containers.wait.strategy.Wait#defaultWaitStrategy()

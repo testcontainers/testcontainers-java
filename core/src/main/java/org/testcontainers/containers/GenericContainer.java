@@ -1048,6 +1048,14 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         this.containerDef.addExposedTcpPorts(ports);
     }
 
+    @Override
+    public void addExposedPort(int port, InternetProtocol protocol) {
+        this.containerDef.addExposedPort(
+            port,
+            com.github.dockerjava.api.model.InternetProtocol.parse(protocol.name())
+        );
+    }
+
     /**
      * {@inheritDoc}
      */
