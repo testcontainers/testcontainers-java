@@ -1,4 +1,4 @@
-FROM alpine:3.17
+FROM alpine:3.24
 
 ADD passthrough.sh /passthrough.sh
 

@@ -3,5 +3,5 @@ services:
   redis:
     image: redis
   other:
-    image: alpine:3.17
+    image: alpine:3.24
     command: sleep 10000
