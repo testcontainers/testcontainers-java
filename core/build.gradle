@@ -80,6 +80,10 @@ dependencies {
 
     shaded 'org.awaitility:awaitility:4.3.0'
 
+    // TODO(wslc): bump both coordinates below to the first docker-java release that carries the
+    // wslc:// transport (docker-java/docker-java#2658, implemented in docker-java/docker-java#2659).
+    // Until then WslcSocketClientProviderStrategy compiles and is discovered, but the URI it
+    // resolves to cannot be opened at runtime -- which is why the pull request adding it is a draft.
     api platform('com.github.docker-java:docker-java-bom:3.7.1')
     shaded platform('com.github.docker-java:docker-java-bom:3.7.1')
 
