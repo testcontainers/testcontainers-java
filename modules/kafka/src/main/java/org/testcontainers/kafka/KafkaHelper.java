@@ -25,10 +25,12 @@ class KafkaHelper {
 
     static final String STARTER_SCRIPT = "/tmp/testcontainers_start.sh";
 
+    static final String STARTER_SCRIPT_SENTINEL = STARTER_SCRIPT + ".ready";
+
     static final String[] COMMAND = {
         "sh",
         "-c",
-        "while [ ! -f " + STARTER_SCRIPT + " ]; do sleep 0.1; done; " + STARTER_SCRIPT,
+        "while [ ! -f " + STARTER_SCRIPT_SENTINEL + " ]; do sleep 0.1; done; " + STARTER_SCRIPT,
     };
 
     static final WaitStrategy WAIT_STRATEGY = Wait.forLogMessage(".*Transitioning from RECOVERY to RUNNING.*", 1);
