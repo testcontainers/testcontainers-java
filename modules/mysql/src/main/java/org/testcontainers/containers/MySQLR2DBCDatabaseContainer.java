@@ -21,6 +21,17 @@ public class MySQLR2DBCDatabaseContainer implements R2DBCDatabaseContainer {
         return new MySQLR2DBCDatabaseContainer(container).configure(options);
     }
 
+    public static String getR2dbcUrl(MySQLContainer<?> container) {
+        return String.format(
+            "r2dbc:mysql://%s:%s@%s:%d/%s",
+            container.getUsername(),
+            container.getPassword(),
+            container.getHost(),
+            container.getMappedPort(MySQLContainer.MYSQL_PORT),
+            container.getDatabaseName()
+        );
+    }
+
     @Override
     public ConnectionFactoryOptions configure(ConnectionFactoryOptions options) {
         return options
