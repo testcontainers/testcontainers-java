@@ -216,19 +216,22 @@ class GenericContainerTest {
             ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
             listAppender.start();
             logger.addAppender(listAppender);
+            try {
+                container.start();
 
-            container.start();
-
-            String regexMatch = "The architecture '\\S+' for image .*";
-            assertThat(listAppender.list)
-                .describedAs(
-                    "Received log list does not have a message matching '" +
-                    regexMatch +
-                    "': " +
-                    listAppender.list.toString()
-                )
-                .filteredOn(event -> event.getMessage().matches(regexMatch))
-                .isNotEmpty();
+                String regexMatch = "The architecture '\\S+' for image .*";
+                assertThat(listAppender.list)
+                    .describedAs(
+                        "Received log list does not have a message matching '" +
+                        regexMatch +
+                        "': " +
+                        listAppender.list.toString()
+                    )
+                    .filteredOn(event -> event.getMessage().matches(regexMatch))
+                    .isNotEmpty();
+            } finally {
+                logger.detachAppender(listAppender);
+            }
         }
     }
 

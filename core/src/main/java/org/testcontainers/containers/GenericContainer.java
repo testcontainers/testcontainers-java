@@ -325,19 +325,23 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
             configure();
 
-            if (logger().isDebugEnabled()) logger().debug("Starting container: " + getDockerImageName());
+            if (logger().isDebugEnabled()) {
+                logger().debug("Starting container: {}", getDockerImageName());
+            }
 
             AtomicInteger attempt = new AtomicInteger(0);
             Unreliables.retryUntilSuccess(
                 startupAttempts,
                 () -> {
-                    logger()
-                        .debug(
-                            "Trying to start container: {} (attempt {}/{})",
-                            getDockerImageName(),
-                            attempt.incrementAndGet(),
-                            startupAttempts
-                        );
+                    if (logger().isDebugEnabled()) {
+                        logger()
+                            .debug(
+                                "Trying to start container: {} (attempt {}/{})",
+                                getDockerImageName(),
+                                attempt.incrementAndGet(),
+                                startupAttempts
+                            );
+                    }
                     tryStart();
                     return true;
                 }
@@ -368,7 +372,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private void tryStart() {
         try {
             String dockerImageName = getDockerImageName();
-            if (logger().isDebugEnabled()) logger().debug("Starting container: " + dockerImageName);
+            logger().debug("Starting container: {}", dockerImageName);
 
             Instant startedAt = Instant.now();
             logger().info("Creating container for image: {}", dockerImageName);
@@ -658,12 +662,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     /**
-     * Provide a logger that references the docker image name.
+     * Provide the shared logger for generic container lifecycle messages.
      *
-     * @return a logger that references the docker image name
+     * @return the shared generic container logger
      */
     protected Logger logger() {
-        return DockerLoggerFactory.getLogger("tc.genericcontainer");
+        return DockerLoggerFactory.getLogger("genericcontainer");
     }
 
     /**
