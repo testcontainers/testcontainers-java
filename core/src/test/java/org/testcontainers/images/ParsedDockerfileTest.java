@@ -91,6 +91,53 @@ class ParsedDockerfileTest {
     }
 
     @Test
+    void doesNotTreatBuildStageReferencesAsDependencyImages() {
+        final ParsedDockerfile parsedDockerfile = new ParsedDockerfile(
+            Arrays.asList("FROM alpine:3.17 AS build", "RUN something", "FROM build", "RUN somethingelse")
+        );
+        assertThat(parsedDockerfile.getDependencyImageNames())
+            .as("does not treat references to a previously declared build stage as images to pull")
+            .isEqualTo(Sets.newHashSet("alpine:3.17"));
+    }
+
+    @Test
+    void extractsOnlyExternalImagesFromMultiStageDockerfile() {
+        final ParsedDockerfile parsedDockerfile = new ParsedDockerfile(
+            Arrays.asList(
+                "FROM maven:3.9-eclipse-temurin-17 AS build",
+                "COPY . /workspace",
+                "RUN mvn -f /workspace package",
+                "FROM eclipse-temurin:17-jre",
+                "COPY --from=build /workspace/target/app.jar /app.jar",
+                "CMD [\"java\", \"-jar\", \"/app.jar\"]"
+            )
+        );
+        assertThat(parsedDockerfile.getDependencyImageNames())
+            .as("extracts only external images from a multi-stage Dockerfile")
+            .isEqualTo(Sets.newHashSet("maven:3.9-eclipse-temurin-17", "eclipse-temurin:17-jre"));
+    }
+
+    @Test
+    void matchesBuildStageNamesCaseInsensitively() {
+        final ParsedDockerfile parsedDockerfile = new ParsedDockerfile(
+            Arrays.asList("FROM someimage As Build", "RUN something", "FROM BUILD", "RUN somethingelse")
+        );
+        assertThat(parsedDockerfile.getDependencyImageNames())
+            .as("matches build stage names case-insensitively, as Docker does")
+            .isEqualTo(Sets.newHashSet("someimage"));
+    }
+
+    @Test
+    void retainsImagesOfUnreferencedBuildStages() {
+        final ParsedDockerfile parsedDockerfile = new ParsedDockerfile(
+            Arrays.asList("FROM someimage AS unusedstage", "RUN something", "FROM nextimage", "RUN somethingelse")
+        );
+        assertThat(parsedDockerfile.getDependencyImageNames())
+            .as("still extracts images of stages whose alias is never referenced")
+            .isEqualTo(Sets.newHashSet("someimage", "nextimage"));
+    }
+
+    @Test
     void handlesGracefullyIfNoFromLine() {
         final ParsedDockerfile parsedDockerfile = new ParsedDockerfile(
             Arrays.asList("RUN something", "# is this even a valid Dockerfile?")
