@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.mock;
 
@@ -18,6 +19,20 @@ class JdbcDatabaseContainerTest {
             .withStartupTimeoutSeconds(1);
 
         assertThatExceptionOfType(IllegalStateException.class).isThrownBy(jdbcContainer::waitUntilContainerStarted);
+    }
+
+    @Test
+    void getR2dbcUrlConvertsJdbcUrlToR2dbcUrl() {
+        JdbcDatabaseContainerStub jdbcContainer = new JdbcDatabaseContainerStub("mysql:latest") {
+            @Override
+            public String getJdbcUrl() {
+                return "jdbc:mysql://localhost:3306/test";
+            }
+        };
+
+        String r2dbcUrl = jdbcContainer.getR2dbcUrl();
+
+        assertThat(r2dbcUrl).isEqualTo("r2dbc:mysql://localhost:3306/test");
     }
 
     static class JdbcDatabaseContainerStub extends JdbcDatabaseContainer {
