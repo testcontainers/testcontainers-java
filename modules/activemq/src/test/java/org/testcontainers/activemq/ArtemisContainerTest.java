@@ -11,6 +11,7 @@ import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.testcontainers.containers.Container.ExecResult;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -59,6 +60,27 @@ class ArtemisContainerTest {
             artemis.start();
 
             assertFunctionality(artemis, true);
+        }
+    }
+
+    @Test
+    @SneakyThrows
+    void execInArtemis() {
+        try (ArtemisContainer artemis = new ArtemisContainer("apache/activemq-artemis:2.32.0-alpine")) {
+            artemis.start();
+
+            // execInArtemis {
+            artemis.execInArtemis(
+                "queue",
+                "create",
+                "--name=exec-test-queue",
+                "--auto-create-address",
+                "--anycast",
+                "--silent"
+            );
+            ExecResult stat = artemis.execInArtemis("queue", "stat", "--queueName=exec-test-queue");
+            assertThat(stat.getStdout()).contains("exec-test-queue");
+            // }
         }
     }
 
