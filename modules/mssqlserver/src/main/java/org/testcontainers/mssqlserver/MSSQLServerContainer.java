@@ -152,5 +152,11 @@ public class MSSQLServerContainer extends JdbcDatabaseContainer<MSSQLServerConta
                 "or percent (%)."
             );
         }
+
     }
+    @Override
+    protected String getStatementSeparator() {
+        return "GO";
+    }
+
 }

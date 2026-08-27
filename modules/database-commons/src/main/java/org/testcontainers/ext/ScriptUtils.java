@@ -220,6 +220,46 @@ public abstract class ScriptUtils {
         }
     }
 
+/**
+ * Load script from classpath and apply it to the given database
+ *
+ * @param databaseDelegate database delegate for script execution
+ * @param initScriptPath   the resource to load the init script from
+ * @param separator        the statement separator to use
+ */
+public static void runInitScript(DatabaseDelegate databaseDelegate, String initScriptPath, String separator) {
+    try {
+        URL resource = Thread.currentThread().getContextClassLoader().getResource(initScriptPath);
+        if (resource == null) {
+            resource = ScriptUtils.class.getClassLoader().getResource(initScriptPath);
+            if (resource == null) {
+                LOGGER.warn("Could not load classpath init script: {}", initScriptPath);
+                throw new ScriptLoadException(
+                    "Could not load classpath init script: " + initScriptPath + ". Resource not found."
+                );
+            }
+        }
+        String scripts = IOUtils.toString(resource, StandardCharsets.UTF_8);
+        executeDatabaseScript(
+            databaseDelegate,
+            initScriptPath,
+            scripts,
+            false,
+            false,
+            DEFAULT_COMMENT_PREFIX,
+            separator,
+            DEFAULT_BLOCK_COMMENT_START_DELIMITER,
+            DEFAULT_BLOCK_COMMENT_END_DELIMITER
+        );
+    } catch (IOException e) {
+        LOGGER.warn("Could not load classpath init script: {}", initScriptPath);
+        throw new ScriptLoadException("Could not load classpath init script: " + initScriptPath, e);
+    } catch (ScriptException e) {
+        LOGGER.error("Error while executing init script: {}", initScriptPath, e);
+        throw new UncategorizedScriptException("Error while executing init script: " + initScriptPath, e);
+    }
+}
+
     public static void executeDatabaseScript(DatabaseDelegate databaseDelegate, String scriptPath, String script)
         throws ScriptException {
         executeDatabaseScript(
