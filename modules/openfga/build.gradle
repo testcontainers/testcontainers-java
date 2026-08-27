@@ -3,7 +3,7 @@ description = "Testcontainers :: OpenFGA"
 dependencies {
     api project(':testcontainers')
 
-    testImplementation 'dev.openfga:openfga-sdk:0.9.7'
+    testImplementation 'dev.openfga:openfga-sdk:0.9.9'
 }
 
 test {

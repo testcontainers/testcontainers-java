@@ -70,7 +70,7 @@ dependencies {
         exclude(group: 'org.jetbrains', module: 'annotations')
     }
 
-    provided('com.google.cloud.tools:jib-core:0.28.1') {
+    provided('com.google.cloud.tools:jib-core:0.28.2') {
         exclude group: 'com.google.guava', module: 'guava'
         exclude group: 'com.fasterxml.jackson.datatype', module: 'jackson-datatype-jsr310'
         exclude group: 'com.fasterxml.jackson.core', module: 'jackson-core'
@@ -96,17 +96,17 @@ dependencies {
 
     shaded 'org.glassfish.main.external:trilead-ssh2-repackaged:4.1.2'
 
-    shaded 'org.zeroturnaround:zt-exec:1.12'
+    shaded 'org.zeroturnaround:zt-exec:1.13.0'
 
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.14.3'
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
-    testImplementation('com.google.cloud.tools:jib-core:0.28.1')  {
+    testImplementation('com.google.cloud.tools:jib-core:0.28.2')  {
         exclude group: 'com.google.guava', module: 'guava'
     }
     testImplementation 'org.apache.httpcomponents:httpclient:4.5.14'
     testImplementation 'redis.clients:jedis:7.4.1'
-    testImplementation 'com.rabbitmq:amqp-client:5.26.0'
+    testImplementation 'com.rabbitmq:amqp-client:5.35.0'
     testImplementation 'org.mongodb:mongo-java-driver:3.12.14'
 
     testImplementation ('org.mockito:mockito-core:4.11.0') {
