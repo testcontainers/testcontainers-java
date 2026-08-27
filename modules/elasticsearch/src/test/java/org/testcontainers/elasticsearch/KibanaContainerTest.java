@@ -474,12 +474,8 @@ class KibanaContainerTest {
             Testcontainers.exposeHostPorts(esMappedPort);
             String esUrl = "http://" + GenericContainer.INTERNAL_HOST_HOSTNAME + ":" + esMappedPort;
 
-            KibanaContainer kibana1 = new KibanaContainer(kibanaImage)
-                .withElasticsearchUrl(esUrl)
-                .withReuse(true);
-            KibanaContainer kibana2 = new KibanaContainer(kibanaImage)
-                .withElasticsearchUrl(esUrl)
-                .withReuse(true);
+            KibanaContainer kibana1 = new KibanaContainer(kibanaImage).withElasticsearchUrl(esUrl).withReuse(true);
+            KibanaContainer kibana2 = new KibanaContainer(kibanaImage).withElasticsearchUrl(esUrl).withReuse(true);
 
             try {
                 kibana1.start();
