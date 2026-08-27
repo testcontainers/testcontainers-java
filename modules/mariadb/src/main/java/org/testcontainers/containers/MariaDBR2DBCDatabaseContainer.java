@@ -32,4 +32,15 @@ public class MariaDBR2DBCDatabaseContainer implements R2DBCDatabaseContainer {
             .option(ConnectionFactoryOptions.PASSWORD, container.getPassword())
             .build();
     }
+
+    public static String getR2dbcUrl(MariaDBContainer<?> container) {
+        return String.format(
+            "r2dbc:mariadb://%s:%s@%s:%d/%s",
+            container.getUsername(),
+            container.getPassword(),
+            container.getHost(),
+            container.getMappedPort(MariaDBContainer.MARIADB_PORT),
+            container.getDatabaseName()
+        );
+    }
 }
