@@ -1,6 +1,7 @@
 package org.testcontainers.mssqlserver;
 
 import org.testcontainers.containers.JdbcDatabaseContainer;
+import org.testcontainers.ext.ScriptUtils;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.LicenseAcceptance;
 
@@ -152,5 +153,10 @@ public class MSSQLServerContainer extends JdbcDatabaseContainer<MSSQLServerConta
                 "or percent (%)."
             );
         }
+    }
+
+    @Override
+    protected String preprocessInitScript(String script) {
+        return ScriptUtils.normalizeGoSeparator(script);
     }
 }

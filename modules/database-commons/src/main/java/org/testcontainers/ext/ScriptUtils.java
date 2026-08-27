@@ -28,6 +28,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.UnaryOperator;
+import java.util.regex.Pattern;
 
 import javax.script.ScriptException;
 
@@ -68,6 +70,15 @@ public abstract class ScriptUtils {
      * Default end delimiter for block comments within SQL scripts.
      */
     public static final String DEFAULT_BLOCK_COMMENT_END_DELIMITER = "*/";
+
+    /**
+     * T-SQL batch separator used by Microsoft SQL Server tooling such as {@code sqlcmd} and SSMS.
+     * Pass this as the {@code separator} argument when executing scripts that use {@code GO} as a batch
+     * delimiter instead of {@code ;}.
+     */
+    public static final String GO_STATEMENT_SEPARATOR = "GO";
+
+    private static final Pattern GO_SEPARATOR_PATTERN = Pattern.compile("(?im)^[ \\t]*GO[ \\t]*$");
 
     /**
      * Prevent instantiation of this utility class.
@@ -189,6 +200,52 @@ public abstract class ScriptUtils {
             }
         }
         return false;
+    }
+
+    /**
+     * Replaces standalone {@code GO} batch separators with {@code ;} so that T-SQL scripts produced
+     * by tools such as {@code sqlcmd} or SSMS can be fed to the standard script executor.
+     *
+     * @param script the raw SQL script content
+     * @return the script with {@code GO} separators replaced by {@code ;}
+     */
+    public static String normalizeGoSeparator(String script) {
+        return GO_SEPARATOR_PATTERN.matcher(script).replaceAll(";");
+    }
+
+    /**
+     * Load script from classpath, apply a preprocessor, and execute it against the given database.
+     *
+     * @param databaseDelegate  database delegate for script execution
+     * @param initScriptPath    the resource to load the init script from
+     * @param scriptPreprocessor function applied to the raw script content before execution
+     */
+    public static void runInitScript(
+        DatabaseDelegate databaseDelegate,
+        String initScriptPath,
+        UnaryOperator<String> scriptPreprocessor
+    ) {
+        try {
+            URL resource = Thread.currentThread().getContextClassLoader().getResource(initScriptPath);
+            if (resource == null) {
+                resource = ScriptUtils.class.getClassLoader().getResource(initScriptPath);
+                if (resource == null) {
+                    LOGGER.warn("Could not load classpath init script: {}", initScriptPath);
+                    throw new ScriptLoadException(
+                        "Could not load classpath init script: " + initScriptPath + ". Resource not found."
+                    );
+                }
+            }
+            String scripts = IOUtils.toString(resource, StandardCharsets.UTF_8);
+            scripts = scriptPreprocessor.apply(scripts);
+            executeDatabaseScript(databaseDelegate, initScriptPath, scripts);
+        } catch (IOException e) {
+            LOGGER.warn("Could not load classpath init script: {}", initScriptPath);
+            throw new ScriptLoadException("Could not load classpath init script: " + initScriptPath, e);
+        } catch (ScriptException e) {
+            LOGGER.error("Error while executing init script: {}", initScriptPath, e);
+            throw new UncategorizedScriptException("Error while executing init script: " + initScriptPath, e);
+        }
     }
 
     /**
