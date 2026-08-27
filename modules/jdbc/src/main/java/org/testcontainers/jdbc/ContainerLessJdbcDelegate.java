@@ -33,4 +33,23 @@ public class ContainerLessJdbcDelegate extends JdbcDatabaseDelegate {
             throw new ConnectionCreationException("Could create JDBC statement", e);
         }
     }
+
+    @Override
+    protected void closeConnectionQuietly(Statement statement) {
+        if (statement != null) {
+            try {
+                statement.close();
+            } catch (Exception e) {
+                log.error("Could not close JDBC connection", e);
+            }
+        }
+
+        if (connection != null) {
+            try {
+                connection.close();
+            } catch (Exception e) {
+                log.error("Could not close JDBC connection", e);
+            }
+        }
+    }
 }
