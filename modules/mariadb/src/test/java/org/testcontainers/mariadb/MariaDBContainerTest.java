@@ -1,6 +1,7 @@
 package org.testcontainers.mariadb;
 
 import org.apache.commons.lang3.SystemUtils;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.MariaDBTestImages;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
@@ -10,7 +11,6 @@ import java.net.URL;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.attribute.PosixFilePermission;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -29,10 +29,7 @@ class MariaDBContainerTest extends AbstractContainerDatabaseTest {
         ) {
             mariadb.start();
 
-            ResultSet resultSet = performQuery(mariadb, "SELECT 1");
-            int resultSetInt = resultSet.getInt(1);
-
-            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+            executeSelectOneQuery(mariadb);
         }
     }
 
@@ -45,12 +42,7 @@ class MariaDBContainerTest extends AbstractContainerDatabaseTest {
         ) {
             mariadbOldVersion.start();
 
-            ResultSet resultSet = performQuery(mariadbOldVersion, "SELECT VERSION()");
-            String resultSetString = resultSet.getString(1);
-
-            assertThat(resultSetString)
-                .as("The database version can be set using a container rule parameter")
-                .startsWith("10.3.39");
+            executeSelectVersionQuery(mariadbOldVersion, "10.3.39");
         }
     }
 
@@ -77,10 +69,20 @@ class MariaDBContainerTest extends AbstractContainerDatabaseTest {
                 .withCommand("mysqld --auto_increment_increment=10")
         ) {
             mariadbCustomConfig.start();
-            ResultSet resultSet = performQuery(mariadbCustomConfig, "show variables like 'auto_increment_increment'");
-            String result = resultSet.getString("Value");
-
-            assertThat(result).as("Auto increment increment should be overridden by command line").isEqualTo("10");
+            executeQuery(
+                mariadbCustomConfig,
+                "show variables like 'auto_increment_increment'",
+                resultSet -> {
+                    Assertions
+                        .assertThatNoException()
+                        .isThrownBy(() -> {
+                            String result = resultSet.getString("Value");
+                            assertThat(result)
+                                .as("Auto increment increment should be overridden by command line")
+                                .isEqualTo("10");
+                        });
+                }
+            );
         }
     }
 
@@ -138,19 +140,24 @@ class MariaDBContainerTest extends AbstractContainerDatabaseTest {
         try (MariaDBContainer mysql = new MariaDBContainer("mariadb:11.2.4").withUsername("root")) {
             mysql.start();
 
-            ResultSet resultSet = performQuery(mysql, "SELECT 1");
-            int resultSetInt = resultSet.getInt(1);
-
-            assertThat(resultSetInt).isEqualTo(1);
+            executeSelectOneQuery(mysql);
         }
     }
 
     private void assertThatCustomIniFileWasUsed(MariaDBContainer mariadb) throws SQLException {
-        try (ResultSet resultSet = performQuery(mariadb, "SELECT @@GLOBAL.innodb_max_undo_log_size")) {
-            long result = resultSet.getLong(1);
-            assertThat(result)
-                .as("The InnoDB max undo log size has been set by the ini file content")
-                .isEqualTo(20000000);
-        }
+        executeQuery(
+            mariadb,
+            "SELECT @@GLOBAL.innodb_max_undo_log_size",
+            resultSet -> {
+                Assertions
+                    .assertThatNoException()
+                    .isThrownBy(() -> {
+                        long result = resultSet.getLong(1);
+                        assertThat(result)
+                            .as("The InnoDB max undo log size has been set by the ini file content")
+                            .isEqualTo(20000000);
+                    });
+            }
+        );
     }
 }
