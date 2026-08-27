@@ -24,11 +24,9 @@ import org.testcontainers.dockerclient.DockerMachineClientProviderStrategy;
 import org.testcontainers.dockerclient.TransportConfig;
 import org.testcontainers.images.RemoteDockerImage;
 import org.testcontainers.images.TimeLimitedLoggedPullImageResultCallback;
-import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.ResourceReaper;
-import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -248,37 +246,7 @@ public class DockerClientFactory {
             throw e;
         }
 
-        boolean checksEnabled = !TestcontainersConfiguration.getInstance().isDisableChecks();
-        if (checksEnabled) {
-            log.debug("Checks are enabled");
-
-            try {
-                log.info("Checking the system...");
-                checkDockerVersion(version.getVersion());
-            } catch (RuntimeException e) {
-                cachedClientFailure = e;
-                throw e;
-            }
-        } else {
-            log.debug("Checks are disabled");
-        }
-
         return client;
-    }
-
-    private void checkDockerVersion(String dockerVersion) {
-        boolean versionIsSufficient = new ComparableVersion(dockerVersion).compareTo(new ComparableVersion("1.6.0")) >=
-        0;
-        check("Docker server version should be at least 1.6.0", versionIsSufficient);
-    }
-
-    private void check(String message, boolean isSuccessful) {
-        if (isSuccessful) {
-            log.info("\u2714\ufe0e {}", message);
-        } else {
-            log.error("\u274c {}", message);
-            throw new IllegalStateException("Check failed: " + message);
-        }
     }
 
     private boolean checkMountableFile() {
