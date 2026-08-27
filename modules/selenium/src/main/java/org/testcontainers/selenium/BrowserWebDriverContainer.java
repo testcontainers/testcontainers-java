@@ -179,8 +179,7 @@ public class BrowserWebDriverContainer
         try {
             return new URL("http", getHost(), getMappedPort(SELENIUM_PORT), "/wd/hub");
         } catch (MalformedURLException e) {
-            e.printStackTrace(); // TODO
-            return null;
+            throw new ContainerLaunchException("Could not construct Selenium address", e);
         }
     }
 
