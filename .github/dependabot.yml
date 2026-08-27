@@ -1,489 +1,339 @@
 version: 2
+
 registries:
   gradle-plugin-portal:
     type: maven-repository
     url: https://plugins.gradle.org/m2
-    username: dummy # Required by dependabot
-    password: dummy # Required by dependabot
-updates:
-  - package-ecosystem: "gradle"
-    directory: "/core"
+    username: dummy # Required by Dependabot
+    password: dummy # Required by Dependabot
+
+multi-ecosystem-groups:
+  dependencies:
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 10
-    ignore:
-      - dependency-name: "org.slf4j:slf4j-api"
-        update-types: [ "version-update:semver-major" ]
-      - dependency-name: "org.mockito:mockito-core"
-        update-types: [ "version-update:semver-major" ]
-      - dependency-name: "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
-        update-types: [ "version-update:semver-minor", "version-update:semver-patch" ]
-      - dependency-name: "org.junit.jupiter:junit-jupiter"
-        update-types: [ "version-update:semver-major" ]
-      - dependency-name: "org.junit.platform:junit-platform-launcher"
-        update-types: [ "version-update:semver-major" ]
-      - dependency-name: "io.rest-assured:rest-assured"
-        update-types: [ "version-update:semver-major" ]
+      day: "monday"
+
+updates:
+  # Gradle plugins declared in the root build.
   - package-ecosystem: "gradle"
     directory: "/"
     allow:
       - dependency-name: "com.gradle*"
     registries:
       - gradle-plugin-portal
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 10
+    patterns:
+      - "com.gradle*"
+    multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 7
     ignore:
       - dependency-name: "com.gradleup.shadow"
-        update-types: [ "version-update:semver-major" ]
-      - dependency-name: "org.junit.jupiter:junit-jupiter"
-        update-types: [ "version-update:semver-major" ]
-      - dependency-name: "org.junit.platform:junit-platform-launcher"
-        update-types: [ "version-update:semver-major" ]
+        update-types: ["version-update:semver-major"]
 
-# Explicit entry for each module
+  # Core dependencies have compatibility constraints that do not apply to every module.
   - package-ecosystem: "gradle"
-    directory: "/modules/activemq"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
+    directory: "/core"
+    patterns:
+      - "*"
+    multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 7
+    ignore:
+      - dependency-name: "org.slf4j:slf4j-api"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.mockito:mockito-core"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
+        update-types: ["version-update:semver-minor", "version-update:semver-patch"]
+      - dependency-name: "org.junit.jupiter:junit-jupiter"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.junit.platform:junit-platform-launcher"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "io.rest-assured:rest-assured"
+        update-types: ["version-update:semver-major"]
+
+  # Modules without additional compatibility constraints.
   - package-ecosystem: "gradle"
-    directory: "/modules/azure"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
+    directories:
+      - "/modules/activemq"
+      - "/modules/azure"
+      - "/modules/clickhouse"
+      - "/modules/cockroachdb"
+      - "/modules/couchbase"
+      - "/modules/cratedb"
+      - "/modules/database-commons"
+      - "/modules/databend"
+      - "/modules/db2"
+      - "/modules/elasticsearch"
+      - "/modules/gcloud"
+      - "/modules/hivemq"
+      - "/modules/k6"
+      - "/modules/kafka"
+      - "/modules/ldap"
+      - "/modules/localstack"
+      - "/modules/milvus"
+      - "/modules/minio"
+      - "/modules/mongodb"
+      - "/modules/mssqlserver"
+      - "/modules/mysql"
+      - "/modules/nginx"
+      - "/modules/oceanbase"
+      - "/modules/openfga"
+      - "/modules/oracle-free"
+      - "/modules/oracle-xe"
+      - "/modules/orientdb"
+      - "/modules/postgresql"
+      - "/modules/presto"
+      - "/modules/qdrant"
+      - "/modules/questdb"
+      - "/modules/rabbitmq"
+      - "/modules/scylladb"
+      - "/modules/tidb"
+      - "/modules/timeplus"
+      - "/modules/toxiproxy"
+      - "/modules/trino"
+      - "/modules/typesense"
+      - "/modules/weaviate"
+      - "/modules/yugabytedb"
+    patterns:
+      - "*"
+    multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 7
+
+  # Modules sharing the same REST Assured compatibility constraint.
+  - package-ecosystem: "gradle"
+    directories:
+      - "/modules/chromadb"
+      - "/modules/consul"
+      - "/modules/grafana"
+      - "/modules/mockserver"
+      - "/modules/ollama"
+      - "/modules/redpanda"
+      - "/modules/vault"
+    patterns:
+      - "*"
+    multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 7
+    ignore:
+      - dependency-name: "io.rest-assured:rest-assured"
+        update-types: ["version-update:semver-major"]
+
   - package-ecosystem: "gradle"
     directory: "/modules/cassandra"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
+    patterns: ["*"]
+    multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 7
     ignore:
       - dependency-name: "io.dropwizard.metrics:metrics-core"
-        update-types: [ "version-update:semver-major" ]
-  - package-ecosystem: "gradle"
-    directory: "/modules/chromadb"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
-    ignore:
-      - dependency-name: "io.rest-assured:rest-assured"
-        update-types: [ "version-update:semver-major" ]
-  - package-ecosystem: "gradle"
-    directory: "/modules/clickhouse"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
-  - package-ecosystem: "gradle"
-    directory: "/modules/cockroachdb"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
-  - package-ecosystem: "gradle"
-    directory: "/modules/consul"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
-    ignore:
-      - dependency-name: "io.rest-assured:rest-assured"
-        update-types: [ "version-update:semver-major" ]
-  - package-ecosystem: "gradle"
-    directory: "/modules/couchbase"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
-  - package-ecosystem: "gradle"
-    directory: "/modules/cratedb"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
-  - package-ecosystem: "gradle"
-    directory: "/modules/database-commons"
-    schedule:
-      interval: "monthly"
-  - package-ecosystem: "gradle"
-    directory: "/modules/databend"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
-  - package-ecosystem: "gradle"
-    directory: "/modules/db2"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
-  - package-ecosystem: "gradle"
-    directory: "/modules/dynalite"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
-  - package-ecosystem: "gradle"
-    directory: "/modules/elasticsearch"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
-  - package-ecosystem: "gradle"
-    directory: "/modules/gcloud"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
-  - package-ecosystem: "gradle"
-    directory: "/modules/grafana"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
-    ignore:
-      - dependency-name: "io.rest-assured:rest-assured"
-        update-types: [ "version-update:semver-major" ]
-  - package-ecosystem: "gradle"
-    directory: "/modules/hivemq"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
+        update-types: ["version-update:semver-major"]
+
   - package-ecosystem: "gradle"
     directory: "/modules/influxdb"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
+    patterns: ["*"]
+    multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 7
     ignore:
       - dependency-name: "com.influxdb:influxdb-java-client"
-        update-types: [ "version-update:semver-major" ]
+        update-types: ["version-update:semver-major"]
+
   - package-ecosystem: "gradle"
     directory: "/modules/jdbc"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
+    patterns: ["*"]
+    multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 7
     ignore:
       - dependency-name: "org.mockito:mockito-core"
-        update-types: [ "version-update:semver-major" ]
+        update-types: ["version-update:semver-major"]
+
   - package-ecosystem: "gradle"
     directory: "/modules/jdbc-test"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
+    patterns: ["*"]
+    multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 7
     ignore:
       - dependency-name: "org.apache.tomcat:tomcat-jdbc"
-        update-types: [ "version-update:semver-minor" ]
+        update-types: ["version-update:semver-minor"]
       - dependency-name: "org.junit.jupiter:junit-jupiter"
-        update-types: [ "version-update:semver-major" ]
+        update-types: ["version-update:semver-major"]
+
   - package-ecosystem: "gradle"
     directory: "/modules/junit-jupiter"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
+    patterns: ["*"]
+    multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 7
     ignore:
       - dependency-name: "org.mockito:mockito-core"
-        update-types: [ "version-update:semver-major" ]
+        update-types: ["version-update:semver-major"]
       - dependency-name: "org.junit:junit-bom"
-        update-types: [ "version-update:semver-major" ]
+        update-types: ["version-update:semver-major"]
+
   - package-ecosystem: "gradle"
     directory: "/modules/k3s"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
+    patterns: ["*"]
+    multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 7
     ignore:
       - dependency-name: "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml"
-        update-types: [ "version-update:semver-minor", "version-update:semver-patch" ]
-  - package-ecosystem: "gradle"
-    directory: "/modules/k6"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
-  - package-ecosystem: "gradle"
-    directory: "/modules/kafka"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
-  - package-ecosystem: "gradle"
-    directory: "/modules/ldap"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
-  - package-ecosystem: "gradle"
-    directory: "/modules/localstack"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
+        update-types: ["version-update:semver-minor", "version-update:semver-patch"]
+
   - package-ecosystem: "gradle"
     directory: "/modules/mariadb"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
+    patterns: ["*"]
+    multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 7
     ignore:
       - dependency-name: "org.mariadb:r2dbc-mariadb"
-        update-types: [ "version-update:semver-minor" ]
-  - package-ecosystem: "gradle"
-    directory: "/modules/milvus"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
-  - package-ecosystem: "gradle"
-    directory: "/modules/minio"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
-  - package-ecosystem: "gradle"
-    directory: "/modules/mockserver"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
-    ignore:
-      - dependency-name: "io.rest-assured:rest-assured"
-        update-types: [ "version-update:semver-major" ]
-  - package-ecosystem: "gradle"
-    directory: "/modules/mongodb"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
-  - package-ecosystem: "gradle"
-    directory: "/modules/mssqlserver"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
-  - package-ecosystem: "gradle"
-    directory: "/modules/mysql"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
+        update-types: ["version-update:semver-minor"]
+
   - package-ecosystem: "gradle"
     directory: "/modules/neo4j"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
+    patterns: ["*"]
+    multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 7
     ignore:
       - dependency-name: "org.neo4j.driver:neo4j-java-driver"
-        update-types: [ "version-update:semver-major" ]
+        update-types: ["version-update:semver-major"]
       - dependency-name: "org.neo4j:neo4j"
-        update-types: [ "version-update:semver-major" ]
-  - package-ecosystem: "gradle"
-    directory: "/modules/nginx"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
-  - package-ecosystem: "gradle"
-    directory: "/modules/oceanbase"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
-  - package-ecosystem: "gradle"
-    directory: "/modules/ollama"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
-    ignore:
-      - dependency-name: "io.rest-assured:rest-assured"
-        update-types: [ "version-update:semver-major" ]
-  - package-ecosystem: "gradle"
-    directory: "/modules/openfga"
-    schedule:
-      interval: "monthly"
-  - package-ecosystem: "gradle"
-    directory: "/modules/oracle-free"
-    schedule:
-      interval: "monthly"
-  - package-ecosystem: "gradle"
-    directory: "/modules/oracle-xe"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
-  - package-ecosystem: "gradle"
-    directory: "/modules/orientdb"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
-  - package-ecosystem: "gradle"
-    directory: "/modules/postgresql"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
-  - package-ecosystem: "gradle"
-    directory: "/modules/presto"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
+        update-types: ["version-update:semver-major"]
+
   - package-ecosystem: "gradle"
     directory: "/modules/pinecone"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
+    patterns: ["*"]
+    multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 7
     ignore:
       - dependency-name: "io.pinecone:pinecone-client"
-        update-types: [ "version-update:semver-major" ]
+        update-types: ["version-update:semver-major"]
+
   - package-ecosystem: "gradle"
     directory: "/modules/pulsar"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
+    patterns: ["*"]
+    multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 7
     ignore:
       - dependency-name: "org.apache.pulsar:pulsar-bom"
-        update-types: [ "version-update:semver-patch" ]
-  - package-ecosystem: "gradle"
-    directory: "/modules/qdrant"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
-  - package-ecosystem: "gradle"
-    directory: "/modules/questdb"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
+        update-types: ["version-update:semver-patch"]
+
   - package-ecosystem: "gradle"
     directory: "/modules/r2dbc"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
+    patterns: ["*"]
+    multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 7
     ignore:
       - dependency-name: "io.r2dbc:r2dbc-spi"
-        update-types: [ "version-update:semver-major", "version-update:semver-minor" ]
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
       - dependency-name: "org.junit.jupiter:junit-jupiter"
-        update-types: [ "version-update:semver-major" ]
-  - package-ecosystem: "gradle"
-    directory: "/modules/rabbitmq"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
-  - package-ecosystem: "gradle"
-    directory: "/modules/redpanda"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
-    ignore:
-      - dependency-name: "io.rest-assured:rest-assured"
-        update-types: [ "version-update:semver-major" ]
-  - package-ecosystem: "gradle"
-    directory: "/modules/scylladb"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
+        update-types: ["version-update:semver-major"]
+
   - package-ecosystem: "gradle"
     directory: "/modules/selenium"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
+    patterns: ["*"]
+    multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 7
     ignore:
       - dependency-name: "org.seleniumhq.selenium:selenium-bom"
-        update-types: [ "version-update:semver-minor" ]
+        update-types: ["version-update:semver-minor"]
+
   - package-ecosystem: "gradle"
     directory: "/modules/solace"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
+    patterns: ["*"]
+    multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 7
     ignore:
       - dependency-name: "org.apache.qpid:qpid-jms-client"
-        update-types: [ "version-update:semver-major" ]
+        update-types: ["version-update:semver-major"]
+
   - package-ecosystem: "gradle"
     directory: "/modules/solr"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
+    patterns: ["*"]
+    multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 7
     ignore:
       - dependency-name: "org.apache.solr:solr-solrj"
-        update-types: [ "version-update:semver-major" ]
+        update-types: ["version-update:semver-major"]
+
   - package-ecosystem: "gradle"
     directory: "/modules/spock"
-    schedule:
-      interval: "monthly"
+    patterns: ["*"]
+    multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 7
     ignore:
       - dependency-name: "org.junit:junit-bom"
-        update-types: [ "version-update:semver-major" ]
-    open-pull-requests-limit: 10
-  - package-ecosystem: "gradle"
-    directory: "/modules/tidb"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
-  - package-ecosystem: "gradle"
-    directory: "/modules/timeplus"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
-  - package-ecosystem: "gradle"
-    directory: "/modules/toxiproxy"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
-  - package-ecosystem: "gradle"
-    directory: "/modules/trino"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
-  - package-ecosystem: "gradle"
-    directory: "/modules/typesense"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
-  - package-ecosystem: "gradle"
-    directory: "/modules/vault"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
-    ignore:
-      - dependency-name: "io.rest-assured:rest-assured"
-        update-types: [ "version-update:semver-major" ]
-  - package-ecosystem: "gradle"
-    directory: "/modules/weaviate"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
-  - package-ecosystem: "gradle"
-    directory: "/modules/yugabytedb"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
+        update-types: ["version-update:semver-major"]
 
-# Examples
   - package-ecosystem: "gradle"
     directory: "/examples"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
+    patterns: ["*"]
+    multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 7
     ignore:
       - dependency-name: "ch.qos.logback:logback-classic"
-        update-types: [ "version-update:semver-minor" ]
+        update-types: ["version-update:semver-minor"]
       - dependency-name: "org.apache.solr:solr-solrj"
-        update-types: [ "version-update:semver-major" ]
+        update-types: ["version-update:semver-major"]
       - dependency-name: "org.neo4j.driver:neo4j-java-driver"
-        update-types: [ "version-update:semver-major" ]
+        update-types: ["version-update:semver-major"]
       - dependency-name: "org.testng:testng"
-        update-types: [ "version-update:semver-minor" ]
+        update-types: ["version-update:semver-minor"]
       - dependency-name: "org.slf4j:slf4j-api"
-        update-types: [ "version-update:semver-major" ]
+        update-types: ["version-update:semver-major"]
       - dependency-name: "org.springframework.boot"
-        update-types: [ "version-update:semver-major" ]
+        update-types: ["version-update:semver-major"]
       - dependency-name: "com.diffplug.spotless"
-        update-types: [ "version-update:semver-major", "version-update:semver-minor" ]
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
       - dependency-name: "com.hazelcast:hazelcast"
-        update-types: [ "version-update:semver-minor" ]
+        update-types: ["version-update:semver-minor"]
       - dependency-name: "org.junit.jupiter:junit-jupiter"
-        update-types: [ "version-update:semver-major" ]
+        update-types: ["version-update:semver-major"]
       - dependency-name: "org.junit.platform:junit-platform-launcher"
-        update-types: [ "version-update:semver-major" ]
+        update-types: ["version-update:semver-major"]
       - dependency-name: "org.junit:junit-bom"
-        update-types: [ "version-update:semver-major" ]
+        update-types: ["version-update:semver-major"]
       - dependency-name: "com.gradleup.shadow"
-        update-types: [ "version-update:semver-major" ]
+        update-types: ["version-update:semver-major"]
 
-# Smoke test
   - package-ecosystem: "gradle"
     directory: "/smoke-test"
-    schedule:
-      interval: "monthly"
-    open-pull-requests-limit: 10
+    patterns: ["*"]
+    multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 7
     ignore:
       - dependency-name: "ch.qos.logback:logback-classic"
-        update-types: [ "version-update:semver-minor" ]
+        update-types: ["version-update:semver-minor"]
       - dependency-name: "com.diffplug.spotless"
-        update-types: [ "version-update:semver-major", "version-update:semver-minor" ]
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
       - dependency-name: "org.junit.jupiter:junit-jupiter"
-        update-types: [ "version-update:semver-major" ]
+        update-types: ["version-update:semver-major"]
       - dependency-name: "org.junit.platform:junit-platform-launcher"
-        update-types: [ "version-update:semver-major" ]
+        update-types: ["version-update:semver-major"]
       - dependency-name: "com.gradleup.shadow"
-        update-types: [ "version-update:semver-major" ]
+        update-types: ["version-update:semver-major"]
 
-# GitHub Actions
   - package-ecosystem: "github-actions"
     directories:
-      - /.github/workflows
-      - /.github/actions/**
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 10
+      - "/"
+      - "/.github/actions/**"
+    patterns:
+      - "*"
+    multi-ecosystem-group: dependencies
+    cooldown:
+      default-days: 7
