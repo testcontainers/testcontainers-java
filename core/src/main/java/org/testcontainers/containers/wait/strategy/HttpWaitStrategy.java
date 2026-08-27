@@ -3,17 +3,18 @@ package org.testcontainers.containers.wait.strategy;
 import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.rnorth.ducttape.TimeoutException;
 import org.testcontainers.containers.ContainerLaunchException;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URI;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -406,18 +407,10 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
     }
 
     private String getResponseBody(HttpURLConnection connection) throws IOException {
-        BufferedReader reader;
-        if (200 <= connection.getResponseCode() && connection.getResponseCode() <= 299) {
-            reader = new BufferedReader(new InputStreamReader((connection.getInputStream())));
-        } else {
-            reader = new BufferedReader(new InputStreamReader((connection.getErrorStream())));
-        }
+        boolean isSuccess = 200 <= connection.getResponseCode() && connection.getResponseCode() <= 299;
 
-        StringBuilder builder = new StringBuilder();
-        String line;
-        while ((line = reader.readLine()) != null) {
-            builder.append(line);
+        try (InputStream stream = isSuccess ? connection.getInputStream() : connection.getErrorStream()) {
+            return IOUtils.toString(stream, StandardCharsets.UTF_8);
         }
-        return builder.toString();
     }
 }
