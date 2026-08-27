@@ -358,6 +358,7 @@ public class MountableFile implements Transferable {
             tarEntry.setMode(getUnixFileMode(itemPath));
             tarArchive.putArchiveEntry(tarEntry);
 
+            log.trace("Transferring {} '{}'", sourceFile.isFile() ? "file" : "directory", sourceFile);
             if (sourceFile.isFile()) {
                 Files.copy(sourceFile.toPath(), tarArchive);
             }
