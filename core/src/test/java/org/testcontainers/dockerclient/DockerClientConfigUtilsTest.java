@@ -47,6 +47,16 @@ class DockerClientConfigUtilsTest {
     }
 
     @Test
+    void getDockerHostIpAddressShouldReturnLocalhostWhenWslcUri() {
+        String actual = DockerClientProviderStrategy.resolveDockerHostIpAddress(
+            client,
+            URI.create("wslc://localhost"),
+            true
+        );
+        assertThat(actual).isEqualTo("localhost");
+    }
+
+    @Test
     void getDockerHostIpAddressShouldReturnNullWhenUnsupportedUriScheme() {
         String actual = DockerClientProviderStrategy.resolveDockerHostIpAddress(
             client,
