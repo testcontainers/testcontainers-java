@@ -3,12 +3,15 @@ package org.testcontainers.utility;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Filesystem operation utility methods.
@@ -74,5 +77,44 @@ public class PathUtils {
             mingwPath.substring(driveLetterIndex + 1);
         mingwPath = mingwPath.replace(":", "");
         return mingwPath;
+    }
+
+    /**
+     * Find the closest common ancestor directory of a set of files, e.g. so that a single directory tree can be
+     * used to resolve all of the files, even when they were supplied from different directories.
+     *
+     * @param files the files to find a common ancestor directory for
+     * @return the closest common ancestor directory of all the given files
+     */
+    public static File findCommonParent(@NonNull List<File> files) {
+        List<Path> parentDirs = files
+            .stream()
+            .map(file -> file.getAbsoluteFile().toPath().normalize().getParent())
+            .collect(Collectors.toList());
+
+        Path commonParent = parentDirs.get(0);
+        for (Path parentDir : parentDirs) {
+            commonParent = commonAncestor(commonParent, parentDir);
+        }
+        return commonParent.toFile();
+    }
+
+    private static Path commonAncestor(Path a, Path b) {
+        if (!a.getRoot().equals(b.getRoot())) {
+            throw new IllegalArgumentException(
+                "Cannot determine a common parent directory for paths on different filesystem roots: " + a + " and " + b
+            );
+        }
+
+        Path commonAncestor = a.getRoot();
+        int sharedNameCount = Math.min(a.getNameCount(), b.getNameCount());
+        for (int i = 0; i < sharedNameCount; i++) {
+            Path aElement = a.getName(i);
+            if (!aElement.equals(b.getName(i))) {
+                break;
+            }
+            commonAncestor = commonAncestor.resolve(aElement);
+        }
+        return commonAncestor;
     }
 }
