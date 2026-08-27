@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -72,20 +71,40 @@ enum LocalImagesCache {
 
     private void populateFromList(List<Image> images) {
         for (Image image : images) {
-            String[] repoTags = image.getRepoTags();
-            if (repoTags == null) {
-                log.debug("repoTags is null, skipping image: {}", image);
-                continue;
-            }
+            ImageData imageData = ImageData.from(image);
 
-            cache.putAll(
+            String[] repoTags = image.getRepoTags();
+            if (repoTags != null) {
                 Stream
                     .of(repoTags)
                     // Protection against some edge case where local image repository tags end up with duplicates
                     // making toMap crash at merge time.
                     .distinct()
-                    .collect(Collectors.toMap(DockerImageName::new, it -> ImageData.from(image)))
-            );
+                    .forEach(tag -> cache.put(new DockerImageName(tag), imageData));
+            }
+
+            String[] repoDigests = image.getRepoDigests();
+            if (repoDigests != null) {
+                Stream
+                    .of(repoDigests)
+                    .distinct()
+                    .forEach(digest -> {
+                        try {
+                            cache.put(new DockerImageName(digest), imageData);
+                        } catch (IllegalArgumentException e) {
+                            log.debug("Unable to parse image digest '{}', skipping", digest, e);
+                        }
+                    });
+            }
+
+            String id = image.getId();
+            if (id != null) {
+                cache.put(new DockerImageName(id), imageData);
+            }
+
+            if (repoTags == null && repoDigests == null && id == null) {
+                log.debug("repoTags, repoDigests, and id are all null, skipping image: {}", image);
+            }
         }
     }
 }
