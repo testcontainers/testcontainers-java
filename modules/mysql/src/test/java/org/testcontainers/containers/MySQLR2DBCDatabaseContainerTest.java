@@ -1,6 +1,11 @@
 package org.testcontainers.containers;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import io.r2dbc.spi.ConnectionFactories;
+import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.ConnectionFactoryOptions;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.MySQLTestImages;
 import org.testcontainers.r2dbc.AbstractR2DBCDatabaseContainerTest;
 
@@ -19,5 +24,28 @@ public class MySQLR2DBCDatabaseContainerTest extends AbstractR2DBCDatabaseContai
     @Override
     protected MySQLContainer<?> createContainer() {
         return new MySQLContainer<>(MySQLTestImages.MYSQL_80_IMAGE);
+    }
+
+    @Test
+    void testGetR2dbcUrl() {
+        try (
+            MySQLContainer<?> container = new MySQLContainer<>(MySQLTestImages.MYSQL_80_IMAGE)
+                .withDatabaseName("testdb")
+                .withUsername("testuser")
+                .withPassword("testpass")
+        ) {
+            container.start();
+            String url = MySQLR2DBCDatabaseContainer.getR2dbcUrl(container);
+            assertThat(url).contains("/testdb");
+            ConnectionFactory connectionFactory = ConnectionFactories.get(
+                ConnectionFactoryOptions
+                    .parse(url)
+                    .mutate()
+                    .option(ConnectionFactoryOptions.USER, container.getUsername())
+                    .option(ConnectionFactoryOptions.PASSWORD, container.getPassword())
+                    .build()
+            );
+            runTestQuery(connectionFactory);
+        }
     }
 }
