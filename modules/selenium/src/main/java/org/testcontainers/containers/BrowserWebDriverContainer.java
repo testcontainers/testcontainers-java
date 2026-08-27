@@ -351,7 +351,7 @@ public class BrowserWebDriverContainer<SELF extends BrowserWebDriverContainer<SE
     }
 
     @Override
-    public void stop() {
+    public synchronized void stop() {
         if (driver != null) {
             try {
                 driver.quit();
