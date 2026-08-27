@@ -3,7 +3,7 @@
 You can obtain a temporary database in one of two ways:
 
  * **Using a specially modified R2DBC URL**: after making a very simple modification to your system's R2DBC URL string, Testcontainers will provide a disposable stand-in database that can be used without requiring modification to your application code.
- * **JUnit @Rule/@ClassRule**: this mode starts a database inside a container before your tests and tears it down afterwards.
+ * **Database container objects**: this mode starts a database inside a container before your tests and tears it down afterwards.
 
 ## Database containers launched via R2DBC URL scheme
 

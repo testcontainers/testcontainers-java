@@ -30,7 +30,6 @@ markdown_extensions:
 nav:
     - Home: index.md
     - Quickstart:
-          - quickstart/junit_4_quickstart.md
           - quickstart/junit_5_quickstart.md
           - quickstart/spock_quickstart.md
     - Features:
@@ -111,7 +110,6 @@ nav:
           - modules/weaviate.md
           - modules/webdriver_containers.md
     - Test framework integration:
-          - test_framework_integration/junit_4.md
           - test_framework_integration/junit_5.md
           - test_framework_integration/spock.md
           - test_framework_integration/manual_lifecycle_control.md

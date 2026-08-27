@@ -1,7 +1,7 @@
 package generic;
 
 import generic.support.TestSpecificImageNameSubstitutor;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
