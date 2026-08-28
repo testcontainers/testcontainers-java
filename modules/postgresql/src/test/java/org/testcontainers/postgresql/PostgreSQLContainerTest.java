@@ -135,7 +135,8 @@ class PostgreSQLContainerTest extends AbstractContainerDatabaseTest {
         ) {
             assertThatThrownBy(postgres::start)
                 .isInstanceOf(ContainerLaunchException.class)
-                .hasStackTraceContaining("Container startup failed");
+                .hasStackTraceContaining("Container startup failed")
+                .hasStackTraceContaining("Container did not start correctly.");
         }
     }
 
