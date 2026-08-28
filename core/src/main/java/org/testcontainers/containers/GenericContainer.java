@@ -544,8 +544,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 String containerLogs = null;
                 try {
                     containerLogs = getLogs();
-                } catch (Exception e2) {
+                } catch (NotFoundException e2) {
                     logger().error("Could not retrieve logs for container {}: container not found", containerId, e2);
+                } catch (Exception e2) {
+                    logger().error("Could not retrieve logs for container {}", containerId, e2);
                 }
                 if (containerLogs != null && !containerLogs.isEmpty()) {
                     logger().error("Log output from the failed container:\n{}", containerLogs);
@@ -553,10 +555,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                     logger().error("There are no stdout/stderr logs available for the failed container");
                 }
 
+                String failedContainerId = containerId;
                 try {
                     stop();
                 } catch (Exception e2) {
-                    logger().debug("Failed to stop container {}", containerId, e2);
+                    logger().debug("Failed to stop container {}", failedContainerId, e2);
                 }
             }
 
