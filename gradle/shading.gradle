@@ -56,11 +56,16 @@ project.afterEvaluate {
         tasks.shadowJar.relocate(pkg, "org.testcontainers.shaded.${pkg}")
     }
 
-    // Add shaded JARs first
-    tasks.test.classpath = findShadedProjects(project)
-        .plus(project)
-        .sum { it.tasks.findByName("shadowJar").outputs.files }
-        .plus(sourceSets.test.runtimeClasspath)
+    // Add shaded JARs first. Wrapping the producing tasks in files() keeps their task dependencies
+    // on the classpath; a plain sum of outputs drops them. shadowJar clears its classifier and
+    // writes the same file as jar, so test has to depend on both. Test-scoped project dependencies
+    // (e.g. testcontainers-jdbc-test) are shaded the same way and need the same wiring.
+    def testProjectDependencies = configurations.testRuntimeClasspath.allDependencies
+        .withType(ProjectDependency)*.dependencyProject
+    def producers = (findShadedProjects(project) + project + testProjectDependencies)
+        .collectMany { [it.tasks.findByName("shadowJar"), it.tasks.findByName("jar")] }
+        .findAll { it != null }
+    tasks.test.classpath = files(producers).plus(sourceSets.test.runtimeClasspath)
 }
 
 static Set<Project> findShadedProjects(Project project) {
