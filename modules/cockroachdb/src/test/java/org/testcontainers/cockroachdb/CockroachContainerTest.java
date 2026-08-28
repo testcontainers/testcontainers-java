@@ -60,6 +60,7 @@ class CockroachContainerTest extends AbstractContainerDatabaseTest {
             assertThat(jdbcUrl)
                 .contains("?")
                 .contains("&")
+                .contains("scramMaxIterations=119680")
                 .contains("sslmode=disable")
                 .contains("application_name=cockroach");
         } finally {

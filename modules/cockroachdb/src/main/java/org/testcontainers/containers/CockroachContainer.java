@@ -41,6 +41,9 @@ public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer
 
     private static final String TEST_QUERY_STRING = "SELECT 1";
 
+    // CockroachDB v22.2 uses 119,680 SCRAM iterations, above pgJDBC's default safety limit.
+    private static final String DEFAULT_SCRAM_MAX_ITERATIONS = "119680";
+
     private static final int REST_API_PORT = 8080;
 
     private static final int DB_PORT = 26257;
@@ -70,6 +73,7 @@ public class CockroachContainer extends JdbcDatabaseContainer<CockroachContainer
     public CockroachContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        withUrlParam("scramMaxIterations", DEFAULT_SCRAM_MAX_ITERATIONS);
         this.isVersionGreaterThanOrEqualTo221 = isVersionGreaterThanOrEqualTo221(dockerImageName);
 
         WaitAllStrategy waitStrategy = new WaitAllStrategy();
