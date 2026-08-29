@@ -17,6 +17,8 @@ import java.util.Set;
  * <ul>
  *     <li>Database: 8123</li>
  *     <li>Console: 9000</li>
+ *     <li>MySQL: 9004</li>
+ *     <li>PostgreSQL: 9005</li>
  * </ul>
  */
 public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContainer> {
@@ -28,6 +30,10 @@ public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContain
     static final Integer HTTP_PORT = 8123;
 
     static final Integer NATIVE_PORT = 9000;
+
+    static final Integer MYSQL_PORT = 9004;
+
+    static final Integer POSTGRESQL_PORT = 9005;
 
     private static final String LEGACY_V1_DRIVER_CLASS_NAME = "com.clickhouse.jdbc.ClickHouseDriver";
 
@@ -55,7 +61,7 @@ public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContain
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(CLICKHOUSE_IMAGE_NAME);
 
-        addExposedPorts(HTTP_PORT, NATIVE_PORT);
+        addExposedPorts(HTTP_PORT, NATIVE_PORT, MYSQL_PORT, POSTGRESQL_PORT);
         waitingFor(
             Wait
                 .forHttp("/")
@@ -103,6 +109,46 @@ public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContain
 
     public String getHttpUrl() {
         return "http://" + getHost() + ":" + getMappedPort(HTTP_PORT);
+    }
+
+    public String getMysqlJdbcUrl() {
+        return (
+            "jdbc:mysql://" +
+            getHost() +
+            ":" +
+            getMappedPort(MYSQL_PORT) +
+            "/" +
+            this.databaseName +
+            constructUrlParameters("?", "&")
+        );
+    }
+
+    public Integer getHttpPort() {
+        return getMappedPort(HTTP_PORT);
+    }
+
+    public Integer getNativePort() {
+        return getMappedPort(NATIVE_PORT);
+    }
+
+    public Integer getMysqlPort() {
+        return getMappedPort(MYSQL_PORT);
+    }
+
+    public Integer getPostgresqlPort() {
+        return getMappedPort(POSTGRESQL_PORT);
+    }
+
+    public String getPostgresqlJdbcUrl() {
+        return (
+            "jdbc:postgresql://" +
+            getHost() +
+            ":" +
+            getMappedPort(POSTGRESQL_PORT) +
+            "/" +
+            this.databaseName +
+            constructUrlParameters("?", "&")
+        );
     }
 
     @Override
