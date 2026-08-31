@@ -33,9 +33,9 @@ import java.util.concurrent.TimeUnit;
  * Supports two modes:
  * <ul>
  *   <li><b>Managed mode:</b> Kibana automatically connects to an {@link ElasticsearchContainer}.
- *       See KibanaContainerTest#managedModeCanStartAndReachElasticsearchInSameExplicitNetwork()</li>
+ *       See KibanaContainerTest#managedModeReachesElasticsearchOnSharedNetwork()</li>
  *   <li><b>External mode:</b> Kibana connects to an external Elasticsearch instance via URL.
- *       See KibanaContainerTest#externalModeCanWorkWithUsernamePassword()</li>
+ *       See KibanaContainerTest#externalModeReachesElasticsearchWithUsernamePassword()</li>
  * </ul>
  * <p>
  */
