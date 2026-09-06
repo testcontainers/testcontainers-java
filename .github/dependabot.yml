@@ -332,8 +332,12 @@ updates:
     directories:
       - "/"
       - "/.github/actions/**"
-    patterns:
-      - "*"
-    multi-ecosystem-group: dependencies
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
     cooldown:
       default-days: 7

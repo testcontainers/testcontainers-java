@@ -94,10 +94,11 @@ We will evaluate incubating modules periodically, and remove the label when appr
 
 ## Reviewing Dependabot PRs
 
-Dependabot uses a native multi-ecosystem group to create one weekly pull request for eligible Gradle and GitHub Actions updates.
+Dependabot creates separate weekly pull requests for eligible Gradle updates and GitHub Actions updates.
+The Gradle entries share a native multi-ecosystem group to preserve directory-specific compatibility constraints while combining their updates.
 Version updates are delayed by the configured cooldown, while security updates continue to be handled separately.
 
-Before merging the grouped pull request:
+Before merging either grouped pull request:
 
 1. Review the complete diff and confirm that every included update is expected.
 2. Check that CI discovered a non-empty test matrix covering every affected module or example, plus the relevant smoke-test and documentation checks.
