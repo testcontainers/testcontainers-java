@@ -71,6 +71,7 @@ class MongoDBContainerTest extends AbstractMongo {
     }
 
     @Test
+    @SuppressWarnings("OctalInteger")
     void shouldRunShInitScript() {
         try (
             MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:4.0.10")
