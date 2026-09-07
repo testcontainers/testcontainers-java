@@ -25,7 +25,7 @@ class FirestoreEmulatorContainerTest {
         try (
             // emulatorContainer {
             FirestoreEmulatorContainer emulator = new FirestoreEmulatorContainer(
-                DockerImageName.parse("gcr.io/google.com/cloudsdktool/google-cloud-cli:441.0.0-emulators")
+                DockerImageName.parse("gcr.io/google.com/cloudsdktool/google-cloud-cli:583.0.0-emulators")
             );
             // }
         ) {
@@ -60,7 +60,7 @@ class FirestoreEmulatorContainerTest {
     void testWithFlags() {
         try (
             FirestoreEmulatorContainer emulator = new FirestoreEmulatorContainer(
-                "gcr.io/google.com/cloudsdktool/google-cloud-cli:465.0.0-emulators"
+                "gcr.io/google.com/cloudsdktool/google-cloud-cli:583.0.0-emulators"
             )
                 .withFlags("--database-mode datastore-mode")
         ) {
