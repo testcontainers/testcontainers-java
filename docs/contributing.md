@@ -94,13 +94,17 @@ We will evaluate incubating modules periodically, and remove the label when appr
 
 ## Reviewing Dependabot PRs
 
-Dependabot creates separate weekly pull requests for eligible Gradle updates and GitHub Actions updates.
-The Gradle entries share a native multi-ecosystem group to preserve directory-specific compatibility constraints while combining their updates.
-Version updates are delayed by the configured cooldown, while security updates continue to be handled separately.
+Dependabot checks for updates every Monday and groups them into two separate pull requests when updates are available:
+
+* Java dependencies and build plugins managed through Gradle.
+* GitHub Actions used in workflows and composite actions.
+
+Routine version updates have a seven-day cooldown after release. Security updates are handled separately and are not delayed by this cooldown.
+Existing ignore rules in `.github/dependabot.yml` exclude upgrades that the project is not ready to adopt.
 
 Before merging either grouped pull request:
 
 1. Review the complete diff and confirm that every included update is expected.
-2. Check that CI discovered a non-empty test matrix covering every affected module or example, plus the relevant smoke-test and documentation checks.
+2. Confirm that the relevant CI checks ran and passed. For Java dependency or build plugin updates, check that CI discovered a non-empty test matrix covering the affected modules and examples, and that any relevant smoke-test and documentation checks ran.
 3. Investigate failures individually. Rerun failures caused by external factors, but do not merge while an included dependency update has an unexplained failure.
-4. If an update is incompatible with a module's constraints, add the narrowest possible ignore rule to that module's entry in `.github/dependabot.yml` and let Dependabot refresh the group.
+4. If an incompatible update must be deferred, limit any new ignore rule to the affected dependency, versions, and directories. If only one module in a shared configuration entry needs the rule, move that module to a separate entry before adding it. Keep the entry in the same update group so its other updates remain grouped.
