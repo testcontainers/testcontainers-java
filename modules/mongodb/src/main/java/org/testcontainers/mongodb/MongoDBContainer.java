@@ -72,6 +72,12 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
     }
 
     @Override
+    public void setWaitStrategy(WaitStrategy waitStrategy) {
+        this.customWaitStrategy = true;
+        super.setWaitStrategy(waitStrategy);
+    }
+
+    @Override
     public MongoDBContainer withCopyFileToContainer(MountableFile mountableFile, String containerPath) {
         checkInitScript(containerPath);
         return super.withCopyFileToContainer(mountableFile, containerPath);
@@ -84,7 +90,22 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
     }
 
     private static boolean isInitScriptPath(String path) {
-        return path != null && (path.equals(INIT_SCRIPT_DIR) || path.startsWith(INIT_SCRIPT_DIR + "/"));
+        if (path == null) {
+            return false;
+        }
+        if (path.equals(INIT_SCRIPT_DIR) || path.equals(INIT_SCRIPT_DIR + "/")) {
+            return true;
+        }
+        if (path.startsWith(INIT_SCRIPT_DIR + "/")) {
+            String subPath = path.substring(INIT_SCRIPT_DIR.length() + 1);
+            return (
+                !subPath.contains("/") &&
+                !subPath.contains("\\") &&
+                !subPath.startsWith(".") &&
+                (subPath.endsWith(".js") || subPath.endsWith(".sh"))
+            );
+        }
+        return false;
     }
 
     private void checkInitScript(String containerPath) {
@@ -105,7 +126,7 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
         if (this.shardingEnabled) {
             copyFileToContainer(MountableFile.forClasspathResource("/sharding.sh", 0777), STARTER_SCRIPT);
         } else if (!this.customWaitStrategy && hasInitScript()) {
-            setWaitStrategy(Wait.forLogMessage("(?i).*waiting for connections.*", 2));
+            super.setWaitStrategy(Wait.forLogMessage("(?i).*waiting for connections.*", 2));
         }
     }
 
