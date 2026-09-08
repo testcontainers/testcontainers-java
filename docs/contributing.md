@@ -92,15 +92,19 @@ New modules should have the following warning at the top of their documentation 
 We will evaluate incubating modules periodically, and remove the label when appropriate.
 
 
-## Combining Dependabot PRs
+## Reviewing Dependabot PRs
 
-Since we generally get a lot of Dependabot PRs, we regularly combine them into single commits.
-For this, we are using the [gh-combine-prs](https://github.com/rnorth/gh-combine-prs) extension for [GitHub CLI](https://cli.github.com/).
+Dependabot checks for updates every Monday and groups them into two separate pull requests when updates are available:
 
-The whole process is as follows:
+* Java dependencies and build plugins managed through Gradle.
+* GitHub Actions used in workflows and composite actions.
 
-1. Check that all open Dependabot PRs did succeed their build. If they did not succeed, trigger a rerun if the cause were external factors or else document the reason if obvious.
-2. Run the extension from an up-to-date local `main` branch: `gh combine-prs --query "author:app/dependabot"`
-3. Merge conflicts might appear. Just ignore them, we will get those PRs in a future run.
-4. Once the build of the combined PR did succeed, temporarily enable merge commits and merge the PR using a merge commit through the GitHub UI.
-5. After the merge, disable merge commits again.
+Routine version updates have a seven-day cooldown after release. Security updates are handled separately and are not delayed by this cooldown.
+Existing ignore rules in `.github/dependabot.yml` exclude upgrades that the project is not ready to adopt.
+
+Before merging either grouped pull request:
+
+1. Review the complete diff and confirm that every included update is expected.
+2. Confirm that the relevant CI checks ran and passed. For Java dependency or build plugin updates, check that CI discovered a non-empty test matrix covering the affected modules and examples, and that any relevant smoke-test and documentation checks ran.
+3. Investigate failures individually. Rerun failures caused by external factors, but do not merge while an included dependency update has an unexplained failure.
+4. If an incompatible update must be deferred, limit any new ignore rule to the affected dependency, versions, and directories. If only one module in a shared configuration entry needs the rule, move that module to a separate entry before adding it. Keep the entry in the same update group so its other updates remain grouped.
