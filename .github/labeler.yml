@@ -119,6 +119,10 @@
   - changed-files:
     - any-glob-to-any-file:
       - modules/mariadb/**/*
+"modules/memcached":
+  - changed-files:
+    - any-glob-to-any-file:
+      - modules/memcached/**/*
 "modules/milvus":
   - changed-files:
     - any-glob-to-any-file:

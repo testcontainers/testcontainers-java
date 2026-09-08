@@ -92,6 +92,7 @@ nav:
           - modules/kafka.md
           - modules/ldap.md
           - modules/localstack.md
+          - modules/memcached.md
           - modules/milvus.md
           - modules/minio.md
           - modules/mockserver.md
