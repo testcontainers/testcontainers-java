@@ -6,6 +6,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
@@ -15,6 +16,7 @@ import java.net.InetSocketAddress;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
+import java.time.Duration;
 import java.util.Optional;
 
 import javax.net.ssl.SSLContext;
@@ -73,7 +75,11 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 
     private final boolean isAtLeastMajorVersion8;
 
+    private final boolean isVersionNumeric;
+
     private String certPath = "";
+
+    private Duration healthCheckTimeout = Duration.ofSeconds(60);
 
     /**
      * Create an Elasticsearch Container by passing the full docker image name
@@ -113,15 +119,12 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
             BindMode.READ_ONLY
         );
         addExposedPorts(ELASTICSEARCH_DEFAULT_PORT, ELASTICSEARCH_DEFAULT_TCP_PORT);
-        this.isAtLeastMajorVersion8 =
-            new ComparableVersion(dockerImageName.getVersionPart()).isGreaterThanOrEqualTo("8.0.0");
-        // regex that
-        //   matches 8.3 JSON logging with started message and some follow up content within the message field
-        //   matches 8.0 JSON logging with no whitespace between message field and content
-        //   matches 7.x JSON logging with whitespace between message field and content
-        //   matches 6.x text logging with node name in brackets and just a 'started' message till the end of the line
-        String regex = ".*(\"message\":\\s?\"started[\\s?|\"].*|] started\n$)";
-        setWaitStrategy(Wait.forLogMessage(regex, 1));
+        String versionPart = dockerImageName.getVersionPart();
+        this.isAtLeastMajorVersion8 = new ComparableVersion(versionPart).isGreaterThanOrEqualTo("8.0.0");
+        this.isVersionNumeric = versionPart.matches("\\d+\\..*");
+        // Wait strategy is deferred to configure() so it can read the final env map
+        // (e.g. password and SSL settings that the user may set after construction).
+        setWaitStrategy(null);
         if (isAtLeastMajorVersion8) {
             withPassword(ELASTICSEARCH_DEFAULT_PASSWORD);
             withCertPath(DEFAULT_CERT_PATH);
@@ -209,8 +212,46 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
         return this;
     }
 
+    @Override
+    public ElasticsearchContainer withStartupTimeout(Duration startupTimeout) {
+        this.healthCheckTimeout = startupTimeout;
+        if (getWaitStrategy() != null) {
+            getWaitStrategy().withStartupTimeout(startupTimeout);
+        }
+        return self();
+    }
+
     String getCertPath() {
         return certPath;
+    }
+
+    @Override
+    protected void configure() {
+        super.configure();
+        configureWaitStrategy();
+    }
+
+    private void configureWaitStrategy() {
+        if (getWaitStrategy() != null) {
+            return;
+        }
+        HttpWaitStrategy strategy = "https".equals(getHttpScheme())
+            ? Wait.forHttps("/_cluster/health").forPort(ELASTICSEARCH_DEFAULT_PORT).allowInsecure()
+            : Wait.forHttp("/_cluster/health").forPort(ELASTICSEARCH_DEFAULT_PORT);
+
+        String password = getEnvMap().get("ELASTIC_PASSWORD");
+        if (password != null) {
+            strategy = strategy.withBasicCredentials("elastic", password);
+        }
+
+        setWaitStrategy(
+            strategy
+                .forStatusCode(200)
+                .forResponsePredicate(body ->
+                    body.contains("\"status\":\"green\"") || body.contains("\"status\":\"yellow\"")
+                )
+                .withStartupTimeout(healthCheckTimeout)
+        );
     }
 
     public String getHttpHostAddress() {
@@ -218,8 +259,8 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
     }
 
     /**
-     * Checks env first if this implies HTTP/HTTPS.
-     * Otherwise, detects the scheme used by Elasticsearch using <code>curl</code>
+     * Checks env first if this implies HTTP/HTTPS, then falls back to version-based defaults.
+     * For 7.x with non-standard SSL configured outside env vars, runs a curl probe (requires a running container).
      *
      * @return "http" or "https"
      */
@@ -235,10 +276,17 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
             return "https";
         }
 
+        // Version-based default: 8.x uses HTTPS by default.
+        // Only apply when the version tag is a concrete numeric version; ambiguous tags
+        // like "latest" may point to an older image that uses HTTP.
+        if (isAtLeastMajorVersion8 && isVersionNumeric) {
+            return "https";
+        }
+
+        // 7.x without explicit SSL config: HTTP is the default.
+        // When running, we probe with curl in case SSL was configured outside env vars.
         if (!isRunning()) {
-            throw new IllegalStateException(
-                "Cannot determine HTTP scheme: environment variables are not set and container is not running for curl probe"
-            );
+            return "http";
         }
 
         ExecResult httpsResult = null;
