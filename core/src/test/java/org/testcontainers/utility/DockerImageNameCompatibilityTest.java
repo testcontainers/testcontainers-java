@@ -127,6 +127,71 @@ class DockerImageNameCompatibilityTest {
     }
 
     @Test
+    void testLibraryPrefixedImageIsNotCompatibleWithDifferentImage() {
+        DockerImageName subject = DockerImageName.parse("library/foo:1.2.3");
+
+        assertThat(subject.isCompatibleWith(DockerImageName.parse("bar"))).as("library/foo:1.2.3 != bar").isFalse();
+        assertThat(subject.isCompatibleWith(DockerImageName.parse("repo/bar")))
+            .as("library/foo:1.2.3 != repo/bar")
+            .isFalse();
+        assertThat(subject.isCompatibleWith(DockerImageName.parse("library/bar")))
+            .as("library/foo:1.2.3 != library/bar")
+            .isFalse();
+    }
+
+    @Test
+    void testLibraryPrefixIsInterchangeable() {
+        assertThat(DockerImageName.parse("library/foo").isCompatibleWith(DockerImageName.parse("foo")))
+            .as("library/foo ~= foo")
+            .isTrue();
+        assertThat(DockerImageName.parse("foo").isCompatibleWith(DockerImageName.parse("library/foo")))
+            .as("foo ~= library/foo")
+            .isTrue();
+        assertThat(DockerImageName.parse("library/foo:1.2.3").isCompatibleWith(DockerImageName.parse("foo")))
+            .as("library/foo:1.2.3 ~= foo")
+            .isTrue();
+        assertThat(DockerImageName.parse("foo:1.2.3").isCompatibleWith(DockerImageName.parse("library/foo")))
+            .as("foo:1.2.3 ~= library/foo")
+            .isTrue();
+        assertThat(DockerImageName.parse("library/foo:1.2.3").isCompatibleWith(DockerImageName.parse("foo:1.2.3")))
+            .as("library/foo:1.2.3 ~= foo:1.2.3")
+            .isTrue();
+        assertThat(DockerImageName.parse("library/foo:1.2.3").isCompatibleWith(DockerImageName.parse("foo:4.5.6")))
+            .as("library/foo:1.2.3 != foo:4.5.6")
+            .isFalse();
+        assertThat(DockerImageName.parse("some.registry/foo").isCompatibleWith(DockerImageName.parse("library/foo")))
+            .as("some.registry/foo != library/foo")
+            .isFalse();
+    }
+
+    @Test
+    void testLibraryPrefixOnlyAppliesToSingleSegmentNames() {
+        // 'library/' is the single-segment official-image namespace, so a multi-segment user namespace
+        // (e.g. 'foo/bar') must not be treated as interchangeable with a 'library/'-prefixed form.
+        assertThat(DockerImageName.parse("foo/bar").isCompatibleWith(DockerImageName.parse("library/foo/bar")))
+            .as("foo/bar != library/foo/bar")
+            .isFalse();
+        assertThat(
+            DockerImageName.parse("myuser/myimage:1").isCompatibleWith(DockerImageName.parse("library/myuser/myimage"))
+        )
+            .as("myuser/myimage:1 != library/myuser/myimage")
+            .isFalse();
+        assertThat(DockerImageName.parse("library/foo/bar").isCompatibleWith(DockerImageName.parse("foo/bar")))
+            .as("library/foo/bar != foo/bar")
+            .isFalse();
+    }
+
+    @Test
+    void testLibraryPrefixedImageWithClaimedCompatibility() {
+        DockerImageName subject = DockerImageName.parse("library/foo:1.2.3").asCompatibleSubstituteFor("bar");
+
+        assertThat(subject.isCompatibleWith(DockerImageName.parse("bar"))).as("library/foo:1.2.3(bar) ~= bar").isTrue();
+        assertThat(subject.isCompatibleWith(DockerImageName.parse("fizz")))
+            .as("library/foo:1.2.3(bar) != fizz")
+            .isFalse();
+    }
+
+    @Test
     void testAssertMethodRejectsIncompatible() {
         DockerImageName subject = DockerImageName.parse("foo");
         assertThatThrownBy(() -> subject.assertCompatibleWith(DockerImageName.parse("bar")))
