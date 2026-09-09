@@ -53,10 +53,21 @@ public class InternalCommandPortListeningCheck implements java.util.concurrent.C
                 result.getExitCode(),
                 result.getStdout()
             );
+
             int exitCode = result.getExitCode();
-            if (exitCode != 0 && exitCode != 1) {
+
+            if (exitCode == 127 && result.getStderr() != null && result.getStderr().contains("/bin/sh")) {
+                log.warn(
+                    "Container image does not contain /bin/sh. " +
+                    "The internal port check cannot be executed. " +
+                    "Consider using a more specific WaitStrategy. " +
+                    "Original error: {}",
+                    result.getStderr()
+                );
+            } else if (exitCode != 0 && exitCode != 1) {
                 log.warn("An exception while executing the internal check: {}", result);
             }
+
             return exitCode == 0;
         } catch (Exception e) {
             throw new IllegalStateException(e);
