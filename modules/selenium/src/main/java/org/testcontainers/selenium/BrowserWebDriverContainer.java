@@ -164,7 +164,7 @@ public class BrowserWebDriverContainer
         if (getShmSize() == null) {
             if (SystemUtils.IS_OS_WINDOWS) {
                 withSharedMemorySize(512 * FileUtils.ONE_MB);
-            } else {
+            } else if (getBinds().stream().noneMatch(bind -> "/dev/shm".equals(bind.getVolume().getPath()))) {
                 this.getBinds().add(new Bind("/dev/shm", new Volume("/dev/shm"), AccessMode.rw));
             }
         }
