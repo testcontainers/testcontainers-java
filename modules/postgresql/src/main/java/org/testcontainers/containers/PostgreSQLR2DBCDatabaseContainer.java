@@ -12,6 +12,15 @@ public final class PostgreSQLR2DBCDatabaseContainer implements R2DBCDatabaseCont
     @Delegate(types = Startable.class)
     private final PostgreSQLContainer<?> container;
 
+    public static String getR2dbcUrl(PostgreSQLContainer<?> container) {
+        return String.format(
+            "r2dbc:postgresql://%s:%d/%s",
+            container.getHost(),
+            container.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT),
+            container.getDatabaseName()
+        );
+    }
+
     public static ConnectionFactoryOptions getOptions(PostgreSQLContainer<?> container) {
         ConnectionFactoryOptions options = ConnectionFactoryOptions
             .builder()
