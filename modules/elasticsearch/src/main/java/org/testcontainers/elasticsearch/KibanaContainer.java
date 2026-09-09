@@ -618,10 +618,7 @@ public class KibanaContainer extends GenericContainer<KibanaContainer> {
         // Kibana returns HTTP 200 from /api/status when ready and 503 otherwise.
         // The body may be redacted for callers without cluster:monitor, so do not
         // inspect status.core.* fields.
-        HttpWaitStrategy strategy = Wait
-            .forHttp("/api/status")
-            .forPort(KIBANA_DEFAULT_PORT)
-            .forStatusCode(200);
+        HttpWaitStrategy strategy = Wait.forHttp("/api/status").forPort(KIBANA_DEFAULT_PORT).forStatusCode(200);
 
         // Add authentication if we have Elasticsearch credentials available
         String serviceToken = getEnvMap().get("ELASTICSEARCH_SERVICEACCOUNTTOKEN");
