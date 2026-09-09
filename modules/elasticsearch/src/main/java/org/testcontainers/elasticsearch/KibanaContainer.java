@@ -33,9 +33,9 @@ import java.util.concurrent.TimeUnit;
  * Supports two modes:
  * <ul>
  *   <li><b>Managed mode:</b> Kibana automatically connects to an {@link ElasticsearchContainer}.
- *       See KibanaContainerTest#managedModeCanStartAndReachElasticsearchInSameExplicitNetwork()</li>
+ *       See KibanaContainerTest#managedModeReachesElasticsearchOnSharedNetwork()</li>
  *   <li><b>External mode:</b> Kibana connects to an external Elasticsearch instance via URL.
- *       See KibanaContainerTest#externalModeCanWorkWithUsernamePassword()</li>
+ *       See KibanaContainerTest#externalModeReachesElasticsearchWithUsernamePassword()</li>
  * </ul>
  * <p>
  */
@@ -615,11 +615,10 @@ public class KibanaContainer extends GenericContainer<KibanaContainer> {
             // the user might have set a custom wait strategy
             return;
         }
-        HttpWaitStrategy strategy = Wait
-            .forHttp("/api/status")
-            .forPort(KIBANA_DEFAULT_PORT)
-            .forStatusCode(200)
-            .forResponsePredicate(this::isKibanaReady);
+        // Kibana returns HTTP 200 from /api/status when ready and 503 otherwise.
+        // The body may be redacted for callers without cluster:monitor, so do not
+        // inspect status.core.* fields.
+        HttpWaitStrategy strategy = Wait.forHttp("/api/status").forPort(KIBANA_DEFAULT_PORT).forStatusCode(200);
 
         // Add authentication if we have Elasticsearch credentials available
         String serviceToken = getEnvMap().get("ELASTICSEARCH_SERVICEACCOUNTTOKEN");
@@ -633,37 +632,5 @@ public class KibanaContainer extends GenericContainer<KibanaContainer> {
         }
 
         setWaitStrategy(strategy.withStartupTimeout(this.startupTimeout));
-    }
-
-    private boolean isKibanaReady(String body) {
-        try {
-            JsonNode json = OBJECT_MAPPER.readTree(body);
-            JsonNode status = json.path("status");
-
-            String overallLevel = status.path("overall").path("level").asText(null);
-            String elasticsearchLevel = status.path("core").path("elasticsearch").path("level").asText(null);
-            String savedObjectsLevel = status.path("core").path("savedObjects").path("level").asText(null);
-
-            boolean overallAvailable = "available".equalsIgnoreCase(overallLevel);
-            boolean elasticsearchAvailable = "available".equalsIgnoreCase(elasticsearchLevel);
-            boolean savedObjectsAvailable = "available".equalsIgnoreCase(savedObjectsLevel);
-
-            boolean isReady = overallAvailable && elasticsearchAvailable && savedObjectsAvailable;
-
-            if (log.isDebugEnabled()) {
-                log.debug(
-                    "Kibana status check: READY={} (overall={}, elasticsearch={}, savedObjects={})",
-                    isReady,
-                    overallLevel,
-                    elasticsearchLevel,
-                    savedObjectsLevel
-                );
-            }
-
-            return isReady;
-        } catch (Exception e) {
-            log.debug("Kibana status check: FAILED to parse response - {}", e.getMessage());
-            return false;
-        }
     }
 }
