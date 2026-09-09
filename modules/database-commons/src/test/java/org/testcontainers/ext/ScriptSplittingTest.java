@@ -21,6 +21,25 @@ class ScriptSplittingTest {
         splitAndCompare(script, expected);
     }
 
+	@Test
+	void testAdjacentStringLiteralsSeparatedByNewlineArePreserved() {
+		String script =
+			"CREATE TABLE test (\n" +
+			"    x int\n" +
+			");\n" +
+			"\n" +
+			"COMMENT ON COLUMN test.x\n" +
+			"    IS 'First sentence. '\n" +
+			"    'Second sentence';";
+
+		List<String> expected = Arrays.asList(
+			"CREATE TABLE test ( x int )",
+			"COMMENT ON COLUMN test.x IS 'First sentence. '\n'Second sentence'"
+		);
+
+		splitAndCompare(script, expected);
+	}
+
     @Test
     void testIssue1547Case1() {
         String script =
