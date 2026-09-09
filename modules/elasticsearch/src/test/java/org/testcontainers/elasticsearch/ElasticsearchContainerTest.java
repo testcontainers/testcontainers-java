@@ -45,6 +45,10 @@ class ElasticsearchContainerTest {
         .parse("docker.elastic.co/elasticsearch/elasticsearch")
         .withTag(ELASTICSEARCH_VERSION);
 
+    private static final DockerImageName ELASTICSEARCH_LATEST_IMAGE = DockerImageName.parse(
+        "docker.elastic.co/elasticsearch/elasticsearch:9.2.4"
+    );
+
     /**
      * Elasticsearch default username, when secured
      */
@@ -159,6 +163,23 @@ class ElasticsearchContainerTest {
             Response response = getClient(container).performRequest(new Request("GET", "/"));
             assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
             assertThat(EntityUtils.toString(response.getEntity())).contains("8.3.0");
+        }
+    }
+
+    @Test
+    void clusterHealthIsAtLeastYellowAfterStart() throws IOException {
+        try (ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_LATEST_IMAGE)) {
+            container.start();
+
+            Response response = getClient(container).performRequest(new Request("GET", "/_cluster/health"));
+            assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
+            String body = EntityUtils.toString(response.getEntity());
+            assertThat(body)
+                .as("Cluster health status should be at least yellow after container start")
+                .satisfiesAnyOf(
+                    b -> assertThat(b).contains("\"status\":\"yellow\""),
+                    b -> assertThat(b).contains("\"status\":\"green\"")
+                );
         }
     }
 
