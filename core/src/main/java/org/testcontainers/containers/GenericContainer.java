@@ -325,19 +325,23 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
             configure();
 
-            logger().debug("Starting container: {}", getDockerImageName());
+            if (logger().isDebugEnabled()) {
+                logger().debug("Starting container: {}", getDockerImageName());
+            }
 
             AtomicInteger attempt = new AtomicInteger(0);
             Unreliables.retryUntilSuccess(
                 startupAttempts,
                 () -> {
-                    logger()
-                        .debug(
-                            "Trying to start container: {} (attempt {}/{})",
-                            getDockerImageName(),
-                            attempt.incrementAndGet(),
-                            startupAttempts
-                        );
+                    if (logger().isDebugEnabled()) {
+                        logger()
+                            .debug(
+                                "Trying to start container: {} (attempt {}/{})",
+                                getDockerImageName(),
+                                attempt.incrementAndGet(),
+                                startupAttempts
+                            );
+                    }
                     tryStart();
                     return true;
                 }
@@ -658,12 +662,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     /**
-     * Provide a logger that references the docker image name.
+     * Provide the shared logger for generic container lifecycle messages.
      *
-     * @return a logger that references the docker image name
+     * @return the shared generic container logger
      */
     protected Logger logger() {
-        return DockerLoggerFactory.getLogger(this.getDockerImageName());
+        return DockerLoggerFactory.getLogger("genericcontainer");
     }
 
     /**
