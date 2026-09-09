@@ -110,7 +110,7 @@ class LoggedPullImageResultCallback extends PullImageResultCallback {
         super.onComplete();
 
         final long downloadedLayerSize = downloadedLayerSize();
-        final long duration = Duration.between(start, Instant.now()).getSeconds();
+        final long duration = start != null ? Duration.between(start, Instant.now()).getSeconds() : 0;
 
         if (completed) {
             logger.info(
@@ -118,7 +118,7 @@ class LoggedPullImageResultCallback extends PullImageResultCallback {
                 allLayers.size(),
                 duration,
                 FileUtils.byteCountToDisplaySize(downloadedLayerSize),
-                FileUtils.byteCountToDisplaySize(downloadedLayerSize / duration)
+                FileUtils.byteCountToDisplaySize(downloadedLayerSize / Math.max(1, duration))
             );
         }
     }
