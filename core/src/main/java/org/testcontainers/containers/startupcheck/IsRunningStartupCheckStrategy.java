@@ -11,13 +11,35 @@ import org.testcontainers.utility.DockerStatus;
  */
 public class IsRunningStartupCheckStrategy extends StartupCheckStrategy {
 
-    @SuppressWarnings("deprecation")
     @Override
+    @SuppressWarnings("deprecation")
     public boolean waitUntilStartupSuccessful(GenericContainer<?> container) {
-        // Optimization: container already has the initial "after start" state, check it first
-        if (checkState(container.getContainerInfo().getState()) == StartupStatus.SUCCESSFUL) {
-            return true;
+        InspectContainerResponse.ContainerState cachedState = container.getContainerInfo().getState();
+        StartupStatus cachedStatus = checkState(cachedState);
+
+        if (cachedStatus == StartupStatus.SUCCESSFUL) {
+            // Cached state shows the container as running/exited-success — verify with
+            // one live Docker inspect to detect stale state (e.g., container crashed
+            // between the port-mapping check and this startup check).
+            try {
+                if (
+                    checkStartupState(container.getDockerClient(), container.getContainerId()) ==
+                    StartupStatus.SUCCESSFUL
+                ) {
+                    return true;
+                }
+                // Live state doesn't match cached — container may have crashed.
+                // Fall through to full rate-limited polling.
+            } catch (Exception e) {
+                // Live inspect failed (e.g., Docker timeout on slow CI) — trust
+                // the cached state as the best available information.
+                return true;
+            }
+        } else if (cachedStatus == StartupStatus.FAILED) {
+            // Container already exited with a non-zero exit code
+            return false;
         }
+
         return super.waitUntilStartupSuccessful(container);
     }
 
