@@ -1,11 +1,13 @@
 package org.testcontainers.elasticsearch;
 
 import com.github.dockerjava.api.DockerClient;
+import org.apache.http.Header;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.client.Request;
@@ -152,6 +154,7 @@ class ElasticsearchContainerTest {
             assertThat(catchThrowable(() -> getAnonymousClient(container).performRequest(new Request("GET", "/"))))
                 .as("anonymous requests are rejected")
                 .isInstanceOf(ResponseException.class);
+            assertThat(container.getApiKey()).as("API key is generated for Elasticsearch 8+").isNotBlank();
             // httpClientLatest {{
         }
         // }
@@ -190,9 +193,65 @@ class ElasticsearchContainerTest {
             assertThat(response.getStatusLine().getStatusCode()).as("cluster health is available").isEqualTo(200);
             assertThat(EntityUtils.toString(response.getEntity())).contains("cluster_name");
             assertThat(container.getHttpScheme()).as("HTTP API uses HTTP when TLS is disabled").isEqualTo("http");
+            assertThat(container.getApiKey())
+                .as("API key is generated when security stays enabled without TLS")
+                .isNotBlank();
             // httpClientTlsDisabled {{
         }
         // }
+    }
+
+    @Test
+    void latestCanAuthenticateWithGeneratedApiKey() throws IOException {
+        // httpClientApiKey {
+        try (ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE_LATEST)) {
+            container.start();
+
+            client =
+                RestClient
+                    .builder(HttpHost.create("https://" + container.getHttpHostAddress()))
+                    .setDefaultHeaders(
+                        new Header[] { new BasicHeader("Authorization", "ApiKey " + container.getApiKey()) }
+                    )
+                    .setHttpClientConfigCallback(httpClientBuilder -> {
+                        httpClientBuilder.setSSLContext(container.createSslContextFromCa());
+                        return httpClientBuilder;
+                    })
+                    .build();
+
+            Response response = client.performRequest(new Request("GET", "/_cluster/health"));
+            // }}
+            assertThat(container.getApiKey()).as("encoded API key is generated on start").isNotBlank();
+            assertThat(response.getStatusLine().getStatusCode()).as("cluster health is available").isEqualTo(200);
+            assertThat(EntityUtils.toString(response.getEntity())).contains("cluster_name");
+            // httpClientApiKey {{
+        }
+        // }
+    }
+
+    @Test
+    void getApiKeyBeforeStartThrows() {
+        try (ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE_LATEST)) {
+            assertThat(catchThrowable(container::getApiKey))
+                .as("API key is not available before the container has started")
+                .isInstanceOf(IllegalStateException.class);
+        }
+    }
+
+    @Test
+    void getApiKeyThrowsWhenSecurityIsDisabled() {
+        try (
+            ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE_LATEST)
+                .withEnv("xpack.security.enabled", "false")
+                .withEnv("xpack.security.http.ssl.enabled", "false")
+                .withEnv("xpack.security.transport.ssl.enabled", "false")
+        ) {
+            container.start();
+
+            assertThat(catchThrowable(container::getApiKey))
+                .as("API key is not generated when security is disabled")
+                .isInstanceOf(IllegalStateException.class);
+        }
     }
 
     @Test
@@ -312,6 +371,7 @@ class ElasticsearchContainerTest {
                 .as("reported version matches the 8.x image")
                 .contains(ELASTICSEARCH_VERSION_8);
             assertThat(container.getHttpScheme()).as("HTTP API uses HTTPS by default").isEqualTo("https");
+            assertThat(container.getApiKey()).as("API key is generated for Elasticsearch 8").isNotBlank();
         }
     }
 
@@ -332,6 +392,9 @@ class ElasticsearchContainerTest {
             assertThat(response.getStatusLine().getStatusCode()).as("cluster health is available").isEqualTo(200);
             assertThat(EntityUtils.toString(response.getEntity())).contains("cluster_name");
             assertThat(container.getHttpScheme()).as("HTTP API uses HTTP by default on 7.x").isEqualTo("http");
+            assertThat(catchThrowable(container::getApiKey))
+                .as("API key is not generated for Elasticsearch 7")
+                .isInstanceOf(IllegalStateException.class);
             // httpClientV7 {{
         }
         // }

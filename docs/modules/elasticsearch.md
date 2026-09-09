@@ -30,6 +30,15 @@ HTTPS can be turned off if you do not need it:
 [HttpClient with TLS disabled](../../modules/elasticsearch/src/test/java/org/testcontainers/elasticsearch/ElasticsearchContainerTest.java) inside_block:httpClientTlsDisabled
 <!--/codeinclude-->
 
+### API key
+
+From Elasticsearch 8 onwards, with security enabled, the container generates an API key at startup.
+`getApiKey()` returns the Base64-encoded `id:api_key` credential for the `Authorization: ApiKey` header:
+
+<!--codeinclude-->
+[HttpClient with API key](../../modules/elasticsearch/src/test/java/org/testcontainers/elasticsearch/ElasticsearchContainerTest.java) inside_block:httpClientApiKey
+<!--/codeinclude-->
+
 ### Elasticsearch 7 (deprecated)
 
 Elasticsearch 7 listens on HTTP and does not enable security unless you opt in with `withPassword()`.
