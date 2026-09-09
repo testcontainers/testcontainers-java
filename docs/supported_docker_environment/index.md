@@ -19,6 +19,26 @@ so not all Testcontainers features might be available.
 If you have further questions about configuration details for your setup or whether it supports running Testcontainers-based tests,
 please contact the Testcontainers team and other users from the Testcontainers community on [Slack](https://slack.testcontainers.org/).
 
+## Temporary directory and JNA
+
+Testcontainers uses [JNA](https://github.com/java-native-access/jna) (directly, and via [docker-java](https://github.com/docker-java/docker-java)) to talk to the container runtime.
+By default JNA extracts a small native library under `/tmp` (typically `/tmp/jna`) and loads it from there.
+
+If `/tmp` is mounted with the `noexec` flag, that load fails with an error similar to:
+
+```
+java.lang.UnsatisfiedLinkError: /tmp/jna-.../jna....tmp: failed to map segment from shared object: Operation not permitted
+```
+
+Point JNA at a directory that allows execution with the JVM system properties `jna.tmpdir` and `java.io.tmpdir`.
+Pass them as JVM arguments to the process that runs Testcontainers (for example Surefire/Failsafe `argLine`, or Gradle `systemProperty`). `JAVA_OPTS` is not always applied.
+
+```
+-Djna.tmpdir=/path/to/exec-tmp -Djava.io.tmpdir=/path/to/exec-tmp
+```
+
+Create that directory first if it does not already exist.
+
 ## Colima
 
 In order to run testcontainers against [colima](https://github.com/abiosoft/colima) the env vars below should be set
