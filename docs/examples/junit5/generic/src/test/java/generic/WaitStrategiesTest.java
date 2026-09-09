@@ -1,25 +1,27 @@
 package generic;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Testcontainers
 public class WaitStrategiesTest {
 
-    @Rule
+    @Container
     // waitForNetworkListening {
     public GenericContainer nginx = new GenericContainer(DockerImageName.parse("nginx:1.27.0-alpine3.19-slim")) //
         .withExposedPorts(80);
 
     // }
 
-    @Rule
+    @Container
     // waitForSimpleHttp {
     public GenericContainer nginxWithHttpWait = new GenericContainer(
         DockerImageName.parse("nginx:1.27.0-alpine3.19-slim")
@@ -29,7 +31,7 @@ public class WaitStrategiesTest {
 
     // }
 
-    @Rule
+    @Container
     // logMessageWait {
     public GenericContainer containerWithLogWait = new GenericContainer(DockerImageName.parse("redis:6-alpine"))
         .withExposedPorts(6379)

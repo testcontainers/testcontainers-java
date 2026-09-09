@@ -1,0 +1,24 @@
+description = "Examples for docs"
+
+buildDir = "$rootDir/build/docs-examples/junit5/generic"
+
+dependencies {
+    testImplementation project(":testcontainers")
+    testImplementation project(":testcontainers-junit-jupiter")
+    testImplementation project(":testcontainers-selenium")
+    testImplementation project(":testcontainers-mysql")
+
+    testRuntimeOnly 'com.mysql:mysql-connector-j:8.2.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter:5.13.4'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.3'
+    testImplementation "org.seleniumhq.selenium:selenium-api:4.35.0"
+    testImplementation 'org.assertj:assertj-core:3.27.4'
+}
+
+test {
+    useJUnitPlatform()
+    // Keep these generic snippets compile-checked without starting every referenced container in docs CI.
+    enabled = false
+}
+
+check.dependsOn(testClasses)
