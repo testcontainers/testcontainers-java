@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
@@ -231,7 +232,7 @@ public class TestcontainersConfiguration {
         @Nullable final String defaultValue,
         Properties... propertiesSources
     ) {
-        String envVarName = propertyName.replaceAll("\\.", "_").toUpperCase();
+        String envVarName = propertyName.replaceAll("\\.", "_").toUpperCase(Locale.ROOT);
         if (!envVarName.startsWith("TESTCONTAINERS_") && !envVarName.startsWith("DOCKER_")) {
             envVarName = "TESTCONTAINERS_" + envVarName;
         }
