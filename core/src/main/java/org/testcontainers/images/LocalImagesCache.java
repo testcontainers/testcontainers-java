@@ -70,17 +70,23 @@ enum LocalImagesCache {
         return true;
     }
 
-    private void populateFromList(List<Image> images) {
+    @VisibleForTesting
+    void populateFromList(List<Image> images) {
         for (Image image : images) {
             String[] repoTags = image.getRepoTags();
-            if (repoTags == null) {
-                log.debug("repoTags is null, skipping image: {}", image);
+            String[] repoDigests = image.getRepoDigests();
+
+            if (repoTags == null && repoDigests == null) {
+                log.debug("repoTags and repoDigests are both null, skipping image: {}", image);
                 continue;
             }
 
+            Stream<String> tagNames = repoTags != null ? Stream.of(repoTags) : Stream.empty();
+            Stream<String> digestNames = repoDigests != null ? Stream.of(repoDigests) : Stream.empty();
+
             cache.putAll(
                 Stream
-                    .of(repoTags)
+                    .concat(tagNames, digestNames)
                     // Protection against some edge case where local image repository tags end up with duplicates
                     // making toMap crash at merge time.
                     .distinct()
