@@ -37,6 +37,12 @@ With anonymous login:
 [Allow anonymous login](../../modules/activemq/src/test/java/org/testcontainers/activemq/ArtemisContainerTest.java) inside_block:enableAnonymousLogin
 <!--/codeinclude-->
 
+Running an Artemis CLI command:
+
+<!--codeinclude-->
+[Executing a CLI command](../../modules/activemq/src/test/java/org/testcontainers/activemq/ArtemisContainerTest.java) inside_block:execInArtemis
+<!--/codeinclude-->
+
 ## Adding this module to your project dependencies
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:
