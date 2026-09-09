@@ -6,6 +6,7 @@ import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -44,6 +45,8 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
     private static final String DEFAULT_INTERNAL_TOPIC_RF = "1";
 
     private static final String STARTER_SCRIPT = "/tmp/testcontainers_start.sh";
+
+    private static final String STARTER_SCRIPT_SENTINEL = STARTER_SCRIPT + ".ready";
 
     // https://docs.confluent.io/platform/7.0.0/release-notes/index.html#ak-raft-kraft
     private static final String MIN_KRAFT_TAG = "7.0.0";
@@ -200,6 +203,11 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
         // Run the original command
         command += "/etc/confluent/docker/run \n";
         copyFileToContainer(Transferable.of(command, 0777), STARTER_SCRIPT);
+        try {
+            execInContainer("touch", STARTER_SCRIPT_SENTINEL);
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     protected String commandKraft() {
@@ -272,7 +280,7 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
             addExposedTcpPort(KAFKA_PORT);
 
             setEntrypoint("sh");
-            setCommand("-c", "while [ ! -f " + STARTER_SCRIPT + " ]; do sleep 0.1; done; " + STARTER_SCRIPT);
+            setCommand("-c", "while [ ! -f " + STARTER_SCRIPT_SENTINEL + " ]; do sleep 0.1; done; " + STARTER_SCRIPT);
 
             setWaitStrategy(Wait.forLogMessage(".*\\[KafkaServer id=\\d+\\] started.*", 1));
         }

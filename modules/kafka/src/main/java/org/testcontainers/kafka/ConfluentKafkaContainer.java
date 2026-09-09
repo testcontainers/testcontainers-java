@@ -5,6 +5,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -66,6 +67,11 @@ public class ConfluentKafkaContainer extends GenericContainer<ConfluentKafkaCont
 
         command += "/etc/confluent/docker/run \n";
         copyFileToContainer(Transferable.of(command, 0777), KafkaHelper.STARTER_SCRIPT);
+        try {
+            execInContainer("touch", KafkaHelper.STARTER_SCRIPT_SENTINEL);
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
