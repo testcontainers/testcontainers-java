@@ -1,6 +1,5 @@
 package org.testcontainers.localstack;
 
-import com.github.dockerjava.api.command.InspectContainerResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.GenericContainer;
@@ -15,6 +14,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -76,13 +76,19 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
         }
     }
 
+    /**
+     * Copied before the container starts: the entrypoint waits only for the script to exist, so copying it
+     * into an already running container can have it executed while still incomplete, exiting with code 126.
+     */
     @Override
-    protected void containerIsStarting(InspectContainerResponse containerInfo) {
+    protected void containerIsCreated(String containerId) {
+        Map<String, String> labels = getDockerClient().inspectContainerCmd(containerId).exec().getConfig().getLabels();
         String command = "#!/bin/bash\n";
-        command += "export LAMBDA_DOCKER_FLAGS=" + configureServiceContainerLabels("LAMBDA_DOCKER_FLAGS") + "\n";
-        command += "export ECS_DOCKER_FLAGS=" + configureServiceContainerLabels("ECS_DOCKER_FLAGS") + "\n";
-        command += "export EC2_DOCKER_FLAGS=" + configureServiceContainerLabels("EC2_DOCKER_FLAGS") + "\n";
-        command += "export BATCH_DOCKER_FLAGS=" + configureServiceContainerLabels("BATCH_DOCKER_FLAGS") + "\n";
+        command +=
+            "export LAMBDA_DOCKER_FLAGS=" + configureServiceContainerLabels("LAMBDA_DOCKER_FLAGS", labels) + "\n";
+        command += "export ECS_DOCKER_FLAGS=" + configureServiceContainerLabels("ECS_DOCKER_FLAGS", labels) + "\n";
+        command += "export EC2_DOCKER_FLAGS=" + configureServiceContainerLabels("EC2_DOCKER_FLAGS", labels) + "\n";
+        command += "export BATCH_DOCKER_FLAGS=" + configureServiceContainerLabels("BATCH_DOCKER_FLAGS", labels) + "\n";
         command += "/usr/local/bin/docker-entrypoint.sh\n";
         copyFileToContainer(Transferable.of(command, 0777), STARTER_SCRIPT);
     }
@@ -93,8 +99,8 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
      * chance.
      * @return the lambda container labels as a string
      */
-    private String configureServiceContainerLabels(String existingEnvFlagKey) {
-        String internalMarkerFlags = internalMarkerLabels();
+    private String configureServiceContainerLabels(String existingEnvFlagKey, Map<String, String> labels) {
+        String internalMarkerFlags = internalMarkerLabels(labels);
         String existingFlags = getEnvMap().get(existingEnvFlagKey);
         if (existingFlags != null) {
             internalMarkerFlags = existingFlags + " " + internalMarkerFlags;
@@ -106,10 +112,8 @@ public class LocalStackContainer extends GenericContainer<LocalStackContainer> {
      * Provides a docker argument string including all default labels set on testcontainers containers (excluding reuse labels)
      * @return Argument string in the format `-l key1=value1 -l key2=value2`
      */
-    private String internalMarkerLabels() {
-        return getContainerInfo()
-            .getConfig()
-            .getLabels()
+    private String internalMarkerLabels(Map<String, String> labels) {
+        return labels
             .entrySet()
             .stream()
             .filter(entry -> entry.getKey().startsWith(DockerClientFactory.TESTCONTAINERS_LABEL))
