@@ -6,6 +6,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.ComparableVersion;
@@ -235,21 +236,29 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
         if (getWaitStrategy() != null) {
             return;
         }
-        HttpWaitStrategy strategy = "https".equals(getHttpScheme())
-            ? Wait.forHttps("/_cluster/health").forPort(ELASTICSEARCH_DEFAULT_PORT).allowInsecure()
-            : Wait.forHttp("/_cluster/health").forPort(ELASTICSEARCH_DEFAULT_PORT);
-
         String password = getEnvMap().get("ELASTIC_PASSWORD");
-        if (password != null) {
-            strategy = strategy.withBasicCredentials("elastic", password);
-        }
-
         setWaitStrategy(
-            strategy
-                .forStatusCode(200)
-                .forResponsePredicate(body ->
-                    body.contains("\"status\":\"green\"") || body.contains("\"status\":\"yellow\"")
-                )
+            new AbstractWaitStrategy() {
+                @Override
+                protected void waitUntilReady() {
+                    // getHttpScheme() is called here, after the container has started,
+                    // so the curl probe is available for cases where the scheme cannot
+                    // be determined from env vars or the version tag alone.
+                    HttpWaitStrategy inner = "https".equals(getHttpScheme())
+                        ? Wait.forHttps("/_cluster/health").forPort(ELASTICSEARCH_DEFAULT_PORT).allowInsecure()
+                        : Wait.forHttp("/_cluster/health").forPort(ELASTICSEARCH_DEFAULT_PORT);
+                    if (password != null) {
+                        inner = inner.withBasicCredentials("elastic", password);
+                    }
+                    inner
+                        .forStatusCode(200)
+                        .forResponsePredicate(body ->
+                            body.contains("\"status\":\"green\"") || body.contains("\"status\":\"yellow\"")
+                        )
+                        .withStartupTimeout(startupTimeout)
+                        .waitUntilReady(waitStrategyTarget);
+                }
+            }
                 .withStartupTimeout(healthCheckTimeout)
         );
     }
