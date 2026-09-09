@@ -3,6 +3,8 @@ package org.testcontainers.junit.wait.strategy;
 import org.assertj.core.api.Assertions;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.rnorth.ducttape.RetryCountExceededException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
@@ -12,6 +14,7 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -237,6 +240,38 @@ class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrategy> {
         }
     }
 
+    static Stream<String> provideResponseBodies() {
+        return Stream.of(
+            // A multiline block
+            """
+            A first line,
+            A second line,
+            And a third one.
+            """,
+            // A single line without any linebreaks
+            "A single line without any linebreaks",
+            // Edge cases for leading, trailing and enclosed newlines
+            "\n\n\nA sample string with leading newlines",
+            "A sample string with trailing newlines\n\n\n",
+            "\n\n\nA sample string with both leading and trailing newlines\n\n\n",
+            // Special symbols
+            "A sample string with special symbols \uD83D\uDC19 \uD83D\uDC41️"
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideResponseBodies")
+    void shouldPreserveResponseBody(String expectedResponseBody) {
+        try (
+            GenericContainer container = startContainerWithCommand(
+                createShellCommand("200 OK", expectedResponseBody),
+                createHttpWaitStrategy(ready).forResponsePredicate(response -> response.equals(expectedResponseBody))
+            )
+        ) {
+            waitUntilReadyAndSucceed(container);
+        }
+    }
+
     /**
      * @param ready the AtomicBoolean on which to indicate success
      * @return the WaitStrategy under test
@@ -279,7 +314,7 @@ class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrategy> {
             length +
             NEWLINE +
             "\";" +
-            " echo \"" +
+            " echo -n \"" +
             responseBody +
             "\";} | nc -lp " +
             port +
