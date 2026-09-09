@@ -359,13 +359,24 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
     }
 
     /**
+     * Override to preprocess the raw SQL script content before execution.
+     * The default implementation returns the script unchanged.
+     *
+     * @param script the raw script content
+     * @return the preprocessed script content
+     */
+    protected String preprocessInitScript(String script) {
+        return script;
+    }
+
+    /**
      * Load init script content and apply it to the database if initScriptPath is set
      */
     protected void runInitScriptIfRequired() {
         initScriptPaths
             .stream()
             .filter(Objects::nonNull)
-            .forEach(path -> ScriptUtils.runInitScript(getDatabaseDelegate(), path));
+            .forEach(path -> ScriptUtils.runInitScript(getDatabaseDelegate(), path, this::preprocessInitScript));
     }
 
     public void setParameters(Map<String, String> parameters) {
