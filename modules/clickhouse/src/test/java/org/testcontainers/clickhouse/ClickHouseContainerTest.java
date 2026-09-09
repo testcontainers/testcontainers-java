@@ -7,8 +7,11 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.ClickhouseTestImages;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -87,6 +90,68 @@ class ClickHouseContainerTest extends AbstractContainerDatabaseTest {
         } finally {
             clickhouse.close();
             client.close();
+        }
+    }
+
+    @Test
+    void testMysqlProtocol() throws SQLException {
+        try (ClickHouseContainer clickhouse = new ClickHouseContainer(ClickhouseTestImages.CLICKHOUSE_24_12_IMAGE)) {
+            clickhouse.start();
+
+            assertThat(clickhouse.getMysqlPort()).isNotNull();
+            assertThat(clickhouse.getHttpPort()).isNotNull();
+            assertThat(clickhouse.getNativePort()).isNotNull();
+
+            String mysqlUrl = clickhouse.getMysqlJdbcUrl();
+            assertThat(mysqlUrl).startsWith("jdbc:mysql://");
+
+            String mariadbUrl =
+                "jdbc:mariadb://" +
+                clickhouse.getHost() +
+                ":" +
+                clickhouse.getMysqlPort() +
+                "/" +
+                clickhouse.getDatabaseName();
+
+            try (
+                Connection connection = DriverManager.getConnection(
+                    mariadbUrl,
+                    clickhouse.getUsername(),
+                    clickhouse.getPassword()
+                );
+                Statement statement = connection.createStatement();
+                ResultSet resultSet = statement.executeQuery("SELECT 1")
+            ) {
+                resultSet.next();
+                int resultSetInt = resultSet.getInt(1);
+                assertThat(resultSetInt).isEqualTo(1);
+            }
+        }
+    }
+
+    @Test
+    void testPostgresqlProtocol() throws SQLException {
+        try (ClickHouseContainer clickhouse = new ClickHouseContainer(ClickhouseTestImages.CLICKHOUSE_24_12_IMAGE)) {
+            clickhouse.start();
+
+            assertThat(clickhouse.getPostgresqlPort()).isNotNull();
+
+            String pgUrl = clickhouse.getPostgresqlJdbcUrl() + "?sslmode=disable&preferQueryMode=simple";
+            assertThat(pgUrl).startsWith("jdbc:postgresql://");
+
+            try (
+                Connection connection = DriverManager.getConnection(
+                    pgUrl,
+                    clickhouse.getUsername(),
+                    clickhouse.getPassword()
+                );
+                Statement statement = connection.createStatement();
+                ResultSet resultSet = statement.executeQuery("SELECT 1")
+            ) {
+                resultSet.next();
+                int resultSetInt = resultSet.getInt(1);
+                assertThat(resultSetInt).isEqualTo(1);
+            }
         }
     }
 }

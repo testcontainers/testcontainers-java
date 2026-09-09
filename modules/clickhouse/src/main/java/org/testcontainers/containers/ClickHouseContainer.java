@@ -31,6 +31,10 @@ public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContain
 
     public static final Integer NATIVE_PORT = 9000;
 
+    public static final Integer MYSQL_PORT = 9004;
+
+    public static final Integer POSTGRESQL_PORT = 9005;
+
     private static final String LEGACY_DRIVER_CLASS_NAME = "ru.yandex.clickhouse.ClickHouseDriver";
 
     private static final String DRIVER_CLASS_NAME = "com.clickhouse.jdbc.ClickHouseDriver";
@@ -64,7 +68,7 @@ public class ClickHouseContainer extends JdbcDatabaseContainer<ClickHouseContain
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, CLICKHOUSE_IMAGE_NAME);
         supportsNewDriver = isNewDriverSupported(dockerImageName);
 
-        addExposedPorts(HTTP_PORT, NATIVE_PORT);
+        addExposedPorts(HTTP_PORT, NATIVE_PORT, MYSQL_PORT, POSTGRESQL_PORT);
         this.waitStrategy =
             new HttpWaitStrategy()
                 .forStatusCode(200)
