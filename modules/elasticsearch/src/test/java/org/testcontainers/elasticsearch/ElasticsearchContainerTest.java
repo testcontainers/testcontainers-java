@@ -41,8 +41,9 @@ class ElasticsearchContainerTest {
      */
     // version_7 {
     static final String ELASTICSEARCH_VERSION_7 = "7.17.29";
-    static final DockerImageName ELASTICSEARCH_IMAGE_7 = DockerImageName.parse(
-        "docker.elastic.co/elasticsearch/elasticsearch")
+
+    static final DockerImageName ELASTICSEARCH_IMAGE_7 = DockerImageName
+        .parse("docker.elastic.co/elasticsearch/elasticsearch")
         .withTag(ELASTICSEARCH_VERSION_7);
     // }
 
@@ -51,8 +52,9 @@ class ElasticsearchContainerTest {
      */
     // version_8 {
     static final String ELASTICSEARCH_VERSION_8 = "8.19.20";
-    static final DockerImageName ELASTICSEARCH_IMAGE_8 = DockerImageName.parse(
-        "docker.elastic.co/elasticsearch/elasticsearch")
+
+    static final DockerImageName ELASTICSEARCH_IMAGE_8 = DockerImageName
+        .parse("docker.elastic.co/elasticsearch/elasticsearch")
         .withTag(ELASTICSEARCH_VERSION_8);
     // }
 
@@ -61,8 +63,9 @@ class ElasticsearchContainerTest {
      */
     // version_9 {
     static final String ELASTICSEARCH_VERSION_9 = "9.5.2";
-    static final DockerImageName ELASTICSEARCH_IMAGE_9 = DockerImageName.parse(
-        "docker.elastic.co/elasticsearch/elasticsearch")
+
+    static final DockerImageName ELASTICSEARCH_IMAGE_9 = DockerImageName
+        .parse("docker.elastic.co/elasticsearch/elasticsearch")
         .withTag(ELASTICSEARCH_VERSION_9);
     // }
 

@@ -22,6 +22,7 @@ import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.images.builder.Transferable;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.io.IOException;
@@ -30,15 +31,18 @@ import java.nio.charset.StandardCharsets;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assumptions.assumeThat;
-import static org.testcontainers.elasticsearch.ElasticsearchContainerTest.ELASTICSEARCH_IMAGE_LATEST;
-import static org.testcontainers.elasticsearch.ElasticsearchContainerTest.ELASTICSEARCH_VERSION_7;
-import static org.testcontainers.elasticsearch.ElasticsearchContainerTest.ELASTICSEARCH_VERSION_LATEST;
 
 class KibanaContainerTest {
 
     public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    private static final String KIBANA_IMAGE = "docker.elastic.co/kibana/kibana:" + ELASTICSEARCH_VERSION_LATEST;
+    private static final DockerImageName ELASTICSEARCH_IMAGE_LATEST =
+        ElasticsearchContainerTest.ELASTICSEARCH_IMAGE_LATEST;
+
+    private static final String ELASTICSEARCH_VERSION_7 = ElasticsearchContainerTest.ELASTICSEARCH_VERSION_7;
+
+    private static final String KIBANA_IMAGE =
+        "docker.elastic.co/kibana/kibana:" + ElasticsearchContainerTest.ELASTICSEARCH_VERSION_LATEST;
 
     /**
      * A Kibana patch intentionally behind the latest Elasticsearch version, to verify mixed-patch compatibility.
@@ -168,8 +172,8 @@ class KibanaContainerTest {
     void managedModeRejectsExplicitElasticsearchUrl() {
         ElasticsearchContainer es = new ElasticsearchContainer(ELASTICSEARCH_IMAGE_LATEST);
         assertThatThrownBy(() -> {
-            new KibanaContainer(es).withElasticsearchUrl("http://somewhere.over.the.rainbow:9200");
-        })
+                new KibanaContainer(es).withElasticsearchUrl("http://somewhere.over.the.rainbow:9200");
+            })
             .as("managed mode cannot also set an explicit Elasticsearch URL")
             .isInstanceOf(IllegalStateException.class)
             .hasMessageContaining("Cannot set Elasticsearch URL when using Elasticsearch container");
@@ -297,10 +301,10 @@ class KibanaContainerTest {
     @Test
     void externalModeRejectsConflictingCredentials() {
         assertThatThrownBy(() -> {
-            new KibanaContainer(KIBANA_IMAGE)
-                .withKibanaUsernameAndPassword("user", "pass")
-                .withElasticsearchServiceAccountToken("token");
-        })
+                new KibanaContainer(KIBANA_IMAGE)
+                    .withKibanaUsernameAndPassword("user", "pass")
+                    .withElasticsearchServiceAccountToken("token");
+            })
             .as("username/password and a service account token cannot be set together")
             .isInstanceOf(IllegalStateException.class)
             .hasMessageContaining("Conflicting Elasticsearch credentials");
