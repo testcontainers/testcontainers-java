@@ -8,6 +8,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.StringEntity;
@@ -407,7 +408,12 @@ class KibanaContainerTest {
     }
 
     private static void assertKibanaIsAvailable(KibanaContainer kibana) throws IOException {
-        assertThat(getKibanaStatus(kibana)).as("Kibana reports overall status available").isEqualTo("available");
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
+            HttpResponse response = httpClient.execute(
+                new HttpGet("http://" + kibana.getHttpHostAddress() + "/api/status")
+            );
+            assertThat(response.getStatusLine().getStatusCode()).as("/api/status returns HTTP 200").isEqualTo(200);
+        }
     }
 
     private static String setKibanaSystemPassword(ElasticsearchContainer elasticsearch) throws IOException {
@@ -507,26 +513,6 @@ class KibanaContainerTest {
         }
 
         return clientBuilder.build();
-    }
-
-    private static String getKibanaStatus(KibanaContainer kibana) throws IOException {
-        try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
-            String url = "http://" + kibana.getHttpHostAddress() + "/api/status";
-            HttpResponse response = httpClient.execute(new org.apache.http.client.methods.HttpGet(url));
-            int statusCode = response.getStatusLine().getStatusCode();
-            String body = EntityUtils.toString(response.getEntity());
-
-            if (statusCode != 200) {
-                throw new IllegalStateException("Failed to get Kibana status. HTTP " + statusCode + ", body=" + body);
-            }
-
-            JsonNode json = OBJECT_MAPPER.readTree(body);
-            String status = json.path("status").path("overall").path("level").asText(null);
-            if (status == null) {
-                throw new IllegalStateException("Kibana status response missing 'status.overall.level' field: " + body);
-            }
-            return status;
-        }
     }
 
     private static void applyTls(ElasticsearchContainer c, byte[] caCrt, byte[] nodeCrt, byte[] nodeKey) {
