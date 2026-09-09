@@ -13,6 +13,19 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 
 jar.archiveClassifier.set("original")
 
+// Derive a JPMS automatic module name from the group id plus a trailing element
+// based on the artifact name (e.g. testcontainers-junit-jupiter -> org.testcontainers.junitjupiter).
+// The plain `jar` carries the attribute and `shadowJar` inherits it for the published artifact.
+def automaticModuleName = "org.testcontainers." + (
+    project.name == "testcontainers" ? "core" : project.name.replaceFirst(/^testcontainers-/, "")
+).replace("-", "")
+
+jar {
+    manifest {
+        attributes('Automatic-Module-Name': automaticModuleName)
+    }
+}
+
 publishing {
     publications {
         mavenJava(MavenPublication) { publication ->
