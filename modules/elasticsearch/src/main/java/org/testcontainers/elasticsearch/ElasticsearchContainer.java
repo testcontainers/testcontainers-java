@@ -234,11 +234,11 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
         if (getWaitStrategy() != null) {
             return;
         }
-        String password = getEnvMap().get("ELASTIC_PASSWORD");
         setWaitStrategy(
             new AbstractWaitStrategy() {
                 @Override
                 protected void waitUntilReady() {
+                    String password = getEnvMap().get("ELASTIC_PASSWORD");
                     // Wait for port 9200 to accept TCP connections first, so that
                     // getHttpScheme()'s curl probe always finds a live socket and no
                     // version-based heuristics are needed.
