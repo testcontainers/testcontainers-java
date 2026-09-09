@@ -9,11 +9,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * Representation of a Dockerfile, with partial parsing for extraction of a minimal set of data.
@@ -22,7 +23,7 @@ import java.util.stream.Collectors;
 public class ParsedDockerfile {
 
     private static final Pattern FROM_LINE_PATTERN = Pattern.compile(
-        "FROM (?<arg>--[^\\s]+\\s)*(?<image>[^\\s]+).*",
+        "FROM (?<arg>--[^\\s]+\\s)*(?<image>[^\\s]+)(\\s+AS\\s+(?<stage>[^\\s]+))?.*",
         Pattern.CASE_INSENSITIVE
     );
 
@@ -57,12 +58,25 @@ public class ParsedDockerfile {
     }
 
     private Set<String> parse(List<String> lines) {
-        Set<String> imageNames = lines
-            .stream()
-            .map(FROM_LINE_PATTERN::matcher)
-            .filter(Matcher::matches)
-            .map(matcher -> matcher.group("image"))
-            .collect(Collectors.toSet());
+        Set<String> imageNames = new HashSet<>();
+        Set<String> buildStageNames = new HashSet<>();
+
+        for (String line : lines) {
+            Matcher matcher = FROM_LINE_PATTERN.matcher(line);
+            if (!matcher.matches()) {
+                continue;
+            }
+            // A FROM referring to a previously declared build stage (e.g. `FROM builder`) is an internal
+            // stage reference, not an external image to be pulled. Build stage names are case-insensitive.
+            String image = matcher.group("image");
+            if (!buildStageNames.contains(image.toLowerCase(Locale.ROOT))) {
+                imageNames.add(image);
+            }
+            String stage = matcher.group("stage");
+            if (stage != null) {
+                buildStageNames.add(stage.toLowerCase(Locale.ROOT));
+            }
+        }
 
         if (!imageNames.isEmpty()) {
             log.debug("Found dependency images in Dockerfile {}: {}", dockerFilePath, imageNames);
