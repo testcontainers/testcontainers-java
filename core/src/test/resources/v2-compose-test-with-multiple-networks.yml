@@ -1,0 +1,14 @@
+version: '2.1'
+services:
+  redis:
+    image: redis
+    networks:
+      - redis-net
+  another-redis:
+    image: redis
+    networks:
+      - another-redis-net
+
+networks:
+  redis-net:
+  another-redis-net:
