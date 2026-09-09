@@ -18,6 +18,7 @@ import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Optional;
 
 import javax.net.ssl.SSLContext;
@@ -241,7 +242,10 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
                     // Wait for port 9200 to accept TCP connections first, so that
                     // getHttpScheme()'s curl probe always finds a live socket and no
                     // version-based heuristics are needed.
+                    // Track the deadline so both steps share the same total timeout.
+                    Instant deadline = Instant.now().plus(startupTimeout);
                     Wait.forListeningPort().withStartupTimeout(startupTimeout).waitUntilReady(waitStrategyTarget);
+                    Duration remaining = Duration.between(Instant.now(), deadline);
                     HttpWaitStrategy inner = "https".equals(getHttpScheme())
                         ? Wait.forHttps("/_cluster/health").forPort(ELASTICSEARCH_DEFAULT_PORT).allowInsecure()
                         : Wait.forHttp("/_cluster/health").forPort(ELASTICSEARCH_DEFAULT_PORT);
@@ -253,7 +257,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
                         .forResponsePredicate(body -> {
                             return body.contains("\"status\":\"green\"") || body.contains("\"status\":\"yellow\"");
                         })
-                        .withStartupTimeout(startupTimeout)
+                        .withStartupTimeout(remaining.isNegative() ? Duration.ZERO : remaining)
                         .waitUntilReady(waitStrategyTarget);
                 }
             }
