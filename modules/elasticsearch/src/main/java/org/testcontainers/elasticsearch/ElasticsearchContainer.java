@@ -121,7 +121,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
         addExposedPorts(ELASTICSEARCH_DEFAULT_PORT, ELASTICSEARCH_DEFAULT_TCP_PORT);
         String versionPart = dockerImageName.getVersionPart();
         this.isAtLeastMajorVersion8 = new ComparableVersion(versionPart).isGreaterThanOrEqualTo("8.0.0");
-        this.isVersionNumeric = versionPart.matches("\\d+\\..*");
+        this.isVersionNumeric = versionPart.matches("\\d+\\.\\d+.*");
         // Wait strategy is deferred to configure() so it can read the final env map
         // (e.g. password and SSL settings that the user may set after construction).
         setWaitStrategy(null);
