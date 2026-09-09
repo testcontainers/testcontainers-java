@@ -76,8 +76,6 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 
     private final boolean isAtLeastMajorVersion8;
 
-    private final boolean isVersionNumeric;
-
     private String certPath = "";
 
     private Duration healthCheckTimeout = Duration.ofSeconds(60);
@@ -122,7 +120,6 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
         addExposedPorts(ELASTICSEARCH_DEFAULT_PORT, ELASTICSEARCH_DEFAULT_TCP_PORT);
         String versionPart = dockerImageName.getVersionPart();
         this.isAtLeastMajorVersion8 = new ComparableVersion(versionPart).isGreaterThanOrEqualTo("8.0.0");
-        this.isVersionNumeric = versionPart.matches("\\d+\\.\\d+.*");
         // Wait strategy is deferred to configure() so it can read the final env map
         // (e.g. password and SSL settings that the user may set after construction).
         setWaitStrategy(null);
@@ -241,9 +238,10 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
             new AbstractWaitStrategy() {
                 @Override
                 protected void waitUntilReady() {
-                    // getHttpScheme() is called here, after the container has started,
-                    // so the curl probe is available for cases where the scheme cannot
-                    // be determined from env vars or the version tag alone.
+                    // Wait for port 9200 to accept TCP connections first, so that
+                    // getHttpScheme()'s curl probe always finds a live socket and no
+                    // version-based heuristics are needed.
+                    Wait.forListeningPort().withStartupTimeout(startupTimeout).waitUntilReady(waitStrategyTarget);
                     HttpWaitStrategy inner = "https".equals(getHttpScheme())
                         ? Wait.forHttps("/_cluster/health").forPort(ELASTICSEARCH_DEFAULT_PORT).allowInsecure()
                         : Wait.forHttp("/_cluster/health").forPort(ELASTICSEARCH_DEFAULT_PORT);
@@ -252,9 +250,9 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
                     }
                     inner
                         .forStatusCode(200)
-                        .forResponsePredicate(body ->
-                            body.contains("\"status\":\"green\"") || body.contains("\"status\":\"yellow\"")
-                        )
+                        .forResponsePredicate(body -> {
+                            return body.contains("\"status\":\"green\"") || body.contains("\"status\":\"yellow\"");
+                        })
                         .withStartupTimeout(startupTimeout)
                         .waitUntilReady(waitStrategyTarget);
                 }
@@ -268,8 +266,8 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
     }
 
     /**
-     * Checks env first if this implies HTTP/HTTPS, then falls back to version-based defaults.
-     * For 7.x with non-standard SSL configured outside env vars, runs a curl probe (requires a running container).
+     * Detects the HTTP scheme used by Elasticsearch. Respects explicit env-var config first;
+     * when ambiguous, probes the live socket with curl (requires a running container on port 9200).
      *
      * @return "http" or "https"
      */
@@ -285,17 +283,10 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
             return "https";
         }
 
-        // Version-based default: 8.x uses HTTPS by default.
-        // Only apply when the version tag is a concrete numeric version; ambiguous tags
-        // like "latest" may point to an older image that uses HTTP.
-        if (isAtLeastMajorVersion8 && isVersionNumeric) {
-            return "https";
-        }
-
-        // 7.x without explicit SSL config: HTTP is the default.
-        // When running, we probe with curl in case SSL was configured outside env vars.
         if (!isRunning()) {
-            return "http";
+            throw new IllegalStateException(
+                "Cannot determine HTTP scheme: environment variables are not set and container is not running for curl probe"
+            );
         }
 
         ExecResult httpsResult = null;
