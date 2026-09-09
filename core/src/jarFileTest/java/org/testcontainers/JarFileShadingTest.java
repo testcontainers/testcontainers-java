@@ -26,8 +26,8 @@ class JarFileShadingTest extends AbstractJarFileTest {
                 "services",
                 "versions",
                 "native-image",
-                "thirdparty-LICENSE",
-                "FastDoubleParser-NOTICE",
+                "Schubfach-LICENSE",
+                "FastDoubleParser-ThirdParty-LICENSE",
                 "FastDoubleParser-LICENSE"
             );
     }
