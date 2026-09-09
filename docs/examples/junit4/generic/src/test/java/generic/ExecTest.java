@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ExecTest {
 
     @Rule
-    public GenericContainer<?> container = new GenericContainer<>(DockerImageName.parse("alpine:3.17"))
+    public GenericContainer<?> container = new GenericContainer<>(DockerImageName.parse("alpine:3.24"))
         .withCommand("top");
 
     @Test

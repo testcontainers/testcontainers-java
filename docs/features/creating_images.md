@@ -51,7 +51,7 @@ new GenericContainer(
         new ImageFromDockerfile()
                 .withDockerfileFromBuilder(builder ->
                         builder
-                                .from("alpine:3.17")
+                                .from("alpine:3.24")
                                 .run("apk add --update nginx")
                                 .cmd("nginx", "-g", "daemon off;")
                                 .build()))
