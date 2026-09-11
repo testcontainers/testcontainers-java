@@ -64,6 +64,26 @@ class TrinoContainerTest {
         }
     }
 
+    @Test
+    void testWithAdditionalUrlParamInJdbcUrl() throws Exception {
+        try (
+            TrinoContainer trino = new TrinoContainer(TrinoTestImages.TRINO_TEST_IMAGE)
+                .withUrlParam("applicationNamePrefix", "tc-")
+        ) {
+            trino.start();
+            String jdbcUrl = trino.getJdbcUrl();
+            assertThat(jdbcUrl).contains("?");
+            assertThat(jdbcUrl).contains("applicationNamePrefix=tc-");
+            try (
+                Connection connection = trino.createConnection();
+                Statement statement = connection.createStatement();
+                ResultSet resultSet = statement.executeQuery("SELECT 1")
+            ) {
+                assertThat(resultSet.next()).as("results").isTrue();
+            }
+        }
+    }
+
     private void assertContainerHasCorrectExposedAndLivenessCheckPorts(TrinoContainer trino) {
         assertThat(trino.getExposedPorts()).containsExactly(8080);
         assertThat(trino.getLivenessCheckPortNumbers()).containsExactly(trino.getMappedPort(8080));
