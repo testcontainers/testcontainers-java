@@ -40,6 +40,30 @@ class SimpleQuestDBTest extends AbstractContainerDatabaseTest {
     }
 
     @Test
+    void testWithAdditionalUrlParamInJdbcUrl() {
+        try (
+            QuestDBContainer questdb = new QuestDBContainer(QuestDBTestImages.QUESTDB_IMAGE)
+                .withUrlParam("sslmode", "disable")
+                .withUrlParam("binaryTransfer", "true")
+        ) {
+            questdb.start();
+            String jdbcUrl = questdb.getJdbcUrl();
+            assertThat(jdbcUrl)
+                .contains("?")
+                .contains("&")
+                .contains("sslmode=disable")
+                .contains("binaryTransfer=true");
+        }
+    }
+
+    @Test
+    void testDatabaseName() {
+        try (QuestDBContainer questdb = new QuestDBContainer(QuestDBTestImages.QUESTDB_IMAGE)) {
+            assertThat(questdb.getDatabaseName()).isEqualTo("qdb");
+        }
+    }
+
+    @Test
     void testRest() throws IOException {
         try (QuestDBContainer questdb = new QuestDBContainer(QuestDBTestImages.QUESTDB_IMAGE)) {
             questdb.start();
