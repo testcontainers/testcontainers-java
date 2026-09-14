@@ -4,6 +4,10 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Testcontainers implementation for Azurite Emulator.
  * <p>
@@ -52,6 +56,8 @@ public class AzuriteContainer extends GenericContainer<AzuriteContainer> {
 
     private String pwd = null;
 
+    private final List<String> commandOptions = new ArrayList<>();
+
     /**
      * @param dockerImageName specified docker image name to run
      */
@@ -93,6 +99,20 @@ public class AzuriteContainer extends GenericContainer<AzuriteContainer> {
         this.cert = pemCert;
         this.key = pemKey;
         this.certExtension = ".pem";
+        return this;
+    }
+
+    /**
+     * Append extra Azurite command line flags after the default host and SSL arguments.
+     * <p>
+     * {@link #withCommand(String...)} cannot be used for this: {@link #configure()} always
+     * rebuilds the process command and overwrites any previously set command.
+     *
+     * @param options additional Azurite flags, for example {@code --skipApiVersionCheck}
+     * @return this
+     */
+    public AzuriteContainer withCommandOptions(String... options) {
+        this.commandOptions.addAll(Arrays.asList(options));
         return this;
     }
 
@@ -159,6 +179,9 @@ public class AzuriteContainer extends GenericContainer<AzuriteContainer> {
             } else {
                 args.append(" --key ").append("/key.pem");
             }
+        }
+        for (String option : this.commandOptions) {
+            args.append(" ").append(option);
         }
         final String cmd = args.toString();
         logger().debug("Using command line: '{}'", cmd);

@@ -54,7 +54,7 @@ jobs:
       matrix:
         java: [ '17', '21' ]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-build
         with:
           java-version: ${{ matrix.java }}
@@ -69,7 +69,7 @@ jobs:
     permissions:
       checks: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-build
       - name: Setup Testcontainers Cloud Client
         uses: atomicjar/testcontainers-cloud-setup-action@main
@@ -88,7 +88,7 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-build
       - id: set-matrix
         env:
@@ -96,6 +96,7 @@ jobs:
           # we should not push empty results to the cache
           READ_ONLY_REMOTE_GRADLE_CACHE: true
         run: |
+          set -o pipefail
           TASKS=$(./gradlew --no-daemon --parallel -q testMatrix | jq 'del(.[] | select(. == ":testcontainers:check" or startswith(":docs:")))' --compact-output)
           echo $TASKS
           echo "matrix={\"gradle_args\":$TASKS}" >> $GITHUB_OUTPUT
@@ -108,7 +109,7 @@ jobs:
     permissions:
       checks: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-build
       - name: Build and test with Gradle (${{matrix.gradle_args}})
         run: |
@@ -121,7 +122,7 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-build
       - id: set-matrix
         working-directory: ./examples/
@@ -142,7 +143,7 @@ jobs:
     permissions:
       checks: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-build
       - name: Build and test Examples with Gradle (${{matrix.gradle_args}})
         working-directory: ./examples/
@@ -156,7 +157,7 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-build
       - id: set-matrix
         env:
@@ -164,6 +165,7 @@ jobs:
           # we should not push empty results to the cache
           READ_ONLY_REMOTE_GRADLE_CACHE: true
         run: |
+          set -o pipefail
           TASKS=$(./gradlew --no-daemon --parallel -q testMatrix | jq 'map(select(startswith(":docs:")))' --compact-output)
           echo $TASKS
           echo "matrix={\"gradle_args\":$TASKS}" >> $GITHUB_OUTPUT
@@ -176,7 +178,7 @@ jobs:
     permissions:
       checks: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-build
       - name: Build and test with Gradle (${{matrix.gradle_args}})
         run: |

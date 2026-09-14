@@ -109,7 +109,7 @@ class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrategy> {
 
     /**
      * Expects that the WaitStrategy returns successfully after receiving an HTTP 401 response from the container.
-     * This 401 response is checked with with many status codes using {@link HttpWaitStrategy#forStatusCode(int)}
+     * This 401 response is checked with many status codes using {@link HttpWaitStrategy#forStatusCode(int)}
      * and a lambda using {@link HttpWaitStrategy#forStatusCodeMatching(Predicate)}
      */
     @Test

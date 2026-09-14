@@ -87,8 +87,15 @@ public final class DockerImageName {
         }
 
         if (remoteName.contains("@sha256:")) {
-            repository = remoteName.split("@sha256:")[0];
-            versioning = new Sha256Versioning(remoteName.split("@sha256:")[1]);
+            String beforeDigest = remoteName.split("@sha256:")[0];
+            if (beforeDigest.contains(":")) {
+                repository = beforeDigest.split(":")[0];
+                String tag = beforeDigest.split(":", 2)[1];
+                versioning = new Sha256Versioning(remoteName.split("@sha256:")[1], tag);
+            } else {
+                repository = beforeDigest;
+                versioning = new Sha256Versioning(remoteName.split("@sha256:")[1]);
+            }
         } else if (remoteName.contains(":")) {
             repository = remoteName.split(":")[0];
             versioning = new TagVersioning(remoteName.split(":")[1]);
@@ -155,16 +162,40 @@ public final class DockerImageName {
     }
 
     /**
-     * @return the versioned part of this name (tag or sha256)
+     * @return the versioned part of this name (tag or sha256). When both tag and digest are present,
+     *         the tag is returned.
      */
     public String getVersionPart() {
+        if (versioning instanceof Sha256Versioning) {
+            String tag = ((Sha256Versioning) versioning).getTag();
+            if (tag != null) {
+                return tag;
+            }
+        }
         return versioning.toString();
+    }
+
+    /**
+     * @return the sha256 digest if present, or null
+     */
+    @Nullable
+    public String getDigest() {
+        if (versioning instanceof Sha256Versioning) {
+            return versioning.toString();
+        }
+        return null;
     }
 
     /**
      * @return canonical name for the image
      */
     public String asCanonicalNameString() {
+        if (versioning instanceof Sha256Versioning) {
+            String tag = ((Sha256Versioning) versioning).getTag();
+            if (tag != null) {
+                return getUnversionedPart() + ":" + tag + "@" + versioning;
+            }
+        }
         return getUnversionedPart() + versioning.getSeparator() + getVersionPart();
     }
 
