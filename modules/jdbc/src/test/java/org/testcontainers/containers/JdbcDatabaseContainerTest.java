@@ -5,10 +5,15 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class JdbcDatabaseContainerTest {
 
@@ -18,6 +23,47 @@ class JdbcDatabaseContainerTest {
             .withStartupTimeoutSeconds(1);
 
         assertThatExceptionOfType(IllegalStateException.class).isThrownBy(jdbcContainer::waitUntilContainerStarted);
+    }
+
+    @Test
+    void testQueryIsRetriedIfReadingItsResultsFails() {
+        // Some databases (e.g. Trino) accept the test query but only fail once its results are fetched
+        FailingResultSetJdbcDatabaseContainerStub jdbcContainer = new FailingResultSetJdbcDatabaseContainerStub();
+        jdbcContainer.withStartupTimeoutSeconds(5);
+
+        jdbcContainer.waitUntilContainerStarted();
+
+        assertThat(jdbcContainer.connectionAttempts).hasValue(2);
+    }
+
+    static class FailingResultSetJdbcDatabaseContainerStub extends JdbcDatabaseContainerStub {
+
+        private final AtomicInteger connectionAttempts = new AtomicInteger();
+
+        FailingResultSetJdbcDatabaseContainerStub() {
+            super("mysql:latest");
+        }
+
+        @Override
+        protected String getTestQueryString() {
+            return "SELECT 1";
+        }
+
+        @Override
+        public Connection createConnection(String queryString) throws SQLException, NoDriverFoundException {
+            ResultSet resultSet = mock(ResultSet.class);
+            if (connectionAttempts.incrementAndGet() == 1) {
+                when(resultSet.next()).thenThrow(new SQLException("No nodes available to run query"));
+            } else {
+                when(resultSet.next()).thenReturn(true, false);
+            }
+            Statement statement = mock(Statement.class);
+            when(statement.execute("SELECT 1")).thenReturn(true);
+            when(statement.getResultSet()).thenReturn(resultSet);
+            Connection connection = mock(Connection.class);
+            when(connection.createStatement()).thenReturn(statement);
+            return connection;
+        }
     }
 
     static class JdbcDatabaseContainerStub extends JdbcDatabaseContainer {

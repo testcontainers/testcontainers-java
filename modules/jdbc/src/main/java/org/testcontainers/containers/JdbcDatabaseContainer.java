@@ -15,6 +15,7 @@ import org.testcontainers.utility.MountableFile;
 
 import java.sql.Connection;
 import java.sql.Driver;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -192,6 +193,13 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
                 try (Connection connection = createConnection(""); Statement statement = connection.createStatement()) {
                     boolean testQuerySucceeded = statement.execute(this.getTestQueryString());
                     if (testQuerySucceeded) {
+                        // Some databases (e.g. Trino) accept the query but only fail once its results are fetched,
+                        // so the database is only considered ready after the results have been read successfully
+                        try (ResultSet resultSet = statement.getResultSet()) {
+                            if (resultSet != null) {
+                                while (resultSet.next()) {}
+                            }
+                        }
                         return;
                     }
                 } catch (NoDriverFoundException e) {
