@@ -263,6 +263,23 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         return exposedPorts;
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Unlike the default implementation, this preserves the protocol the first port was exposed with,
+     * so it also works for containers whose first exposed port is UDP.
+     */
+    @Override
+    public Integer getFirstMappedPort() {
+        return this.containerDef.getExposedPorts()
+            .stream()
+            .findFirst()
+            .map(exposedPort ->
+                getMappedPort(exposedPort.getPort(), InternetProtocol.fromDockerNotation(exposedPort.getProtocol().toString()))
+            )
+            .orElseThrow(() -> new IllegalStateException("Container doesn't expose any ports"));
+    }
+
     @Override
     public void setExposedPorts(List<Integer> exposedPorts) {
         this.containerDef.exposedPorts.clear();
