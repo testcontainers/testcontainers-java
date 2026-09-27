@@ -292,6 +292,14 @@ public class MountableFile implements Transferable {
     private void copyFromJarToLocation(final JarFile jarFile, final JarEntry entry, final File toRoot) throws IOException {
         File newFile = new File(toRoot, entry.getName());
 
+        // Guard against malformed entries (e.g. containing "../") escaping the extraction directory
+        Path rootPath = toRoot.getCanonicalFile().toPath();
+        if (!newFile.getCanonicalFile().toPath().startsWith(rootPath)) {
+            throw new IOException(
+                "JAR entry " + entry.getName() + " would be extracted outside of the target directory " + toRoot
+            );
+        }
+
         log.debug("Copying resource {} from JAR file {}", entry.getName(), jarFile.getName());
 
         if (!entry.isDirectory()) {
