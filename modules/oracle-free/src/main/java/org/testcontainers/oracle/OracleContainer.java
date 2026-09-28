@@ -15,7 +15,7 @@ import java.util.Set;
 /**
  * Testcontainers implementation for Oracle Database Free.
  * <p>
- * Supported image: {@code gvenzl/oracle-free}
+ * Supported images: {@code gvenzl/oracle-free}, {@code gvenzl/oracle-xe}
  * <p>
  * Exposed ports: 1521
  */
@@ -24,6 +24,8 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     static final String NAME = "oracle";
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("gvenzl/oracle-free");
+
+    private static final DockerImageName ORACLE_XE_IMAGE_NAME = DockerImageName.parse("gvenzl/oracle-xe");
 
     static final String DEFAULT_TAG = "slim";
 
@@ -66,7 +68,7 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     public OracleContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, ORACLE_XE_IMAGE_NAME);
         waitingFor(
             Wait
                 .forLogMessage(".*DATABASE IS READY TO USE!.*\\s", 1)
