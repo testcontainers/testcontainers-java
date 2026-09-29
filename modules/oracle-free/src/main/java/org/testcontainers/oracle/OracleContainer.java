@@ -42,6 +42,10 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     static final String DEFAULT_SID = "free";
 
+    private static final String ORACLE_XE_DEFAULT_DATABASE_NAME = "xepdb1";
+
+    private static final String ORACLE_XE_DEFAULT_SID = "xe";
+
     static final String DEFAULT_SYSTEM_USER = "system";
 
     static final String DEFAULT_SYS_USER = "sys";
@@ -53,6 +57,10 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 
     // Restricted user and database names
     private static final List<String> ORACLE_SYSTEM_USERS = Arrays.asList(DEFAULT_SYSTEM_USER, DEFAULT_SYS_USER);
+
+    private String defaultDatabaseName = DEFAULT_DATABASE_NAME;
+
+    private String defaultSid = DEFAULT_SID;
 
     private String databaseName = DEFAULT_DATABASE_NAME;
 
@@ -69,6 +77,11 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     public OracleContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, ORACLE_XE_IMAGE_NAME);
+        if (dockerImageName.isCompatibleWith(ORACLE_XE_IMAGE_NAME)) {
+            defaultDatabaseName = ORACLE_XE_DEFAULT_DATABASE_NAME;
+            defaultSid = ORACLE_XE_DEFAULT_SID;
+            databaseName = defaultDatabaseName;
+        }
         waitingFor(
             Wait
                 .forLogMessage(".*DATABASE IS READY TO USE!.*\\s", 1)
@@ -153,8 +166,8 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
             throw new IllegalArgumentException("Database name cannot be null or empty");
         }
 
-        if (DEFAULT_DATABASE_NAME.equals(databaseName.toLowerCase())) {
-            throw new IllegalArgumentException("Database name cannot be set to " + DEFAULT_DATABASE_NAME);
+        if (defaultDatabaseName.equals(databaseName.toLowerCase())) {
+            throw new IllegalArgumentException("Database name cannot be set to " + defaultDatabaseName);
         }
 
         this.databaseName = databaseName;
@@ -171,9 +184,8 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
         throw new UnsupportedOperationException("The Oracle Database driver does not support this");
     }
 
-    @SuppressWarnings("SameReturnValue")
     public String getSid() {
-        return DEFAULT_SID;
+        return defaultSid;
     }
 
     public Integer getOraclePort() {
@@ -189,8 +201,8 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     protected void configure() {
         withEnv("ORACLE_PASSWORD", password);
 
-        // Only set ORACLE_DATABASE if different than the default.
-        if (databaseName != DEFAULT_DATABASE_NAME) {
+        // Only set ORACLE_DATABASE if different than the image default.
+        if (!defaultDatabaseName.equals(databaseName)) {
             withEnv("ORACLE_DATABASE", databaseName);
         }
 
