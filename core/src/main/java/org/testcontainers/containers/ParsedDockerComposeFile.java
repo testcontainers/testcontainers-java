@@ -104,7 +104,8 @@ class ParsedDockerComposeFile {
             case sequence:
                 return Tag.SEQ;
             default:
-                return resolver.resolve(NodeId.scalar, ((ScalarNode) node).getValue(), true);
+                ScalarNode scalarNode = (ScalarNode) node;
+                return resolver.resolve(NodeId.scalar, scalarNode.getValue(), scalarNode.isPlain());
         }
     }
 

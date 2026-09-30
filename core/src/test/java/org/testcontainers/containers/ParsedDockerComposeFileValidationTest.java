@@ -167,6 +167,20 @@ class ParsedDockerComposeFileValidationTest {
     }
 
     @Test
+    void shouldKeepQuotedValuesTaggedWithOverrideAsStrings() throws Exception {
+        File file = temporaryFolder.resolve("override-quoted-docker-compose.yml").toFile();
+        try (PrintWriter writer = new PrintWriter(file)) {
+            writer.println("services:");
+            writer.println("  db:");
+            writer.println("    image: !override \"1.0\"");
+        }
+        ParsedDockerComposeFile parsedFile = new ParsedDockerComposeFile(file);
+        assertThat(parsedFile.getServiceNameToImageNames())
+            .as("quoted values tagged with !override are not implicitly typed")
+            .containsOnly(entry("db", Sets.newHashSet("1.0")));
+    }
+
+    @Test
     void shouldIgnoreImageNamesRemovedWithResetTag() throws Exception {
         File file = temporaryFolder.resolve("reset-docker-compose.yml").toFile();
         try (PrintWriter writer = new PrintWriter(file)) {
