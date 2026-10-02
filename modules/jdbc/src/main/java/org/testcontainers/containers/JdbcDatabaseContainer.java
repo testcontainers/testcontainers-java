@@ -17,6 +17,8 @@ import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
+import java.sql.SQLTimeoutException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -191,15 +193,28 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
                 Thread.sleep(100L);
             } else {
                 try (Connection connection = createConnection(""); Statement statement = connection.createStatement()) {
+                    long remainingNanos = TimeUnit.SECONDS.toNanos(startupTimeoutSeconds) - (System.nanoTime() - start);
+                    if (remainingNanos <= 0) {
+                        throw new SQLTimeoutException("Startup timeout exceeded before executing the test query");
+                    }
+                    try {
+                        // JDBC uses whole seconds; zero would disable the timeout.
+                        statement.setQueryTimeout((int) Math.max(1, TimeUnit.NANOSECONDS.toSeconds(remainingNanos)));
+                    } catch (SQLFeatureNotSupportedException e) {
+                        logger().debug("JDBC driver does not support a query timeout", e);
+                    }
                     boolean testQuerySucceeded = statement.execute(this.getTestQueryString());
                     if (testQuerySucceeded) {
                         // Some databases (e.g. Trino) accept the query but only fail once its results are fetched,
                         // so the database is only considered ready after the results have been read successfully
                         try (ResultSet resultSet = statement.getResultSet()) {
                             if (resultSet != null) {
-                                while (resultSet.next()) {}
+                                while (resultSet.next()) {
+                                    checkStartupTimeout(start);
+                                }
                             }
                         }
+                        checkStartupTimeout(start);
                         return;
                     }
                 } catch (NoDriverFoundException e) {
@@ -221,6 +236,12 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
             ),
             lastConnectionException
         );
+    }
+
+    private void checkStartupTimeout(long start) throws SQLTimeoutException {
+        if (System.nanoTime() - start >= TimeUnit.SECONDS.toNanos(startupTimeoutSeconds)) {
+            throw new SQLTimeoutException("Startup timeout exceeded while reading the test query results");
+        }
     }
 
     @Override
