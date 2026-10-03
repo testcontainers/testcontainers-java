@@ -51,6 +51,8 @@ public final class EnvironmentAndSystemPropertyClientProviderStrategy extends Do
                 applicable = configBuilder.isDockerHostSetExplicitly();
                 break;
             case "dockerContext":
+                // none of the Testcontainers configuration are relevant when using docker contexts since we rely
+                // on the docker-java default to have all the necessary configuration already set.
                 applicable = true;
                 break;
             default:
