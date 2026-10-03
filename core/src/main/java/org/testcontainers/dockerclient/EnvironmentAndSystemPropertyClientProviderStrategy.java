@@ -50,6 +50,9 @@ public final class EnvironmentAndSystemPropertyClientProviderStrategy extends Do
             case "autoIgnoringUserProperties":
                 applicable = configBuilder.isDockerHostSetExplicitly();
                 break;
+            case "dockerContext":
+                applicable = true;
+                break;
             default:
                 throw new InvalidConfigurationException("Invalid value for dockerconfig.source: " + dockerConfigSource);
         }
