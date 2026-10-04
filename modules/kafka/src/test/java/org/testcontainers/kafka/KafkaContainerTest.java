@@ -22,6 +22,14 @@ class KafkaContainerTest extends AbstractKafka {
     }
 
     @Test
+    void testUsageWithTransactions() throws Exception {
+        try (KafkaContainer kafka = new KafkaContainer("apache/kafka-native:3.8.0")) {
+            kafka.start();
+            testKafkaTransactionalFunctionality(kafka.getBootstrapServers());
+        }
+    }
+
+    @Test
     void testUsageWithListener() throws Exception {
         try (
             Network network = Network.newNetwork();
