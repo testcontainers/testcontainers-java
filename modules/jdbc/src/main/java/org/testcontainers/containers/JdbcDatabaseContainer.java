@@ -17,6 +17,7 @@ import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -123,6 +124,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
      */
     public SELF withStartupTimeoutSeconds(int startupTimeoutSeconds) {
         this.startupTimeoutSeconds = startupTimeoutSeconds;
+        getWaitStrategy().withStartupTimeout(Duration.ofSeconds(startupTimeoutSeconds));
         return self();
     }
 
