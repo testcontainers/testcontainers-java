@@ -11,6 +11,7 @@ import org.testcontainers.containers.GenericContainer;
 import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -88,6 +89,61 @@ class WaitAllStrategyTest {
         assertThat(child2.startupTimeout.toMillis())
             .as("WaitAllStrategy overrides a child's timeout (2nd, additional)")
             .isEqualTo(20L);
+    }
+
+    @Test
+    void maximumOuterTimeoutPreservesChildrenAddedAfterTimeout() {
+        DummyStrategy child1 = new DummyStrategy(Duration.ofSeconds(5));
+        DummyStrategy child2 = new DummyStrategy(Duration.ofSeconds(10));
+
+        new WaitAllStrategy(WaitAllStrategy.Mode.WITH_MAXIMUM_OUTER_TIMEOUT)
+            .withStartupTimeout(Duration.ofSeconds(60))
+            .withStrategy(child1)
+            .withStrategy(child2);
+
+        assertThat(child1.startupTimeout).isEqualTo(Duration.ofSeconds(5));
+        assertThat(child2.startupTimeout).isEqualTo(Duration.ofSeconds(10));
+    }
+
+    @Test
+    void maximumOuterTimeoutPreservesChildrenAddedBeforeTimeout() {
+        DummyStrategy child1 = new DummyStrategy(Duration.ofSeconds(5));
+        DummyStrategy child2 = new DummyStrategy(Duration.ofSeconds(10));
+
+        new WaitAllStrategy(WaitAllStrategy.Mode.WITH_MAXIMUM_OUTER_TIMEOUT)
+            .withStrategy(child1)
+            .withStrategy(child2)
+            .withStartupTimeout(Duration.ofSeconds(60));
+
+        assertThat(child1.startupTimeout).isEqualTo(Duration.ofSeconds(5));
+        assertThat(child2.startupTimeout).isEqualTo(Duration.ofSeconds(10));
+    }
+
+    @Test
+    void maximumOuterTimeoutPreservesChildrenWhenTimeoutChanges() {
+        DummyStrategy child1 = new DummyStrategy(Duration.ofSeconds(5));
+        DummyStrategy child2 = new DummyStrategy(Duration.ofSeconds(10));
+
+        new WaitAllStrategy(WaitAllStrategy.Mode.WITH_MAXIMUM_OUTER_TIMEOUT)
+            .withStrategy(child1)
+            .withStartupTimeout(Duration.ofSeconds(60))
+            .withStrategy(child2)
+            .withStartupTimeout(Duration.ofSeconds(90));
+
+        assertThat(child1.startupTimeout).isEqualTo(Duration.ofSeconds(5));
+        assertThat(child2.startupTimeout).isEqualTo(Duration.ofSeconds(10));
+    }
+
+    @Test
+    void maximumOuterTimeoutAllowsNestedIndividualTimeoutStrategy() {
+        WaitAllStrategy child = new WaitAllStrategy(WaitAllStrategy.Mode.WITH_INDIVIDUAL_TIMEOUTS_ONLY);
+
+        assertThatCode(() -> {
+                new WaitAllStrategy(WaitAllStrategy.Mode.WITH_MAXIMUM_OUTER_TIMEOUT)
+                    .withStrategy(child)
+                    .withStartupTimeout(Duration.ofSeconds(60));
+            })
+            .doesNotThrowAnyException();
     }
 
     /*
