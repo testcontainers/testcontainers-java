@@ -4,10 +4,10 @@ dependencies {
     api project(':testcontainers')
     api project(':testcontainers-jdbc')
 
-    testRuntimeOnly 'org.postgresql:postgresql:42.7.12'
+    testRuntimeOnly 'org.postgresql:postgresql:42.7.13'
 
     testImplementation project(':testcontainers-jdbc-test')
-    testImplementation 'org.questdb:questdb:9.2.2'
+    testImplementation 'org.questdb:questdb:10.0.1'
     testImplementation 'org.awaitility:awaitility:4.3.0'
     testImplementation 'org.apache.httpcomponents:httpclient:4.5.14'
 }

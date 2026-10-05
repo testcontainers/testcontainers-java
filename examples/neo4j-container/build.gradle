@@ -7,12 +7,12 @@ repositories {
 }
 
 dependencies {
-    testImplementation 'org.assertj:assertj-core:3.27.4'
-    testImplementation 'org.neo4j.driver:neo4j-java-driver:4.4.20'
+    testImplementation 'org.assertj:assertj-core:3.27.7'
+    testImplementation 'org.neo4j.driver:neo4j-java-driver:4.4.27'
     testImplementation 'org.testcontainers:testcontainers-neo4j'
     testImplementation 'org.testcontainers:testcontainers-junit-jupiter'
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.14.4'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.14.4'
 }
 
 test {
