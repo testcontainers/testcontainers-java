@@ -7,28 +7,20 @@ task testMatrix {
             it.tasks.findByName("check")
         }.findAll { it != null }
 
-        dependsOn(checkTasks)
         doLast {
             def checkTaskPaths = checkTasks
                 .collect { it.path }
 
-            println(JsonOutput.toJson(checkTaskPaths))
-        }
-    }
-}
+            def json = JsonOutput.toJson(checkTaskPaths)
+            def outputPath = providers.gradleProperty("testMatrixOutput").getOrNull()
 
-// If we're executing the `testMatrix` task, disable tests and other slow tasks
-//  so that we can get a result quickly.
-gradle.taskGraph.whenReady {
-    if (it.hasTask(tasks.testMatrix)) {
-        for (subproject in subprojects) {
-            subproject.tasks.withType(Test).all {
-                testExecuter([execute: { spec, processor -> }, stopNow:{}] as org.gradle.api.internal.tasks.testing.TestExecuter)
+            if (outputPath != null) {
+                def outputFile = file(outputPath)
+                outputFile.parentFile.mkdirs()
+                outputFile.text = json + System.lineSeparator()
+            } else {
+                println(json)
             }
-            subproject.tasks.findByName("shadowJar")?.enabled = false
-            subproject.tasks.findByName("javadoc")?.enabled = false
-            subproject.tasks.findByName("delombok")?.enabled = false
-            subproject.tasks.findByName("japicmp")?.enabled = false
         }
     }
 }
