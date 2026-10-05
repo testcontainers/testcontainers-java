@@ -19,6 +19,10 @@ class ScriptSplitter {
 
     private final StringBuilder sb = new StringBuilder();
 
+		// Tracks deferred whitespace between lexems in standard parsing mode
+		private boolean pendingWhitespace = false;
+		private boolean pendingWhitespaceHadEol = false;
+
     /**
      * Standard parsing:
      * 1. Remove comments
@@ -26,33 +30,66 @@ class ScriptSplitter {
      * 3. Split on separator
      */
     void split() {
-        Lexem l;
-        while ((l = scanner.next()) != Lexem.EOF) {
-            switch (l) {
-                case SEPARATOR:
-                    flushStringBuilder();
-                    break;
-                case COMMENT:
-                    //skip
-                    break;
-                case WHITESPACE:
-                    if (sb.length() == 0 || sb.charAt(sb.length() - 1) != ' ') {
-                        sb.append(' ');
-                    }
-                    break;
-                case IDENTIFIER:
-                    appendMatch();
-                    if ("begin".equalsIgnoreCase(scanner.getCurrentMatch())) {
-                        compoundStatement(false);
-                        flushStringBuilder();
-                    }
-                    break;
-                default:
-                    appendMatch();
-            }
-        }
-        flushStringBuilder();
+		Lexem l;
+		while ((l = scanner.next()) != Lexem.EOF) {
+			switch (l) {
+				case SEPARATOR:
+					// statement boundary, reset any pending whitespace
+					pendingWhitespace = false;
+					pendingWhitespaceHadEol = false;
+					flushStringBuilder();
+					break;
+				case COMMENT:
+					// skip comments; keep pending whitespace as-is
+					break;
+				case WHITESPACE: {
+					// Defer emitting whitespace until we know what follows.
+					// This allows us to preserve a newline between adjacent quoted strings,
+					// which is required by some SQL dialects (e.g. PostgreSQL) to concatenate literals.
+					final String ws = scanner.getCurrentMatch();
+					pendingWhitespace = true;
+					pendingWhitespaceHadEol = ws.indexOf('\n') >= 0 || ws.indexOf('\r') >= 0;
+					break;
+				}
+				case IDENTIFIER: {
+					emitPendingWhitespaceIfNeeded(l);
+					appendMatch();
+					if ("begin".equalsIgnoreCase(scanner.getCurrentMatch())) {
+						compoundStatement(false);
+						flushStringBuilder();
+					}
+					break;
+				}
+				default:
+					emitPendingWhitespaceIfNeeded(l);
+					appendMatch();
+			}
+		}
+		flushStringBuilder();
     }
+
+		// helper: emits pending whitespace before the given next lexem
+		private void emitPendingWhitespaceIfNeeded(Lexem nextLexem) {
+			if (!pendingWhitespace) {
+				return;
+			}
+			// Decide between ' ' and '\n'
+			// Preserve a newline only when it appeared in the original whitespace
+			// and it separates two quoted strings.
+			final boolean prevEndsWithQuote =
+				sb.length() > 0 && (sb.charAt(sb.length() - 1) == '\'' || sb.charAt(sb.length() - 1) == '"');
+			if (pendingWhitespaceHadEol && prevEndsWithQuote && Lexem.QUOTED_STRING.equals(nextLexem)) {
+				if (sb.length() == 0 || sb.charAt(sb.length() - 1) != '\n') {
+					sb.append('\n');
+				}
+			} else {
+				if (sb.length() == 0 || sb.charAt(sb.length() - 1) != ' ') {
+					sb.append(' ');
+				}
+			}
+			pendingWhitespace = false;
+			pendingWhitespaceHadEol = false;
+		}
 
     /**
      * Compound statement ('create procedure') mode:
