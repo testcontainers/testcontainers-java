@@ -261,6 +261,26 @@ class ComposeDelegate {
     void startAmbassadorContainer() {
         if (!this.ambassadorPortMappings.isEmpty()) {
             this.ambassadorContainer.start();
+            connectAmbassadorToComposeNetworks();
+        }
+    }
+
+    private void connectAmbassadorToComposeNetworks() {
+        Set<String> composeNetworkIds = listChildContainers()
+            .stream()
+            .filter(container -> {
+                return container.getNetworkSettings() != null && container.getNetworkSettings().getNetworks() != null;
+            })
+            .flatMap(container -> container.getNetworkSettings().getNetworks().entrySet().stream())
+            .filter(entry -> !Arrays.asList("bridge", "host", "none").contains(entry.getKey()))
+            .map(entry -> entry.getValue().getNetworkID())
+            .collect(Collectors.toSet());
+
+        for (String composeNetworkId : composeNetworkIds) {
+            this.dockerClient.connectToNetworkCmd()
+                .withContainerId(this.ambassadorContainer.getContainerId())
+                .withNetworkId(composeNetworkId)
+                .exec();
         }
     }
 
@@ -282,15 +302,14 @@ class ComposeDelegate {
         /*
          * For every service/port pair that needs to be exposed, we register a target on an 'ambassador container'.
          *
-         * The ambassador container's role is to link (within the Docker network) to one of the
-         * compose services, and proxy TCP network I/O out to a port that the ambassador container
-         * exposes.
+         * The ambassador container's role is to proxy TCP network I/O from one of the compose
+         * services out to a port that the ambassador container exposes.
+         *
+         * After Docker Compose starts, the ambassador container is connected to the compose
+         * network so it can resolve service names via Docker's built-in DNS.
          *
          * This avoids the need for the docker compose file to explicitly expose ports on all the
          * services.
-         *
-         * {@link GenericContainer} should ensure that the ambassador container is on the same network
-         * as the rest of the compose environment.
          */
 
         // Ambassador container will be started together after docker compose has started
@@ -298,11 +317,10 @@ class ComposeDelegate {
         ambassadorPortMappings
             .computeIfAbsent(serviceInstanceName, __ -> new ConcurrentHashMap<>())
             .put(servicePort, ambassadorPort);
-        ambassadorContainer.withTarget(ambassadorPort, serviceInstanceName, servicePort);
-        ambassadorContainer.addLink(
-            new FutureContainer(this.project + this.composeSeparator + serviceInstanceName),
-            serviceInstanceName
-        );
+        // Use the full container name as the socat target so Docker DNS can resolve it
+        // on the compose network (e.g., "project-redis-1" instead of just "redis-1")
+        String containerName = this.project + this.composeSeparator + serviceInstanceName;
+        ambassadorContainer.withTarget(ambassadorPort, containerName, servicePort);
         addWaitStrategy(serviceInstanceName, waitStrategy);
     }
 
