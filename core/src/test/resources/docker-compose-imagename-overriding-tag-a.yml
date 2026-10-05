@@ -1,0 +1,7 @@
+services:
+    db:
+        image: postgres:15
+    redis:
+        image: redis:6
+    mysql:
+        image: mysql:8.0

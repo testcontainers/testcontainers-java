@@ -1,6 +1,7 @@
 package org.testcontainers.containers;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -12,6 +13,8 @@ import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.nodes.Node;
+import org.yaml.snakeyaml.nodes.NodeId;
+import org.yaml.snakeyaml.nodes.ScalarNode;
 import org.yaml.snakeyaml.nodes.Tag;
 import org.yaml.snakeyaml.representer.Representer;
 import org.yaml.snakeyaml.resolver.Resolver;
@@ -32,6 +35,19 @@ import java.util.Set;
 @EqualsAndHashCode
 class ParsedDockerComposeFile {
 
+    /**
+     * Top-level elements of the Compose file format that are not services, e.g. in a file without a 'services' element
+     */
+    private static final Set<String> TOP_LEVEL_ELEMENTS = ImmutableSet.of(
+        "version",
+        "name",
+        "include",
+        "networks",
+        "volumes",
+        "configs",
+        "secrets"
+    );
+
     private final Map<String, Object> composeFileContent;
 
     private final String composeFileName;
@@ -46,17 +62,22 @@ class ParsedDockerComposeFile {
         LoaderOptions options = new LoaderOptions();
         options.setMaxAliasesForCollections(1_000);
         DumperOptions dumperOptions = new DumperOptions();
+        Resolver resolver = new Resolver();
 
         SafeConstructor constructor = new SafeConstructor(options) {
             @Override
             protected Object constructObject(Node node) {
-                if (node.getTag().equals(new Tag("!reset")) || node.getTag().equals(new Tag("!override"))) {
+                if (node.getTag().equals(new Tag("!reset"))) {
                     return null;
+                }
+                if (node.getTag().equals(new Tag("!override"))) {
+                    // !override replaces the value from previous compose files, so keep the value as if it was untagged
+                    node.setTag(resolveUntaggedTag(node, resolver));
                 }
                 return super.constructObject(node);
             }
         };
-        Yaml yaml = new Yaml(constructor, new Representer(dumperOptions), dumperOptions, options, new Resolver());
+        Yaml yaml = new Yaml(constructor, new Representer(dumperOptions), dumperOptions, options, resolver);
         try (FileInputStream fileInputStream = FileUtils.openInputStream(composeFile)) {
             composeFileContent = yaml.load(fileInputStream);
         } catch (Exception e) {
@@ -76,8 +97,21 @@ class ParsedDockerComposeFile {
         parseAndValidate();
     }
 
+    private static Tag resolveUntaggedTag(Node node, Resolver resolver) {
+        switch (node.getNodeId()) {
+            case mapping:
+                return Tag.MAP;
+            case sequence:
+                return Tag.SEQ;
+            default:
+                ScalarNode scalarNode = (ScalarNode) node;
+                return resolver.resolve(NodeId.scalar, scalarNode.getValue(), scalarNode.isPlain());
+        }
+    }
+
     private void parseAndValidate() {
         final Map<String, ?> servicesMap;
+        final boolean legacyFormat;
         if (composeFileContent.containsKey("version") && "2.0".equals(composeFileContent.get("version"))) {
             log.warn(
                 "Testcontainers may not be able to clean up networks spawned using Docker Compose v2.0 files. " +
@@ -104,12 +138,18 @@ class ParsedDockerComposeFile {
             @SuppressWarnings("unchecked")
             Map<String, ?> temp = (Map<String, ?>) servicesElement;
             servicesMap = temp;
+            legacyFormat = false;
         } else {
+            // Compose file format v1: top-level elements are services
             servicesMap = composeFileContent;
+            legacyFormat = true;
         }
 
         for (Map.Entry<String, ?> entry : servicesMap.entrySet()) {
             String serviceName = entry.getKey();
+            if (legacyFormat && (TOP_LEVEL_ELEMENTS.contains(serviceName) || serviceName.startsWith("x-"))) {
+                continue;
+            }
             Object serviceDefinition = entry.getValue();
             if (!(serviceDefinition instanceof Map)) {
                 log.debug(
@@ -117,7 +157,7 @@ class ParsedDockerComposeFile {
                     composeFileName,
                     serviceName
                 );
-                break;
+                continue;
             }
 
             @SuppressWarnings("unchecked")
