@@ -6,6 +6,8 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.containers.wait.strategy.WaitStrategy;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
@@ -41,9 +43,15 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
 
     private static final String STARTER_SCRIPT = "/testcontainers_start.sh";
 
+    private static final String INIT_SCRIPT_DIR = "/docker-entrypoint-initdb.d";
+
     private boolean shardingEnabled;
 
     private boolean rsEnabled;
+
+    private boolean hasInitScript;
+
+    private boolean customWaitStrategy;
 
     public MongoDBContainer(@NonNull String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
@@ -54,12 +62,71 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, COMMUNITY_SERVER_IMAGE, ENTERPRISE_SERVER_IMAGE);
 
         withExposedPorts(MONGODB_INTERNAL_PORT);
+        super.waitingFor(Wait.forLogMessage("(?i).*waiting for connections.*", 1));
+    }
+
+    @Override
+    public MongoDBContainer waitingFor(@NonNull WaitStrategy waitStrategy) {
+        this.customWaitStrategy = true;
+        return super.waitingFor(waitStrategy);
+    }
+
+    @Override
+    public void setWaitStrategy(WaitStrategy waitStrategy) {
+        this.customWaitStrategy = true;
+        super.setWaitStrategy(waitStrategy);
+    }
+
+    @Override
+    public MongoDBContainer withCopyFileToContainer(MountableFile mountableFile, String containerPath) {
+        checkInitScript(containerPath);
+        return super.withCopyFileToContainer(mountableFile, containerPath);
+    }
+
+    @Override
+    public MongoDBContainer withCopyToContainer(Transferable transferable, String containerPath) {
+        checkInitScript(containerPath);
+        return super.withCopyToContainer(transferable, containerPath);
+    }
+
+    private static boolean isInitScriptPath(String path) {
+        if (path == null) {
+            return false;
+        }
+        if (path.equals(INIT_SCRIPT_DIR) || path.equals(INIT_SCRIPT_DIR + "/")) {
+            return true;
+        }
+        if (path.startsWith(INIT_SCRIPT_DIR + "/")) {
+            String subPath = path.substring(INIT_SCRIPT_DIR.length() + 1);
+            return (
+                !subPath.contains("/") &&
+                !subPath.contains("\\") &&
+                !subPath.startsWith(".") &&
+                (subPath.endsWith(".js") || subPath.endsWith(".sh"))
+            );
+        }
+        return false;
+    }
+
+    private void checkInitScript(String containerPath) {
+        if (isInitScriptPath(containerPath)) {
+            this.hasInitScript = true;
+        }
+    }
+
+    private boolean hasInitScript() {
+        return (
+            this.hasInitScript ||
+            getBinds().stream().anyMatch(b -> b.getVolume() != null && isInitScriptPath(b.getVolume().getPath()))
+        );
     }
 
     @Override
     protected void containerIsStarting(InspectContainerResponse containerInfo) {
         if (this.shardingEnabled) {
             copyFileToContainer(MountableFile.forClasspathResource("/sharding.sh", 0777), STARTER_SCRIPT);
+        } else if (!this.customWaitStrategy && hasInitScript()) {
+            super.setWaitStrategy(Wait.forLogMessage("(?i).*waiting for connections.*", 2));
         }
     }
 
@@ -157,7 +224,6 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
     public MongoDBContainer withReplicaSet() {
         this.rsEnabled = true;
         withCommand("--replSet", "docker-rs");
-        waitingFor(Wait.forLogMessage("(?i).*waiting for connections.*", 1));
         return this;
     }
 
