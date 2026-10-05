@@ -33,9 +33,11 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
         super(dockerImageName);
         addEnv(ENV_PROJECT_NAME, identifier);
 
-        // Map the docker compose file into the container
-        final File dockerComposeBaseFile = composeFiles.get(0);
-        final String pwd = dockerComposeBaseFile.getAbsoluteFile().getParentFile().getAbsolutePath();
+        // Docker Compose (running inside the container) needs one shared root directory to resolve
+        // every -f file against, so map the files in relative to the closest common ancestor of all
+        // of them rather than assuming they all live alongside the first file.
+        final File composeFileRoot = PathUtils.findCommonParent(composeFiles);
+        final String pwd = composeFileRoot.getAbsolutePath();
         final String containerPwd = convertToUnixFilesystemPath(pwd);
 
         final List<String> absoluteDockerComposeFiles = composeFiles
@@ -52,12 +54,14 @@ class ContainerisedDockerCompose extends GenericContainer<ContainerisedDockerCom
             logger().info("Copying all files in {} into the container", pwd);
             withCopyFileToContainer(MountableFile.forHostPath(pwd), containerPwd);
         } else {
-            // Always copy the compose file itself
-            logger().info("Copying docker compose file: {}", dockerComposeBaseFile.getAbsolutePath());
-            withCopyFileToContainer(
-                MountableFile.forHostPath(dockerComposeBaseFile.getAbsolutePath()),
-                convertToUnixFilesystemPath(dockerComposeBaseFile.getAbsolutePath())
-            );
+            // Always copy the compose files themselves, wherever they live under the common root
+            for (File composeFile : composeFiles) {
+                logger().info("Copying docker compose file: {}", composeFile.getAbsolutePath());
+                withCopyFileToContainer(
+                    MountableFile.forHostPath(composeFile.getAbsolutePath()),
+                    convertToUnixFilesystemPath(composeFile.getAbsolutePath())
+                );
+            }
             for (String pathToCopy : fileCopyInclusions) {
                 String hostPath = pwd + "/" + pathToCopy;
                 logger().info("Copying inclusion file: {}", hostPath);
