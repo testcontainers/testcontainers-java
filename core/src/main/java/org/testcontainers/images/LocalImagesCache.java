@@ -14,8 +14,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Slf4j
 enum LocalImagesCache {
@@ -35,8 +33,6 @@ enum LocalImagesCache {
     public Optional<ImageData> refreshCache(DockerImageName imageName) {
         DockerClient dockerClient = DockerClientFactory.instance().client();
         if (!maybeInitCache(dockerClient)) {
-            // Cache may be stale, trying inspectImageCmd...
-
             InspectImageResponse response = null;
             try {
                 response = dockerClient.inspectImageCmd(imageName.asCanonicalNameString()).exec();
@@ -46,6 +42,24 @@ enum LocalImagesCache {
             if (response != null) {
                 ImageData imageData = ImageData.from(response);
                 cache.put(imageName, imageData);
+                if (response.getRepoDigests() != null) {
+                    for (String repoDigest : response.getRepoDigests()) {
+                        if (repoDigest != null && !"<none>@<none>".equals(repoDigest)) {
+                            try {
+                                cache.put(DockerImageName.parse(repoDigest), imageData);
+                            } catch (IllegalArgumentException ignored) {}
+                        }
+                    }
+                }
+                String imageId = response.getId();
+                if (imageId != null) {
+                    try {
+                        cache.put(DockerImageName.parse(imageId), imageData);
+                        if (imageId.startsWith("sha256:")) {
+                            cache.put(DockerImageName.parse(imageId.substring(7)), imageData);
+                        }
+                    } catch (IllegalArgumentException ignored) {}
+                }
                 return Optional.of(imageData);
             } else {
                 cache.remove(imageName);
@@ -56,7 +70,8 @@ enum LocalImagesCache {
         return Optional.ofNullable(cache.get(imageName));
     }
 
-    private synchronized boolean maybeInitCache(DockerClient dockerClient) {
+    @VisibleForTesting
+    synchronized boolean maybeInitCache(DockerClient dockerClient) {
         if (!initialized.compareAndSet(false, true)) {
             return false;
         }
@@ -72,20 +87,43 @@ enum LocalImagesCache {
 
     private void populateFromList(List<Image> images) {
         for (Image image : images) {
-            String[] repoTags = image.getRepoTags();
-            if (repoTags == null) {
-                log.debug("repoTags is null, skipping image: {}", image);
-                continue;
+            ImageData imageData = ImageData.from(image);
+
+            if (image.getRepoTags() != null) {
+                for (String repoTag : image.getRepoTags()) {
+                    if (repoTag != null && !"<none>:<none>".equals(repoTag)) {
+                        try {
+                            cache.put(DockerImageName.parse(repoTag), imageData);
+                        } catch (IllegalArgumentException e) {
+                            log.debug("Failed to parse repoTag: {}", repoTag, e);
+                        }
+                    }
+                }
             }
 
-            cache.putAll(
-                Stream
-                    .of(repoTags)
-                    // Protection against some edge case where local image repository tags end up with duplicates
-                    // making toMap crash at merge time.
-                    .distinct()
-                    .collect(Collectors.toMap(DockerImageName::new, it -> ImageData.from(image)))
-            );
+            if (image.getRepoDigests() != null) {
+                for (String repoDigest : image.getRepoDigests()) {
+                    if (repoDigest != null && !"<none>@<none>".equals(repoDigest)) {
+                        try {
+                            cache.put(DockerImageName.parse(repoDigest), imageData);
+                        } catch (IllegalArgumentException e) {
+                            log.debug("Failed to parse repoDigest: {}", repoDigest, e);
+                        }
+                    }
+                }
+            }
+
+            String imageId = image.getId();
+            if (imageId != null) {
+                try {
+                    cache.put(DockerImageName.parse(imageId), imageData);
+                    if (imageId.startsWith("sha256:")) {
+                        cache.put(DockerImageName.parse(imageId.substring(7)), imageData);
+                    }
+                } catch (IllegalArgumentException e) {
+                    log.debug("Failed to parse image id: {}", imageId, e);
+                }
+            }
         }
     }
 }
