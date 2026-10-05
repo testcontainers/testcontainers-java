@@ -263,6 +263,23 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         return exposedPorts;
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Unlike the default implementation, this preserves the protocol the first port was exposed with,
+     * so it also works for containers whose first exposed port is UDP.
+     */
+    @Override
+    public Integer getFirstMappedPort() {
+        return this.containerDef.getExposedPorts()
+            .stream()
+            .findFirst()
+            .map(exposedPort ->
+                getMappedPort(exposedPort.getPort(), InternetProtocol.fromDockerNotation(exposedPort.getProtocol().toString()))
+            )
+            .orElseThrow(() -> new IllegalStateException("Container doesn't expose any ports"));
+    }
+
     @Override
     public void setExposedPorts(List<Integer> exposedPorts) {
         this.containerDef.exposedPorts.clear();
@@ -1046,6 +1063,30 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public void addExposedPorts(int... ports) {
         this.containerDef.addExposedTcpPorts(ports);
+    }
+
+    /**
+     * Expose a container port using a specific protocol, so that a randomly chosen host port will be bound to it
+     * when the container starts. Use {@link ContainerState#getMappedPort(int, InternetProtocol)} to retrieve the
+     * bound host port once the container is running.
+     *
+     * @param port the container port to expose
+     * @param protocol the protocol (TCP or UDP) that the port should be exposed with
+     */
+    public void addExposedPort(int port, InternetProtocol protocol) {
+        this.containerDef.addExposedPort(port, com.github.dockerjava.api.model.InternetProtocol.parse(protocol.name()));
+    }
+
+    /**
+     * Fluent variant of {@link #addExposedPort(int, InternetProtocol)}.
+     *
+     * @param port the container port to expose
+     * @param protocol the protocol (TCP or UDP) that the port should be exposed with
+     * @return this
+     */
+    public SELF withExposedPort(int port, InternetProtocol protocol) {
+        addExposedPort(port, protocol);
+        return self();
     }
 
     /**
