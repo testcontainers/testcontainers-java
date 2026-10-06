@@ -158,6 +158,12 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     protected final Set<Startable> dependencies = new HashSet<>();
 
     /**
+     * Guards {@link #start()} and {@link #stop()} so that concurrent invocations on the same instance
+     * do not create/start more than one underlying container (or race with a concurrent stop).
+     */
+    private final Object startLock = new Object();
+
+    /**
      * Unique instance of DockerClient for use by this container object.
      * We use {@link DockerClientFactory#lazyClient()} here to avoid eager client creation
      */
@@ -169,7 +175,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Setter(AccessLevel.NONE)
     @VisibleForTesting
-    String containerId;
+    volatile String containerId;
 
     @Setter(AccessLevel.NONE)
     private InspectContainerResponse containerInfo;
@@ -308,13 +314,15 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     @SneakyThrows({ InterruptedException.class, ExecutionException.class })
     public void start() {
-        if (containerId != null) {
-            return;
+        synchronized (startLock) {
+            if (containerId != null) {
+                return;
+            }
+            Startables.deepStart(dependencies).get();
+            // trigger LazyDockerClient's resolve so that we fail fast here and not in getDockerImageName()
+            dockerClient.authConfig();
+            doStart();
         }
-        Startables.deepStart(dependencies).get();
-        // trigger LazyDockerClient's resolve so that we fail fast here and not in getDockerImageName()
-        dockerClient.authConfig();
-        doStart();
     }
 
     protected void doStart() {
@@ -635,25 +643,27 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public void stop() {
-        if (containerId == null) {
-            return;
-        }
-
-        try {
-            String imageName;
-
-            try {
-                imageName = getDockerImageName();
-            } catch (Exception e) {
-                imageName = "<unknown>";
+        synchronized (startLock) {
+            if (containerId == null) {
+                return;
             }
 
-            containerIsStopping(containerInfo);
-            ResourceReaper.instance().stopAndRemoveContainer(containerId, imageName);
-            containerIsStopped(containerInfo);
-        } finally {
-            containerId = null;
-            containerInfo = null;
+            try {
+                String imageName;
+
+                try {
+                    imageName = getDockerImageName();
+                } catch (Exception e) {
+                    imageName = "<unknown>";
+                }
+
+                containerIsStopping(containerInfo);
+                ResourceReaper.instance().stopAndRemoveContainer(containerId, imageName);
+                containerIsStopped(containerInfo);
+            } finally {
+                containerId = null;
+                containerInfo = null;
+            }
         }
     }
 
