@@ -1,0 +1,65 @@
+{
+  "name": "outbound",
+  "address": {
+    "socketAddress": {
+      "address": "0.0.0.0",
+      "portValue": 15001
+    }
+  },
+  "filterChains": [
+    {
+      "filters": [
+        {
+          "name": "envoy.filters.network.http_connection_manager",
+          "typedConfig": {
+            "@type": "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager",
+            "statPrefix": "outbound_http",
+            "routeConfig": {
+              "name": "outbound",
+              "virtualHosts": [
+                {
+                  "name": "server",
+                  "domains": [
+                    "*"
+                  ],
+                  "routes": [
+                    {
+                      "match": {
+                        "prefix": "/"
+                      },
+                      "route": {
+                        "cluster": "server",
+                        "timeout": "1s",
+                        "retryPolicy": {
+                          "retryOn": "5xx",
+                          "numRetries": 2
+                        }
+                      }
+                    }
+                  ],
+                  "requestHeadersToAdd": [
+                    {
+                      "header": {
+                        "key": "x-service-caller",
+                        "value": "client"
+                      },
+                      "appendAction": "OVERWRITE_IF_EXISTS_OR_ADD"
+                    }
+                  ]
+                }
+              ]
+            },
+            "httpFilters": [
+              {
+                "name": "envoy.filters.http.router",
+                "typedConfig": {
+                  "@type": "type.googleapis.com/envoy.extensions.filters.http.router.v3.Router"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
