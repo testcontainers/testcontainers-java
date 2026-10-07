@@ -17,3 +17,4 @@ Examples of different use cases provided by Testcontainers can be found below:
 - [Zookeeper](https://github.com/testcontainers/testcontainers-java/tree/main/examples/zookeeper)
 - [NATS](https://github.com/testcontainers/testcontainers-java/tree/main/examples/nats)
 - [SFTP](https://github.com/testcontainers/testcontainers-java/tree/main/examples/sftp)
+- [Ollama with Hugging Face](https://github.com/testcontainers/testcontainers-java/tree/main/examples/ollama-hugging-face)

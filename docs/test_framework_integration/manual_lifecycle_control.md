@@ -21,27 +21,11 @@ Sometimes it might be useful to define a container that is only started once for
 There is no special support for this use case provided by the Testcontainers extension.
 Instead this can be implemented using the following pattern:
 
-```java
-abstract class AbstractContainerBaseTest {
+<!--codeinclude-->
+[Singleton container base class](../../examples/singleton-container/src/test/java/com/example/AbstractIntegrationTest.java) block:AbstractIntegrationTest
+<!--/codeinclude-->
 
-    static final MySQLContainer MY_SQL_CONTAINER;
-
-    static {
-        MY_SQL_CONTAINER = new MySQLContainer();
-        MY_SQL_CONTAINER.start();
-    }
-}
-
-class FirstTest extends AbstractContainerBaseTest {
-
-    @Test
-    void someTestMethod() {
-        String url = MY_SQL_CONTAINER.getJdbcUrl();
-
-        // create a connection and run test as normal
-    }
-}
-```
+For a complete set of test classes using this pattern, see the [singleton container example](https://github.com/testcontainers/testcontainers-java/tree/main/examples/singleton-container).
 
 The singleton container is started only once when the base class is loaded.
 The container can then be used by all inheriting test classes.
