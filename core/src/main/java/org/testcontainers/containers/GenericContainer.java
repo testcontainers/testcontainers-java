@@ -169,7 +169,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Setter(AccessLevel.NONE)
     @VisibleForTesting
-    String containerId;
+    volatile String containerId;
 
     @Setter(AccessLevel.NONE)
     private InspectContainerResponse containerInfo;
@@ -307,7 +307,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     @SneakyThrows({ InterruptedException.class, ExecutionException.class })
-    public void start() {
+    public synchronized void start() {
         if (containerId != null) {
             return;
         }
@@ -634,7 +634,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      * Kill and remove the container.
      */
     @Override
-    public void stop() {
+    public synchronized void stop() {
         if (containerId == null) {
             return;
         }
