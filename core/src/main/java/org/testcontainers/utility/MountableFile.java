@@ -353,6 +353,10 @@ public class MountableFile implements Transferable {
             }
 
             final TarArchiveEntry tarEntry = new TarArchiveEntry(sourceFile, tarEntryFilename.replaceAll("^/", ""));
+            tarEntry.setUserId(0);
+            tarEntry.setGroupId(0);
+            tarEntry.setUserName("root");
+            tarEntry.setGroupName("root");
 
             // TarArchiveEntry automatically sets the mode for file/directory, but we can update to ensure that the mode is set exactly (inc executable bits)
             tarEntry.setMode(getUnixFileMode(itemPath));
