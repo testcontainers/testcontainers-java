@@ -174,3 +174,17 @@ Examples/Tests:
 
  * [MySQL](https://github.com/testcontainers/testcontainers-java/blob/main/modules/mysql/src/test/java/org/testcontainers/junit/mysql/SimpleMySQLTest.java)
  * [PostgreSQL](https://github.com/testcontainers/testcontainers-java/blob/main/modules/postgresql/src/test/java/org/testcontainers/junit/postgresql/SimplePostgreSQLTest.java)
+
+## Init script encoding for container instances
+
+Scripts configured with `withInitScript` or `withInitScripts` are read as UTF-8 by default.
+For scripts saved with another encoding, set the charset on the container before starting it:
+
+```java
+container.withInitScript("init.sql")
+    .withInitScriptCharset(java.nio.charset.Charset.forName("windows-1252"));
+```
+
+The charset applies to all scripts configured on that container. It controls how the script files
+are read, not the database's character set. Scripts loaded through the JDBC URL parameter
+`TC_INITSCRIPT` continue to use UTF-8.
