@@ -8,6 +8,37 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class DockerImageNameCompatibilityTest {
 
     @Test
+    void testNoExplicitCompatibility() {
+        DockerImageName image = DockerImageName.parse("wiremock/wiremock:test");
+
+        assertThat(image.isCompatibleWith(DockerImageName.parse("wiremock/wiremock"))).isTrue();
+        assertThat(image.getCompatibleSubstituteFor()).isNull();
+    }
+
+    @Test
+    void testExplicitCompatibilityFromString() {
+        DockerImageName original = DockerImageName.parse("custom/wiremock:test");
+        DockerImageName image = original.asCompatibleSubstituteFor("wiremock/wiremock:3.0.0");
+
+        assertThat(image.getCompatibleSubstituteFor()).isEqualTo(DockerImageName.parse("wiremock/wiremock:3.0.0"));
+        assertThat(original.getCompatibleSubstituteFor()).isNull();
+    }
+
+    @Test
+    void testExplicitCompatibilitySurvivesImageChanges() {
+        DockerImageName compatibleImage = DockerImageName.parse("wiremock/wiremock:3.0.0");
+        DockerImageName image = DockerImageName
+            .parse("custom/wiremock:test")
+            .asCompatibleSubstituteFor(compatibleImage)
+            .withRegistry("registry.example.com")
+            .withRepository("mirror/wiremock")
+            .withTag("custom");
+
+        assertThat(image.getCompatibleSubstituteFor()).isSameAs(compatibleImage);
+        assertThat(image.isCompatibleWith(compatibleImage)).isTrue();
+    }
+
+    @Test
     void testPlainImage() {
         DockerImageName subject = DockerImageName.parse("foo");
 
