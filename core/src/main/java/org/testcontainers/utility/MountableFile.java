@@ -250,7 +250,7 @@ public class MountableFile implements Transferable {
                         hostPath,
                         tmpLocation
                     );
-                    copyFromJarToLocation(jarFile, entry, internalPath, tmpLocation);
+                    copyFromJarToLocation(jarFile, entry, tmpLocation);
                 }
             }
         } catch (IOException e) {
@@ -264,7 +264,14 @@ public class MountableFile implements Transferable {
         deleteOnExit(tmpLocation.toPath());
 
         try {
-            return tmpLocation.getCanonicalPath();
+            // Preserve the resource's own path within the JAR underneath the extraction directory
+            // (see #9423). A single extracted file therefore still ends up inside a directory
+            // created specifically for this extraction, rather than being written directly onto
+            // the temp directory's own path - which would leave the extracted file's parent as the
+            // shared system temp directory, breaking any caller that treats the resolved path's
+            // parent as a self-contained context (e.g. building an image from a Dockerfile loaded
+            // via a classpath resource).
+            return new File(tmpLocation, internalPath).getCanonicalPath();
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
@@ -282,16 +289,18 @@ public class MountableFile implements Transferable {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    private void copyFromJarToLocation(
-        final JarFile jarFile,
-        final JarEntry entry,
-        final String fromRoot,
-        final File toRoot
-    ) throws IOException {
-        String destinationName = entry.getName().replaceFirst(fromRoot, "");
-        File newFile = new File(toRoot, destinationName);
+    private void copyFromJarToLocation(final JarFile jarFile, final JarEntry entry, final File toRoot) throws IOException {
+        File newFile = new File(toRoot, entry.getName());
 
-        log.debug("Copying resource {} from JAR file {}", fromRoot, jarFile.getName());
+        // Guard against malformed entries (e.g. containing "../") escaping the extraction directory
+        Path rootPath = toRoot.getCanonicalFile().toPath();
+        if (!newFile.getCanonicalFile().toPath().startsWith(rootPath)) {
+            throw new IOException(
+                "JAR entry " + entry.getName() + " would be extracted outside of the target directory " + toRoot
+            );
+        }
+
+        log.debug("Copying resource {} from JAR file {}", entry.getName(), jarFile.getName());
 
         if (!entry.isDirectory()) {
             // Create parent directories

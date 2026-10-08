@@ -11,9 +11,16 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.function.Consumer;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -51,6 +58,62 @@ class MountableFileTest {
         final MountableFile mountableFile = MountableFile.forClasspathResource("/META-INF/dummy_unique_name.txt");
 
         performChecks(mountableFile);
+    }
+
+    @Test
+    void forClasspathResourceFileInJarIsExtractedIntoItsOwnDirectory() throws Exception {
+        // see #9423: a single-file classpath resource extracted from a JAR must end up inside a
+        // directory created specifically for this extraction (preserving the resource's own path
+        // within the JAR), rather than being written directly onto the temp *directory*'s own path.
+        // Otherwise the extracted file's parent is the shared system temp directory, which breaks
+        // any caller that treats the resolved path's parent as a self-contained context (e.g.
+        // building an image from a Dockerfile loaded via MountableFile.forClasspathResource(...)).
+        final Map<String, String> entries = new LinkedHashMap<>();
+        entries.put("nested/inside/jar/Dockerfile", "FROM postgres\n");
+        final Path jarFile = createJarWithEntries(entries);
+
+        withJarOnClasspath(
+            jarFile,
+            () -> {
+                final MountableFile mountableFile = MountableFile.forClasspathResource("nested/inside/jar/Dockerfile");
+                final File extractedFile = new File(mountableFile.getFilesystemPath());
+
+                assertThat(extractedFile).as("the resource was extracted to a real file").isFile();
+                assertThat(Files.readString(extractedFile.toPath())).isEqualTo("FROM postgres\n");
+
+                final File parentDir = extractedFile.getParentFile();
+                assertThat(parentDir)
+                    .as("the extracted file's parent is not the shared system temp directory")
+                    .isNotEqualTo(new File(System.getProperty("java.io.tmpdir")));
+                assertThat(parentDir.list())
+                    .as("only the extracted resource lives in its own extraction directory")
+                    .containsExactly("Dockerfile");
+            }
+        );
+    }
+
+    @Test
+    void forClasspathResourceDirectoryInJarPreservesRelativeStructure() throws Exception {
+        // Regression guard: extracting a directory resource from a JAR must still lay out its
+        // files relative to the resolved path exactly as before this fix.
+        final Map<String, String> entries = new LinkedHashMap<>();
+        entries.put("assets/", "");
+        entries.put("assets/dir/", "");
+        entries.put("assets/dir/sub/", "");
+        entries.put("assets/dir/a.txt", "a-content");
+        entries.put("assets/dir/sub/b.txt", "b-content");
+        final Path jarFile = createJarWithEntries(entries);
+
+        withJarOnClasspath(
+            jarFile,
+            () -> {
+                final MountableFile mountableFile = MountableFile.forClasspathResource("assets/dir");
+                final String resolvedPath = mountableFile.getResolvedPath();
+
+                assertThat(Files.readString(new File(resolvedPath, "a.txt").toPath())).isEqualTo("a-content");
+                assertThat(Files.readString(new File(resolvedPath, "sub/b.txt").toPath())).isEqualTo("b-content");
+            }
+        );
     }
 
     @Test
@@ -129,6 +192,38 @@ class MountableFileTest {
         while ((entry = tais.getNextEntry()) != null) {
             assertThat(entry.getName()).as("no entries should have a trailing slash").doesNotEndWith("/");
         }
+    }
+
+    @NotNull
+    private Path createJarWithEntries(final Map<String, String> entries) throws IOException {
+        final Path jarFile = Files.createTempFile("mountable-file-test", ".jar");
+        jarFile.toFile().deleteOnExit();
+
+        try (JarOutputStream jos = new JarOutputStream(Files.newOutputStream(jarFile))) {
+            for (final Map.Entry<String, String> entry : entries.entrySet()) {
+                jos.putNextEntry(new JarEntry(entry.getKey()));
+                jos.write(entry.getValue().getBytes(StandardCharsets.UTF_8));
+                jos.closeEntry();
+            }
+        }
+
+        return jarFile;
+    }
+
+    private void withJarOnClasspath(final Path jarFile, final ThrowingRunnable runnable) throws Exception {
+        final ClassLoader previousContextClassLoader = Thread.currentThread().getContextClassLoader();
+        try (URLClassLoader jarClassLoader = new URLClassLoader(new URL[] { jarFile.toUri().toURL() }, previousContextClassLoader)) {
+            Thread.currentThread().setContextClassLoader(jarClassLoader);
+            try {
+                runnable.run();
+            } finally {
+                Thread.currentThread().setContextClassLoader(previousContextClassLoader);
+            }
+        }
+    }
+
+    private interface ThrowingRunnable {
+        void run() throws Exception;
     }
 
     private TarArchiveInputStream intoTarArchive(Consumer<TarArchiveOutputStream> consumer) throws IOException {
