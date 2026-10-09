@@ -212,6 +212,10 @@ public class TestcontainersConfiguration {
         return Integer.parseInt(getEnvVarOrProperty("pull.timeout", "120"));
     }
 
+    public boolean isImageFromDockerfileNoCache() {
+        return Boolean.parseBoolean(getEnvVarOrProperty("imagefromdockerfile.nocache", "false"));
+    }
+
     public String getImageSubstitutorClassName() {
         return getEnvVarOrProperty("image.substitutor", null);
     }
