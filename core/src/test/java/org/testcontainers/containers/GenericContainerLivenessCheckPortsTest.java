@@ -34,7 +34,7 @@ class GenericContainerLivenessCheckPortsTest {
             binding(8080, com.github.dockerjava.api.model.InternetProtocol.TCP, 58080)
         )
             .withExposedPort(12345, InternetProtocol.UDP)
-            .withExposedPorts(8080);
+            .withExposedPort(8080, InternetProtocol.TCP);
 
         assertThat(container.getLivenessCheckPortNumbers()).containsExactly(58080);
     }
