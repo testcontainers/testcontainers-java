@@ -97,7 +97,22 @@ jobs:
           READ_ONLY_REMOTE_GRADLE_CACHE: true
         run: |
           set -o pipefail
-          TASKS=$(./gradlew --no-daemon --parallel -q testMatrix | jq 'del(.[] | select(. == ":testcontainers:check" or startswith(":docs:")))' --compact-output)
+          # Keep Elasticsearch checks and its two slow test classes in separate matrix jobs.
+          TASKS=$(./gradlew --no-daemon --parallel -q testMatrix | jq '
+            del(.[] | select(. == ":testcontainers:check" or startswith(":docs:")))
+            | map(
+                if . == ":testcontainers-elasticsearch:check" then
+                  [
+                    ":testcontainers-elasticsearch:check -x :testcontainers-elasticsearch:test",
+                    ":testcontainers-elasticsearch:test --tests org.testcontainers.elasticsearch.ElasticsearchContainerTest",
+                    ":testcontainers-elasticsearch:test --tests org.testcontainers.elasticsearch.KibanaContainerTest"
+                  ]
+                else
+                  [.]
+                end
+              )
+            | flatten
+          ' --compact-output)
           echo $TASKS
           echo "matrix={\"gradle_args\":$TASKS}" >> $GITHUB_OUTPUT
   check:
