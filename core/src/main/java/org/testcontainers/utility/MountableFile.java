@@ -289,7 +289,8 @@ public class MountableFile implements Transferable {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    private void copyFromJarToLocation(final JarFile jarFile, final JarEntry entry, final File toRoot) throws IOException {
+    private void copyFromJarToLocation(final JarFile jarFile, final JarEntry entry, final File toRoot)
+        throws IOException {
         File newFile = new File(toRoot, entry.getName());
 
         // Guard against malformed entries (e.g. containing "../") escaping the extraction directory
