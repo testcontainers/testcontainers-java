@@ -23,6 +23,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class MountableFileTest {
 
@@ -112,6 +113,27 @@ class MountableFileTest {
 
                 assertThat(Files.readString(new File(resolvedPath, "a.txt").toPath())).isEqualTo("a-content");
                 assertThat(Files.readString(new File(resolvedPath, "sub/b.txt").toPath())).isEqualTo("b-content");
+            }
+        );
+    }
+
+    @Test
+    void forClasspathResourceInJarRejectsEntriesEscapingTheExtractionDirectory() throws Exception {
+        final Map<String, String> entries = new LinkedHashMap<>();
+        entries.put("assets/", "");
+        entries.put("assets/dir/", "");
+        entries.put("assets/dir/../../../escaped.txt", "escaped-content");
+        final Path jarFile = createJarWithEntries(entries);
+
+        withJarOnClasspath(
+            jarFile,
+            () -> {
+                assertThatThrownBy(() -> MountableFile.forClasspathResource("assets/dir").getResolvedPath())
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasRootCauseInstanceOf(IOException.class)
+                    .hasStackTraceContaining(
+                        "JAR entry assets/dir/../../../escaped.txt would be extracted outside of the target directory"
+                    );
             }
         );
     }
@@ -212,7 +234,12 @@ class MountableFileTest {
 
     private void withJarOnClasspath(final Path jarFile, final ThrowingRunnable runnable) throws Exception {
         final ClassLoader previousContextClassLoader = Thread.currentThread().getContextClassLoader();
-        try (URLClassLoader jarClassLoader = new URLClassLoader(new URL[] { jarFile.toUri().toURL() }, previousContextClassLoader)) {
+        try (
+            URLClassLoader jarClassLoader = new URLClassLoader(
+                new URL[] { jarFile.toUri().toURL() },
+                previousContextClassLoader
+            )
+        ) {
             Thread.currentThread().setContextClassLoader(jarClassLoader);
             try {
                 runnable.run();
