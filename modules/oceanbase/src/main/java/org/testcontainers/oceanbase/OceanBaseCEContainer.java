@@ -4,6 +4,8 @@ import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
+import java.time.Duration;
+
 /**
  * Testcontainers implementation for OceanBase Community Edition.
  * <p>
@@ -50,7 +52,9 @@ public class OceanBaseCEContainer extends JdbcDatabaseContainer<OceanBaseCEConta
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         addExposedPorts(SQL_PORT, RPC_PORT);
-        setWaitStrategy(Wait.forLogMessage(".*boot success!.*", 1));
+        // The image's README states the bootstrap may take up to five minutes
+        // https://github.com/oceanbase/docker-images/blob/main/oceanbase-ce/README.md
+        setWaitStrategy(Wait.forLogMessage(".*boot success!.*", 1).withStartupTimeout(Duration.ofMinutes(5)));
     }
 
     @Override
