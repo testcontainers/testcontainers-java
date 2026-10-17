@@ -12,6 +12,8 @@ import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.nodes.Node;
+import org.yaml.snakeyaml.nodes.NodeId;
+import org.yaml.snakeyaml.nodes.ScalarNode;
 import org.yaml.snakeyaml.nodes.Tag;
 import org.yaml.snakeyaml.representer.Representer;
 import org.yaml.snakeyaml.resolver.Resolver;
@@ -46,17 +48,22 @@ class ParsedDockerComposeFile {
         LoaderOptions options = new LoaderOptions();
         options.setMaxAliasesForCollections(1_000);
         DumperOptions dumperOptions = new DumperOptions();
+        Resolver resolver = new Resolver();
 
         SafeConstructor constructor = new SafeConstructor(options) {
             @Override
             protected Object constructObject(Node node) {
-                if (node.getTag().equals(new Tag("!reset")) || node.getTag().equals(new Tag("!override"))) {
+                if (node.getTag().equals(new Tag("!reset"))) {
                     return null;
+                }
+                if (node.getTag().equals(new Tag("!override"))) {
+                    // !override replaces the value from previous compose files, so keep the value as if it was untagged
+                    node.setTag(resolveUntaggedTag(node, resolver));
                 }
                 return super.constructObject(node);
             }
         };
-        Yaml yaml = new Yaml(constructor, new Representer(dumperOptions), dumperOptions, options, new Resolver());
+        Yaml yaml = new Yaml(constructor, new Representer(dumperOptions), dumperOptions, options, resolver);
         try (FileInputStream fileInputStream = FileUtils.openInputStream(composeFile)) {
             composeFileContent = yaml.load(fileInputStream);
         } catch (Exception e) {
@@ -74,6 +81,18 @@ class ParsedDockerComposeFile {
         this.composeFile = new File(".");
 
         parseAndValidate();
+    }
+
+    private static Tag resolveUntaggedTag(Node node, Resolver resolver) {
+        switch (node.getNodeId()) {
+            case mapping:
+                return Tag.MAP;
+            case sequence:
+                return Tag.SEQ;
+            default:
+                ScalarNode scalarNode = (ScalarNode) node;
+                return resolver.resolve(NodeId.scalar, scalarNode.getValue(), scalarNode.isPlain());
+        }
     }
 
     private void parseAndValidate() {
@@ -117,7 +136,7 @@ class ParsedDockerComposeFile {
                     composeFileName,
                     serviceName
                 );
-                break;
+                continue;
             }
 
             @SuppressWarnings("unchecked")

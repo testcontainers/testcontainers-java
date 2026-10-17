@@ -1,0 +1,7 @@
+services:
+    db: !override
+        image: postgres:16
+    redis:
+        image: !override redis:7
+    mysql:
+        image: mysql:8.4

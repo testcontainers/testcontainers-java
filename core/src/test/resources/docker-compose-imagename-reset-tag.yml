@@ -1,0 +1,5 @@
+services:
+    db:
+        image: !reset null
+    redis:
+        image: redis:7
