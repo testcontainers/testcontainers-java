@@ -24,6 +24,10 @@ gradle.taskGraph.whenReady {
         for (subproject in subprojects) {
             subproject.tasks.withType(Test).all {
                 testExecuter([execute: { spec, processor -> }, stopNow:{}] as org.gradle.api.internal.tasks.testing.TestExecuter)
+                // Gradle 9+ fails test tasks that discover no tests, which is always the case with the no-op executer above
+                if (GradleVersion.current() >= GradleVersion.version("9.0")) {
+                    failOnNoDiscoveredTests = false
+                }
             }
             subproject.tasks.findByName("shadowJar")?.enabled = false
             subproject.tasks.findByName("javadoc")?.enabled = false
