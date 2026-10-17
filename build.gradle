@@ -65,7 +65,11 @@ subprojects {
     }
 
 
-    task delombok(type: io.franzbecker.gradle.lombok.task.DelombokTask) {
+    // gradle-lombok's DelombokTask relies on JavaExec.main, which was removed in Gradle 9
+    task delombok(type: JavaExec) {
+        mainClass = 'lombok.launch.Main'
+        classpath = configurations.compileClasspath
+        args 'delombok'
         outputs.cacheIf {
             true
         }
