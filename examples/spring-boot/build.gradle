@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '2.7.18'
+    id 'org.springframework.boot' version '3.5.16'
 }
 apply plugin: 'io.spring.dependency-management'
 
@@ -17,7 +17,7 @@ dependencies {
     runtimeOnly 'org.postgresql:postgresql'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.testcontainers:testcontainers-postgresql'
-    testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.8.2"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
 
 test {
