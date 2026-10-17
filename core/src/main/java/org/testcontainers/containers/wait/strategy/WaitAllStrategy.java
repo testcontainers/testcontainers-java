@@ -88,7 +88,9 @@ public class WaitAllStrategy implements WaitStrategy {
         }
 
         this.timeout = startupTimeout;
-        strategies.forEach(this::applyStartupTimeout);
+        if (mode == Mode.WITH_OUTER_TIMEOUT) {
+            strategies.forEach(this::applyStartupTimeout);
+        }
         return this;
     }
 
