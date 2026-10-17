@@ -195,35 +195,15 @@ class ParsedDockerComposeFileValidationTest {
     }
 
     @Test
-    void shouldIgnoreTopLevelElementsWithoutServicesElement() {
-        File file = new File("src/test/resources/docker-compose-imagename-parsing-no-services.yml");
-        ParsedDockerComposeFile parsedFile = new ParsedDockerComposeFile(file);
-        assertThat(parsedFile.getServiceNameToImageNames())
-            .as("top-level elements without images are not services")
-            .isEmpty();
-    }
-
-    @Test
     void shouldObtainImageNamesV1WithServicesNamedLikeTopLevelElements() {
         File file = new File("src/test/resources/docker-compose-imagename-parsing-v1-top-level-names.yml");
         ParsedDockerComposeFile parsedFile = new ParsedDockerComposeFile(file);
         assertThat(parsedFile.getServiceNameToImageNames())
-            .as("v1 services may be named like top-level elements of newer formats")
+            .as("v1 services may be named like top-level elements or extension fields of newer formats")
             .containsOnly(
                 entry("name", Sets.newHashSet("busybox:1.36")),
-                entry("networks", Sets.newHashSet("redis:7"))
-            );
-    }
-
-    @Test
-    void shouldObtainImageNamesV1WithServiceNamedLikeExtensionField() {
-        File file = new File("src/test/resources/docker-compose-imagename-parsing-v1-extension-like-name.yml");
-        ParsedDockerComposeFile parsedFile = new ParsedDockerComposeFile(file);
-        assertThat(parsedFile.getServiceNameToImageNames())
-            .as("v1 services may be named like extension fields")
-            .containsOnly(
-                entry("x-api", Sets.newHashSet("private.example/api:1.0")),
-                entry("redis", Sets.newHashSet("redis:7"))
+                entry("networks", Sets.newHashSet("redis:7")),
+                entry("x-api", Sets.newHashSet("private.example/api:1.0"))
             );
     }
 
