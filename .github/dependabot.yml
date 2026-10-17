@@ -27,6 +27,8 @@ updates:
     cooldown:
       default-days: 7
     ignore:
+      # Wrapper upgrades are handled by the separate Update Gradle Wrapper workflow.
+      - dependency-name: "gradle-wrapper"
       - dependency-name: "com.gradleup.shadow"
         update-types: ["version-update:semver-major"]
 
@@ -285,6 +287,8 @@ updates:
     cooldown:
       default-days: 7
     ignore:
+      # Wrapper upgrades are handled by the separate Update Gradle Wrapper workflow.
+      - dependency-name: "gradle-wrapper"
       - dependency-name: "ch.qos.logback:logback-classic"
         update-types: ["version-update:semver-minor"]
       - dependency-name: "org.apache.solr:solr-solrj"
@@ -317,6 +321,8 @@ updates:
     cooldown:
       default-days: 7
     ignore:
+      # Wrapper upgrades are handled by the separate Update Gradle Wrapper workflow.
+      - dependency-name: "gradle-wrapper"
       - dependency-name: "ch.qos.logback:logback-classic"
         update-types: ["version-update:semver-minor"]
       - dependency-name: "com.diffplug.spotless"
