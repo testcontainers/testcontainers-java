@@ -226,6 +226,26 @@ class ParsedDockerComposeFileValidationTest {
     }
 
     @Test
+    void shouldObtainImageNamesV1WithServicesNamedLikeTopLevelElements() throws Exception {
+        File file = temporaryFolder.resolve("v1-top-level-names-docker-compose.yml").toFile();
+        try (PrintWriter writer = new PrintWriter(file)) {
+            writer.println("name:");
+            writer.println("  image: busybox:1.36");
+            writer.println("networks:");
+            writer.println("  image: redis:7");
+            writer.println("x-common:");
+            writer.println("  image: alpine:3.20");
+        }
+        ParsedDockerComposeFile parsedFile = new ParsedDockerComposeFile(file);
+        assertThat(parsedFile.getServiceNameToImageNames())
+            .as("v1 services may be named like top-level elements of newer formats")
+            .containsOnly(
+                entry("name", Sets.newHashSet("busybox:1.36")),
+                entry("networks", Sets.newHashSet("redis:7"))
+            );
+    }
+
+    @Test
     void shouldSupportALotOfAliases() throws Exception {
         File file = temporaryFolder.resolve("tmp-docker-compose.yml").toFile();
         try (PrintWriter writer = new PrintWriter(file)) {

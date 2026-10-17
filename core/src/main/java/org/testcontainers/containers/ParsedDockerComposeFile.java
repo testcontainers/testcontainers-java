@@ -1,7 +1,6 @@
 package org.testcontainers.containers;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -34,19 +33,6 @@ import java.util.Set;
 @Slf4j
 @EqualsAndHashCode
 class ParsedDockerComposeFile {
-
-    /**
-     * Top-level elements of the Compose file format that are not services, e.g. in a file without a 'services' element
-     */
-    private static final Set<String> TOP_LEVEL_ELEMENTS = ImmutableSet.of(
-        "version",
-        "name",
-        "include",
-        "networks",
-        "volumes",
-        "configs",
-        "secrets"
-    );
 
     private final Map<String, Object> composeFileContent;
 
@@ -147,7 +133,8 @@ class ParsedDockerComposeFile {
 
         for (Map.Entry<String, ?> entry : servicesMap.entrySet()) {
             String serviceName = entry.getKey();
-            if (legacyFormat && (TOP_LEVEL_ELEMENTS.contains(serviceName) || serviceName.startsWith("x-"))) {
+            // extension fields are not services
+            if (legacyFormat && serviceName.startsWith("x-")) {
                 continue;
             }
             Object serviceDefinition = entry.getValue();
