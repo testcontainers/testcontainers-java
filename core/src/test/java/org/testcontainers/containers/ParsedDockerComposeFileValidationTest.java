@@ -214,14 +214,12 @@ class ParsedDockerComposeFileValidationTest {
         File file = temporaryFolder.resolve("no-services-docker-compose.yml").toFile();
         try (PrintWriter writer = new PrintWriter(file)) {
             writer.println("version: \"3.8\"");
-            writer.println("x-common:");
-            writer.println("  image: busybox:1.36");
             writer.println("networks:");
             writer.println("  backend: {}");
         }
         ParsedDockerComposeFile parsedFile = new ParsedDockerComposeFile(file);
         assertThat(parsedFile.getServiceNameToImageNames())
-            .as("extensions and top-level elements are not services")
+            .as("top-level elements without images are not services")
             .isEmpty();
     }
 
@@ -233,8 +231,6 @@ class ParsedDockerComposeFileValidationTest {
             writer.println("  image: busybox:1.36");
             writer.println("networks:");
             writer.println("  image: redis:7");
-            writer.println("x-common:");
-            writer.println("  image: alpine:3.20");
         }
         ParsedDockerComposeFile parsedFile = new ParsedDockerComposeFile(file);
         assertThat(parsedFile.getServiceNameToImageNames())
@@ -242,6 +238,24 @@ class ParsedDockerComposeFileValidationTest {
             .containsOnly(
                 entry("name", Sets.newHashSet("busybox:1.36")),
                 entry("networks", Sets.newHashSet("redis:7"))
+            );
+    }
+
+    @Test
+    void shouldObtainImageNamesV1WithServiceNamedLikeExtensionField() throws Exception {
+        File file = temporaryFolder.resolve("v1-extension-like-name-docker-compose.yml").toFile();
+        try (PrintWriter writer = new PrintWriter(file)) {
+            writer.println("x-api:");
+            writer.println("  image: private.example/api:1.0");
+            writer.println("redis:");
+            writer.println("  image: redis:7");
+        }
+        ParsedDockerComposeFile parsedFile = new ParsedDockerComposeFile(file);
+        assertThat(parsedFile.getServiceNameToImageNames())
+            .as("v1 services may be named like extension fields")
+            .containsOnly(
+                entry("x-api", Sets.newHashSet("private.example/api:1.0")),
+                entry("redis", Sets.newHashSet("redis:7"))
             );
     }
 

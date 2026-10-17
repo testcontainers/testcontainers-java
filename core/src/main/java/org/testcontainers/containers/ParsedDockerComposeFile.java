@@ -97,7 +97,6 @@ class ParsedDockerComposeFile {
 
     private void parseAndValidate() {
         final Map<String, ?> servicesMap;
-        final boolean legacyFormat;
         if (composeFileContent.containsKey("version") && "2.0".equals(composeFileContent.get("version"))) {
             log.warn(
                 "Testcontainers may not be able to clean up networks spawned using Docker Compose v2.0 files. " +
@@ -124,19 +123,12 @@ class ParsedDockerComposeFile {
             @SuppressWarnings("unchecked")
             Map<String, ?> temp = (Map<String, ?>) servicesElement;
             servicesMap = temp;
-            legacyFormat = false;
         } else {
-            // Compose file format v1: top-level elements are services
             servicesMap = composeFileContent;
-            legacyFormat = true;
         }
 
         for (Map.Entry<String, ?> entry : servicesMap.entrySet()) {
             String serviceName = entry.getKey();
-            // extension fields are not services
-            if (legacyFormat && serviceName.startsWith("x-")) {
-                continue;
-            }
             Object serviceDefinition = entry.getValue();
             if (!(serviceDefinition instanceof Map)) {
                 log.debug(
