@@ -18,7 +18,7 @@ class MinIOContainerTest {
     void testBasicUsage() throws Exception {
         try (
             // minioContainer {
-            MinIOContainer container = new MinIOContainer("minio/minio:RELEASE.2023-09-04T19-57-37Z");
+            MinIOContainer container = new MinIOContainer("pgsty/silo:RELEASE.2026-09-16T00-00-00Z");
             // }
         ) {
             container.start();
@@ -58,7 +58,7 @@ class MinIOContainerTest {
 
     @Test
     void testDefaultUserPassword() {
-        try (MinIOContainer container = new MinIOContainer("minio/minio:RELEASE.2023-09-04T19-57-37Z")) {
+        try (MinIOContainer container = new MinIOContainer("pgsty/silo:RELEASE.2026-09-16T00-00-00Z")) {
             container.start();
             assertThat(container.getUserName()).isEqualTo("minioadmin");
             assertThat(container.getPassword()).isEqualTo("minioadmin");
@@ -69,7 +69,7 @@ class MinIOContainerTest {
     void testOverwriteUserPassword() {
         try (
             // minioOverrides {
-            MinIOContainer container = new MinIOContainer("minio/minio:RELEASE.2023-09-04T19-57-37Z")
+            MinIOContainer container = new MinIOContainer("pgsty/silo:RELEASE.2026-09-16T00-00-00Z")
                 .withUserName("testuser")
                 .withPassword("testpassword");
             // }

@@ -2,6 +2,11 @@
 
 Testcontainers can be used to automatically instantiate and manage [MinIO](https://min.io) containers.
 
+!!! note
+    The upstream `minio/minio` image is no longer published on Docker Hub. The module also accepts the community-maintained
+    fork [Silo](https://github.com/pgsty/silo) (`pgsty/silo`, formerly published as `pgsty/minio`), which is used in the
+    examples below.
+
 ## Usage example
 
 Create a `MinIOContainer` to use it in your tests:
