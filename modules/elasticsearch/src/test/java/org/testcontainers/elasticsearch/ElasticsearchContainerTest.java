@@ -106,7 +106,7 @@ class ElasticsearchContainerTest {
     // Latest (default coverage)
 
     @Test
-    void latestStartsWithTlsAndPassword() throws IOException {
+    void latestStartsWithTlsAndPassword() throws Exception {
         // httpClientLatest {
         // Create the elasticsearch container.
         try (ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE_LATEST)) {
@@ -134,7 +134,14 @@ class ElasticsearchContainerTest {
             Response response = client.performRequest(new Request("GET", "/_cluster/health"));
             // }}
             assertThat(response.getStatusLine().getStatusCode()).as("cluster health is available").isEqualTo(200);
-            assertThat(EntityUtils.toString(response.getEntity())).contains("cluster_name");
+            String clusterHealth = EntityUtils.toString(response.getEntity());
+            assertThat(clusterHealth).contains("cluster_name");
+            assertThat(clusterHealth)
+                .as("Cluster health status should be at least yellow after container start")
+                .satisfiesAnyOf(
+                    body -> assertThat(body).contains("\"status\":\"yellow\""),
+                    body -> assertThat(body).contains("\"status\":\"green\"")
+                );
             assertThat(container.getHttpScheme()).as("HTTP API uses HTTPS by default").isEqualTo("https");
 
             response = client.performRequest(new Request("GET", "/"));
@@ -148,6 +155,9 @@ class ElasticsearchContainerTest {
             assertThat(EntityUtils.toString(response.getEntity()))
                 .as("Elastic licensed features are available")
                 .contains("monitoring");
+
+            // Default is 2g, see https://www.elastic.co/guide/en/elasticsearch/reference/current/heap-size.html
+            assertElasticsearchContainerHasHeapSize(container, 2_147_483_648L);
 
             assertThat(catchThrowable(() -> getAnonymousClient(container).performRequest(new Request("GET", "/"))))
                 .as("anonymous requests are rejected")
@@ -233,23 +243,6 @@ class ElasticsearchContainerTest {
     }
 
     @Test
-    void clusterHealthIsAtLeastYellowAfterStart() throws IOException {
-        try (ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE_LATEST)) {
-            container.start();
-
-            Response response = getClient(container).performRequest(new Request("GET", "/_cluster/health"));
-            assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
-            String body = EntityUtils.toString(response.getEntity());
-            assertThat(body)
-                .as("Cluster health status should be at least yellow after container start")
-                .satisfiesAnyOf(
-                    b -> assertThat(b).contains("\"status\":\"yellow\""),
-                    b -> assertThat(b).contains("\"status\":\"green\"")
-                );
-        }
-    }
-
-    @Test
     void latestWorksWithDockerHubImage() throws Exception {
         try (
             ElasticsearchContainer container = new ElasticsearchContainer(
@@ -259,17 +252,6 @@ class ElasticsearchContainerTest {
             container.start();
 
             assertClusterHealthResponse(container);
-        }
-    }
-
-    @Test
-    void latestDefaultHeapIsTwoGb() throws Exception {
-        // Default is 2g, see https://www.elastic.co/guide/en/elasticsearch/reference/current/heap-size.html
-        long defaultHeapSize = 2_147_483_648L;
-
-        try (ElasticsearchContainer container = new ElasticsearchContainer(ELASTICSEARCH_IMAGE_LATEST)) {
-            container.start();
-            assertElasticsearchContainerHasHeapSize(container, defaultHeapSize);
         }
     }
 
