@@ -151,29 +151,21 @@ class ParsedDockerComposeFileValidationTest {
     }
 
     @Test
-    void shouldObtainImageNamesFromOverrideTag() throws Exception {
-        File file = temporaryFolder.resolve("override-docker-compose.yml").toFile();
-        try (PrintWriter writer = new PrintWriter(file)) {
-            writer.println("services:");
-            writer.println("  db: !override");
-            writer.println("    image: postgres:16");
-            writer.println("  redis:");
-            writer.println("    image: !override redis:7");
-        }
+    void shouldObtainImageNamesFromOverrideTag() {
+        File file = new File("src/test/resources/docker-compose-imagename-overriding-tag-b.yml");
         ParsedDockerComposeFile parsedFile = new ParsedDockerComposeFile(file);
         assertThat(parsedFile.getServiceNameToImageNames())
             .as("values tagged with !override are kept")
-            .containsOnly(entry("db", Sets.newHashSet("postgres:16")), entry("redis", Sets.newHashSet("redis:7")));
+            .containsOnly(
+                entry("db", Sets.newHashSet("postgres:16")),
+                entry("redis", Sets.newHashSet("redis:7")),
+                entry("mysql", Sets.newHashSet("mysql:8.4"))
+            );
     }
 
     @Test
-    void shouldKeepQuotedValuesTaggedWithOverrideAsStrings() throws Exception {
-        File file = temporaryFolder.resolve("override-quoted-docker-compose.yml").toFile();
-        try (PrintWriter writer = new PrintWriter(file)) {
-            writer.println("services:");
-            writer.println("  db:");
-            writer.println("    image: !override \"1.0\"");
-        }
+    void shouldKeepQuotedValuesTaggedWithOverrideAsStrings() {
+        File file = new File("src/test/resources/docker-compose-imagename-overriding-tag-quoted.yml");
         ParsedDockerComposeFile parsedFile = new ParsedDockerComposeFile(file);
         assertThat(parsedFile.getServiceNameToImageNames())
             .as("quoted values tagged with !override are not implicitly typed")
@@ -181,15 +173,8 @@ class ParsedDockerComposeFileValidationTest {
     }
 
     @Test
-    void shouldIgnoreImageNamesRemovedWithResetTag() throws Exception {
-        File file = temporaryFolder.resolve("reset-docker-compose.yml").toFile();
-        try (PrintWriter writer = new PrintWriter(file)) {
-            writer.println("services:");
-            writer.println("  db:");
-            writer.println("    image: !reset null");
-            writer.println("  redis:");
-            writer.println("    image: redis:7");
-        }
+    void shouldIgnoreImageNamesRemovedWithResetTag() {
+        File file = new File("src/test/resources/docker-compose-imagename-reset-tag.yml");
         ParsedDockerComposeFile parsedFile = new ParsedDockerComposeFile(file);
         assertThat(parsedFile.getServiceNameToImageNames())
             .as("values tagged with !reset are removed")
@@ -210,13 +195,8 @@ class ParsedDockerComposeFileValidationTest {
     }
 
     @Test
-    void shouldIgnoreTopLevelElementsWithoutServicesElement() throws Exception {
-        File file = temporaryFolder.resolve("no-services-docker-compose.yml").toFile();
-        try (PrintWriter writer = new PrintWriter(file)) {
-            writer.println("version: \"3.8\"");
-            writer.println("networks:");
-            writer.println("  backend: {}");
-        }
+    void shouldIgnoreTopLevelElementsWithoutServicesElement() {
+        File file = new File("src/test/resources/docker-compose-imagename-parsing-no-services.yml");
         ParsedDockerComposeFile parsedFile = new ParsedDockerComposeFile(file);
         assertThat(parsedFile.getServiceNameToImageNames())
             .as("top-level elements without images are not services")
@@ -224,14 +204,8 @@ class ParsedDockerComposeFileValidationTest {
     }
 
     @Test
-    void shouldObtainImageNamesV1WithServicesNamedLikeTopLevelElements() throws Exception {
-        File file = temporaryFolder.resolve("v1-top-level-names-docker-compose.yml").toFile();
-        try (PrintWriter writer = new PrintWriter(file)) {
-            writer.println("name:");
-            writer.println("  image: busybox:1.36");
-            writer.println("networks:");
-            writer.println("  image: redis:7");
-        }
+    void shouldObtainImageNamesV1WithServicesNamedLikeTopLevelElements() {
+        File file = new File("src/test/resources/docker-compose-imagename-parsing-v1-top-level-names.yml");
         ParsedDockerComposeFile parsedFile = new ParsedDockerComposeFile(file);
         assertThat(parsedFile.getServiceNameToImageNames())
             .as("v1 services may be named like top-level elements of newer formats")
@@ -242,14 +216,8 @@ class ParsedDockerComposeFileValidationTest {
     }
 
     @Test
-    void shouldObtainImageNamesV1WithServiceNamedLikeExtensionField() throws Exception {
-        File file = temporaryFolder.resolve("v1-extension-like-name-docker-compose.yml").toFile();
-        try (PrintWriter writer = new PrintWriter(file)) {
-            writer.println("x-api:");
-            writer.println("  image: private.example/api:1.0");
-            writer.println("redis:");
-            writer.println("  image: redis:7");
-        }
+    void shouldObtainImageNamesV1WithServiceNamedLikeExtensionField() {
+        File file = new File("src/test/resources/docker-compose-imagename-parsing-v1-extension-like-name.yml");
         ParsedDockerComposeFile parsedFile = new ParsedDockerComposeFile(file);
         assertThat(parsedFile.getServiceNameToImageNames())
             .as("v1 services may be named like extension fields")

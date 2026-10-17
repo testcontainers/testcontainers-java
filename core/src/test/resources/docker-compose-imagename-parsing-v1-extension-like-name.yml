@@ -1,0 +1,4 @@
+x-api:
+    image: private.example/api:1.0
+redis:
+    image: redis:7

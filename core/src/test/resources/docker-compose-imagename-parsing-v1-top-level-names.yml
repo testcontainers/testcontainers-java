@@ -1,0 +1,4 @@
+name:
+    image: busybox:1.36
+networks:
+    image: redis:7
