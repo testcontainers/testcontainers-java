@@ -9,7 +9,7 @@ import java.time.temporal.ChronoUnit;
 /**
  * Testcontainers implementation for MinIO.
  * <p>
- * Supported image: {@code minio/minio}
+ * Supported images: {@code minio/minio}, {@code pgsty/silo}
  * <p>
  * Exposed ports:
  * <ul>
@@ -20,6 +20,8 @@ import java.time.temporal.ChronoUnit;
 public class MinIOContainer extends GenericContainer<MinIOContainer> {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("minio/minio");
+
+    private static final DockerImageName SILO_IMAGE_NAME = DockerImageName.parse("pgsty/silo");
 
     private static final int MINIO_S3_PORT = 9000;
 
@@ -47,7 +49,7 @@ public class MinIOContainer extends GenericContainer<MinIOContainer> {
      */
     public MinIOContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, SILO_IMAGE_NAME);
         withExposedPorts(MINIO_S3_PORT, MINIO_UI_PORT);
         withCommand("server", "--console-address", ":" + MINIO_UI_PORT, "/data");
         waitingFor(
