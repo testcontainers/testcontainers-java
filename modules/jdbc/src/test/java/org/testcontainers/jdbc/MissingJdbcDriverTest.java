@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.fail;
 
 class MissingJdbcDriverTest {
@@ -33,6 +34,17 @@ class MissingJdbcDriverTest {
         assertThat(container.getConnectionAttempts())
             .as("only one connection attempt should have been made")
             .isEqualTo(1);
+    }
+
+    @Test
+    void shouldNameTheMissingDriverClass() {
+        final MissingDriverContainer container = new MissingDriverContainer();
+
+        assertThatThrownBy(container::getJdbcDriverInstance)
+            .isInstanceOf(JdbcDatabaseContainer.NoDriverFoundException.class)
+            .hasMessageContaining("nonexistent.ClassName")
+            .hasMessageContaining("R2DBC")
+            .hasCauseInstanceOf(ClassNotFoundException.class);
     }
 
     /**
