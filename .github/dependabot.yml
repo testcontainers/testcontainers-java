@@ -24,6 +24,7 @@ updates:
       - gradle-plugin-portal
     patterns:
       - "com.gradle*"
+      - "com.diffplug.spotless"
     multi-ecosystem-group: dependencies
     cooldown:
       default-days: 7
