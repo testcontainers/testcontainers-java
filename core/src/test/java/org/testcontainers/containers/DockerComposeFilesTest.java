@@ -29,4 +29,16 @@ class DockerComposeFilesTest {
         assertThat(dockerComposeFiles.getDependencyImages())
             .containsExactlyInAnyOrder("alpine:3.17", "redis:b", "mysql:b", "aservice:latest");
     }
+
+    @Test
+    void shouldGetDependencyImagesWhenOverridingWithOverrideTag() {
+        DockerComposeFiles dockerComposeFiles = new DockerComposeFiles(
+            Lists.newArrayList(
+                new File("src/test/resources/docker-compose-imagename-overriding-tag-a.yml"),
+                new File("src/test/resources/docker-compose-imagename-overriding-tag-b.yml")
+            )
+        );
+        assertThat(dockerComposeFiles.getDependencyImages())
+            .containsExactlyInAnyOrder("postgres:16", "redis:7", "mysql:8.4");
+    }
 }

@@ -96,10 +96,18 @@ jobs:
           # we should not push empty results to the cache
           READ_ONLY_REMOTE_GRADLE_CACHE: true
         run: |
-          set -o pipefail
-          TASKS=$(./gradlew --no-daemon --parallel -q testMatrix | jq 'del(.[] | select(. == ":testcontainers:check" or startswith(":docs:")))' --compact-output)
-          echo $TASKS
-          echo "matrix={\"gradle_args\":$TASKS}" >> $GITHUB_OUTPUT
+          set -euo pipefail
+          MATRIX_FILE="$RUNNER_TEMP/test-matrix.json"
+          ./gradlew --no-daemon --parallel -q testMatrix -PtestMatrixOutput="$MATRIX_FILE"
+          TASKS=$(jq --compact-output --exit-status '
+            if type == "array" and length > 0 and all(.[]; type == "string" and startswith(":"))
+            then map(select(. != ":testcontainers:check" and (startswith(":docs:") | not)))
+            else error("testMatrix output must be a non-empty array of Gradle task paths")
+            end
+            | if length > 0 then . else error("testMatrix produced no core Gradle tasks") end
+          ' "$MATRIX_FILE")
+          echo "$TASKS"
+          printf 'matrix={"gradle_args":%s}\n' "$TASKS" >> "$GITHUB_OUTPUT"
   check:
     needs: [find_gradle_jobs]
     strategy:
@@ -131,9 +139,17 @@ jobs:
           # we should not push empty results to the cache
           READ_ONLY_REMOTE_GRADLE_CACHE: true
         run: |
-          TASKS=$(./gradlew --no-daemon --parallel -q testMatrix)
-          echo $TASKS
-          echo "matrix={\"gradle_args\":$TASKS}" >> $GITHUB_OUTPUT
+          set -euo pipefail
+          MATRIX_FILE="$RUNNER_TEMP/examples-test-matrix.json"
+          ./gradlew --no-daemon --parallel -q testMatrix -PtestMatrixOutput="$MATRIX_FILE"
+          TASKS=$(jq --compact-output --exit-status '
+            if type == "array" and length > 0 and all(.[]; type == "string" and startswith(":"))
+            then .
+            else error("testMatrix output must be a non-empty array of Gradle task paths")
+            end
+          ' "$MATRIX_FILE")
+          echo "$TASKS"
+          printf 'matrix={"gradle_args":%s}\n' "$TASKS" >> "$GITHUB_OUTPUT"
   check_examples:
     needs: [find_examples_jobs]
     strategy:
@@ -165,10 +181,18 @@ jobs:
           # we should not push empty results to the cache
           READ_ONLY_REMOTE_GRADLE_CACHE: true
         run: |
-          set -o pipefail
-          TASKS=$(./gradlew --no-daemon --parallel -q testMatrix | jq 'map(select(startswith(":docs:")))' --compact-output)
-          echo $TASKS
-          echo "matrix={\"gradle_args\":$TASKS}" >> $GITHUB_OUTPUT
+          set -euo pipefail
+          MATRIX_FILE="$RUNNER_TEMP/docs-test-matrix.json"
+          ./gradlew --no-daemon --parallel -q testMatrix -PtestMatrixOutput="$MATRIX_FILE"
+          TASKS=$(jq --compact-output --exit-status '
+            if type == "array" and length > 0 and all(.[]; type == "string" and startswith(":"))
+            then map(select(startswith(":docs:")))
+            else error("testMatrix output must be a non-empty array of Gradle task paths")
+            end
+            | if length > 0 then . else error("testMatrix produced no docs Gradle tasks") end
+          ' "$MATRIX_FILE")
+          echo "$TASKS"
+          printf 'matrix={"gradle_args":%s}\n' "$TASKS" >> "$GITHUB_OUTPUT"
   check_docs_examples:
     needs: [find_docs_examples_jobs]
     strategy:

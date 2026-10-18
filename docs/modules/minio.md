@@ -2,6 +2,13 @@
 
 Testcontainers can be used to automatically instantiate and manage [MinIO](https://min.io) containers.
 
+!!! note
+    Upstream MinIO stopped publishing free community builds in late 2025 and archived the
+    [minio/minio](https://github.com/minio/minio) repository in 2026; the `minio/minio` image is no longer available on
+    Docker Hub. The module therefore also accepts [Silo](https://github.com/pgsty/silo) (`pgsty/silo`), a
+    community-maintained, AGPL-licensed fork of MinIO by the [Pigsty](https://pigsty.io) project, which is used in the
+    examples below. See the [Silo manifesto](https://silo.pigsty.io/about/manifesto/) for background on the fork.
+
 ## Usage example
 
 Create a `MinIOContainer` to use it in your tests:

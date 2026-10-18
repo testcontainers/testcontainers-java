@@ -1,0 +1,3 @@
+services:
+    db:
+        image: !override "1.0"

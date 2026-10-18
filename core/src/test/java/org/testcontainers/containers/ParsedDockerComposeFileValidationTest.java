@@ -151,6 +151,63 @@ class ParsedDockerComposeFileValidationTest {
     }
 
     @Test
+    void shouldObtainImageNamesFromOverrideTag() {
+        File file = new File("src/test/resources/docker-compose-imagename-overriding-tag-b.yml");
+        ParsedDockerComposeFile parsedFile = new ParsedDockerComposeFile(file);
+        assertThat(parsedFile.getServiceNameToImageNames())
+            .as("values tagged with !override are kept")
+            .containsOnly(
+                entry("db", Sets.newHashSet("postgres:16")),
+                entry("redis", Sets.newHashSet("redis:7")),
+                entry("mysql", Sets.newHashSet("mysql:8.4"))
+            );
+    }
+
+    @Test
+    void shouldKeepQuotedValuesTaggedWithOverrideAsStrings() {
+        File file = new File("src/test/resources/docker-compose-imagename-overriding-tag-quoted.yml");
+        ParsedDockerComposeFile parsedFile = new ParsedDockerComposeFile(file);
+        assertThat(parsedFile.getServiceNameToImageNames())
+            .as("quoted values tagged with !override are not implicitly typed")
+            .containsOnly(entry("db", Sets.newHashSet("1.0")));
+    }
+
+    @Test
+    void shouldIgnoreImageNamesRemovedWithResetTag() {
+        File file = new File("src/test/resources/docker-compose-imagename-reset-tag.yml");
+        ParsedDockerComposeFile parsedFile = new ParsedDockerComposeFile(file);
+        assertThat(parsedFile.getServiceNameToImageNames())
+            .as("values tagged with !reset are removed")
+            .containsOnly(entry("redis", Sets.newHashSet("redis:7")));
+    }
+
+    @Test
+    void shouldContinueAfterServiceWithUnknownStructure() {
+        ParsedDockerComposeFile parsedFile = new ParsedDockerComposeFile(
+            ImmutableMap.of(
+                "services",
+                ImmutableMap.of("unknown", "not a map", "redis", ImmutableMap.of("image", "redis:7"))
+            )
+        );
+        assertThat(parsedFile.getServiceNameToImageNames())
+            .as("services after one with an unknown structure are still parsed")
+            .containsOnly(entry("redis", Sets.newHashSet("redis:7")));
+    }
+
+    @Test
+    void shouldObtainImageNamesV1WithServicesNamedLikeTopLevelElements() {
+        File file = new File("src/test/resources/docker-compose-imagename-parsing-v1-top-level-names.yml");
+        ParsedDockerComposeFile parsedFile = new ParsedDockerComposeFile(file);
+        assertThat(parsedFile.getServiceNameToImageNames())
+            .as("v1 services may be named like top-level elements or extension fields of newer formats")
+            .containsOnly(
+                entry("name", Sets.newHashSet("busybox:1.36")),
+                entry("networks", Sets.newHashSet("redis:7")),
+                entry("x-api", Sets.newHashSet("private.example/api:1.0"))
+            );
+    }
+
+    @Test
     void shouldSupportALotOfAliases() throws Exception {
         File file = temporaryFolder.resolve("tmp-docker-compose.yml").toFile();
         try (PrintWriter writer = new PrintWriter(file)) {

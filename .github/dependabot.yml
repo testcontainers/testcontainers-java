@@ -19,14 +19,18 @@ updates:
     directory: "/"
     allow:
       - dependency-name: "com.gradle*"
+      - dependency-name: "com.diffplug.spotless"
     registries:
       - gradle-plugin-portal
     patterns:
       - "com.gradle*"
+      - "com.diffplug.spotless"
     multi-ecosystem-group: dependencies
     cooldown:
       default-days: 7
     ignore:
+      # Wrapper upgrades are handled by the separate Update Gradle Wrapper workflow.
+      - dependency-name: "gradle-wrapper"
       - dependency-name: "com.gradleup.shadow"
         update-types: ["version-update:semver-major"]
 
@@ -43,6 +47,8 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "org.mockito:mockito-core"
         update-types: ["version-update:semver-major"]
+      - dependency-name: "com.fasterxml.jackson.core:jackson-databind"
+        update-types: ["version-update:semver-minor", "version-update:semver-patch"]
       - dependency-name: "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
         update-types: ["version-update:semver-minor", "version-update:semver-patch"]
       - dependency-name: "org.junit.jupiter:junit-jupiter"
@@ -285,6 +291,8 @@ updates:
     cooldown:
       default-days: 7
     ignore:
+      # Wrapper upgrades are handled by the separate Update Gradle Wrapper workflow.
+      - dependency-name: "gradle-wrapper"
       - dependency-name: "ch.qos.logback:logback-classic"
         update-types: ["version-update:semver-minor"]
       - dependency-name: "org.apache.solr:solr-solrj"
@@ -317,6 +325,8 @@ updates:
     cooldown:
       default-days: 7
     ignore:
+      # Wrapper upgrades are handled by the separate Update Gradle Wrapper workflow.
+      - dependency-name: "gradle-wrapper"
       - dependency-name: "ch.qos.logback:logback-classic"
         update-types: ["version-update:semver-minor"]
       - dependency-name: "com.diffplug.spotless"
