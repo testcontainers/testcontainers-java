@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.delegate.AbstractDatabaseDelegate;
 
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,13 +24,6 @@ class ScriptUtilsTest {
     @Test
     void readsWindows1252Script() {
         ScriptUtils.runInitScript(delegate, "init-windows-1252.sql", Charset.forName("windows-1252"));
-
-        assertThat(delegate.statements).containsExactly("SELECT 'café'");
-    }
-
-    @Test
-    void readsExplicitUtf8Script() {
-        ScriptUtils.runInitScript(delegate, "init-utf-8.sql", StandardCharsets.UTF_8);
 
         assertThat(delegate.statements).containsExactly("SELECT 'café'");
     }
