@@ -16,8 +16,12 @@ spotless {
 
         importOrder('', 'java', 'javax', '\\#')
     }
-    groovyGradle {
-        target '**/*.groovy'
-        greclipse('4.19')
+    // greclipse downloads its Eclipse dependencies even when nothing matches the target,
+    //  so only configure it in projects that actually contain Groovy sources.
+    if (!fileTree('src') { include '**/*.groovy' }.isEmpty()) {
+        groovyGradle {
+            target '**/*.groovy'
+            greclipse('4.19')
+        }
     }
 }

@@ -19,10 +19,12 @@ updates:
     directory: "/"
     allow:
       - dependency-name: "com.gradle*"
+      - dependency-name: "com.diffplug.spotless"
     registries:
       - gradle-plugin-portal
     patterns:
       - "com.gradle*"
+      - "com.diffplug.spotless"
     multi-ecosystem-group: dependencies
     cooldown:
       default-days: 7
