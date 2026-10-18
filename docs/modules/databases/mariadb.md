@@ -44,4 +44,5 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 !!! hint
     Adding this Testcontainers library JAR will not automatically add a database driver JAR to your project. You should ensure that your project also has a suitable database driver as a dependency.
+    The JDBC driver is required even if your application only uses R2DBC, because the container startup check connects over JDBC.
 

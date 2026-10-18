@@ -14,6 +14,9 @@ The started container will be terminated when the `ConnectionFactory` is closed.
 !!! warning
     Both the database module (e.g. `org.testcontainers:testcontainers-mysql`) **and** `org.testcontainers:testcontainers-r2dbc` need to be on your application's classpath at runtime.
 
+!!! warning
+    For MySQL, MariaDB and MS SQL Server, the JDBC driver also needs to be on the test classpath, even if your application only uses R2DBC. Testcontainers checks that these databases are ready by connecting over JDBC; without the driver, the container fails to start with `Could not get Driver`.
+
 **Original URL**: `r2dbc:mysql://localhost:3306/databasename`
 
 1. Insert `tc:` after `r2dbc:` as follows. Note that the hostname, port and database name will be ignored; you can leave these as-is or set them to any value.
