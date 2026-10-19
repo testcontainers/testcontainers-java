@@ -1,5 +1,6 @@
 package org.testcontainers.gcloud;
 
+import org.apache.commons.lang3.StringUtils;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -37,8 +38,12 @@ public class BigQueryEmulatorContainer extends GenericContainer<BigQueryEmulator
      *
      * @param projectId the project id
      * @return this container
+     * @throws IllegalArgumentException if {@code projectId} is null or blank
      */
     public BigQueryEmulatorContainer withProjectId(String projectId) {
+        if (StringUtils.isBlank(projectId)) {
+            throw new IllegalArgumentException("BigQuery emulator project id cannot be blank");
+        }
         this.projectId = projectId;
         return withCommand("--project", projectId);
     }

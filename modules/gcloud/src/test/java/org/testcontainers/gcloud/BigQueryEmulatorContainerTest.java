@@ -33,6 +33,9 @@ import io.grpc.ManagedChannelBuilder;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.threeten.bp.Duration;
 
 import java.math.BigDecimal;
@@ -40,6 +43,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class BigQueryEmulatorContainerTest {
 
@@ -206,6 +210,19 @@ class BigQueryEmulatorContainerTest {
             bigQuery.create(DatasetInfo.of(DatasetId.of("my_project", "my_dataset")));
 
             assertThat(bigQuery.getDataset(DatasetId.of("my_project", "my_dataset"))).isNotNull();
+        }
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = { " " })
+    void testBlankProjectIdIsRejected(String projectId) {
+        try (
+            BigQueryEmulatorContainer container = new BigQueryEmulatorContainer("ghcr.io/goccy/bigquery-emulator:0.6.5")
+        ) {
+            assertThatThrownBy(() -> container.withProjectId(projectId))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("project id");
         }
     }
 
