@@ -190,6 +190,25 @@ class BigQueryEmulatorContainerTest {
         }
     }
 
+    @Test
+    void testCustomProjectId() {
+        try (
+            // emulatorContainerWithProjectId {
+            BigQueryEmulatorContainer container = new BigQueryEmulatorContainer("ghcr.io/goccy/bigquery-emulator:0.6.5")
+                .withProjectId("my_project")
+            // }
+        ) {
+            container.start();
+
+            assertThat(container.getProjectId()).isEqualTo("my_project");
+
+            BigQuery bigQuery = getBigQuery(container);
+            bigQuery.create(DatasetInfo.of(DatasetId.of("my_project", "my_dataset")));
+
+            assertThat(bigQuery.getDataset(DatasetId.of("my_project", "my_dataset"))).isNotNull();
+        }
+    }
+
     private BigQuery getBigQuery(BigQueryEmulatorContainer container) {
         String url = container.getEmulatorHttpEndpoint();
         return BigQueryOptions
