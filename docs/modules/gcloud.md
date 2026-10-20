@@ -30,6 +30,12 @@ Start BigQuery Emulator during a test:
 [Creating BigQuery Client](../../modules/gcloud/src/test/java/org/testcontainers/gcloud/BigQueryEmulatorContainerTest.java) inside_block:bigQueryClient
 <!--/codeinclude-->
 
+The emulator is started with the `test-project` project id by default. Use `withProjectId` to start it with another one:
+
+<!--codeinclude-->
+[Starting a BigQuery Emulator container with a custom project id](../../modules/gcloud/src/test/java/org/testcontainers/gcloud/BigQueryEmulatorContainerTest.java) inside_block:emulatorContainerWithProjectId
+<!--/codeinclude-->
+
 ### Bigtable
 
 Start Bigtable Emulator during a test:
