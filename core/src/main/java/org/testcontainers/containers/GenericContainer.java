@@ -70,6 +70,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -667,9 +669,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 throw new IllegalStateException("Reusable container " + name + " is paused, unpause or remove it");
             }
             // A start that dies between create and start leaves the container in "created" for good
-            boolean orphaned =
-                "created".equals(status) &&
-                Instant.parse(existing.getCreated()).isBefore(Instant.now().minus(REUSE_ORPHAN_AGE));
+            boolean orphaned = "created".equals(status) && isOlderThan(existing.getCreated(), REUSE_ORPHAN_AGE);
             if ("exited".equals(status) || "dead".equals(status) || orphaned) {
                 logger().info("Removing leftover reusable container {} ({}, {})", name, existing.getId(), status);
                 // Remove by ID, so a container that was re-created in the meantime is not affected
@@ -677,6 +677,15 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             }
         } catch (NotFoundException | ConflictException e) {
             // Removed by someone else in the meantime
+        }
+    }
+
+    private static boolean isOlderThan(String timestamp, Duration age) {
+        try {
+            return OffsetDateTime.parse(timestamp).toInstant().isBefore(Instant.now().minus(age));
+        } catch (DateTimeParseException | NullPointerException e) {
+            // Unknown age, so never treat it as orphaned
+            return false;
         }
     }
 
