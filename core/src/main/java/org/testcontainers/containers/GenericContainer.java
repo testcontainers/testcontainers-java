@@ -114,6 +114,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     static final String COPIED_FILES_HASH_LABEL = "org.testcontainers.copied_files.hash";
 
+    /**
+     * How long a reusable container may stay in "created" before it counts as left behind by a killed start
+     */
+    private static final Duration REUSE_ORPHAN_AGE = Duration.ofMinutes(1);
+
     /*
      * Default settings
      */
@@ -620,7 +625,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         AtomicBoolean created = new AtomicBoolean(false);
         containerId =
             await()
-                .atMost(1, TimeUnit.MINUTES)
+                .atMost(REUSE_ORPHAN_AGE.multipliedBy(2))
                 .pollDelay(Duration.ZERO)
                 .pollInterval(DynamicPollInterval.ofMillis(100))
                 .pollInSameThread()
@@ -646,7 +651,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     }
 
     /**
-     * Removes a stopped leftover of this reusable container, so that the name can be claimed again.
+     * Removes a stopped or orphaned leftover of this reusable container, so that the name can be claimed again.
      */
     private void removeStoppedContainer(String name, String hash) {
         try {
@@ -658,8 +663,15 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 );
             }
             String status = existing.getState().getStatus();
-            if ("exited".equals(status) || "dead".equals(status)) {
-                logger().info("Removing stopped reusable container {} ({})", name, existing.getId());
+            if ("paused".equals(status)) {
+                throw new IllegalStateException("Reusable container " + name + " is paused, unpause or remove it");
+            }
+            // A start that dies between create and start leaves the container in "created" for good
+            boolean orphaned =
+                "created".equals(status) &&
+                Instant.parse(existing.getCreated()).isBefore(Instant.now().minus(REUSE_ORPHAN_AGE));
+            if ("exited".equals(status) || "dead".equals(status) || orphaned) {
+                logger().info("Removing leftover reusable container {} ({}, {})", name, existing.getId(), status);
                 // Remove by ID, so a container that was re-created in the meantime is not affected
                 dockerClient.removeContainerCmd(existing.getId()).withForce(true).exec();
             }

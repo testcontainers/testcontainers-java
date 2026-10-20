@@ -8,6 +8,7 @@ import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.InspectContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.command.ListContainersCmd;
+import com.github.dockerjava.api.command.RemoveContainerCmd;
 import com.github.dockerjava.api.command.StartContainerCmd;
 import com.github.dockerjava.api.exception.ConflictException;
 import com.github.dockerjava.api.model.Container;
@@ -22,6 +23,7 @@ import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Answers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 import org.testcontainers.DockerClientFactory;
@@ -35,12 +37,15 @@ import org.testcontainers.utility.TestcontainersConfiguration;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -290,6 +295,54 @@ class ReusabilityUnitTests {
 
             assertThat(container.getContainerId()).isEqualTo(existingContainerId);
             Mockito.verify(client, Mockito.never()).startContainerCmd(any());
+        }
+
+        @Test
+        void shouldReplaceContainerOrphanedInCreatedState() {
+            Mockito.doReturn(true).when(TestcontainersConfiguration.getInstance()).environmentSupportsReuse();
+            AtomicReference<CreateContainerCmd> commandRef = new AtomicReference<>();
+            String containerId = randomContainerId();
+            // The name is taken by a container whose start was killed before it ran
+            AtomicBoolean orphanRemoved = new AtomicBoolean(false);
+            when(client.createContainerCmd(any()))
+                .then(invocation -> {
+                    CreateContainerCmd.Exec exec = command -> {
+                        commandRef.set(command);
+                        if (!orphanRemoved.get()) {
+                            throw new ConflictException("name is already in use");
+                        }
+                        CreateContainerResponse response = new CreateContainerResponse();
+                        response.setId(containerId);
+                        return response;
+                    };
+                    return new CreateContainerCmdImpl(exec, null, "image:latest");
+                });
+            when(client.listContainersCmd()).then(listContainersAnswer());
+            String orphanId = randomContainerId();
+            InspectContainerResponse orphan = Mockito.mock(InspectContainerResponse.class, Answers.RETURNS_DEEP_STUBS);
+            when(orphan.getId()).thenReturn(orphanId);
+            when(orphan.getState().getStatus()).thenReturn("created");
+            when(orphan.getCreated()).thenReturn(Instant.now().minus(Duration.ofMinutes(5)).toString());
+            when(client.inspectContainerCmd(ArgumentMatchers.startsWith("testcontainers-reuse-")))
+                .then(invocation -> {
+                    when(orphan.getConfig().getLabels()).thenReturn(commandRef.get().getLabels());
+                    return new InspectContainerCmdImpl(command -> orphan, invocation.getArgument(0));
+                });
+            RemoveContainerCmd removeCmd = Mockito.mock(RemoveContainerCmd.class, Answers.RETURNS_SELF);
+            when(removeCmd.exec())
+                .then(invocation -> {
+                    orphanRemoved.set(true);
+                    return null;
+                });
+            when(client.removeContainerCmd(orphanId)).thenReturn(removeCmd);
+            when(client.startContainerCmd(containerId)).then(startContainerAnswer());
+            when(client.inspectContainerCmd(containerId)).then(inspectContainerAnswer());
+
+            container.start();
+
+            Mockito.verify(removeCmd).exec();
+            assertThat(container.getContainerId()).isEqualTo(containerId);
+            Mockito.verify(client).startContainerCmd(containerId);
         }
 
         @Test
