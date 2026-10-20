@@ -1,1 +1,4 @@
 *.sh text eol=lf
+
+# Force correct line endings for Gradle Wrapper
+gradlew text eol=lf
