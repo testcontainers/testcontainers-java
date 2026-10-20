@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.exception.ConflictException;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.ContainerNetwork;
@@ -88,6 +89,7 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -378,6 +380,7 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             createCommand.getLabels().putAll(DockerClientFactory.DEFAULT_LABELS);
 
             boolean reused = false;
+            String reuseHash = null;
             final boolean reusable;
             if (shouldBeReused) {
                 if (!canBeReused()) {
@@ -400,6 +403,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                         logger().debug("Can't find a reusable running container with hash: {}", hash);
 
                         createCommand.getLabels().put(HASH_LABEL, hash);
+                        if (createCommand.getName() == null) {
+                            // Docker enforces unique names, so only one of several concurrent starts can create it
+                            createCommand.withName("testcontainers-reuse-" + hash.substring(0, 12));
+                        }
+                        reuseHash = hash;
                     }
                     reusable = true;
                 } else {
@@ -421,9 +429,13 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 createCommand = ResourceReaper.instance().register(this, createCommand);
             }
 
-            if (!reused) {
+            if (reuseHash != null) {
+                reused = createOrAwaitReusableContainer(createCommand, reuseHash);
+            } else if (!reused) {
                 containerId = createCommand.exec().getId();
+            }
 
+            if (!reused) {
                 // TODO use single "copy" invocation (and calculate an hash of the resulting tar archive)
                 copyToFileContainerPathMap.forEach(this::copyFileToContainer);
 
@@ -597,6 +609,63 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             .stream()
             .findAny()
             .map(it -> it.getId());
+    }
+
+    /**
+     * Creates the reusable container, or waits for a concurrent start that already claimed its name to run it.
+     *
+     * @return {@code true} if an existing container is reused, {@code false} if this call created it
+     */
+    private boolean createOrAwaitReusableContainer(CreateContainerCmd createCommand, String hash) {
+        AtomicBoolean created = new AtomicBoolean(false);
+        containerId =
+            await()
+                .atMost(1, TimeUnit.MINUTES)
+                .pollDelay(Duration.ZERO)
+                .pollInterval(DynamicPollInterval.ofMillis(100))
+                .pollInSameThread()
+                .until(
+                    () -> {
+                        try {
+                            String id = createCommand.exec().getId();
+                            created.set(true);
+                            return id;
+                        } catch (ConflictException e) {
+                            logger()
+                                .debug("Container {} already exists, waiting for it to run", createCommand.getName());
+                        }
+                        String runningId = findContainerForReuse(hash).orElse(null);
+                        if (runningId == null) {
+                            removeStoppedContainer(createCommand.getName(), hash);
+                        }
+                        return runningId;
+                    },
+                    Objects::nonNull
+                );
+        return !created.get();
+    }
+
+    /**
+     * Removes a stopped leftover of this reusable container, so that the name can be claimed again.
+     */
+    private void removeStoppedContainer(String name, String hash) {
+        try {
+            InspectContainerResponse existing = dockerClient.inspectContainerCmd(name).exec();
+            Map<String, String> labels = existing.getConfig().getLabels();
+            if (labels == null || !hash.equals(labels.get(HASH_LABEL))) {
+                throw new IllegalStateException(
+                    "Container name " + name + " is already used by a container with a different configuration"
+                );
+            }
+            String status = existing.getState().getStatus();
+            if ("exited".equals(status) || "dead".equals(status)) {
+                logger().info("Removing stopped reusable container {} ({})", name, existing.getId());
+                // Remove by ID, so a container that was re-created in the meantime is not affected
+                dockerClient.removeContainerCmd(existing.getId()).withForce(true).exec();
+            }
+        } catch (NotFoundException | ConflictException e) {
+            // Removed by someone else in the meantime
+        }
     }
 
     /**

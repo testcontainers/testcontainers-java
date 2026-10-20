@@ -9,6 +9,7 @@ import com.github.dockerjava.api.command.InspectContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.command.ListContainersCmd;
 import com.github.dockerjava.api.command.StartContainerCmd;
+import com.github.dockerjava.api.exception.ConflictException;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.core.command.CreateContainerCmdImpl;
 import com.github.dockerjava.core.command.InspectContainerCmdImpl;
@@ -250,6 +251,45 @@ class ReusabilityUnitTests {
 
             assertThat(commandRef).isNotNull();
             assertThat(commandRef.get().getLabels()).containsKeys(GenericContainer.COPIED_FILES_HASH_LABEL);
+        }
+
+        @Test
+        void shouldNameReusableContainerAfterHash() {
+            Mockito.doReturn(true).when(TestcontainersConfiguration.getInstance()).environmentSupportsReuse();
+            AtomicReference<CreateContainerCmd> commandRef = new AtomicReference<>();
+            String containerId = randomContainerId();
+            when(client.createContainerCmd(any())).then(createContainerAnswer(containerId, commandRef::set));
+            when(client.listContainersCmd()).then(listContainersAnswer());
+            when(client.startContainerCmd(containerId)).then(startContainerAnswer());
+            when(client.inspectContainerCmd(containerId)).then(inspectContainerAnswer());
+
+            container.start();
+
+            String hash = commandRef.get().getLabels().get(GenericContainer.HASH_LABEL);
+            assertThat(commandRef.get().getName()).isEqualTo("testcontainers-reuse-" + hash.substring(0, 12));
+        }
+
+        @Test
+        void shouldReuseContainerCreatedConcurrently() {
+            Mockito.doReturn(true).when(TestcontainersConfiguration.getInstance()).environmentSupportsReuse();
+            when(client.createContainerCmd(any()))
+                .then(invocation -> {
+                    CreateContainerCmd.Exec exec = command -> {
+                        throw new ConflictException("name is already in use");
+                    };
+                    return new CreateContainerCmdImpl(exec, null, "image:latest");
+                });
+            String existingContainerId = randomContainerId();
+            // Not running yet when first looked up, running once the concurrent start is done
+            when(client.listContainersCmd())
+                .then(listContainersAnswer())
+                .then(listContainersAnswer(existingContainerId));
+            when(client.inspectContainerCmd(existingContainerId)).then(inspectContainerAnswer());
+
+            container.start();
+
+            assertThat(container.getContainerId()).isEqualTo(existingContainerId);
+            Mockito.verify(client, Mockito.never()).startContainerCmd(any());
         }
 
         @Test
