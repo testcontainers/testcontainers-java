@@ -6,10 +6,16 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.IOException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Enumeration;
 
 /**
  * Testcontainers implementation for MongoDB.
@@ -41,9 +47,15 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
 
     private static final String STARTER_SCRIPT = "/testcontainers_start.sh";
 
+    private static final String SCRIPT_DESTINATION_DEFAULT = "/docker-entrypoint-initdb.d/init.js";
+
+    private static final String SCRIPT_DESTINATION_MANUAL = "/tmp/init.js";
+
     private boolean shardingEnabled;
 
     private boolean rsEnabled;
+
+    private String initScriptPath;
 
     public MongoDBContainer(@NonNull String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
@@ -67,6 +79,69 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
     protected void containerIsStarted(InspectContainerResponse containerInfo, boolean reused) {
         if (this.rsEnabled) {
             initReplicaSet(reused);
+        }
+
+        boolean isClusterMode = this.shardingEnabled || this.rsEnabled;
+
+        if (isClusterMode && this.initScriptPath != null) {
+            executeInitScriptInContainer();
+        }
+    }
+
+    /**
+     * Configures the container.
+     * <p>
+     * This method handles the transfer of the initialization script to the container.
+     * Unlike standard file copying mechanisms, this implementation explicitly reads the script content as bytes
+     * and uses {@link org.testcontainers.images.builder.Transferable} to copy it.
+     * <p>
+     * This approach is necessary to strictly support filenames containing special characters
+     * (e.g., "#", spaces, etc.) on the classpath. Standard resource loading methods may misinterpret
+     * these characters (e.g., treating "#" as a URL fragment), causing resolution failures.
+     * By manually resolving the file path and transferring the raw bytes, we ensure the script
+     * is correctly deployed regardless of its filename complexity.
+     */
+    @Override
+    protected void configure() {
+        super.configure();
+        boolean isClusterMode = this.shardingEnabled || this.rsEnabled;
+        if (this.initScriptPath != null) {
+            try {
+                Path scriptPath = Paths.get(this.initScriptPath);
+                String fileName = scriptPath.getFileName().toString();
+                Path parentDir = scriptPath.getParent();
+                String resourceDir = (parentDir == null) ? "" : parentDir.toString();
+
+                Enumeration<URL> resources = this.getClass().getClassLoader().getResources(resourceDir);
+                byte[] fileContent = null;
+
+                while (resources.hasMoreElements()) {
+                    URL dirUrl = resources.nextElement();
+
+                    if ("file".equals(dirUrl.getProtocol())) {
+                        Path dirPath = Paths.get(dirUrl.toURI());
+                        Path candidatePath = dirPath.resolve(fileName);
+
+                        if (Files.exists(candidatePath) && !Files.isDirectory(candidatePath)) {
+                            fileContent = Files.readAllBytes(candidatePath);
+                            break;
+                        }
+                    }
+                }
+
+                if (fileContent == null) {
+                    throw new RuntimeException("Could not find init script on classpath: " + this.initScriptPath);
+                }
+
+                String destination = isClusterMode ? SCRIPT_DESTINATION_MANUAL : SCRIPT_DESTINATION_DEFAULT;
+                withCopyToContainer(Transferable.of(fileContent, 0777), destination);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to read or transfer init script: " + this.initScriptPath, e);
+            }
+        }
+
+        if (this.initScriptPath != null && !isClusterMode) {
+            this.waitStrategy = Wait.forLogMessage("(?i).*waiting for connections.*", 2);
         }
     }
 
@@ -203,5 +278,47 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
             throw new IllegalStateException("MongoDBContainer should be started first");
         }
         return getConnectionString() + "/" + databaseName;
+    }
+
+    /**
+     * Executes a MongoDB initialization script from the classpath during startup.
+     * <p>
+     * In standalone mode, the script will be copied to {@code /docker-entrypoint-initdb.d/init.js},
+     * and the {@link org.testcontainers.containers.wait.strategy.WaitStrategy} is adjusted
+     * to expect the "waiting for connections" log message twice.
+     * <p>
+     * In Replica Set or Sharding mode, the script is copied to a temporary location and executed
+     * manually after the cluster is initialized.
+     *
+     * @param scriptPath the path to the init script file on the classpath
+     * @return this container instance
+     */
+    public MongoDBContainer withInitScript(String scriptPath) {
+        this.initScriptPath = scriptPath;
+        return this;
+    }
+
+    @SneakyThrows
+    private void executeInitScriptInContainer() {
+        String cmd =
+            "mongosh " +
+            MONGODB_DATABASE_NAME_DEFAULT +
+            " " +
+            SCRIPT_DESTINATION_MANUAL +
+            " || mongo " +
+            MONGODB_DATABASE_NAME_DEFAULT +
+            " " +
+            SCRIPT_DESTINATION_MANUAL;
+
+        ExecResult result = execInContainer("sh", "-c", cmd);
+        if (result.getExitCode() != CONTAINER_EXIT_CODE_OK) {
+            throw new IllegalStateException(
+                String.format(
+                    "Failed to execute init script.\nStdout: %s\nStderr: %s",
+                    result.getStdout(),
+                    result.getStderr()
+                )
+            );
+        }
     }
 }
