@@ -27,6 +27,9 @@ This can be done using the `getMappedPort` method, which takes the original (con
     Because the randomised port mapping happens during container startup, the container must be running at the time `getMappedPort` is called. 
     You may need to ensure that the startup order of components in your tests caters for this.
 
+`getMappedPort` assumes a TCP port by default. If a container exposes the same port number for both TCP and UDP,
+pass the desired `InternetProtocol` explicitly, e.g. `getMappedPort(originalPort, InternetProtocol.UDP)`.
+
 There is also a `getFirstMappedPort` method for convenience, for the fairly common scenario of a container that only exposes one port:
 
 <!--codeinclude-->
