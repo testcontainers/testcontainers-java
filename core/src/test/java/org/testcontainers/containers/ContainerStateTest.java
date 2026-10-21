@@ -1,12 +1,20 @@
 package org.testcontainers.containers;
 
+import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.Ports;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Answers;
+import org.mockito.Mockito;
 
 import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -34,5 +42,38 @@ class ContainerStateTest {
 
         List<Integer> result = containerState.getBoundPortNumbers();
         assertThat(result).hasSameElementsAs(expectedResult);
+    }
+
+    @Test
+    void getMappedPortWithProtocolLooksUpTheBindingForThatProtocol() {
+        ContainerState containerState = mock(ContainerState.class);
+        doCallRealMethod().when(containerState).getMappedPort(anyInt(), any());
+        when(containerState.getContainerId()).thenReturn("container-id");
+
+        InspectContainerResponse containerInfo = Mockito.mock(InspectContainerResponse.class, Answers.RETURNS_DEEP_STUBS);
+        ExposedPort udpPort = new ExposedPort(12345, com.github.dockerjava.api.model.InternetProtocol.UDP);
+        when(containerInfo.getNetworkSettings().getPorts().getBindings())
+            .thenReturn(Collections.singletonMap(udpPort, new Ports.Binding[] { Ports.Binding.bindPort(54321) }));
+        when(containerState.getContainerInfo()).thenReturn(containerInfo);
+
+        Integer mappedPort = containerState.getMappedPort(12345, InternetProtocol.UDP);
+
+        assertThat(mappedPort).isEqualTo(54321);
+    }
+
+    @Test
+    void getMappedPortWithProtocolThrowsWhenNotMapped() {
+        ContainerState containerState = mock(ContainerState.class);
+        doCallRealMethod().when(containerState).getMappedPort(anyInt(), any());
+        when(containerState.getContainerId()).thenReturn("container-id");
+
+        InspectContainerResponse containerInfo = Mockito.mock(InspectContainerResponse.class, Answers.RETURNS_DEEP_STUBS);
+        when(containerInfo.getNetworkSettings().getPorts().getBindings()).thenReturn(Collections.emptyMap());
+        when(containerState.getContainerInfo()).thenReturn(containerInfo);
+
+        org.assertj.core.api.Assertions
+            .assertThatThrownBy(() -> containerState.getMappedPort(12345, InternetProtocol.UDP))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("12345/udp");
     }
 }
