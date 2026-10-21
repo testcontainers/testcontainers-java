@@ -10,6 +10,8 @@ import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Testcontainers implementation for MongoDB.
@@ -45,6 +47,8 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
 
     private boolean rsEnabled;
 
+    private final List<MountableFile> initScripts = new ArrayList<>();
+
     public MongoDBContainer(@NonNull String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
     }
@@ -60,6 +64,12 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
     protected void containerIsStarting(InspectContainerResponse containerInfo) {
         if (this.shardingEnabled) {
             copyFileToContainer(MountableFile.forClasspathResource("/sharding.sh", 0777), STARTER_SCRIPT);
+        }
+        for (int i = 0; i < initScripts.size(); i++) {
+            copyFileToContainer(initScripts.get(i), "/docker-entrypoint-initdb.d/init-" + i + ".js");
+        }
+        if (this.rsEnabled && !initScripts.isEmpty()) {
+            waitingFor(Wait.forLogMessage("(?i).*waiting for connections.*", 2));
         }
     }
 
@@ -158,6 +168,18 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
         this.rsEnabled = true;
         withCommand("--replSet", "docker-rs");
         waitingFor(Wait.forLogMessage("(?i).*waiting for connections.*", 1));
+        return this;
+    }
+
+    /**
+     * Adds a JavaScript init script to be executed by MongoDB on first startup.
+     * Scripts are copied to {@code /docker-entrypoint-initdb.d/} and run in the order they were added.
+     *
+     * @param initScript the script to copy into the container
+     * @return this
+     */
+    public MongoDBContainer withInitScript(MountableFile initScript) {
+        this.initScripts.add(initScript);
         return this;
     }
 
