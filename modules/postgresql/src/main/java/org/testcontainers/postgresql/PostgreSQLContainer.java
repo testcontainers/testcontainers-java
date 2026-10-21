@@ -139,6 +139,12 @@ public class PostgreSQLContainer extends JdbcDatabaseContainer<PostgreSQLContain
 
     @Override
     protected void waitUntilContainerStarted() {
+        // Run the configured wait strategy first (defaults to the log-output
+        // strategy), then the JDBC readiness gate from JdbcDatabaseContainer:
+        // a real host-side connection running the test query. The log line
+        // alone can precede mapped-port reachability on Docker Desktop/Colima,
+        // giving Connection refused on first connect. See issue #11981.
         getWaitStrategy().waitUntilReady(this);
+        super.waitUntilContainerStarted();
     }
 }
