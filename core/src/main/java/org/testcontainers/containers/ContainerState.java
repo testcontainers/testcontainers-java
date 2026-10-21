@@ -145,7 +145,7 @@ public interface ContainerState {
     }
 
     /**
-     * Get the actual mapped port for a given port exposed by the container.
+     * Get the actual mapped port for a given TCP port exposed by the container.
      * It should be used in conjunction with {@link #getHost()}.
      * <p>
      * Note: The returned port number might be outdated (for instance, after disconnecting from a network and reconnecting
@@ -156,8 +156,29 @@ public interface ContainerState {
      * @return the port that the exposed port is mapped to, or null if it is not exposed
      * @see #getContainerInfo()
      * @see #getCurrentContainerInfo()
+     * @see #getMappedPort(int, InternetProtocol)
      */
     default Integer getMappedPort(int originalPort) {
+        return getMappedPort(originalPort, InternetProtocol.TCP);
+    }
+
+    /**
+     * Get the actual mapped port for a given port and protocol exposed by the container.
+     * It should be used in conjunction with {@link #getHost()}.
+     * <p>
+     * Note: The returned port number might be outdated (for instance, after disconnecting from a network and reconnecting
+     * again). If you always need up-to-date value, override the {@link #getContainerInfo()} to return the
+     * {@link #getCurrentContainerInfo()}.
+     *
+     * @param originalPort the original port that is exposed
+     * @param protocol the protocol (TCP or UDP) of the exposed port
+     * @return the port that the exposed port is mapped to
+     * @throws IllegalStateException if the container is not started
+     * @throws IllegalArgumentException if the requested port is not mapped
+     * @see #getContainerInfo()
+     * @see #getCurrentContainerInfo()
+     */
+    default Integer getMappedPort(int originalPort, InternetProtocol protocol) {
         Preconditions.checkState(
             this.getContainerId() != null,
             "Mapped port can only be obtained after the container is started"
@@ -166,13 +187,19 @@ public interface ContainerState {
         Ports.Binding[] binding = new Ports.Binding[0];
         final InspectContainerResponse containerInfo = this.getContainerInfo();
         if (containerInfo != null) {
-            binding = containerInfo.getNetworkSettings().getPorts().getBindings().get(new ExposedPort(originalPort));
+            ExposedPort exposedPort = new ExposedPort(
+                originalPort,
+                com.github.dockerjava.api.model.InternetProtocol.parse(protocol.name())
+            );
+            binding = containerInfo.getNetworkSettings().getPorts().getBindings().get(exposedPort);
         }
 
         if (binding != null && binding.length > 0 && binding[0] != null) {
             return Integer.valueOf(binding[0].getHostPortSpec());
         } else {
-            throw new IllegalArgumentException("Requested port (" + originalPort + ") is not mapped");
+            throw new IllegalArgumentException(
+                "Requested port (" + originalPort + "/" + protocol.toDockerNotation() + ") is not mapped"
+            );
         }
     }
 
