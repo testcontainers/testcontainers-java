@@ -34,7 +34,9 @@ class MockServerContainerTest {
             try (MockServerClient client = new MockServerClient(mockServer.getHost(), mockServer.getServerPort())) {
                 assertThat(client.hasStarted()).as("Mockserver running").isTrue();
 
+                // testSimpleExpectation {
                 client.when(request().withPath("/hello")).respond(response().withBody(expectedBody));
+                // }
 
                 assertThat(given().when().get(mockServer.getEndpoint() + "/hello").then().extract().body().asString())
                     .as("MockServer returns correct result")
