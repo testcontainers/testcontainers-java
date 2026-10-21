@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.exception.ConflictException;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.ContainerNetwork;
@@ -69,6 +70,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -85,6 +87,7 @@ import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -111,6 +114,22 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     static final String HASH_LABEL = "org.testcontainers.hash";
 
     static final String COPIED_FILES_HASH_LABEL = "org.testcontainers.copied_files.hash";
+
+    /**
+     * Deterministic name given to a container created for reuse, derived from its reuse hash.
+     * Docker enforces container-name uniqueness across every process/host sharing a daemon, so
+     * attempting to create a container under this name is used as a cross-process arbiter: only
+     * one JVM/process can ever win the "create" call for a given hash, see {@link #tryStart()}.
+     */
+    static final String REUSE_CONTAINER_NAME_PREFIX = "testcontainers-reuse-";
+
+    /**
+     * JVM-local lock, keyed by reuse hash, guarding the "check reuse, else create" sequence in
+     * {@link #tryStart()} against same-JVM races (see "// TODO locking" history on
+     * {@link #findContainerForReuse(String)}). This does NOT protect against cross-process races.
+     * Those are handled by the Docker container-name uniqueness arbiter, see {@link #REUSE_CONTAINER_NAME_PREFIX}.
+     */
+    private static final ConcurrentHashMap<String, Object> REUSE_LOCKS = new ConcurrentHashMap<>();
 
     /*
      * Default settings
@@ -391,15 +410,31 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
                     String hash = hash(createCommand);
 
-                    containerId = findContainerForReuse(hash).orElse(null);
+                    // Layer 1: JVM-local lock, so two threads in this process can't both miss the
+                    // reuse lookup below and both fall through to creating a container.
+                    Object reuseLock = REUSE_LOCKS.computeIfAbsent(hash, h -> new Object());
+                    synchronized (reuseLock) {
+                        containerId = findContainerForReuse(hash).orElse(null);
 
-                    if (containerId != null) {
-                        logger().info("Reusing container with ID: {} and hash: {}", containerId, hash);
-                        reused = true;
-                    } else {
-                        logger().debug("Can't find a reusable running container with hash: {}", hash);
+                        if (containerId != null) {
+                            logger().info("Reusing container with ID: {} and hash: {}", containerId, hash);
+                            reused = true;
+                        } else {
+                            logger().debug("Can't find a reusable running container with hash: {}", hash);
 
-                        createCommand.getLabels().put(HASH_LABEL, hash);
+                            createCommand.getLabels().put(HASH_LABEL, hash);
+
+                            // Layer 2: the JVM-local lock above only protects this process. Two
+                            // separate processes racing on an identical config hash would both
+                            // still see "not found" here. Use Docker's own container-name
+                            // uniqueness as a cross-process arbiter for the actual create call.
+                            AbstractMap.SimpleEntry<String, Boolean> createdOrJoined = createOrJoinReusableContainer(
+                                createCommand,
+                                hash
+                            );
+                            containerId = createdOrJoined.getKey();
+                            reused = createdOrJoined.getValue();
+                        }
                     }
                     reusable = true;
                 } else {
@@ -421,9 +456,11 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
                 createCommand = ResourceReaper.instance().register(this, createCommand);
             }
 
-            if (!reused) {
+            if (!reused && !reusable) {
                 containerId = createCommand.exec().getId();
+            }
 
+            if (!reused) {
                 // TODO use single "copy" invocation (and calculate an hash of the resulting tar archive)
                 copyToFileContainerPathMap.forEach(this::copyFileToContainer);
 
@@ -587,7 +624,9 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     @VisibleForTesting
     Optional<String> findContainerForReuse(String hash) {
-        // TODO locking
+        // Callers must hold the per-hash lock in REUSE_LOCKS around this call (see tryStart()) to
+        // avoid a same-JVM check-then-act race; cross-process races are handled separately by
+        // createOrJoinReusableContainer's name-based arbiter.
         return dockerClient
             .listContainersCmd()
             .withLabelFilter(ImmutableMap.of(HASH_LABEL, hash))
@@ -597,6 +636,123 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             .stream()
             .findAny()
             .map(it -> it.getId());
+    }
+
+    /**
+     * Creates the container for reuse, using a deterministic name derived from the reuse hash as
+     * a cross-process arbiter: Docker enforces container-name uniqueness daemon-wide, so at most
+     * one process can ever win the "create" call for a given name/hash, even across separate JVMs
+     * that all missed the {@link #findContainerForReuse(String)} lookup at the same time.
+     *
+     * @return the container id, and whether it was reused (joined a container created by a
+     *         concurrent winner) rather than freshly created by this call.
+     */
+    private AbstractMap.SimpleEntry<String, Boolean> createOrJoinReusableContainer(
+        CreateContainerCmd createCommand,
+        String hash
+    ) {
+        String name = REUSE_CONTAINER_NAME_PREFIX + hash;
+        createCommand.withName(name);
+
+        while (true) {
+            try {
+                String newId = createCommand.exec().getId();
+                return new AbstractMap.SimpleEntry<>(newId, false);
+            } catch (ConflictException nameConflict) {
+                Optional<String> joinedId = resolveConflictingReusableContainer(name, hash);
+                if (joinedId.isPresent()) {
+                    return new AbstractMap.SimpleEntry<>(joinedId.get(), true);
+                }
+                // Name is confirmed free again (the conflicting container vanished, or we just
+                // cleaned up a dead one). Retry the create call above.
+            }
+        }
+    }
+
+    /**
+     * Waits out a name conflict on an in-progress concurrent creation, or resolves it directly,
+     * without re-attempting {@code createCommand.exec()} on every poll. That call is guaranteed
+     * to fail again as long as the name is still taken, so polling here re-inspects the existing
+     * container by name instead.
+     *
+     * @return the running container's id if one was found and is joinable; empty once the name
+     *         is confirmed free again, meaning the caller should retry the create call.
+     */
+    private Optional<String> resolveConflictingReusableContainer(String name, String hash) {
+        // Matches AbstractWaitStrategy's default startup timeout. A concurrent winner that
+        // hasn't finished starting within that budget is treated the same way a normal container
+        // start that overruns its timeout would be: an error, not an indefinite wait.
+        Instant deadline = Instant.now().plus(Duration.ofSeconds(60));
+        long backoffMillis = 100;
+
+        while (true) {
+            InspectContainerResponse existing;
+            try {
+                existing = dockerClient.inspectContainerCmd(name).exec();
+            } catch (NotFoundException goneAlready) {
+                // The conflicting container vanished since our create attempt (e.g. its own
+                // creator's process crashed, or Ryuk reaped it). Nothing to join.
+                return Optional.empty();
+            }
+
+            Map<String, String> existingLabels = existing.getConfig().getLabels();
+            String existingHash = existingLabels != null ? existingLabels.get(HASH_LABEL) : null;
+            if (!hash.equals(existingHash)) {
+                // A real name clash with something that isn't one of our reuse containers.
+                // Do NOT blindly reuse it, that could hand back an unrelated container.
+                throw new IllegalStateException(
+                    "Container name \"" +
+                    name +
+                    "\" is already in use by a container that is not a Testcontainers reuse " +
+                    "container for this configuration (expected label " +
+                    HASH_LABEL +
+                    "=" +
+                    hash +
+                    ", found \"" +
+                    existingHash +
+                    "\")"
+                );
+            }
+
+            String status = existing.getState().getStatus();
+            if ("running".equalsIgnoreCase(status)) {
+                return Optional.of(existing.getId());
+            }
+
+            if ("exited".equalsIgnoreCase(status) || "dead".equalsIgnoreCase(status)) {
+                // The concurrent winner crashed before starting. Clean up so the name is free for
+                // the caller to retry the create; this process is now the new winner-in-waiting.
+                try {
+                    dockerClient.removeContainerCmd(existing.getId()).withForce(true).exec();
+                } catch (NotFoundException alreadyRemoved) {
+                    // A concurrent loser (or Ryuk) already removed it. Fine, name is free either way.
+                }
+                return Optional.empty();
+            }
+
+            // Still "created" (or some other transient state): a concurrent winner is still
+            // mid create-and-start. Back off and re-inspect directly, rather than retrying the
+            // create call in the meantime.
+            if (Instant.now().isAfter(deadline)) {
+                throw new IllegalStateException(
+                    "Timed out waiting for concurrently-created reusable container \"" +
+                    name +
+                    "\" (hash: " +
+                    hash +
+                    ") to finish starting"
+                );
+            }
+            try {
+                Thread.sleep(backoffMillis);
+            } catch (InterruptedException interrupted) {
+                Thread.currentThread().interrupt();
+                throw new IllegalStateException(
+                    "Interrupted while waiting for reusable container to start",
+                    interrupted
+                );
+            }
+            backoffMillis = Math.min(backoffMillis * 2, 2000);
+        }
     }
 
     /**
