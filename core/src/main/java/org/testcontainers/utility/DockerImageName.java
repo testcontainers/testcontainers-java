@@ -253,6 +253,17 @@ public final class DockerImageName {
     }
 
     /**
+     * Returns the image explicitly declared as compatible through {@link #asCompatibleSubstituteFor(DockerImageName)}
+     * or {@link #asCompatibleSubstituteFor(String)}. This does not infer compatibility from the image name.
+     *
+     * @return the declared compatible image, or {@code null} if no compatibility has been declared
+     */
+    @Nullable
+    public DockerImageName getCompatibleSubstituteFor() {
+        return compatibleSubstituteFor;
+    }
+
+    /**
      * Test whether this {@link DockerImageName} has declared compatibility with another image (set using
      * {@link DockerImageName#asCompatibleSubstituteFor(String)} or
      * {@link DockerImageName#asCompatibleSubstituteFor(DockerImageName)}.
