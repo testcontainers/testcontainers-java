@@ -56,6 +56,7 @@ import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.DockerLoggerFactory;
 import org.testcontainers.utility.DockerMachineClient;
 import org.testcontainers.utility.DynamicPollInterval;
+import org.testcontainers.utility.LogUtils;
 import org.testcontainers.utility.MountableFile;
 import org.testcontainers.utility.PathUtils;
 import org.testcontainers.utility.ResourceReaper;
@@ -134,6 +135,15 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     private StartupCheckStrategy startupCheckStrategy = new IsRunningStartupCheckStrategy();
 
     private int startupAttempts = 1;
+
+    /**
+     * Log output captured from the container when it failed to start. Kept so that callers can still
+     * inspect it after the failed container has been removed.
+     */
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
+    @Nullable
+    private String logsFromFailedStartup = null;
 
     @Nullable
     private String workingDirectory = null;
@@ -300,6 +310,20 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
 
     public String getContainerId() {
         return containerId;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * If the container failed to start it will already have been removed, so the log output that was
+     * captured during the failure is returned instead.
+     */
+    @Override
+    public String getLogs() {
+        if (getContainerId() == null) {
+            return this.logsFromFailedStartup != null ? this.logsFromFailedStartup : "";
+        }
+        return LogUtils.getOutput(getDockerClient(), getContainerId());
     }
 
     /**
@@ -539,6 +563,8 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             if (containerId != null) {
                 // Log output if startup failed, either due to a container failure or exception (including timeout)
                 final String containerLogs = getLogs();
+                // Keep the logs around: stop() below removes the container, making them unreachable afterwards
+                this.logsFromFailedStartup = containerLogs;
 
                 if (containerLogs.length() > 0) {
                     logger().error("Log output from the failed container:\n{}", containerLogs);
