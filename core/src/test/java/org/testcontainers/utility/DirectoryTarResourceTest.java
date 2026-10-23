@@ -22,7 +22,7 @@ class DirectoryTarResourceTest {
             new ImageFromDockerfile()
                 .withDockerfileFromBuilder(builder -> {
                     builder
-                        .from("alpine:3.17")
+                        .from("alpine:3.24")
                         .copy("/tmp/foo", "/foo")
                         .cmd("cat /foo/test/resources/test-recursive-file.txt")
                         .build();
@@ -47,7 +47,7 @@ class DirectoryTarResourceTest {
                 new ImageFromDockerfile()
                     .withDockerfileFromBuilder(builder -> {
                         builder
-                            .from("alpine:3.17") //
+                            .from("alpine:3.24") //
                             .copy("/tmp/foo", "/foo")
                             .cmd("ls", "-al", "/")
                             .build();
@@ -75,7 +75,7 @@ class DirectoryTarResourceTest {
                 new ImageFromDockerfile()
                     .withDockerfileFromBuilder(builder -> {
                         builder
-                            .from("alpine:3.17") //
+                            .from("alpine:3.24") //
                             .copy("/tmp/foo", "/foo")
                             .cmd("ls -lRt /foo")
                             .build();

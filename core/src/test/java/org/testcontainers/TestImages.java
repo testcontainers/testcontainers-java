@@ -9,9 +9,9 @@ public interface TestImages {
 
     DockerImageName MONGODB_IMAGE = DockerImageName.parse("mongo:4.4");
 
-    DockerImageName ALPINE_IMAGE = DockerImageName.parse("alpine:3.17");
+    DockerImageName ALPINE_IMAGE = DockerImageName.parse("alpine:3.24");
 
     DockerImageName DOCKER_REGISTRY_IMAGE = DockerImageName.parse("registry:2.7.0");
 
-    DockerImageName TINY_IMAGE = DockerImageName.parse("alpine:3.17");
+    DockerImageName TINY_IMAGE = DockerImageName.parse("alpine:3.24");
 }
