@@ -28,6 +28,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -52,6 +53,8 @@ public class TestcontainersExtension
             });
 
         Store store = context.getStore(NAMESPACE);
+        // A unique key prevents nested contexts from inheriting another class's failure holder.
+        store.put(context.getUniqueId(), new AtomicReference<Throwable>());
         List<StoreAdapter> sharedContainersStoreAdapters = findSharedContainers(testClass);
 
         startContainers(sharedContainersStoreAdapters, store, context);
@@ -86,7 +89,15 @@ public class TestcontainersExtension
 
     @Override
     public void afterAll(ExtensionContext context) {
-        signalAfterTestToContainersFor(SHARED_LIFECYCLE_AWARE_CONTAINERS, context);
+        captureSharedContainerFailure(context);
+        AtomicReference<Throwable> failure = context
+            .getStore(NAMESPACE)
+            .get(context.getUniqueId(), AtomicReference.class);
+        Optional<Throwable> throwable = context.getExecutionException();
+        if (!throwable.isPresent() && failure != null) {
+            throwable = Optional.ofNullable(failure.get());
+        }
+        signalAfterTestToContainersFor(SHARED_LIFECYCLE_AWARE_CONTAINERS, context, throwable);
     }
 
     @Override
@@ -128,7 +139,25 @@ public class TestcontainersExtension
 
     @Override
     public void afterEach(ExtensionContext context) {
-        signalAfterTestToContainersFor(LOCAL_LIFECYCLE_AWARE_CONTAINERS, context);
+        captureSharedContainerFailure(context);
+        signalAfterTestToContainersFor(LOCAL_LIFECYCLE_AWARE_CONTAINERS, context, context.getExecutionException());
+    }
+
+    private void captureSharedContainerFailure(ExtensionContext context) {
+        context
+            .getExecutionException()
+            .ifPresent(throwable -> {
+                ExtensionContext current = context;
+                while (current != null) {
+                    AtomicReference<Throwable> failure = current
+                        .getStore(NAMESPACE)
+                        .get(current.getUniqueId(), AtomicReference.class);
+                    if (failure != null) {
+                        failure.compareAndSet(null, throwable);
+                    }
+                    current = current.getParent().orElse(null);
+                }
+            });
     }
 
     private void signalBeforeTestToContainers(
@@ -138,13 +167,16 @@ public class TestcontainersExtension
         lifecycleAwareContainers.forEach(container -> container.beforeTest(testDescription));
     }
 
-    private void signalAfterTestToContainersFor(String storeKey, ExtensionContext context) {
+    private void signalAfterTestToContainersFor(
+        String storeKey,
+        ExtensionContext context,
+        Optional<Throwable> throwable
+    ) {
         List<TestLifecycleAware> lifecycleAwareContainers = (List<TestLifecycleAware>) context
             .getStore(NAMESPACE)
             .get(storeKey);
         if (lifecycleAwareContainers != null) {
             TestDescription description = testDescriptionFrom(context);
-            Optional<Throwable> throwable = context.getExecutionException();
             lifecycleAwareContainers.forEach(container -> container.afterTest(description, throwable));
         }
     }
