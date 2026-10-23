@@ -37,7 +37,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -295,6 +300,50 @@ class GenericContainerTest {
         assertThat(reportLeakedContainers()).isEmpty();
     }
 
+    /**
+     * Test case for: https://github.com/testcontainers/testcontainers-java/issues/11492
+     */
+    @Test
+    void concurrentStopShouldNotPassNullContainerIdToResourceReaper() throws Exception {
+        try (LatchedStopContainer container = new LatchedStopContainer(TestImages.TINY_IMAGE)) {
+            container.withCommand("tail", "-f", "/dev/null");
+            container.start();
+
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            try {
+                Future<?> blockedStop = executor.submit(container::stop);
+                assertThat(container.stopping.await(10, TimeUnit.SECONDS)).isTrue();
+
+                // completes fully and nulls the container state while the first call is
+                // still inside containerIsStopping
+                container.stop();
+                container.proceed.countDown();
+
+                // throws NullPointerException without the containerId snapshot in stop()
+                blockedStop.get(30, TimeUnit.SECONDS);
+            } finally {
+                executor.shutdownNow();
+            }
+            assertThat(container.isRunning()).isFalse();
+        }
+    }
+
+    /**
+     * Test case for: https://github.com/testcontainers/testcontainers-java/issues/11492
+     */
+    @Test
+    void reentrantStopFromContainerIsStoppingHookShouldNotThrow() {
+        try (ReentrantStopContainer container = new ReentrantStopContainer(TestImages.TINY_IMAGE)) {
+            container.withCommand("tail", "-f", "/dev/null");
+            container.start();
+
+            // throws NullPointerException without the containerId snapshot in stop()
+            container.stop();
+
+            assertThat(container.isRunning()).isFalse();
+        }
+    }
+
     private static Optional<String> reportLeakedContainers() {
         @SuppressWarnings("resource") // Throws when close is attempted, as this is a global instance.
         DockerClient dockerClient = DockerClientFactory.lazyClient();
@@ -334,6 +383,45 @@ class GenericContainerTest {
                     .collect(Collectors.joining(", ", "[", "]"))
             )
         );
+    }
+
+    static class LatchedStopContainer extends GenericContainer<LatchedStopContainer> {
+
+        final CountDownLatch stopping = new CountDownLatch(1);
+
+        final CountDownLatch proceed = new CountDownLatch(1);
+
+        private final AtomicBoolean firstStop = new AtomicBoolean(true);
+
+        LatchedStopContainer(DockerImageName image) {
+            super(image);
+        }
+
+        @Override
+        @SneakyThrows
+        protected void containerIsStopping(InspectContainerResponse containerInfo) {
+            if (this.firstStop.getAndSet(false)) {
+                this.stopping.countDown();
+                this.proceed.await(10, TimeUnit.SECONDS);
+            }
+        }
+    }
+
+    static class ReentrantStopContainer extends GenericContainer<ReentrantStopContainer> {
+
+        private final AtomicBoolean reentered = new AtomicBoolean(false);
+
+        ReentrantStopContainer(DockerImageName image) {
+            super(image);
+        }
+
+        @Override
+        protected void containerIsStopping(InspectContainerResponse containerInfo) {
+            if (this.reentered.compareAndSet(false, true)) {
+                // simulates a hook implementation that triggers another stop of the same container
+                stop();
+            }
+        }
     }
 
     static class NoopStartupCheckStrategy extends StartupCheckStrategy {
