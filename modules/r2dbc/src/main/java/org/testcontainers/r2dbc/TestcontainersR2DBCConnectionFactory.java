@@ -31,7 +31,7 @@ class TestcontainersR2DBCConnectionFactory implements ConnectionFactory, Closeab
 
     private final R2DBCDatabaseContainerProvider containerProvider;
 
-    private CompletableFuture<R2DBCDatabaseContainer> future;
+    private volatile CompletableFuture<R2DBCDatabaseContainer> future;
 
     TestcontainersR2DBCConnectionFactory(ConnectionFactoryOptions options) {
         this.options = options;
@@ -47,10 +47,12 @@ class TestcontainersR2DBCConnectionFactory implements ConnectionFactory, Closeab
     @Override
     public Publisher<? extends Connection> create() {
         return new ConnectionPublisher(() -> {
-            if (future == null) {
+            CompletableFuture<R2DBCDatabaseContainer> futureRef = future;
+            if (futureRef == null) {
                 synchronized (this) {
-                    if (future == null) {
-                        future =
+                    futureRef = future;
+                    if (futureRef == null) {
+                        futureRef =
                             CompletableFuture.supplyAsync(
                                 () -> {
                                     R2DBCDatabaseContainer container = containerProvider.createContainer(options);
@@ -59,12 +61,11 @@ class TestcontainersR2DBCConnectionFactory implements ConnectionFactory, Closeab
                                 },
                                 EXECUTOR
                             );
+                        future = futureRef;
                     }
                 }
             }
-            return future.thenApply(it -> {
-                return ConnectionFactories.find(it.configure(options));
-            });
+            return futureRef.thenApply(it -> ConnectionFactories.find(it.configure(options)));
         });
     }
 
