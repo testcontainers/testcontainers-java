@@ -62,11 +62,13 @@ public class TrinoContainer extends JdbcDatabaseContainer<TrinoContainer> {
 
     @Override
     public String getJdbcUrl() {
+        String additionalUrlParams = constructUrlParameters("?", "&");
         return String.format(
-            "jdbc:trino://%s:%s/%s",
+            "jdbc:trino://%s:%s/%s%s",
             getHost(),
             getMappedPort(TRINO_PORT),
-            Strings.nullToEmpty(catalog)
+            Strings.nullToEmpty(catalog),
+            additionalUrlParams
         );
     }
 
