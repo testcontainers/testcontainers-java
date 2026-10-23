@@ -1,19 +1,21 @@
 package generic;
 
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Testcontainers
 public class ContainerCreationTest {
 
     // spotless:off
     // simple {
     public static final DockerImageName REDIS_IMAGE = DockerImageName.parse("redis:6-alpine");
 
-    @ClassRule
+    @Container
     public static GenericContainer<?> redis = new GenericContainer<>(REDIS_IMAGE)
         .withExposedPorts(6379);
 
@@ -27,7 +29,7 @@ public class ContainerCreationTest {
     // Set up a plain OS container and customize environment,
     //   command and exposed ports. This just listens on port 80
     //   and always returns '42'
-    @ClassRule
+    @Container
     public static GenericContainer<?> alpine = new GenericContainer<>(ALPINE_IMAGE)
         .withExposedPorts(80)
         .withEnv("MAGIC_NUMBER", "42")
