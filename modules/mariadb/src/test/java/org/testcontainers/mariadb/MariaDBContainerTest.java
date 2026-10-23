@@ -33,6 +33,7 @@ class MariaDBContainerTest extends AbstractContainerDatabaseTest {
             int resultSetInt = resultSet.getInt(1);
 
             assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+            assertHasCorrectExposedAndLivenessCheckPorts(mariadb);
         }
     }
 
@@ -143,6 +144,12 @@ class MariaDBContainerTest extends AbstractContainerDatabaseTest {
 
             assertThat(resultSetInt).isEqualTo(1);
         }
+    }
+
+    private void assertHasCorrectExposedAndLivenessCheckPorts(MariaDBContainer mariadb) {
+        assertThat(mariadb.getExposedPorts()).containsExactly(MariaDBContainer.MARIADB_PORT);
+        assertThat(mariadb.getLivenessCheckPortNumbers())
+            .containsExactly(mariadb.getMappedPort(MariaDBContainer.MARIADB_PORT));
     }
 
     private void assertThatCustomIniFileWasUsed(MariaDBContainer mariadb) throws SQLException {

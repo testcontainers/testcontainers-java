@@ -1,12 +1,9 @@
 package org.testcontainers.mariadb;
 
-import com.google.common.collect.Sets;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
-
-import java.util.Set;
 
 /**
  * Testcontainers implementation for MariaDB.
@@ -46,11 +43,6 @@ public class MariaDBContainer extends JdbcDatabaseContainer<MariaDBContainer> {
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
         addExposedPort(MARIADB_PORT);
-    }
-
-    @Override
-    public Set<Integer> getLivenessCheckPortNumbers() {
-        return Sets.newHashSet(MARIADB_PORT);
     }
 
     @Override
