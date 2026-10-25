@@ -232,7 +232,14 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
                 try {
                     driver = (Driver) Class.forName(this.getDriverClassName()).newInstance();
                 } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-                    throw new NoDriverFoundException("Could not get Driver", e);
+                    throw new NoDriverFoundException(
+                        String.format(
+                            "Could not get Driver %s. The JDBC driver must be on the classpath because the " +
+                            "container startup check connects over JDBC, even if the application only uses R2DBC",
+                            this.getDriverClassName()
+                        ),
+                        e
+                    );
                 }
             }
         }
