@@ -4,6 +4,8 @@ This module helps running [solr](https://solr.apache.org/) using Testcontainers.
 
 Note that it's based on the [official Docker image](https://hub.docker.com/_/solr/).
 
+For a complete runnable example, see the [Solr example](https://github.com/testcontainers/testcontainers-java/tree/main/examples/solr-container).
+
 ## Usage example
 
 You can start a solr container instance from any Java application by using:

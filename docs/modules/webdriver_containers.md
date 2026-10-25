@@ -84,6 +84,8 @@ Note the factory must implement `org.testcontainers.containers.RecordingFileFact
 
 A few different examples are shown in [ChromeWebDriverContainerTest.java](https://github.com/testcontainers/testcontainers-java/blob/main/modules/selenium/src/test/java/org/testcontainers/selenium/ChromeWebDriverContainerTest.java).
 
+A complete runnable Spring Boot application using a Selenium container is available in the [Selenium example](https://github.com/testcontainers/testcontainers-java/tree/main/examples/selenium-container).
+
 ## Adding this module to your project dependencies
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:

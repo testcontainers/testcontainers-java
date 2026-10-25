@@ -12,6 +12,8 @@ Currently, two different Kafka images are supported:
     `org.testcontainers.containers.KafkaContainer` is deprecated.
     Please use `org.testcontainers.kafka.ConfluentKafkaContainer` or `org.testcontainers.kafka.KafkaContainer` instead, depending on the used image.
 
+For a runnable multi-broker setup, see the [Kafka cluster example](https://github.com/testcontainers/testcontainers-java/tree/main/examples/kafka-cluster).
+
 ## Benefits
 
 * Running a single node Kafka installation with just one line of code

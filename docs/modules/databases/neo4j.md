@@ -7,6 +7,8 @@ Note that it's based on the [official Docker image](https://hub.docker.com/_/neo
 Even though the latest LTS version of Neo4j 4.4 is used in the examples of this documentation,
 the Testcontainers integration supports also newer 5.x images of Neo4j.
 
+For a complete runnable example, see the [Neo4j example](https://github.com/testcontainers/testcontainers-java/tree/main/examples/neo4j-container).
+
 ## Usage example
 
 You can start a Neo4j container instance from any Java application by using:
