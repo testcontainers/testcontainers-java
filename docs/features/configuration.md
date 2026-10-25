@@ -132,3 +132,11 @@ In addition, you can deactivate this behaviour by specifying:
 ```properties
 dockerconfig.source=autoIgnoringUserProperties # 'auto' by default
 ```
+
+## Docker Context support
+
+For users who wants to use docker context for host configuration can set the following property:
+```properties
+dockerconfig.source=dockerContext # 'auto' by default
+```
+Warning, this option will not do any extra checks, it defaults to whatever is configured through docker and/or docker context
