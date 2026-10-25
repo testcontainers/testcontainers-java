@@ -207,7 +207,7 @@ class WaitAllStrategyTest {
             .withStrategy(strategy2);
 
         verify(strategy1, never()).withStartupTimeout(any());
-        verify(strategy1, never()).withStartupTimeout(any());
+        verify(strategy2, never()).withStartupTimeout(any());
     }
 
     @Test
@@ -216,7 +216,7 @@ class WaitAllStrategyTest {
         new WaitAllStrategy().withStartupTimeout(someSeconds).withStrategy(strategy1).withStrategy(strategy2);
 
         verify(strategy1).withStartupTimeout(someSeconds);
-        verify(strategy1).withStartupTimeout(someSeconds);
+        verify(strategy2).withStartupTimeout(someSeconds);
     }
 
     static class DummyStrategy extends AbstractWaitStrategy {
