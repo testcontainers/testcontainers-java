@@ -330,7 +330,7 @@ public class KibanaContainer extends GenericContainer<KibanaContainer> {
     }
 
     private void configureManagedElasticsearch() {
-        ensureCorrectNetworkSetupForManagedMode();
+        ensureCorrectNetworkSetupForManagedMode(elasticsearch.getNetwork(), getNetwork());
 
         if (getNetwork() == null) {
             createAdHocNetwork();
@@ -379,10 +379,7 @@ public class KibanaContainer extends GenericContainer<KibanaContainer> {
         }
     }
 
-    private void ensureCorrectNetworkSetupForManagedMode() {
-        Network esNetwork = elasticsearch.getNetwork();
-        Network kbNetwork = this.getNetwork();
-
+    static void ensureCorrectNetworkSetupForManagedMode(Network esNetwork, Network kbNetwork) {
         if ((esNetwork == null) != (kbNetwork == null)) {
             throw new IllegalStateException(
                 "Managed mode requires either both containers share the same explicit network, " +
