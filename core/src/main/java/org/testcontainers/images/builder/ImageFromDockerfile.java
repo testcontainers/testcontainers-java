@@ -25,6 +25,7 @@ import org.testcontainers.utility.DockerLoggerFactory;
 import org.testcontainers.utility.ImageNameSubstitutor;
 import org.testcontainers.utility.LazyFuture;
 import org.testcontainers.utility.ResourceReaper;
+import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.io.IOException;
 import java.io.PipedInputStream;
@@ -186,6 +187,11 @@ public class ImageFromDockerfile
 
         this.buildArgs.forEach(buildImageCmd::withBuildArg);
         this.target.ifPresent(buildImageCmd::withTarget);
+
+        if (TestcontainersConfiguration.getInstance().isImageFromDockerfileNoCache()) {
+            buildImageCmd.withNoCache(true);
+        }
+
         this.buildImageCmdModifiers.forEach(hook -> hook.accept(buildImageCmd));
     }
 
