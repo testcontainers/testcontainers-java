@@ -200,6 +200,12 @@ public abstract class DockerClientProviderStrategy {
                     };
                 socketAddress = new InetSocketAddress("localhost", 2375);
                 break;
+            case "wslc":
+                // wslc publishes neither a socket file nor a port: the daemon is reached over a
+                // stdio bridge, so there is nothing here to connect() to. Reachability is
+                // established by the infoCmd() ping in tryOutStrategy instead.
+                log.debug("wslc transport has no connectable endpoint, deferring to the daemon ping");
+                return true;
             default:
                 log.warn("Unknown DOCKER_HOST scheme {}, skipping the strategy test...", dockerHost.getScheme());
                 return true;
@@ -474,6 +480,11 @@ public abstract class DockerClientProviderStrategy {
                             return DockerClientConfigUtils.getDefaultGateway().orElse("localhost");
                         });
                 }
+                return "localhost";
+            case "wslc":
+                // The wslc control plane relays published container ports onto 127.0.0.1 on the
+                // Windows host, so the daemon is always addressable there. Without this case the
+                // default below returns null and ContainerState.getHost() has no address to give.
                 return "localhost";
             default:
                 return null;
