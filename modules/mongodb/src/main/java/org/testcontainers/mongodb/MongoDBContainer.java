@@ -54,6 +54,8 @@ public class MongoDBContainer extends GenericContainer<MongoDBContainer> {
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME, COMMUNITY_SERVER_IMAGE, ENTERPRISE_SERVER_IMAGE);
 
         withExposedPorts(MONGODB_INTERNAL_PORT);
+
+        waitingFor(Wait.forLogMessage("(?i).*waiting for connections.*", 1));
     }
 
     @Override
