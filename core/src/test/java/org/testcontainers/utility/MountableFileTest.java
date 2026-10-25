@@ -2,6 +2,7 @@ package org.testcontainers.utility;
 
 import lombok.Cleanup;
 import org.apache.commons.compress.archivers.ArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.jetbrains.annotations.NotNull;
@@ -30,6 +31,27 @@ class MountableFileTest {
         final MountableFile mountableFile = MountableFile.forClasspathResource("mappable-resource/test-resource.txt");
 
         performChecks(mountableFile);
+    }
+
+    @Test
+    void tarEntriesShouldUseRootOwnership() throws Exception {
+        final Path file = createTempFile("ownership-test.txt");
+        final MountableFile mountableFile = MountableFile.forHostPath(file);
+
+        @Cleanup
+        final TarArchiveInputStream tais = intoTarArchive(taos -> {
+            mountableFile.transferTo(taos, "/ownership-test.txt");
+        });
+
+        final TarArchiveEntry tarEntry = tais.getNextEntry();
+
+        assertThat(tarEntry).isNotNull();
+
+        System.out.println("UID = " + tarEntry.getLongUserId());
+        System.out.println("GID = " + tarEntry.getLongGroupId());
+
+        assertThat(tarEntry.getLongUserId()).isZero();
+        assertThat(tarEntry.getLongGroupId()).isZero();
     }
 
     @Test
