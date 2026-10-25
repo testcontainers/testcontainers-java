@@ -183,7 +183,10 @@ public abstract class DockerClientProviderStrategy {
                 break;
             case "unix":
             case "npipe":
-                if (!new File(dockerHost.getPath()).exists()) {
+                // Windows answers File.exists() on a named pipe by opening an instance of it, which fails with
+                // ERROR_PIPE_BUSY while every instance is taken, so a busy pipe would read as absent.
+                // NamedPipeSocket.connect waits for a busy pipe and fails on an absent one, so it decides alone.
+                if ("unix".equals(dockerHost.getScheme()) && !new File(dockerHost.getPath()).exists()) {
                     log.debug("DOCKER_HOST socket file '{}' does not exist", dockerHost.getPath());
                     return false;
                 }
