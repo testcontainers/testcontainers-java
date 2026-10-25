@@ -22,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class FixedHostPortContainerTest {
 
-    private static final String TEST_IMAGE = "alpine:3.17";
+    private static final String TEST_IMAGE = "alpine:3.24";
 
     /**
      * Default http server port (just something different from default)

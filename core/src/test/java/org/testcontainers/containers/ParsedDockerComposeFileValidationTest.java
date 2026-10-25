@@ -133,8 +133,8 @@ class ParsedDockerComposeFileValidationTest {
             .contains(
                 entry("mysql", Sets.newHashSet("mysql")),
                 entry("redis", Sets.newHashSet("redis")),
-                entry("custom", Sets.newHashSet("alpine:3.17"))
-            ); // r/ redis, mysql from compose file, alpine:3.17 from Dockerfile build
+                entry("custom", Sets.newHashSet("alpine:3.24"))
+            ); // r/ redis, mysql from compose file, alpine:3.24 from Dockerfile build
     }
 
     @Test
@@ -146,8 +146,8 @@ class ParsedDockerComposeFileValidationTest {
             .contains(
                 entry("mysql", Sets.newHashSet("mysql")),
                 entry("redis", Sets.newHashSet("redis")),
-                entry("custom", Sets.newHashSet("alpine:3.17"))
-            ); // redis, mysql from compose file, alpine:3.17 from Dockerfile build
+                entry("custom", Sets.newHashSet("alpine:3.24"))
+            ); // redis, mysql from compose file, alpine:3.24 from Dockerfile build
     }
 
     @Test
