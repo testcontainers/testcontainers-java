@@ -80,6 +80,14 @@ If you would like to customise the file name of the recording, or provide a diff
 
 Note the factory must implement `org.testcontainers.containers.RecordingFileFactory`.
 
+If you reuse a single `BrowserWebDriverContainer` across multiple tests (e.g. to avoid the cost of starting a new
+browser container per test), call `restartVncRecording()` before each test so that `afterTest()` saves a separate
+recording per test instead of one continuous recording for the whole container's lifetime:
+
+<!--codeinclude-->
+[Restart recording between tests](../../modules/selenium/src/test/java/org/testcontainers/selenium/ChromeRecordingWebDriverContainerTest.java) inside_block:restart
+<!--/codeinclude-->
+
 ## More examples
 
 A few different examples are shown in [ChromeWebDriverContainerTest.java](https://github.com/testcontainers/testcontainers-java/blob/main/modules/selenium/src/test/java/org/testcontainers/selenium/ChromeWebDriverContainerTest.java).
