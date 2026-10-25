@@ -1,5 +1,6 @@
 package org.testcontainers.gcloud;
 
+import org.apache.commons.lang3.StringUtils;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -17,7 +18,9 @@ public class BigQueryEmulatorContainer extends GenericContainer<BigQueryEmulator
 
     private static final int GRPC_PORT = 9060;
 
-    private static final String PROJECT_ID = "test-project";
+    private static final String DEFAULT_PROJECT_ID = "test-project";
+
+    private String projectId = DEFAULT_PROJECT_ID;
 
     public BigQueryEmulatorContainer(String image) {
         this(DockerImageName.parse(image));
@@ -27,7 +30,22 @@ public class BigQueryEmulatorContainer extends GenericContainer<BigQueryEmulator
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
         addExposedPorts(HTTP_PORT, GRPC_PORT);
-        withCommand("--project", PROJECT_ID);
+        withCommand("--project", DEFAULT_PROJECT_ID);
+    }
+
+    /**
+     * Sets the project id the emulator is started with. Defaults to {@code test-project}.
+     *
+     * @param projectId the project id
+     * @return this container
+     * @throws IllegalArgumentException if {@code projectId} is null or blank
+     */
+    public BigQueryEmulatorContainer withProjectId(String projectId) {
+        if (StringUtils.isBlank(projectId)) {
+            throw new IllegalArgumentException("BigQuery emulator project id cannot be blank");
+        }
+        this.projectId = projectId;
+        return withCommand("--project", projectId);
     }
 
     public String getEmulatorHttpEndpoint() {
@@ -39,6 +57,6 @@ public class BigQueryEmulatorContainer extends GenericContainer<BigQueryEmulator
     }
 
     public String getProjectId() {
-        return PROJECT_ID;
+        return this.projectId;
     }
 }
