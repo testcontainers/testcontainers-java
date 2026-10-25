@@ -1,0 +1,79 @@
+{
+  "name": "inbound",
+  "address": {
+    "socketAddress": {
+      "address": "0.0.0.0",
+      "portValue": 15006
+    }
+  },
+  "filterChains": [
+    {
+      "filters": [
+        {
+          "name": "envoy.filters.network.http_connection_manager",
+          "typedConfig": {
+            "@type": "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager",
+            "statPrefix": "inbound_http",
+            "routeConfig": {
+              "name": "inbound",
+              "virtualHosts": [
+                {
+                  "name": "local-app",
+                  "domains": [
+                    "*"
+                  ],
+                  "routes": [
+                    {
+                      "match": {
+                        "prefix": "/"
+                      },
+                      "route": {
+                        "cluster": "local-app"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            "httpFilters": [
+              {
+                "name": "envoy.filters.http.rbac",
+                "typedConfig": {
+                  "@type": "type.googleapis.com/envoy.extensions.filters.http.rbac.v3.RBAC",
+                  "rules": {
+                    "action": "ALLOW",
+                    "policies": {
+                      "allowed-callers": {
+                        "permissions": [
+                          {
+                            "any": true
+                          }
+                        ],
+                        "principals": [
+                          {
+                            "header": {
+                              "name": "x-service-caller",
+                              "stringMatch": {
+                                "exact": "${ALLOWED_CALLER}"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "name": "envoy.filters.http.router",
+                "typedConfig": {
+                  "@type": "type.googleapis.com/envoy.extensions.filters.http.router.v3.Router"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
