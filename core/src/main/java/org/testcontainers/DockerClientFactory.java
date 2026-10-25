@@ -164,7 +164,7 @@ public class DockerClientFactory {
     public String getRemoteDockerUnixSocketPath() {
         DockerClientProviderStrategy strategy = getOrInitializeStrategy();
         if (strategy.allowUserOverrides()) {
-            String dockerSocketOverride = System.getenv("TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE");
+            String dockerSocketOverride = TestcontainersConfiguration.getInstance().getDockerSocketOverride();
             if (!StringUtils.isBlank(dockerSocketOverride)) {
                 return dockerSocketOverride;
             }
