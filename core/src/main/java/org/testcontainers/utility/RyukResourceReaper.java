@@ -33,6 +33,8 @@ class RyukResourceReaper extends ResourceReaper {
 
     private final AtomicBoolean started = new AtomicBoolean(false);
 
+    private volatile boolean ready = false;
+
     private final RyukContainer ryukContainer = new RyukContainer();
 
     @Override
@@ -71,13 +73,16 @@ class RyukResourceReaper extends ResourceReaper {
 
     @SneakyThrows(InterruptedException.class)
     private void maybeStart() {
-        if (started.get()) {
+        if (ready) {
             return;
         }
 
         DockerClientFactory.instance().client();
 
         synchronized (this) {
+            if (ready) {
+                return;
+            }
             if (!started.compareAndSet(false, true)) {
                 return;
             }
@@ -140,6 +145,8 @@ class RyukResourceReaper extends ResourceReaper {
                 log.error("Timed out waiting for Ryuk container to start. Ryuk's logs:\n{}", ryukContainer.getLogs());
                 throw new IllegalStateException(String.format("Could not connect to Ryuk at %s:%s", host, ryukPort));
             }
+
+            ready = true;
         }
     }
 }
