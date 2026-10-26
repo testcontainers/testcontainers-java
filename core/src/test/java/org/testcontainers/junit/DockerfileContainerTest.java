@@ -23,8 +23,10 @@ class DockerfileContainerTest {
         new ImageFromDockerfile("tcdockerfile/nginx", false)
             .withDockerfileFromBuilder(builder -> {
                 builder
-                    .from("alpine:3.2") //
+                    .from("alpine:3.12") //
                     .run("apk add --update nginx")
+                    .run("mkdir -p /run/nginx")
+                    .run("sed -i 's/return 404;/return 200;/' /etc/nginx/conf.d/default.conf")
                     .cmd("nginx", "-g", "daemon off;")
                     .build();
             })
