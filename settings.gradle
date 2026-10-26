@@ -28,6 +28,7 @@ file('modules').eachDir { dir ->
 }
 
 include ':docs:examples:junit5:redis'
+include ':docs:examples:junit5:generic'
 include ':docs:examples:spock:redis'
 
 include 'test-support'

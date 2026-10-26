@@ -10,9 +10,10 @@ See [Database containers](./index.md) for documentation and usage that is common
 Running Presto as a stand-in for in a test:
 
 ```java
+@Testcontainers
 public class SomeTest {
 
-    @Rule
+    @Container
     public PrestoContainer presto = new PrestoContainer();
     
     @Test
@@ -34,8 +35,9 @@ Presto comes with several catalogs preconfigured. Most useful ones for testing a
 Example test using the `tpch` and `memory` catalogs:
 
 ```java
+@Testcontainers
 public class SomeTest {
-    @Rule
+    @Container
     public PrestoContainer prestoSql = new PrestoContainer();
 
     @Test
@@ -56,7 +58,7 @@ public class SomeTest {
                 while (resultSet.next()) {
                     actualElements.add(resultSet.getInt("element"));
                 }
-                Assert.assertEquals(Arrays.asList(2, 4, 42, 42, 42), actualElements);
+                assertThat(actualElements).isEqualTo(Arrays.asList(2, 4, 42, 42, 42));
             }
         }
     }
@@ -85,5 +87,4 @@ Add the following dependency to your `pom.xml`/`build.gradle` file:
     Adding this Testcontainers library JAR will not automatically add the Presto JDBC driver JAR to your project.
     You should ensure that your project has the Presto JDBC driver as a dependency, if you plan on using it.
     Refer to [Presto project download page](https://prestosql.io/download.html) for instructions.
-
 
