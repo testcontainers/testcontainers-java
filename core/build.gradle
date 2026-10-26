@@ -59,6 +59,9 @@ configurations.all {
         force 'com.fasterxml.jackson.core:jackson-core:2.18.12'
         force 'com.fasterxml.jackson.core:jackson-databind:2.18.12'
         force 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.12'
+        force 'org.bouncycastle:bcprov-jdk18on:1.86'
+        force 'org.bouncycastle:bcutil-jdk18on:1.86'
+        force 'org.bouncycastle:bcpkix-jdk18on:1.86'
     }
 }
 
