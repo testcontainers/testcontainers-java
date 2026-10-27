@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -78,9 +79,13 @@ class KafkaHelper {
             String listenerHost = listener.split(":")[0];
             String listenerPort = listener.split(":")[1];
             String listenerProtocol = String.format("%s://%s:%s", protocol, listenerHost, listenerPort);
-            String protocolMap = String.format("%s:PLAINTEXT", protocol);
             listeners.add(listenerProtocol);
-            listenerSecurityProtocolMap.add(protocolMap);
+            boolean securityProtocolConfigured = listenerSecurityProtocolMap
+                .stream()
+                .anyMatch(entry -> entry.trim().toUpperCase(Locale.ROOT).startsWith(protocol + ":"));
+            if (!securityProtocolConfigured) {
+                listenerSecurityProtocolMap.add(String.format("%s:PLAINTEXT", protocol));
+            }
 
             String host = listener.split(":")[0];
             kafkaContainer.withNetworkAliases(host);

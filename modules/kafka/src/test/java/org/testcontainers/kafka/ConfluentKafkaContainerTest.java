@@ -68,6 +68,30 @@ class ConfluentKafkaContainerTest extends AbstractKafka {
 
     @SneakyThrows
     @Test
+    void shouldKeepSecurityProtocolConfiguredForListener() {
+        try (
+            Network network = Network.newNetwork();
+            SocatContainer socat = new SocatContainer().withNetwork(network).withTarget(2000, "kafka", 19092);
+            ConfluentKafkaContainer kafka = new ConfluentKafkaContainer("confluentinc/cp-kafka:7.7.0")
+                .withListener("kafka:19092", () -> socat.getHost() + ":" + socat.getMappedPort(2000))
+                .withNetwork(network)
+                .withEnv(
+                    "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP",
+                    "BROKER:PLAINTEXT,PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,TC-0:SASL_PLAINTEXT"
+                )
+                .withEnv("KAFKA_LISTENER_NAME_TC-0_SASL_ENABLED_MECHANISMS", "PLAIN")
+                .withEnv("KAFKA_LISTENER_NAME_TC-0_PLAIN_SASL_JAAS_CONFIG", getJaasConfig())
+        ) {
+            socat.start();
+            kafka.start();
+
+            String bootstrapServers = String.format("%s:%s", socat.getHost(), socat.getMappedPort(2000));
+            testSecurePlainKafkaFunctionality(bootstrapServers);
+        }
+    }
+
+    @SneakyThrows
+    @Test
     void shouldConfigureAuthenticationWithSaslUsingJaas() {
         try (
             ConfluentKafkaContainer kafka = new ConfluentKafkaContainer("confluentinc/cp-kafka:7.7.0")
