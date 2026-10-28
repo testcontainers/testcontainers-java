@@ -118,6 +118,48 @@ class MountableFileTest {
     }
 
     @Test
+    void forClasspathResourceDirectoryInJarDoesNotExtractSiblingsSharingItsNamePrefix() throws Exception {
+        final Map<String, String> entries = new LinkedHashMap<>();
+        entries.put("foo/", "");
+        entries.put("foo/bar/", "");
+        entries.put("foo/bar/a.txt", "a-content");
+        entries.put("foo/barbaz/", "");
+        entries.put("foo/barbaz/b.txt", "b-content");
+        final Path jarFile = createJarWithEntries(entries);
+
+        withJarOnClasspath(
+            jarFile,
+            () -> {
+                final MountableFile mountableFile = MountableFile.forClasspathResource("foo/bar");
+                final File resolved = new File(mountableFile.getResolvedPath());
+
+                assertThat(Files.readString(new File(resolved, "a.txt").toPath())).isEqualTo("a-content");
+                assertThat(new File(resolved.getParentFile(), "barbaz")).doesNotExist();
+            }
+        );
+    }
+
+    @Test
+    void forClasspathResourceFileInJarDoesNotExtractSiblingsSharingItsNamePrefix() throws Exception {
+        final Map<String, String> entries = new LinkedHashMap<>();
+        entries.put("db/", "");
+        entries.put("db/init.sql", "init-content");
+        entries.put("db/init.sql.bak", "bak-content");
+        final Path jarFile = createJarWithEntries(entries);
+
+        withJarOnClasspath(
+            jarFile,
+            () -> {
+                final MountableFile mountableFile = MountableFile.forClasspathResource("db/init.sql");
+                final File resolved = new File(mountableFile.getResolvedPath());
+
+                assertThat(Files.readString(resolved.toPath())).isEqualTo("init-content");
+                assertThat(new File(resolved.getParentFile(), "init.sql.bak")).doesNotExist();
+            }
+        );
+    }
+
+    @Test
     void forClasspathResourceInJarRejectsEntriesEscapingTheExtractionDirectory() throws Exception {
         final Map<String, String> entries = new LinkedHashMap<>();
         entries.put("assets/", "");
