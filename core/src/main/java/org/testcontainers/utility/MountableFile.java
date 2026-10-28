@@ -237,6 +237,9 @@ public class MountableFile implements Transferable {
 
         String urldecodedJarPath = unencodeResourceURIToFilePath(hostPath);
         String internalPath = hostPath.replaceAll("[^!]*!/", "");
+        // Match the resource itself or entries beneath it, but not siblings that merely share the
+        // name as a prefix (e.g. "foo/barbaz/..." for "foo/bar", or "init.sql.bak" for "init.sql")
+        String entryPrefix = internalPath.endsWith("/") ? internalPath : internalPath + "/";
 
         try (JarFile jarFile = new JarFile(urldecodedJarPath)) {
             Enumeration<JarEntry> entries = jarFile.entries();
@@ -244,7 +247,7 @@ public class MountableFile implements Transferable {
             while (entries.hasMoreElements()) {
                 JarEntry entry = entries.nextElement();
                 final String name = entry.getName();
-                if (name.startsWith(internalPath)) {
+                if (name.equals(internalPath) || name.startsWith(entryPrefix)) {
                     log.debug(
                         "Copying classpath resource(s) from {} to {} to permit Docker to bind",
                         hostPath,
