@@ -1,5 +1,6 @@
 package org.testcontainers.spock
 
+import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
 import org.spockframework.runtime.extension.IMethodInvocation
 import org.testcontainers.lifecycle.TestDescription
@@ -10,6 +11,7 @@ import org.testcontainers.lifecycle.TestDescription
  * Filesystem friendly name is based on Specification and Feature.
  */
 @PackageScope
+@CompileStatic
 class SpockTestDescription implements TestDescription {
 
 	String specName
