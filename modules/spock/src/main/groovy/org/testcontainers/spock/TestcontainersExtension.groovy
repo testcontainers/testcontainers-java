@@ -36,7 +36,7 @@ class TestcontainersExtension extends AbstractAnnotationDrivenExtension<Testcont
 		spec.addListener(listener)
 	}
 
-	class ErrorListener extends AbstractRunListener {
+	private class ErrorListener extends AbstractRunListener {
 		List<ErrorInfo> errors = []
 
 		@Override
