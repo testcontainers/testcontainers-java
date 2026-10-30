@@ -1,10 +1,12 @@
 package org.testcontainers.spock
 
+import groovy.transform.CompileStatic
 import org.spockframework.runtime.AbstractRunListener
 import org.spockframework.runtime.extension.AbstractAnnotationDrivenExtension
 import org.spockframework.runtime.model.ErrorInfo
 import org.spockframework.runtime.model.SpecInfo
 
+@CompileStatic
 class TestcontainersExtension extends AbstractAnnotationDrivenExtension<Testcontainers> {
 
 	private final DockerAvailableDetector dockerDetector

@@ -1,5 +1,6 @@
 package org.testcontainers.spock
 
+import groovy.transform.CompileStatic
 import org.spockframework.runtime.extension.AbstractMethodInterceptor
 import org.spockframework.runtime.extension.IMethodInvocation
 import org.spockframework.runtime.model.FieldInfo
@@ -10,6 +11,7 @@ import org.testcontainers.containers.GenericContainer
 import org.testcontainers.lifecycle.TestLifecycleAware
 import org.testcontainers.spock.TestcontainersExtension.ErrorListener
 
+@CompileStatic
 class TestcontainersMethodInterceptor extends AbstractMethodInterceptor {
 
 	private final SpecInfo spec
