@@ -96,13 +96,20 @@ public class SolrContainer extends GenericContainer<SolrContainer> {
         }
         // Generate Command Builder
         String command = "solr start -f";
+        // Solr 10 starts in cloud mode by default
+        if (this.imageVersion.isGreaterThanOrEqualTo("10.0.0")) {
+            command = "solr start -f --user-managed";
+        }
         // Add Default Ports
         addExposedPort(SOLR_PORT);
 
         // Configure Zookeeper
         if (configuration.isZookeeper()) {
             addExposedPort(ZOOKEEPER_PORT);
-            if (this.imageVersion.isGreaterThanOrEqualTo("9.7.0")) {
+            if (this.imageVersion.isGreaterThanOrEqualTo("10.0.0")) {
+                // zkRun is deprecated and no longer accepted without a value since Solr 10.1
+                command = "-Dsolr.zookeeper.server.enabled=true --host localhost";
+            } else if (this.imageVersion.isGreaterThanOrEqualTo("9.7.0")) {
                 command = "-DzkRun --host localhost";
             } else {
                 command = "-DzkRun -h localhost";
