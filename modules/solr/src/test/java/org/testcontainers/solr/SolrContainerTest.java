@@ -17,7 +17,7 @@ class SolrContainerTest {
     private SolrClient client = null;
 
     public static String[] getVersionsToTest() {
-        return new String[] { "solr:8.11.4", "solr:9.8.0" };
+        return new String[] { "solr:8.11.4", "solr:9.8.0", "solr:10.1.0" };
     }
 
     @AfterEach
