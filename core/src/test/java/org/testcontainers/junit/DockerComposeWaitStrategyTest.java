@@ -43,7 +43,7 @@ class DockerComposeWaitStrategyTest {
         try {
             environment.start();
         } catch (RuntimeException e) {
-            fail("Docker compose should start after waiting for listening port with failed with: " + e);
+            fail("Docker compose should start after waiting for listening port", e);
         }
     }
 
@@ -57,7 +57,7 @@ class DockerComposeWaitStrategyTest {
         try {
             environment.start();
         } catch (RuntimeException e) {
-            fail("Docker compose should start after waiting for listening port with failed with: " + e);
+            fail("Docker compose should start after waiting for multiple strategies", e);
         }
     }
 
