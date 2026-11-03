@@ -6,7 +6,7 @@ jobs:
     steps:
     - checkout
     - run:
-        command: ./gradlew --no-daemon --continue --scan testcontainers:test --tests '*GenericContainerRuleTest'
+        command: ./gradlew --no-daemon --continue --scan testcontainers:test --tests '*GenericContainerRuleTest' testcontainers:jarFileTest
     - run:
         name: Save test results
         command: |

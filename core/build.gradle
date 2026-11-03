@@ -32,7 +32,7 @@ shadowJar {
 task jarFileTest(type: Test) {
     useJUnitPlatform()
     testClassesDirs = sourceSets.jarFileTest.output.classesDirs
-    classpath = sourceSets.jarFileTest.runtimeClasspath
+    classpath = sourceSets.jarFileTest.runtimeClasspath + configurations.runtimeClasspath
 
     inputs.files(shadowJar).withPathSensitivity(PathSensitivity.RELATIVE)
     systemProperty("jarFile", project.projectDir.toPath().relativize(shadowJar.outputs.files.singleFile.toPath()).toString())
