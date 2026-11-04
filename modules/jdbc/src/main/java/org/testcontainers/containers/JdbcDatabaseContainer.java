@@ -124,7 +124,12 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
      */
     public SELF withStartupTimeoutSeconds(int startupTimeoutSeconds) {
         this.startupTimeoutSeconds = startupTimeoutSeconds;
-        getWaitStrategy().withStartupTimeout(Duration.ofSeconds(startupTimeoutSeconds));
+        try {
+            getWaitStrategy().withStartupTimeout(Duration.ofSeconds(startupTimeoutSeconds));
+        } catch (IllegalStateException e) {
+            // e.g. WaitAllStrategy in WITH_INDIVIDUAL_TIMEOUTS_ONLY mode does not accept a startup timeout
+            logger().debug("Wait strategy does not accept a startup timeout, only the JDBC startup timeout is used", e);
+        }
         return self();
     }
 
