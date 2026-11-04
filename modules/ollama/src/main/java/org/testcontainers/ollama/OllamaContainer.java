@@ -3,15 +3,12 @@ package org.testcontainers.ollama;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.DeviceRequest;
 import com.github.dockerjava.api.model.Image;
-import com.github.dockerjava.api.model.Info;
-import com.github.dockerjava.api.model.RuntimeInfo;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Testcontainers implementation for Ollama.
@@ -19,6 +16,8 @@ import java.util.Map;
  * Supported image: {@code ollama/ollama}
  * <p>
  * Exposed ports: 11434
+ * <p>
+ * GPU access is opt-in: use {@link #withGpuAccess()} to request access to the host GPU(s).
  */
 public class OllamaContainer extends GenericContainer<OllamaContainer> {
 
@@ -34,24 +33,32 @@ public class OllamaContainer extends GenericContainer<OllamaContainer> {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DOCKER_IMAGE_NAME);
 
-        Info info = this.dockerClient.infoCmd().exec();
-        Map<String, RuntimeInfo> runtimes = info.getRuntimes();
-        if (runtimes != null) {
-            if (runtimes.containsKey("nvidia")) {
-                withCreateContainerCmdModifier(cmd -> {
-                    cmd
-                        .getHostConfig()
-                        .withDeviceRequests(
-                            Collections.singletonList(
-                                new DeviceRequest()
-                                    .withCapabilities(Collections.singletonList(Collections.singletonList("gpu")))
-                                    .withCount(-1)
-                            )
-                        );
-                });
-            }
-        }
         withExposedPorts(OLLAMA_PORT);
+    }
+
+    /**
+     * Requests access to the host GPU(s) by adding a {@link DeviceRequest} to the container's create command.
+     * <p>
+     * GPU access is opt-in and not enabled automatically: the presence of an {@code nvidia} runtime does not
+     * guarantee that a usable GPU is present. Notably, Docker Desktop (WSL2) registers such a runtime even on
+     * machines without NVIDIA GPUs, which would make the container fail to start if a GPU device request was
+     * applied automatically.
+     *
+     * @return this
+     */
+    public OllamaContainer withGpuAccess() {
+        withCreateContainerCmdModifier(cmd -> {
+            cmd
+                .getHostConfig()
+                .withDeviceRequests(
+                    Collections.singletonList(
+                        new DeviceRequest()
+                            .withCapabilities(Collections.singletonList(Collections.singletonList("gpu")))
+                            .withCount(-1)
+                    )
+                );
+        });
+        return self();
     }
 
     /**
