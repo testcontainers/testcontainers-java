@@ -141,6 +141,63 @@ public class AbstractKafka {
         }
     }
 
+    protected void testKafkaTransactionalFunctionality(String bootstrapServers) throws Exception {
+        Properties adminClientProperties = new Properties();
+        adminClientProperties.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+
+        Properties consumerProperties = new Properties();
+        consumerProperties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        consumerProperties.put(ConsumerConfig.GROUP_ID_CONFIG, "tc-" + UUID.randomUUID());
+        consumerProperties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        consumerProperties.put(ConsumerConfig.ISOLATION_LEVEL_CONFIG, "read_committed");
+
+        Properties producerProperties = new Properties();
+        producerProperties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        producerProperties.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, "tc-" + UUID.randomUUID());
+        // Fail fast if the transaction state topic can not be created
+        producerProperties.put(ProducerConfig.MAX_BLOCK_MS_CONFIG, "10000");
+
+        try (
+            AdminClient adminClient = AdminClient.create(adminClientProperties);
+            KafkaProducer<String, String> producer = new KafkaProducer<>(
+                producerProperties,
+                new StringSerializer(),
+                new StringSerializer()
+            );
+            KafkaConsumer<String, String> consumer = new KafkaConsumer<>(
+                consumerProperties,
+                new StringDeserializer(),
+                new StringDeserializer()
+            );
+        ) {
+            String topicName = "messages-" + UUID.randomUUID();
+
+            Collection<NewTopic> topics = Collections.singletonList(new NewTopic(topicName, 1, (short) 1));
+            adminClient.createTopics(topics).all().get(30, TimeUnit.SECONDS);
+
+            consumer.subscribe(Collections.singletonList(topicName));
+
+            producer.initTransactions();
+            producer.beginTransaction();
+            producer.send(new ProducerRecord<>(topicName, "testcontainers", "rulezzz")).get();
+            producer.commitTransaction();
+
+            Awaitility
+                .await()
+                .atMost(Duration.ofSeconds(10))
+                .untilAsserted(() -> {
+                    ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
+
+                    assertThat(records)
+                        .hasSize(1)
+                        .extracting(ConsumerRecord::topic, ConsumerRecord::key, ConsumerRecord::value)
+                        .containsExactly(tuple(topicName, "testcontainers", "rulezzz"));
+                });
+
+            consumer.unsubscribe();
+        }
+    }
+
     protected static String getJaasConfig() {
         String jaasConfig =
             "org.apache.kafka.common.security.plain.PlainLoginModule required " +
