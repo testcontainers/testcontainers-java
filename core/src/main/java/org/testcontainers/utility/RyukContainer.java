@@ -11,6 +11,10 @@ class RyukContainer extends GenericContainer<RyukContainer> {
     RyukContainer() {
         super("testcontainers/ryuk:0.14.0");
         withExposedPorts(8080);
+        String network = TestcontainersConfiguration.getInstance().getRyukNetwork();
+        if (network != null) {
+            withNetworkMode(network);
+        }
         withCreateContainerCmdModifier(cmd -> {
             cmd.withName("testcontainers-ryuk-" + DockerClientFactory.SESSION_ID);
             cmd.withHostConfig(
