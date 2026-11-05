@@ -60,6 +60,15 @@ class DockerImageNameTest {
             assertThatThrownBy(() -> DockerImageName.parse(imageName).assertValid())
                 .isInstanceOf(IllegalArgumentException.class);
         }
+
+        @Test
+        void rejectsRepeatedDigestWhenParsing() {
+            String digest = "1234abcd1234abcd1234abcd1234abcd";
+            assertThatThrownBy(() -> DockerImageName.parse("myname@sha256:" + digest + "@sha256:" + digest))
+                .isInstanceOf(IllegalArgumentException.class);
+            assertThatThrownBy(() -> DockerImageName.parse("myname:latest@sha256:" + digest + "@sha256:" + digest))
+                .isInstanceOf(IllegalArgumentException.class);
+        }
     }
 
     @Nested
