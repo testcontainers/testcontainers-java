@@ -202,7 +202,7 @@ public class BrowserWebDriverContainer
     }
 
     @Override
-    public void stop() {
+    public synchronized void stop() {
         if (vncRecordingContainer != null) {
             try {
                 vncRecordingContainer.stop();

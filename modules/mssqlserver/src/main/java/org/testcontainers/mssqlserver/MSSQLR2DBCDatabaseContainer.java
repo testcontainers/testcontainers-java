@@ -43,12 +43,12 @@ public class MSSQLR2DBCDatabaseContainer implements R2DBCDatabaseContainer {
     }
 
     @Override
-    public void start() {
+    public synchronized void start() {
         this.container.start();
     }
 
     @Override
-    public void stop() {
+    public synchronized void stop() {
         this.container.stop();
     }
 
