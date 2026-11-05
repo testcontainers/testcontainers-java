@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.stream.Stream;
 
@@ -58,6 +59,16 @@ class DockerImageNameTest {
         @MethodSource("getNames")
         void testInvalidNameRejected(String imageName) {
             assertThatThrownBy(() -> DockerImageName.parse(imageName).assertValid())
+                .isInstanceOf(IllegalArgumentException.class);
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = { "", "1234abcd1234abcd1234abcd1234abcd" })
+        void rejectsRepeatedDigestWhenParsing(String secondDigest) {
+            String digestSuffix = "@sha256:1234abcd1234abcd1234abcd1234abcd@sha256:" + secondDigest;
+            assertThatThrownBy(() -> DockerImageName.parse("myname" + digestSuffix))
+                .isInstanceOf(IllegalArgumentException.class);
+            assertThatThrownBy(() -> DockerImageName.parse("myname:latest" + digestSuffix))
                 .isInstanceOf(IllegalArgumentException.class);
         }
     }
