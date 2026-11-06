@@ -152,11 +152,13 @@ public class HiveMQExtension {
             for (final String subClassName : subClassNames) {
                 final String className = subClassName.replaceAll("/", ".");
 
-                if (!className.startsWith("[L")) {
+                // Array descriptors from the constant pool (e.g. "[B", "[Lcom.example.Foo;",
+                // "[[Ljava.lang.String;") do not name classes that can be added to the archive.
+                if (!className.startsWith("[")) {
                     LOGGER.debug("Trying to package subclass '{}' into extension '{}'.", className, extensionId);
                     javaArchive.addClass(className);
                 } else {
-                    LOGGER.debug("Class '{}' will be ignored.", className);
+                    LOGGER.debug("Array descriptor '{}' will be ignored.", className);
                 }
             }
         }
