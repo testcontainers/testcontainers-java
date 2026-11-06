@@ -15,7 +15,9 @@ class JarFileShadingTest extends AbstractJarFileTest {
     void testPackages() throws Exception {
         assertThatFileList(root).containsOnly("org", "META-INF");
 
-        assertThatFileList(root.resolve("org")).containsOnly("testcontainers");
+        // "publicsuffix" is the data-only resource directory of the shaded httpclient5
+        // (effective_tld_names.dat), not relocated, just like in docker-java's zerodep jar
+        assertThatFileList(root.resolve("org")).containsOnly("testcontainers", "publicsuffix");
     }
 
     @Test

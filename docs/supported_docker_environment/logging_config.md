@@ -20,7 +20,7 @@ should be included in your classpath to show a reasonable level of log output:
     <!-- The following logger can be used for containers logs since 1.18.0 -->
     <logger name="tc" level="INFO"/>
     <logger name="com.github.dockerjava" level="WARN"/>
-    <logger name="com.github.dockerjava.zerodep.shaded.org.apache.hc.client5.http.wire" level="OFF"/>
+    <logger name="org.testcontainers.shaded.org.apache.hc.client5.http.wire" level="OFF"/>
 </configuration>
 ```
 

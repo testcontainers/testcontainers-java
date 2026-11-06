@@ -26,7 +26,19 @@ shadowJar {
         'META-INF/proguard/',
         'META-INF/versions/*/module-info.class',
         'META-INF/services/java.security.Provider',
+        'META-INF/DEPENDENCIES',
+        'META-INF/AL2.0',
+        'META-INF/LGPL2.1',
     ].each { exclude(it) }
+}
+
+afterEvaluate {
+    // gradle/shading.gradle replaces shadowJar.relocators within its own afterEvaluate
+    // block, so these must be registered afterwards. The auto-generated relocations
+    // only cover class packages; the httpclient5/httpcore5 resources (version.properties)
+    // would otherwise stay behind at their original paths.
+    tasks.shadowJar.relocate('org.apache.hc.client5', 'org.testcontainers.shaded.org.apache.hc.client5')
+    tasks.shadowJar.relocate('org.apache.hc.core5', 'org.testcontainers.shaded.org.apache.hc.core5')
 }
 
 task jarFileTest(type: Test) {
@@ -84,12 +96,19 @@ dependencies {
     shaded platform('com.github.docker-java:docker-java-bom:3.7.1')
 
     api "com.github.docker-java:docker-java-api"
+    api 'com.github.docker-java:docker-java-transport'
 
     shaded('com.github.docker-java:docker-java-core') {
         exclude group: 'com.google.guava', module: 'guava'
     }
 
-    api 'com.github.docker-java:docker-java-transport-zerodep'
+    // Embed the HTTP transport ourselves instead of depending on
+    // com.github.docker-java:docker-java-transport-zerodep, whose jar bundles
+    // httpclient5 5.5.1 / httpcore5(-h2) 5.3.6, affected by CVE-2026-54428
+    // (see https://github.com/testcontainers/testcontainers-java/issues/11973).
+    // httpclient5 5.6.4 brings httpcore5 5.4.3, the first fixed version.
+    shaded 'com.github.docker-java:docker-java-transport-httpclient5'
+    shaded 'org.apache.httpcomponents.client5:httpclient5:5.6.4'
 
     shaded 'com.google.guava:guava:33.3.1-jre'
     shaded "org.yaml:snakeyaml:2.6"
@@ -129,6 +148,8 @@ dependencies {
 tasks.generatePomFileForMavenJavaPublication.finalizedBy(
     tasks.register('checkPOMdependencies', org.testcontainers.build.ComparePOMWithLatestReleasedTask) {
         ignore = [
+            // previously pulled in transitively by docker-java-transport-zerodep (#11973)
+            'com.github.docker-java:docker-java-transport',
         ]
     }
 )
