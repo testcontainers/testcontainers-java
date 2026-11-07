@@ -110,6 +110,15 @@ dependencies {
     shaded 'com.github.docker-java:docker-java-transport-httpclient5'
     shaded 'org.apache.httpcomponents.client5:httpclient5:5.6.4'
 
+    // docker-java-transport-httpclient5 depends on JNA, which used to reach the api
+    // configuration transitively via docker-java-transport-zerodep. Declared as an api
+    // dependency here, JNA is excluded from the shaded jar and left unrelocated: shaded
+    // (relocated) JNA classes cannot bind the native jnidispatch library, whose JNI
+    // symbols and embedded resource path stay at com/sun/jna/... - relocating them
+    // breaks DockerClientProviderStrategy resolution with an UnsatisfiedLinkError in
+    // RootlessDockerClientProviderStrategy (ci/circleci: minimal_core failure).
+    api 'net.java.dev.jna:jna:5.18.1'
+
     shaded 'com.google.guava:guava:33.3.1-jre'
     shaded "org.yaml:snakeyaml:2.6"
 
@@ -150,6 +159,8 @@ tasks.generatePomFileForMavenJavaPublication.finalizedBy(
         ignore = [
             // previously pulled in transitively by docker-java-transport-zerodep (#11973)
             'com.github.docker-java:docker-java-transport',
+            // same for JNA, previously pulled in transitively by docker-java-transport-zerodep (#11973)
+            'net.java.dev.jna:jna',
         ]
     }
 )
