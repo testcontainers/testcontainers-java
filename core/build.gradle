@@ -1,3 +1,5 @@
+import com.github.jengelman.gradle.plugins.shadow.relocation.SimpleRelocator
+
 apply plugin: 'com.gradleup.shadow'
 
 description = "Testcontainers Core"
@@ -37,8 +39,30 @@ afterEvaluate {
     // block, so these must be registered afterwards. The auto-generated relocations
     // only cover class packages; the httpclient5/httpcore5 resources (version.properties)
     // would otherwise stay behind at their original paths.
-    tasks.shadowJar.relocate('org.apache.hc.client5', 'org.testcontainers.shaded.org.apache.hc.client5')
+    tasks.shadowJar.relocate('org.apache.hc.client5', 'org.testcontainers.shaded.org.apache.hc.client5') {
+        exclude 'org.apache.hc.client5.http.wire'
+        exclude 'org.apache.hc.client5.http.headers'
+    }
     tasks.shadowJar.relocate('org.apache.hc.core5', 'org.testcontainers.shaded.org.apache.hc.core5')
+
+    // Keep the Apache HttpClient wire/headers logger names out of the `org.testcontainers`
+    // hierarchy. The logger names are plain string constants inside the shaded classes
+    // ("org.apache.hc.client5.http.wire" / "org.apache.hc.client5.http.headers") and shadow
+    // relocates them along with the code. If they landed under
+    // `org.testcontainers.shaded...`, they would inherit the level of the `org.testcontainers`
+    // logger: raising it to DEBUG (the documented troubleshooting switch) would silently turn
+    // on full wire/header logging of the Docker API traffic, including registry credentials.
+    // With the original logger names preserved, wire logging stays off by default and only
+    // activates when the user explicitly enables that exact logger (see
+    // docs/supported_docker_environment/logging_config.md). The excludes above are not enough
+    // on their own: the auto-generated per-package relocator for `org.apache.hc.client5.http`
+    // (gradle/shading.gradle) would still match the strings, so it must skip them as well.
+    tasks.shadowJar.relocators
+        .findAll { it instanceof SimpleRelocator && it.pattern == 'org.apache.hc.client5.http' }
+        .each { relocator ->
+            relocator.exclude('org.apache.hc.client5.http.wire')
+            relocator.exclude('org.apache.hc.client5.http.headers')
+        }
 }
 
 task jarFileTest(type: Test) {
