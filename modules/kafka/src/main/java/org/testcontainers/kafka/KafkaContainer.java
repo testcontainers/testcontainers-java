@@ -72,6 +72,12 @@ public class KafkaContainer extends GenericContainer<KafkaContainer> {
 
         command += "/etc/kafka/docker/run \n";
         copyFileToContainer(Transferable.of(command, 0777), STARTER_SCRIPT);
+        // Marker file: created after the starter script copy has fully released its
+        // writer, so the wait loop in KafkaHelper.COMMAND only proceeds when the
+        // script is safe to execve. Without this, on busy hosts the loop can see the
+        // starter script entry before docker-cp has closed it and fail with
+        // "Text file busy" (exit 126).
+        copyFileToContainer(Transferable.of(""), KafkaHelper.STARTER_SCRIPT_READY_FLAG);
     }
 
     /**
