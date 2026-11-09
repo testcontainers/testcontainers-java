@@ -81,8 +81,6 @@ Some companies disallow the usage of Docker Hub, but you can override `*.image` 
 
 > **ryuk.container.network**
 > If set, ryuk is attached to the given (pre-existing) network instead of the default one.
-> Useful in environments such as rootless Podman or devcontainers, where ryuk otherwise cannot reach
-> containers running in custom networks.
 
 ### Disabling Ryuk
 Ryuk must be started as a privileged container.  

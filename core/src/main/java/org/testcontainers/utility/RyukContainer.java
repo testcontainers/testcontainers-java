@@ -33,4 +33,19 @@ class RyukContainer extends GenericContainer<RyukContainer> {
 
         waitingFor(Wait.forLogMessage(".*Started.*", 1));
     }
+
+    /**
+     * Returns the port that the Ryuk process listens on, reachable at {@link #getHost()}.
+     * <p>
+     * When Ryuk is attached to the <code>host</code> network, Docker does not publish ports, so the exposed port is
+     * used directly. For any other network, the mapped (published) port is used.
+     *
+     * @return the port to connect to Ryuk at {@link #getHost()}
+     */
+    Integer getPort() {
+        if ("host".equals(getNetworkMode())) {
+            return getExposedPorts().get(0);
+        }
+        return getFirstMappedPort();
+    }
 }
