@@ -73,8 +73,10 @@ class RyukContainer extends GenericContainer<RyukContainer> {
         try (ServerSocket socket = ServerSocketFactory.getDefault().createServerSocket(0)) {
             return socket.getLocalPort();
         } catch (IOException e) {
-            // Nothing more can be done here, fall back to Ryuk's default port.
-            return DEFAULT_PORT;
+            // Failing fast is safer than silently falling back to Ryuk's default port,
+            // which may already be occupied: Ryuk would fail to bind with a confusing
+            // error, or steal the port from its owner.
+            throw new IllegalStateException("Failed to find a free host port for Ryuk", e);
         }
     }
 }
