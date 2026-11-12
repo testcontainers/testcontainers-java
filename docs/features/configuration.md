@@ -82,6 +82,9 @@ Some companies disallow the usage of Docker Hub, but you can override `*.image` 
 > **ryuk.container.network**
 > If set, ryuk is attached to the given (pre-existing) network instead of the default one.
 
+> **ryuk.container.port**
+> The port ryuk listens on, instead of its default port (8080). When Docker can publish ports (any network other than `host`), the host-side port is always picked by the Docker daemon, so this usually only matters with `ryuk.container.network=host`, where Docker does not publish ports and ryuk binds the port directly on the Docker host — it must be free there, otherwise ryuk cannot start.
+
 ### Disabling Ryuk
 Ryuk must be started as a privileged container.  
 If your environment already implements automatic cleanup of containers after the execution,

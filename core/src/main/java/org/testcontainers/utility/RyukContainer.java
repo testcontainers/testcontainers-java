@@ -2,9 +2,7 @@ package org.testcontainers.utility;
 
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Volume;
-import java.io.IOException;
-import java.net.ServerSocket;
-import javax.net.ServerSocketFactory;
+import org.jetbrains.annotations.Nullable;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -18,21 +16,32 @@ class RyukContainer extends GenericContainer<RyukContainer> {
     RyukContainer() {
         super("testcontainers/ryuk:0.14.0");
         String network = TestcontainersConfiguration.getInstance().getRyukNetwork();
+        Integer configuredPort = configuredPort();
         if ("host".equals(network)) {
-            // In host network mode Docker does not publish ports, so Ryuk listens on a host port
-            // directly. Pick a free port to avoid colliding with anything already bound to the
-            // default port, and pass it to Ryuk. Do not declare exposed ports, as they would never
-            // become mapped in this mode, and the mapped-port wait in GenericContainer#tryStart
+            // In host network mode Docker does not publish ports, so there is no mapped port to
+            // read back and the daemon offers no way to allocate a port in the Docker host's
+            // network namespace. Ryuk therefore listens on its default port, or the one
+            // configured via ryuk.container.port, directly in the Docker host's namespace. No
+            // port is probed in the JVM, whose network namespace can differ from the Docker
+            // host's (e.g. a bridge-networked JVM or a remote daemon), so a locally free port
+            // could already be occupied on the host. If the port is occupied, Ryuk fails to bind
+            // and exits before logging "Started", failing the startup loudly instead of silently
+            // taking the port of another process. No ports are exposed, as they would never
+            // become mapped in this mode and the mapped-port wait in GenericContainer#tryStart
             // would time out.
-            this.listeningPort = findFreePort();
-            withEnv("RYUK_PORT", String.valueOf(listeningPort));
             withNetworkMode("host");
+            this.listeningPort = configuredPort != null ? configuredPort : DEFAULT_PORT;
         } else {
+            // On networks where Docker publishes ports, the daemon picks a free host-side port
+            // in its own namespace; the JVM only reads it back after startup.
             this.listeningPort = null;
-            withExposedPorts(DEFAULT_PORT);
+            withExposedPorts(configuredPort != null ? configuredPort : DEFAULT_PORT);
             if (network != null) {
                 withNetworkMode(network);
             }
+        }
+        if (configuredPort != null) {
+            withEnv("RYUK_PORT", String.valueOf(configuredPort));
         }
         withCreateContainerCmdModifier(cmd -> {
             cmd.withName("testcontainers-ryuk-" + DockerClientFactory.SESSION_ID);
@@ -56,9 +65,10 @@ class RyukContainer extends GenericContainer<RyukContainer> {
     /**
      * Returns the port that the Ryuk process listens on, reachable at {@link #getHost()}.
      * <p>
-     * When Ryuk is attached to the <code>host</code> network, it listens on a host port chosen
-     * before startup (passed to Ryuk via the <code>RYUK_PORT</code> environment variable). For any
-     * other network, the mapped (published) port is used.
+     * When Ryuk is attached to the <code>host</code> network, it listens directly on the Docker
+     * host, using the port configured via <code>ryuk.container.port</code> or Ryuk's default
+     * port. For any other network, the mapped (published) port chosen by the Docker daemon is
+     * used.
      *
      * @return the port to connect to Ryuk at {@link #getHost()}
      */
@@ -69,14 +79,12 @@ class RyukContainer extends GenericContainer<RyukContainer> {
         return getFirstMappedPort();
     }
 
-    private static Integer findFreePort() {
-        try (ServerSocket socket = ServerSocketFactory.getDefault().createServerSocket(0)) {
-            return socket.getLocalPort();
-        } catch (IOException e) {
-            // Failing fast is safer than silently falling back to Ryuk's default port,
-            // which may already be occupied: Ryuk would fail to bind with a confusing
-            // error, or steal the port from its owner.
-            throw new IllegalStateException("Failed to find a free host port for Ryuk", e);
+    @Nullable
+    private static Integer configuredPort() {
+        Integer port = TestcontainersConfiguration.getInstance().getRyukPort();
+        if (port != null && (port < 1 || port > 65535)) {
+            throw new IllegalArgumentException("ryuk.container.port must be between 1 and 65535, but is " + port);
         }
+        return port;
     }
 }

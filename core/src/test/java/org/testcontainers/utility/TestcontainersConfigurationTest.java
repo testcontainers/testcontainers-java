@@ -239,6 +239,23 @@ class TestcontainersConfigurationTest {
     }
 
     @Test
+    void shouldNotReadRyukPortByDefault() {
+        assertThat(newConfig().getRyukPort()).as("no custom port by default").isNull();
+    }
+
+    @Test
+    void shouldReadRyukPortFromUserProperties() {
+        userProperties.setProperty("ryuk.container.port", "9090");
+        assertThat(newConfig().getRyukPort()).as("custom port is set via user properties").isEqualTo(9090);
+    }
+
+    @Test
+    void shouldReadRyukPortFromEnvironment() {
+        environment.put("TESTCONTAINERS_RYUK_CONTAINER_PORT", "9090");
+        assertThat(newConfig().getRyukPort()).as("custom port is set via an environment variable").isEqualTo(9090);
+    }
+
+    @Test
     void shouldTrimImageNames() {
         userProperties.setProperty("ryuk.container.image", " testcontainers/ryuk:0.3.2 ");
         assertThat(newConfig().getRyukImage())

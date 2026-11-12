@@ -1,6 +1,7 @@
 package org.testcontainers.utility;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,7 +37,7 @@ class RyukContainerTest {
     }
 
     @Test
-    void shouldPickFreeHostPortOnHostNetwork() {
+    void shouldUseRyukDefaultPortOnHostNetwork() {
         Mockito.doReturn("host").when(TestcontainersConfiguration.getInstance()).getRyukNetwork();
 
         RyukContainer container = new RyukContainer();
@@ -46,11 +47,47 @@ class RyukContainerTest {
             .as("no ports are exposed on the host network, where Docker does not publish ports")
             .isEmpty();
         assertThat(container.getEnv())
-            .as("the chosen port is passed to Ryuk")
-            .contains("RYUK_PORT=" + container.getPort());
+            .as("Ryuk listens on its own default port unless one is configured")
+            .noneMatch(it -> it.startsWith("RYUK_PORT="));
         assertThat(container.getPort())
-            .as("a host port is chosen directly, instead of waiting for a mapped port")
-            .isPositive();
+            .as("Ryuk's default port is used directly on the Docker host, instead of a JVM-picked port")
+            .isEqualTo(8080);
+    }
+
+    @Test
+    void shouldUseConfiguredPortOnHostNetwork() {
+        Mockito.doReturn("host").when(TestcontainersConfiguration.getInstance()).getRyukNetwork();
+        Mockito.doReturn(9090).when(TestcontainersConfiguration.getInstance()).getRyukPort();
+
+        RyukContainer container = new RyukContainer();
+
+        assertThat(container.getExposedPorts())
+            .as("no ports are exposed on the host network, where Docker does not publish ports")
+            .isEmpty();
+        assertThat(container.getEnv()).as("the configured port is passed to Ryuk").contains("RYUK_PORT=9090");
+        assertThat(container.getPort()).as("the configured port is used directly on the Docker host").isEqualTo(9090);
+    }
+
+    @Test
+    void shouldUseConfiguredPortOnOtherNetworks() {
+        Mockito.doReturn(9090).when(TestcontainersConfiguration.getInstance()).getRyukPort();
+
+        RyukContainer container = new RyukContainer();
+
+        assertThat(container.getExposedPorts())
+            .as("the configured port is exposed, so that the daemon publishes it")
+            .containsExactly(9090);
+        assertThat(container.getEnv()).as("Ryuk is told to listen on the configured port").contains("RYUK_PORT=9090");
+    }
+
+    @Test
+    void shouldRejectInvalidConfiguredPort() {
+        Mockito.doReturn(0).when(TestcontainersConfiguration.getInstance()).getRyukPort();
+
+        assertThatThrownBy(RyukContainer::new)
+            .as("a port of 0 would make Ryuk bind an ephemeral port the JVM cannot discover")
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("ryuk.container.port");
     }
 
     @Test
