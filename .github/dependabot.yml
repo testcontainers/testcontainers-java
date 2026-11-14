@@ -231,6 +231,9 @@ updates:
     ignore:
       - dependency-name: "org.apache.pulsar:pulsar-bom"
         update-types: ["version-update:semver-patch"]
+      # Pulsar 5 requires Java 17; the module is still built and tested against Java 8.
+      - dependency-name: "org.apache.pulsar:*"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: "gradle"
     directory: "/modules/r2dbc"

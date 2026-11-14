@@ -5,6 +5,8 @@ dependencies {
     api project(':testcontainers-jdbc')
 
     compileOnly project(':testcontainers-r2dbc')
+    // javax.annotation.Nullable; no longer leaked transitively by Guava >= 33.4
+    compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
     compileOnly(group: 'com.clickhouse', name: 'clickhouse-r2dbc', version: '0.9.8', classifier: 'http')
 
     testImplementation project(':testcontainers-jdbc-test')
