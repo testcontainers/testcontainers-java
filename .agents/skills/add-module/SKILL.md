@@ -39,7 +39,7 @@ description = "Testcontainers :: <Display Name>"
 dependencies {
     api project(':testcontainers')
 
-    // compileOnly 'vendor:client:x.y.z'      // only if the public API needs it at compile time
+    // compileOnly 'vendor:client:x.y.z'      // optional, for internal use in main code; never expose its types in public API
     testImplementation 'vendor:client:x.y.z'
 }
 ```

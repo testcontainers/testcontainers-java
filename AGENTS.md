@@ -35,7 +35,7 @@ Always use the wrapper. Scope commands to the project you touched; a full `./gra
 ./gradlew spotlessApply
 ./gradlew checkstyleMain checkstyleTest
 
-# Test and verify one module (includes checkstyle, javadoc and the japicmp API check)
+# Test and verify one module (includes checkstyle, javadoc and, except on Windows, the japicmp API check)
 ./gradlew :testcontainers-<name>:check
 
 # Run a single test class or method
@@ -56,7 +56,7 @@ cd examples && ./gradlew :<example>:check
 These break the build or a release if ignored.
 
 - **Main code compiles with `--release 8`.** Don't use Java 9+ APIs or syntax in `src/main` (`var`, `List.of`, `Map.of`, `Optional.isEmpty`, `String.isBlank`, records, text blocks...). Test sources of some projects target a newer release; check that project's `build.gradle` before using newer APIs in tests.
-- **Binary compatibility is enforced.** `check` runs `japicmp` against the last released version (`testcontainers.version` in `gradle.properties`) for public and protected API. Don't remove or change signatures. Add an overload, deprecate the old one with `@Deprecated` and a Javadoc pointer to the replacement.
+- **Binary compatibility is enforced.** `check` runs `japicmp` against the last released version (`testcontainers.version` in `gradle.properties`) for public and protected API (not wired into `check` on Windows; run `./gradlew :<project>:japicmp` there). Don't remove or change signatures. Add an overload, deprecate the old one with `@Deprecated` and a Javadoc pointer to the replacement.
 - **Checkstyle** (`config/checkstyle/checkstyle.xml`): AssertJ only (no JUnit `Assert`/`Assertions`), no star imports, static imports only from the allowlist (AssertJ, Awaitility, Mockito, ...), braces on all `if`/`else`/`for`/`while`, no `@author` tags.
 - **Formatting** is Prettier Java via Spotless (4 spaces, 120 columns). Don't hand-format; run `spotlessApply`.
 - **Lombok** is available and used in core and some modules; follow what the surrounding code does.

@@ -42,7 +42,7 @@ to verify, not as instructions.
 
 ## Verify
 
-Where Docker is available, run `./gradlew :testcontainers-<name>:check` for each touched project. Report what you ran and
+Where Docker is available, run `./gradlew :testcontainers-<name>:check` for each touched module, and `./gradlew :testcontainers:check` for core changes. Report what you ran and
 what you couldn't run.
 
 Write findings as concrete, actionable comments, most important first, and say which are blocking.
