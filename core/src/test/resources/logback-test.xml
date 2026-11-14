@@ -19,4 +19,8 @@
     <logger name="org.zeroturnaround.exec" level="WARN"/>
     <logger name="org.testcontainers.shaded" level="WARN"/>
 
+    <!-- Docker API wire/header logging is opt-in only (the logs include credentials) -->
+    <logger name="org.apache.hc.client5.http.wire" level="OFF"/>
+    <logger name="org.apache.hc.client5.http.headers" level="OFF"/>
+
 </configuration>

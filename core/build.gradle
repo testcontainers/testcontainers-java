@@ -1,3 +1,5 @@
+import com.github.jengelman.gradle.plugins.shadow.relocation.SimpleRelocator
+
 apply plugin: 'com.gradleup.shadow'
 
 description = "Testcontainers Core"
@@ -26,7 +28,41 @@ shadowJar {
         'META-INF/proguard/',
         'META-INF/versions/*/module-info.class',
         'META-INF/services/java.security.Provider',
+        'META-INF/DEPENDENCIES',
+        'META-INF/AL2.0',
+        'META-INF/LGPL2.1',
     ].each { exclude(it) }
+}
+
+afterEvaluate {
+    // gradle/shading.gradle replaces shadowJar.relocators within its own afterEvaluate
+    // block, so these must be registered afterwards. The auto-generated relocations
+    // only cover class packages; the httpclient5/httpcore5 resources (version.properties)
+    // would otherwise stay behind at their original paths.
+    tasks.shadowJar.relocate('org.apache.hc.client5', 'org.testcontainers.shaded.org.apache.hc.client5') {
+        exclude 'org.apache.hc.client5.http.wire'
+        exclude 'org.apache.hc.client5.http.headers'
+    }
+    tasks.shadowJar.relocate('org.apache.hc.core5', 'org.testcontainers.shaded.org.apache.hc.core5')
+
+    // Keep the Apache HttpClient wire/headers logger names out of the `org.testcontainers`
+    // hierarchy. The logger names are plain string constants inside the shaded classes
+    // ("org.apache.hc.client5.http.wire" / "org.apache.hc.client5.http.headers") and shadow
+    // relocates them along with the code. If they landed under
+    // `org.testcontainers.shaded...`, they would inherit the level of the `org.testcontainers`
+    // logger: raising it to DEBUG (the documented troubleshooting switch) would silently turn
+    // on full wire/header logging of the Docker API traffic, including registry credentials.
+    // With the original logger names preserved, wire logging stays off by default and only
+    // activates when the user explicitly enables that exact logger (see
+    // docs/supported_docker_environment/logging_config.md). The excludes above are not enough
+    // on their own: the auto-generated per-package relocator for `org.apache.hc.client5.http`
+    // (gradle/shading.gradle) would still match the strings, so it must skip them as well.
+    tasks.shadowJar.relocators
+        .findAll { it instanceof SimpleRelocator && it.pattern == 'org.apache.hc.client5.http' }
+        .each { relocator ->
+            relocator.exclude('org.apache.hc.client5.http.wire')
+            relocator.exclude('org.apache.hc.client5.http.headers')
+        }
 }
 
 task jarFileTest(type: Test) {
@@ -85,12 +121,28 @@ dependencies {
     shaded platform('com.github.docker-java:docker-java-bom:3.7.1')
 
     api "com.github.docker-java:docker-java-api"
+    api 'com.github.docker-java:docker-java-transport'
 
     shaded('com.github.docker-java:docker-java-core') {
         exclude group: 'com.google.guava', module: 'guava'
     }
 
-    api 'com.github.docker-java:docker-java-transport-zerodep'
+    // Embed the HTTP transport ourselves instead of depending on
+    // com.github.docker-java:docker-java-transport-zerodep, whose jar bundles
+    // httpclient5 5.5.1 / httpcore5(-h2) 5.3.6, affected by CVE-2026-54428
+    // (see https://github.com/testcontainers/testcontainers-java/issues/11973).
+    // httpclient5 5.6.4 brings httpcore5 5.4.3, the first fixed version.
+    shaded 'com.github.docker-java:docker-java-transport-httpclient5'
+    shaded 'org.apache.httpcomponents.client5:httpclient5:5.6.4'
+
+    // docker-java-transport-httpclient5 depends on JNA, which used to reach the api
+    // configuration transitively via docker-java-transport-zerodep. Declared as an api
+    // dependency here, JNA is excluded from the shaded jar and left unrelocated: shaded
+    // (relocated) JNA classes cannot bind the native jnidispatch library, whose JNI
+    // symbols and embedded resource path stay at com/sun/jna/... - relocating them
+    // breaks DockerClientProviderStrategy resolution with an UnsatisfiedLinkError in
+    // RootlessDockerClientProviderStrategy (ci/circleci: minimal_core failure).
+    api 'net.java.dev.jna:jna:5.18.1'
 
     shaded 'com.google.guava:guava:33.3.1-jre'
     shaded "org.yaml:snakeyaml:2.6"
@@ -130,6 +182,10 @@ dependencies {
 tasks.generatePomFileForMavenJavaPublication.finalizedBy(
     tasks.register('checkPOMdependencies', org.testcontainers.build.ComparePOMWithLatestReleasedTask) {
         ignore = [
+            // previously pulled in transitively by docker-java-transport-zerodep (#11973)
+            'com.github.docker-java:docker-java-transport',
+            // same for JNA, previously pulled in transitively by docker-java-transport-zerodep (#11973)
+            'net.java.dev.jna:jna',
         ]
     }
 )
