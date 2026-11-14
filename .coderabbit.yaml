@@ -2,7 +2,10 @@
 #
 # CodeRabbit configuration. The project rules live in AGENTS.md and .agents/skills/;
 # this file only points CodeRabbit at them and adds path-specific focus.
-# Settings not listed here keep the values configured in the CodeRabbit app.
+# This file is the single source of truth for CodeRabbit on this repository: settings made in
+# the CodeRabbit web app are not inherited. Anything not set here uses CodeRabbit's defaults.
+
+inheritance: false
 
 knowledge_base:
   code_guidelines:
