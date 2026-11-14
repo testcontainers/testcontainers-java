@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class LegacyModeTest {
 
     private static final DockerImageName LOCALSTACK_CUSTOM_TAG = DockerImageName
-        .parse("localstack/localstack:0.12.8")
+        .parse("localstack/localstack:0.13.0")
         .withTag("custom");
 
     @BeforeAll
@@ -25,7 +25,7 @@ class LegacyModeTest {
         DockerClient dockerClient = DockerClientFactory.instance().client();
         dockerClient
             .tagImageCmd(
-                new RemoteDockerImage(LocalstackTestImages.LOCALSTACK_0_12_IMAGE).get(),
+                new RemoteDockerImage(LocalstackTestImages.LOCALSTACK_0_13_IMAGE).get(),
                 LOCALSTACK_CUSTOM_TAG.getRepository(),
                 LOCALSTACK_CUSTOM_TAG.getVersionPart()
             )
@@ -34,7 +34,7 @@ class LegacyModeTest {
 
     static Stream<Arguments> localstackVersionWithLegacyOff() {
         return Stream.of(
-            Arguments.arguments("0.12", new LocalStackContainer(LocalstackTestImages.LOCALSTACK_0_12_IMAGE)),
+            Arguments.arguments("0.13", new LocalStackContainer(LocalstackTestImages.LOCALSTACK_0_13_IMAGE)),
             Arguments.arguments("0.11", new LocalStackContainer(LocalstackTestImages.LOCALSTACK_0_11_IMAGE)),
             Arguments.arguments(
                 "0.11 with legacy = off",
