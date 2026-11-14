@@ -8,7 +8,7 @@ configurations.all {
 
 dependencies {
     api project(":testcontainers-database-commons")
-    api "com.datastax.cassandra:cassandra-driver-core:3.10.0"
+    api "com.datastax.cassandra:cassandra-driver-core:4.0.0"
 
     testImplementation 'com.datastax.oss:java-driver-core:4.17.0'
 }
