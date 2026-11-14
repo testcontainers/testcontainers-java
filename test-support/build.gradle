@@ -3,3 +3,7 @@ dependencies {
     implementation 'org.slf4j:slf4j-api:2.0.17'
     testImplementation 'org.assertj:assertj-core:3.27.4'
 }
+
+tasks.named('test') {
+    dependsOn tasks.named('jar')
+}
