@@ -1,0 +1,82 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+#
+# CodeRabbit configuration. The project rules live in AGENTS.md and .agents/skills/;
+# this file only points CodeRabbit at them and adds path-specific focus.
+# This file is the single source of truth for CodeRabbit on this repository: settings made in
+# the CodeRabbit web app are not inherited. Anything not set here uses CodeRabbit's defaults.
+
+inheritance: false
+
+knowledge_base:
+  code_guidelines:
+    enabled: true
+    filePatterns:
+      - "AGENTS.md"
+      - "docs/contributing.md"
+      - "docs/contributing_docs.md"
+      - "config/checkstyle/checkstyle.xml"
+
+reviews:
+  # Checklist items with a clear yes/no answer, taken from .agents/skills/review-pr/SKILL.md.
+  # They run in warning mode so they flag issues without blocking merges.
+  pre_merge_checks:
+    custom_checks:
+      - name: "New module registration"
+        mode: "warning"
+        instructions: |
+          Only applies if the PR adds a new directory under modules/. Otherwise pass.
+          Pass if the PR also: adds the module to the module dropdown in .github/ISSUE_TEMPLATE/bug_report.yaml,
+          enhancement.yaml and feature.yaml; adds /modules/<name> to .github/dependabot.yml; adds a
+          modules/<name> entry to .github/labeler.yml; adds a docs page under docs/modules/ that starts with
+          the incubating note; and adds that page to the nav in mkdocs.yml. Fail and list what is missing otherwise.
+      - name: "Public API compatibility"
+        mode: "warning"
+        instructions: |
+          Fail if the PR removes, renames, or changes the signature, return type or visibility of any public or
+          protected class, method, constructor or field under src/main/java without keeping the old one available
+          and marked @Deprecated with a pointer to its replacement. Additive changes pass. Classes in
+          org.testcontainers.shaded are excluded.
+      - name: "Tests for behaviour changes"
+        mode: "warning"
+        instructions: |
+          Fail if the PR changes behaviour in src/main/java (bug fix, new option, changed wait strategy or default)
+          without adding or updating a test under src/test that exercises the change. Pass for documentation-only,
+          build-only, or pure refactoring changes.
+  path_instructions:
+    - path: "**/src/main/java/**/*.java"
+      instructions: |
+        Apply the "Hard constraints" from AGENTS.md:
+        - Main sources compile with --release 8. Flag Java 9+ APIs or syntax (var, List.of, Map.of,
+          String.isBlank, Optional.isEmpty, records, text blocks).
+        - Public and protected API must stay binary compatible with the last release (japicmp).
+          Flag removed or changed signatures, return types or visibility; replacements must be
+          additive, with the old API marked @Deprecated and pointing to the replacement.
+        - Public API must expose only JDK types, not types from compileOnly dependencies.
+    - path: "modules/*/src/main/java/**/*.java"
+      instructions: |
+        Check container classes against "Conventions for container classes" in AGENTS.md:
+        - Constructors accept String and DockerImageName and call assertCompatibleWith.
+        - No 'latest' or mutable image tags.
+        - A technology-specific wait strategy that respects a single startup timeout budget.
+        - No assumptions about localhost or fixed host ports.
+        - withXxx(...) methods validate their arguments and return this.
+        - New classes go in org.testcontainers.<module>, not the deprecated org.testcontainers.containers package.
+    - path: "**/src/test/java/**/*.java"
+      instructions: |
+        Tests use JUnit 5 and AssertJ only, try-with-resources around containers, pinned image tags,
+        and no Thread.sleep. A bug fix or behaviour change needs a test that fails without it.
+        Don't flag deliberately insecure test setups (plain HTTP, default credentials) as security issues.
+        Codeinclude markers such as `// container {` are referenced from docs; flag renames or removals.
+    - path: "modules/*/build.gradle"
+      instructions: |
+        Dependencies should be minimal. Client libraries or drivers users likely already have are
+        compileOnly; test clients are testImplementation. Flag new implementation/api dependencies
+        that could conflict with users' classpaths.
+        If this build.gradle belongs to a new module, check that the PR also registers the module in
+        the three .github/ISSUE_TEMPLATE files, .github/dependabot.yml, .github/labeler.yml and mkdocs.yml,
+        and adds a docs page under docs/modules/.
+    - path: "docs/**/*.md"
+      instructions: |
+        Module docs should use <!--codeinclude--> blocks pointing at real test code instead of pasted
+        snippets, and include the Gradle/Maven dependency block using {{latest_version}}. New module pages
+        need the incubating note and an entry in mkdocs.yml. See docs/contributing_docs.md.
