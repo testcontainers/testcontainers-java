@@ -11,10 +11,34 @@ knowledge_base:
       - "AGENTS.md"
       - "docs/contributing.md"
       - "docs/contributing_docs.md"
-      - ".agents/skills/review-pr/SKILL.md"
       - "config/checkstyle/checkstyle.xml"
 
 reviews:
+  # Checklist items with a clear yes/no answer, taken from .agents/skills/review-pr/SKILL.md.
+  # They run in warning mode so they flag issues without blocking merges.
+  pre_merge_checks:
+    custom_checks:
+      - name: "New module registration"
+        mode: "warning"
+        instructions: |
+          Only applies if the PR adds a new directory under modules/. Otherwise pass.
+          Pass if the PR also: adds the module to the module dropdown in .github/ISSUE_TEMPLATE/bug_report.yaml,
+          enhancement.yaml and feature.yaml; adds /modules/<name> to .github/dependabot.yml; adds a
+          modules/<name> entry to .github/labeler.yml; adds a docs page under docs/modules/ that starts with
+          the incubating note; and adds that page to the nav in mkdocs.yml. Fail and list what is missing otherwise.
+      - name: "Public API compatibility"
+        mode: "warning"
+        instructions: |
+          Fail if the PR removes, renames, or changes the signature, return type or visibility of any public or
+          protected class, method, constructor or field under src/main/java without keeping the old one available
+          and marked @Deprecated with a pointer to its replacement. Additive changes pass. Classes in
+          org.testcontainers.shaded are excluded.
+      - name: "Tests for behaviour changes"
+        mode: "warning"
+        instructions: |
+          Fail if the PR changes behaviour in src/main/java (bug fix, new option, changed wait strategy or default)
+          without adding or updating a test under src/test that exercises the change. Pass for documentation-only,
+          build-only, or pure refactoring changes.
   path_instructions:
     - path: "**/src/main/java/**/*.java"
       instructions: |
