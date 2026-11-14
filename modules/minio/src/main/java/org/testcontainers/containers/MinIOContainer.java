@@ -54,7 +54,7 @@ public class MinIOContainer extends GenericContainer<MinIOContainer> {
         withCommand("server", "--console-address", ":" + MINIO_UI_PORT, "/data");
         waitingFor(
             Wait
-                .forHttp("/minio/health/live")
+                .forHttp("/minio/health/cluster")
                 .forPort(MINIO_S3_PORT)
                 .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS))
         );
