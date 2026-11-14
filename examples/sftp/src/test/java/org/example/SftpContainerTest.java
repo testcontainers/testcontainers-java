@@ -21,7 +21,9 @@ class SftpContainerTest {
     @Test
     void test() throws Exception {
         try (
-            GenericContainer<?> sftp = new GenericContainer<>("atmoz/sftp:alpine@sha256:c5fb9e4beb8b7054a4c0b65c5e11df47cc20da95ad6002e88aecff62bab06372")
+            GenericContainer<?> sftp = new GenericContainer<>(
+                "atmoz/sftp:alpine@sha256:c5fb9e4beb8b7054a4c0b65c5e11df47cc20da95ad6002e88aecff62bab06372"
+            )
                 .withCopyFileToContainer(
                     MountableFile.forClasspathResource("testcontainers/", 0777),
                     "/home/foo/upload/testcontainers"
@@ -55,7 +57,9 @@ class SftpContainerTest {
     @Test
     void testHostKeyCheck() throws Exception {
         try (
-            GenericContainer<?> sftp = new GenericContainer<>("atmoz/sftp:alpine@sha256:c5fb9e4beb8b7054a4c0b65c5e11df47cc20da95ad6002e88aecff62bab06372")
+            GenericContainer<?> sftp = new GenericContainer<>(
+                "atmoz/sftp:alpine@sha256:c5fb9e4beb8b7054a4c0b65c5e11df47cc20da95ad6002e88aecff62bab06372"
+            )
                 .withCopyFileToContainer(
                     MountableFile.forClasspathResource("testcontainers/", 0777),
                     "/home/foo/upload/testcontainers"
