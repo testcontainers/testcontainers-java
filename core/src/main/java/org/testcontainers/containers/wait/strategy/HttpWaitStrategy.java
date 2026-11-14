@@ -386,12 +386,14 @@ public class HttpWaitStrategy extends AbstractWaitStrategy {
         final String scheme = (tlsEnabled ? "https" : "http") + "://";
         final String host = waitStrategyTarget.getHost();
 
-        final String portSuffix;
-        if ((tlsEnabled && 443 == livenessCheckPort) || (!tlsEnabled && 80 == livenessCheckPort)) {
-            portSuffix = "";
-        } else {
-            portSuffix = ":" + livenessCheckPort;
-        }
+        // Always render the port explicitly. Dropping the default port
+        // (80/443) is only valid when host:<port> really is the mapped
+        // service, which cannot be assumed here (custom WaitStrategyTarget
+        // implementations, proxied environments, ...). An explicit port is
+        // also what the "un-map the port for logging" path above relies on:
+        // URI.getPort() returns -1 when the port is elided, which breaks the
+        // exposed-port lookup.
+        final String portSuffix = ":" + livenessCheckPort;
 
         return URI.create(scheme + host + portSuffix + path);
     }
