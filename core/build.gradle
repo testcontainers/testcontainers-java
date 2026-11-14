@@ -59,7 +59,7 @@ configurations.all {
         force 'com.fasterxml.jackson.core:jackson-core:2.18.12'
         force 'com.fasterxml.jackson.core:jackson-databind:2.18.12'
         force 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.12'
-        // docker-java-core still pulls in Bouncy Castle 1.82. Remove these forces once a docker-java release ships 1.86 or newer.
+        // docker-java-core still pulls in Bouncy Castle 1.82. Remove these forces once a docker-java release ships 1.86 or newer (docker-java/docker-java#2696).
         force 'org.bouncycastle:bcprov-jdk18on:1.86'
         force 'org.bouncycastle:bcutil-jdk18on:1.86'
         force 'org.bouncycastle:bcpkix-jdk18on:1.86'
