@@ -149,6 +149,9 @@ public class PostgreSQLContainer<SELF extends PostgreSQLContainer<SELF>> extends
 
     @Override
     protected void waitUntilContainerStarted() {
+        // Same gate as the non-deprecated container: strategy first, then the
+        // JDBC readiness check from JdbcDatabaseContainer. See issue #11981.
         getWaitStrategy().waitUntilReady(this);
+        super.waitUntilContainerStarted();
     }
 }
