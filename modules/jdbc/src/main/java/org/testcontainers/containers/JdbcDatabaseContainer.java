@@ -13,6 +13,8 @@ import org.testcontainers.jdbc.JdbcDatabaseDelegate;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
@@ -40,6 +42,8 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
     private Driver driver;
 
     private List<String> initScriptPaths = new ArrayList<>();
+
+    private Charset initScriptCharset = StandardCharsets.UTF_8;
 
     protected Map<String, String> parameters = new HashMap<>();
 
@@ -168,6 +172,18 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
     public SELF withInitScripts(Iterable<String> initScriptPaths) {
         this.initScriptPaths = new ArrayList<>();
         initScriptPaths.forEach(this.initScriptPaths::add);
+        return self();
+    }
+
+    /**
+     * Sets the charset used to read all scripts configured with {@link #withInitScript(String)}
+     * or {@link #withInitScripts(String...)}. Defaults to UTF-8.
+     *
+     * @param charset the charset used to read the scripts
+     * @return self
+     */
+    public SELF withInitScriptCharset(@NonNull Charset charset) {
+        this.initScriptCharset = charset;
         return self();
     }
 
@@ -365,7 +381,7 @@ public abstract class JdbcDatabaseContainer<SELF extends JdbcDatabaseContainer<S
         initScriptPaths
             .stream()
             .filter(Objects::nonNull)
-            .forEach(path -> ScriptUtils.runInitScript(getDatabaseDelegate(), path));
+            .forEach(path -> ScriptUtils.runInitScript(getDatabaseDelegate(), path, initScriptCharset));
     }
 
     public void setParameters(Map<String, String> parameters) {

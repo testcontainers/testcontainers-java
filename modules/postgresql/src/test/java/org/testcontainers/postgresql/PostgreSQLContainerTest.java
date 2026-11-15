@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.PostgreSQLTestImages;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
+import java.nio.charset.Charset;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Level;
@@ -84,6 +85,24 @@ class PostgreSQLContainerTest extends AbstractContainerDatabaseTest {
 
             String firstColumnValue = resultSet.getString(1);
             assertThat(firstColumnValue).as("Value from init script should equal real value").isEqualTo("hello world");
+        }
+    }
+
+    @Test
+    void testExplicitInitScriptWithCharset() throws SQLException {
+        try (
+            // initScriptCharset {
+            PostgreSQLContainer postgres = new PostgreSQLContainer(PostgreSQLTestImages.POSTGRES_TEST_IMAGE)
+                .withInitScript("somepath/init_postgresql_windows-1252.sql")
+                .withInitScriptCharset(Charset.forName("windows-1252"))
+            // }
+        ) {
+            postgres.start();
+
+            ResultSet resultSet = performQuery(postgres, "SELECT foo FROM bar");
+
+            String firstColumnValue = resultSet.getString(1);
+            assertThat(firstColumnValue).as("Value from init script should equal real value").isEqualTo("café");
         }
     }
 

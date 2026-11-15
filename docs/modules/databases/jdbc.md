@@ -174,3 +174,13 @@ Examples/Tests:
 
  * [MySQL](https://github.com/testcontainers/testcontainers-java/blob/main/modules/mysql/src/test/java/org/testcontainers/junit/mysql/SimpleMySQLTest.java)
  * [PostgreSQL](https://github.com/testcontainers/testcontainers-java/blob/main/modules/postgresql/src/test/java/org/testcontainers/junit/postgresql/SimplePostgreSQLTest.java)
+
+### Init script encoding
+
+Init scripts configured with `withInitScript` or `withInitScripts` are read as UTF-8 by default. If your scripts use another encoding, set it on the container:
+
+<!--codeinclude-->
+[Init script charset](../../../modules/postgresql/src/test/java/org/testcontainers/postgresql/PostgreSQLContainerTest.java) inside_block:initScriptCharset
+<!--/codeinclude-->
+
+The charset applies to all init scripts of the container. Scripts loaded via `TC_INITSCRIPT` are always read as UTF-8.
