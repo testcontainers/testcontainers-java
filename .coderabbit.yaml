@@ -20,6 +20,10 @@ reviews:
   # Checklist items with a clear yes/no answer, taken from .agents/skills/review-pr/SKILL.md.
   # They run in warning mode so they flag issues without blocking merges.
   pre_merge_checks:
+    # Off: the built-in check counts every touched method, including tests, and warned on nearly
+    # every PR. Javadoc on public API is already enforced by the Gradle `check` task.
+    docstrings:
+      mode: "off"
     custom_checks:
       - name: "New module registration"
         mode: "warning"
