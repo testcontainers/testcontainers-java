@@ -21,7 +21,7 @@ reviews:
   # They run in warning mode so they flag issues without blocking merges.
   pre_merge_checks:
     # Off: the built-in check counts every touched method, including tests, and warned on nearly
-    # every PR. Javadoc on public API is already enforced by the Gradle `check` task.
+    # every PR. AGENTS.md already asks for Javadoc on public API, and the Gradle `check` task builds it.
     docstrings:
       mode: "off"
     custom_checks:
