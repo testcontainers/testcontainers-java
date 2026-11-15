@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.slf4j.event.Level;
 import org.testcontainers.hivemq.util.MyExtensionWithSubclasses;
+import org.testcontainers.hivemq.util.PrimitiveArrayClass;
 import org.testcontainers.hivemq.util.TestPublishModifiedUtil;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
@@ -21,6 +22,7 @@ class ContainerWithExtensionSubclassIT {
             .name("my-extension")
             .version("1.0")
             .mainClass(MyExtensionWithSubclasses.class)
+            .addAdditionalClass(PrimitiveArrayClass.class)
             .build();
 
         try (
