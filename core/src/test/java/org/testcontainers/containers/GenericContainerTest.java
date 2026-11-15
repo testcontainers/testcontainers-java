@@ -280,6 +280,21 @@ class GenericContainerTest {
     }
 
     @Test
+    void shouldNotChangeStartupTimeoutOfOtherContainers() {
+        // Never started. Only sets a short timeout for itself.
+        new GenericContainer<>(TestImages.ALPINE_IMAGE).withStartupTimeout(Duration.ofSeconds(2));
+
+        // Default wait strategy. The port opens after 5 seconds.
+        try (
+            GenericContainer<?> container = new GenericContainer<>(TestImages.ALPINE_IMAGE)
+                .withExposedPorts(8080)
+                .withCommand("sh", "-c", "sleep 5; while true; do nc -l -p 8080; done")
+        ) {
+            container.start();
+        }
+    }
+
+    @Test
     void testStartupAttemptsDoesNotLeaveContainersRunningWhenWrongWaitStrategyIsUsed() {
         try (
             GenericContainer<?> container = new GenericContainer<>(TestImages.TINY_IMAGE)
