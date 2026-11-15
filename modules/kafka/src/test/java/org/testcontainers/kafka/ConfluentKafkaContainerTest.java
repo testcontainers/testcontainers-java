@@ -25,6 +25,14 @@ class ConfluentKafkaContainerTest extends AbstractKafka {
     }
 
     @Test
+    void testUsageWithTransactions() throws Exception {
+        try (ConfluentKafkaContainer kafka = new ConfluentKafkaContainer("confluentinc/cp-kafka:7.4.0")) {
+            kafka.start();
+            testKafkaTransactionalFunctionality(kafka.getBootstrapServers());
+        }
+    }
+
+    @Test
     void testUsageWithListener() throws Exception {
         try (
             Network network = Network.newNetwork();
