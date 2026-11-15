@@ -1,3 +1,0 @@
-updates:
-- path: mkdocs.yml
-  pattern: 'latest_version: (.*)'
