@@ -63,6 +63,8 @@ public class ImageFromDockerfile
 
     private Optional<Path> dockerfile = Optional.empty();
 
+    private Optional<Path> buildContext = Optional.empty();
+
     private Optional<String> target = Optional.empty();
 
     private final Set<Consumer<BuildImageCmd>> buildImageCmdModifiers = new LinkedHashSet<>();
@@ -173,16 +175,36 @@ public class ImageFromDockerfile
     protected void configure(BuildImageCmd buildImageCmd) {
         buildImageCmd.withTags(Collections.singleton(getDockerImageName()));
         this.dockerFilePath.ifPresent(buildImageCmd::withDockerfilePath);
-        this.dockerfile.ifPresent(p -> {
-                buildImageCmd.withDockerfile(p.toFile());
-                dependencyImageNames = new ParsedDockerfile(p).getDependencyImageNames();
+        Optional<Path> effectiveDockerfile = this.dockerfile;
+        if (this.buildContext.isPresent()) {
+            Path context = this.buildContext.get().toAbsolutePath().normalize();
+            if (!this.transferables.isEmpty()) {
+                throw new IllegalStateException(
+                    "withBuildContext cannot be combined with withFile*/withDockerfileFromBuilder, " +
+                    "the build context directory is sent as-is"
+                );
+            }
+            if (!effectiveDockerfile.isPresent()) {
+                effectiveDockerfile = Optional.of(context.resolve("Dockerfile"));
+            }
+            if (!effectiveDockerfile.get().toAbsolutePath().normalize().startsWith(context)) {
+                throw new IllegalArgumentException(
+                    "Dockerfile " + effectiveDockerfile.get() + " must be located inside the build context " + context
+                );
+            }
+            // must be set before withDockerfile, which otherwise uses the Dockerfile's parent directory as context
+            buildImageCmd.withBaseDirectory(context.toFile());
+        }
+        effectiveDockerfile.ifPresent(p -> {
+            buildImageCmd.withDockerfile(p.toFile());
+            dependencyImageNames = new ParsedDockerfile(p).getDependencyImageNames();
 
-                if (dependencyImageNames.size() > 0) {
-                    // if we'll be pre-pulling images, disable the built-in pull as it is not necessary and will fail for
-                    // authenticated registries
-                    buildImageCmd.withPull(false);
-                }
-            });
+            if (dependencyImageNames.size() > 0) {
+                // if we'll be pre-pulling images, disable the built-in pull as it is not necessary and will fail for
+                // authenticated registries
+                buildImageCmd.withPull(false);
+            }
+        });
 
         this.buildArgs.forEach(buildImageCmd::withBuildArg);
         this.target.ifPresent(buildImageCmd::withTarget);
@@ -266,6 +288,21 @@ public class ImageFromDockerfile
      */
     public ImageFromDockerfile withDockerfile(Path dockerfile) {
         this.dockerfile = Optional.of(dockerfile);
+        return this;
+    }
+
+    /**
+     * Sets the directory on the test host to be sent as build context, like the context argument of {@code docker build}.
+     * A {@code .dockerignore} file in its root is honored.
+     * <p>
+     * The Dockerfile defaults to {@code Dockerfile} in the root of the build context. Use {@link #withDockerfile(Path)}
+     * to select a different one, which must be located inside the build context.
+     * Cannot be combined with the {@code withFile*} methods.
+     *
+     * @param buildContext path to the build context directory on the test host.
+     */
+    public ImageFromDockerfile withBuildContext(Path buildContext) {
+        this.buildContext = Optional.of(buildContext);
         return this;
     }
 

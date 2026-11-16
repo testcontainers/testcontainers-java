@@ -80,6 +80,22 @@ By default the no-args constructor will use an image name of the form `testconta
 Normally Docker will automatically build an image from any `/Dockerfile` that it finds in the root of the build context.
 To override this behaviour, use `.withDockerfilePath("./Name-Of-Other-Dockerfile")`.
 
+## Build context directory
+
+To send an existing directory as build context, the way `docker build <dir>` does, use `.withBuildContext(path)`.
+A `.dockerignore` file in the root of that directory is honored, so ignored files are never sent to the Docker daemon.
+
+The Dockerfile defaults to `Dockerfile` in the root of the build context. To use a different one, add
+`.withDockerfile(path)`; it must be located inside the build context.
+
+```java
+new ImageFromDockerfile()
+    .withBuildContext(Paths.get("build/docker-context"))
+    .withDockerfile(Paths.get("build/docker-context/docker/Dockerfile"));
+```
+
+`.withBuildContext` cannot be combined with the `.withFile*` methods or `.withDockerfileFromBuilder`.
+
 ## Build Args
 
 [Build Args](https://docs.docker.com/engine/reference/builder/#arg) may be used to allow lightweight parameterization.
