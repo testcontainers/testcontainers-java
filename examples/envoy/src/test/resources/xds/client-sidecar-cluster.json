@@ -1,0 +1,24 @@
+{
+  "name": "server",
+  "type": "STRICT_DNS",
+  "connectTimeout": "1s",
+  "loadAssignment": {
+    "clusterName": "server",
+    "endpoints": [
+      {
+        "lbEndpoints": [
+          {
+            "endpoint": {
+              "address": {
+                "socketAddress": {
+                  "address": "server-sidecar",
+                  "portValue": 15006
+                }
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

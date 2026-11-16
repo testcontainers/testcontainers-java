@@ -1,0 +1,21 @@
+{
+  "name": "local-app",
+  "type": "STRICT_DNS",
+  "connectTimeout": "1s",
+  "loadAssignment": {
+    "clusterName": "local-app",
+    "endpoints": [
+      {
+        "lbEndpoints": [
+          {
+            "endpoint": {
+              "address": {
+                "socketAddress": { "address": "server-app", "portValue": 8080 }
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
