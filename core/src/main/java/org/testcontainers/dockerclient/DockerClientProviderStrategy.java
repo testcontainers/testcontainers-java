@@ -208,6 +208,7 @@ public abstract class DockerClientProviderStrategy {
         try (Socket socket = socketProvider.call()) {
             Awaitility
                 .await()
+                .dontCatchUncaughtExceptions()
                 .atMost(TestcontainersConfiguration.getInstance().getClientPingTimeout(), TimeUnit.SECONDS) // timeout after configured duration
                 .pollInterval(Duration.ofMillis(200)) // check state every 200ms
                 .pollDelay(Duration.ofSeconds(0)) // start checking immediately
