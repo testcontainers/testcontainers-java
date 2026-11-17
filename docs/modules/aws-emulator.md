@@ -19,16 +19,18 @@ The container automatically configures the recommended 2 GiB memory limit, disab
 Add the following dependency to your `pom.xml`/`build.gradle` file:
 
 === "Gradle"
-```groovy
-testImplementation "org.testcontainers:testcontainers-aws-emulator:{{latest_version}}"
-```
+
+    ```groovy
+    testImplementation "org.testcontainers:testcontainers-aws-emulator:{{latest_version}}"
+    ```
 
 === "Maven"
-```xml
-<dependency>
-    <groupId>org.testcontainers</groupId>
-    <artifactId>testcontainers-aws-emulator</artifactId>
-    <version>{{latest_version}}</version>
-    <scope>test</scope>
-</dependency>
-```
+
+    ```xml
+    <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>testcontainers-aws-emulator</artifactId>
+        <version>{{latest_version}}</version>
+        <scope>test</scope>
+    </dependency>
+    ```
