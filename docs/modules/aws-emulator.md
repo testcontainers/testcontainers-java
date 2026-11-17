@@ -14,7 +14,6 @@ You can start an AWS Emulator container instance from any Java application by us
 <!--/codeinclude-->
 
 The container automatically configures the recommended 2 GiB memory limit, disables usage telemetry by default, waits for the HTTPS `/__admin/health` endpoint, and extracts the generated PKCS12 truststore (`getTrustStorePath()`) and SigV4 credentials (`getAccessKey()`, `getSecretKey()`).
-
 ## Adding this module to your project dependencies
 
 Add the following dependency to your `pom.xml`/`build.gradle` file:

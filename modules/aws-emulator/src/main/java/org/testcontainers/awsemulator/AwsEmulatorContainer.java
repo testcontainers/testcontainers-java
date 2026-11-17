@@ -1,6 +1,7 @@
 package org.testcontainers.awsemulator;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.builder.ImageFromDockerfile;
@@ -23,16 +24,29 @@ import java.util.concurrent.Future;
 
 /**
  * Testcontainers implementation for AWS Emulator.
- * <p>
- * Supported images: {@code aws-emulator} (or built automatically from the official AWS Linux RPM package)
- * <p>
- * Exposed ports: 9297 (HTTPS)
+ *
+ * <p>Supported images: {@code aws-emulator} (or built automatically from the official AWS Linux RPM package)
+ *
+ * <p>Exposed ports: 9297 (HTTPS)
  */
 public class AwsEmulatorContainer extends GenericContainer<AwsEmulatorContainer> {
 
     static final int PORT = 9297;
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("aws-emulator");
+
+    private static final String BASE_IMAGE =
+        "public.ecr.aws/amazonlinux/amazonlinux@sha256:158a9044f9dc0777f098b76c8b54346f6ed4560b9a6a416dec7a5ba3bc483af4";
+
+    private static final String RPM_URL_X86_64 =
+        "https://downloads.aws.com/aws-emulator/packages/aws-emulator/LTS/latest/aws-emulator-x86_64.rpm";
+
+    private static final String RPM_SHA256_X86_64 = "0aa130ff811add64826c6811ec714e375d4a7891d08976ae57bdb6ee645724ee";
+
+    private static final String RPM_URL_AARCH64 =
+        "https://downloads.aws.com/aws-emulator/packages/aws-emulator/LTS/latest/aws-emulator-aarch64.rpm";
+
+    private static final String RPM_SHA256_AARCH64 = "38e2069c656429eaa023fdc807a49c02a48acff77f090f068ccdc9fa0a7c4fe4";
 
     private static final String DEFAULT_REGION = "us-east-1";
 
@@ -84,18 +98,19 @@ public class AwsEmulatorContainer extends GenericContainer<AwsEmulatorContainer>
     }
 
     private static Future<String> createDefaultImage() {
-        String arch = System.getProperty("os.arch", "").toLowerCase(Locale.ROOT);
-        String rpmArch = (arch.contains("aarch64") || arch.contains("arm64")) ? "aarch64" : "x86_64";
-        String rpmUrl =
-            "https://downloads.aws.com/aws-emulator/packages/aws-emulator/LTS/latest/aws-emulator-" + rpmArch + ".rpm";
+        boolean isArm64 = isArm64Daemon();
+        String rpmUrl = isArm64 ? RPM_URL_AARCH64 : RPM_URL_X86_64;
+        String expectedSha256 = isArm64 ? RPM_SHA256_AARCH64 : RPM_SHA256_X86_64;
 
         return new ImageFromDockerfile("testcontainers/aws-emulator", false)
             .withDockerfileFromBuilder(builder -> {
                 builder
-                    .from("public.ecr.aws/amazonlinux/amazonlinux:2023-minimal")
+                    .from(BASE_IMAGE)
                     .add(rpmUrl, "/tmp/aws-emulator.rpm")
                     .run(
-                        "rpm -i /tmp/aws-emulator.rpm && rm /tmp/aws-emulator.rpm && mkdir -p /home/emulator && chown 1000 /home/emulator"
+                        "echo \"" +
+                        expectedSha256 +
+                        "  /tmp/aws-emulator.rpm\" | sha256sum -c - && rpm -i /tmp/aws-emulator.rpm && rm /tmp/aws-emulator.rpm && mkdir -p /home/emulator && chown 1000 /home/emulator"
                     )
                     .user("1000")
                     .env("HOME", "/home/emulator")
@@ -103,6 +118,20 @@ public class AwsEmulatorContainer extends GenericContainer<AwsEmulatorContainer>
                     .entryPoint("aws-emulator", "-b", "0.0.0.0")
                     .build();
             });
+    }
+
+    private static boolean isArm64Daemon() {
+        String arch = null;
+        try {
+            arch = DockerClientFactory.instance().client().infoCmd().exec().getArchitecture();
+        } catch (Exception ignored) {
+            // Fall back to JVM architecture if Docker daemon info cannot be queried
+        }
+        if (arch == null || arch.trim().isEmpty()) {
+            arch = System.getProperty("os.arch", "");
+        }
+        String normalized = arch.toLowerCase(Locale.ROOT);
+        return normalized.contains("aarch64") || normalized.contains("arm64");
     }
 
     private void initContainer() {
@@ -250,9 +279,9 @@ public class AwsEmulatorContainer extends GenericContainer<AwsEmulatorContainer>
     public URI getEndpoint() {
         try {
             String ipAddress = InetAddress.getByName(getHost()).getHostAddress();
-            return new URI("https://" + ipAddress + ":" + getMappedPort(PORT));
+            return new URI("https", null, ipAddress, getMappedPort(PORT), null, null, null);
         } catch (UnknownHostException | URISyntaxException e) {
-            throw new IllegalStateException("Cannot obtain endpoint URL", e);
+            throw new IllegalStateException("Failed to build AWS Emulator endpoint URI", e);
         }
     }
 
