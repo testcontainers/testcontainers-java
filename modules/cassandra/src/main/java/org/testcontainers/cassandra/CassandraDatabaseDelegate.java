@@ -38,7 +38,7 @@ public class CassandraDatabaseDelegate extends AbstractDatabaseDelegate<Void> {
     ) {
         try {
             // Use cqlsh command directly inside the container to execute statements
-            // See documentation here: https://cassandra.apache.org/doc/stable/cassandra/tools/cqlsh.html
+            // See documentation here: https://cassandra.apache.org/doc/stable/cassandra/managing/tools/cqlsh.html
             String[] cqlshCommand = new String[] { "cqlsh" };
 
             if (this.container instanceof CassandraContainer) {
