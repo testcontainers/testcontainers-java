@@ -31,6 +31,24 @@ class SimpleOracleTest extends AbstractContainerDatabaseTest {
         assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
     }
 
+    private void runTestSystemUser(OracleContainer container, String databaseName, String username, String password)
+        throws SQLException {
+        //Test config was honored
+        assertThat(container.getDatabaseName()).isEqualTo(databaseName);
+        assertThat(container.getUsername()).isEqualTo(username);
+        assertThat(container.getPassword()).isEqualTo(password);
+
+        //Test we can get a connection and verify current user
+        container.start();
+
+        // Verify we are connected as the system user
+        ResultSet resultSet = performQuery(container, "SELECT USER FROM DUAL");
+        String currentUser = resultSet.getString(1);
+        assertThat(currentUser)
+            .as("Connected session should run as the system user")
+            .isEqualToIgnoringCase(username);
+    }
+
     @Test
     void testDefaultSettings() throws SQLException {
         try ( // container {
@@ -78,7 +96,7 @@ class SimpleOracleTest extends AbstractContainerDatabaseTest {
     @Test
     void testSID() throws SQLException {
         try (OracleContainer oracle = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME).usingSid()) {
-            runTest(oracle, "freepdb1", "system", "test");
+            runTestSystemUser(oracle, "freepdb1", "system", "test");
 
             // Match against the last ':'
             String urlSuffix = oracle.getJdbcUrl().split("(\\:)(?!.*\\:)", 2)[1];
@@ -93,7 +111,30 @@ class SimpleOracleTest extends AbstractContainerDatabaseTest {
                 .usingSid()
                 .withPassword("testPassword")
         ) {
-            runTest(oracle, "freepdb1", "system", "testPassword");
+            runTestSystemUser(oracle, "freepdb1", "system", "testPassword");
+        }
+    }
+
+    @Test
+    public void testWithSystemPassword() throws SQLException {
+        try (
+            OracleContainer oracle = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME)
+                .usingSid()
+                .withOraclePassword("SysP@ss1!")
+                .withPassword("AppP@ss1!")
+        ) {
+            runTestSystemUser(oracle, "freepdb1", "system", "SysP@ss1!");
+        }
+    }
+
+    @Test
+    public void testWithPassword() throws SQLException {
+        try (
+            OracleContainer oracle = new OracleContainer(ORACLE_DOCKER_IMAGE_NAME)
+                .withOraclePassword("SysP@ss2!")
+                .withPassword("AppP@ss2!")
+        ) {
+            runTest(oracle, "freepdb1", "test", "AppP@ss2!");
         }
     }
 
