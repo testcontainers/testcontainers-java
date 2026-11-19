@@ -1,27 +1,28 @@
 package generic;
 
 import com.sun.net.httpserver.HttpServer;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
-import org.testcontainers.Testcontainers;
 import org.testcontainers.containers.BrowserWebDriverContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Testcontainers
 public class HostPortExposedTest {
 
     private static HttpServer server;
 
     private static int localServerPort;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() throws Exception {
         server = HttpServer.create(new InetSocketAddress(0), 0);
         server.createContext(
@@ -40,16 +41,16 @@ public class HostPortExposedTest {
         localServerPort = server.getAddress().getPort();
 
         // exposePort {
-        Testcontainers.exposeHostPorts(localServerPort);
+        org.testcontainers.Testcontainers.exposeHostPorts(localServerPort);
         // }
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() throws Exception {
         server.stop(0);
     }
 
-    @Rule
+    @Container
     public BrowserWebDriverContainer<?> browser = new BrowserWebDriverContainer<>()
         .withCapabilities(new ChromeOptions());
 
