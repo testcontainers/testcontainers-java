@@ -6,7 +6,7 @@ import org.testcontainers.utility.DockerImageName;
 /**
  * Factory for TimescaleDB containers, which are a special flavour of PostgreSQL.
  *
- * @see <a href="https://docs.timescale.com/latest/introduction">https://docs.timescale.com/latest/introduction</a>
+ * @see <a href="https://github.com/timescale/timescaledb">https://github.com/timescale/timescaledb</a>
  */
 public class TimescaleDBContainerProvider extends JdbcDatabaseContainerProvider {
 
