@@ -154,4 +154,20 @@ class EnvironmentAndSystemPropertyClientProviderStrategyTest {
 
         assertThat(strategy.isApplicable()).isFalse();
     }
+
+    @Test
+    void applicableWhenUsingDockerContext() {
+        Mockito
+            .doReturn("dockerContext")
+            .when(TestcontainersConfiguration.getInstance())
+            .getEnvVarOrProperty(eq("dockerconfig.source"), anyString());
+
+        Properties oldProperties = System.getProperties();
+        try {
+            EnvironmentAndSystemPropertyClientProviderStrategy strategy = new EnvironmentAndSystemPropertyClientProviderStrategy();
+            assertThat(strategy.isApplicable()).isTrue();
+        } finally {
+            System.setProperties(oldProperties);
+        }
+    }
 }
