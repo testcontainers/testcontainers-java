@@ -24,7 +24,7 @@ class ToStringConsumerTest {
 
     @Test
     void newlines_are_not_added_to_exec_output() throws Exception {
-        try (GenericContainer<?> container = new GenericContainer<>("alpine:3.17")) {
+        try (GenericContainer<?> container = new GenericContainer<>("alpine:3.24")) {
             container.withCommand("sleep", "2m");
             container.start();
 
@@ -36,7 +36,7 @@ class ToStringConsumerTest {
     @Test
     @Timeout(60)
     void newlines_are_not_added_to_exec_output_with_tty() throws Exception {
-        try (GenericContainer<?> container = new GenericContainer<>("alpine:3.17")) {
+        try (GenericContainer<?> container = new GenericContainer<>("alpine:3.24")) {
             container.withCreateContainerCmdModifier(cmd -> {
                 cmd.withAttachStdin(true).withStdinOpen(true).withTty(true);
             });
@@ -50,7 +50,7 @@ class ToStringConsumerTest {
 
     @Test
     void newlines_are_not_added_to_container_output() {
-        try (GenericContainer<?> container = new GenericContainer<>("alpine:3.17")) {
+        try (GenericContainer<?> container = new GenericContainer<>("alpine:3.24")) {
             container.withCommand("echo", "-n", LARGE_PAYLOAD);
             container.setStartupCheckStrategy(new OneShotStartupCheckStrategy());
             container.start();
@@ -63,7 +63,7 @@ class ToStringConsumerTest {
 
     @Test
     void newlines_are_not_added_to_container_output_with_tty() {
-        try (GenericContainer<?> container = new GenericContainer<>("alpine:3.17")) {
+        try (GenericContainer<?> container = new GenericContainer<>("alpine:3.24")) {
             container.withCreateContainerCmdModifier(cmd -> {
                 cmd.withTty(true);
             });

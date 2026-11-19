@@ -11,7 +11,7 @@ class ImagePullTest {
     public static String[] parameters() {
         return new String[] {
             "alpine:latest",
-            "alpine:3.17",
+            "alpine:3.24",
             "alpine", // omitting the tag should work and default to latest
             "alpine@sha256:1775bebec23e1f3ce486989bfc9ff3c4e951690df84aa9f926497d82f2ffca9d",
             "docker.io/testcontainers/ryuk:latest",
