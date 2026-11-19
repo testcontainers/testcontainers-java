@@ -1219,6 +1219,10 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
      */
     @Override
     public SELF withStartupTimeout(Duration startupTimeout) {
+        if (getWaitStrategy() == DEFAULT_WAIT_STRATEGY) {
+            // DEFAULT_WAIT_STRATEGY is shared by all containers, so give this container its own instance
+            waitingFor(Wait.defaultWaitStrategy());
+        }
         getWaitStrategy().withStartupTimeout(startupTimeout);
         return self();
     }
