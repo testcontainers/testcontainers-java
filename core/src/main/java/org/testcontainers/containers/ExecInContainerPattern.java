@@ -16,8 +16,10 @@ import org.testcontainers.utility.TestEnvironment;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -199,7 +201,11 @@ public class ExecInContainerPattern {
         String containerId = containerInfo.getId();
         String containerName = containerInfo.getName();
 
-        String[] command = execConfig.getCommand();
+        String[] command = Arrays
+            .stream(execConfig.getCommand())
+            .filter(Objects::nonNull)
+            .filter(str -> !str.trim().isEmpty())
+            .toArray(String[]::new);
         log.debug("{}: Running \"exec\" command: {}", containerName, String.join(" ", command));
         final ExecCreateCmd execCreateCmd = dockerClient
             .execCreateCmd(containerId)
