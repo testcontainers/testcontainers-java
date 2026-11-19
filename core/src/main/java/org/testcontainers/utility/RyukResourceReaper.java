@@ -80,7 +80,7 @@ class RyukResourceReaper extends ResourceReaper {
         CountDownLatch ryukScheduledLatch = new CountDownLatch(1);
 
         String host = ryukContainer.getHost();
-        Integer ryukPort = ryukContainer.getFirstMappedPort();
+        Integer ryukPort = ryukContainer.getPort();
         Thread kiraThread = new Thread(
             DockerClientFactory.TESTCONTAINERS_THREAD_GROUP,
             () -> {
