@@ -62,6 +62,7 @@ updates:
   - package-ecosystem: "gradle"
     directories:
       - "/modules/activemq"
+      - "/modules/aws-emulator"
       - "/modules/azure"
       - "/modules/clickhouse"
       - "/modules/cockroachdb"
