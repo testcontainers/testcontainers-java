@@ -23,6 +23,12 @@ should be sufficient to launch any number of services required by our tests:
 !!! note
     Make sure the service names use a `-` rather than `_` as separator.
 
+!!! note "`container_name` is not supported"
+    Testcontainers starts each Compose environment under a random project name, so that several environments can run
+    side by side without clashing. A fixed `container_name` would defeat this, so starting a Compose file that sets
+    `container_name` on any service fails with an `IllegalStateException`. Remove `container_name` from the file used in
+    tests and refer to the containers by their service names instead.
+
 In this example, Docker Compose file should have content such as:
 ```yaml
 services:
