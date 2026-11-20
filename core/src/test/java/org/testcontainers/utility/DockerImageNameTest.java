@@ -51,6 +51,9 @@ class DockerImageNameTest {
                 "/myname@sha256:latest",
                 "/myname@sha256:gggggggggggggggggggggggggggggggg",
                 "repo:notaport/myname:latest",
+                "myname:myname:1.0",
+                "repo/my-name:1.0:extra",
+                "registry.foo.com:1234/my-name:1.0:extra",
             };
         }
 
@@ -148,6 +151,22 @@ class DockerImageNameTest {
                     .as(combined + " has version part: " + version)
                     .isEqualTo(version);
             }
+        }
+
+        @Test
+        void testExtraColonInTagIsNotDropped() {
+            final DockerImageName imageName = DockerImageName.parse("neo4j:neo4j:4.4");
+
+            assertThat(imageName.getRepository()).isEqualTo("neo4j");
+            assertThat(imageName.getVersionPart()).isEqualTo("neo4j:4.4");
+            assertThat(imageName.asCanonicalNameString()).isEqualTo("neo4j:neo4j:4.4");
+        }
+
+        @Test
+        void testEmptyTagIsRejected() {
+            assertThatThrownBy(() -> DockerImageName.parse("myname:"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("myname:");
         }
     }
 

@@ -97,8 +97,12 @@ public final class DockerImageName {
                 versioning = new Sha256Versioning(remoteName.split("@sha256:")[1]);
             }
         } else if (remoteName.contains(":")) {
-            repository = remoteName.split(":")[0];
-            versioning = new TagVersioning(remoteName.split(":")[1]);
+            String[] repositoryAndTag = remoteName.split(":", 2);
+            if (repositoryAndTag[1].isEmpty()) {
+                throw new IllegalArgumentException("Missing tag after ':' in image name " + fullImageName);
+            }
+            repository = repositoryAndTag[0];
+            versioning = new TagVersioning(repositoryAndTag[1]);
         } else {
             repository = remoteName;
             versioning = Versioning.ANY;
