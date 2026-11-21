@@ -96,6 +96,12 @@ but does not allow starting privileged containers, you can turn off the Ryuk con
 > **pull.pause.timeout = 30**
 > By default Testcontainers will abort the pull of an image if the pull appears stalled (no data transferred) for longer than this duration (in seconds).
 
+## Disabling the Docker build cache for `ImageFromDockerfile`
+
+By default, `ImageFromDockerfile` uses Docker's layer cache. To disable the cache for all `ImageFromDockerfile` builds, set `imagefromdockerfile.nocache=true` in `~/.testcontainers.properties` or a classpath `testcontainers.properties` file, or set the `TESTCONTAINERS_IMAGEFROMDOCKERFILE_NOCACHE=true` environment variable.
+
+The setting is applied before any `withBuildImageCmdModifier` callbacks, so an individual image can override it.
+
 ## Customizing client ping behaviour
 
 > **client.ping.timeout = 10**
