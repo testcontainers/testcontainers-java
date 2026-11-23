@@ -12,6 +12,7 @@ import org.testcontainers.utility.TestEnvironment;
 import redis.clients.jedis.Jedis;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,7 +24,11 @@ public abstract class BaseComposeTest {
 
     protected abstract ComposeContainer getEnvironment();
 
+    private static final String COMPOSE_PROJECT_LABEL = "com.docker.compose.project";
+
     private List<String> existingNetworks = new ArrayList<>();
+
+    private String composeProject;
 
     @BeforeAll
     public static void checkVersion() {
@@ -63,19 +68,31 @@ public abstract class BaseComposeTest {
 
     @BeforeEach
     public void captureNetworks() {
-        existingNetworks.addAll(findAllNetworks());
+        composeProject =
+            getEnvironment()
+                .getContainerByServiceName("redis-1")
+                .map(container -> container.getContainerInfo().getConfig().getLabels().get(COMPOSE_PROJECT_LABEL))
+                .orElseThrow(() -> new IllegalStateException("Compose service redis-1 is not running"));
+        existingNetworks.addAll(findComposeProjectNetworks());
+        assertThat(existingNetworks).as("The networks of compose project %s", composeProject).isNotEmpty();
     }
 
     @AfterEach
     public void verifyNoNetworks() {
-        assertThat(findAllNetworks()).as("The networks").isEqualTo(existingNetworks);
+        assertThat(findComposeProjectNetworks()).as("The networks").isEqualTo(existingNetworks);
     }
 
-    private List<String> findAllNetworks() {
+    /**
+     * Only look at the networks of this test's compose project. Core tests run in parallel forks against the same
+     * Docker daemon, so other tests create and remove networks while this test runs; comparing the daemon-wide network
+     * list made this check flaky.
+     */
+    private List<String> findComposeProjectNetworks() {
         return DockerClientFactory
             .instance()
             .client()
             .listNetworksCmd()
+            .withFilter("label", Collections.singletonList(COMPOSE_PROJECT_LABEL + "=" + composeProject))
             .exec()
             .stream()
             .map(Network::getName)
