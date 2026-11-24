@@ -12,6 +12,7 @@ import org.apache.commons.lang3.SystemUtils;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
@@ -50,20 +51,30 @@ public class K3sContainer extends GenericContainer<K3sContainer> {
         tmpFsMapping.put("/var/run", "");
         setTmpFsMapping(tmpFsMapping);
 
-        List<String> commands = buildCommandArgs(this.getHost(), isKmsgMissingOnLinux());
+        List<String> commands = buildCommandArgs(dockerImageName, this.getHost(), isKmsgMissingOnLinux());
         setCommand(commands.toArray(new String[0]));
         setWaitStrategy(Wait.forLogMessage(".*Node controller sync successful.*", 1));
     }
 
-    static List<String> buildCommandArgs(String host, boolean addUserNamespaceFeatureGate) {
+    static List<String> buildCommandArgs(DockerImageName dockerImageName, String host, boolean isKmsgMissingOnLinux) {
         List<String> commands = new ArrayList<>();
         commands.add("server");
         commands.add("--disable=traefik");
         commands.add("--tls-san=" + host);
-        if (addUserNamespaceFeatureGate) {
+        // Allow kubelet to start in environments where /dev/kmsg is missing (e.g., isolated CI containers)
+        if (isKmsgMissingOnLinux && supportsUserNamespaceFeatureGate(dockerImageName)) {
             commands.add("--kubelet-arg=--feature-gates=KubeletInUserNamespace=true");
         }
         return commands;
+    }
+
+    static boolean supportsUserNamespaceFeatureGate(DockerImageName dockerImageName) {
+        String version = dockerImageName.getVersionPart();
+        if ("latest".equals(version)) {
+            return true;
+        }
+        String normalizedVersion = version.startsWith("v") ? version.substring(1) : version;
+        return new ComparableVersion(normalizedVersion).isGreaterThanOrEqualTo("1.22");
     }
 
     static boolean isKmsgMissingOnLinux() {
