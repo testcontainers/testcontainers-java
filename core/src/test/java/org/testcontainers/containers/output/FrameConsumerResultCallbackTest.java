@@ -50,6 +50,18 @@ class FrameConsumerResultCallbackTest {
     }
 
     @Test
+    void preservesNonUtf8OutputWhenRemovingColors() throws IOException {
+        FrameConsumerResultCallback callback = new FrameConsumerResultCallback();
+        ToStringConsumer consumer = new ToStringConsumer();
+        callback.addConsumer(OutputFrame.OutputType.STDOUT, consumer);
+        callback.onNext(
+            new Frame(StreamType.STDOUT, "\u001B[32mcafé\u001B[0m\n".getBytes(StandardCharsets.ISO_8859_1))
+        );
+        callback.close();
+        assertThat(consumer.toString(StandardCharsets.ISO_8859_1)).isEqualTo("café\n");
+    }
+
+    @Test
     void passStdoutFrameWithColors() throws IOException {
         FrameConsumerResultCallback callback = new FrameConsumerResultCallback();
         ToStringConsumer consumer = new ToStringConsumer().withRemoveAnsiCodes(false);
@@ -57,6 +69,17 @@ class FrameConsumerResultCallbackTest {
         callback.onNext(new Frame(StreamType.STDOUT, FRAME_PAYLOAD.getBytes()));
         callback.close();
         assertThat(consumer.toUtf8String()).isEqualTo(FRAME_PAYLOAD);
+    }
+
+    @Test
+    void preservesNonUtf8OutputWhenKeepingColors() throws IOException {
+        String payload = "\u001B[32mcafé\u001B[0m\n";
+        FrameConsumerResultCallback callback = new FrameConsumerResultCallback();
+        ToStringConsumer consumer = new ToStringConsumer().withRemoveAnsiCodes(false);
+        callback.addConsumer(OutputFrame.OutputType.STDOUT, consumer);
+        callback.onNext(new Frame(StreamType.STDOUT, payload.getBytes(StandardCharsets.ISO_8859_1)));
+        callback.close();
+        assertThat(consumer.toString(StandardCharsets.ISO_8859_1)).isEqualTo(payload);
     }
 
     @Test

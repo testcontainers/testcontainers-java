@@ -136,17 +136,18 @@ public class FrameConsumerResultCallback extends ResultCallbackTemplate<FrameCon
         }
 
         private void consume() {
-            final String string = new String(buffer.toByteArray(), StandardCharsets.UTF_8);
-            final byte[] bytes = processAnsiColorCodes(string).getBytes(StandardCharsets.UTF_8);
-            consumer.accept(new OutputFrame(type, bytes));
+            consumer.accept(new OutputFrame(type, processAnsiColorCodes(buffer.toByteArray())));
             buffer.reset();
         }
 
-        private String processAnsiColorCodes(final String utf8String) {
+        private byte[] processAnsiColorCodes(final byte[] bytes) {
             if (!(consumer instanceof BaseConsumer) || ((BaseConsumer<?>) consumer).isRemoveColorCodes()) {
-                return ANSI_COLOR_PATTERN.matcher(utf8String).replaceAll("");
+                return ANSI_COLOR_PATTERN
+                    .matcher(new String(bytes, StandardCharsets.ISO_8859_1))
+                    .replaceAll("")
+                    .getBytes(StandardCharsets.ISO_8859_1);
             }
-            return utf8String;
+            return bytes;
         }
     }
 }
