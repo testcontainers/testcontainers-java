@@ -38,4 +38,22 @@ class K3sContainerTest {
 
         assertThat(args).containsExactly("server", "--disable=traefik", "--tls-san=localhost");
     }
+
+    @Test
+    void shouldNotIncludeUserNamespaceFeatureGateForOpaqueTag() {
+        DockerImageName opaqueImage = DockerImageName.parse("rancher/k3s:legacy");
+        List<String> args = K3sContainer.buildCommandArgs(opaqueImage, "localhost", true);
+
+        assertThat(args).containsExactly("server", "--disable=traefik", "--tls-san=localhost");
+    }
+
+    @Test
+    void shouldNotIncludeUserNamespaceFeatureGateForDigestReference() {
+        DockerImageName digestImage = DockerImageName.parse(
+            "rancher/k3s@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+        );
+        List<String> args = K3sContainer.buildCommandArgs(digestImage, "localhost", true);
+
+        assertThat(args).containsExactly("server", "--disable=traefik", "--tls-san=localhost");
+    }
 }

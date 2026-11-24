@@ -73,6 +73,9 @@ public class K3sContainer extends GenericContainer<K3sContainer> {
         if ("latest".equals(version)) {
             return true;
         }
+        if (!version.matches("^v?\\d+\\.\\d+.*")) {
+            return false;
+        }
         String normalizedVersion = version.startsWith("v") ? version.substring(1) : version;
         return new ComparableVersion(normalizedVersion).isGreaterThanOrEqualTo("1.22");
     }
