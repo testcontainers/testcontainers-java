@@ -56,4 +56,22 @@ class K3sContainerTest {
 
         assertThat(args).containsExactly("server", "--disable=traefik", "--tls-san=localhost");
     }
+
+    @Test
+    void shouldNotIncludeUserNamespaceFeatureGateForLegacyVersionWithoutPatch() {
+        DockerImageName legacyMinorOnly = DockerImageName.parse("rancher/k3s:v1.21-k3s1");
+        List<String> args = K3sContainer.buildCommandArgs(legacyMinorOnly, "localhost", true);
+
+        assertThat(args).containsExactly("server", "--disable=traefik", "--tls-san=localhost");
+    }
+
+    @Test
+    void shouldNotIncludeUserNamespaceFeatureGateForTaggedDigestReference() {
+        DockerImageName taggedDigestImage = DockerImageName.parse(
+            "rancher/k3s:v1.22.0-k3s1@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+        );
+        List<String> args = K3sContainer.buildCommandArgs(taggedDigestImage, "localhost", true);
+
+        assertThat(args).containsExactly("server", "--disable=traefik", "--tls-san=localhost");
+    }
 }

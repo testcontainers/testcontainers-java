@@ -12,7 +12,6 @@ import org.apache.commons.lang3.SystemUtils;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
@@ -68,16 +67,25 @@ public class K3sContainer extends GenericContainer<K3sContainer> {
         return commands;
     }
 
+    private static final java.util.regex.Pattern K3S_VERSION_PATTERN = java.util.regex.Pattern.compile(
+        "^v?(\\d+)\\.(\\d+).*"
+    );
+
     static boolean supportsUserNamespaceFeatureGate(DockerImageName dockerImageName) {
+        if (dockerImageName.getDigest() != null) {
+            return false;
+        }
         String version = dockerImageName.getVersionPart();
         if ("latest".equals(version)) {
             return true;
         }
-        if (!version.matches("^v?\\d+\\.\\d+.*")) {
+        java.util.regex.Matcher matcher = K3S_VERSION_PATTERN.matcher(version);
+        if (!matcher.matches()) {
             return false;
         }
-        String normalizedVersion = version.startsWith("v") ? version.substring(1) : version;
-        return new ComparableVersion(normalizedVersion).isGreaterThanOrEqualTo("1.22");
+        int major = Integer.parseInt(matcher.group(1));
+        int minor = Integer.parseInt(matcher.group(2));
+        return major > 1 || (major == 1 && minor >= 22);
     }
 
     static boolean isKmsgMissingOnLinux() {
