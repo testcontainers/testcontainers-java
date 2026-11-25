@@ -74,4 +74,12 @@ class K3sContainerTest {
 
         assertThat(args).containsExactly("server", "--disable=traefik", "--tls-san=localhost");
     }
+
+    @Test
+    void shouldNotThrowOrIncludeGateForOversizedVersionNumbers() {
+        DockerImageName oversizedImage = DockerImageName.parse("rancher/k3s:202611240001.0");
+        List<String> args = K3sContainer.buildCommandArgs(oversizedImage, "localhost", true);
+
+        assertThat(args).containsExactly("server", "--disable=traefik", "--tls-san=localhost");
+    }
 }

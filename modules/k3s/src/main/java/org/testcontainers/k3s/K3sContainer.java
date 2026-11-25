@@ -83,9 +83,13 @@ public class K3sContainer extends GenericContainer<K3sContainer> {
         if (!matcher.matches()) {
             return false;
         }
-        int major = Integer.parseInt(matcher.group(1));
-        int minor = Integer.parseInt(matcher.group(2));
-        return major > 1 || (major == 1 && minor >= 22);
+        try {
+            int major = Integer.parseInt(matcher.group(1));
+            int minor = Integer.parseInt(matcher.group(2));
+            return major > 1 || (major == 1 && minor >= 22);
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
     static boolean isKmsgMissingOnLinux() {
