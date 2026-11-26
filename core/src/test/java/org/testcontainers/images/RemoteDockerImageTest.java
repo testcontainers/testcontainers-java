@@ -5,7 +5,10 @@ import org.junit.jupiter.api.Timeout;
 import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.LazyFuture;
+import org.testcontainers.utility.TestcontainersConfiguration;
 
+import java.lang.reflect.Field;
+import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -13,6 +16,34 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class RemoteDockerImageTest {
+
+    private static final String HUB_IMAGE_NAME_PREFIX_PROPERTY = "hub.image.name.prefix";
+
+    private static final String HUB_IMAGE_NAME_PREFIX = "registry.example.com/mirror/";
+
+    private static final String LOCAL_IMAGE_NAME = "redis-sentinel:latest";
+
+    @Test
+    void futureBackedLocalImageDoesNotUseConfiguredHubPrefix() throws Exception {
+        RemoteDockerImage image = new RemoteDockerImage(CompletableFuture.completedFuture(LOCAL_IMAGE_NAME));
+
+        assertThat(resolveWithConfiguredHubPrefix(image)).isEqualTo(LOCAL_IMAGE_NAME);
+    }
+
+    @Test
+    void futureBackedImageWithExplicitRegistryDoesNotUseConfiguredHubPrefix() throws Exception {
+        String imageName = "localhost:5000/redis-sentinel:latest";
+        RemoteDockerImage image = new RemoteDockerImage(CompletableFuture.completedFuture(imageName));
+
+        assertThat(resolveWithConfiguredHubPrefix(image)).isEqualTo(imageName);
+    }
+
+    @Test
+    void dockerImageNameUsesConfiguredHubPrefix() throws Exception {
+        RemoteDockerImage image = new RemoteDockerImage(DockerImageName.parse(LOCAL_IMAGE_NAME));
+
+        assertThat(resolveWithConfiguredHubPrefix(image)).isEqualTo(HUB_IMAGE_NAME_PREFIX + LOCAL_IMAGE_NAME);
+    }
 
     @Test
     void toStringContainsOnlyImageName() {
@@ -75,5 +106,24 @@ class RemoteDockerImageTest {
         // Trigger resolve
         imageNameFuture.get();
         assertThat(remoteDockerImage.toString()).contains("imageName=" + imageName);
+    }
+
+    private String resolveWithConfiguredHubPrefix(RemoteDockerImage image) throws Exception {
+        // Avoid TestcontainersConfiguration.updateUserConfig, which writes to the user's configuration file.
+        Field userPropertiesField = TestcontainersConfiguration.class.getDeclaredField("userProperties");
+        userPropertiesField.setAccessible(true);
+        Properties userProperties = (Properties) userPropertiesField.get(TestcontainersConfiguration.getInstance());
+        String originalPrefix = userProperties.getProperty(HUB_IMAGE_NAME_PREFIX_PROPERTY);
+
+        try {
+            userProperties.setProperty(HUB_IMAGE_NAME_PREFIX_PROPERTY, HUB_IMAGE_NAME_PREFIX);
+            return image.withImagePullPolicy(__ -> false).get();
+        } finally {
+            if (originalPrefix == null) {
+                userProperties.remove(HUB_IMAGE_NAME_PREFIX_PROPERTY);
+            } else {
+                userProperties.setProperty(HUB_IMAGE_NAME_PREFIX_PROPERTY, originalPrefix);
+            }
+        }
     }
 }
