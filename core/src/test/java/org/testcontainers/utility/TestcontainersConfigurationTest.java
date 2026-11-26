@@ -218,6 +218,29 @@ class TestcontainersConfigurationTest {
     }
 
     @Test
+    void shouldNotDisableImageFromDockerfileLayerCachingByDefault() {
+        assertThat(newConfig().isImageFromDockerfileNoCache()).isFalse();
+    }
+
+    @Test
+    void shouldDisableImageFromDockerfileLayerCachingWithUserProperty() {
+        userProperties.setProperty("imagefromdockerfile.nocache", "true");
+        assertThat(newConfig().isImageFromDockerfileNoCache()).isTrue();
+    }
+
+    @Test
+    void shouldDisableImageFromDockerfileLayerCachingWithClasspathProperty() {
+        classpathProperties.setProperty("imagefromdockerfile.nocache", "true");
+        assertThat(newConfig().isImageFromDockerfileNoCache()).isTrue();
+    }
+
+    @Test
+    void shouldDisableImageFromDockerfileLayerCachingWithEnvironmentVariable() {
+        environment.put("TESTCONTAINERS_IMAGEFROMDOCKERFILE_NOCACHE", "true");
+        assertThat(newConfig().isImageFromDockerfileNoCache()).isTrue();
+    }
+
+    @Test
     void shouldTrimImageNames() {
         userProperties.setProperty("ryuk.container.image", " testcontainers/ryuk:0.3.2 ");
         assertThat(newConfig().getRyukImage())
