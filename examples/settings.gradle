@@ -34,6 +34,7 @@ include 'hazelcast'
 include 'nats'
 include 'sftp'
 include 'ollama-hugging-face'
+include 'envoy'
 
 ext.isCI = System.getenv("CI") != null
 
