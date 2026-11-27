@@ -115,57 +115,27 @@ They are always resolved relative to the directory where the compose file reside
     This can be used with `DockerComposeContainer` and `ComposeContainer`, but **only in the containerized Compose (not with `Local Compose` mode)**.
 
 ## Using private repositories in Docker compose
-When Docker Compose is used in container mode (not local), it needs to be made aware of Docker
-settings for private repositories. 
-By default, those setting are located in `$HOME/.docker/config.json`. 
+When Docker Compose runs in container mode (not local), the Compose container has no access to your Docker
+credentials. To make private images work anyway, Testcontainers pulls the images referenced by the Compose file
+(and by any Dockerfiles it builds) itself before starting Compose, so Compose finds them locally.
 
-There are 3 ways to specify location of the `config.json` for Docker Compose:
+These pulls use the same [Docker registry authentication](../supported_docker_environment/index.md#docker-registry-authentication)
+as any other image Testcontainers pulls, including credential stores and helpers such as `osxkeychain`.
+To use credentials from a non-default location, do one of the following:
 
-* Use `DOCKER_CONFIG_FILE` environment variable. 
+* Set the `DOCKER_CONFIG` environment variable to the **directory** containing your `config.json`.
 
-    `export DOCKER_CONFIG_FILE=/some/location/config.json`
+    `export DOCKER_CONFIG=/some/location`
 
-* Use `dockerConfigFile` java property
-    
-    `java -DdockerConfigFile=/some/location/config.json`
+* Set the `DOCKER_AUTH_CONFIG` environment variable to the content of a `config.json`.
 
-* Don't specify anything. In this case default location `$HOME/.docker/config.json`, if present, will be used.
+* Don't specify anything. In this case `$HOME/.docker/config.json`, if present, will be used.
 
-!!! note "Docker Compose and Credential Store / Credential Helpers"
-    Modern Docker tends to store credentials using the credential store/helper mechanism rather than storing credentials in Docker's configuration file. So, your `config.json` may look something like:
-    
-    ```json
-    {
-      "auths" : {
-        "https://index.docker.io/v1/" : {
-        }
-      },
-      "credsStore" : "osxkeychain"
-    }
-    ```
-    
-    When run inside a container, Docker Compose cannot access the Keychain, thus making the configuration useless. 
-    To work around this problem, there are two options:
-    
-    ##### Putting auths in a config file
-    Create a `config.json` in separate location with real authentication keys, like:
-    
-    ```json
-    {
-      "auths" : {
-        "https://index.docker.io/v1/" : {
-         "auth": "QWEADSZXC..."
-        }
-      },
-      "credsStore" : "osxkeychain"
-    }
-    ```
-    and specify the location to Testcontainers using any of the two first methods from above.
-    
-    ##### Using 'local compose' mode
-    
-    [Local Compose mode](#local-compose-mode), mentioned above, will allow compose to directly access the Docker auth system (to the same extent that running the `docker-compose` CLI manually works).
-    
+!!! note
+    This only works while image pulling is enabled, which is the default. If you disable it with `withPull(false)`,
+    Compose has to pull any missing images itself and cannot authenticate from inside its container.
+    In that case, use [Local Compose mode](#the-local-compose-mode), which lets Compose use your Docker credentials
+    directly, the same way running the `docker compose` CLI manually does.
 
 ## Adding this module to your project dependencies
 
