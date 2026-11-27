@@ -66,7 +66,7 @@ public class DockerDesktopClientProviderStrategy extends DockerClientProviderStr
 
     @Override
     protected boolean isApplicable() {
-        return (SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_MAC) && this.socketPath != null;
+        return (SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_MAC) && getSocketPath() != null;
     }
 
     private Optional<Path> tryFolder(Path path) {
