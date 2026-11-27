@@ -24,6 +24,7 @@ import org.testcontainers.delegate.DatabaseDelegate;
 
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
@@ -192,12 +193,24 @@ public abstract class ScriptUtils {
     }
 
     /**
-     * Load script from classpath and apply it to the given database
+     * Load a UTF-8 script from the classpath and apply it to the given database.
      *
      * @param databaseDelegate database delegate for script execution
      * @param initScriptPath   the resource to load the init script from
      */
     public static void runInitScript(DatabaseDelegate databaseDelegate, String initScriptPath) {
+        runInitScript(databaseDelegate, initScriptPath, StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Load a script from the classpath using the given charset and apply it to the given database.
+     *
+     * @param databaseDelegate database delegate for script execution
+     * @param initScriptPath the resource to load the init script from
+     * @param charset the charset used to read the script; never {@code null}
+     */
+    public static void runInitScript(DatabaseDelegate databaseDelegate, String initScriptPath, Charset charset) {
+        checkArgument(charset != null, "charset must not be null");
         try {
             URL resource = Thread.currentThread().getContextClassLoader().getResource(initScriptPath);
             if (resource == null) {
@@ -209,7 +222,7 @@ public abstract class ScriptUtils {
                     );
                 }
             }
-            String scripts = IOUtils.toString(resource, StandardCharsets.UTF_8);
+            String scripts = IOUtils.toString(resource, charset);
             executeDatabaseScript(databaseDelegate, initScriptPath, scripts);
         } catch (IOException e) {
             LOGGER.warn("Could not load classpath init script: {}", initScriptPath);
