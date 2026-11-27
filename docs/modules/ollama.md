@@ -2,6 +2,8 @@
 
 Testcontainers module for [Ollama](https://hub.docker.com/r/ollama/ollama) .
 
+For a complete runnable application using this module, see the [Ollama Hugging Face example](https://github.com/testcontainers/testcontainers-java/tree/main/examples/ollama-hugging-face).
+
 ## Ollama's usage examples
 
 You can start an Ollama container instance from any Java application by using:

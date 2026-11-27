@@ -6,14 +6,9 @@
 
 Add a `@Rule` or `@ClassRule` annotated field to your test class, e.g.:
 
-```java
-public class SimpleMySQLTest {
-    @Rule
-    public MySQLContainer mysql = new MySQLContainer();
-    
-    // [...]
-}
-```
+<!--codeinclude-->
+[JUnit 4 `@Rule` annotated container field](../examples/junit4/redis/src/test/java/quickstart/RedisBackedCacheIntTest.java) inside_block:rule
+<!--/codeinclude-->
 
 
 ## Manually controlling container lifecycle
