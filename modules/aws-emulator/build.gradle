@@ -1,0 +1,9 @@
+description = "Testcontainers :: AWS Emulator"
+
+dependencies {
+    api project(':testcontainers')
+
+    testImplementation 'software.amazon.awssdk:s3:2.31.1'
+    testImplementation 'software.amazon.awssdk:sts:2.31.1'
+    testImplementation 'software.amazon.awssdk:url-connection-client:2.31.1'
+}

@@ -15,6 +15,7 @@ body:
       options:
         - Core
         - ActiveMQ
+        - aws-emulator
         - Azure
         - Cassandra
         - ChromaDB

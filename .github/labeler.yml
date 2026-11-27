@@ -23,6 +23,10 @@
   - changed-files:
       - any-glob-to-any-file:
           - modules/activemq/**/*
+"modules/aws-emulator":
+  - changed-files:
+      - any-glob-to-any-file:
+          - modules/aws-emulator/**/*
 "modules/azure":
   - changed-files:
     - any-glob-to-any-file:
