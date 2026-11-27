@@ -225,6 +225,56 @@ class TestcontainersConfigurationTest {
             .isEqualTo("testcontainers/ryuk:0.3.2");
     }
 
+    @Test
+    void shouldReadDockerSocketOverrideFromEnvironment() {
+        assertThat(newConfig().getDockerSocketOverride()).as("no docker socket override by default").isNull();
+
+        environment.put("TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE", "/var/run/docker.sock");
+        assertThat(newConfig().getDockerSocketOverride())
+            .as("docker socket override read from environment variable")
+            .isEqualTo("/var/run/docker.sock");
+    }
+
+    @Test
+    void shouldReadDockerSocketOverrideFromUserProperties() {
+        assertThat(newConfig().getDockerSocketOverride()).as("no docker socket override by default").isNull();
+
+        userProperties.setProperty("docker.socket.override", "/var/run/docker.sock");
+        assertThat(newConfig().getDockerSocketOverride())
+            .as("docker socket override read from user properties")
+            .isEqualTo("/var/run/docker.sock");
+    }
+
+    @Test
+    void shouldNotReadDockerSocketOverrideFromClasspathProperties() {
+        assertThat(newConfig().getDockerSocketOverride()).as("no docker socket override by default").isNull();
+
+        classpathProperties.setProperty("docker.socket.override", "/var/run/docker.sock");
+        assertThat(newConfig().getDockerSocketOverride())
+            .as("docker socket override not read from classpath properties")
+            .isNull();
+    }
+
+    @Test
+    void shouldApplyDockerSocketOverridePrecedenceOrder() {
+        userProperties.setProperty("docker.socket.override", "/var/run/user.sock");
+        environment.put("TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE", "/var/run/env.sock");
+
+        assertThat(newConfig().getDockerSocketOverride())
+            .as("environment variable takes precedence over user property")
+            .isEqualTo("/var/run/env.sock");
+    }
+
+    @Test
+    void shouldTreatBlankEnvironmentVariableAsUnset() {
+        userProperties.setProperty("docker.socket.override", "/var/run/docker.sock");
+        environment.put("TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE", "");
+
+        assertThat(newConfig().getDockerSocketOverride())
+            .as("blank environment variable should fall back to user property")
+            .isEqualTo("/var/run/docker.sock");
+    }
+
     private TestcontainersConfiguration newConfig() {
         return new TestcontainersConfiguration(userProperties, classpathProperties, environment);
     }
