@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.io.File;
 import java.net.URI;
@@ -17,32 +18,45 @@ public class DockerClientConfigUtils {
     public static final boolean IN_A_CONTAINER = new File("/.dockerenv").exists();
 
     @Getter(lazy = true)
-    private static final Optional<String> defaultGateway = Optional
-        .ofNullable(
-            DockerClientFactory
-                .instance()
-                .runInsideDocker(
-                    cmd -> cmd.withCmd("sh", "-c", "ip route|awk '/default/ { print $3 }'"),
-                    (client, id) -> {
-                        try {
-                            LogToStringContainerCallback loggingCallback = new LogToStringContainerCallback();
-                            client
-                                .logContainerCmd(id)
-                                .withStdOut(true)
-                                .withFollowStream(true)
-                                .exec(loggingCallback)
-                                .awaitStarted();
-                            loggingCallback.awaitCompletion(3, TimeUnit.SECONDS);
-                            return loggingCallback.toString();
-                        } catch (Exception e) {
-                            log.warn("Can't parse the default gateway IP", e);
-                            return null;
-                        }
-                    }
+    private static final Optional<String> defaultGateway = resolveDefaultGateway();
+
+    static Optional<String> resolveDefaultGateway() {
+        if (TestcontainersConfiguration.getInstance().isDisableChecks()) {
+            log.debug("Checks are disabled, skipping default gateway detection");
+            return Optional.empty();
+        }
+        try {
+            return Optional
+                .ofNullable(
+                    DockerClientFactory
+                        .instance()
+                        .runInsideDocker(
+                            cmd -> cmd.withCmd("sh", "-c", "ip route|awk '/default/ { print $3 }'"),
+                            (client, id) -> {
+                                try {
+                                    LogToStringContainerCallback loggingCallback = new LogToStringContainerCallback();
+                                    client
+                                        .logContainerCmd(id)
+                                        .withStdOut(true)
+                                        .withFollowStream(true)
+                                        .exec(loggingCallback)
+                                        .awaitStarted();
+                                    loggingCallback.awaitCompletion(3, TimeUnit.SECONDS);
+                                    return loggingCallback.toString();
+                                } catch (Exception e) {
+                                    log.warn("Can't parse the default gateway IP", e);
+                                    return null;
+                                }
+                            }
+                        )
                 )
-        )
-        .map(StringUtils::trimToEmpty)
-        .filter(StringUtils::isNotBlank);
+                .map(StringUtils::trimToEmpty)
+                .filter(StringUtils::isNotBlank);
+        } catch (Exception e) {
+            log.warn("Can't detect the default gateway", e);
+            return Optional.empty();
+        }
+    }
 
     /**
      * @deprecated use {@link DockerClientProviderStrategy#getDockerHostIpAddress()}

@@ -4,12 +4,17 @@ import com.github.dockerjava.api.DockerClient;
 import org.assertj.core.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.utility.MockTestcontainersConfigurationExtension;
+import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.net.URI;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@ExtendWith(MockTestcontainersConfigurationExtension.class)
 class DockerClientConfigUtilsTest {
 
     DockerClient client = DockerClientFactory.lazyClient();
@@ -60,5 +65,13 @@ class DockerClientConfigUtilsTest {
     @Timeout(5)
     void getDefaultGateway() {
         assertThat(DockerClientConfigUtils.getDefaultGateway()).isNotNull();
+    }
+
+    @Test
+    @Timeout(5)
+    void resolveDefaultGatewayShouldNotRunContainerWhenChecksAreDisabled() {
+        Mockito.doReturn(true).when(TestcontainersConfiguration.getInstance()).isDisableChecks();
+
+        assertThat(DockerClientConfigUtils.resolveDefaultGateway()).isEmpty();
     }
 }
