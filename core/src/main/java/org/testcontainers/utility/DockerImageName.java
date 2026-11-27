@@ -87,14 +87,19 @@ public final class DockerImageName {
         }
 
         if (remoteName.contains("@sha256:")) {
-            String beforeDigest = remoteName.split("@sha256:")[0];
+            String[] nameAndDigest = remoteName.split("@sha256:", 3);
+            if (nameAndDigest.length != 2 || nameAndDigest[1].isEmpty()) {
+                throw new IllegalArgumentException("Invalid SHA-256 digest in Docker image name: " + fullImageName);
+            }
+            String beforeDigest = nameAndDigest[0];
+            String digest = nameAndDigest[1];
             if (beforeDigest.contains(":")) {
                 repository = beforeDigest.split(":")[0];
                 String tag = beforeDigest.split(":", 2)[1];
-                versioning = new Sha256Versioning(remoteName.split("@sha256:")[1], tag);
+                versioning = new Sha256Versioning(digest, tag);
             } else {
                 repository = beforeDigest;
-                versioning = new Sha256Versioning(remoteName.split("@sha256:")[1]);
+                versioning = new Sha256Versioning(digest);
             }
         } else if (remoteName.contains(":")) {
             repository = remoteName.split(":")[0];
