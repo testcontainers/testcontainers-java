@@ -104,6 +104,8 @@ Using Gradle 5.0 or higher, you can add the following to the `dependencies` sect
     But there are also "private", implementation detail dependencies (e.g., docker-java-core, Guava, OkHttp, etc.) that are not exposed to public API but prone to conflicts with test code/application under test code. 
     As such, **these libraries are 'shaded' into the core Testcontainers JAR** and relocated under `org.testcontainers.shaded` to prevent class conflicts.
 
+    `jackson-annotations` is a transitive dependency of `docker-java-api` and is not shaded. If you manage Jackson versions, keep this artifact compatible with the Jackson version used by Testcontainers. Forcing an older version can cause linkage errors in the shaded mapper.
+
 ## Sponsors
 
 A huge thank you to our sponsors:
