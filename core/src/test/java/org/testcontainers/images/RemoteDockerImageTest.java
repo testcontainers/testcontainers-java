@@ -8,6 +8,8 @@ import org.testcontainers.utility.LazyFuture;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -18,6 +20,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 class RemoteDockerImageTest {
 
     private static final String HUB_IMAGE_NAME_PREFIX_PROPERTY = "hub.image.name.prefix";
+
+    private static final String HUB_IMAGE_NAME_PREFIX_ENV_VAR = "TESTCONTAINERS_HUB_IMAGE_NAME_PREFIX";
 
     private static final String HUB_IMAGE_NAME_PREFIX = "registry.example.com/mirror/";
 
@@ -46,10 +50,10 @@ class RemoteDockerImageTest {
     }
 
     @Test
-    void toStringContainsOnlyImageName() {
+    void toStringContainsOnlyImageName() throws Exception {
         String imageName = Base58.randomString(8).toLowerCase();
         RemoteDockerImage remoteDockerImage = new RemoteDockerImage(DockerImageName.parse(imageName));
-        assertThat(remoteDockerImage.toString()).contains("imageName=" + imageName);
+        assertThat(withPinnedHubImageNamePrefix("", remoteDockerImage::toString)).contains("imageName=" + imageName);
     }
 
     @Test
@@ -108,22 +112,47 @@ class RemoteDockerImageTest {
         assertThat(remoteDockerImage.toString()).contains("imageName=" + imageName);
     }
 
-    private String resolveWithConfiguredHubPrefix(RemoteDockerImage image) throws Exception {
+    @FunctionalInterface
+    private interface ThrowingSupplier<T> {
+        T get() throws Exception;
+    }
+
+    /**
+     * Runs the given action with the {@code hub.image.name.prefix} configuration pinned to
+     * {@code prefix}, isolated from machine-level settings: environment variables take precedence
+     * over user properties, so a {@code TESTCONTAINERS_HUB_IMAGE_NAME_PREFIX} variable set on the
+     * machine or CI job is temporarily removed from the configuration's environment copy.
+     */
+    private <T> T withPinnedHubImageNamePrefix(String prefix, ThrowingSupplier<T> action) throws Exception {
+        TestcontainersConfiguration configuration = TestcontainersConfiguration.getInstance();
+
         // Avoid TestcontainersConfiguration.updateUserConfig, which writes to the user's configuration file.
         Field userPropertiesField = TestcontainersConfiguration.class.getDeclaredField("userProperties");
         userPropertiesField.setAccessible(true);
-        Properties userProperties = (Properties) userPropertiesField.get(TestcontainersConfiguration.getInstance());
+        Properties userProperties = (Properties) userPropertiesField.get(configuration);
         String originalPrefix = userProperties.getProperty(HUB_IMAGE_NAME_PREFIX_PROPERTY);
 
+        Field environmentField = TestcontainersConfiguration.class.getDeclaredField("environment");
+        environmentField.setAccessible(true);
+        Map<String, String> originalEnvironment = (Map<String, String>) environmentField.get(configuration);
+        Map<String, String> pinnedEnvironment = new HashMap<>(originalEnvironment);
+        pinnedEnvironment.remove(HUB_IMAGE_NAME_PREFIX_ENV_VAR);
+
         try {
-            userProperties.setProperty(HUB_IMAGE_NAME_PREFIX_PROPERTY, HUB_IMAGE_NAME_PREFIX);
-            return image.withImagePullPolicy(__ -> false).get();
+            userProperties.setProperty(HUB_IMAGE_NAME_PREFIX_PROPERTY, prefix);
+            environmentField.set(configuration, pinnedEnvironment);
+            return action.get();
         } finally {
+            environmentField.set(configuration, originalEnvironment);
             if (originalPrefix == null) {
                 userProperties.remove(HUB_IMAGE_NAME_PREFIX_PROPERTY);
             } else {
                 userProperties.setProperty(HUB_IMAGE_NAME_PREFIX_PROPERTY, originalPrefix);
             }
         }
+    }
+
+    private String resolveWithConfiguredHubPrefix(RemoteDockerImage image) throws Exception {
+        return withPinnedHubImageNamePrefix(HUB_IMAGE_NAME_PREFIX, () -> image.withImagePullPolicy(__ -> false).get());
     }
 }
