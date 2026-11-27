@@ -478,4 +478,36 @@ class ScriptSplittingTest {
     void testContainsDelimiters() {
         assertThat(ScriptUtils.containsSqlScriptDelimiters("'@' /*@*/ @ \"@\" --@", "@")).isTrue();
     }
+
+    @Test
+    void testNormalizeGoSeparatorBasic() {
+        String script = "SELECT 1\nGO\nSELECT 2\nGO\n";
+        String normalized = ScriptUtils.normalizeGoSeparator(script);
+        List<String> statements = doSplit(normalized, ScriptUtils.DEFAULT_STATEMENT_SEPARATOR);
+        assertThat(statements).containsExactly("SELECT 1", "SELECT 2");
+    }
+
+    @Test
+    void testNormalizeGoSeparatorCaseInsensitive() {
+        String script = "SELECT 1\ngo\nSELECT 2\nGo\n";
+        String normalized = ScriptUtils.normalizeGoSeparator(script);
+        List<String> statements = doSplit(normalized, ScriptUtils.DEFAULT_STATEMENT_SEPARATOR);
+        assertThat(statements).containsExactly("SELECT 1", "SELECT 2");
+    }
+
+    @Test
+    void testNormalizeGoSeparatorWithLeadingWhitespace() {
+        String script = "SELECT 1\n  GO\nSELECT 2\n\tGO\n";
+        String normalized = ScriptUtils.normalizeGoSeparator(script);
+        List<String> statements = doSplit(normalized, ScriptUtils.DEFAULT_STATEMENT_SEPARATOR);
+        assertThat(statements).containsExactly("SELECT 1", "SELECT 2");
+    }
+
+    @Test
+    void testNormalizeGoSeparatorDoesNotMatchInlineGo() {
+        String script = "SELECT GOOD, GOTO_COL\nGO\n";
+        String normalized = ScriptUtils.normalizeGoSeparator(script);
+        List<String> statements = doSplit(normalized, ScriptUtils.DEFAULT_STATEMENT_SEPARATOR);
+        assertThat(statements).containsExactly("SELECT GOOD, GOTO_COL");
+    }
 }

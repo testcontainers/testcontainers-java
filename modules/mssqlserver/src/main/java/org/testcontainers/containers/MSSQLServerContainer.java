@@ -1,5 +1,6 @@
 package org.testcontainers.containers;
 
+import org.testcontainers.ext.ScriptUtils;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.LicenseAcceptance;
 
@@ -165,5 +166,10 @@ public class MSSQLServerContainer<SELF extends MSSQLServerContainer<SELF>> exten
                 "or percent (%)."
             );
         }
+    }
+
+    @Override
+    protected String preprocessInitScript(String script) {
+        return ScriptUtils.normalizeGoSeparator(script);
     }
 }
