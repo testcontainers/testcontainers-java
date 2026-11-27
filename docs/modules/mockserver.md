@@ -1,5 +1,14 @@
 # Mockserver Module
 
+!!! note "Deprecated — use the MockServer-maintained module for new projects"
+    This bundled module is deprecated. For new projects, prefer the MockServer-maintained
+    module [`org.mock-server:mockserver-testcontainers`](https://www.mock-server.com/mock_server/mockserver_testcontainers.html)
+    (class `org.mockserver.testcontainers.MockServerContainer`). It tracks current MockServer
+    releases, derives its image tag from the client library so the container and client stay in
+    lockstep, and adds configuration helpers (DNS, transparent proxy, HTTP/3, initialization JSON,
+    log level, arbitrary properties) plus direct `MockServerClient` wiring. This page documents the
+    legacy bundled module.
+
 Mock Server can be used to mock HTTP services by matching requests against user-defined expectations.
 
 ## Usage example

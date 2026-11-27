@@ -3,6 +3,8 @@ description = "Testcontainers :: MockServer"
 dependencies {
     api project(':testcontainers')
 
-    testImplementation 'org.mock-server:mockserver-client-java:5.15.0'
+    // Single source of truth for the MockServer version: the test derives its container image
+    // tag from this client jar's implementation version, so bumping here updates both in lockstep.
+    testImplementation 'org.mock-server:mockserver-client-java:7.1.0'
     testImplementation 'io.rest-assured:rest-assured:5.5.7'
 }
