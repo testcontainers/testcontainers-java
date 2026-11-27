@@ -1,5 +1,8 @@
 package org.testcontainers.elasticsearch;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.NotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
@@ -9,6 +12,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.ComparableVersion;
 import org.testcontainers.utility.DockerImageName;
 
@@ -72,6 +76,8 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
     // default location of the automatically generated self-signed HTTP cert for versions >= 8
     private static final String DEFAULT_CERT_PATH = "/usr/share/elasticsearch/config/certs/http_ca.crt";
 
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
     @Deprecated
     private boolean isOss = false;
 
@@ -80,6 +86,11 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
     private String certPath = "";
 
     private Duration healthCheckTimeout = Duration.ofSeconds(60);
+
+    /**
+     * Base64-encoded {@code id:api_key} generated after start for Elasticsearch 8+ with security enabled.
+     */
+    private String apiKey;
 
     /**
      * Create an Elasticsearch Container by passing the full docker image name
@@ -224,10 +235,90 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
         return certPath;
     }
 
+    /**
+     * Returns the encoded API key generated when the container started.
+     * Available for Elasticsearch 8+ with security enabled.
+     *
+     * @return the Base64-encoded {@code id:api_key} credential
+     * @throws IllegalStateException if no API key was generated
+     */
+    public String getApiKey() {
+        if (apiKey == null) {
+            throw new IllegalStateException(
+                "API key is only available after start for Elasticsearch 8+ with security enabled"
+            );
+        }
+        return apiKey;
+    }
+
     @Override
     protected void configure() {
         super.configure();
         configureWaitStrategy();
+    }
+
+    @Override
+    protected void containerIsStarted(InspectContainerResponse containerInfo) {
+        super.containerIsStarted(containerInfo);
+        if (shouldGenerateApiKey()) {
+            try {
+                this.apiKey = createApiKey(getHttpScheme());
+            } catch (Exception e) {
+                // Same lenient behavior as missing CA certs: a non-semantic tag such as :latest
+                // may look like 8+ while the image does not actually expose the security API.
+                log.warn("Failed to generate API key. getApiKey() will not be available.", e);
+            }
+        }
+    }
+
+    private boolean shouldGenerateApiKey() {
+        return isAtLeastMajorVersion8 && !"false".equalsIgnoreCase(getEnvMap().get("xpack.security.enabled"));
+    }
+
+    private String createApiKey(String protocol) {
+        String elasticPassword = getEnvMap().get("ELASTIC_PASSWORD");
+        if (StringUtils.isBlank(elasticPassword)) {
+            throw new IllegalStateException("Cannot create API key: ELASTIC_PASSWORD is not set");
+        }
+
+        String name = "tc-" + Base58.randomString(12);
+        String endpoint = protocol + "://localhost:" + ELASTICSEARCH_DEFAULT_PORT + "/_security/api_key";
+        String curlTlsArgs = "";
+        if ("https".equals(protocol)) {
+            curlTlsArgs = StringUtils.isNotBlank(certPath) ? " --cacert '" + certPath + "'" : " -k";
+        }
+
+        String curlCommand = String.format(
+            "curl -sS%s -u \"elastic:$1\" -H 'Content-Type: application/json' -X POST '%s' -d '{\"name\":\"%s\"}'",
+            curlTlsArgs,
+            endpoint,
+            name
+        );
+
+        try {
+            ExecResult result = execInContainer("/bin/sh", "-c", curlCommand, "sh", elasticPassword);
+            String stdout = result.getStdout() == null ? "" : result.getStdout();
+            String stderr = result.getStderr() == null ? "" : result.getStderr();
+            if (result.getExitCode() != 0) {
+                throw new IllegalStateException(
+                    "Failed to create API key. Exit code: " +
+                    result.getExitCode() +
+                    ", stdout: " +
+                    stdout +
+                    ", stderr: " +
+                    stderr
+                );
+            }
+            JsonNode encoded = OBJECT_MAPPER.readTree(stdout).path("encoded");
+            if (encoded.isTextual() && !encoded.asText().trim().isEmpty()) {
+                return encoded.asText().trim();
+            }
+            throw new IllegalStateException("API key response did not contain encoded: " + stdout);
+        } catch (IllegalStateException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to create API key", e);
+        }
     }
 
     private void configureWaitStrategy() {
