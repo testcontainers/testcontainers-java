@@ -1,6 +1,7 @@
 package org.testcontainers.utility;
 
 import com.github.dockerjava.api.command.CreateContainerCmd;
+import java.util.concurrent.atomic.AtomicReference;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.rnorth.ducttape.ratelimits.RateLimiter;
@@ -78,6 +79,7 @@ class RyukResourceReaper extends ResourceReaper {
         ryukContainer.start();
 
         CountDownLatch ryukScheduledLatch = new CountDownLatch(1);
+        AtomicReference<IOException> lastConnectException = new AtomicReference<>();
 
         String host = ryukContainer.getHost();
         Integer ryukPort = ryukContainer.getFirstMappedPort();
@@ -117,7 +119,12 @@ class RyukResourceReaper extends ResourceReaper {
                                 }
                             }
                         } catch (IOException e) {
-                            log.warn("Can not connect to Ryuk at {}:{}", host, ryukPort, e);
+                            if (ryukScheduledLatch.getCount() != 0) {
+                                log.debug(CANNOT_CONNECT, host, ryukPort, e);
+                                lastConnectException.set(e);
+                            } else {
+                                log.warn(CANNOT_CONNECT, host, ryukPort, e);
+                            }
                         }
                     });
                 }
@@ -129,7 +136,10 @@ class RyukResourceReaper extends ResourceReaper {
         // We need to wait before we can start any containers to make sure that we delete them
         if (!ryukScheduledLatch.await(TestcontainersConfiguration.getInstance().getRyukTimeout(), TimeUnit.SECONDS)) {
             log.error("Timed out waiting for Ryuk container to start. Ryuk's logs:\n{}", ryukContainer.getLogs());
-            throw new IllegalStateException(String.format("Could not connect to Ryuk at %s:%s", host, ryukPort));
+            throw new IllegalStateException(String.format("Could not connect to Ryuk at %s:%s", host, ryukPort),
+                lastConnectException.get());
         }
     }
+
+    private static final String CANNOT_CONNECT = "Cannot connect to Ryuk at {}:{}";
 }
