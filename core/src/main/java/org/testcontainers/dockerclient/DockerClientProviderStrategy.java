@@ -6,11 +6,11 @@ import com.github.dockerjava.api.model.Network;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.core.RemoteApiVersion;
+import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
 import com.github.dockerjava.transport.DockerHttpClient;
 import com.github.dockerjava.transport.NamedPipeSocket;
 import com.github.dockerjava.transport.SSLConfig;
 import com.github.dockerjava.transport.UnixSocket;
-import com.github.dockerjava.zerodep.ZerodepDockerHttpClient;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import lombok.Getter;
@@ -392,7 +392,7 @@ public abstract class DockerClientProviderStrategy {
         switch (transportType) {
             case "httpclient5":
                 dockerHttpClient =
-                    new ZerodepDockerHttpClient.Builder()
+                    new ApacheDockerHttpClient.Builder()
                         .dockerHost(transportConfig.getDockerHost())
                         .sslConfig(transportConfig.getSslConfig())
                         .build();
