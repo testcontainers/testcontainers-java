@@ -132,13 +132,15 @@ public class WaitingConsumer extends BaseConsumer<WaitingConsumer> {
      * @param limitUnit maximum time to wait (units)
      */
     public void waitUntilEnd(long limit, TimeUnit limitUnit) throws TimeoutException {
-        long expiry = limitUnit.toNanos(limit) + System.nanoTime();
+        long timeoutLimitInNanos = limitUnit.toNanos(limit);
 
-        waitUntilEnd(expiry);
+        waitUntilEnd(timeoutLimitInNanos);
     }
 
-    private void waitUntilEnd(Long expiry) throws TimeoutException {
-        while (System.nanoTime() < expiry) {
+    private void waitUntilEnd(long timeoutLimitInNanos) throws TimeoutException {
+        final long startTime = System.nanoTime();
+
+        while (System.nanoTime() - startTime < timeoutLimitInNanos) {
             try {
                 OutputFrame frame = frames.pollLast(100, TimeUnit.MILLISECONDS);
 
