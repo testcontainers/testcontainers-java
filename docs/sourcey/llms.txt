@@ -1,0 +1,31 @@
+# Testcontainers for Java Sourcey Reference
+
+> *Testcontainers for Java* is a Java library that supports JUnit tests, providing lightweight, throwaway instances of common databases, Selenium web browsers, or anything else that can run in a Docker container.
+
+## Java Guide
+
+- [Testcontainers for Java](/sourcey/): *Testcontainers for Java* is a Java library that supports JUnit tests, providing lightweight, throwaway instances of common databases, Selenium web browsers, or anything else that can run in a Docker container.
+- [Examples](/sourcey/examples.html): Examples of different use cases provided by Testcontainers can be found below:
+- [JUnit 4 Quickstart](/sourcey/quickstart/junit-4-quickstart.html): It's easy to add Testcontainers to your project - let's walk through a quick example to see how.
+- [JUnit 5 Quickstart](/sourcey/quickstart/junit-5-quickstart.html): It's easy to add Testcontainers to your project - let's walk through a quick example to see how.
+- [Spock Quickstart](/sourcey/quickstart/spock-quickstart.html): It's easy to add Testcontainers to your project - let's walk through a quick example to see how.
+- [Creating a container](/sourcey/features/creating-container.html): Testcontainers' generic container support offers the most flexibility, and makes it easy to use virtually any container images as temporary test dependencies. For example, if you might use it to test interactions with:
+- [Networking and communicating with containers](/sourcey/features/networking.html): It is common to want to connect to a container from your test process, running on the test 'host' machine. For example, you may be testing a class that needs to connect to a backend or data store container.
+- [Executing commands](/sourcey/features/commands.html): By default the container will execute whatever command is specified in the image's Dockerfile. To override this, and specify a different command, use `withCommand`. For example:
+- [Files and volumes](/sourcey/features/files.html): Files can be copied into the container before startup, or can be copied from the container after the container has started.
+- [Waiting for containers to start or be ready](/sourcey/features/startup-and-waits.html): Ordinarily Testcontainers will wait for up to 60 seconds for the container's first mapped network port to start listening.
+- [Accessing container logs](/sourcey/features/container-logs.html): It is possible to capture container output using:
+- [Creating images on-the-fly](/sourcey/features/creating-images.html): In situations where there is no pre-existing Docker image, Testcontainers can create a new temporary image on-the-fly from a Dockerfile. For example, when the component under test is the Docker image itself, or when an existing base image needs to be customized for specific test(s).
+- [Custom configuration](/sourcey/features/configuration.html): You can override some default properties if your environment requires that.
+- [Image name substitution](/sourcey/features/image-name-substitution.html): Testcontainers supports automatic substitution of Docker image names.
+- [Advanced options](/sourcey/features/advanced-options.html): To add a custom label to the container, use `withLabel`:
+- [Reusable Containers (Experimental)](/sourcey/features/reuse.html): The *Reusable* feature keeps the containers running and next executions with the same container configuration will reuse it. To use it, start the container manually by calling `start()` method, do not call `stop()` method directly or indirectly via `try-with-resources` or `JUnit integration`, and enable it manually through an opt-in mechanism per environment. To reuse a container, the container configuration **must be the same**.
+- [Database containers](/sourcey/modules/databases/): You might want to use Testcontainers' database support:
+- [JDBC support](/sourcey/modules/databases/jdbc.html): You can obtain a temporary database in one of two ways:
+- [Postgres Module](/sourcey/modules/databases/postgres.html): Testcontainers module for PostgresSQL
+- [MySQL Module](/sourcey/modules/databases/mysql.html): Testcontainers module for MySQL
+- [MongoDB Module](/sourcey/modules/databases/mongodb.html): The MongoDB module provides two Testcontainers for MongoDB unit testing:
+- [Kafka Module](/sourcey/modules/kafka.html): Testcontainers can be used to automatically instantiate and manage Apache Kafka containers.
+- [LocalStack Module](/sourcey/modules/localstack.html): Testcontainers module for LocalStack, 'a fully functional local AWS cloud stack', to develop and test your cloud and serverless apps without actually using the cloud.
+- [Toxiproxy Module](/sourcey/modules/toxiproxy.html): Testcontainers module for Shopify's Toxiproxy. This TCP proxy can be used to simulate network failure conditions.
+- [Jupiter / JUnit 5](/sourcey/test-framework-integration/junit-5.html): This module provides an API that is based on the JUnit Jupiter extension model.
