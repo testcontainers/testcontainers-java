@@ -20,8 +20,11 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -32,6 +35,10 @@ class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContainerTest {
      * @see VncRecordingFormat#reencodeRecording(VncRecordingContainer, String)
      */
     private static final int MINIMUM_VIDEO_DURATION_MILLISECONDS = 200;
+
+    private static final Pattern FFMPEG_DURATION_PATTERN = Pattern.compile(
+        "Duration: (\\d{2}):(\\d{2}):(\\d{2})\\.(\\d{2})"
+    );
 
     @Nested
     class ChromeThatRecordsAllTests {
@@ -63,21 +70,111 @@ class ChromeRecordingWebDriverContainerTest extends BaseWebDriverContainerTest {
             TimeUnit.MILLISECONDS.sleep(MINIMUM_VIDEO_DURATION_MILLISECONDS);
             doSimpleExplore(container, new ChromeOptions());
             container.afterTest(
-                new TestDescription() {
-                    @Override
-                    public String getTestId() {
-                        return getFilesystemFriendlyName();
-                    }
-
-                    @Override
-                    public String getFilesystemFriendlyName() {
-                        return "ChromeThatRecordsAllTests-recordingTestThatShouldBeRecordedAndRetained";
-                    }
-                },
+                testDescription("ChromeThatRecordsAllTests-recordingTestThatShouldBeRecordedAndRetained"),
                 Optional.empty()
             );
 
             return vncRecordingDirectory.toFile().listFiles(new PatternFilenameFilter(fileNamePattern));
+        }
+
+        private TestDescription testDescription(String filesystemFriendlyName) {
+            return new TestDescription() {
+                @Override
+                public String getTestId() {
+                    return getFilesystemFriendlyName();
+                }
+
+                @Override
+                public String getFilesystemFriendlyName() {
+                    return filesystemFriendlyName;
+                }
+            };
+        }
+
+        @Test
+        void restartVncRecordingProducesASeparateFileForEachTest() throws InterruptedException, IOException {
+            File target = vncRecordingDirectory.toFile();
+            try (
+                // restart {
+                BrowserWebDriverContainer chrome = new BrowserWebDriverContainer("selenium/standalone-chrome:4.13.0")
+                    .withRecordingMode(VncRecordingMode.RECORD_ALL, target)
+                    .withRecordingFileFactory(new DefaultRecordingFileFactory())
+                    .withNetwork(NETWORK)
+            ) {
+                chrome.start();
+
+                TimeUnit.MILLISECONDS.sleep(MINIMUM_VIDEO_DURATION_MILLISECONDS);
+                doSimpleExplore(chrome, new ChromeOptions());
+                chrome.afterTest(
+                    testDescription("restartVncRecordingProducesASeparateFileForEachTest-first"),
+                    Optional.empty()
+                );
+
+                // Call this before each subsequent test so its recording doesn't get appended to the previous one
+                chrome.restartVncRecording();
+                // }
+
+                TimeUnit.MILLISECONDS.sleep(MINIMUM_VIDEO_DURATION_MILLISECONDS);
+                doSimpleExplore(chrome, new ChromeOptions());
+                chrome.afterTest(
+                    testDescription("restartVncRecordingProducesASeparateFileForEachTest-second"),
+                    Optional.empty()
+                );
+
+                File[] files = vncRecordingDirectory.toFile().listFiles(new PatternFilenameFilter("PASSED-.*\\.flv"));
+                assertThat(files).as("a separate recording file exists per test").hasSize(2);
+
+                Duration firstRecordingDuration = extractRecordedDuration(fileEndingWith(files, "-first"));
+                Duration secondRecordingDuration = extractRecordedDuration(fileEndingWith(files, "-second"));
+
+                // Both recordings cover one explore each, so their durations should be in the same ballpark
+                // regardless of how long a single explore happens to take on this machine. If
+                // restartVncRecording() were a no-op, the second recording would be one continuous stream
+                // covering both explores - roughly double the first recording's duration - rather than just
+                // the interval captured after the restart.
+                assertThat(secondRecordingDuration)
+                    .as("the second recording excludes the first test's interval")
+                    .isGreaterThan(Duration.ZERO)
+                    .isLessThan(firstRecordingDuration.multipliedBy(3).dividedBy(2));
+            }
+        }
+
+        private File fileEndingWith(File[] files, String suffix) {
+            return Arrays
+                .stream(files)
+                .filter(file -> file.getName().contains(suffix + "-"))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("No recording file found matching " + suffix));
+        }
+
+        private Duration extractRecordedDuration(File recordingFile) throws IOException {
+            MountableFile mountableFile = MountableFile.forHostPath(recordingFile.getCanonicalPath());
+            try (
+                GenericContainer<?> container = new GenericContainer<>(
+                    DockerImageName.parse("testcontainers/vnc-recorder:1.3.0")
+                )
+            ) {
+                String recordFileContainerPath = "/tmp/recording.flv";
+                container
+                    .withCopyFileToContainer(mountableFile, recordFileContainerPath)
+                    .withCreateContainerCmdModifier(createContainerCmd -> createContainerCmd.withEntrypoint("ffmpeg"))
+                    .withCommand("-i", recordFileContainerPath, "-f", "null", "-")
+                    .waitingFor(
+                        new LogMessageWaitStrategy()
+                            .withRegEx(".*Duration.*")
+                            .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS))
+                    )
+                    .start();
+
+                Matcher matcher = FFMPEG_DURATION_PATTERN.matcher(container.getLogs());
+                assertThat(matcher.find()).as("ffmpeg output contains a Duration line").isTrue();
+
+                return Duration
+                    .ofHours(Long.parseLong(matcher.group(1)))
+                    .plusMinutes(Long.parseLong(matcher.group(2)))
+                    .plusSeconds(Long.parseLong(matcher.group(3)))
+                    .plusMillis(Long.parseLong(matcher.group(4)) * 10);
+            }
         }
 
         @Test
