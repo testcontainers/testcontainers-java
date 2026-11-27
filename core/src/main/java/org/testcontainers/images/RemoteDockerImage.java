@@ -68,6 +68,9 @@ public class RemoteDockerImage extends LazyFuture<String> {
 
     public RemoteDockerImage(@NonNull Future<String> imageFuture) {
         this.imageNameFuture = Futures.lazyTransform(imageFuture, DockerImageName::new);
+        // Image names provided as a Future refer to images that already exist locally (e.g. built using
+        // ImageFromDockerfile), so no substitution (such as applying a registry prefix) should be applied
+        this.imageNameSubstitutor = ImageNameSubstitutor.noop();
     }
 
     @Override
