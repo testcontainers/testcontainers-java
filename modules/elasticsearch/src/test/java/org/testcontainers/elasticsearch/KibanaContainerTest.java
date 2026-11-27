@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
@@ -133,39 +134,46 @@ class KibanaContainerTest {
     }
 
     @Test
+    void managedModeAcceptsNoExplicitNetwork() {
+        assertThatCode(() -> KibanaContainer.ensureCorrectNetworkSetupForManagedMode(null, null))
+            .doesNotThrowAnyException();
+    }
+
+    @Test
+    void managedModeAcceptsSharedExplicitNetwork() {
+        try (Network network = Network.newNetwork()) {
+            assertThatCode(() -> KibanaContainer.ensureCorrectNetworkSetupForManagedMode(network, network))
+                .doesNotThrowAnyException();
+        }
+    }
+
+    @Test
     void managedModeRejectsWhenOnlyElasticsearchHasExplicitNetwork() {
-        Network network = Network.newNetwork();
-        try (
-            ElasticsearchContainer es = new ElasticsearchContainer(ELASTICSEARCH_IMAGE_LATEST).withNetwork(network);
-            KibanaContainer kibana = new KibanaContainer(es)
-        ) {
-            assertThatThrownBy(kibana::start)
+        try (Network network = Network.newNetwork()) {
+            assertThatThrownBy(() -> KibanaContainer.ensureCorrectNetworkSetupForManagedMode(network, null))
                 .as("managed mode requires Kibana to join the same explicit network as Elasticsearch")
-                .isInstanceOf(ContainerLaunchException.class)
-                .satisfies(ex -> {
-                    assertThat(ex.getCause())
-                        .isInstanceOf(IllegalStateException.class)
-                        .hasMessageContaining("explicit network");
-                });
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("explicit network");
+        }
+    }
+
+    @Test
+    void managedModeRejectsWhenOnlyKibanaHasExplicitNetwork() {
+        try (Network network = Network.newNetwork()) {
+            assertThatThrownBy(() -> KibanaContainer.ensureCorrectNetworkSetupForManagedMode(null, network))
+                .as("managed mode requires Elasticsearch to join the same explicit network as Kibana")
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("explicit network");
         }
     }
 
     @Test
     void managedModeRejectsWhenNetworksDiffer() {
-        try (
-            Network esNetwork = Network.newNetwork();
-            Network kibanaNetwork = Network.newNetwork();
-            ElasticsearchContainer es = new ElasticsearchContainer(ELASTICSEARCH_IMAGE_LATEST).withNetwork(esNetwork);
-            KibanaContainer kibana = new KibanaContainer(es).withNetwork(kibanaNetwork)
-        ) {
-            assertThatThrownBy(kibana::start)
+        try (Network esNetwork = Network.newNetwork(); Network kibanaNetwork = Network.newNetwork()) {
+            assertThatThrownBy(() -> KibanaContainer.ensureCorrectNetworkSetupForManagedMode(esNetwork, kibanaNetwork))
                 .as("managed mode rejects Kibana and Elasticsearch on different networks")
-                .isInstanceOf(ContainerLaunchException.class)
-                .satisfies(ex -> {
-                    assertThat(ex.getCause())
-                        .isInstanceOf(IllegalStateException.class)
-                        .hasMessageContaining("different networks");
-                });
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("different networks");
         }
     }
 
