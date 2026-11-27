@@ -3,6 +3,9 @@ package org.testcontainers.junit;
 import org.assertj.core.api.Assumptions;
 import org.junit.jupiter.api.AutoClose;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.testcontainers.TestImages;
 import org.testcontainers.containers.ExecConfig;
 import org.testcontainers.containers.GenericContainer;
@@ -34,6 +37,19 @@ class ExecInContainerTest {
             .startsWith("master");
         assertThat(result.getStderr()).as("Stderr for \"redis-cli role\" command should be empty").isEmpty();
         // We expect to reach this point for modern Docker versions.
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = { "", " ", "  " })
+    void shouldExecuteCommandAndSkipCommand(String commandParam) throws Exception {
+        Assumptions.assumeThat(TestEnvironment.dockerExecutionDriverSupportsExec()).isTrue();
+
+        final GenericContainer.ExecResult result = redis.execInContainer("redis-cli", commandParam, "role");
+        assertThat(result.getStdout())
+            .as("Output for \"redis-cli role\" command should start with \"master\"")
+            .startsWith("master");
+        assertThat(result.getStderr()).as("Stderr for \"redis-cli role\" command should be empty").isEmpty();
     }
 
     @Test
