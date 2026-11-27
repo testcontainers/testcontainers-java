@@ -70,22 +70,37 @@ enum LocalImagesCache {
         return true;
     }
 
-    private void populateFromList(List<Image> images) {
+    @VisibleForTesting
+    void populateFromList(List<Image> images) {
         for (Image image : images) {
             String[] repoTags = image.getRepoTags();
-            if (repoTags == null) {
-                log.debug("repoTags is null, skipping image: {}", image);
+            String[] repoDigests = image.getRepoDigests();
+
+            if (repoTags == null && repoDigests == null) {
+                log.debug("repoTags and repoDigests are both null, skipping image: {}", image);
                 continue;
             }
 
-            cache.putAll(
-                Stream
-                    .of(repoTags)
-                    // Protection against some edge case where local image repository tags end up with duplicates
-                    // making toMap crash at merge time.
-                    .distinct()
-                    .collect(Collectors.toMap(DockerImageName::new, it -> ImageData.from(image)))
-            );
+            // Images pulled by digest only (e.g. "postgres@sha256:...") have no repo tags,
+            // so they must be indexed by their repo digests to be found in the cache.
+            putAll(repoTags, image);
+            putAll(repoDigests, image);
         }
+    }
+
+    private void putAll(String[] names, Image image) {
+        if (names == null) {
+            return;
+        }
+        cache.putAll(
+            Stream
+                .of(names)
+                // Dangling images are reported as "<none>:<none>" / "<none>@<none>"; they can't be looked up by name.
+                .filter(it -> !it.startsWith("<none>"))
+                // Protection against some edge case where local image repository tags end up with duplicates
+                // making toMap crash at merge time.
+                .distinct()
+                .collect(Collectors.toMap(DockerImageName::new, it -> ImageData.from(image)))
+        );
     }
 }
