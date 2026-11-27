@@ -74,7 +74,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -261,6 +260,23 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
             exposedPorts.add(exposedPort.getPort());
         }
         return exposedPorts;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Unlike the default implementation, this preserves the protocol the first port was exposed with,
+     * so it also works for containers whose first exposed port is UDP.
+     */
+    @Override
+    public Integer getFirstMappedPort() {
+        return this.containerDef.getExposedPorts()
+            .stream()
+            .findFirst()
+            .map(exposedPort ->
+                getMappedPort(exposedPort.getPort(), InternetProtocol.fromDockerNotation(exposedPort.getProtocol().toString()))
+            )
+            .orElseThrow(() -> new IllegalStateException("Container doesn't expose any ports"));
     }
 
     @Override
@@ -739,9 +755,13 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Deprecated
     protected Integer getLivenessCheckPort() {
         // legacy implementation for backwards compatibility
-        Iterator<ExposedPort> exposedPortsIterator = this.containerDef.getExposedPorts().iterator();
-        if (exposedPortsIterator.hasNext()) {
-            return getMappedPort(exposedPortsIterator.next().getPort());
+        // UDP ports cannot be checked with a TCP connection, so only TCP ports are candidates
+        Optional<ExposedPort> firstTcpPort = this.containerDef.getExposedPorts()
+            .stream()
+            .filter(exposedPort -> exposedPort.getProtocol() == com.github.dockerjava.api.model.InternetProtocol.TCP)
+            .findFirst();
+        if (firstTcpPort.isPresent()) {
+            return getMappedPort(firstTcpPort.get().getPort());
         } else if (!this.containerDef.getPortBindings().isEmpty()) {
             return Integer.valueOf(
                 this.containerDef.getPortBindings().iterator().next().getBinding().getHostPortSpec()
@@ -759,7 +779,14 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @NonNull
     @Deprecated
     protected Set<Integer> getLivenessCheckPorts() {
-        final Set<Integer> result = WaitStrategyTarget.super.getLivenessCheckPortNumbers();
+        // Ports exposed only as UDP have no TCP mapping and cannot be checked by the default wait strategy
+        final Set<Integer> udpOnlyPorts = getUdpOnlyExposedPorts();
+        final Set<Integer> result = getExposedPorts()
+            .stream()
+            .filter(port -> !udpOnlyPorts.contains(port))
+            .map(this::getMappedPort)
+            .collect(Collectors.toSet());
+        result.addAll(getBoundPortNumbers());
 
         // for backwards compatibility
         if (this.getLivenessCheckPort() != null) {
@@ -767,6 +794,20 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
         }
 
         return result;
+    }
+
+    private Set<Integer> getUdpOnlyExposedPorts() {
+        final Set<Integer> udpPorts = new HashSet<>();
+        final Set<Integer> tcpPorts = new HashSet<>();
+        for (ExposedPort exposedPort : this.containerDef.getExposedPorts()) {
+            if (exposedPort.getProtocol() == com.github.dockerjava.api.model.InternetProtocol.UDP) {
+                udpPorts.add(exposedPort.getPort());
+            } else if (exposedPort.getProtocol() == com.github.dockerjava.api.model.InternetProtocol.TCP) {
+                tcpPorts.add(exposedPort.getPort());
+            }
+        }
+        udpPorts.removeAll(tcpPorts);
+        return udpPorts;
     }
 
     @Override
@@ -1046,6 +1087,30 @@ public class GenericContainer<SELF extends GenericContainer<SELF>>
     @Override
     public void addExposedPorts(int... ports) {
         this.containerDef.addExposedTcpPorts(ports);
+    }
+
+    /**
+     * Expose a container port using a specific protocol, so that a randomly chosen host port will be bound to it
+     * when the container starts. Use {@link ContainerState#getMappedPort(int, InternetProtocol)} to retrieve the
+     * bound host port once the container is running.
+     *
+     * @param port the container port to expose
+     * @param protocol the protocol (TCP or UDP) that the port should be exposed with
+     */
+    public void addExposedPort(int port, InternetProtocol protocol) {
+        this.containerDef.addExposedPort(port, com.github.dockerjava.api.model.InternetProtocol.parse(protocol.name()));
+    }
+
+    /**
+     * Fluent variant of {@link #addExposedPort(int, InternetProtocol)}.
+     *
+     * @param port the container port to expose
+     * @param protocol the protocol (TCP or UDP) that the port should be exposed with
+     * @return this
+     */
+    public SELF withExposedPort(int port, InternetProtocol protocol) {
+        addExposedPort(port, protocol);
+        return self();
     }
 
     /**
