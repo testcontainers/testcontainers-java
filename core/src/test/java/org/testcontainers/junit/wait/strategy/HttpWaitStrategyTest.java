@@ -1,19 +1,29 @@
 package org.testcontainers.junit.wait.strategy;
 
+import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.sun.net.httpserver.HttpServer;
 import org.assertj.core.api.Assertions;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.rnorth.ducttape.RetryCountExceededException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Tests for {@link HttpWaitStrategy}.
@@ -179,6 +189,50 @@ class HttpWaitStrategyTest extends AbstractWaitStrategyTest<HttpWaitStrategy> {
     @Test
     void testWaitUntilReadyWithTimeoutAndBadResponseBody() {
         waitUntilReadyAndTimeout(createShellCommand("200 OK", "Bad Response"));
+    }
+
+    /**
+     * Ensures that a response predicate is evaluated again when the first response does not match.
+     * Test case for: https://github.com/testcontainers/testcontainers-java/issues/2516
+     */
+    @Test
+    void testWaitUntilReadyWithResponsePredicateRetries() throws Exception {
+        AtomicInteger requestCount = new AtomicInteger();
+        HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        server.createContext(
+            "/",
+            exchange -> {
+                String responseBody = requestCount.getAndIncrement() == 0 ? "not-ready" : "ready";
+                byte[] response = responseBody.getBytes(StandardCharsets.UTF_8);
+                exchange.sendResponseHeaders(200, response.length);
+                try (OutputStream outputStream = exchange.getResponseBody()) {
+                    outputStream.write(response);
+                }
+            }
+        );
+        server.start();
+
+        try {
+            int exposedPort = 8080;
+            int mappedPort = server.getAddress().getPort();
+            InspectContainerResponse containerInfo = mock(InspectContainerResponse.class);
+            WaitStrategyTarget target = mock(WaitStrategyTarget.class);
+            when(containerInfo.getName()).thenReturn("http-wait-strategy-test");
+            when(target.getContainerInfo()).thenReturn(containerInfo);
+            when(target.getHost()).thenReturn("127.0.0.1");
+            when(target.getExposedPorts()).thenReturn(Collections.singletonList(exposedPort));
+            when(target.getMappedPort(exposedPort)).thenReturn(mappedPort);
+
+            new HttpWaitStrategy()
+                .forPort(exposedPort)
+                .forResponsePredicate("ready"::equals)
+                .withStartupTimeout(Duration.ofSeconds(5))
+                .waitUntilReady(target);
+
+            assertThat(requestCount).hasValue(2);
+        } finally {
+            server.stop(0);
+        }
     }
 
     /**
