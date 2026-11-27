@@ -5,7 +5,6 @@ import org.testcontainers.CockroachDBTestImages;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 import org.testcontainers.images.builder.Transferable;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -25,11 +24,7 @@ class CockroachContainerTest extends AbstractContainerDatabaseTest {
             // }
         ) {
             cockroach.start();
-
-            ResultSet resultSet = performQuery(cockroach, "SELECT 1");
-
-            int resultSetInt = resultSet.getInt(1);
-            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+            executeSelectOneQuery(cockroach);
         }
     }
 
@@ -41,10 +36,7 @@ class CockroachContainerTest extends AbstractContainerDatabaseTest {
         ) { // CockroachDB is expected to be compatible with Postgres
             cockroach.start();
 
-            ResultSet resultSet = performQuery(cockroach, "SELECT foo FROM bar");
-
-            String firstColumnValue = resultSet.getString(1);
-            assertThat(firstColumnValue).as("Value from init script should equal real value").isEqualTo("hello world");
+            executeSelectFooBarQuery(cockroach);
         }
     }
 
@@ -77,10 +69,7 @@ class CockroachContainerTest extends AbstractContainerDatabaseTest {
         ) {
             cockroach.start();
 
-            ResultSet resultSet = performQuery(cockroach, "SELECT 1");
-
-            int resultSetInt = resultSet.getInt(1);
-            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+            executeSelectOneQuery(cockroach);
 
             String jdbcUrl = cockroach.getJdbcUrl();
             assertThat(jdbcUrl).contains("/" + "test_database");
@@ -101,10 +90,7 @@ class CockroachContainerTest extends AbstractContainerDatabaseTest {
         ) { // CockroachDB is expected to be compatible with Postgres
             cockroach.start();
 
-            ResultSet resultSet = performQuery(cockroach, "SELECT foo FROM bar");
-
-            String firstColumnValue = resultSet.getString(1);
-            assertThat(firstColumnValue).as("Value from init script should equal real value").isEqualTo("hello world");
+            executeSelectFooBarQuery(cockroach);
         }
     }
 }

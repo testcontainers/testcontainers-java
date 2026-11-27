@@ -25,10 +25,9 @@ class MSSQLServerContainerTest extends AbstractContainerDatabaseTest {
             // }
         ) {
             mssqlServer.start();
-            ResultSet resultSet = performQuery(mssqlServer, "SELECT 1");
 
-            int resultSetInt = resultSet.getInt(1);
-            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+            executeSelectOneQuery(mssqlServer);
+
             assertHasCorrectExposedAndLivenessCheckPorts(mssqlServer);
         }
     }
@@ -78,9 +77,7 @@ class MSSQLServerContainerTest extends AbstractContainerDatabaseTest {
         ) {
             mssqlServerContainer.start();
 
-            ResultSet resultSet = performQuery(mssqlServerContainer, mssqlServerContainer.getTestQueryString());
-            int resultSetInt = resultSet.getInt(1);
-            assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+            executeSelectOneQuery(mssqlServerContainer);
         }
     }
 
