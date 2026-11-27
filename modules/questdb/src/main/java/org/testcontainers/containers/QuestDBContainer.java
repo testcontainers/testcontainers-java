@@ -59,8 +59,20 @@ public class QuestDBContainer extends JdbcDatabaseContainer<QuestDBContainer> {
     }
 
     @Override
+    public String getDatabaseName() {
+        return getDefaultDatabaseName();
+    }
+
+    @Override
     public String getJdbcUrl() {
-        return String.format("jdbc:postgresql://%s:%d/%s", getHost(), getMappedPort(8812), getDefaultDatabaseName());
+        String additionalUrlParams = constructUrlParameters("?", "&");
+        return String.format(
+            "jdbc:postgresql://%s:%d/%s%s",
+            getHost(),
+            getMappedPort(POSTGRES_PORT),
+            getDatabaseName(),
+            additionalUrlParams
+        );
     }
 
     @Override
