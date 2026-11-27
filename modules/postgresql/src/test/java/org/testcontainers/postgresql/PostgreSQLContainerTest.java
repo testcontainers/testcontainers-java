@@ -2,6 +2,7 @@ package org.testcontainers.postgresql;
 
 import org.junit.jupiter.api.Test;
 import org.testcontainers.PostgreSQLTestImages;
+import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.db.AbstractContainerDatabaseTest;
 
 import java.sql.ResultSet;
@@ -11,6 +12,7 @@ import java.util.logging.LogManager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class PostgreSQLContainerTest extends AbstractContainerDatabaseTest {
     static {
@@ -119,6 +121,22 @@ class PostgreSQLContainerTest extends AbstractContainerDatabaseTest {
             assertThat(jdbcUrl).contains("?");
             assertThat(jdbcUrl).contains("&");
             assertThat(jdbcUrl).contains("charSet=UNICODE");
+        }
+    }
+
+    @Test
+    void testContainerExitBeforeStartupCheck() {
+        // Regression test for #11860: verify that a PostgreSQLContainer which exits before/during
+        // startup produces a handled ContainerLaunchException from the startup check, not a
+        // suppressed or cascading error from cleanup (getLogs/stop throwing NotFoundException).
+        try (
+            PostgreSQLContainer postgres = new PostgreSQLContainer(PostgreSQLTestImages.POSTGRES_TEST_IMAGE)
+.withCommand("/bin/false")
+        ) {
+            assertThatThrownBy(postgres::start)
+                .isInstanceOf(ContainerLaunchException.class)
+                .hasStackTraceContaining("Container startup failed")
+                .hasStackTraceContaining("Container did not start correctly.");
         }
     }
 
