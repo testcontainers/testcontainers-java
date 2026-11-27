@@ -7,6 +7,7 @@ dependencies {
 
     testImplementation project(':testcontainers-mysql')
     testImplementation project(':testcontainers-postgresql')
+    testImplementation 'org.junit.platform:junit-platform-launcher'
     testImplementation 'com.zaxxer:HikariCP:7.0.2'
     testImplementation 'redis.clients:jedis:7.5.3'
     testImplementation 'org.apache.httpcomponents:httpclient:4.5.14'
