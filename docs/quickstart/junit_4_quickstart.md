@@ -78,6 +78,6 @@ That's it!
 Let's look at our complete test class to see how little we had to add to get up and running with Testcontainers:
 
 <!--codeinclude-->
-[RedisBackedCacheIntTest](../examples/junit4/redis/src/test/java/quickstart/RedisBackedCacheIntTest.java) block:RedisBackedCacheIntTest
+[RedisBackedCacheIntTest](../examples/junit4/redis/src/test/java/quickstart/RedisBackedCacheIntTest.java) inside_block:class
 <!--/codeinclude-->
 
