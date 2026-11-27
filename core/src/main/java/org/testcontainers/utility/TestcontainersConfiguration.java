@@ -155,6 +155,24 @@ public class TestcontainersConfiguration {
         return Integer.parseInt(getEnvVarOrProperty("ryuk.container.timeout", "30"));
     }
 
+    /**
+     * @return the name of the network the Ryuk container should be attached to, or {@code null} if Ryuk should use
+     * the default network.
+     */
+    @Nullable
+    public String getRyukNetwork() {
+        return getEnvVarOrProperty("ryuk.container.network", null);
+    }
+
+    /**
+     * @return the port Ryuk should listen on, or {@code null} if Ryuk should use its own default port.
+     */
+    @Nullable
+    public Integer getRyukPort() {
+        String port = getEnvVarOrProperty("ryuk.container.port", null);
+        return port != null ? Integer.valueOf(port) : null;
+    }
+
     @Deprecated
     public String getKafkaImage() {
         return getImage(KAFKA_IMAGE).asCanonicalNameString();
