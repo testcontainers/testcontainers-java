@@ -11,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
 import org.testcontainers.utility.Versioning.Sha256Versioning;
 import org.testcontainers.utility.Versioning.TagVersioning;
 
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 @EqualsAndHashCode(exclude = { "rawName", "compatibleSubstituteFor" })
@@ -71,14 +72,7 @@ public final class DockerImageName {
         final int slashIndex = fullImageName.indexOf('/');
 
         String remoteName;
-        if (
-            slashIndex == -1 ||
-            (
-                !fullImageName.substring(0, slashIndex).contains(".") &&
-                !fullImageName.substring(0, slashIndex).contains(":") &&
-                !fullImageName.substring(0, slashIndex).equals("localhost")
-            )
-        ) {
+        if (slashIndex == -1 || !isRegistry(fullImageName.substring(0, slashIndex))) {
             registry = "";
             remoteName = fullImageName;
         } else {
@@ -124,14 +118,7 @@ public final class DockerImageName {
         final int slashIndex = nameWithoutTag.indexOf('/');
 
         String remoteName;
-        if (
-            slashIndex == -1 ||
-            (
-                !nameWithoutTag.substring(0, slashIndex).contains(".") &&
-                !nameWithoutTag.substring(0, slashIndex).contains(":") &&
-                !nameWithoutTag.substring(0, slashIndex).equals("localhost")
-            )
-        ) {
+        if (slashIndex == -1 || !isRegistry(nameWithoutTag.substring(0, slashIndex))) {
             registry = "";
             remoteName = nameWithoutTag;
         } else {
@@ -148,6 +135,19 @@ public final class DockerImageName {
         }
 
         compatibleSubstituteFor = null;
+    }
+
+    /**
+     * Docker treats the first path component as a registry when it contains a dot or a colon,
+     * is <code>localhost</code>, or is not all lowercase (a repository path is lowercase).
+     */
+    private static boolean isRegistry(String firstComponent) {
+        return (
+            firstComponent.contains(".") ||
+            firstComponent.contains(":") ||
+            firstComponent.equals("localhost") ||
+            !firstComponent.equals(firstComponent.toLowerCase(Locale.ROOT))
+        );
     }
 
     /**

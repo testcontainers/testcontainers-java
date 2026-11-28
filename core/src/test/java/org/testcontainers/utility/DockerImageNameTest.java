@@ -31,6 +31,8 @@ class DockerImageNameTest {
                 "1.2.3.4:1234/my-name:1.0",
                 "1.2.3.4/repo-here/my-name:1.0",
                 "1.2.3.4:1234/repo-here/my-name:1.0",
+                "FOO/bar",
+                "LOCALDOMAIN/fooo/bar:1.0",
             };
         }
 
@@ -93,7 +95,11 @@ class DockerImageNameTest {
                 Arguments.of("1.2.3.4", "/", "my-name", "@", "sha256:1234abcd1234abcd1234abcd1234abcd"),
                 Arguments.of("1.2.3.4:1234", "/", "my-name", "@", "sha256:1234abcd1234abcd1234abcd1234abcd"),
                 Arguments.of("1.2.3.4", "/", "my-name", "@", "sha256:1234abcd1234abcd1234abcd1234abcd"),
-                Arguments.of("1.2.3.4:1234", "/", "my-name", "@", "sha256:1234abcd1234abcd1234abcd1234abcd")
+                Arguments.of("1.2.3.4:1234", "/", "my-name", "@", "sha256:1234abcd1234abcd1234abcd1234abcd"),
+                Arguments.of("FOO", "/", "bar", ":", null),
+                Arguments.of("Foo", "/", "bar", ":", "1.0"),
+                Arguments.of("LOCALDOMAIN", "/", "fooo/bar", ":", null),
+                Arguments.of("LOCALDOMAIN", "/", "fooo", "@", "sha256:1234abcd1234abcd1234abcd1234abcd")
             );
         }
 
